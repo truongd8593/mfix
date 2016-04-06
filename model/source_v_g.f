@@ -379,43 +379,36 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOURCE_V_G_BC(A_M, B_M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
+!---------------------------------------------------------------------//
+      USE bc
       USE constant
-      USE physprop
+      USE compar
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE output
-      USE compar
-      USE fun_avg
-      USE functions
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      use turb, only: k_epsilon
+      USE visc_g
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Boundary condition
       INTEGER :: L
 ! Indices
@@ -425,7 +418,7 @@
       INTEGER :: M
 ! Turbulent shear stress
       DOUBLE PRECISION :: W_F_Slip
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 ! Set reference phase to gas
       M = 0

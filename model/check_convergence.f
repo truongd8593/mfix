@@ -31,6 +31,7 @@
       USE run
       USE scalars, only :NScalar
       USE toleranc
+      use turb, only: k_epsilon
       USE utilities, ONLY: check_vel_bound
       IMPLICIT NONE
 !-----------------------------------------------

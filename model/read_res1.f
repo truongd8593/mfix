@@ -1,84 +1,54 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: READ_RES1                                              C
+!  Subroutine: READ_RES1                                               C
 !  Purpose: read in the time-dependent restart records                 C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 03-JAN-92  C
 !  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: IJKMAX2, MMAX, DT                             C
-!  Variables modified: TIME, NSTEP, EP_g, P_g, P_star, RO_g            C
-!                      ROP_g, T_g, T_s,  U_g, V_g, W_g, ROP_s    C
-!                      U_s, V_s, W_s                                   C
-!                                                                      C
-!  Local variables: TIME_READ, LC, NEXT_REC                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE READ_RES1
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cdist
+      USE compar
+      USE energy
+      USE fldvar
+      USE funits
+      USE geometry
+      USE in_binary_512
+      USE mpi_utility
       USE param
       USE param1
-      USE fldvar
-      USE geometry
       USE physprop
       USE run
       USE rxns
       USE scalars
-      USE funits
-      USE energy
-      USE compar
-      USE cdist
-      USE mpi_utility
       USE sendrecv
-      USE in_binary_512
-
+      use turb, only: k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!             loop counter
-      INTEGER LC
-!
-!                      Local species index
-      INTEGER          NN
-!
-!             pointer to the next record
-      INTEGER NEXT_REC
-!
-!                file version id
-      CHARACTER(LEN=512) :: VERSION
-!
-!                version number
-      REAL       VERSION_NUMBER
-!
-!                      Dummy array
-      DOUBLE PRECISION DT_SAVE
 
+! Local variables
+!---------------------------------------------------------------------//
+! loop counter
+      INTEGER :: LC
+! Local species index
+      INTEGER :: NN
+! pointer to the next record
+      INTEGER :: NEXT_REC
+! version id
+      CHARACTER(LEN=512) :: VERSION
+! version number
+      REAL :: VERSION_NUMBER
+! Dummy array
+      DOUBLE PRECISION :: DT_SAVE
 !//PAR_I/O declare global scratch arrays
       double precision, allocatable :: array1(:)
       double precision, allocatable :: array2(:)
-!-----------------------------------------------
-!
+!---------------------------------------------------------------------//
+
       if (myPE .eq. PE_IO .or. .not.bStart_with_one_res) then
          allocate (array1(ijkmax2))
          allocate (array2(ijkmax3))
@@ -88,10 +58,10 @@
       end if
 
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
-!
-!     Use DT from data file if DT_FAC is set to 1.0
+
+! Use DT from data file if DT_FAC is set to 1.0
       IF (DT_FAC == ONE) DT_SAVE = DT
-!
+
 
 !//PAR_I/O only PE_IO reads the restart file
       if (myPE == PE_IO .or. (bDist_IO .and. .not.bStart_with_one_RES)) then
@@ -108,7 +78,6 @@
       end if
 
 
-
       if (.not.bDist_IO  .or. bStart_with_one_RES) then
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
@@ -120,32 +89,22 @@
         end if
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
-!AE TIME 091501 Store the timestep counter level at the begin of RESTART run
+! Store the timestep counter level at the begin of RESTART run
         NSTEPRST = NSTEP
 
 ! for now ... do not do RES1 file in netCDF format
 !       call read_res1_netcdf
 !        goto 999
-!
 
-
-!
       call readScatterRes(EP_G,array2, array1, 0, NEXT_REC)
-
       call readScatterRes(P_G,array2, array1, 0, NEXT_REC)
-
       call readScatterRes(P_STAR,array2, array1, 1, NEXT_REC)
-
       call readScatterRes(RO_G,array2, array1, 0, NEXT_REC)
-
       call readScatterRes(ROP_G,array2, array1, 0, NEXT_REC)
-
       call readScatterRes(T_G,array2, array1, 1, NEXT_REC)
-!
 
       IF (VERSION_NUMBER < 1.15) THEN
          call readScatterRes (T_s(:,1),array2, array1, 1, NEXT_REC)
-
          IF (MMAX >= 2) THEN
             call readScatterRes (T_s(:,2),array2, array1, 1, NEXT_REC)
          ELSE
@@ -163,7 +122,7 @@
       call readScatterRes(U_G, array2, array1, 0, NEXT_REC)
       call readScatterRes(V_G, array2, array1, 0, NEXT_REC)
       call readScatterRes(W_G, array2, array1, 0, NEXT_REC)
-!
+
       DO LC = 1, MMAX
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
@@ -223,7 +182,6 @@
           call readScatterRes(E_Turb_G, array2, array1, 1, NEXT_REC)
       ENDIF
 !------------------------------------------------------------------------
-!
 
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       deallocate( array1 )
@@ -238,30 +196,44 @@
 
 
       IF (DT_FAC == ONE) DT = DT_SAVE
-!
 
-!     We may no longer need PATCH_AFTER_RESTART
+! We may no longer need PATCH_AFTER_RESTART
 !     CALL PATCH_AFTER_RESTART
 
       RETURN
       END SUBROUTINE READ_RES1
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       subroutine readScatterRes(VAR, array2, array1, init, NEXT_REC)
-        use param1, only: zero, undefined
-        use param, only: dimension_3
-        USE geometry
-        USE funits
-        USE compar
-        USE cdist
-        USE mpi_utility
-        USE sendrecv
-        USE in_binary_512
-        IMPLICIT NONE
-        double precision, dimension(ijkmax2) :: array1
-        double precision, dimension(ijkmax3) :: array2
-        double precision, dimension(DIMENSION_3) :: VAR
-        INTEGER :: init  ! define VAR initialization, 0: undefin, 1: zero
-        INTEGER :: NEXT_REC
+
+! Modules
+!---------------------------------------------------------------------//
+      use param1, only: zero, undefined
+      use param, only: dimension_3
+      USE geometry
+      USE funits
+      USE compar
+      USE cdist
+      USE mpi_utility
+      USE sendrecv
+      USE in_binary_512
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+      double precision, dimension(DIMENSION_3) :: VAR
+      double precision, dimension(ijkmax2) :: array1
+      double precision, dimension(ijkmax3) :: array2
+      INTEGER :: init  ! define VAR initialization, 0: undefin, 1: zero
+      INTEGER :: NEXT_REC
+!---------------------------------------------------------------------//
 
 !// Reset global scratch arrays
         if( init==0 ) then
@@ -286,8 +258,17 @@
 
       End subroutine readScatterRes
 
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       subroutine readScatterRes_netcdf(VAR, array2, array1, ncid , varid)
+
+! Modules
+!---------------------------------------------------------------------//
       USE param, only: dimension_3
       USE geometry
       USE compar
@@ -296,16 +277,15 @@
       USE sendrecv
       USE MFIX_netcdf
       USE in_binary_512
-
       IMPLICIT NONE
 
+! Dummy arguments
+!---------------------------------------------------------------------//
       double precision, dimension(ijkmax2)     :: array1
       double precision, dimension(ijkmax3)     :: array2
       double precision, dimension(DIMENSION_3) :: VAR
-
       integer :: ncid , varid
-
-
+!---------------------------------------------------------------------//
 
       if (myPE .eq. PE_IO) then
          call MFIX_check_netcdf( MFIX_nf90_get_var(ncid , varid   , array1   ) )
@@ -319,78 +299,68 @@
       End subroutine readScatterRes_netcdf
 
 
-
-
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 020 New local variables for parallelization: array1, array2
-!// 400 Added sendrecv module and send_recv calls for COMMunication
-!// 400 Added mpi_utility module and other global reduction (bcast) calls
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                                                                              !
-!                                      read_res1_netcdf                       !
-!                                                                              !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       subroutine read_res1_netcdf
 
-        USE param
-        USE param1
-        USE fldvar
-        USE geometry
-        USE physprop
-        USE run
-!       USE funits
-        USE scalars
-!       USE output
-        USE rxns
-        USE cdist
-        USE compar
-        USE mpi_utility
-        USE MFIX_netcdf
-!       USE tmp_array
-        USE energy
+! Dummy arguments
+!---------------------------------------------------------------------//
+      USE cdist
+      USE compar
+      USE energy
+      USE fldvar
+      USE geometry
+      USE mpi_utility
+      USE MFIX_netcdf
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      use turb, only: k_epsilon
+      implicit none
 
+! Local variables
+!---------------------------------------------------------------------//
+      integer :: I , nn
 
-        implicit none
+      integer   :: ncid
+      integer   :: varid_time
+      integer   :: varid_epg , varid_pg
+      integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
+      integer   :: varid_tg
+      integer   :: varid_rog , varid_gamaRG , varid_TRG
+      integer   :: varid_gamaRS(20) , varid_TRS(20) , varid_ropg
 
-        integer :: I , nn
+      integer   :: varid_us(20) , varid_vs(20) , varid_ws(20)  !! MMAX
+      integer   :: varid_rops(20)  , varid_ts(20) !! mmax
+      integer   :: varid_thetam(20) !! mmax
 
-        integer   :: ncid
-        integer   :: varid_time
-        integer   :: varid_epg , varid_pg
-        integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
-        integer   :: varid_tg
-        integer   :: varid_rog , varid_gamaRG , varid_TRG
-        integer   :: varid_gamaRS(20) , varid_TRS(20) , varid_ropg
+      integer   :: varid_xg(20)  ! nmax(0)
+      integer   :: varid_xs(20,20)  ! mmax , MAX(nmax(1:mmax))
 
-        integer   :: varid_us(20) , varid_vs(20) , varid_ws(20)  !! MMAX
-        integer   :: varid_rops(20)  , varid_ts(20) !! mmax
-        integer   :: varid_thetam(20) !! mmax
+      integer   :: varid_scalar(20)  ! nscalar
+      integer   :: varid_rr(20)      ! nRR
+      integer   :: varid_kturbg , varid_eturbg
 
-        integer   :: varid_xg(20)  ! nmax(0)
-        integer   :: varid_xs(20,20)  ! mmax , MAX(nmax(1:mmax))
+      character(LEN=80) :: fname, var_name
 
-        integer   :: varid_scalar(20)  ! nscalar
-        integer   :: varid_rr(20)      ! nRR
+      integer nDim , nVars , nAttr , unID , formatNUM
 
-        integer   :: varid_kturbg , varid_eturbg
+      integer xyz_id , xyz_dim
 
+      character(LEN=80) :: varname
+      integer vartype,nvdims,vdims(10),nvatts,rcode
 
-        character(LEN=80) :: fname, var_name
-
-        integer nDim , nVars , nAttr , unID , formatNUM
-
-        integer xyz_id , xyz_dim
-
-        character(LEN=80) :: varname
-        integer vartype,nvdims,vdims(10),nvatts,rcode
-
-        double precision, allocatable :: array1(:)
-        double precision, allocatable :: array2(:)
-
+      double precision, allocatable :: array1(:)
+      double precision, allocatable :: array2(:)
+!---------------------------------------------------------------------//
 
 !        integer :: MFIX_nf90_create
 !        integer :: MFIX_nf90_def_dim
@@ -400,16 +370,6 @@
 !       integer :: MFIX_nf90_inq_dimid
 !       integer :: MFIX_nf90_inquire_dimension
 !       integer :: MFIX_nf90_inq_varid
-
-
-
-
-
-
-
-
-!
-!
 
 
 ! bWrite_netcdf(1)  : EP_g
@@ -640,55 +600,34 @@
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 14-APR-15  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE PATCH_AFTER_RESTART
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cdist
+      USE compar
+      USE cutcell
+      USE energy
+      USE fldvar
+      use functions
+      USE funits
+      USE geometry
+      USE mpi_utility
       USE param
       USE param1
-      USE fldvar
-      USE geometry
       USE physprop
       USE run
       USE rxns
       USE scalars
-      USE funits
-      USE energy
-      USE compar
-      USE cdist
-      USE mpi_utility
       USE sendrecv
-      USE cutcell
-      use functions
-
+      use turb, only: k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: I,J,K, IJK, IJKNB
       INTEGER :: M,NN
@@ -696,8 +635,7 @@
       INTEGER, DIMENSION(6) :: NBCELL
       LOGICAL :: NB_FOUND
 
-
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3
 

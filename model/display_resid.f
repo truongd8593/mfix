@@ -8,32 +8,29 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DISPLAY_RESID(NIT)
 
+! Modules
+!---------------------------------------------------------------------//
       USE residual, only: GROUP_RESID
-
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
 ! iteration number
       INTEGER, INTENT(IN) :: NIT
+!---------------------------------------------------------------------//
 
 ! Print Location of Max_Resid
 !      LOGICAL,PARAMETER:: Print_ijk=.FALSE.
-
 
       IF(GROUP_RESID) THEN
          CALL DISPLAY_GROUP_RESID
       ELSE
          CALL DISPLAY_FIELD_RESID
       ENDIF
-
 !     IF(PRINT_IJK) 
 
 
-
-
-
-!
-!
-!     Display maximum values of residuals
+! Display maximum values of residuals
 !     IF(PRINT_IJK) WRITE(*,'(A, G12.3, 3I6, A, G12.3, 3I6, A, G12.3)') &
 !     & " Max Res/IJK: P_g: ", MAX_RESID(RESID_P, 0), &
 !     & I_OF_G(IJK_RESID(RESID_P, 0)), &
@@ -60,14 +57,17 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DISPLAY_FIELD_RESID
 
+! Modules 
+!---------------------------------------------------------------------//
       use param1, only: UNDEFINED_I
       use residual, only: RESID_STRING, RESID_INDEX, RESID
-
       use error_manager
-
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: LL, LC, LS, LE
+!---------------------------------------------------------------------//
 
       IF(NIT == 1) THEN
          WRITE(ERR_MSG(1)(1:5),'("  Nit")')
@@ -123,20 +123,23 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DISPLAY_GROUP_RESID
 
+! Modules
+!---------------------------------------------------------------------//
       use residual, only: RESID_STRING
       use residual, only: RESID_GRP, RESID_GRP_STRING
       use residual, only: HYDRO_GRP, THETA_GRP, ENERGY_GRP
       use residual, only: SPECIES_GRP, SCALAR_GRP, KE_GRP
       use run, only: GRANULAR_ENERGY, ENERGY_EQ
-      use run, only: ANY_SPECIES_EQ, K_EPSILON
+      use run, only: ANY_SPECIES_EQ
+      use turb, only: K_EPSILON
       use scalars, only : NScalar
-
       use error_manager
-
       IMPLICIT NONE
 
-
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: LC, LS, LE
+!---------------------------------------------------------------------//
 
       IF (NIT == 1) THEN
          WRITE(ERR_MSG(1)(1:5),'("  Nit")')

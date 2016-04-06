@@ -608,7 +608,7 @@
 ! needed because of ghd theory
       use fldvar, only: rop_s, ro_s, d_p
       use run, only: kt_type_enum, ghd_2007
-      use run, only: k_epsilon
+      use turb, only: k_epsilon
       use physprop, only: nmax, smax, mmax
       use scalars, only: nscalar, phase4scalar
 

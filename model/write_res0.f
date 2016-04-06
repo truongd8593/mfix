@@ -47,7 +47,9 @@
       USE sendrecv         ! for filling the boundary information
       USE stiff_chem
       USE toleranc
+      use turb, only: l_scale0, k_epsilon
       USE ur_facs
+      use visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------

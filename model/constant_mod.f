@@ -169,15 +169,4 @@
 ! Names of user defined constants (for output file only)
       CHARACTER(LEN=20) :: C_NAME (DIMENSION_C)
 
-! Move these to turb at some point:
-! Scale factor for gas turbulence length scale
-      DOUBLE PRECISION :: K_scale
-
-! Default value for characteristic length for turbulence
-      DOUBLE PRECISION :: L_scale0
-
-! Maximum value of turbulent viscosity
-      DOUBLE PRECISION :: MU_gmax
-
-
       END MODULE constant

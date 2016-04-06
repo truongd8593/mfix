@@ -14,7 +14,7 @@
 ! Time-step intervalue between updating the .LOG file.
       use output, only: NLOG
 ! Flag: Use the K-Epsilon model
-      use run, only: K_EPSILON
+      use turb, only: K_EPSILON
 ! Number of arrays to store in SPA
       use rxns, only: nRR
 ! VTK

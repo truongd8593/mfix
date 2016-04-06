@@ -216,10 +216,11 @@
 
       use param1, only: undefined, zero
       use physprop, only: smax, mmax, nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale_pressure
       use toleranc, only: tmin
+      use turb, only: k_epsilon
 
       use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
@@ -372,9 +373,10 @@
 
       use param1, only: zero
       use physprop, only: smax, mmax, nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale_pressure
+      use turb, only: k_epsilon
 
       use indices, only: im1, jm1, km1
       use functions, only: is_on_mype_plus2layers, bound_funijk
@@ -680,8 +682,9 @@
       use fldvar, only: k_turb_g, e_turb_g
       use physprop, only: smax, mmax
       use physprop, only: nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
+      use turb, only: k_epsilon
 
       use indices, only: im1, ip1, jm1, jp1, km1, kp1
       use functions, only: is_on_mype_plus2layers, bound_funijk

@@ -33,9 +33,10 @@
       use residual, only: resid, max_resid, ijk_resid
       use residual, only: num_resid, den_resid
       use residual, only: resid_ke
-      use run, only: discretize, k_epsilon, added_mass, odt
+      use run, only: discretize, added_mass, odt
       use rxns, only: sum_r_g
       use toleranc, only: zero_ep_s
+      use turb, only: k_epsilon
       use turb, only: dif_k_turb_g, k_turb_g_c, k_turb_g_p
       use turb, only: dif_e_turb_g, e_turb_g_c, e_turb_g_p
       use ur_facs, only: ur_fac

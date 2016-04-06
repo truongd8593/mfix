@@ -40,6 +40,7 @@ MODULE CHECK_DATA_CG
       USE run
       USE scalars
       USE stl
+      use turb, only: k_epsilon
       USE vtk
       IMPLICIT NONE
 !-----------------------------------------------
@@ -980,6 +981,7 @@ MODULE CHECK_DATA_CG
       USE run
       USE scalars
       USE toleranc
+      use turb, only: k_epsilon
       USE vtk
       use error_manager
 

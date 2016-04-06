@@ -623,7 +623,7 @@
 
       USE toleranc, only: dil_ep_s
 
-      USE turb, only: tau_1
+      USE turb, only: tau_1, turb_c_mu
 
       USE visc_s, only: lambda_s_v, mu_s_v, mu_b_v
       USE visc_s, only: ep_star_array
@@ -636,11 +636,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-
-! Local parameters
-!---------------------------------------------------------------------//
-! constant in simonin model
-      DOUBLE PRECISION, PARAMETER :: C_mu = 9.0D-02
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -655,7 +650,10 @@
       DOUBLE PRECISION :: SUM_EpsGo
 ! single particle drag coefficient/ep_s
       DOUBLE PRECISION :: dga_sl
+! constant in ahmadi model
+      DOUBLE PRECISION :: C_mu 
 !---------------------------------------------------------------------//
+      c_mu = turb_c_mu
 
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
@@ -780,7 +778,7 @@
 
       USE toleranc, only: dil_ep_s
 
-      USE turb, only: tau_1, tau_12, k_12
+      USE turb, only: tau_1, tau_12, k_12, turb_c_mu
 
       USE visc_s, only: lambda_s_v, mu_s_v, mu_b_v
 
@@ -792,11 +790,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-
-! Local parameters
-!---------------------------------------------------------------------//
-! constant in simonin model
-      DOUBLE PRECISION, PARAMETER :: C_mu = 9.0D-02
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -815,7 +808,10 @@
       DOUBLE PRECISION :: dga_sl
 ! relative velocity between gas and solids
       DOUBLE PRECISION :: rvel_l
+! constant in simonin model
+      DOUBLE PRECISION :: C_mu
 !---------------------------------------------------------------------//
+      c_mu = turb_c_mu
 
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN

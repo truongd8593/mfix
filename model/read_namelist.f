@@ -46,9 +46,11 @@
       USE scales
       USE stiff_chem
       USE toleranc
+      use turb, only: k_epsilon, l_scale0
       USE ur_facs
       USE usr
       USE utilities
+      use visc_g, only: mu_gmax
       USE vtk
       Use stl
       use usr_prop, only: usr_fgs, usr_fss, usr_gama

@@ -93,9 +93,6 @@
 ! phase number where added mass is applied.
       INTEGER :: M_AM
 
-! If .TRUE. solve K_Epsilon turbulence eq.
-      LOGICAL :: K_Epsilon
-
 ! If .TRUE. solve energy equations
       LOGICAL :: ENERGY_EQ
 

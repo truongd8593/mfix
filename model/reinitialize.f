@@ -105,11 +105,6 @@ MODULE REINIT
       CALL SET_BC_FLOW
       IF(REINIT_ERROR()) RETURN
 
-! This is all that happens in SET_L_SCALE so it needs moved, maybe
-! this should go in int_fluid_var.?
-!     CALL SET_L_SCALE
-!      L_SCALE(:) = L_SCALE0
-
 ! Set constant physical properties
       CALL SET_CONSTPROP
       IF(REINIT_ERROR()) RETURN

@@ -42,7 +42,9 @@
       USE scales
       USE stiff_chem
       USE toleranc
+      use turb, only: k_epsilon, l_scale0
       USE ur_facs
+      use visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------

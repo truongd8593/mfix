@@ -390,43 +390,36 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOURCE_U_G_BC(A_M, B_M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
+!---------------------------------------------------------------------//
+      USE bc
+      USE compar
       USE constant
-      USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE output
-      USE compar
-      USE fun_avg
-      USE functions
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE turb, only: k_epsilon
+      USE visc_g
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Boundary condition
       INTEGER :: L
 ! Indices
@@ -436,7 +429,7 @@
       INTEGER :: M
 ! Turbulent shear stress
       DOUBLE PRECISION  :: W_F_Slip
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 ! Set reference phase to gas
       M = 0
@@ -945,20 +938,13 @@
 !  Author: S. Benyahia                                Date: MAY-13-04  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE Wall_Function(IJK1, IJK2, ODX_WF, W_F_Slip)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE physprop
@@ -968,36 +954,31 @@
       USE indices
       USE bc
       USE compar
-      USE turb
+! C_mu is constant in turbulent viscosity
+! Kappa is Von Karmen constant
+      USE turb, only: turb_c_mu, turb_kappa
       USE mpi_utility
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! IJK indices for wall cell and fluid cell
       INTEGER :: IJK1, IJK2
 ! ODX_WF: 1/dx, and W_F_Slip: value of turb. shear stress at walls
       DOUBLE PRECISION ODX_WF, W_F_Slip
-!-----------------------------------------------
-! Local parameters
-!-----------------------------------------------
-! C_mu is constant in turbulent viscosity
-      DOUBLE PRECISION, PARAMETER :: C_mu = 0.09D0
-! Kappa is Von Karmen constant
-      DOUBLE PRECISION, PARAMETER :: Kappa = 0.42D0
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
-!-----------------------------------------------
-
+!---------------------------------------------------------------------//
+     
       IF(DABS(ODX_WF)>1.0D-5) THEN
 ! Avoid division by near-zero. This can occur when del_h is undefined
 ! for some bad cut-cells. Will probably need user-defined tolerance.
 
-         W_F_Slip = (ONE - ONE/ODX_WF* RO_g(IJK2)*C_mu**0.25 * &
-            SQRT(K_Turb_G(IJK2))/MU_gT(IJK2) * &
-            Kappa/LOG(9.81D+0/(ODX_WF*2.D+0)*RO_g(IJK2)*C_mu**0.25*&
+         W_F_Slip = (ONE - ONE/ODX_WF * RO_g(IJK2)*turb_C_mu**0.25* &
+            SQRT(K_Turb_G(IJK2))/MU_gT(IJK2) * turb_Kappa/&
+            LOG(9.81D+0/(ODX_WF*2.D+0)*RO_g(IJK2)*turb_C_mu**0.25*&
             SQRT(K_Turb_G(IJK2))/MU_g(IJK2)))
       ELSE
 ! Should it be set to another value in this case?

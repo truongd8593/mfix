@@ -366,9 +366,6 @@
 
 
 
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: RE_INDEX_ARRAYS                                        C
@@ -377,20 +374,13 @@
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE RE_INDEX_ARRAYS
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE bc, only: IJK_P_G
       USE cdist
       USE compar
@@ -415,24 +405,16 @@
       USE sendrecv
       USE stiff_chem, only: STIFF_CHEMISTRY,notOwner
       USE stl
+      use turb, only: k_epsilon
       USE visc_g
-
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I, J, K, IJK, NEW_IJK,NN
-!
-!                      Index for the solids phase.
-      INTEGER          M
+
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I, J, K, IJK, NEW_IJK,NN
+! Index for the solids phase.
+      INTEGER :: M
 
       LOGICAL,DIMENSION(DIMENSION_3) :: ANY_CUT_TREATMENT, ANY_STANDARD_CELL
 
@@ -466,20 +448,18 @@
       INTEGER :: IJKW,IJKE,IJKS,IJKN,IJKB,IJKT
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
 
-!                             Array index denoting a cell class, it is a
-!                             column of the array STORE_INCREMENTS
-      INTEGER                 ICLASS
-!
-!                             Array of sum of increments to make the class
-!                             determination faster.
-      INTEGER                 DENOTE_CLASS(MAX_CLASS)
+! Array index denoting a cell class, it is a column of the array
+! STORE_INCREMENTS
+      INTEGER :: ICLASS
+! Array of sum of increments to make the class determination faster
+      INTEGER :: DENOTE_CLASS(MAX_CLASS)
 
-   INTEGER :: I_SIZE,J_SIZE,K_SIZE
+      INTEGER :: I_SIZE,J_SIZE,K_SIZE
+!---------------------------------------------------------------------//
 
-!======================================================================
+
 !   Loop through useful cells and save their index
 !======================================================================
-
       allocate(BACKGROUND_IJK_OF(DIMENSION_3))
       allocate(IJK_OF_BACKGROUND(DIMENSION_3))
 
@@ -2003,28 +1983,23 @@
 
       END SUBROUTINE RE_INDEX_ARRAYS
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: RECORD_NEW_IJK_CELL                                    C
+!  Subroutine: RECORD_NEW_IJK_CELL                                     C
 !  Purpose: Records indices for new IJK cell                           C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE RECORD_NEW_IJK_CELL(I,J,K,IJK,NEW_IJK,TEMP_IJK_ARRAY_OF,TEMP_I_OF,TEMP_J_OF,TEMP_K_OF)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+      SUBROUTINE RECORD_NEW_IJK_CELL(I, J, K, IJK, NEW_IJK,&
+                                     TEMP_IJK_ARRAY_OF, TEMP_I_OF,&
+                                     TEMP_J_OF, TEMP_K_OF)
+
+! Modules
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE indices
@@ -2035,33 +2010,21 @@
       USE funits
       USE scalars
       USE run
-
       USE cutcell
-
       USE sendrecv
-
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER ::        I, J, K, IJK, NEW_IJK
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I, J, K, IJK, NEW_IJK
       INTEGER, DIMENSION(ISTART3-1:IEND3+1,JSTART3-1:JEND3+1,KSTART3-1:KEND3+1) :: TEMP_IJK_ARRAY_OF
-      INTEGER, DIMENSION(DIMENSION_3)     :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
+      INTEGER, DIMENSION(DIMENSION_3) :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
 
-
+!---------------------------------------------------------------------//
 
       BACKGROUND_IJK_OF(NEW_IJK) = IJK
-
       IJK_OF_BACKGROUND(IJK) = NEW_IJK
-
       TEMP_IJK_ARRAY_OF(I,J,K)=NEW_IJK
 
       TEMP_I_OF(NEW_IJK) = I
@@ -2070,62 +2033,43 @@
 
       NEW_IJK = NEW_IJK + 1
 
-
       RETURN
-
       END SUBROUTINE RECORD_NEW_IJK_CELL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: BUBBLE_SORT_1D_INT_ARRAY                               C
+!  Subroutine: BUBBLE_SORT_1D_INT_ARRAY                                C
 !  Purpose: Bubble sort a section of a 1D integer array in ascending   C
 !           order. The section that is sorted out is from I1 to I2     C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-
       SUBROUTINE BUBBLE_SORT_1D_INT_ARRAY(ARRAY,I1,I2)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE indices
       USE geometry
       USE compar
       USE cutcell
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER ::I1,I2,BUFFER,I,J
-!
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I1, I2
       INTEGER, DIMENSION(I1:I2) :: ARRAY
 
-!-----------------------------------------------
-
-!======================================================================
-!   Bubble sort a section of a 1D integer array in ascending order
-!   The section that is sorted out is from I1 to I2
-!======================================================================
+! Local variables
+!---------------------------------------------------------------------//
+      INTEGER ::BUFFER, I, J
+!---------------------------------------------------------------------//
 
 !     print*,'Before Bubble sorting from MyPE=',MyPE, I1,I2,ARRAY
-
-
       DO I = I1,I2-1
          DO J = I2-1,I,-1
             IF(ARRAY(J)>ARRAY(J+1)) THEN
@@ -2135,20 +2079,27 @@
             ENDIF
          ENDDO
       ENDDO
-
-
 !     print*,'After Bubble sorting from MyPE=',MyPE, I1,I2,ARRAY
-
 
       END SUBROUTINE BUBBLE_SORT_1D_INT_ARRAY
 
 
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!  To remove dead cells, the number of useful cells was calculated     C
+!  in RE_INDEX_ARRAY, and is stored back in IJKEND3                    C
+!  Now, the array is shifted such that all useful values are           C
+!  contiguous and are located between IJKSTART3 and IJKEND3            C
+!  The array BACKGROUND_IJK_OF(IJK) points to the original cell        C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SHIFT_DP_ARRAY(ARRAY)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE compar
       USE cutcell
       USE functions
@@ -2156,185 +2107,137 @@
       USE indices
       USE param, only: dimension_3
       USE param1, only: undefined
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
+! Dummy arguments
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY
+
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
       INTEGER ::IJK
 !
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
-
-!======================================================================
-!   To remove dead cells, the number of useful cells was calculated in
-!   RE_INDEX_ARRAY, and is stored back in IJKEND3
-!   Now, the array is shifted such that all useful values are contiguous
-!   and are located between IJKSTART3 and IJKEND3
-!   The array BACKGROUND_IJK_OF(IJK) points to the original cell
-!======================================================================
-
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: BUFFER
+!---------------------------------------------------------------------//
       BUFFER = ARRAY
       ARRAY = UNDEFINED
 
       DO IJK = IJKSTART3, IJKEND3
-
           ARRAY(IJK) = BUFFER(BACKGROUND_IJK_OF(IJK))
-
       ENDDO
-
-
       END SUBROUTINE SHIFT_DP_ARRAY
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SHIFT_INT_ARRAY                                         C
+!  Subroutine: SHIFT_INT_ARRAY                                         C
 !  Purpose: Shifts an Integer array to new IJK range                   C
+!  To remove dead cells, the number of useful cells was calculated     C
+!  in RE_INDEX_ARRAY, and is stored back in IJKEND3                    C
+!  Now, the array is shifted such that all useful values are           C
+!  contiguous and are located between IJKSTART3 and IJKEND3            C
+!  The array BACKGROUND_IJK_OF(IJK) points to the original cell        C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE SHIFT_INT_ARRAY(ARRAY,DEFAULT_VALUE)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE indices
       USE geometry
       USE compar
       USE cutcell
       USE functions
       USE param, only: dimension_3
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER ::IJK
-!
-      INTEGER, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
+! Dummy arguments
+!---------------------------------------------------------------------//
+      INTEGER, DIMENSION(DIMENSION_3) :: ARRAY
       INTEGER :: DEFAULT_VALUE
 
-!======================================================================
-!   To remove dead cells, the number of useful cells was calculated in
-!   RE_INDEX_ARRAY, and is stored back in IJKEND3
-!   Now, the array is shifted such that all useful values are contiguous
-!   and are located between IJKSTART3 and IJKEND3
-!   The array BACKGROUND_IJK_OF(IJK) points to the original cell
-!======================================================================
-
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER ::IJK
+      INTEGER, DIMENSION(DIMENSION_3) :: BUFFER
+!---------------------------------------------------------------------//
       BUFFER = ARRAY
       ARRAY = DEFAULT_VALUE
 
       DO IJK = IJKSTART3, IJKEND3
-
           ARRAY(IJK) = BUFFER(BACKGROUND_IJK_OF(IJK))
-
       ENDDO
-
-
       END SUBROUTINE SHIFT_INT_ARRAY
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SHIFT_LOG_ARRAY                                         C
-!  Purpose: Shifts an Integer array to new IJK range                   C
+!  Subroutine: SHIFT_LOG_ARRAY                                         C
+!  Purpose:                                                            C
+!  To remove dead cells, the number of useful cells was calculated     C
+!  in RE_INDEX_ARRAY, and is stored back in IJKEND3                    C
+!  Now, the array is shifted such that all useful values are           C
+!  contiguous and are located between IJKSTART3 and IJKEND3            C
+!  The array BACKGROUND_IJK_OF(IJK) points to the original cell        C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE SHIFT_LOG_ARRAY(ARRAY,DEFAULT_VALUE)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE indices
       USE geometry
       USE compar
       USE cutcell
       USE functions
       USE param, only: dimension_3
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER ::IJK
-!
-      LOGICAL, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
+! Dummy arguments
+!---------------------------------------------------------------------//
+      LOGICAL, DIMENSION(DIMENSION_3) :: ARRAY
       LOGICAL :: DEFAULT_VALUE
 
-!======================================================================
-!   To remove dead cells, the number of useful cells was calculated in
-!   RE_INDEX_ARRAY, and is stored back in IJKEND3
-!   Now, the array is shifted such that all useful values are contiguous
-!   and are located between IJKSTART3 and IJKEND3
-!   The array BACKGROUND_IJK_OF(IJK) points to the original cell
-!======================================================================
-
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER ::IJK
+      LOGICAL, DIMENSION(DIMENSION_3) :: BUFFER
+!---------------------------------------------------------------------//
       BUFFER = ARRAY
       ARRAY = DEFAULT_VALUE
 
       DO IJK = IJKSTART3, IJKEND3
-
           ARRAY(IJK) = BUFFER(BACKGROUND_IJK_OF(IJK))
-
       ENDDO
-
-
       END SUBROUTINE SHIFT_LOG_ARRAY
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: UNSHIFT_DP_ARRAY                                       C
+!  Subroutine: UNSHIFT_DP_ARRAY                                        C
 !  Purpose: Reverts a shifted Double precision array to                C
 !  original (background) IJK range                                     C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE UNSHIFT_DP_ARRAY(ARRAY_1,ARRAY_2)
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE indices
       USE geometry
       USE compar
@@ -2342,80 +2245,58 @@
       USE functions
       USE param, only: dimension_3
       USE param1, only: undefined
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER ::IJK
-
+! Dummy arguments 
+!---------------------------------------------------------------------//
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY_1, ARRAY_2
 
-!======================================================================
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER ::IJK
+!---------------------------------------------------------------------//
 
       ARRAY_2 = UNDEFINED
-
       DO IJK = IJKSTART3,IJKEND3
-
           ARRAY_2(BACKGROUND_IJK_OF(IJK)) = ARRAY_1(IJK)
-
       ENDDO
-
-
       END SUBROUTINE UNSHIFT_DP_ARRAY
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SHIFT_CONNECTIVITY_FOR_BDIST_IO                        C
+!  Subroutine: SHIFT_CONNECTIVITY_FOR_BDIST_IO                         C
 !  Purpose: Shifts connectivity for distributed IO                     C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 04-MAY-11  C
 !  Reviewer:                                          Date: ##-###-##  C
 !                                                                      C
-!  Revision Number: #                                                  C
-!  Purpose: ##########                                                 C
-!  Author:  ##########                                Date: ##-###-##  C
-!                                                                      C
-!  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE SHIFT_CONNECTIVITY_FOR_BDIST_IO
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE indices
       USE geometry
       USE compar
       USE cutcell
       USE functions
       USE param, only: dimension_3
-
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
       INTEGER ::IJK, L, BCK_IJK, NN , CONN
-!
-
       INTEGER, DIMENSION(DIMENSION_3,15) ::TEMP_CONNECTIVITY
+!---------------------------------------------------------------------//
 
-!======================================================================
-!
-!   The array BACKGROUND_IJK_OF(IJK) points to the original cell
-!======================================================================
+! The array BACKGROUND_IJK_OF(IJK) points to the original cell
 
       CALL SHIFT_INT_ARRAY(NUMBER_OF_NODES,0)
-
       TEMP_CONNECTIVITY = CONNECTIVITY
 
       DO IJK = 1,IJKEND3
@@ -2443,74 +2324,54 @@
          ENDIF
       END DO
 
-
-
       END SUBROUTINE SHIFT_CONNECTIVITY_FOR_BDIST_IO
 
 
 
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE WRITE_INT_TABLE(FILE_UNIT,ARRAY, ARRAY_SIZE, LSTART, LEND, NCOL)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE funits
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
 
-!                      FILE UNIT
-      INTEGER  ::        FILE_UNIT
-
-
-
-!                      Starting array index
-      INTEGER  ::        ARRAY_SIZE
-
-
-!                      Starting array index
-      INTEGER  ::        LSTART
-!
-!                      Ending array index
-      INTEGER ::         LEND
-!//EFD Nov/11, avoid use of (*)
-!//      DOUBLE PRECISION ARRAY(*)
+! Dummy arguments
+!---------------------------------------------------------------------//
+! FILE UNIT
+      INTEGER  :: FILE_UNIT
+! Starting array index
+      INTEGER  :: ARRAY_SIZE
+! Starting array index
+      INTEGER  :: LSTART
+! Ending array index
+      INTEGER ::  LEND
+! avoid use of (*)
+!      DOUBLE PRECISION ARRAY(*)
       INTEGER :: ARRAY(ARRAY_SIZE)
-!
-!
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!
-!                      Number of columns in the table.  When this is changed
-!                      remember to change the FORMAT statement also.
-!
 
+! Number of columns in the table.  When this is changed
+! remember to change the FORMAT statement also.
       INTEGER :: NCOL
-!
 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!
-!                      Number of rows
-      INTEGER          NROW
-!
-!
-!                      Local array indices
-      INTEGER          L, L1, L2, L3
-!-----------------------------------------------
-!
+! Local variables
+!---------------------------------------------------------------------//
+! Number of rows
+      INTEGER :: NROW
+! Local array indices
+      INTEGER :: L, L1, L2, L3
+!---------------------------------------------------------------------//
+
       NROW = (LEND - LSTART + 1)/NCOL
-!
+
       L2 = LSTART - 1
       DO L = 1, NROW
          L1 = L2 + 1
@@ -2532,12 +2393,17 @@
 
 
 
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE WRITE_IJK_VALUES
 
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+! Modules
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE indices
@@ -2549,34 +2415,23 @@
       USE scalars
       USE run
       USE visc_g
-
       USE cutcell
-
       USE sendrecv
-
       USE mpi_utility
       USE parallel
-
       USE cdist
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I, J, K, IJK
 
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I, J, K, IJK
       INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: TEMP_IJK_ARRAY_OF
       INTEGER :: IJK_FILE_UNIT
       CHARACTER(LEN=255) :: IJK_FILE_NAME
       CHARACTER(LEN=6)  :: CHAR_MyPE
+!---------------------------------------------------------------------//
 
       allocate(TEMP_IJK_ARRAY_OF(ISTART3-1:IEND3+1,JSTART3-1:JEND3+1,KSTART3-1:KEND3+1))
       TEMP_IJK_ARRAY_OF = IJK_ARRAY_OF

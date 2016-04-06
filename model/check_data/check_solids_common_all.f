@@ -265,8 +265,6 @@
       USE run, only: FRICTION
 ! Flag: Solve granular energy eq
       USE run, only: GRANULAR_ENERGY
-! Flag: Solve K-Epsilon Eq.
-      USE run, only: K_EPSILON
 ! Flag: Impose a mean shear on flow field.
       USE run, only: SHEAR
 ! Flag: Invoke Schaeffer and KT-Theory blending
@@ -280,6 +278,8 @@
       USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
+! Flag: Solve K-Epsilon Eq.
+      USE turb, only: K_EPSILON
 ! Specularity coefficient for particle-wall collisions
       use constant, only: PHIP
 ! Flag: Use cartesian grid model

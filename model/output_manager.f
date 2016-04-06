@@ -351,7 +351,6 @@ MODULE output_man
       use param1, only: UNDEFINED
       use param1, only: ZERO
       use physprop, only: MMAX, NMAX
-      use run, only: K_EPSILON
       use run, only: RUN_TYPE
       use run, only: TIME, DT, STEADY_STATE
       use rxns, only: nRR
@@ -359,6 +358,7 @@ MODULE output_man
       use time_cpu, only: CPU_IO
       use time_cpu, only: TIME_START
       use time_cpu, only: WALL_START
+      use turb, only: K_EPSILON
       use vtk, only:    VTK_TIME, VTK_DT
       use vtk, only: DIMENSION_VTK
       use vtk, only: DIMENSION_VTK

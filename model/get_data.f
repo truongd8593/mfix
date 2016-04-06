@@ -19,7 +19,6 @@ MODULE read_input
       USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
       USE cut_cell_preproc, only: cut_cell_preprocessing
       USE compar
-      USE constant, only: L_SCALE0
       USE cutcell
       USE dashboard
       USE des_allocate
@@ -40,7 +39,8 @@ MODULE read_input
       USE qmom_kinetic_equation
       USE run
       USE stl_preproc_des, only: DES_STL_PREPROCESSING
-      USE visc_g, only: L_SCALE
+      USE turb, only: L_SCALE0, K_EPSILON, l_scale
+      USE visc_g, only: MU_GMAX
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -155,11 +155,6 @@ MODULE read_input
       CALL INIT_FVARS
       IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
 
-! This is all that happens in SET_L_SCALE so it needs moved, maybe
-! this should go in int_fluid_var.?
-!     CALL SET_L_SCALE
-      L_SCALE(:) = L_SCALE0
-
 !======================================================================
 ! Data initialization for Dashboard
 !======================================================================
@@ -196,7 +191,6 @@ MODULE read_input
       USE constant, only: gas_const
       USE constant, only: gravity, gravity_x, gravity_y, gravity_z
       USE constant, only: to_SI
-      USE constant, only: k_scale
       USE run, only: LAM_HYS, UNITS
       USE error_manager, only: err_msg, init_err_msg, finl_err_msg
       USE error_manager, only: flush_err_msg
@@ -205,9 +199,6 @@ MODULE read_input
 !---------------------------------------------------------------------//
 
 ! Note that the cell flags are not set when this routine is called.
-
-! Dimensionless constants
-      K_SCALE = .08D0   ! this actually isn't used anywhere...
 
 ! Enter the value of all constants in various units (CGS or SI)
       IF (UNITS == 'SI') THEN

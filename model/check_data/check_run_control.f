@@ -22,11 +22,11 @@
       USE run, only: TIME, TSTOP
 ! Time step size, one over time step size.
       USE run, only: DT, ODT, STEADY_STATE
-! Flag: Use K-Epsilon turbulence model.
-      USE run, only: K_EPSILON
       USE run, only: ishii, jackson
-! Turbulence lenghth scale and viscosity bound.
-      use constant, only: L_SCALE0, MU_GMAX
+! Flag: Use K-Epsilon or l_scale0 turbulence model.
+      use turb, only: K_EPSILON, L_SCALE0
+! Viscosity bound.
+      use visc_g, only: MU_GMAX
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -122,8 +122,9 @@
              '.T.',/,'Please correct the mfix.dat file.')
       ENDIF
 
-!  Check whether MU_gmax is specified for turbulence (sof)
-      IF (K_Epsilon .AND. MU_GMAX==UNDEFINED) THEN
+!  Check whether MU_gmax is specified for turbulence
+      IF ((K_Epsilon .OR. L_SCALE0 /= ZERO) .AND. &
+           MU_GMAX==UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) 'MU_GMAX'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF

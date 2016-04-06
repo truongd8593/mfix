@@ -13,10 +13,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use constant, only: l_scale0
       use param1, only: undefined, zero
       use physprop, only: mu_g0
-      use run, only: k_epsilon
+      use turb, only: k_epsilon, l_scale0
 ! invoke user defined quantity
       USE usr_prop, only: usr_mug, calc_usr_prop
       USE usr_prop, only: gas_viscosity
@@ -181,16 +180,16 @@
 ! Modules
 !---------------------------------------------------------------------//
       use compar, only: ijkstart3, ijkend3
-      use constant, only: mu_gmax
       use drag, only: f_gs
-      use fldvar, only: k_turb_g, e_turb_g, ro_g
-      use fldvar, only: ep_s, ro_s
+      use fldvar, only: k_turb_g, e_turb_g
+      use fldvar, only: ro_g, ep_s, ro_s
       use functions, only: fluid_at
       use param1, only: zero, one, small_number
       use physprop, only: mu_g
       use run, only: kt_type_enum, ahmadi_1995
-      use turb, only: tau_1
+      use turb, only: tau_1, turb_c_mu
       use visc_g, only: mu_gt, lambda_gt
+      use visc_g, only: mu_gmax
       use visc_s, only: ep_star_array
       IMPLICIT NONE
 
@@ -210,7 +209,8 @@
       INTEGER :: IJK
 !---------------------------------------------------------------------//
 
-      C_MU = 9D-02
+! initialize
+      C_MU = turb_c_mu
 
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
@@ -221,7 +221,7 @@
 ! solids phase index used throughout routine...
                M = 1 ! for solids phase
                Tau_12_st = Ep_s(IJK,M)*RO_S(IJK,M)/F_GS(IJK,1)
-               C_MU = C_MU/(ONE+ Tau_12_st/Tau_1(IJK) * &
+               C_MU = turb_C_MU/(ONE+ Tau_12_st/Tau_1(IJK) * &
                   (EP_s(IJK,M)/(ONE-EP_star_array(IJK)))**3)
             ENDIF
 
@@ -267,13 +267,13 @@
 ! Modules
 !---------------------------------------------------------------------//
       use compar, only: ijkstart3, ijkend3
-      use constant, only: mu_gmax
       use fldvar, only: ro_g
       use functions, only: fluid_at
       use param1, only: zero
       use physprop, only: mu_g
+      use turb, only: l_scale
       use visc_g, only: mu_gt, lambda_gt
-      use visc_g, only: l_scale
+      use visc_g, only: mu_gmax
       IMPLICIT NONE
 
 ! Local parameters

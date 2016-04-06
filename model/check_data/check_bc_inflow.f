@@ -20,11 +20,11 @@
       use physprop, only: mu_g0
       use physprop, only: mw_avg, nmax
       use physprop, only: ro_g0
-      use run, only: energy_eq, granular_energy, k_epsilon
+      use run, only: energy_eq, granular_energy
       use run, only: solids_model, solve_ros, species_eq
       use scalars, only: nscalar
       use toleranc, only: compare
-
+      use turb, only: k_epsilon
       use error_manager
       IMPLICIT NONE
 

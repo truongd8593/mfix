@@ -70,6 +70,7 @@
       USE sendrecv
       USE stl
       USE toleranc
+      use turb, only: k_epsilon
       USE visc_s
       USE vtk
       USE vtp

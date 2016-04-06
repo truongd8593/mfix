@@ -5,7 +5,6 @@
 !     - check whether field variables are initialized in all cells     C
 !     - check whether the sum of void and volume fractions is 1.0      C
 !       in all fluid and mass inflow cells                             C
-!     - check whether mu_gmax is specified if k_epsilon or l_scale     C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-JAN-92  C
 !  Reviewer: P. Nicoletti, W. Rogers, S. Venkatesan   Date: 31-JAN-92  C
@@ -25,31 +24,28 @@
 
       SUBROUTINE CHECK_DATA_20
 
-!-----------------------------------------------
+
 ! Modules
 !-----------------------------------------------
+      USE constant
+      USE compar
+      USE discretelement
+      use error_manager
+      USE fldvar
+      USE funits
+      USE functions
+      USE geometry
+      USE indices
+      USE mfix_pic
+      use mpi_utility
       USE param
       USE param1
-      USE toleranc
-      USE fldvar
-      USE run
-      USE geometry
-      USE constant
       USE physprop
-      USE indices
-      USE funits
-      USE visc_g
+      USE run
       USE rxns
       USE scalars
-      USE compar
+      USE toleranc
       USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE functions
-
-      use mpi_utility
-      use error_manager
-
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -63,8 +59,6 @@
       INTEGER :: NN
 ! Logical variable to set, if there is an error
       LOGICAL :: ABORT
-! Whether L_scale is nonzero
-      LOGICAL :: NONZERO
 ! 1.0 - sum of all volume fractions
       DOUBLE PRECISION DIF
 !-----------------------------------------------
@@ -205,17 +199,12 @@
 
 ! Additional check for fluid or mass inflow cells
 ! --------------------------------------------------------------------//
-      NONZERO = .FALSE.
-
       DO K = kstart2, kend2
       DO J = jstart2, jend2
       DO I = istart2, iend2
          IJK = FUNIJK(I,J,K)
 
          IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN
-
-! Check whether L_scale is non-zero anywhere
-            IF (L_SCALE(IJK) /= ZERO) NONZERO = .TRUE.
 
 ! Ep_g must have a value > 0 and < 1
             IF(EP_G(IJK) < SMALL_NUMBER .OR. EP_G(IJK) > ONE) &
@@ -243,16 +232,6 @@
          RETURN
       ENDIF
 
-!  Check whether MU_gmax is specified
-      CALL GLOBAL_ALL_OR(NONZERO)
-      IF (NONZERO .AND. MU_GMAX==UNDEFINED) THEN
-         WRITE(ERR_MSG, 1300)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         CALL FINL_ERR_MSG
-      ENDIF
-
- 1300 FORMAT('Error 1300: Message: Turbulent length scale is nonzero.',&
-         /'Specify MU_gmax in the mfix.dat file.')
 
       CALL FINL_ERR_MSG
       RETURN

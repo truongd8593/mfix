@@ -355,6 +355,7 @@
       USE constant
       USE run
       USE physprop
+      use turb, only: k_epsilon
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

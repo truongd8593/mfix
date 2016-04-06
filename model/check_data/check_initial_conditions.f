@@ -364,7 +364,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use constant, only: l_scale0
 ! Gas phase volume fraction, pressure, temperature, species.
       use ic, only: IC_EP_g, IC_P_g, IC_T_g, IC_X_g
 ! Gas phase velocity components.
@@ -384,8 +383,8 @@
       use run, only: ENERGY_EQ
 ! Flag. Solve Species equations
       use run, only: SPECIES_EQ
-! Flag: Solve K-Epsilon; K-E parameters
-      use run, only: K_Epsilon
+! Flag: Solve K-Epsilon or l_scale0
+      use turb, only: l_scale0, k_epsilon
 ! Specified constant gas density and viscosity.
       use physprop, only: RO_G0, MU_G0
 ! Specified average molecular weight
@@ -573,7 +572,7 @@
          ELSEIF (L_SCALE0 < ZERO) THEN
             WRITE(ERR_MSG, 1001) 'L_SCALE0', iVal(L_scale0)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSE   ! l_scale0 is defined at not zero
+         ELSE   ! l_scale0 is defined and greater than zero
             IF (IC_L_SCALE(ICV) < ZERO) THEN
                WRITE(ERR_MSG, 1001) iVar('IC_L_SCALE',ICV), &
                   iVal(IC_L_SCALE(ICV))

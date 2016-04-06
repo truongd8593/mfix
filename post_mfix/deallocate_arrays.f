@@ -32,6 +32,7 @@
       USE run
       USE rxns
       USE scalars
+      use turb, only: l_scale
       USE tau_g
       USE tau_s
       USE trace

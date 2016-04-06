@@ -442,51 +442,38 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOURCE_W_G_BC(A_M, B_M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
+!---------------------------------------------------------------------//
+      USE bc
+      USE compar
       USE constant
-      USE physprop
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE output
-      USE compar
-      USE fun_avg
-      USE functions
-
+      USE param
+      USE param1
+      USE physprop
+      USE run
+! C_mu is constant in turbulent viscosity
+! Kappa is Von Karmen constant
+      use turb, only: k_epsilon, turb_c_mu, turb_kappa
+      USE visc_g
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! Local parameters
-!-----------------------------------------------
-! C_mu is constant in turbulent viscosity
-      DOUBLE PRECISION, PARAMETER :: C_mu = 0.09D0
-! Kappa is Von Karmen constant
-      DOUBLE PRECISION, PARAMETER :: Kappa = 0.42D0
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Boundary condition
       INTEGER :: L
 ! Indices
@@ -496,12 +483,10 @@
       INTEGER :: M
 ! Turbulent shear at walls
       DOUBLE PRECISION W_F_Slip
-
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 ! Set reference phase to gas
       M = 0
-
 
 ! Set the default boundary conditions
 ! The NS default setting is the where bc_type='dummy' or any default
@@ -831,11 +816,11 @@
                               W_F_Slip = ( ONE/&
                                  (ODX_E(I)+HALF*OX_E(I)) )*          &
                                  ( ODX_E(I) - OX_E(I) -              &
-                                   RO_g(EAST_OF(IJK))*C_mu**0.25*    &
+                                   RO_g(EAST_OF(IJK))*turb_C_mu**0.25*    &
                                    SQRT(K_Turb_G((EAST_OF(IJK))))/   &
-                                   MU_gT(EAST_OF(IJK))*Kappa/        &
+                                   MU_gT(EAST_OF(IJK))*turb_Kappa/        &
                                    LOG(9.81D0/ODX_E(I)/(2.D0)*       &
-                                   RO_g(EAST_OF(IJK))*C_mu**0.25*    &
+                                   RO_g(EAST_OF(IJK))*turb_C_mu**0.25*    &
                                    SQRT(K_Turb_G((EAST_OF(IJK))))/   &
                                    MU_g(EAST_OF(IJK))) )
                            ELSE
@@ -850,11 +835,11 @@
                               W_F_Slip =  (ONE/&
                                  (ONE*ODX_E(IM) + HALF*OX_E(IM)))*    &
                                  ( ONE*ODX_E(IM) - OX_E(IM) -         &
-                                   RO_g(WEST_OF(IJK))*C_mu**0.25*     &
+                                   RO_g(WEST_OF(IJK))*turb_C_mu**0.25*     &
                                    SQRT(K_Turb_G((WEST_OF(IJK))))/    &
-                                   MU_gT(WEST_OF(IJK))*Kappa/         &
+                                   MU_gT(WEST_OF(IJK))*turb_Kappa/         &
                                    LOG(9.81D0/ODX_E(IM)/(2.D0)*       &
-                                   RO_g(WEST_OF(IJK))*C_mu**0.25*     &
+                                   RO_g(WEST_OF(IJK))*turb_C_mu**0.25*     &
                                    SQRT(K_Turb_G((WEST_OF(IJK))))/    &
                                    MU_g(WEST_OF(IJK))) )
                            ELSE

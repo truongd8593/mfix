@@ -49,12 +49,15 @@
       USE scales
       USE stiff_chem
       USE toleranc
+      use turb, only: l_scale0, k_epsilon
       USE ur_facs
       use usr_src, only: call_usr_source
 ! user defined flags
       use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
       use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
       use usr_prop, only: usr_gama, usr_fgs, usr_fss
+
+      use visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------

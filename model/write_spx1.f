@@ -1,34 +1,17 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: WRITE_SPX1                                             C
+!  Subroutine: WRITE_SPX1                                              C
 !  Purpose: write out the time-dependent restart records (REAL)        C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 13-DEC-91  C
 !  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: TIME, NSTEP, EP_g, P_g, P_star, U_g           C
-!                        V_g, W_g, U_s, V_s, W_s, ROP_s, T_g, T_s      C
-!                        IJKMAX2, MMAX                                 C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables:  LC, N, NEXT_REC, NUM_REC                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE WRITE_SPX1(L, unit_add)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE cdist
       USE compar
       USE cutcell
@@ -45,44 +28,28 @@
       USE run
       USE rxns
       USE scalars
+      use turb, only: k_epsilon
       use discretelement, only: DES_CONTINUUM_COUPLED
       use discretelement, only: DISCRETE_ELEMENT
       use discretelement, only: PRINT_DES_DATA
-
-!//       USE tmp_array
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!             flag whether to write a particular SPx file
-      INTEGER L
 
-!              offset for use in post_mfix
-      INTEGER  unit_add
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-! local variables
-!
-!//
+! Dummy arguments
+!---------------------------------------------------------------------//
+! flag whether to write a particular SPx file
+      INTEGER :: L
+! offset for use in post_mfix
+      INTEGER :: unit_add
+
+! Local variables
+!---------------------------------------------------------------------//
       double precision, allocatable :: array1(:)     !//
       double precision, allocatable :: array2(:)     !//
-
-!             loop counters
+! loop counters
       INTEGER LC, NN
-!
-!             Pointer to the next record
+! Pointer to the next record
       INTEGER NEXT_REC
-!
-!              Number of records written each time step
+!  Number of records written each time step
       INTEGER  NUM_REC
 
       INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
@@ -91,10 +58,9 @@
 
       allocate(TMP_VAR(DIMENSION_3))
 
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       uspx = UNIT_SPX + unit_add
 
-!
       if (myPE .eq.PE_IO) then
          allocate (array1(ijkmax2))   !//
          allocate (array2(ijkmax3))   !//
@@ -102,10 +68,9 @@
          allocate (array1(1))   !//
          allocate (array2(1))   !//
       end if
-!
+
 ! ".SP1" FILE         EP_g    [ ROP_g, RO_g  must be calculated ...
 !                                        not written out ]
-!
       SELECT CASE (L)
       CASE (1)
          if (myPE.eq.PE_IO.or.bDist_IO) then
@@ -153,9 +118,9 @@
          ENDIF
 
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP2" FILE         P_g , P_star
-!
       CASE (2)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -185,9 +150,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP3" FILE         U_g , V_g , W_g
-!
       CASE (3)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -222,9 +187,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP4" FILE         U_s , V_s , W_s
-!
       CASE (4)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -265,9 +230,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP5" FILE         ROP_s
-!
       CASE (5)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -298,9 +263,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP6" FILE         T_g  , T_s
-!
       CASE (6)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -337,9 +302,9 @@
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
-!
+
+
 ! ".SP7" FILE         X_g, X_s
-!
       CASE (7)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -395,9 +360,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP8" FILE         THETA_m
-!
       CASE (8)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -430,9 +395,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
+
+
 ! ".SP9" FILE         Scalar
-!
       CASE (9)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -465,8 +430,9 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
-      CASE (10)  ! Reaction rates
+
+! Reaction rates
+      CASE (10)
 
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -498,9 +464,9 @@
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
-!
+
+
 ! ".SP11" FILE         turbulence
-!
       CASE (11)
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC
@@ -534,38 +500,53 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
            end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!
-!
+
+
       CASE DEFAULT
             LINE(1) = 'Unknown SPx file index'
             CALL WRITE_ERROR ('WRITE_SPX1', LINE, 1)
             CALL MFIX_EXIT(myPE)
       END SELECT
 
-!//      call unlock_tmp_array
-!
       deallocate (array1)
       deallocate (array2)
       deallocate (TMP_VAR)
-!
+
       RETURN
       END SUBROUTINE WRITE_SPX1
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       subroutine gatherWriteSpx(VAR, array2, array1, uspxL, NEXT_REC)
-        USE geometry
-        USE compar           !//
-        USE mpi_utility      !//d pnicol : for gatherWriteSpx
-        USE sendrecv         !//d pnicol : for gatherWriteSpx
-        USE cutcell
-        USE in_binary_512
-        USE param, only: dimension_3
-        USE param1, only: undefined
-        IMPLICIT NONE
-        integer uspxL, NEXT_REC
-        double precision, dimension(ijkmax2) :: array1
-        double precision, dimension(ijkmax3) :: array2
-        double precision, dimension(DIMENSION_3) :: VAR
-        double precision, dimension(:), allocatable :: TMP_VAR
+
+! Modules
+!---------------------------------------------------------------------//
+      USE geometry
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE cutcell
+      USE in_binary_512
+      USE param, only: dimension_3
+      USE param1, only: undefined
+      IMPLICIT NONE
+
+! Dummy arguments 
+!---------------------------------------------------------------------//
+      integer uspxL, NEXT_REC
+      double precision, dimension(ijkmax2) :: array1
+      double precision, dimension(ijkmax3) :: array2
+      double precision, dimension(DIMENSION_3) :: VAR
+
+! Local variables
+!---------------------------------------------------------------------//
+      double precision, dimension(:), allocatable :: TMP_VAR
+!---------------------------------------------------------------------//
 
         allocate(TMP_VAR(DIMENSION_3))
 
@@ -590,76 +571,101 @@
       End subroutine gatherWriteSpx
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      subroutine gatherWriteSpx_netcdf(VAR, arr1, arr2, arr4d, ncid, &
+                 varid, nx, ny, nz, ijkmax2_use, ijkmax3_use)
 
-      subroutine gatherWriteSpx_netcdf(VAR, arr1, arr2 , arr4d, ncid, varid , &
-                nx,ny,nz,ijkmax2_use , ijkmax3_use)
+! Modules
+!---------------------------------------------------------------------//
+      USE geometry
+      use param, only: dimension_3
+      USE compar           !//
+      USE mpi_utility      !//d pnicol : for gatherWriteSpx
+      USE sendrecv         !//d pnicol : for gatherWriteSpx
+      USE MFIX_netcdf
+      USE in_binary_512
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+      integer :: ncid, varid
+      integer :: nx, ny, nz
+      integer :: ijkmax2_use, ijkmax3_use
+
+      double precision ::  var(dimension_3)
+      double precision ::  arr1(ijkmax2_use)
+      double precision ::  arr2(ijkmax3_use)
+      double precision ::  arr4d(nx,ny,nz,1)
+
+! Local variables
+!---------------------------------------------------------------------//
+      integer :: ii, jj, kk, ijk
+!---------------------------------------------------------------------//
+      call gather(var,arr2,root)
+
+      if (myPE .eq. PE_IO) then
+         call convert_to_io_dp(arr2,arr1,ijkmax2_use)
+
+         ijk = 0
+         do kk = 1,nz
+            do jj = 1,ny
+               do ii = 1,nx
+                  ijk = ijk + 1
+                  arr4d(ii,jj,kk,1) = arr1(ijk)
+               enddo
+            enddo
+         enddo
+
+         call MFIX_check_netcdf( MFIX_nf90_put_var(ncid,varid,arr4d) )
+      endif
+      End subroutine gatherWriteSpx_netcdf
 
 
-     USE geometry
-     use param, only: dimension_3
-     USE compar           !//
-     USE mpi_utility      !//d pnicol : for gatherWriteSpx
-     USE sendrecv         !//d pnicol : for gatherWriteSpx
-     USE MFIX_netcdf
-     USE in_binary_512
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      subroutine gatherWriteSpx_netcdf_int(VAR, arr1, arr2, arr4d, &
+                   ncid, varid, nx, ny, nz, ijkmax2_use, ijkmax3_use)
 
-     IMPLICIT NONE
+! Modules
+!---------------------------------------------------------------------//
+      USE geometry
+      use param, only: dimension_3
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE MFIX_netcdf
+      USE in_binary_512i
+      IMPLICIT NONE
 
-     integer          :: ncid , varid , nx,ny,nz , ijkmax2_use , ijkmax3_use
-     integer          :: ii , jj , kk , ijk
+! Dummy arguments
+!---------------------------------------------------------------------//
+      integer :: ncid, varid
+      integer :: nx, ny, nz
+      integer :: ijkmax2_use, ijkmax3_use
 
-     double precision ::  arr1(ijkmax2_use)
-     double precision ::  arr2(ijkmax3_use)
-     double precision ::  arr4d(nx,ny,nz,1)
-     double precision ::  var(dimension_3)
+      integer :: arr1(ijkmax2_use)
+      integer :: arr2(ijkmax3_use)
+      integer :: arr4d(nx,ny,nz,1)
+      integer :: var(dimension_3)
 
-     call gather(var,arr2,root)
-     if (myPE .eq. PE_IO) then
-        call convert_to_io_dp(arr2,arr1,ijkmax2_use)
+! Local variables 
+!---------------------------------------------------------------------//
+      integer :: ii, jj, kk, ijk
+!---------------------------------------------------------------------//
 
-        ijk = 0
-        do kk = 1,nz
-           do jj = 1,ny
-              do ii = 1,nx
-                 ijk = ijk + 1
-                 arr4d(ii,jj,kk,1) = arr1(ijk)
-              end do
-           end do
-        end do
-
-        call MFIX_check_netcdf( MFIX_nf90_put_var(ncid,varid,arr4d) )
-
-     end if
-
-
-    End subroutine gatherWriteSpx_netcdf
-
-
-
-      subroutine gatherWriteSpx_netcdf_int(VAR, arr1, arr2 , arr4d, ncid, &
-                varid , nx,ny,nz,ijkmax2_use , ijkmax3_use)
-
-
-     USE geometry
-     use param, only: dimension_3
-     USE compar           !//
-     USE mpi_utility      !//d pnicol : for gatherWriteSpx
-     USE sendrecv         !//d pnicol : for gatherWriteSpx
-     USE MFIX_netcdf
-     USE in_binary_512i
-
-     IMPLICIT NONE
-
-     integer          :: ncid , varid , nx,ny,nz , ijkmax2_use , ijkmax3_use
-     integer          :: ii , jj , kk , ijk
-
-     integer ::  arr1(ijkmax2_use)
-     integer ::  arr2(ijkmax3_use)
-     integer :: arr4d(nx,ny,nz,1)
-     integer ::   var(dimension_3)
-
-     call gather(var,arr2,root)
-     if (myPE .eq. PE_IO) then
+      call gather(var,arr2,root)
+      if (myPE .eq. PE_IO) then
         call convert_to_io_i(arr2,arr1,ijkmax2_use)
 
         ijk = 0
@@ -674,78 +680,85 @@
 
         call MFIX_check_netcdf( MFIX_nf90_put_var(ncid,varid,arr4d) )
 
-     end if
+      end if
+      End subroutine gatherWriteSpx_netcdf_int
 
 
-    End subroutine gatherWriteSpx_netcdf_int
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      subroutine copy_d_to_r(darr,rarr,nx,ny,nz)
+      implicit none
 
-        subroutine copy_d_to_r(darr,rarr,nx,ny,nz)
-        implicit none
+! Dummy arguments
+!---------------------------------------------------------------------//
+      integer :: nx, ny, nz
+      double precision :: darr(*)
+      real :: rarr(nx,ny,*)
 
-        integer          :: nx , ny , nz
-        double precision :: darr(*)
-        real             :: rarr(nx,ny,*)
-        integer          :: i , j , k , ijk
-
-
-        ijk = 0
-
-        do i = 1,nx
+! Local variables
+!---------------------------------------------------------------------//
+      integer :: i, j, k, ijk
+!---------------------------------------------------------------------//
+      ijk = 0
+      do i = 1,nx
            do j = 1,ny
               do k = 1,nz
                  ijk = ijk + 1
                  rarr(i,j,k) = real(darr(ijk))
               end do
            end do
-        end do
+      end do
 
-        return
-        end subroutine copy_d_to_r
+      return
+      end subroutine copy_d_to_r
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
-!                          write_mesh_netcdf
-!
-!
-        SUBROUTINE write_mesh_netcdf
 
-        USE param
-        USE param1
-        USE fldvar
-        USE geometry
-        USE physprop
-        USE run
-!       USE funits
-        USE scalars
-!       USE output
-        USE rxns
-        USE cdist
-        USE compar
-        USE mpi_utility
-        USE MFIX_netcdf
-!       USE tmp_array
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE write_mesh_netcdf
 
-        implicit none
+! Modules
+!---------------------------------------------------------------------//
+      USE param
+      USE param1
+      USE fldvar
+      USE geometry
+      USE physprop
+      USE run
+      USE scalars
+      USE rxns
+      USE cdist
+      USE compar
+      USE mpi_utility
+      USE MFIX_netcdf
+      implicit none
 
-        integer   :: ncid    , x_dimid , y_dimid , z_dimid  , t_dimid
-        integer   :: varid_x , varid_y , varid_z , L , dimids(4)
-        integer   :: varid_flag , coords_dimid , varid_coords , coords
-
-        character(LEN=80) :: fname
-
-        double precision, dimension(:) , allocatable :: xloc
-        double precision, dimension(:) , allocatable :: yloc
-        double precision, dimension(:) , allocatable :: zloc
-
-        integer, dimension(:) , allocatable :: arr1
-        integer, dimension(:) , allocatable :: arr2
-        integer, dimension(:,:,:,:) , allocatable :: arr4d
-
+! Local variables
+!---------------------------------------------------------------------//
+      integer   :: ncid    , x_dimid , y_dimid , z_dimid  , t_dimid
+      integer   :: varid_x , varid_y , varid_z , L , dimids(4)
+      integer   :: varid_flag , coords_dimid , varid_coords , coords
+      character(LEN=80) :: fname
+      double precision, dimension(:) , allocatable :: xloc
+      double precision, dimension(:) , allocatable :: yloc
+      double precision, dimension(:) , allocatable :: zloc
+      integer, dimension(:) , allocatable :: arr1
+      integer, dimension(:) , allocatable :: arr2
+      integer, dimension(:,:,:,:) , allocatable :: arr4d
+!---------------------------------------------------------------------//
 
         if (.not. MFIX_usingNETCDF()) return
-
         if (.not. bGlobalNetcdf) return  ! no netCDF writes asked for
-
         if (.not. bFirst_netcdf_write) return
 
         if (myPE.eq.PE_IO) then
@@ -835,28 +848,41 @@
         return
         end subroutine write_mesh_netcdf
 
-        SUBROUTINE write_netcdf(L, unit_add, the_time)
 
-        USE param
-        USE param1
-        USE fldvar
-        USE geometry
-        USE physprop
-        USE run
-!       USE funits
-        USE scalars
-!       USE output
-        USE rxns
-        USE cdist
-        USE compar
-        USE mpi_utility
-        USE MFIX_netcdf
-!       USE tmp_array
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine:                                                         C
+!  Purpose:                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE write_netcdf(L, unit_add, the_time)
 
+! Modules
+!---------------------------------------------------------------------//
+      USE cdist
+      USE compar
+      USE fldvar
+      USE geometry
+      USE mpi_utility
+      USE MFIX_netcdf
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      use turb, only: k_epsilon
+      implicit none
 
-        implicit none
+! Dummy arguments 
+!---------------------------------------------------------------------//
+      integer :: L, unit_add
+      double precision :: the_time
 
-        integer :: L , unit_add , I , nn , ii
+! Local variables
+!---------------------------------------------------------------------//
+      integer :: I , nn , ii
 
         integer   :: ncid , x_dimid , y_dimid , z_dimid
         integer   :: t_dimid
@@ -878,7 +904,6 @@
 
         integer   :: varid_kturbg , varid_eturbg
 
-
         character(LEN=80) :: fname, var_name
         character(LEN=9) :: fname_index
 
@@ -892,8 +917,8 @@
         double precision, dimension(:) , allocatable :: yloc
         double precision, dimension(:) , allocatable :: zloc
 
-        double precision :: the_time
         logical          :: file_exists
+!---------------------------------------------------------------------//
 
 
 ! bWrite_netcdf(1)  : EP_g
@@ -923,10 +948,6 @@
            allocate ( xloc(imax2) )
            allocate ( yloc(jmax2) )
            allocate ( zloc(kmax2) )
-
-
-
-
         else
            allocate (arr1(1))
            allocate (arr2(1))

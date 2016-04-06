@@ -36,7 +36,9 @@
       USE scales
       USE sendrecv
       USE toleranc
+      use turb, only: l_scale0, k_epsilon
       USE ur_facs
+      USE visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------
