@@ -193,6 +193,10 @@ class MfixGui(QtGui.QMainWindow):
         # autoload last project
         if self.get_project_dir():
             self.open_project(self.get_project_dir())
+            
+        # print number of keywords
+        self.print_internal('Registered {} keywords'.format(
+            len(self.project.registered_keywords)))
 
     def __setup_simple_keyword_widgets(self):
         """
@@ -764,6 +768,7 @@ class ProjectManager(Project):
 
         self.parent = parent
         self.widgetList = []
+        self.registered_keywords = set()
 
     def submit_change(self, widget, newValueDict, args=None,
                       forceUpdate=False):
@@ -850,6 +855,8 @@ class ProjectManager(Project):
             )
         self.widgetList.append([widget, keys])
         widget.value_updated.connect(self.submit_change)
+
+        self.registered_keywords = self.registered_keywords.union(set(keys))
 
     def objectName(self):
         return 'Project Manager'

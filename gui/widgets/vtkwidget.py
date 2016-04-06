@@ -2,7 +2,6 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 import os
-import sys
 from collections import OrderedDict
 
 # 3rd pary imports
@@ -1484,8 +1483,9 @@ class VtkWidget(QtGui.QWidget):
                     self.color_dict['background_mesh'].getRgbF()[:3])
             actor_property.SetEdgeColor(
                  self.color_dict['background_mesh_edge'].getRgbF()[:3])
-                 
-            mesh_is_visible = self.grid_viewer_dict['actors'][0].GetVisibility()
+
+            mesh_is_visible = \
+                self.grid_viewer_dict['actors'][0].GetVisibility()
 
         # remove exsisting
         for actor in self.grid_viewer_dict['actors']:
@@ -1692,15 +1692,18 @@ class VtkWidget(QtGui.QWidget):
             else:
                 self.geometry_visible = True
 
+        if toolbutton.isChecked():
+            toolbutton.setIcon(
+                        get_icon('visibilityofftransparent.png'))
+        else:
+            toolbutton.setIcon(get_icon('visibility.png'))
+
         if actors is not None:
             for actor in actors:
                 if toolbutton.isChecked():
                     actor.VisibilityOff()
-                    toolbutton.setIcon(
-                        get_icon('visibilityofftransparent.png'))
                 else:
                     actor.VisibilityOn()
-                    toolbutton.setIcon(get_icon('visibility.png'))
 
             self.vtkRenderWindow.Render()
 
