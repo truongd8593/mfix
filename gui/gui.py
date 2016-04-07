@@ -69,6 +69,7 @@ class MfixGui(QtGui.QMainWindow):
                               'DoubleSpinBox': DoubleSpinBox,
                               'SpinBox':       SpinBox,
                               }
+
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
         self.ui.general = QWidget()
@@ -130,6 +131,7 @@ class MfixGui(QtGui.QMainWindow):
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
 
+        # create project manager
         self.project = ProjectManager(self, self.keyword_doc)
 
         # --- data ---
@@ -138,11 +140,6 @@ class MfixGui(QtGui.QMainWindow):
                                'developer': self.ui.pushButtonDeveloper,
                                }
 
-        self.booleanbtndict = {
-            'union':      self.ui.geometry.toolbutton_geometry_union,
-            'intersection':  self.ui.geometry.toolbutton_geometry_intersect,
-            'difference': self.ui.geometry.toolbutton_geometry_difference,
-            }
         self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
@@ -314,7 +311,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
 
     def get_project_dir(self):
-        " get the current project directory"
+        " get the current project directory "
 
         last_dir = self.settings.value('project_dir')
         if last_dir:

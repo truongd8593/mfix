@@ -118,15 +118,21 @@ class VtkWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.project = project
+
         self.parent = parent
-        self.geometrytree = self.parent.ui.geometry.treeWidgetGeometry
-        self.booleanbtndict = self.parent.booleanbtndict
+        self.ui = parent.ui
+        self.geometrytree = self.ui.geometry.treeWidgetGeometry
 
         # --- data ---
         self.geometrydict = {}
         self.geometry_visible = True
 
-        self.primitivedict = {}
+        self.booleanbtndict = {
+            'union':        self.ui.geometry.toolbutton_geometry_union,
+            'intersection': self.ui.geometry.toolbutton_geometry_intersect,
+            'difference':   self.ui.geometry.toolbutton_geometry_difference,
+            }
+
         self.primitivedict = OrderedDict([
             ('sphere',   vtk.vtkSphereSource),
             ('box',      vtk.vtkCubeSource),
@@ -283,7 +289,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- geometry button ---
         self.add_geometry_menu = QtGui.QMenu(self)
-        self.parent.ui.geometry.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
+        self.ui.geometry.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
 
         action = QtGui.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
@@ -308,7 +314,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- filter button ---
         self.add_filter_menu = QtGui.QMenu(self)
-        self.parent.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
+        self.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
         for geo in self.filterdict.keys():
             action = QtGui.QAction(geo.replace('_', ' '),
@@ -318,9 +324,9 @@ class VtkWidget(QtGui.QWidget):
             self.add_filter_menu.addAction(action)
 
         # setup signals
-        self.parent.ui.geometry.toolbutton_remove_geometry.pressed.connect(
+        self.ui.geometry.toolbutton_remove_geometry.pressed.connect(
             self.remove_geometry)
-        self.parent.ui.geometry.toolbutton_copy_geometry.pressed.connect(
+        self.ui.geometry.toolbutton_copy_geometry.pressed.connect(
             self.copy_geometry)
 
         # connect boolean
@@ -329,7 +335,7 @@ class VtkWidget(QtGui.QWidget):
                 make_callback(self.boolean_operation, key))
 
         # connect parameter widgets
-        for widget in widget_iter(self.parent.ui.geometry.stackedWidgetGeometryDetails):
+        for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtGui.QLineEdit):
                 widget.editingFinished.connect(
                     make_callback(self.parameter_edited, widget))
@@ -339,20 +345,20 @@ class VtkWidget(QtGui.QWidget):
 
         # --- mesh ---
         # connect mesh tab btns
-        for i, btn in enumerate([self.parent.ui.mesh.pushbutton_mesh_uniform,
-                                 self.parent.ui.mesh.pushbutton_mesh_controlpoints,
-                                 self.parent.ui.mesh.pushbutton_mesh_mesher]):
+        for i, btn in enumerate([self.ui.mesh.pushbutton_mesh_uniform,
+                                 self.ui.mesh.pushbutton_mesh_controlpoints,
+                                 self.ui.mesh.pushbutton_mesh_mesher]):
             btn.pressed.connect(
                 make_callback(self.change_mesh_tab, i, btn))
 
-        self.parent.ui.mesh.pushbutton_mesh_autosize.pressed.connect(
+        self.ui.mesh.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
 
         # connect mesher
-        self.parent.ui.mesh.combobox_mesher.currentIndexChanged.connect(
+        self.ui.mesh.combobox_mesher.currentIndexChanged.connect(
                     self.change_mesher_options)
 
-        self.parent.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
+        self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
 
     def __add_tool_buttons(self):
 
@@ -471,23 +477,23 @@ class VtkWidget(QtGui.QWidget):
 
         # enable/disable delete/copy/filter button
         if len(current_selection) == 1 and \
-                self.parent.ui.geometry.treeWidgetGeometry.indexOfTopLevelItem(
+                self.ui.geometry.treeWidgetGeometry.indexOfTopLevelItem(
                 current_selection[0]) > -1:
-            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(True)
-            self.parent.ui.geometry.toolbutton_add_filter.setEnabled(True)
-            self.parent.ui.geometry.toolbutton_copy_geometry.setEnabled(True)
+            self.ui.geometry.toolbutton_remove_geometry.setEnabled(True)
+            self.ui.geometry.toolbutton_add_filter.setEnabled(True)
+            self.ui.geometry.toolbutton_copy_geometry.setEnabled(True)
         else:
-            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
-            self.parent.ui.geometry.toolbutton_add_filter.setEnabled(False)
-            self.parent.ui.geometry.toolbutton_copy_geometry.setEnabled(False)
+            self.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
+            self.ui.geometry.toolbutton_add_filter.setEnabled(False)
+            self.ui.geometry.toolbutton_copy_geometry.setEnabled(False)
 
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
 
             current_index = 0
             for i in range(
-                    self.parent.ui.geometry.stackedWidgetGeometryDetails.count()):
-                widget = self.parent.ui.geometry.stackedWidgetGeometryDetails.widget(i)
+                    self.ui.geometry.stackedWidgetGeometryDetails.count()):
+                widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(i)
                 if str(widget.objectName()) == self.geometrydict[text]['type']:
                     current_index = i
                     break
@@ -504,17 +510,17 @@ class VtkWidget(QtGui.QWidget):
                 elif isinstance(child, QtGui.QCheckBox):
                     child.setChecked(value)
 
-            self.parent.ui.groupBoxGeometryParameters.setTitle(text)
+            self.ui.geometry.groupBoxGeometryParameters.setTitle(text)
 
         else:
             current_index = 0
 
-            self.parent.ui.groupBoxGeometryParameters.setTitle('Parameters')
-            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
+            self.ui.geometry.groupBoxGeometryParameters.setTitle('Parameters')
+            self.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
 
         self.parent.animate_stacked_widget(
-            self.parent.ui.geometry.stackedWidgetGeometryDetails,
-            self.parent.ui.geometry.stackedWidgetGeometryDetails.currentIndex(),
+            self.ui.geometry.stackedWidgetGeometryDetails,
+            self.ui.geometry.stackedWidgetGeometryDetails.currentIndex(),
             current_index,
             'horizontal',
             )
@@ -566,11 +572,8 @@ class VtkWidget(QtGui.QWidget):
             # actor
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.GetProperty().SetRepresentationToWireframe()
-            actor.GetProperty().SetColor(
-                self.color_dict['geometry'].getRgbF()[:3])
-            actor.GetProperty().SetEdgeColor(
-                self.color_dict['geometry_edge'].getRgbF()[:3])
+
+            self.set_geometry_actor_props(actor, name)
 
             self.vtkrenderer.AddActor(actor)
 
@@ -812,20 +815,7 @@ class VtkWidget(QtGui.QWidget):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
 
-        # copy properties from an exsiting actor
-        if len(self.geometrydict) > 1:
-            other_actor = list(self.geometrydict.keys())
-            other_actor.remove(name)
-            other_actor = self.geometrydict[other_actor[0]]['actor']
-            actor.GetProperty().DeepCopy(other_actor.GetProperty())
-        else:
-            actor.GetProperty().SetRepresentationToWireframe()
-
-        # make sure the colors are correct
-        actor.GetProperty().SetColor(
-            self.color_dict['geometry'].getRgbF()[:3])
-        actor.GetProperty().SetEdgeColor(
-            self.color_dict['geometry_edge'].getRgbF()[:3])
+        self.set_geometry_actor_props(actor, name)
 
         self.vtkrenderer.AddActor(actor)
 
@@ -984,11 +974,8 @@ class VtkWidget(QtGui.QWidget):
         # actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToWireframe()
-        actor.GetProperty().SetColor(
-            self.color_dict['geometry'].getRgbF()[:3])
-        actor.GetProperty().SetEdgeColor(
-                self.color_dict['geometry_edge'].getRgbF()[:3])
+
+        self.set_geometry_actor_props(actor, name)
 
         self.vtkrenderer.AddActor(actor)
 
@@ -1023,6 +1010,7 @@ class VtkWidget(QtGui.QWidget):
             self.geometrydict[boolname] = {
                 'type':     booltype,
                 'children': [],
+                'visible':  True,
             }
 
             boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
@@ -1047,6 +1035,7 @@ class VtkWidget(QtGui.QWidget):
 
                 # hide the sources
                 self.geometrydict[name]['actor'].VisibilityOff()
+                self.geometrydict[name]['visible'] = False
 
                 boolean_operation.SetInputConnection(i,
                                                      geometry.GetOutputPort())
@@ -1058,11 +1047,8 @@ class VtkWidget(QtGui.QWidget):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.GetProperty().SetRepresentationToWireframe()
-            actor.GetProperty().SetColor(
-                self.color_dict['geometry'].getRgbF()[:3])
-            actor.GetProperty().SetEdgeColor(
-                self.color_dict['geometry_edge'].getRgbF()[:3])
+
+            self.set_geometry_actor_props(actor, boolname)
 
             self.vtkrenderer.AddActor(actor)
 
@@ -1104,8 +1090,10 @@ class VtkWidget(QtGui.QWidget):
             # move children to toplevel, make visible
             for child in item.takeChildren():
                 self.geometrytree.addTopLevelItem(child)
-                self.geometrydict[
-                    str(child.text(0)).lower()]['actor'].VisibilityOn()
+                if self.geometry_visible:
+                    name = str(child.text(0)).lower()
+                    self.geometrydict[name]['actor'].VisibilityOn()
+                    self.geometrydict[name]['visible'] = True
                 child.setCheckState(0, QtCore.Qt.Checked)
 
             # remove graphics
@@ -1241,19 +1229,18 @@ class VtkWidget(QtGui.QWidget):
 
             # hide the source
             self.geometrydict[selection_text]['actor'].VisibilityOff()
+            self.geometrydict[selection_text]['visible'] = False
 
             # Create a mapper
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(vtkfilter.GetOutputPort())
+            mapper.ScalarVisibilityOff()
 
             # Create an actor
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.GetProperty().SetRepresentationToWireframe()
-            actor.GetProperty().SetColor(
-                self.color_dict['geometry'].getRgbF()[:3])
-            actor.GetProperty().SetEdgeColor(
-                self.color_dict['geometry_edge'].getRgbF()[:3])
+            
+            self.set_geometry_actor_props(actor, name)
 
             # add actor to render
             self.vtkrenderer.AddActor(actor)
@@ -1337,6 +1324,27 @@ class VtkWidget(QtGui.QWidget):
 
         return geometry.GetOutput().GetBounds()
 
+    def set_geometry_actor_props(self, actor, name):
+        """ set the geometry proprerties to the others in the scene """
+
+        # copy properties from an exsiting actor
+        if len(self.geometrydict) > 1:
+            other_actor = list(self.geometrydict.keys())
+            other_actor.remove(name)
+            other_actor = self.geometrydict[other_actor[0]]['actor']
+            actor.GetProperty().DeepCopy(other_actor.GetProperty())
+        else:
+            actor.GetProperty().SetRepresentationToWireframe()
+
+        actor.GetProperty().SetColor(
+            self.color_dict['geometry'].getRgbF()[:3])
+        actor.GetProperty().SetEdgeColor(
+                self.color_dict['geometry_edge'].getRgbF()[:3])
+
+        # check visibility
+        if not self.geometry_visible:
+            actor.VisibilityOff()
+
     # --- output files ---
     def export_stl(self, file_name):
         """ expoort visivle toplevel geometry """
@@ -1394,30 +1402,30 @@ class VtkWidget(QtGui.QWidget):
     def change_mesh_tab(self, tabnum, btn):
         """ switch mesh stacked widget based on selected """
         self.parent.animate_stacked_widget(
-            self.parent.ui.stackedwidget_mesh,
-            self.parent.ui.stackedwidget_mesh.currentIndex(),
+            self.ui.mesh.stackedwidget_mesh,
+            self.ui.mesh.stackedwidget_mesh.currentIndex(),
             tabnum,
             direction='horizontal',
-            line=self.parent.ui.line_mesh,
+            line=self.ui.mesh.line_mesh,
             to_btn=btn,
-            btn_layout=self.parent.ui.gridlayout_mesh_tab_btns,
+            btn_layout=self.ui.mesh.gridlayout_mesh_tab_btns,
             )
 
     def change_mesher_options(self):
         """ switch the mesh options stacked widget """
 
-        mesher = str(self.parent.ui.mesh.combobox_mesher.currentText()).lower()
+        mesher = str(self.ui.mesh.combobox_mesher.currentText()).lower()
 
         current_index = 0
-        for i in range(self.parent.ui.stackedwidget_mesher_options.count()):
-            widget = self.parent.ui.stackedwidget_mesher_options.widget(i)
+        for i in range(self.ui.mesh.stackedwidget_mesher_options.count()):
+            widget = self.ui.mesh.stackedwidget_mesher_options.widget(i)
             if mesher == str(widget.objectName()).lower():
                 current_index = i
                 break
 
         self.parent.animate_stacked_widget(
-            self.parent.ui.stackedwidget_mesher_options,
-            self.parent.ui.stackedwidget_mesher_options.currentIndex(),
+            self.ui.mesh.stackedwidget_mesher_options,
+            self.ui.mesh.stackedwidget_mesher_options.currentIndex(),
             current_index,
             direction='horizontal',
             )
@@ -1556,13 +1564,13 @@ class VtkWidget(QtGui.QWidget):
 
         clipper = vtk.vtkTableBasedClipDataSet()
         clipper.SetInputData(self.rectilinear_grid)
-        if self.parent.ui.checkbox_mesh_inside.isChecked():
+        if self.ui.mesh.checkbox_mesh_inside.isChecked():
             clipper.InsideOutOn()
         else:
             clipper.InsideOutOff()
 
         clipper.SetMergeTolerance(
-            float(self.parent.ui.lineedit_vtk_mesh_merge.text())
+            float(self.ui.mesh.lineedit_vtk_mesh_merge.text())
             )
         clipper.SetValue(0.0)
         clipper.Update()
@@ -1586,12 +1594,12 @@ class VtkWidget(QtGui.QWidget):
         thresh = vtk.vtkThreshold()
         thresh.SetInputData(self.rectilinear_grid)
 
-        if self.parent.ui.checkbox_threshold_inside.isChecked():
+        if self.ui.mesh.checkbox_threshold_inside.isChecked():
             thresh.ThresholdByLower(0)
         else:
             thresh.ThresholdByUpper(0)
 
-        if self.parent.ui.checkbox_threshold_interface.isChecked():
+        if self.ui.mesh.checkbox_threshold_interface.isChecked():
             thresh.AllScalarsOff()
         else:
             thresh.AllScalarsOn()
@@ -1627,16 +1635,16 @@ class VtkWidget(QtGui.QWidget):
                 cell_list.count(cell)
                 ])
 
-        self.parent.ui.lineedit_mesh_cells.setText(str(cell_count))
+        self.ui.mesh.lineedit_mesh_cells.setText(str(cell_count))
 
-        self.parent.ui.plaintextedit_mesh_cell_types.setPlainText(
+        self.ui.mesh.plaintextedit_mesh_cell_types.setPlainText(
             '\n'.join([':\t'.join([str(cell_type), str(cells)])
                       for cell_type, cells in cell_type_counts])
             )
 
     def mesher(self):
 
-        mesher = str(self.parent.ui.mesh.combobox_mesher.currentText())
+        mesher = str(self.ui.mesh.combobox_mesher.currentText())
 
         if mesher == 'vtkTableBasedClipDataSet':
             self.vtk_mesher_table_based()
