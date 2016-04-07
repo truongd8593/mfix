@@ -93,6 +93,27 @@ FFLAGS="$SAVED_FFLAGS"])
 
 fi
 
+AC_ARG_WITH([perl],
+            AS_HELP_STRING([--with-perl], [full path to Perl interpreter]),
+            [with_perl=$withval], [with_perl=check])
+
+if test "x$with_perl" != "xno" ; then
+  if test "x$with_perl" == "xcheck" ; then
+    AC_PATH_PROG([PERL], [perl])
+  else
+    PERL=$with_perl
+    AC_MSG_NOTICE([user defined perl... $[]PERL])
+  fi
+  AC_SUBST([PERL])
+else
+  AC_MSG_ERROR([
+  Perl is required. I could not find Perl's location.
+  Please specify --with-perl=<LOCATION>
+  ])
+fi
+AC_PATH_PROGS([MD5SUM], [md5sum md5],
+              [Unable to find a MD5 program])
+
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
@@ -164,10 +185,11 @@ AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
 
 AC_CONFIG_FILES([Makefile build-aux/Makefile.usr])
+AC_CONFIG_FILES([build-aux/fdep], [chmod +x build-aux/fdep])
 
 # Define Autoconf variables so Automake doesn't see GNU Make conditionals
 make_ifnotclean='
-ifneq ($(MAKECMDGOALS),clean)
+ifeq (,$(filter $(CLEANS),$(MAKECMDGOALS)))
 '
 AC_SUBST([make_ifnotclean])
 AM_SUBST_NOTMAKE([make_ifnotclean])
@@ -178,7 +200,7 @@ endif
 AC_SUBST([make_endif])
 AM_SUBST_NOTMAKE([make_endif])
 AC_CONFIG_COMMANDS([cases],
-[cp $ac_srcdir/build-aux/test.sh $ac_builddir/build-aux; for casedir in benchmarks legacy_tests tests tutorials; do [[ "$ac_builddir" != "$ac_srcdir" ]] && cp -r $ac_srcdir/$casedir $ac_builddir; chmod --recursive +w $ac_builddir/$casedir; done ],
+[cp $ac_srcdir/build-aux/test.sh $ac_builddir/build-aux; for casedir in benchmarks legacy_tests tests tutorials; do [[ "$ac_builddir" != "$ac_srcdir" ]] && cp -r $ac_srcdir/$casedir $ac_builddir; chmod -R +w $ac_builddir/$casedir; done ],
 )
 
 AC_OUTPUT

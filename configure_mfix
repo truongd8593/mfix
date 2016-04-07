@@ -56,4 +56,10 @@ else
     if [ -f "${MAKEFILE_USR}" ]; then
         cp "${MAKEFILE_USR}" "${MAKEFILE}"
     fi
+        cp ${MAKEFILE_USR} ${MAKEFILE}
+    fi
+    FDEP=${MFIX_HOME}/build-aux/fdep
+    FDEP_USR=${BUILD_DIR}/build-aux/fdep
+    if [ -f ${FDEP_USR} ] ; then
+        cp ${FDEP_USR} ${FDEP}
 fi

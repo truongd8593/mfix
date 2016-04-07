@@ -27,10 +27,12 @@ DISTCLEANFILES += benchmarks
 DISTCLEANFILES += legacy_tests
 DISTCLEANFILES += tests
 DISTCLEANFILES += tutorials
+DISTCLEANFILES += build-aux/fdep
 
-AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
-AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
-AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
+INCS = $(FC_MODINC)$(top_srcdir)/model/include \
+       $(FC_MODINC)$(MODDIR)
+AM_FCFLAGS = $(INCS) \
+             $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
 
 SUFFIXES = .d
@@ -93,18 +95,20 @@ distclean-local:
 
 ################################################################
 #                                                              #
-#  Use script "fortran-depcomp" to find dependencies among     #
-#  source files.                                               #
+# Use script "fdep" to find dependencies among source files.   #
+# Ignoring the following modules:                              #
+#  - omp_lib (OpenMP)                                          #
+#  - netcdf                                                    #
 #                                                              #
 ################################################################
+DEP_IGN := -i omp_lib -i netcdf -i mpi
 
 .f.d:
 	@$(MKDIR_P) $(@D)
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
+	$(top_srcdir)/build-aux/fdep $(DEP_IGN) $(INCS) -m $(MODDIR) -o $(@D) $^
 
 # Use generated module dependency rules
-
+CLEANS := clean distclean mostlyclean
 @make_ifnotclean@
 $(eval -include $(mfix_SOURCES:%.f=%.d) )
 $(eval -include $(libmfix_src:%.f=%.d) )
