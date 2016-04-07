@@ -87,6 +87,38 @@ class MfixGui(QtGui.QMainWindow):
         uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
+        self.ui.regions = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
+
+        self.ui.model_setup = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'model_setup.ui'), self.ui.model_setup)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
+
+        self.ui.numerics = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'numerics.ui'), self.ui.numerics)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.numerics)
+
+        self.ui.output = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'output.ui'), self.ui.output)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
+
+        self.ui.monitors = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'monitors.ui'), self.ui.monitors)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.monitors)
+
+        self.ui.run = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'run.ui'), self.ui.run)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
+
+        self.ui.interact = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'interact.ui'), self.ui.interact)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.interact)
+
+        self.ui.post_processing = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'post_processing.ui'), self.ui.post_processing)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
+
         # load settings
         self.settings = QSettings('MFIX', 'MFIX')
 
@@ -160,10 +192,10 @@ class MfixGui(QtGui.QMainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.build_mfix_button.pressed.connect(self.build_mfix)
-        self.ui.run_mfix_button.pressed.connect(self.run_mfix)
-        self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
-        self.ui.clear_output_button.pressed.connect(self.clear_output)
+        self.ui.run.build_mfix_button.pressed.connect(self.build_mfix)
+        self.ui.run.run_mfix_button.pressed.connect(self.run_mfix)
+        self.ui.run.connect_mfix_button.pressed.connect(self.connect_mfix)
+        self.ui.run.clear_output_button.pressed.connect(self.clear_output)
 
 
         # --- Threads ---
@@ -700,7 +732,7 @@ class MfixGui(QtGui.QMainWindow):
 
         self.project.load_mfix_dat(mfix_dat)
 
-        self.ui.energy_eq.setChecked(self.project['energy_eq'])
+        self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
 
 
 # --- Threads ---

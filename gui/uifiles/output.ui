@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>output</class>
+ <widget class="QWidget" name="output">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>301</width>
+    <height>340</height>
+   </rect>
+  </property>
+  <widget class="QLabel" name="label_136">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>50</y>
+     <width>59</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>RES_DT</string>
+   </property>
+  </widget>
+  <widget class="DoubleSpinBox" name="doublespinbox_keyword_res_dt">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>40</y>
+     <width>67</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_137">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>90</y>
+     <width>59</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>NLOG</string>
+   </property>
+  </widget>
+  <widget class="SpinBox" name="doublespinbox_keyword_nlog">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>80</y>
+     <width>48</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="CheckBox" name="checkbox_keyword_full_log" native="true">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>130</y>
+     <width>86</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" stdset="0">
+    <string>FULL_LOG</string>
+   </property>
+  </widget>
+  <widget class="CheckBox" name="checkbox_keyword_group_resid" native="true">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>190</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" stdset="0">
+    <string>GROUP_RESID</string>
+   </property>
+  </widget>
+  <widget class="CheckBox" name="checkbox_keyword_print_des_data" native="true">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>240</y>
+     <width>141</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" stdset="0">
+    <string>PRINT_DES_DATA</string>
+   </property>
+  </widget>
+  <widget class="CheckBox" name="checkbox_keyword_write_vtk_files" native="true">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>280</y>
+     <width>151</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" stdset="0">
+    <string>WRITE_VTK_FILES</string>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>SpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
