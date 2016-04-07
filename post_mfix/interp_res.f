@@ -6,49 +6,40 @@
 !  Author: M. Syamlal                                 Date: 03-DEC-93  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE INTERP_RES
 
-        USE compar
-        USE energy, only: gama_rg, t_rg, gama_rs, t_rs
-        USE fldvar
-        USE functions
-        USE funits
-        USE geometry
-        USE gridmap ! added
-        USE indices
-        USE param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
-        USE param1
-        USE physprop
-        USE post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
-        USE read_input
-        USE run
-        USE rxns
-        USE scalars
-
+! Modules
+!---------------------------------------------------------------------//
+      USE compar
+      USE energy, only: gama_rg, t_rg, gama_rs, t_rs
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE gridmap
+      USE indices
+      USE param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
+      USE param1
+      USE physprop
+      USE post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
+      USE read_input
+      USE run
+      USE rxns
+      USE scalars
+      use turb, only: k_epsilon
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
-!
-!  Function subroutines
-!
+
+! Function subroutines
+!---------------------------------------------------------------------//
       LOGICAL OPEN_FILEP
       INTEGER GET_INDEX, LC
-!
-!  Local variables
-!
+
+! Local variables
+!---------------------------------------------------------------------//
       DOUBLE PRECISION , DIMENSION(:), ALLOCATABLE ::  &
         EP_g_OLD, P_g_OLD, &
         P_star_OLD, RO_g_OLD, &
@@ -94,7 +85,8 @@
       LOGICAL EXT_I, EXT_J, EXT_K, DONE, SHIFT, INTERNAL
 
       INTEGER I, J, K, IJK, M, N
-!
+!---------------------------------------------------------------------//
+
       WRITE(*,*)' Processing data. Please wait. '
 
       Allocate(  EP_g_OLD(DIMENSION_3) )
@@ -131,23 +123,18 @@
       Allocate(  X_s_OLD(DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
 
 
-
-
-
       EXT_I = .FALSE.
       EXT_J = .FALSE.
       EXT_K = .FALSE.
       I1SAVE = I1
       J1SAVE = J1
       K1SAVE = K1
-!
-!  Read old RES file
-!
+
+! Read old RES file
       WRITE(*,*)' Reading old RES file ...'
       CALL READ_RES1
-!
-!  Save old values
-!
+
+! Save old values
       WRITE(*,*)' Saving old values ...'
       DO K = 1, KMAX2
          DO J = 1, JMAX2
@@ -178,20 +165,18 @@
                      X_s_OLD(IJK, M, N) = X_s(IJK, M, N)
                   ENDDO
                ENDDO
-               !
-               !       Version 1.3
 
+! Version 1.3
                DO LC = 1, NScalar
                   Scalar_OLD (IJK, LC) = Scalar (IJK, LC)
-               END DO
-               !
+               ENDDO
 
                if(k_epsilon) then
                   k_turb_g_OLD (IJK) = k_turb_g (IJK)
                   e_turb_g_OLD (IJK) = e_turb_g (IJK)
                endif
-               !
-               !       Version 1.4 -- write radiation variables in write_res1
+
+! Version 1.4 -- write radiation variables in write_res1
                GAMA_RG_OLD(IJK) = GAMA_RG(IJK)
                T_RG_OLD(IJK) = T_RG(IJK)
 
@@ -200,11 +185,10 @@
                   T_RS_OLD(IJK, LC) = T_RS(IJK, LC)
                ENDDO
 
-               !
-               !       Version 1.5
+! Version 1.5
                DO LC = 1, nRR
                   ReactionRates_OLD (IJK, LC) = ReactionRates (IJK, LC)
-               END DO
+               ENDDO
 
             ENDDO
          ENDDO
@@ -232,9 +216,8 @@
       ENDDO
       TIME_OLD = TIME
       NSTEP_OLD = NSTEP
-!
-!  Read the new data file
-!
+
+! Read the new data file
       WRITE(*,*)' Reading new mfix.dat ...'
       CALL DEALLOCATE_ARRAYS
 
@@ -267,21 +250,18 @@
       CALL SET_GEOMETRY
 
       CALL ALLOCATE_ARRAYS
-!
-!  Do initial calculations
-!
 
+! Do initial calculations
       CALL CALC_DISTANCE (XMIN,DX,IMAX2,XDIST_SC,XDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DY,JMAX2,YDIST_SC,YDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DZ,KMAX2,ZDIST_SC,ZDIST_VEC)
-!
+
 ! set smax value since check_data_01 and constant_prop are not called in post_mfix.
       SMAX = MMAX
 
       WRITE(*,*)' New grid size (IMAX,JMAX,KMAX) = ',IMAX,JMAX,KMAX
-!
-!  Open new RES files
-!
+
+! Open new RES files
       CLOSE(UNIT_RES)
       IF (.NOT.DO_XFORMS) THEN
          WRITE(*,'(/A)',ADVANCE='NO') ' Enter a new RUN_NAME > '
@@ -300,9 +280,8 @@
         READ(*,'(A)')RUN_NAME
         GOTO 200
       ENDIF
-!
-!  Interpolate values for the new grid
-!
+
+! Interpolate values for the new grid
       DO K = 1, KMAX2
          DO J = 1, JMAX2
             DO I = 1, IMAX2
@@ -310,9 +289,8 @@
 !               IJK = FUNIJK(I, J, K)
                IJK  = I + (J - 1) * IMAX2 + (K - 1) * IJMAX2
                INTERNAL = .TRUE.
-!
-!  compute I, J, and K for the old coordinate system
-!
+
+! compute I, J, and K for the old coordinate system
                IF(I .EQ. 1)THEN
                  I_OLD = 1
                  IV_OLD = 1
@@ -322,10 +300,10 @@
                  IV_OLD = IMAX2_OLD
                  IF(.NOT.NO_I) INTERNAL = .FALSE.
                ELSE
-                 I_OLD = GET_INDEX &
-                      (XDIST_SC(I), XDIST_SC_OLD, IMAX2_OLD, EXT_I, I1,'X')
-                 IV_OLD= GET_INDEX &
-                      (XDIST_VEC(I), XDIST_VEC_OLD, IMAX2_OLD, EXT_I, I1,'X_E')
+                 I_OLD = GET_INDEX (XDIST_SC(I), XDIST_SC_OLD, &
+                                    IMAX2_OLD, EXT_I,I1,'X')
+                 IV_OLD= GET_INDEX (XDIST_VEC(I), XDIST_VEC_OLD,&
+                                    IMAX2_OLD, EXT_I, I1,'X_E')
                ENDIF
 
                IF(J .EQ. 1)THEN
@@ -337,10 +315,10 @@
                  JV_OLD = JMAX2_OLD
                  IF(.NOT.NO_J) INTERNAL = .FALSE.
                ELSE
-                 J_OLD = GET_INDEX &
-                      (YDIST_SC(J), YDIST_SC_OLD, JMAX2_OLD, EXT_J, J1,'Y')
-                 JV_OLD= GET_INDEX &
-                      (YDIST_VEC(J), YDIST_VEC_OLD, JMAX2_OLD, EXT_J, J1,'Y_N')
+                 J_OLD = GET_INDEX (YDIST_SC(J), YDIST_SC_OLD, &
+                                    JMAX2_OLD, EXT_J, J1,'Y')
+                 JV_OLD= GET_INDEX (YDIST_VEC(J), YDIST_VEC_OLD, &
+                                    JMAX2_OLD, EXT_J, J1,'Y_N')
                ENDIF
 
                IF(K .EQ. 1)THEN
@@ -352,20 +330,19 @@
                  KV_OLD = KMAX2_OLD
                  IF(.NOT.NO_K) INTERNAL = .FALSE.
                ELSE
-                 K_OLD = GET_INDEX &
-                      (ZDIST_SC(K), ZDIST_SC_OLD, KMAX2_OLD, EXT_K, K1,'Z')
-                 KV_OLD= GET_INDEX &
-                      (ZDIST_VEC(K), ZDIST_VEC_OLD, KMAX2_OLD, EXT_K, K1,'Z_T')
+                 K_OLD = GET_INDEX (ZDIST_SC(K), ZDIST_SC_OLD, &
+                                    KMAX2_OLD, EXT_K, K1,'Z')
+                 KV_OLD= GET_INDEX (ZDIST_VEC(K), ZDIST_VEC_OLD, &
+                                    KMAX2_OLD, EXT_K, K1,'Z_T')
                ENDIF
 
                IJK_OLD  = I_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (K_OLD - 1) * IJMAX2_OLD
-!
-!  If the old IJK location is a wall cell, search the near by cells
-!  for a non-wall cell.  Although this interpolation will not be
-!  accurate, it is essential for restarting a run, since non-zero values
-!  are required for quantities such as void fraction, temperature etc.
-!
+
+! If the old IJK location is a wall cell, search the near by cells
+! for a non-wall cell.  Although this interpolation will not be
+! accurate, it is essential for restarting a run, since non-zero values
+! are required for quantities such as void fraction, temperature etc.
                IF(FLAG_OLD(IJK_OLD) .GE. 100 .AND. INTERNAL) THEN
                   DO L = 1, 1000
                      IM_OLD = MAX((I_OLD - L), 1)
@@ -401,9 +378,8 @@
                   + (K_OLD - 1) * IJMAX2_OLD
                IJKV_OLD = I_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (KV_OLD - 1) * IJMAX2_OLD
-!
-!  Set the values for the new arrays
-!
+
+! Set the values for the new arrays
                EP_g(IJK)    = EP_g_OLD(IJK_OLD)
                P_g(IJK)     = P_g_OLD(IJK_OLD)
                P_star(IJK)  = P_star_OLD(IJK_OLD)
@@ -477,9 +453,8 @@
                      ENDDO
                   ENDIF
                ENDDO
-               !
-               !       Version 1.3
 
+! Version 1.3
                DO LC = 1, NScalar
                   Scalar (IJK, LC) = Scalar_OLD (IJK_OLD, LC)
                END DO
@@ -487,8 +462,8 @@
                   k_turb_g (IJK) = k_turb_g_OLD (IJK_OLD)
                   e_turb_g (IJK) = e_turb_g_OLD (IJK_OLD)
                endif
-               !
-               !       Version 1.4 -- write radiation variables in write_res1
+
+! Version 1.4 -- write radiation variables in write_res1
                GAMA_RG(IJK) = GAMA_RG_OLD(IJK_OLD)
                T_RG(IJK) = T_RG_OLD(IJK_OLD)
 
@@ -497,19 +472,16 @@
                   T_RS(IJK, LC) = T_RS_OLD(IJK_OLD, LC)
                ENDDO
 
-               !
-               !       Version 1.5
-
+! Version 1.5
                DO LC = 1, nRR
                   ReactionRates (IJK, LC) = ReactionRates_OLD (IJK_OLD, LC)
-               END DO
+               ENDDO
 
             ENDDO
          ENDDO
       ENDDO
-!
-!  Write the new RES file
-!
+
+! Write the new RES file
       IF (.NOT.DO_XFORMS) THEN
          WRITE(*,'(/A)',ADVANCE='NO') &
                ' Do you need time to be reset to 0.0 (Y/N) ?'
@@ -527,15 +499,14 @@
        ENDIF
       CALL WRITE_RES0
       CALL WRITE_RES1
-!
+
       WRITE(*,*)' New RES file written.  Start the new run by setting'
       WRITE(*,*)' RUN_TYPE = RESTART_2'
-!
+
 ! SET IN CASE CODE IS CHANGED TO RETURN INSTEAD OF STOP
-!
       I1 = I1SAVE
       J1 = J1SAVE
       K1 = K1SAVE
-!
+
       STOP
-    END SUBROUTINE INTERP_RES
+      END SUBROUTINE INTERP_RES

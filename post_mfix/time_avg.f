@@ -1,41 +1,37 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: TIME_AVG                                               C
-!  Purpose: Select records from SPx files interactively and write to a C
-!           new SPx file                                               C
-!           NOTE : USES N_SPX                                          C
+!  Subroutine: TIME_AVG                                                C
+!  Purpose: Select records from SPx files interactively and write to   C
+!  a new SPx file                                                      C
+!  NOTE : USES N_SPX                                                   C
 !                                                                      C
 !  Author: P. Nicoeltti                               Date:13-JUN-2002 C
 !  Reviewer:                                                           C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE TIME_AVG
-!
-!
-      Use param
-      Use param1
+
+! Modules
+!---------------------------------------------------------------------//
+      Use fldvar
+      Use funits
       Use geometry
       Use indices
-      Use run
       Use machine
-      Use funits
+      Use param
+      Use param1
       Use post3d
       Use physprop
-      Use fldvar
-      Use scalars
+      Use run
       Use rxns
-!
+      Use scalars
+      use turb, only: k_epsilon
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
-!
+
+! Local Variables 
+!---------------------------------------------------------------------//
       REAL    :: TIME_FOR_RES, TIME_FOUND
       LOGICAL :: AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
       INTEGER :: REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
@@ -45,22 +41,20 @@
       REAL    :: TIME_REAL(N_SPX)
       LOGICAL :: ERROR
 
-!
 ! variables for time averaging
-!
       double precision,allocatable :: tavg(:,:,:)
       double precision,allocatable :: tavgs(:,:,:)
       integer :: tcount
       real    :: tstart , tend
-!
+
       INTEGER L, L_SPX , LL , M , i , NB
       integer :: unit_add = 10
-!
+
       CHARACTER(LEN=35) :: EXT_END
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-!
+
       ERROR  = .FALSE.
       SELECT = .TRUE.
       L_SPX  = SPX_NUM
@@ -70,15 +64,16 @@
       write (*,*) ' enter ending time for time averaging'
       read  (*,*) tend
 
-      WRITE (*,'(A)',ADVANCE='NO') 'Enter the RUN_NAME for time averaged data > '
+      WRITE (*,'(A)',ADVANCE='NO') &
+             'Enter the RUN_NAME for time averaged data > '
       READ  (*,'(A60)') TEMP_FILE
 
       do i = 1,len(temp_file)
           if (temp_file(i:i) .eq. ' ') then
              nb = i
              goto 10
-          end if
-      end do
+          endif
+      enddo
 
  10   call make_upper_case(temp_file,60)
       temp_file(nb:nb+3) = '.SPx'
@@ -94,10 +89,9 @@
                  STATUS='NEW', &
                  RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED', &
                  ERR=101,CONVERT='BIG_ENDIAN')
-         END IF
-!
+         ENDIF
+
 ! allocate variables as needed  (what if no scalars or nRR ??)
-!
          if (l_spx .eq. 1) then          ! ep_g
             allocate (tavg(ijkmax2,1,1))
          else if (l_spx .eq. 2) then     ! p_g and P_star
@@ -136,10 +130,10 @@
 
          tavg(:,:,:) = 0.0
          if ( (l_spx.eq.6) .or. (l_spx.eq.7) ) tavgs(:,:,:) = 0.0
-!
-!
+
+
          CALL WRITE_SPX0(L_SPX,unit_add)
-!
+
          DO L = 1, N_SPX
             READ_SPX(L) = .FALSE.
             REC_POINTER(L) = 4
@@ -148,7 +142,7 @@
 
          READ_SPX(L_SPX) = .TRUE.
          tcount = 0
-!
+
          L = 0
 100      continue
          CALL READ_SPX1(READ_SPX,REC_POINTER,AT_EOF, TIME_REAL,NSTEP_1)

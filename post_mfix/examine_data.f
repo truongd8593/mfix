@@ -1,25 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: EXAMINE_DATA                                           C
-!  Purpose: Examine/print selected data                                C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 03-NOV-93  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number:                                                    C
+!  Subroutine:                                                         C
 !  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
 
       ! format_one
       subroutine format_one(spec,nPrec,sLen)
@@ -179,7 +163,6 @@
       end subroutine format_four
 
 
-
       ! format_five
       subroutine format_five(spec,nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,sLen)
       implicit none
@@ -219,28 +202,44 @@
 !                                      VALUE_TMP
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: EXAMINE_DATA                                            C
+!  Purpose: Examine/print selected data                                C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 03-NOV-93  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE EXAMINE_DATA
-!
+
+! Modules
+!---------------------------------------------------------------------//
+      Use compar
+      Use constant
+      Use fldvar
+      Use functions
+      Use geometry
+      Use indices
       Use param, only: dimension_3
       Use param1
-      Use constant
       Use physprop
-      Use fldvar
-      Use indices
-      Use run, only: any_solve_ros, k_epsilon, time, run_name
-      Use geometry
       Use post3d, only: xdist_vec, xdist_sc, ydist_vec, ydist_sc, zdist_vec, zdist_sc
+      use post_precision
+      Use run, only: any_solve_ros, time, run_name
       Use rxns
       Use scalars
-      Use compar
-      use post_precision
-      Use functions
-
+      use turb, only: k_epsilon
       IMPLICIT NONE
+!---------------------------------------------------------------------//
       INTEGER  N_VAR
       PARAMETER (N_VAR=52)
       INCLUDE 'xforms.inc'
 
+! Local variables
+!---------------------------------------------------------------------//
       CHARACTER(LEN=80)  :: LINE
       CHARACTER(LEN=120)  :: STRING, SUBSTR
       CHARACTER(LEN=8)   :: VAR, VAR_DAT(N_VAR)
@@ -258,13 +257,13 @@
       INTEGER      M_LOCAL, mIJK, lIJK, IER
       INTEGER      I, J, K, IJK, M, N
       REAL         DELm, DELl, FAC1, FAC2
-!
+
       REAL              TIME_REAL(N_SPX), TIME_FOUND, TIME_NOW , TIME_OLD
       INTEGER           REC_POINTER(N_SPX)
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
-!
-!  Function subroutines
-!
+
+! Function subroutines
+!---------------------------------------------------------------------//
       REAL XFLOW_gx, XFLOW_gy, XFLOW_gz
       REAL VFLOW_gx, VFLOW_gy, VFLOW_gz, MFLOW_gx, MFLOW_gy, MFLOW_gz
       REAL XFLOW_sx, XFLOW_sy, XFLOW_sz
@@ -273,6 +272,7 @@
       REAL FLUX_sx, FLUX_sy, FLUX_sz
       REAL CALC_RO_g
       INTEGER, EXTERNAL :: FUNIJK_LOC
+!---------------------------------------------------------------------//
 !
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
@@ -316,19 +316,18 @@
       common /fast_sp7/ gas_species_index , solid_species_index , &
                          solid_index , bRead_all
 
+!---------------------------------------------------------------------//
       solid_species_index = 0
       solid_index    = 0
       gas_species_index = 0
       bRead_all = .true.
 
-
       CALL READ_RES1
       TIME_IN_RES = TIME
-!
       SUM  = .FALSE.
       LMAX = LEN(STRING)
       INTER = .FALSE.
-!
+
       IF (.NOT.DO_XFORMS) THEN
          TIME_START = 0.
          TIME_END   = 0.
@@ -348,8 +347,7 @@
       ELSE
          VAR     = VAR_DAT(VAR_NO)
       END IF
-!
-!
+
       FILE_NAME  = '*'
       IF (.NOT.DO_XFORMS) THEN
          RES_P_g    = .FALSE.
@@ -360,15 +358,13 @@
       DO L = 1, N_SPX
          REC_POINTER(L) = 4
       END DO
-!
-!
+
       IF (DO_XFORMS) THEN
         M          = M_USE
         N          = N_USE
         GOTO 5500
       ENDIF
-!
-!
+
       WRITE(*,*)
       WRITE(*,*)&
       ' Interactive data retrieval program. Type ? any time for help,'
@@ -376,7 +372,7 @@
       ' or press RETURN to select default values shown in parenthesis.'
 
       WRITE(*,*)
-
+!
 9     write (*,'(A)',ADVANCE='NO') &
          ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
@@ -399,9 +395,9 @@
          write (*,'(A)',ADVANCE='NO') ' Enter precision for time values: '
          read  (*,*) nPrec_time
       end if
-!
-!  Read time
-!
+
+
+! Read time
 10    continue
 
       solid_species_index = 0
@@ -442,6 +438,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
+!
 11      WRITE(*, '(A,1A1,A)',ADVANCE='NO')' Time average ? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=11) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -454,9 +451,8 @@
           TIME_AVERAGE = .FALSE.
         ENDIF
       ENDIF
-!
-!  Read variable name
-!
+
+! Read variable name
 20    CONTINUE
       IF(MINMAX .EQ. 1) THEN
         SUBSTR(1:1) = '1'
@@ -476,7 +472,7 @@
         GOTO 20
       ENDIF
       L3 = 1
-!
+
       IF(STRING(1:1) .EQ. '1') THEN
         MINMAX = 1
         L3 =2
@@ -486,23 +482,24 @@
       ELSEIF(STRING(1:1) .NE. ' ')THEN
         MINMAX = -1
       ENDIF
-!
+
       CALL GET_SUBSTR(STRING, L3, SUBSTR)
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,'(1A8)',ERR=20) VAR
-!
-!     Identify variable number
-!
+
+! Identify variable number
       DO 22 L = 1, N_VAR
         IF (STRCMP(VAR,VAR_DAT(L)))THEN
           VAR_NO = L
           GOTO 23
         ENDIF
+!
 22    CONTINUE
       WRITE(*,'(A,1A8,A)')' Variable ', VAR, ' not found'
       GOTO 20
+!
 23    CONTINUE
 
-!
+
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE. 10) .OR. &
          (VAR_NO .EQ. 12                     ) .OR. &
          (VAR_NO .EQ. 15                     ) .OR. &
@@ -518,6 +515,7 @@
          (VAR_NO .EQ. 48                     ) &
                                                    )THEN
         IF(MMAX .GT. 1) THEN
+!
 24        WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Solids phase: (', M, ') > '
           READ(*,'(1A60)',ERR=24) STRING
           IF(STRING(1:1) .EQ. '?') THEN
@@ -537,8 +535,9 @@
         ENDIF
         solid_index = m
       ENDIF
-!
+
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21)THEN
+!
 25      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Species: (', N, ') > '
         READ(*,'(1A60)',ERR=25) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -562,7 +561,7 @@
         if (var_no .eq. 14) gas_species_index   = N
         if (var_no .eq. 15) solid_species_index = N
       ENDIF
-!
+
       IF(VAR_NO .EQ. 49)THEN
         IF(NScalar .LE. 0) THEN
           write(*,'(i40)')Nscalar
@@ -570,6 +569,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. NScalar)N = 1
+!
 29      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Scalar: (', N, ') > '
         READ(*,'(1A60)',ERR=29) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -585,7 +585,7 @@
           GOTO 29
         ENDIF
       ENDIF
-!
+
       IF(VAR_NO .EQ. 50)THEN
         IF(nRR .LE. 0) THEN
           write(*,'(i40)')nRR
@@ -593,6 +593,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. nRR)N = 1
+!
 229     WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Reaction Rate: (', N, ') > '
         READ(*,'(1A60)',ERR=229) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -608,25 +609,24 @@
           GOTO 229
         ENDIF
       ENDIF
-!
+
       IF(VAR_NO .EQ. 51)THEN
         IF( .NOT. K_Epsilon) THEN
           WRITE(*,'(A)')' K_Turb_G not found'
           GOTO 20
         ENDIF
       ENDIF
-!
+
       IF(VAR_NO .EQ. 52)THEN
         IF( .NOT. K_Epsilon) THEN
           WRITE(*,'(A)')' E_Turb_G not found'
           GOTO 20
         ENDIF
       ENDIF
-!
+
 !
  5500 CONTINUE
-!
-!
+
       IF(VAR_NO .EQ.  4 .OR. VAR_NO .EQ.  7 .OR. VAR_NO .EQ. 16 .OR.&
          VAR_NO .EQ. 19 .OR. VAR_NO .EQ. 22 .OR. VAR_NO .EQ. 25 .OR.&
          VAR_NO .EQ. 28 .OR. VAR_NO .EQ. 31 .OR. VAR_NO .EQ. 36 .OR.&
@@ -647,15 +647,14 @@
       ELSE
          DIRECTION = 0
       ENDIF
-!
+
       IF(VAR_NO .GE. 16 .AND. VAR_NO .LE. 41) THEN
         SUM = .TRUE.
       ELSE
         SUM = .FALSE.
       ENDIF
-!
-!  Enable the required SPX file
-!
+
+! Enable the required SPX file
       DO L = 1, N_SPX
          READ_SPX(L)    = .FALSE.
          AT_EOF(L)      = .FALSE.
@@ -666,8 +665,7 @@
       else
           bRead_all = .true.
       end if
-!
-!
+
       IF(VAR_NO .EQ. 1 .OR. (VAR_NO .GE. 16 .AND. VAR_NO .LE. 18) .OR.&
          (VAR_NO .GE. 22 .AND. VAR_NO .LE. 24) .OR. &
          (VAR_NO .GE. 28 .AND. VAR_NO .LE. 30) .OR.&
@@ -718,11 +716,11 @@
       IF(VAR_NO .GE. 11 .AND. VAR_NO .LE. 13) THEN
         READ_SPX(6) = .TRUE.    ! T_g, T_s, T_s2
       ENDIF
-!     When the solids density is not constant, it is computed
-!     from solids species mass fractions
-!     This is needed for volumetric flow rates VFLOW_sx, VFLOW_sy or VFLOW_sz
-!     because EP_S is needed and EP_S = ROP_S / RO_S
-!     ROP_S is read from the SP5 file, but RO_S is not saved anywhere
+! When the solids density is not constant, it is computed from solids
+! species mass fractions. This is needed for volumetric flow rates
+! VFLOW_sx, VFLOW_sy or VFLOW_sz because EP_S is needed and 
+! EP_S = ROP_S / RO_S.  ROP_S is read from the SP5 file, but RO_S is
+! not saved anywhere
       IF((VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) .OR. &
          (ANY_SOLVE_ROs.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
@@ -747,9 +745,8 @@
       IF(VAR_NO .EQ. 52 ) THEN
         READ_SPX(11) = .TRUE.    ! E_Turb_G
       ENDIF
-!
-!  Open P_g, T_g, and X_g files, if gas density needs to be determined
-!
+
+! Open P_g, T_g, and X_g files, if gas density needs to be determined
       IF (DO_XFORMS) GOTO 1125
       IF( RO_g0 .EQ. UNDEFINED .AND. &
          ( (VAR_NO .GE. 16 .AND. VAR_NO .LE. 18) .OR.&
@@ -762,7 +759,7 @@
           IF (.NOT.DO_XFORMS) THEN
              WRITE(*,*)&
            ' To calculate gas density P_g, T_g, and X_g are needed'
-!
+
            IF(RES_P_g)THEN
              SUBSTR(1:1) = 'Y'
            ELSE
@@ -780,7 +777,7 @@
            ELSEIF(STRING(1:1) .NE. ' ')THEN
              RES_P_g = .FALSE.
            ENDIF
-!
+
            IF(RES_T_g)THEN
              SUBSTR(1:1) = 'Y'
            ELSE
@@ -801,7 +798,7 @@
         ELSE
            CONTINUE
         END IF
-!
+
         RES_X_G = .FALSE.
         IF(MW_avg .EQ. UNDEFINED) THEN
           IF (.NOT.DO_XFORMS) THEN
@@ -826,20 +823,17 @@
              CONTINUE
           END IF
         ENDIF
-!
-!
+
         IF(.NOT.RES_P_g) READ_SPX(2) = .TRUE.    ! P_g, P_star
         IF(.NOT.RES_X_g) READ_SPX(7) = .TRUE.    ! X_g, X_s
         IF(.NOT.RES_T_g) READ_SPX(6) = .TRUE.    ! T_g, T_s, T_s2
         IF(RES_P_g .OR. RES_T_g .OR. RES_X_g) CALL READ_RES1
-!
-!
+
       ENDIF
 !
 1125  IF (DO_XFORMS) GOTO 5501
-!
+
 ! if doing user-specifiied precision output, get value for this variable
-!
       if (bPrecision) then
           write (*,'(a,i2,a)',ADVANCE='NO') ' Enter precision ( ' , nPrec_variable , ') >'
           read (*,'(1a60)') string
@@ -847,9 +841,8 @@
           CALL GET_SUBSTR(STRING, L3, SUBSTR)
           IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=30) nPrec_variable
       end if
-!
-!  Read I range
-!
+
+! Read I range
 30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' I range: (', I1, ',', I2, ') >'
       READ(*,'(1A60)') STRING
@@ -862,9 +855,8 @@
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=30) I1
       CALL GET_SUBSTR(STRING, L3, SUBSTR)
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=30) I2
-!
-!     Check bounds
-!
+
+! Check bounds
       IF(I2 .LT. I1) I2 = I1
       IF(I1 .LT. 1 .OR. I1 .GT. IMAX2 .OR.&
          I2 .LT. 1 .OR. I2 .GT. IMAX2     ) THEN
@@ -872,7 +864,7 @@
           ' I1 and I2 should be in the range 1 to ', IMAX2
         GOTO 30
       ENDIF
-!
+
       IF(I1 .NE. I2) THEN
         IF(I_AVERAGE)THEN
           SUBSTR(1:1) = 'Y'
@@ -892,9 +884,8 @@
           I_AVERAGE = .FALSE.
         ENDIF
       ENDIF
-!
-!  Read J range
-!
+
+! Read J range
 40    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' J range: (', J1,',',J2, ') >'
       READ(*,'(1A60)') STRING
@@ -907,9 +898,8 @@
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=40) J1
       CALL GET_SUBSTR(STRING, L3, SUBSTR)
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=40) J2
-!
-!     Check bounds
-!
+
+! Check bounds
       IF(J2 .LT. J1) J2 = J1
       IF(J1 .LT. 1 .OR. J1 .GT. JMAX2 .OR.&
          J2 .LT. 1 .OR. J2 .GT. JMAX2     ) THEN
@@ -917,7 +907,7 @@
           ' J1 and J2 should be in the range 1 to ', JMAX2
         GOTO 40
       ENDIF
-!
+
       IF(J1 .NE. J2) THEN
         IF(J_AVERAGE)THEN
           SUBSTR(1:1) = 'Y'
@@ -937,9 +927,8 @@
           J_AVERAGE = .FALSE.
         ENDIF
       ENDIF
-!
-!  Read K range
-!
+
+! Read K range
 50    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' K range: (', K1,',',K2,') >'
       READ(*,'(1A60)') STRING
@@ -952,9 +941,8 @@
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=50) K1
       CALL GET_SUBSTR(STRING, L3, SUBSTR)
       IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=50) K2
-!
-!     Check bounds
-!
+
+! Check bounds
       IF(K2 .LT. K1) K2 = K1
       IF(K1 .LT. 1 .OR. K1 .GT. KMAX2 .OR.&
          K2 .LT. 1 .OR. K2 .GT. KMAX2     ) THEN
@@ -962,7 +950,7 @@
           ' K1 and K2 should be in the range 1 to ', KMAX2
         GOTO 50
       ENDIF
-!
+
       IF(K1 .NE. K2) THEN
         IF(K_AVERAGE)THEN
           SUBSTR(1:1) = 'Y'
@@ -982,12 +970,12 @@
           K_AVERAGE = .FALSE.
         ENDIF
       ENDIF
-!
-!
+
+
  5501 CONTINUE
-!
-!
-!  Read file name
+
+
+! Read file name
 !
 !      IF (DO_XFORMS) THEN
 !         L3 = INDEX(TEMP_FILE,'*')
@@ -1004,8 +992,8 @@
 !         END IF
 !         GOTO 5502
 !      END IF
-!
-!
+
+
 70    WRITE(*,'(A,1A30,A)',ADVANCE='NO') ' File: (', FILE_NAME,') >'
       READ(*,'(1A60)') STRING
       IF (STRING(1:1) .EQ. '?') THEN
@@ -1031,10 +1019,9 @@
             ENDIF
          ENDIF
       ENDIF
-!
-!
+
  5502 CONTINUE
-!
+
       IF (TIME_START .LT. TIME_IN_RES) THEN
          CALL SEEK_TIME(READ_SPX,TIME_START,REC_POINTER,TIME_FOUND)
          IF (DO_XFORMS) THEN
@@ -1048,9 +1035,8 @@
           GOTO 10
         ENDIF
       ENDIF
-!
-!  write initial data
-!
+
+! write initial data
       CALL WRITE_LINE(FILE_NAME,' ',1)
       CALL WRITE_LINE(FILE_NAME,' ',1)
       DISPLAY = 15
@@ -1091,7 +1077,7 @@
         DISPLAY = DISPLAY - 4
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+27)
       ENDIF
-!
+
       IF(J1 .EQ. J2) THEN
         IF(DIRECTION .EQ. 2)THEN
           YTMP = YDIST_VEC(J1)
@@ -1126,7 +1112,7 @@
         DISPLAY = DISPLAY - 2
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+27)
       ENDIF
-!
+
       IF(K1 .EQ. K2) THEN
         IF(DIRECTION .EQ. 3)THEN
           ZTMP = ZDIST_VEC(K1)
@@ -1161,7 +1147,7 @@
         DISPLAY = DISPLAY - 1
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+27)
       ENDIF
-!
+
       IF(DISPLAY .EQ. 8 .AND. .NOT.TIME_AVERAGE)THEN
         WRITE(LINE,'(5X,A,10X,1A8)')'Time', VAR
         CALL WRITE_LINE(FILE_NAME, LINE, 27)
@@ -1192,9 +1178,8 @@
         WRITE(LINE,'(A,I2)') ' Rrates = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 12)
       ENDIF
-!
-!  Read data
-!
+
+! Read data
       END_AVERAGE = .FALSE.
       TIME_OLD = -1.
       NT = 0
@@ -1208,7 +1193,7 @@
            ENDDO
         ENDDO
       ENDIF
-!
+
       IF(MINMAX .EQ. 0) THEN
         WRITE(LINE,'(6X,A, 10X, A,13X,A,13X,A,5X,A,1A8)')&
             'Time', 'X', 'Y', 'Z', 'Minimum ', VAR
@@ -1218,7 +1203,7 @@
             'Time', 'X', 'Y', 'Z', 'Maximum ', VAR
         CALL WRITE_LINE(FILE_NAME, LINE, 70)
       ENDIF
-!
+
 100   CONTINUE
       IF (TIME_START .LT. TIME_IN_RES) THEN
          CALL GET_SAME_TIME (READ_SPX, REC_POINTER, AT_EOF,&
@@ -1233,7 +1218,7 @@
          CALL READ_RES1
          TIME_NOW = TIME_IN_RES
       ENDIF
-!
+
       IF (TIME_NOW .LT. ZERO) THEN
         IF(.NOT.TIME_AVERAGE) THEN
            IF (.NOT.DO_XFORMS) THEN
@@ -1249,7 +1234,7 @@
       ENDIF
       IF (TIME_NOW .LT. TIME_START) GOTO 100
       TIME_OLD = TIME_NOW
-!
+
       IF(MMAX .EQ. 1.AND.(.NOT.ANY_SOLVE_ROs)) THEN
         IF (VAR_NO .EQ. 10 .OR.&
          (VAR_NO .GE. 19 .AND. VAR_NO .LE. 21) .OR.&
@@ -1262,8 +1247,8 @@
          (VAR_NO .EQ. 46                     ) .OR.&
          (VAR_NO .EQ. 47                     ) &
                                                   ) THEN
-          ! loop over the entire domain because mass flux calculations
-          ! need ROP_s outside i,j,k limits specified by the user
+! loop over the entire domain because mass flux calculations
+! need ROP_s outside i,j,k limits specified by the user
           DO K = KMIN1, KMAX2
              DO J = JMIN1, JMAX2
                 DO I = IMIN1, IMAX2
@@ -1274,9 +1259,8 @@
           ENDDO
        ENDIF
       ENDIF
-!
-!     FIND THETA IF CALCULATING SOLIDS PRESSURE, P_s
-!
+
+! FIND THETA IF CALCULATING SOLIDS PRESSURE, P_s
       IF(VAR_NO .EQ. 44 .OR. VAR_NO .EQ. 47) THEN
         M_LOCAL=M
         DO M = 1, MMAX
@@ -1284,7 +1268,7 @@
         ENDDO
         M=M_LOCAL
       ENDIF
-!
+
       NT = NT + 1
       DO K = K1, K2
          DO J = J1, J2
@@ -1443,9 +1427,8 @@
           GOTO 100
         ENDIF
       ENDIF
-!
-!  DO I, J, or K averaging
-!
+
+! DO I, J, or K averaging
       IF(K_AVERAGE)THEN
         K = K1
         DO J = J1, J2
@@ -1465,7 +1448,7 @@
               ENDIF
            ENDDO
         ENDDO
-!
+
         DO K = K1+1, K2
            DO J = J1, J2
               DO I = I1, I2
@@ -1500,15 +1483,15 @@
                 ENDIF
              ENDDO
           ENDDO
-       ENDIF
-       K2d = K1
-    ELSE
-       K2d = K2
-    ENDIF
+        ENDIF
+          K2d = K1
+      ELSE
+        K2d = K2
+      ENDIF
 
-    IF(J_AVERAGE)THEN
-       J = J1
-       DO K = K1, K2d
+      IF(J_AVERAGE)THEN
+        J = J1
+        DO K = K1, K2d
           DO I = I1, I2
              IJK = FUNIJK_LOC(I, J, K)
              IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
@@ -1524,9 +1507,9 @@
                 ENDIF
              ENDIF
           ENDDO
-       ENDDO
+        ENDDO
 
-       DO K = K1, K2d
+        DO K = K1, K2d
           DO J = J1+1, J2
              DO I = I1, I2
                 IJK = FUNIJK_LOC(I, J, K)
@@ -1546,9 +1529,9 @@
                 ENDIF
              ENDDO
           ENDDO
-       ENDDO
+        ENDDO
 
-       IF(.NOT.SUM) THEN
+        IF(.NOT.SUM) THEN
           J = J1
           DO K = K1, K2d
              DO I = I1, I2
@@ -1560,15 +1543,15 @@
                 ENDIF
              ENDDO
           ENDDO
-       ENDIF
-       J2d = J1
-    ELSE
-       J2d = J2
-    ENDIF
+        ENDIF
+        J2d = J1
+      ELSE
+        J2d = J2
+      ENDIF
 
-    IF(I_AVERAGE)THEN
-       I = I1
-       DO K = K1, K2d
+      IF(I_AVERAGE)THEN
+        I = I1
+        DO K = K1, K2d
           DO J = J1, J2d
              IJK = FUNIJK_LOC(I, J, K)
              IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
@@ -1584,9 +1567,9 @@
                 ENDIF
              ENDIF
           ENDDO
-       ENDDO
+        ENDDO
 
-       DO K = K1, K2d
+        DO K = K1, K2d
           DO J = J1, J2d
              DO I = I1+1, I2
                 IJK = FUNIJK_LOC(I, J, K)
@@ -1606,9 +1589,9 @@
                 ENDIF
              ENDDO
           ENDDO
-       ENDDO
+        ENDDO
 
-       IF(.NOT.SUM) THEN
+        IF(.NOT.SUM) THEN
           I = I1
           DO K = K1, K2d
              DO J = J1, J2d
@@ -1620,16 +1603,15 @@
                 ENDIF
              ENDDO
           ENDDO
-       ENDIF
-       I2d = I1
-    ELSE
-       I2d = I2
-    ENDIF
-!
-!  Display data or write data to file
-!
-    IF(MINMAX .GE. 0) THEN
-       IF(MINMAX .EQ. 0)THEN
+        ENDIF
+        I2d = I1
+      ELSE
+        I2d = I2
+      ENDIF
+
+! Display data or write data to file
+      IF(MINMAX .GE. 0) THEN
+        IF(MINMAX .EQ. 0)THEN
           VALUE_TMP = 1E32
           DO K = K1, K2d
              DO J = J1, J2d
@@ -1652,7 +1634,7 @@
                 ENDDO
              ENDDO
           ENDDO
-       ELSEIF(MINMAX .EQ. 1)THEN
+        ELSEIF(MINMAX .EQ. 1)THEN
           VALUE_TMP = -1E32
           DO K = K1, K2d
              DO J = J1, J2d
@@ -1675,30 +1657,30 @@
                 ENDDO
              ENDDO
           ENDDO
-       ENDIF
-       call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
+        ENDIF
+        call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
             nPrec_location,nPrec_variable,nPrec_length)
-       WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
+        WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
             VALUE_TMP
-       CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-    ELSEIF(DISPLAY .EQ. 8) THEN
-       IJK = FUNIJK_LOC(I1, J1, K1)
-       IF(TIME_AVERAGE) THEN
+        CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
+      ELSEIF(DISPLAY .EQ. 8) THEN
+        IJK = FUNIJK_LOC(I1, J1, K1)
+        IF(TIME_AVERAGE) THEN
           call format_oneB(spec,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-       ELSE
+        ELSE
           call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)TIME_NOW, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-       ENDIF
-    ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO I = I1, I2d
+        ENDIF
+      ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO I = I1, I2d
           IJK = FUNIJK_LOC(I, J1, K1)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 1)THEN
@@ -1707,14 +1689,14 @@
              WRITE(LINE,spec)XDIST_SC(I), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO J = J1, J2d
+        ENDDO
+      ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO J = J1, J2d
           IJK = FUNIJK_LOC(I1, J, K1)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 2)THEN
@@ -1723,14 +1705,14 @@
              WRITE(LINE,spec)YDIST_SC(J), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO K = K1, K2d
+        ENDDO
+      ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO K = K1, K2d
           IJK = FUNIJK_LOC(I1, J1, K)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 3)THEN
@@ -1739,22 +1721,22 @@
              WRITE(LINE,spec)ZDIST_SC(K), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 0) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       IJK = FUNIJK_LOC(I1, J1, K1)
-       call format_oneC(spec,nPrec_variable,nPrec_length)
-       WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
-    ELSE
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 56)
-       DO K = K1, K2d
+        ENDDO
+      ELSEIF(DISPLAY .EQ. 0) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        IJK = FUNIJK_LOC(I1, J1, K1)
+        call format_oneC(spec,nPrec_variable,nPrec_length)
+        WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
+      ELSE
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 56)
+        DO K = K1, K2d
           DO J = J1, J2d
              DO I = I1, I2d
                 IJK = FUNIJK_LOC(I,J,K)
@@ -1776,38 +1758,40 @@
                 CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
              ENDDO
           ENDDO
-       ENDDO
-    ENDIF
+        ENDDO
+      ENDIF
 
-    IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
-       IF (DO_XFORMS) THEN
+      IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
+        IF (DO_XFORMS) THEN
           IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
           RETURN
-       ELSE
+        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append',convert='big_endian')
+             open (unit=40,file=file_name,position='append',&
+                   convert='big_endian')
           end if
           GOTO 10
-       END IF
-    END IF
+        ENDIF
+      ENDIF
 
-    IF(TIME_NOW .GE. TIME_END) THEN
-       IF (DO_XFORMS) THEN
+      IF(TIME_NOW .GE. TIME_END) THEN
+        IF (DO_XFORMS) THEN
           IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
           RETURN
-       ELSE
+        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append',convert='big_endian')
+             open (unit=40,file=file_name,position='append',&
+                   convert='big_endian')
           end if
           GOTO 10
-       END IF
-    END IF
+        ENDIF
+      ENDIF
 
-    GOTO 100
+      GOTO 100
 
-    CONTAINS
+     CONTAINS
 
       DOUBLE PRECISION FUNCTION DZ_T(K)
         IMPLICIT NONE
@@ -1829,22 +1813,22 @@
 
       END
 
-      ! This routine appears to need its own version of the funijk routine
+! This routine appears to need its own version of the funijk routine
       INTEGER FUNCTION FUNIJK_LOC(LI, LJ, LK)
         USE geometry
-	IMPLICIT NONE
+        IMPLICIT NONE
         INTEGER, INTENT(IN) :: LI, LJ, LK
         FUNIJK_LOC = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
       END FUNCTION FUNIJK_LOC
-!
+
       SUBROUTINE WRITE_LINE(FILE_NAME,LINE,NCHARS)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: FILE_NAME, LINE
       CHARACTER(LEN=81):: LINE2
       INTEGER       NCHARS
-!
+
       INCLUDE 'xforms.inc'
-!
+
       IF (DO_XFORMS) THEN
          LINE2 = LINE
          LINE2(NCHARS+1:NCHARS+1) = CHAR(0)
@@ -1857,13 +1841,13 @@
       ENDIF
       RETURN
       END
-!
+
       SUBROUTINE HELP(N)
       IMPLICIT NONE
       INTEGER N
-!
+
       WRITE(*,*)
-!
+
       IF(N .EQ. 9)THEN
         WRITE(*,*) &
         ' If true, then user is asked for the number of digits of precision'
@@ -1974,8 +1958,8 @@
         WRITE(*,*)' the values at the terminal.  Enter ! for going'
         WRITE(*,*)' to the begining of this menu.'
       ENDIF
-!
+
       WRITE(*,*)
-!
+
       RETURN
       END
