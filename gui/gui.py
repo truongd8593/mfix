@@ -16,6 +16,7 @@ import glob
 
 # import qt
 from qtpy import QtCore, QtGui
+from qtpy.QtGui import QWidget
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
 
 # TODO: add pyside?
@@ -70,13 +71,29 @@ class MfixGui(QtGui.QMainWindow):
                               }
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
+        self.ui.general = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'general.ui'), self.ui.general)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.general)
+
+        self.ui.geometry = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'geometry.ui'), self.ui.geometry)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.geometry)
+
+        self.ui.mesh = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'mesh.ui'), self.ui.mesh)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
+
+        self.ui.regions = QWidget()
+        uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
+
         # load settings
         self.settings = QSettings('MFIX', 'MFIX')
 
         # set title and icon
         self.setWindowTitle('MFIX')
         self.setWindowIcon(get_icon('mfix.png'))
-        
+
         # build keyword documentation from namelist docstrings
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
@@ -90,9 +107,9 @@ class MfixGui(QtGui.QMainWindow):
                                }
 
         self.booleanbtndict = {
-            'union':      self.ui.toolbutton_geometry_union,
-            'intersection':  self.ui.toolbutton_geometry_intersect,
-            'difference': self.ui.toolbutton_geometry_difference,
+            'union':      self.ui.geometry.toolbutton_geometry_union,
+            'intersection':  self.ui.geometry.toolbutton_geometry_intersect,
+            'difference': self.ui.geometry.toolbutton_geometry_difference,
             }
         self.animation_speed = 400
         self.animating = False
@@ -119,12 +136,12 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
         self.ui.toolbutton_interact.setIcon(get_icon('flash.png'))
 
-        self.ui.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
-        self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
-        self.ui.toolbutton_geometry_union.setIcon(get_icon('union.png'))
-        self.ui.toolbutton_geometry_intersect.setIcon(
+        self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
+        self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
+        self.ui.geometry.toolbutton_geometry_union.setIcon(get_icon('union.png'))
+        self.ui.geometry.toolbutton_geometry_intersect.setIcon(
             get_icon('intersect.png'))
-        self.ui.toolbutton_geometry_difference.setIcon(
+        self.ui.geometry.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
         self.ui.toolButtonTFMSolidsDatabase.setIcon(get_icon('download.png'))
@@ -193,7 +210,7 @@ class MfixGui(QtGui.QMainWindow):
         # autoload last project
         if self.get_project_dir():
             self.open_project(self.get_project_dir())
-            
+
         # print number of keywords
         self.print_internal('Registered {} keywords'.format(
             len(self.project.registered_keywords)))

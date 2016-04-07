@@ -119,7 +119,7 @@ class VtkWidget(QtGui.QWidget):
 
         self.project = project
         self.parent = parent
-        self.geometrytree = self.parent.ui.treeWidgetGeometry
+        self.geometrytree = self.parent.ui.geometry.treeWidgetGeometry
         self.booleanbtndict = self.parent.booleanbtndict
 
         # --- data ---
@@ -283,7 +283,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- geometry button ---
         self.add_geometry_menu = QtGui.QMenu(self)
-        self.parent.ui.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
+        self.parent.ui.geometry.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
 
         action = QtGui.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
@@ -308,7 +308,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- filter button ---
         self.add_filter_menu = QtGui.QMenu(self)
-        self.parent.ui.toolbutton_add_filter.setMenu(self.add_filter_menu)
+        self.parent.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
         for geo in self.filterdict.keys():
             action = QtGui.QAction(geo.replace('_', ' '),
@@ -318,9 +318,9 @@ class VtkWidget(QtGui.QWidget):
             self.add_filter_menu.addAction(action)
 
         # setup signals
-        self.parent.ui.toolbutton_remove_geometry.pressed.connect(
+        self.parent.ui.geometry.toolbutton_remove_geometry.pressed.connect(
             self.remove_geometry)
-        self.parent.ui.toolbutton_copy_geometry.pressed.connect(
+        self.parent.ui.geometry.toolbutton_copy_geometry.pressed.connect(
             self.copy_geometry)
 
         # connect boolean
@@ -329,7 +329,7 @@ class VtkWidget(QtGui.QWidget):
                 make_callback(self.boolean_operation, key))
 
         # connect parameter widgets
-        for widget in widget_iter(self.parent.ui.stackedWidgetGeometryDetails):
+        for widget in widget_iter(self.parent.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtGui.QLineEdit):
                 widget.editingFinished.connect(
                     make_callback(self.parameter_edited, widget))
@@ -339,20 +339,20 @@ class VtkWidget(QtGui.QWidget):
 
         # --- mesh ---
         # connect mesh tab btns
-        for i, btn in enumerate([self.parent.ui.pushbutton_mesh_uniform,
-                                 self.parent.ui.pushbutton_mesh_controlpoints,
-                                 self.parent.ui.pushbutton_mesh_mesher]):
+        for i, btn in enumerate([self.parent.ui.mesh.pushbutton_mesh_uniform,
+                                 self.parent.ui.mesh.pushbutton_mesh_controlpoints,
+                                 self.parent.ui.mesh.pushbutton_mesh_mesher]):
             btn.pressed.connect(
                 make_callback(self.change_mesh_tab, i, btn))
 
-        self.parent.ui.pushbutton_mesh_autosize.pressed.connect(
+        self.parent.ui.mesh.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
 
         # connect mesher
-        self.parent.ui.combobox_mesher.currentIndexChanged.connect(
+        self.parent.ui.mesh.combobox_mesher.currentIndexChanged.connect(
                     self.change_mesher_options)
 
-        self.parent.ui.pushbutton_generate_mesh.pressed.connect(self.mesher)
+        self.parent.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
 
     def __add_tool_buttons(self):
 
@@ -471,23 +471,23 @@ class VtkWidget(QtGui.QWidget):
 
         # enable/disable delete/copy/filter button
         if len(current_selection) == 1 and \
-                self.parent.ui.treeWidgetGeometry.indexOfTopLevelItem(
+                self.parent.ui.geometry.treeWidgetGeometry.indexOfTopLevelItem(
                 current_selection[0]) > -1:
-            self.parent.ui.toolbutton_remove_geometry.setEnabled(True)
-            self.parent.ui.toolbutton_add_filter.setEnabled(True)
-            self.parent.ui.toolbutton_copy_geometry.setEnabled(True)
+            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(True)
+            self.parent.ui.geometry.toolbutton_add_filter.setEnabled(True)
+            self.parent.ui.geometry.toolbutton_copy_geometry.setEnabled(True)
         else:
-            self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
-            self.parent.ui.toolbutton_add_filter.setEnabled(False)
-            self.parent.ui.toolbutton_copy_geometry.setEnabled(False)
+            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
+            self.parent.ui.geometry.toolbutton_add_filter.setEnabled(False)
+            self.parent.ui.geometry.toolbutton_copy_geometry.setEnabled(False)
 
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
 
             current_index = 0
             for i in range(
-                    self.parent.ui.stackedWidgetGeometryDetails.count()):
-                widget = self.parent.ui.stackedWidgetGeometryDetails.widget(i)
+                    self.parent.ui.geometry.stackedWidgetGeometryDetails.count()):
+                widget = self.parent.ui.geometry.stackedWidgetGeometryDetails.widget(i)
                 if str(widget.objectName()) == self.geometrydict[text]['type']:
                     current_index = i
                     break
@@ -510,11 +510,11 @@ class VtkWidget(QtGui.QWidget):
             current_index = 0
 
             self.parent.ui.groupBoxGeometryParameters.setTitle('Parameters')
-            self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
+            self.parent.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
 
         self.parent.animate_stacked_widget(
-            self.parent.ui.stackedWidgetGeometryDetails,
-            self.parent.ui.stackedWidgetGeometryDetails.currentIndex(),
+            self.parent.ui.geometry.stackedWidgetGeometryDetails,
+            self.parent.ui.geometry.stackedWidgetGeometryDetails.currentIndex(),
             current_index,
             'horizontal',
             )
@@ -1406,7 +1406,7 @@ class VtkWidget(QtGui.QWidget):
     def change_mesher_options(self):
         """ switch the mesh options stacked widget """
 
-        mesher = str(self.parent.ui.combobox_mesher.currentText()).lower()
+        mesher = str(self.parent.ui.mesh.combobox_mesher.currentText()).lower()
 
         current_index = 0
         for i in range(self.parent.ui.stackedwidget_mesher_options.count()):
@@ -1636,7 +1636,7 @@ class VtkWidget(QtGui.QWidget):
 
     def mesher(self):
 
-        mesher = str(self.parent.ui.combobox_mesher.currentText())
+        mesher = str(self.parent.ui.mesh.combobox_mesher.currentText())
 
         if mesher == 'vtkTableBasedClipDataSet':
             self.vtk_mesher_table_based()
