@@ -412,7 +412,7 @@ class VtkWidget(QtGui.QWidget):
 
             # style
             combobox = QtGui.QComboBox()
-            combobox.addItems(['wire', 'solid', 'solid with edges', 'points'])
+            combobox.addItems(['wire', 'solid', 'edges', 'points'])
             combobox.currentIndexChanged.connect(
                 make_callback(self.change_representation,
                               geo.lower(), combobox))
@@ -429,9 +429,20 @@ class VtkWidget(QtGui.QWidget):
                 )
             layout.addWidget(toolbutton, i, 2)
 
+            # opacity
+            slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+            slider.valueChanged.connect(make_callback(self.change_opacity,
+                                                      geo.lower(),
+                                                      slider
+                                                      ))
+            slider.setRange(0, 100)
+            slider.setValue(100)
+            slider.setFixedWidth(30)
+            layout.addWidget(slider, i, 3)
+
             # label
             label = QtGui.QLabel(geo)
-            layout.addWidget(label, i, 3)
+            layout.addWidget(label, i, 4)
 
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
@@ -1239,7 +1250,7 @@ class VtkWidget(QtGui.QWidget):
             # Create an actor
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            
+
             self.set_geometry_actor_props(actor, name)
 
             # add actor to render
@@ -1733,7 +1744,7 @@ class VtkWidget(QtGui.QWidget):
                 elif representation == 'solid':
                     actor.GetProperty().SetRepresentationToSurface()
                     actor.GetProperty().EdgeVisibilityOff()
-                elif representation == 'solid with edges':
+                elif representation == 'edges':
                     actor.GetProperty().SetRepresentationToSurface()
                     actor.GetProperty().EdgeVisibilityOn()
                 elif representation == 'points':
@@ -1772,3 +1783,20 @@ class VtkWidget(QtGui.QWidget):
                      self.color_dict[name_edge].getRgbF()[:3])
 
                 self.vtkRenderWindow.Render()
+
+    def change_opacity(self, name, slider):
+
+        value = slider.value()/100.0
+        actors = None
+        if name == 'mesh':
+            actors = [self.mesh_actor]
+        elif name == 'background mesh':
+            actors = self.grid_viewer_dict['actors']
+        elif name == 'geometry':
+            actors = [geo['actor'] for geo in self.geometrydict.values()]
+
+        if actors is not None:
+            for actor in actors:
+                actor.GetProperty().SetOpacity(value)
+                
+            self.vtkRenderWindow.Render()
