@@ -15,8 +15,9 @@ CLEANFILES=*.$(FC_MODEXT) *.so
 MODDIR=$(top_builddir)/model
 
 # Current directory takes precedence over model/include/ and model/
-AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
-AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
+INCS = $(FC_MODINC)$(top_srcdir)/model/include \
+       $(FC_MODINC)$(MODDIR)
+AM_FCFLAGS = $(INCS)
 AM_LDFLAGS =
 
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
@@ -53,7 +54,7 @@ $(LIBMFIX):
 	$(MAKE) -C $(top_builddir) $(notdir $@)
 
 $(LIBMFIX).md5: $(LIBMFIX)
-	@md5sum $< | cmp -s $@ -; if test $$? -ne 0; then md5sum $< > $@; fi
+	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
@@ -79,17 +80,18 @@ $(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 species.inc: mfix.dat
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
-#########################################################################
-#
-#  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
-#
-#      Include /dev/null so GREP doesn't hang if $^ is empty
-#
-#########################################################################
+################################################################
+#                                                              #
+#  Use script "fdep" to find dependencies among source files.  #
+#  Ignoring the following modules:                             #
+#  - omp_lib (OpenMP)                                          #
+#  - netcdf                                                    #
+#      Include /dev/null so GREP doesn't hang if $^ is empty   #
+################################################################
+DEP_IGN := -i omp_lib -i netcdf -i mpi
 
 .f.d:
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
+	$(top_builddir)/build-aux/fdep $(DEP_IGN) $(INCS) -m $(MODDIR) -o $(@D) $^
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
 	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
@@ -97,6 +99,7 @@ species.inc: mfix.dat
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
+CLEANS := clean distclean mostlyclean
 @make_ifnotclean@
 $(eval -include $(src_overrides:%.f=%.d) )
 @make_endif@
