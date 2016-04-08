@@ -2,7 +2,7 @@ module MFIX_netcdf
 
 #ifdef NETCDF
   include 'netcdf.inc'
-  USE netcdf ! ignore-depcomp
+  USE netcdf
 #else
   integer NF90_64BIT_OFFSET
 

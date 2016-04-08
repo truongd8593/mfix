@@ -41,7 +41,7 @@
       SUBROUTINE INITIALIZE
 
 #ifdef MPI
-      USE mpi, only: mpi_comm_world, mpi_barrier  ! ignore-depcomp
+      USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
       USE cdist, only: bdoing_postmfix
       USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
@@ -887,7 +887,7 @@
    !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
    function do_mpi_bcast(str)
 #ifdef MPI
-      use mpi ! ignore-depcomp
+      use mpi
 #endif
       implicit none
 
