@@ -88,10 +88,6 @@ class MfixGui(QtGui.QMainWindow):
         uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
-        self.ui.regions = QWidget()
-        uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
-
         self.ui.model_setup = QWidget()
         uic.loadUi(os.path.join('uifiles', 'model_setup.ui'), self.ui.model_setup)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
@@ -566,11 +562,11 @@ class MfixGui(QtGui.QMainWindow):
         nodesj = int(self.ui.nodes_j.text())
         nodesk = int(self.ui.nodes_k.text())
         if max(nodesi, nodesj, nodesk) > 1:
-            self.ui.dmp_button.setChecked(True)
+            self.ui.run.dmp_button.setChecked(True)
 
     def set_nodes(self):
         " set all nodes to one if MPI checkbox is unchecked "
-        if self.ui.dmp_button.isChecked():
+        if self.ui.run.dmp_button.isChecked():
             self.ui.nodes_i.setValue(1)
             self.ui.nodes_j.setValue(1)
             self.ui.nodes_k.setValue(1)
@@ -579,8 +575,8 @@ class MfixGui(QtGui.QMainWindow):
         """ build mfix """
         mfix_home = os.path.dirname(
             os.path.dirname(os.path.realpath(__file__)))
-        dmp = '--dmp' if self.ui.dmp_button.isChecked() else ''
-        smp = '--smp' if self.ui.smp_button.isChecked() else ''
+        dmp = '--dmp' if self.ui.run.dmp_button.isChecked() else ''
+        smp = '--smp' if self.ui.run.smp_button.isChecked() else ''
         return os.path.join(mfix_home, 'configure_mfix --python %s %s && make -j pymfix' % (smp, dmp))
 
     def build_mfix(self):
@@ -597,7 +593,7 @@ class MfixGui(QtGui.QMainWindow):
 
     def run_mfix(self):
         """ build mfix """
-        if not self.ui.dmp_button.isChecked():
+        if not self.ui.run.dmp_button.isChecked():
             pymfix_exe = os.path.join(self.get_project_dir(), 'pymfix')
         else:
             nodesi = int(self.ui.nodes_i.text())
@@ -618,12 +614,12 @@ class MfixGui(QtGui.QMainWindow):
 
     def connect_mfix(self):
         """ connect to running instance of mfix """
-        url = "http://{}:{}".format(self.ui.mfix_host.text(),
-                                    self.ui.mfix_port.text())
+        url = "http://{}:{}".format(self.ui.run.mfix_host.text(),
+                                    self.ui.run.mfix_port.text())
         log = logging.getLogger(__name__)
         log.debug("trying to connect to {}".format(url))
         qurl = QUrl(url)
-        self.ui.mfix_browser.load(qurl)
+        self.ui.interact.mfix_browser.load(qurl)
 
         self.updater = UpdateResidualsThread()
         self.updater.sig.connect(self.update_residuals)
