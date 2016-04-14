@@ -15,8 +15,7 @@ import glob
 
 
 # import qt
-from qtpy import QtCore, QtGui
-from qtpy.QtGui import QWidget
+from qtpy import QtCore, QtWidgets
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
 
 # TODO: add pyside?
@@ -52,12 +51,12 @@ set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
 
 
 # --- Main Gui ---
-class MfixGui(QtGui.QMainWindow):
+class MfixGui(QtWidgets.QMainWindow):
     '''
     Main window class handling all gui interactions
     '''
     def __init__(self, app, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+        QtWidgets.QMainWindow.__init__(self, parent)
 
         # reference to qapp instance
         self.app = app
@@ -72,47 +71,47 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
-        self.ui.general = QWidget()
+        self.ui.general = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'general.ui'), self.ui.general)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.general)
 
-        self.ui.geometry = QWidget()
+        self.ui.geometry = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'geometry.ui'), self.ui.geometry)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.geometry)
 
-        self.ui.mesh = QWidget()
+        self.ui.mesh = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'mesh.ui'), self.ui.mesh)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
 
-        self.ui.regions = QWidget()
+        self.ui.regions = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
-        self.ui.model_setup = QWidget()
+        self.ui.model_setup = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'model_setup.ui'), self.ui.model_setup)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
 
-        self.ui.numerics = QWidget()
+        self.ui.numerics = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'numerics.ui'), self.ui.numerics)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.numerics)
 
-        self.ui.output = QWidget()
+        self.ui.output = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'output.ui'), self.ui.output)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
 
-        self.ui.monitors = QWidget()
+        self.ui.monitors = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'monitors.ui'), self.ui.monitors)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.monitors)
 
-        self.ui.run = QWidget()
+        self.ui.run = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'run.ui'), self.ui.run)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
 
-        self.ui.interact = QWidget()
+        self.ui.interact = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'interact.ui'), self.ui.interact)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.interact)
 
-        self.ui.post_processing = QWidget()
+        self.ui.post_processing = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'post_processing.ui'), self.ui.post_processing)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
 
@@ -143,7 +142,7 @@ class MfixGui(QtGui.QMainWindow):
         # --- icons ---
         # loop through all widgets, because I am lazy
         for widget in widget_iter(self.ui):
-            if isinstance(widget, QtGui.QToolButton):
+            if isinstance(widget, QtWidgets.QToolButton):
                 name = str(widget.objectName())
                 if 'add' in name:
                     widget.setIcon(get_icon('add.png'))
@@ -278,7 +277,7 @@ class MfixGui(QtGui.QMainWindow):
                         widget.default(
                             self.keyword_doc[keyword]['initpython'])
 
-                    if isinstance(widget, QtGui.QComboBox) and widget.count() < 1:
+                    if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(self.keyword_doc[keyword]['valids'].keys()))
 
                 # register the widget with the project manager
@@ -501,14 +500,14 @@ class MfixGui(QtGui.QMainWindow):
         infotext = 'extended information text'
         detailedtext = 'Some details'
         '''
-        msgBox = QtGui.QMessageBox(self)
+        msgBox = QtWidgets.QMessageBox(self)
         msgBox.setWindowTitle(title)
 
         # Icon
         if icon == 'warning':
-            icon = QtGui.QMessageBox.Warning
+            icon = QtWidgets.QMessageBox.Warning
         else:
-            icon = QtGui.QMessageBox.Information
+            icon = QtWidgets.QMessageBox.Information
 
         msgBox.setIcon(icon)
 
@@ -522,11 +521,11 @@ class MfixGui(QtGui.QMainWindow):
             msgBox.setDetailedText(detailedtext)
 
         # buttons
-        qbuttonDict = {'ok':      QtGui.QMessageBox.Ok,
-                       'yes':     QtGui.QMessageBox.Yes,
-                       'no':      QtGui.QMessageBox.No,
-                       'cancel':  QtGui.QMessageBox.Cancel,
-                       'discard': QtGui.QMessageBox.Discard,
+        qbuttonDict = {'ok':      QtWidgets.QMessageBox.Ok,
+                       'yes':     QtWidgets.QMessageBox.Yes,
+                       'no':      QtWidgets.QMessageBox.No,
+                       'cancel':  QtWidgets.QMessageBox.Cancel,
+                       'discard': QtWidgets.QMessageBox.Discard,
                        }
         for button in buttons:
             msgBox.addButton(qbuttonDict[button])
@@ -552,7 +551,7 @@ class MfixGui(QtGui.QMainWindow):
         cursor.insertText(text)
         cursor.movePosition(cursor.End)
         vbar = self.ui.command_output.verticalScrollBar()
-        vbar.triggerAction(QtGui.QAbstractSlider.SliderToMaximum)
+        vbar.triggerAction(QtWidgets.QAbstractSlider.SliderToMaximum)
         self.ui.command_output.ensureCursorVisible()
 
     # --- mfix methods ---
@@ -647,10 +646,10 @@ class MfixGui(QtGui.QMainWindow):
     def new_project(self, project_dir=None):
         if not project_dir:
             project_dir = str(
-                QtGui.QFileDialog.getExistingDirectory(
+                QtWidgets.QFileDialog.getExistingDirectory(
                     self, 'Create Project in Directory',
                     "",
-                    QtGui.QFileDialog.ShowDirsOnly))
+                    QtWidgets.QFileDialog.ShowDirsOnly))
         if len(project_dir) < 1:
             return
         try:
@@ -676,10 +675,10 @@ class MfixGui(QtGui.QMainWindow):
 
         if not project_dir:
             project_dir = str(
-                 QtGui.QFileDialog.getExistingDirectory(
+                 QtWidgets.QFileDialog.getExistingDirectory(
                      self, 'Open Project Directory',
                      "",
-                     QtGui.QFileDialog.ShowDirsOnly))
+                     QtWidgets.QFileDialog.ShowDirsOnly))
 
         if len(project_dir) < 1:
             return
@@ -905,7 +904,7 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
-    qapp = QtGui.QApplication(sys.argv)
+    qapp = QtWidgets.QApplication(sys.argv)
 
     mfix = MfixGui(qapp)
 

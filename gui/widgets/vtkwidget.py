@@ -8,7 +8,7 @@ from collections import OrderedDict
 import numpy as np
 
 # Qt imports
-from qtpy import QtCore, QtGui
+from qtpy import QtCore, QtGui, QtWidgets
 
 # VTK imports
 import vtk
@@ -111,11 +111,11 @@ class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
         print('pressed')
 
 
-class VtkWidget(QtGui.QWidget):
+class VtkWidget(QtWidgets.QWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, project, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
 
         self.project = project
 
@@ -191,11 +191,11 @@ class VtkWidget(QtGui.QWidget):
                 self.color_dict[color].darker()
 
         # --- layout ---
-        self.grid_layout = QtGui.QGridLayout(self)
+        self.grid_layout = QtWidgets.QGridLayout(self)
         self.grid_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.button_bar = QtGui.QWidget(self)
-        self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
+        self.button_bar = QtWidgets.QWidget(self)
+        self.button_bar_layout = QtWidgets.QHBoxLayout(self.button_bar)
         self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
         self.button_bar.setLayout(self.button_bar_layout)
         self.button_bar.setGeometry(QtCore.QRect(0, 0, 300, 300))
@@ -288,17 +288,17 @@ class VtkWidget(QtGui.QWidget):
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
 
         # --- geometry button ---
-        self.add_geometry_menu = QtGui.QMenu(self)
+        self.add_geometry_menu = QtWidgets.QMenu(self)
         self.ui.geometry.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
 
-        action = QtGui.QAction('STL File',  self.add_geometry_menu)
+        action = QtWidgets.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
         self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
 
         for geo in self.primitivedict.keys():
-            action = QtGui.QAction(geo, self.add_geometry_menu)
+            action = QtWidgets.QAction(geo, self.add_geometry_menu)
             action.triggered.connect(
                 make_callback(self.add_primitive, geo))
             self.add_geometry_menu.addAction(action)
@@ -306,18 +306,18 @@ class VtkWidget(QtGui.QWidget):
         self.add_geometry_menu.addSeparator()
 
         for geo in self.parametricdict.keys():
-            action = QtGui.QAction(geo.replace('_', ' '),
+            action = QtWidgets.QAction(geo.replace('_', ' '),
                                    self.add_geometry_menu)
             action.triggered.connect(
                 make_callback(self.add_parametric, geo))
             self.add_geometry_menu.addAction(action)
 
         # --- filter button ---
-        self.add_filter_menu = QtGui.QMenu(self)
+        self.add_filter_menu = QtWidgets.QMenu(self)
         self.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
         for geo in self.filterdict.keys():
-            action = QtGui.QAction(geo.replace('_', ' '),
+            action = QtWidgets.QAction(geo.replace('_', ' '),
                                    self.add_filter_menu)
             action.triggered.connect(
                 make_callback(self.add_filter, geo))
@@ -336,10 +336,10 @@ class VtkWidget(QtGui.QWidget):
 
         # connect parameter widgets
         for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
-            if isinstance(widget, QtGui.QLineEdit):
+            if isinstance(widget, QtWidgets.QLineEdit):
                 widget.editingFinished.connect(
                     make_callback(self.parameter_edited, widget))
-            elif isinstance(widget, QtGui.QCheckBox):
+            elif isinstance(widget, QtWidgets.QCheckBox):
                 widget.stateChanged.connect(
                     make_callback(self.parameter_edited, widget))
 
@@ -362,46 +362,46 @@ class VtkWidget(QtGui.QWidget):
 
     def __add_tool_buttons(self):
 
-        self.toolbutton_reset = QtGui.QToolButton()
+        self.toolbutton_reset = QtWidgets.QToolButton()
         self.toolbutton_reset.pressed.connect(self.reset_view)
         self.toolbutton_reset.setIcon(get_icon('overscan.png'))
 
-        self.toolbutton_perspective = QtGui.QToolButton()
+        self.toolbutton_perspective = QtWidgets.QToolButton()
         self.toolbutton_perspective.pressed.connect(self.perspective)
         self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
 
-        self.toolbutton_view_xy = QtGui.QToolButton()
+        self.toolbutton_view_xy = QtWidgets.QToolButton()
         self.toolbutton_view_xy.pressed.connect(lambda: self.set_view('xy'))
         self.toolbutton_view_xy.setIcon(get_icon('-z.png'))
 
-        self.toolbutton_view_yz = QtGui.QToolButton()
+        self.toolbutton_view_yz = QtWidgets.QToolButton()
         self.toolbutton_view_yz.pressed.connect(lambda: self.set_view('yz'))
         self.toolbutton_view_yz.setIcon(get_icon('-x.png'))
 
-        self.toolbutton_view_xz = QtGui.QToolButton()
+        self.toolbutton_view_xz = QtWidgets.QToolButton()
         self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
         self.toolbutton_view_xz.setIcon(get_icon('-y.png'))
 
-        self.toolbutton_screenshot = QtGui.QToolButton()
+        self.toolbutton_screenshot = QtWidgets.QToolButton()
         self.toolbutton_screenshot.pressed.connect(self.screenshot)
         self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
 
-        self.toolbutton_visible = QtGui.QToolButton()
+        self.toolbutton_visible = QtWidgets.QToolButton()
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
-        self.visible_menu = QtGui.QMenu(self)
+        self.visible_menu = QtWidgets.QMenu(self)
         self.toolbutton_visible.setMenu(self.visible_menu)
-        self.toolbutton_visible.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
 
         # --- visual representation menu ---
-        layout = QtGui.QGridLayout(self.visible_menu)
+        layout = QtWidgets.QGridLayout(self.visible_menu)
         layout.setContentsMargins(5, 5, 5, 5)
         for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
                                  'Regions', 'Initial Conditions',
                                  'Boundary Conditions', 'Point Sources']):
 
             # tool button
-            toolbutton = QtGui.QToolButton()
+            toolbutton = QtWidgets.QToolButton()
             toolbutton.pressed.connect(make_callback(self.change_visibility,
                                                      geo.lower(), toolbutton))
             toolbutton.setCheckable(True)
@@ -411,7 +411,7 @@ class VtkWidget(QtGui.QWidget):
             layout.addWidget(toolbutton, i, 0)
 
             # style
-            combobox = QtGui.QComboBox()
+            combobox = QtWidgets.QComboBox()
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
             combobox.currentIndexChanged.connect(
                 make_callback(self.change_representation,
@@ -419,7 +419,7 @@ class VtkWidget(QtGui.QWidget):
             layout.addWidget(combobox, i, 1)
 
             # color
-            toolbutton = QtGui.QToolButton()
+            toolbutton = QtWidgets.QToolButton()
             toolbutton.pressed.connect(make_callback(self.change_color,
                                                      geo.lower(), toolbutton))
             toolbutton.setAutoRaise(True)
@@ -430,7 +430,7 @@ class VtkWidget(QtGui.QWidget):
             layout.addWidget(toolbutton, i, 2)
 
             # opacity
-            slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+            slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
             slider.valueChanged.connect(make_callback(self.change_opacity,
                                                       geo.lower(),
                                                       slider
@@ -441,7 +441,7 @@ class VtkWidget(QtGui.QWidget):
             layout.addWidget(slider, i, 3)
 
             # label
-            label = QtGui.QLabel(geo)
+            label = QtWidgets.QLabel(geo)
             layout.addWidget(label, i, 4)
 
         for btn in [self.toolbutton_reset,
@@ -516,9 +516,9 @@ class VtkWidget(QtGui.QWidget):
                     if key in name:
                         break
 
-                if isinstance(child, QtGui.QLineEdit):
+                if isinstance(child, QtWidgets.QLineEdit):
                     child.setText(str(value))
-                elif isinstance(child, QtGui.QCheckBox):
+                elif isinstance(child, QtWidgets.QCheckBox):
                     child.setChecked(value)
 
             self.ui.geometry.groupBoxGeometryParameters.setTitle(text)
@@ -557,7 +557,7 @@ class VtkWidget(QtGui.QWidget):
         Open browse dialog and load selected stl file
         """
 
-        filename = str(QtGui.QFileDialog.getOpenFileName(
+        filename = str(QtWidgets.QFileDialog.getOpenFileName(
             self, 'Select an STL File',
             self.parent.get_project_dir(),
             'STL File (*.stl)',))
@@ -620,7 +620,7 @@ class VtkWidget(QtGui.QWidget):
                 }
 
             # Add to tree
-            item = QtGui.QTreeWidgetItem([name])
+            item = QtWidgets.QTreeWidgetItem([name])
             item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
             item.setCheckState(0, QtCore.Qt.Checked)
             self.geometrytree.addTopLevelItem(item)
@@ -644,14 +644,14 @@ class VtkWidget(QtGui.QWidget):
                     break
 
             # if widget is a lineedit
-            if isinstance(widget, QtGui.QLineEdit):
+            if isinstance(widget, QtWidgets.QLineEdit):
                 string = str(widget.text())
                 if any([s in parameter for s in ['divisions', 'resolution',
                                                  'nhills']]):
                     value = int(string)
                 else:
                     value = float(string)
-            elif isinstance(widget, QtGui.QCheckBox):
+            elif isinstance(widget, QtWidgets.QCheckBox):
                 value = widget.isChecked()
 
             if value is not None:
@@ -840,7 +840,7 @@ class VtkWidget(QtGui.QWidget):
         self.geometrydict[name]['source'] = source
 
         # Add to tree
-        item = QtGui.QTreeWidgetItem([name])
+        item = QtWidgets.QTreeWidgetItem([name])
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
@@ -1000,7 +1000,7 @@ class VtkWidget(QtGui.QWidget):
         self.geometrydict[name]['source'] = source
 
         # Add to tree
-        item = QtGui.QTreeWidgetItem([name])
+        item = QtWidgets.QTreeWidgetItem([name])
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
@@ -1071,7 +1071,7 @@ class VtkWidget(QtGui.QWidget):
             self.geometrydict[boolname]['actor'] = actor
 
             # Add to tree
-            toplevel = QtGui.QTreeWidgetItem([boolname])
+            toplevel = QtWidgets.QTreeWidgetItem([boolname])
             toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
             toplevel.setCheckState(0, QtCore.Qt.Checked)
 
@@ -1265,7 +1265,7 @@ class VtkWidget(QtGui.QWidget):
             self.geometrydict[name]['mapper'] = mapper
 
             # Add to tree
-            toplevel = QtGui.QTreeWidgetItem([name])
+            toplevel = QtWidgets.QTreeWidgetItem([name])
             toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
             toplevel.setCheckState(0, QtCore.Qt.Checked)
 
@@ -1380,7 +1380,7 @@ class VtkWidget(QtGui.QWidget):
         self.toolbutton_screenshot.setDown(False)
 
         if fname is None:
-            fname = str(QtGui.QFileDialog.getSaveFileName(
+            fname = str(QtWidgets.QFileDialog.getSaveFileName(
                 self.parent,
                 "Save screenshot",
                 self.parent.settings.value('project_dir'),
@@ -1754,7 +1754,7 @@ class VtkWidget(QtGui.QWidget):
 
     def change_color(self, name, button):
 
-        col = QtGui.QColorDialog.getColor()
+        col = QtWidgets.QColorDialog.getColor()
 
         if col.isValid():
 
@@ -1798,5 +1798,5 @@ class VtkWidget(QtGui.QWidget):
         if actors is not None:
             for actor in actors:
                 actor.GetProperty().SetOpacity(value)
-                
+
             self.vtkRenderWindow.Render()

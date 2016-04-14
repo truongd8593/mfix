@@ -7,7 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals
 import re
 
 # local imports
-from qtpy import QtGui, QtCore
+from qtpy import QtWidgets, QtCore
 from tools.mfixproject import KeyWord, Equation
 from tools.general import to_text_string
 
@@ -56,11 +56,11 @@ class CommonBase(QtCore.QObject):
             self.updateValue(self.key, self.defualtValue, args=None)
 
 
-class LineEdit(QtGui.QLineEdit, CommonBase):
+class LineEdit(QtWidgets.QLineEdit, CommonBase):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtGui.QLineEdit.__init__(self, parent)
+        QtWidgets.QLineEdit.__init__(self, parent)
         CommonBase.__init__(self)
 
         self.timer = QtCore.QTimer()
@@ -112,11 +112,11 @@ class LineEdit(QtGui.QLineEdit, CommonBase):
             self.clear()
 
 
-class CheckBox(QtGui.QCheckBox, CommonBase):
+class CheckBox(QtWidgets.QCheckBox, CommonBase):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtGui.QCheckBox.__init__(self, parent)
+        QtWidgets.QCheckBox.__init__(self, parent)
         CommonBase.__init__(self)
         self.released.connect(self.emitUpdatedValue)
 
@@ -134,11 +134,11 @@ class CheckBox(QtGui.QCheckBox, CommonBase):
             self.setChecked(False)
 
 
-class ComboBox(QtGui.QComboBox, CommonBase):
+class ComboBox(QtWidgets.QComboBox, CommonBase):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtGui.QComboBox.__init__(self, parent)
+        QtWidgets.QComboBox.__init__(self, parent)
         CommonBase.__init__(self)
         self.activated.connect(self.emitUpdatedValue)
 
@@ -172,11 +172,11 @@ class ComboBox(QtGui.QComboBox, CommonBase):
                 break
 
 
-class SpinBox(QtGui.QSpinBox, CommonBase):
+class SpinBox(QtWidgets.QSpinBox, CommonBase):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtGui.QDoubleSpinBox.__init__(self, parent)
+        QtWidgets.QDoubleSpinBox.__init__(self, parent)
         CommonBase.__init__(self)
 
         self.valueChanged.connect(self.emitUpdatedValue)
@@ -199,11 +199,11 @@ class SpinBox(QtGui.QSpinBox, CommonBase):
             self.setMinimum(int(_min))
 
 
-class DoubleSpinBox(QtGui.QDoubleSpinBox, CommonBase):
+class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtGui.QDoubleSpinBox.__init__(self, parent)
+        QtWidgets.QDoubleSpinBox.__init__(self, parent)
         CommonBase.__init__(self)
 
         self.valueChanged.connect(self.emitUpdatedValue)
