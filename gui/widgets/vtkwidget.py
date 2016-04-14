@@ -431,13 +431,13 @@ class VtkWidget(QtWidgets.QWidget):
 
             # opacity
             slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+            slider.setRange(0, 100)
+            slider.setValue(100)
+            slider.setFixedWidth(30)
             slider.valueChanged.connect(make_callback(self.change_opacity,
                                                       geo.lower(),
                                                       slider
                                                       ))
-            slider.setRange(0, 100)
-            slider.setValue(100)
-            slider.setFixedWidth(30)
             layout.addWidget(slider, i, 3)
 
             # label
