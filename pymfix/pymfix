@@ -24,6 +24,7 @@ from mfix import main as MAIN
 from mfix import discretelement as DEM
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
+from mfix import read_input as READ_INPUT
 from mfix import step as STEP
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -85,6 +86,8 @@ class Mfix:
             MAIN.add_command_line_argument(arg)
 
         MAIN.initialize()
+        READ_INPUT.get_data()
+        MAIN.initialize_2()
 
         if (DEM.discrete_element and not DEM.des_continuum_coupled):
             if RUN.dem_solids:
