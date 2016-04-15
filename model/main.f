@@ -179,6 +179,10 @@
       USE vtk, only: write_vtk_files
       IMPLICIT NONE
 
+      !$    INTEGER num_threads, threads_specified, omp_id
+      !$    INTEGER omp_get_num_threads
+      !$    INTEGER omp_get_thread_num
+
       ! Temporary storage for DT
       DOUBLE PRECISION :: DT_tmp
       ! Save TIME in input file for RESTART_2
