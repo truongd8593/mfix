@@ -40,10 +40,6 @@ MODULE read_input
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
-<<<<<<< 1782d64de81a0bb387e58b08b743190186856b10
-      print *,"FOUL WASTELAND ", mfix_dat
-=======
->>>>>>> specify alternate mfix.dat filename on the command line with -f
       CALL READ_NAMELIST(0,MFIX_DAT)
 
       RETURN
