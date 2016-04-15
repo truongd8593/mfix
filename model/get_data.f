@@ -26,6 +26,7 @@ MODULE read_input
       USE funits
       USE iterate, only: max_nit
       USE leqsol
+      USE main, only: mfix_dat
       USE mfix_pic
       USE parallel
       USE param
@@ -39,7 +40,7 @@ MODULE read_input
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
-      CALL READ_NAMELIST(0,"mfix.dat")
+      CALL READ_NAMELIST(0,MFIX_DAT)
 
       RETURN
 
