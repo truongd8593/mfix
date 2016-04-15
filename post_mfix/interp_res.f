@@ -21,6 +21,7 @@
       USE geometry
       USE gridmap
       USE indices
+      USE main
       USE param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
       USE param1
       USE physprop

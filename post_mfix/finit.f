@@ -20,6 +20,7 @@
       USE gridmap
       USE indices
       USE machine
+      USE main
       USE parallel_mpi
       USE param
       USE param1
