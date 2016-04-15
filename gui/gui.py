@@ -301,8 +301,8 @@ class MfixGui(QtWidgets.QMainWindow):
     def __setup_workflow_widget(self):
 
         self.nodeChart = NodeWidget(showtoolbar=False)
-        # Build defualt node library
-        self.nodeChart.nodeLibrary.buildDefualtLibrary()
+        # Build default node library
+        self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
 
     def get_project_dir(self):
