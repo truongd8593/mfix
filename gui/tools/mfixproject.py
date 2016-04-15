@@ -596,7 +596,7 @@ class Project(object):
         self.regX_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
         self.regX_float_exp = re.compile("^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$")
         self.regX_float = re.compile("^[+-]?[0-9]+\.([0-9]+)?$")
-        self.regX_expression = re.compile('@\(([0-9.eEpiPI+-/*\(\))]+)\)')
+        self.regX_expression = re.compile('@\(([ 0-9.eEpiPI+-/*\(\))]+)\)')
         #self.regX_stringShortHand = re.compile("""(\d+\*["'].+?["'])""")
         self.regX_stringShortHand = re.compile("""([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))""")
 
@@ -696,6 +696,11 @@ class Project(object):
 
                 # values
                 valString = match[2].strip()
+                
+                # remove spaces from equations: @( 2*pi)
+                exps = self.regX_expression.findall(valString)
+                for exp in exps:
+                    valString = valString.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
                 # Replace short hand string
@@ -1243,3 +1248,8 @@ class Project(object):
         with open(fname, 'w') as dat_file:
             for line in self.convertToString():
                 dat_file.write(line)
+
+
+if __name__ == '__main__':
+    proj = Project()
+    print(list(proj.parseKeywordLine('key = @( 2* 10)')))

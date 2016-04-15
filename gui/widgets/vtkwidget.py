@@ -557,10 +557,15 @@ class VtkWidget(QtWidgets.QWidget):
         Open browse dialog and load selected stl file
         """
 
-        filename = str(QtWidgets.QFileDialog.getOpenFileName(
+        filename = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Select an STL File',
             self.parent.get_project_dir(),
-            'STL File (*.stl)',))
+            'STL File (*.stl)',)
+
+        if isinstance(filename, tuple) or isinstance(filename, list):
+            filename = filename[0]
+
+        filename = str(filename)
 
         if filename:
             name = os.path.basename(filename).lower()
@@ -1391,9 +1396,15 @@ class VtkWidget(QtWidgets.QWidget):
                            ]),
                 ))
 
+        if not fname:
+            return
+
         # screenshot code:
         window_image = vtk.vtkWindowToImageFilter()
         window_image.SetInput(self.vtkRenderWindow)
+        window_image.SetMagnification(3)
+        window_image.SetInputBufferTypeToRGBA()
+#        window_image.ReadFrontBufferOff()
         window_image.Update()
 
         if fname.endswith('.png'):
@@ -1456,9 +1467,11 @@ class VtkWidget(QtWidgets.QWidget):
 
         extents = []
         for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            if key in self.project:
+            try:
                 extents.append(float(self.project[key]))
-            else:
+            except TypeError:
+                extents.append(0.0)
+            except KeyError:
                 extents.append(0.0)
 
         cells = []
