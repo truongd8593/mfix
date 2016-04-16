@@ -3,16 +3,21 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
+import glob
 import logging
 import os
 import shutil
 import signal
-import sys
 import subprocess
+import sys
 import time
-import urllib2
-import glob
 
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 # import qt
 from qtpy import QtCore, QtWidgets
@@ -789,7 +794,7 @@ class UpdateResidualsThread(QThread):
         while True:
             self.job_done = False
             try:
-                self.residuals = urllib2.urlopen('http://localhost:5000/residuals').read()
+                self.residuals = urlopen('http://localhost:5000/residuals').read()
             except Exception:
                 log = logging.getLogger(__name__)
                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")
