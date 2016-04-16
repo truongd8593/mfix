@@ -642,7 +642,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.writeDatFile(os.path.join(project_dir, 'mfix.dat'))
+        mfix_dat = '{}.mfx'.format(self.project.run_name).replace("'","").replace('"','')
+        self.project.writeDatFile(os.path.join(project_dir, mfix_dat))
 
     def unsaved(self):
         project_dir = self.settings.value('project_dir')
