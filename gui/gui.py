@@ -606,13 +606,13 @@ class MfixGui(QtWidgets.QMainWindow):
             total = nodesi*nodesj*nodesk
             pymfix_exe = 'mpirun -np {} ./pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
 
-        build_and_run_cmd = '{} && {}'.format(self.make_build_cmd(),
-                                              pymfix_exe)
+        build_and_run_cmd = '{} && {} -f {}'.format(self.make_build_cmd(),
+                                                    pymfix_exe, self.get_mfix_dat())
         self.run_thread.start_command(build_and_run_cmd,
                                       self.get_project_dir())
 
     def update_residuals(self):
-        self.ui.residuals.setText(self.updater.residuals)
+        self.ui.residuals.setText(str(self.updater.residuals))
         if self.updater.job_done:
             self.ui.mfix_browser.setHTML('')
 
@@ -631,6 +631,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.change_pane('interact')
 
+
+    def get_mfix_dat(self):
+        mfix_dat = '{}.mfx'.format(self.project.run_name).replace("'","").replace('"','')
+        return os.path.join(self.get_project_dir(), mfix_dat)
+
     # --- open/save/new ---
     def save_project(self):
         # make sure the button is not down
@@ -642,8 +647,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.setWindowTitle('MFIX - %s' % project_dir)
-        mfix_dat = '{}.mfx'.format(self.project.run_name).replace("'","").replace('"','')
-        self.project.writeDatFile(os.path.join(project_dir, mfix_dat))
+        self.project.writeDatFile(self.get_mfix_dat())
 
     def unsaved(self):
         project_dir = self.settings.value('project_dir')
@@ -757,7 +761,7 @@ class MfixThread(QThread):
                                      shell=True, cwd=self.cwd)
             lines_iterator = iter(popen.stdout.readline, b"")
             for line in lines_iterator:
-                self.line_printed.emit(line)
+                self.line_printed.emit(str(line))
 
 
 class RunThread(MfixThread):
