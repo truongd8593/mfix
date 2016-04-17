@@ -581,7 +581,10 @@ class MfixGui(QtWidgets.QMainWindow):
             os.path.dirname(os.path.realpath(__file__)))
         dmp = '--dmp' if self.ui.run.dmp_button.isChecked() else ''
         smp = '--smp' if self.ui.run.smp_button.isChecked() else ''
-        return os.path.join(mfix_home, 'configure_mfix --python %s %s && make -j pymfix' % (smp, dmp))
+        f2py = ''
+        if 'F2PY' in os.environ:
+            f2py = 'F2PY={}'.format(os.environ['F2PY'])
+        return os.path.join(mfix_home, 'configure_mfix --enable-python %s %s %s && make -j pymfix' % (f2py, smp, dmp))
 
     def build_mfix(self):
         """ build mfix """
@@ -599,12 +602,13 @@ class MfixGui(QtWidgets.QMainWindow):
         """ build mfix """
         if not self.ui.run.dmp_button.isChecked():
             pymfix_exe = os.path.join(self.get_project_dir(), 'pymfix')
+            pymfix_exe = '{} {}'.format(sys.executable, pymfix_exe)
         else:
             nodesi = int(self.ui.nodes_i.text())
             nodesj = int(self.ui.nodes_j.text())
             nodesk = int(self.ui.nodes_k.text())
             total = nodesi*nodesj*nodesk
-            pymfix_exe = 'mpirun -np {} ./pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
+            pymfix_exe = 'mpirun -np {} {} pymfix NODESI={} NODESJ={} NODESK={}'.format(total, sys.executable, nodesi, nodesj, nodesk)
 
         build_and_run_cmd = '{} && {} -f {}'.format(self.make_build_cmd(),
                                                     pymfix_exe, self.get_mfix_dat())
