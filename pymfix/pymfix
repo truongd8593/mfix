@@ -483,16 +483,18 @@ def get_residuals():
 def parse_command_line_arguments():
     "handle command line arguments"
     port = 5000 # Flask default
-    usage_string = "Usage: pymfix [-h, --help] [ -p, --port <port> ] \
-                    [ -s, --start ] [<keyword>=<keywordvalue> ...]"
+    usage_string = "Usage: pymfix [-f, --file <mfix.dat>] [-h, --help] [ -p, --port <port> ] [ -s, --start ] [<keyword>=<keywordvalue> ...]"
     try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:], "hsp:", ["port=", ])
+        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hsp:", ["port=", ])
     except getopt.GetoptError:
         print(usage_string)
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt in ("-h", "--help"):
+        if opt in ("-f", "--file"):
+            # Fortran strings need to be padded with blanks (ljust)
+            MAIN.mfix_dat = arg.ljust(len(MAIN.mfix_dat))
+        elif opt in ("-h", "--help"):
             print(usage_string)
             sys.exit(0)
         elif opt in ("-s", "--start"):
@@ -507,9 +509,9 @@ def parse_command_line_arguments():
                 print("Invalid port: %d" % port)
                 sys.exit(1)
 
-    if len(keyword_args) > 100:
+    if len(keyword_args) > len(MAIN.cmd_line_args):
         print("Too many command line arguments: %d" % len(keyword_args))
-        print("Only 100 or fewer command line arguments are supported.")
+        print("Only %d or fewer command line arguments are supported." % len(MAIN.cmd_line_args))
         sys.exit(1)
 
     return port, keyword_args

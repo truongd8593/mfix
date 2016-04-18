@@ -3,16 +3,21 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
+import glob
 import logging
 import os
 import shutil
 import signal
-import sys
 import subprocess
+import sys
 import time
-import urllib2
-import glob
 
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 # import qt
 from qtpy import QtCore, QtWidgets
@@ -576,7 +581,10 @@ class MfixGui(QtWidgets.QMainWindow):
             os.path.dirname(os.path.realpath(__file__)))
         dmp = '--dmp' if self.ui.run.dmp_button.isChecked() else ''
         smp = '--smp' if self.ui.run.smp_button.isChecked() else ''
-        return os.path.join(mfix_home, 'configure_mfix --python %s %s && make -j pymfix' % (smp, dmp))
+        f2py = ''
+        if 'F2PY' in os.environ:
+            f2py = 'F2PY={}'.format(os.environ['F2PY'])
+        return os.path.join(mfix_home, 'configure_mfix --enable-python %s %s %s && make -j pymfix' % (f2py, smp, dmp))
 
     def build_mfix(self):
         """ build mfix """
@@ -594,20 +602,21 @@ class MfixGui(QtWidgets.QMainWindow):
         """ build mfix """
         if not self.ui.run.dmp_button.isChecked():
             pymfix_exe = os.path.join(self.get_project_dir(), 'pymfix')
+            pymfix_exe = '{} {}'.format(sys.executable, pymfix_exe)
         else:
             nodesi = int(self.ui.nodes_i.text())
             nodesj = int(self.ui.nodes_j.text())
             nodesk = int(self.ui.nodes_k.text())
             total = nodesi*nodesj*nodesk
-            pymfix_exe = 'mpirun -np {} ./pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
+            pymfix_exe = 'mpirun -np {} {} pymfix NODESI={} NODESJ={} NODESK={}'.format(total, sys.executable, nodesi, nodesj, nodesk)
 
-        build_and_run_cmd = '{} && {}'.format(self.make_build_cmd(),
-                                              pymfix_exe)
+        build_and_run_cmd = '{} && {} -f {}'.format(self.make_build_cmd(),
+                                                    pymfix_exe, self.get_mfix_dat())
         self.run_thread.start_command(build_and_run_cmd,
                                       self.get_project_dir())
 
     def update_residuals(self):
-        self.ui.residuals.setText(self.updater.residuals)
+        self.ui.residuals.setText(str(self.updater.residuals))
         if self.updater.job_done:
             self.ui.mfix_browser.setHTML('')
 
@@ -626,6 +635,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.change_pane('interact')
 
+
+    def get_mfix_dat(self):
+        mfix_dat = '{}.mfx'.format(self.project.run_name).replace("'","").replace('"','')
+        return os.path.join(self.get_project_dir(), mfix_dat)
+
     # --- open/save/new ---
     def save_project(self):
         # make sure the button is not down
@@ -637,7 +651,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.writeDatFile(os.path.join(project_dir, 'mfix.dat'))
+        self.project.writeDatFile(self.get_mfix_dat())
 
     def unsaved(self):
         project_dir = self.settings.value('project_dir')
@@ -751,7 +765,7 @@ class MfixThread(QThread):
                                      shell=True, cwd=self.cwd)
             lines_iterator = iter(popen.stdout.readline, b"")
             for line in lines_iterator:
-                self.line_printed.emit(line)
+                self.line_printed.emit(str(line))
 
 
 class RunThread(MfixThread):
@@ -789,7 +803,7 @@ class UpdateResidualsThread(QThread):
         while True:
             self.job_done = False
             try:
-                self.residuals = urllib2.urlopen('http://localhost:5000/residuals').read()
+                self.residuals = urlopen('http://localhost:5000/residuals').read()
             except Exception:
                 log = logging.getLogger(__name__)
                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")

@@ -67,7 +67,7 @@ AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
 
 if test "$python" = "true"; then
 
-AC_CHECK_PROG(F2PY,f2py,true)
+AC_CHECK_PROG(F2PY,f2py,f2py)
 
 if test x"$F2PY" = x; then
    AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])

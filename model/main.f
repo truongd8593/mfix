@@ -1204,9 +1204,10 @@
 
       CMD_LINE_ARGS_COUNT = CMD_LINE_ARGS_COUNT + 1
 
-      if (CMD_LINE_ARGS_COUNT > 100) THEN
-         print *,"TOO MANY COMMAND LINE ARGUMENTS"
-         stop
+      IF (CMD_LINE_ARGS_COUNT > SIZE(CMD_LINE_ARGS)) THEN
+         print *, "Too many command line arguments: ", COMMAND_ARGUMENT_COUNT()
+         print *, "Only ",SIZE( CMD_LINE_ARGS )," or fewer command line arguments are supported."
+         STOP
       ENDIF
 
       CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
