@@ -20,7 +20,7 @@ except ImportError:
     from urllib2 import urlopen
 
 # import qt
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
 
 # TODO: add pyside?
@@ -203,15 +203,20 @@ class MfixGui(QtWidgets.QMainWindow):
         def make_handler(qtextbrowser):
             " make a closure to read stdout from external process "
 
-            def handle_line(line):
+            def handle_line(line, color=None):
                 " closure to read stdout from external process "
 
                 log = logging.getLogger(__name__)
                 log.debug(str(line).strip())
                 cursor = qtextbrowser.textCursor()
                 cursor.movePosition(cursor.End)
+                char_format = QtGui.QTextCharFormat()
+                if color:
+                    char_format.setForeground(QtGui.QColor(color))
+                cursor.setCharFormat(char_format)
                 cursor.insertText(line)
-                qtextbrowser.ensureCursorVisible()
+                scrollbar = qtextbrowser.verticalScrollBar()
+                scrollbar.setValue(scrollbar.maximum())
 
             return handle_line
 
@@ -744,7 +749,7 @@ class MfixGui(QtWidgets.QMainWindow):
 # --- Threads ---
 class MfixThread(QThread):
 
-    line_printed = pyqtSignal(str)
+    line_printed = pyqtSignal(str, str)
 
     def __init__(self, parent):
         super(MfixThread, self).__init__(parent)
@@ -762,23 +767,25 @@ class MfixThread(QThread):
         if self.cmd:
             popen = subprocess.Popen(self.cmd,
                                      stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
                                      shell=True, cwd=self.cwd)
             lines_iterator = iter(popen.stdout.readline, b"")
             for line in lines_iterator:
-                self.line_printed.emit(str(line))
+                self.line_printed.emit(str(line), None)
+            lines_iterator = iter(popen.stderr.readline, b"")
+            for line in lines_iterator:
+                self.line_printed.emit(str(line), "red")
+
 
 
 class RunThread(MfixThread):
-    line_printed = pyqtSignal(str)
-
+    line_printed = pyqtSignal(str, str)
 
 class BuildThread(MfixThread):
-    line_printed = pyqtSignal(str)
-
+    line_printed = pyqtSignal(str, str)
 
 class ClearThread(MfixThread):
-    line_printed = pyqtSignal(str)
-
+    line_printed = pyqtSignal(str, str)
 
 class MonitorOutputFilesThread(QThread):
 
