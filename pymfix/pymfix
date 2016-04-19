@@ -223,6 +223,8 @@ class Mfix:
     def step(cls, args):
         " take one or more timesteps "
         stepcount = int(args.get('stepcount', None)[0])
+        if RUN.tstop <= RUN.time:
+            RUN.tstop = RUN.tstop + stepcount*RUN.dt
         for _ in range(stepcount):
             cls.do_step()
         return 200, 'DOING %s TIMESTEP(S)\n' % stepcount
