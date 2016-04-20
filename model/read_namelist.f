@@ -216,7 +216,8 @@
 
       LOGICAL, INTENT(OUT) ::ERROR
 
-
+!Temporary variable for checking keywords
+       CHARACTER(LEN=512) :: LINE_STRING_TMP
 
 ! External namelist files:
 !---------------------------------------------------------------------//
@@ -243,17 +244,15 @@
 
       ERROR = .FALSE.
 
-! Make upper case all except species names
-      if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
-         index(LINE_STRING,'species_name') == 0 .AND. &
-         index(LINE_STRING,'Species_Name') == 0 .AND. &
-         index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
-         index(LINE_STRING,'Species_g') == 0 .AND.    &
-         index(LINE_STRING,'species_g') == 0 .AND.    &
-         index(LINE_STRING,'SPECIES_s') == 0 .AND.    &
-         index(LINE_STRING,'Species_s') == 0 .AND.    &
-         index(LINE_STRING,'species_s') == 0)         &
-         CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
+! Make upper case every line except species names
+      LINE_STRING_TMP = LINE_STRING
+      CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
+
+      IF(INDEX(LINE_STRING,'SPECIES_NAME') /= 0 .OR. &
+         INDEX(LINE_STRING,'SPECIES_G') /= 0 .OR.    &
+         INDEX(LINE_STRING,'SPECIES_S') /= 0) THEN
+         LINE_STRING = LINE_STRING_TMP
+      ENDIF
 
       CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
       CALL REMOVE_PAR_BLANKS(LINE_STRING)

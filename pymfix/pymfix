@@ -82,6 +82,9 @@ class Mfix:
     @classmethod
     def run_mfix(cls, keyword_args=None):
         "Main thread for running MFIX itself"
+
+        RUN.interactive = True
+
         for arg in keyword_args:
             MAIN.add_command_line_argument(arg)
 
