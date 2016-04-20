@@ -157,13 +157,17 @@ MODULE output_man
 !                                                                      !
 !----------------------------------------------------------------------!
       LOGICAL FUNCTION CHECK_TIME(lTIME)
+      USE RUN, ONLY: INTERACTIVE
+
+      IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
       IF(STEADY_STATE) THEN
          CHECK_TIME = FINISHED
       ELSE
-         CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
+         CHECK_TIME = (TIME+0.1d0*DT>=TSTOP .AND. .NOT.INTERACTIVE  ) &
+                  .OR. TIME+0.1d0*DT>=lTIME
       ENDIF
 
       RETURN

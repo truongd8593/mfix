@@ -264,6 +264,9 @@
       ! CPU time unit.
       CHARACTER(LEN=4) :: TUNIT
 
+! only set to TRUE when running in pymfix
+      LOGICAL :: INTERACTIVE = .FALSE.
+
       CONTAINS
 
          !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
