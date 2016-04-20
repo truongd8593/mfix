@@ -201,10 +201,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.clear_thread = ClearThread(self)
 
         def make_handler(qtextbrowser):
-            " make a closure to read stdout from external process "
+            " make a closure to read output from external process "
 
             def handle_line(line, color=None):
-                " closure to read stdout from external process "
+                " closure to read output from external process "
 
                 log = logging.getLogger(__name__)
                 log.debug(str(line).strip())
@@ -252,7 +252,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def __setup_simple_keyword_widgets(self):
         """
         Look for and connect simple keyword widgets to the project manager.
-        Keyword informtation from the namelist doc strings is added to each
+        Keyword information from the namelist doc strings is added to each
         keyword widget. The widget must be named: *_keyword_<keyword> where
         <keyword> is the actual keyword. For example:
         lineedit_keyword_run_name
@@ -262,7 +262,7 @@ class MfixGui(QtWidgets.QMainWindow):
         for widget in widget_iter(self.ui):
             name_list = str(widget.objectName()).lower().split('_')
 
-            if 'keyword' in name_list:
+            if 'keyword' in name_list: # perf - cgw
                 keyword = '_'.join(name_list[name_list.index('keyword')+1:])
 
                 # set the key attribute to the keyword
@@ -270,25 +270,25 @@ class MfixGui(QtWidgets.QMainWindow):
 
                 # add info from keyword documentation
                 if keyword in self.keyword_doc:
-                    widget.setdtype(self.keyword_doc[keyword]['dtype'])
-
-                    if 'required' in self.keyword_doc[keyword]:
+                    doc = self.keyword_doc[keyword]
+                    widget.setdtype(doc['dtype'])
+                    if 'required' in doc:
                         widget.setValInfo(
-                            req=self.keyword_doc[keyword]['required'] == 'true')
-                    if 'validrange' in self.keyword_doc[keyword]:
-                        if 'max' in self.keyword_doc[keyword]['validrange']:
+                            req=doc['required'] == 'true')
+                    if 'validrange' in doc:
+                        if 'max' in doc['validrange']:
                             widget.setValInfo(
-                                _max = self.keyword_doc[keyword]['validrange']['max'])
-                        if 'min' in self.keyword_doc[keyword]['validrange']:
+                                _max = doc['validrange']['max'])
+                        if 'min' in doc['validrange']:
                             widget.setValInfo(
-                                _min = self.keyword_doc[keyword]['validrange']['min'])
+                                _min = doc['validrange']['min'])
 
-                    if 'initpython' in self.keyword_doc[keyword]:
+                    if 'initpython' in doc:
                         widget.default(
                             self.keyword_doc[keyword]['initpython'])
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
-                            widget.addItems(list(self.keyword_doc[keyword]['valids'].keys()))
+                            widget.addItems(list(doc['valids'].keys()))
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, [keyword])
@@ -934,10 +934,11 @@ if __name__ == '__main__':
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
+    #timer = QTimer()
+    #timer.start(500)  # You may change this if you wish.
+    #timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms. (?)
+
     # exit with Ctrl-C at the terminal
-    timer = QTimer()
-    timer.start(500)  # You may change this if you wish.
-    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     qapp.exec_()
