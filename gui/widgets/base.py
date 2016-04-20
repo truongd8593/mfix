@@ -84,7 +84,7 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
             if self.regX_mathOp.findall(str(self.text())):
                 return Equation(self.text())
             else:
-                return float(str(self.text()))
+                return float(str(self.text())) # TODO: validate input - cgw
         elif self.dtype == int:
             return int(float(str(self.text())))
 

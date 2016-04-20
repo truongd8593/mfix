@@ -4,7 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals
 import os
 from collections import OrderedDict
 
-# 3rd pary imports
+# 3rd party imports
 import numpy as np
 
 # Qt imports
