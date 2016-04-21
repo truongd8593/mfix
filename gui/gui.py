@@ -177,8 +177,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- Connect Signals to Slots---
         # open/save/new project
-        self.ui.toolbutton_open.pressed.connect(self.open_project)
-        self.ui.toolbutton_save.pressed.connect(self.save_project)
+        self.ui.toolbutton_open.clicked.connect(self.open_project)
+        self.ui.toolbutton_save.clicked.connect(self.save_project)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -189,11 +189,10 @@ class MfixGui(QtWidgets.QMainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.run.build_mfix_button.pressed.connect(self.build_mfix)
-        self.ui.run.run_mfix_button.pressed.connect(self.run_mfix)
-        self.ui.run.connect_mfix_button.pressed.connect(self.connect_mfix)
-        self.ui.run.clear_output_button.pressed.connect(self.clear_output)
-
+        self.ui.run.build_mfix_button.clicked.connect(self.build_mfix)
+        self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
+        self.ui.run.connect_mfix_button.clicked.connect(self.connect_mfix)
+        self.ui.run.clear_output_button.clicked.connect(self.clear_output)
 
         # --- Threads ---
         self.build_thread = BuildThread(self)
@@ -719,9 +718,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
     # --- open/save/new ---
     def save_project(self):
-        # make sure the button is not down
-        self.ui.toolbutton_save.setDown(False)
-
         project_dir = self.settings.value('project_dir')
 
         # export geometry
@@ -761,9 +757,6 @@ class MfixGui(QtWidgets.QMainWindow):
         """
         Open MFiX Project
         """
-        # make sure the button is not left down
-        self.ui.toolbutton_open.setDown(False)
-
         if not project_dir:
             project_dir = str(
                  QtWidgets.QFileDialog.getExistingDirectory(
