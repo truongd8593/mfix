@@ -21,7 +21,7 @@ except ImportError:
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui
-from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
+from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings, Qt
 
 # TODO: add pyside?
 try:
@@ -45,7 +45,7 @@ except ImportError:
     NodeWidget = None
 
 logging.basicConfig(stream=sys.stdout,
-                    filemode='w', level=logging.DEBUG,
+                    filemode='w', level=logging.INFO,
                     format='%(name)s - %(levelname)s - %(message)s')
 
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
@@ -227,8 +227,9 @@ class MfixGui(QtWidgets.QMainWindow):
         self.clear_thread.line_printed.connect(
             make_handler(self.ui.command_output))
 
-        # --- setup simple widgets ---
+        # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
+        self.__setup_other_widgets()
 
         # --- vtk setup ---
         self.__setup_vtk_widget()
@@ -248,6 +249,43 @@ class MfixGui(QtWidgets.QMainWindow):
         # print number of keywords
         self.print_internal('Registered {} keywords'.format(
             len(self.project.registered_keywords)))
+
+
+    def set_solver(self, index):
+        """ handler for "Solver" combobox in Model Setup """
+        # NB.  This depends on strings matching items in the ui.
+
+        solver_name = self.ui.model_setup.combobox_solver.currentText()
+        self.print_internal("set solver to %d: %s" % (index, solver_name))
+
+        item_names =  ("Solids", "Continuum Solids Model",
+                       "Discrete Element Model", "Particle in Cell Model")
+
+        on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        off = Qt.ItemFlags(0)
+
+        states = {"Single phase": (on, off, off, off), #  ??? cgw
+                  "MFIX-TFM": (on, on, off, off),
+                  "MFIX-DEM": (on, off, on, off),
+                  "MFIX-PIC": (on, off, off, on),
+                  "MFIX-Hybrid": (on, on, on, off)}
+
+        tree = self.ui.treewidget_model_navigation
+        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        items = [tree.findItems(item_name, flags, 0)[0]
+                 for item_name in item_names]
+
+        for (item, state) in zip(items, states[solver_name]):
+            item.setFlags(state)
+
+    def __setup_other_widgets(self):
+        """ setup widgets which are not tied to a simple keyword
+        """
+        # move to another file! - cgw
+
+        combobox_solver = self.ui.model_setup.combobox_solver
+        combobox_solver.currentIndexChanged.connect(self.set_solver)
+        self.set_solver(0) # Default
 
     def __setup_simple_keyword_widgets(self):
         """
@@ -348,7 +386,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         clist = self.ui.treewidget_model_navigation.findItems(
                     name,
-                    QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive,
+                    Qt.MatchContains | Qt.MatchRecursive,
                     0)
 
         for item in clist:
@@ -555,7 +593,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def print_internal(self, text):
         if not text.endswith('\n'):
             text += '\n'
-        LOG.debug(str(text).strip())
+        LOG.info(str(text).strip())
         cursor = self.ui.command_output.textCursor()
         cursor.movePosition(cursor.End)
         cursor.insertText(text)
