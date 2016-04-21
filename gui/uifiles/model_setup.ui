@@ -89,7 +89,7 @@
     </spacer>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="checkbox_disable_fluid_solver">
      <property name="text">
       <string>Disable Fluid Solver (Pure Granular Flow)</string>
      </property>

@@ -250,6 +250,14 @@ class MfixGui(QtWidgets.QMainWindow):
         self.print_internal('Registered {} keywords'.format(
             len(self.project.registered_keywords)))
 
+    def set_navigation_item_state(self, item_name, state):
+        on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        off = Qt.ItemFlags(0)
+        tree = self.ui.treewidget_model_navigation
+        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        items = tree.findItems(item_name, flags, 0)
+        assert len(items) == 1, "Multiple menu items matching %s"%item_name
+        items[0].setFlags(on if state else off)
 
     def set_solver(self, index):
         """ handler for "Solver" combobox in Model Setup """
@@ -261,31 +269,29 @@ class MfixGui(QtWidgets.QMainWindow):
         item_names =  ("Solids", "Continuum Solids Model",
                        "Discrete Element Model", "Particle in Cell Model")
 
-        on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        off = Qt.ItemFlags(0)
+        states = {"Single phase": (True, False, False, False), #  ??? cgw
+                  "MFIX-TFM": (True, True, False, False),
+                  "MFIX-DEM": (True, False, True, False),
+                  "MFIX-PIC": (True, False, False, True),
+                  "MFIX-Hybrid": (True, True, True, False)}
 
-        states = {"Single phase": (on, off, off, off), #  ??? cgw
-                  "MFIX-TFM": (on, on, off, off),
-                  "MFIX-DEM": (on, off, on, off),
-                  "MFIX-PIC": (on, off, off, on),
-                  "MFIX-Hybrid": (on, on, on, off)}
+        for item_name, state in zip(item_names, states[solver_name]):
+            self.set_navigation_item_state(item_name, state)
 
-        tree = self.ui.treewidget_model_navigation
-        flags =  Qt.MatchFixedString | Qt.MatchRecursive
-        items = [tree.findItems(item_name, flags, 0)[0]
-                 for item_name in item_names]
-
-        for (item, state) in zip(items, states[solver_name]):
-            item.setFlags(state)
+    def disable_fluid_solver(self, state):
+        self.set_navigation_item_state("Fluid", not state)
 
     def __setup_other_widgets(self):
         """ setup widgets which are not tied to a simple keyword
         """
-        # move to another file! - cgw
-
-        combobox_solver = self.ui.model_setup.combobox_solver
+        # move to another file - cgw
+        model_setup = self.ui.model_setup
+        combobox_solver = model_setup.combobox_solver
         combobox_solver.currentIndexChanged.connect(self.set_solver)
-        self.set_solver(0) # Default
+        self.set_solver(0) # Default - Single Phase - (?)
+
+        checkbox_disable_fluid_solver = model_setup.checkbox_disable_fluid_solver
+        checkbox_disable_fluid_solver.stateChanged.connect(self.disable_fluid_solver)
 
     def __setup_simple_keyword_widgets(self):
         """
