@@ -2829,7 +2829,13 @@ background-color:transparent;
              <widget class="QWidget" name="developer">
               <layout class="QGridLayout" name="gridLayout_22">
                <item row="0" column="0">
-                <widget class="QTextBrowser" name="mfix_dat_source"/>
+                <widget class="QTextBrowser" name="mfix_dat_source">
+                 <property name="font">
+                  <font>
+                   <family>Monospace</family>
+                  </font>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
