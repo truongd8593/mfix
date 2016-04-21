@@ -8,7 +8,7 @@ import re
 
 # local imports
 from qtpy import QtWidgets, QtCore
-from tools.mfixproject import KeyWord, Equation
+from tools.mfixproject import Keyword, Equation
 from tools.general import to_text_string
 
 
@@ -125,7 +125,7 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
         return bool(self.isChecked())
 
     def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, KeyWord):
+        if isinstance(newValue, Keyword):
             newValue = newValue.value
 
         if newValue and isinstance(newValue, bool):
@@ -157,7 +157,7 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
             return str(self.currentText())
 
     def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, KeyWord):
+        if isinstance(newValue, Keyword):
             newValue = newValue.value
 
         self.setCurrentText(newValue)
@@ -187,7 +187,7 @@ class SpinBox(QtWidgets.QSpinBox, CommonBase):
         self.value_updated.emit(self, {self.key: self.value()}, None)
 
     def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, KeyWord):
+        if isinstance(newValue, Keyword):
             newValue = newValue.value
 
         self.setValue(int(newValue))
@@ -214,7 +214,7 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
         self.value_updated.emit(self, {self.key: self.value()}, None)
 
     def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, KeyWord):
+        if isinstance(newValue, Keyword):
             newValue = newValue.value
 
         self.setValue(float(newValue))

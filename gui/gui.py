@@ -33,7 +33,7 @@ except ImportError:
 # local imports
 from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox)
-from tools.mfixproject import Project, KeyWord
+from tools.mfixproject import Project, Keyword
 from tools.general import (make_callback, get_icon,
                            widget_iter, set_script_directory)
 from tools.namelistparser import buildKeywordDoc
@@ -931,7 +931,7 @@ class ProjectManager(Project):
         key = key.lower()
         updatedValue = None
 
-        if isinstance(newValue, KeyWord):
+        if isinstance(newValue, Keyword):
             keyword = newValue
             newValue = keyword.value
         else:

@@ -79,7 +79,7 @@ class Equation(object):
         return ''.join(['@(', str(self.eq), ')'])
 
 
-class KeyWord(object):
+class Keyword(object):
     def __init__(self, key, val, comment='', dtype=None, args=[]):
 
         self.key = key
@@ -98,7 +98,7 @@ class KeyWord(object):
             self._checkdtype()
 
     def __deepcopy__(self, memo):
-        return KeyWord(copy.copy(self.key),
+        return Keyword(copy.copy(self.key),
                        copy.copy(self.value),
                        comment=copy.copy(self.comment),
                        dtype=copy.copy(self.dtype),
@@ -219,8 +219,8 @@ class Base(object):
 
     def __setitem__(self, name, value):
         if name in self._keyword_dict and isinstance(self._keyword_dict[name],
-                                                    KeyWord):
-            if isinstance(value, KeyWord):
+                                                    Keyword):
+            if isinstance(value, Keyword):
                 self._keyword_dict[name].updateValue(value.value)
             else:
                 self._keyword_dict[name].updateValue(value)
@@ -234,7 +234,7 @@ class Base(object):
         return len(self._keyword_dict)
 
 #    def addKeyword(self, key, value, args=[]):
-#        self._keyword_dict[key] = KeyWord(key, value, args=args)
+#        self._keyword_dict[key] = Keyword(key, value, args=args)
 
     def deleteDict(self):
         self.delete = True
@@ -839,7 +839,7 @@ class Project(object):
             # Save conditions
             if cond is not None:
                 if len(args) == 1:
-                    keywordobject = KeyWord(key, value, args=args,
+                    keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     cond[args[0]][key] = keywordobject
 
@@ -853,7 +853,7 @@ class Project(object):
                     else:
                         spec = condItm.gasSpecies[args[1]]
 
-                    keywordobject = KeyWord(key, value, args=args,
+                    keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
 
                     spec[key] = keywordobject
@@ -870,7 +870,7 @@ class Project(object):
                         solid = condItm.solids[args[1]]
 
                     if len(args) == 2:
-                        keywordobject = KeyWord(key, value, args=args,
+                        keywordobject = Keyword(key, value, args=args,
                                                 comment=keywordComment)
                         solid[key] = keywordobject
 
@@ -880,7 +880,7 @@ class Project(object):
                         else:
                             spec = solid.species[args[2]]
 
-                        keywordobject = KeyWord(key, value, args=args,
+                        keywordobject = Keyword(key, value, args=args,
                                                 comment=keywordComment)
 
                         spec[key] = keywordobject
@@ -896,7 +896,7 @@ class Project(object):
                     solid = self.solids[args[0]]
 
                 if len(args) == 1:
-                    keywordobject = KeyWord(key, value, args=args,
+                    keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     solid[key] = keywordobject
                 else:
@@ -905,7 +905,7 @@ class Project(object):
                     else:
                         spec = solid.species[args[1]]
 
-                    keywordobject = KeyWord(key, value, args=args,
+                    keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     spec[key] = keywordobject
 
@@ -916,7 +916,7 @@ class Project(object):
                 else:
                     spec = self.gasSpecies[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spec[key] = keywordobject
 
@@ -927,7 +927,7 @@ class Project(object):
                 else:
                     leq = self.speciesEq[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 leq[key] = keywordobject
 
@@ -939,7 +939,7 @@ class Project(object):
                 else:
                     leq = self.linearEq[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 leq[key] = keywordobject
 
@@ -950,7 +950,7 @@ class Project(object):
                 else:
                     spx = self.spx[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spx[key] = keywordobject
 
@@ -961,7 +961,7 @@ class Project(object):
                 else:
                     vtkvar = self.vtkvar[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 vtkvar[key] = keywordobject
 
@@ -975,19 +975,19 @@ class Project(object):
                 else:
                     variablegrid = self.variablegrid[args[0]]
 
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
 
                 variablegrid[key] = keywordobject
 
             # Save everything else
             else:
-                keywordobject = KeyWord(key, value, args=args,
+                keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
 
         # no args
         else:
-            keywordobject = KeyWord(key, value, args=[],
+            keywordobject = Keyword(key, value, args=[],
                                     comment=keywordComment)
 
         # add keyword to other data structures
@@ -1153,7 +1153,7 @@ class Project(object):
 
     def keywordLookup(self, keyword, args=[]):
         '''
-        Search the project for a keyword and return the KeyWord object, else
+        Search the project for a keyword and return the Keyword object, else
         raise an exception.
 
         Parameters
@@ -1165,8 +1165,8 @@ class Project(object):
 
         Returns
         -------
-        keyword (pymfix.KeyWord):
-            the KeyWord object
+        keyword (pymfix.Keyword):
+            the Keyword object
         '''
 
         keyword = keyword.lower()

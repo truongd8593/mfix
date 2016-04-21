@@ -48,10 +48,10 @@ class MfixCodeAnalyzer(object):
         #              ])
         self.re_remove = re.compile('|'.join([string]), re.S|re.I)
 
-        self.mfixKeyWordDoc={}
+        self.mfixKeywordDoc={}
 
     def setKeywordDoc(self, keywordDoc):
-        self.mfixKeyWordDoc = keywordDoc
+        self.mfixKeywordDoc = keywordDoc
 
     def check_mfix_source(self, source_code):
         """Finds mfix.dat file errors"""
@@ -111,7 +111,7 @@ class MfixCodeAnalyzer(object):
                             if val is not None:
                                 cleanVals.append(val)
 
-                    if re.sub(r'\([^)]*\)', '', match[0].lower()) in self.mfixKeyWordDoc.keys():
+                    if re.sub(r'\([^)]*\)', '', match[0].lower()) in self.mfixKeywordDoc.keys():
                         if match[0].lower() not in keyval:
                             keyval[match[0].lower()] = {'line':line+1,
                                                         'vals':cleanVals,
@@ -139,20 +139,20 @@ class MfixCodeAnalyzer(object):
             if keyval[keywordArgs]['vals']:
                 for val in keyval[keywordArgs]['vals']:
                     # Check data type
-                    if self.getType(val)!=self.mfixKeyWordDoc[keyword]['dtype']:
-                        if not self.getType(val)=='I' and not self.mfixKeyWordDoc[keyword]['dtype']=='DP':
-                            results.append(("Type Error: '"+str(val)+"' \nNeeds to be a "+self.mfixKeyWordDoc[keyword]['dtype'], keyval[keywordArgs]['line']))
+                    if self.getType(val)!=self.mfixKeywordDoc[keyword]['dtype']:
+                        if not self.getType(val)=='I' and not self.mfixKeywordDoc[keyword]['dtype']=='DP':
+                            results.append(("Type Error: '"+str(val)+"' \nNeeds to be a "+self.mfixKeywordDoc[keyword]['dtype'], keyval[keywordArgs]['line']))
 
                     # Check Boolean
-                    elif self.mfixKeyWordDoc[keyword]['dtype']=='L':
+                    elif self.mfixKeywordDoc[keyword]['dtype']=='L':
                         if type(val)!=type(True):
                             results.append(("Value Error: '"+str(val)+"' \nIs not a valid value.", keyval[keywordArgs]['line']))
 
                     # Checl valid values
-                    elif self.mfixKeyWordDoc[keyword]['valids']:
-                        validList = [valid.lower() for valid in self.mfixKeyWordDoc[keyword]['valids'].keys()]
+                    elif self.mfixKeywordDoc[keyword]['valids']:
+                        validList = [valid.lower() for valid in self.mfixKeywordDoc[keyword]['valids'].keys()]
 
-                        for valid in self.mfixKeyWordDoc[keyword]['valids'].values():
+                        for valid in self.mfixKeywordDoc[keyword]['valids'].values():
                             if valid['alias']:
                                 validList.append(valid['alias'].lower())
 
@@ -160,20 +160,20 @@ class MfixCodeAnalyzer(object):
                             results.append(("Value Error: '"+str(val)+"' \nIs not a valid value.", keyval[keywordArgs]['line']))
 
                     # Check valid range
-                    elif self.mfixKeyWordDoc[keyword]['validrange']:
-                        if float(val)< float(self.mfixKeyWordDoc[keyword]['validrange']['min']) or float(val)>float(self.mfixKeyWordDoc[keyword]['validrange']['max']):
+                    elif self.mfixKeywordDoc[keyword]['validrange']:
+                        if float(val)< float(self.mfixKeywordDoc[keyword]['validrange']['min']) or float(val)>float(self.mfixKeywordDoc[keyword]['validrange']['max']):
                             results.append(("Value Error: '"+str(val)+"' \nIs outside the valid range ("+
-                            self.mfixKeyWordDoc[keyword]['validrange']['min']+", "+self.mfixKeyWordDoc[keyword]['validrange']['max']+").", keyval[keywordArgs]['line']))
+                            self.mfixKeywordDoc[keyword]['validrange']['min']+", "+self.mfixKeywordDoc[keyword]['validrange']['max']+").", keyval[keywordArgs]['line']))
             else:
                 results.append(("Value Error: '"+keyword+"' \nNeeds value(s).", keyval[keywordArgs]['line']))
 
             # Check arguments
             if keyval[keywordArgs]['args']:
-                if len(keyval[keywordArgs]['args'])!=len(self.mfixKeyWordDoc[keyword]['args'].keys()):
-                    results.append(("Argument Error: '"+keywordArgs+"' \nNeeds to have "+str(len(self.mfixKeyWordDoc[keyword]['args']))+' argument(s).', keyval[keywordArgs]['line']))
+                if len(keyval[keywordArgs]['args'])!=len(self.mfixKeywordDoc[keyword]['args'].keys()):
+                    results.append(("Argument Error: '"+keywordArgs+"' \nNeeds to have "+str(len(self.mfixKeywordDoc[keyword]['args']))+' argument(s).', keyval[keywordArgs]['line']))
 
             # Check for legacy keywords
-            if self.mfixKeyWordDoc[keyword]['legacy']=='true':
+            if self.mfixKeywordDoc[keyword]['legacy']=='true':
                 results.append(("Legacy Keyword: '"+keyword+"' \nDo not use.", keyval[keywordArgs]['line']))
 
         mylogger.debug('Checking mfix source ... Done')
@@ -218,13 +218,13 @@ class MfixCodeAnalyzer(object):
         return expandList
 
     def get_completion_list(self, text, source_code, offset, filename):
-        proposals = self.mfixKeyWordDoc.keys()
+        proposals = self.mfixKeywordDoc.keys()
         return proposals
 
     def get_calltip_and_docs(self, text, source_code, offset, filename):
         objectName = text.upper()
-        if objectName.lower() in self.mfixKeyWordDoc.keys():
-            doc_text = self.mfixKeyWordDoc[objectName.lower()]['description']
+        if objectName.lower() in self.mfixKeywordDoc.keys():
+            doc_text = self.mfixKeywordDoc[objectName.lower()]['description']
             rtn = re.split('([.!?] *)', doc_text)
             doc_text =''.join([each.capitalize() for each in rtn])
             argspec = 'args:'
