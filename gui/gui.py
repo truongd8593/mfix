@@ -269,7 +269,7 @@ class MfixGui(QtWidgets.QMainWindow):
         item_names =  ("Solids", "Continuum Solids Model",
                        "Discrete Element Model", "Particle in Cell Model")
 
-        states = {"Single phase": (True, False, False, False), #  ??? cgw
+        states = {"Single phase": (False, False, False, False),
                   "MFIX-TFM": (True, True, False, False),
                   "MFIX-DEM": (True, False, True, False),
                   "MFIX-PIC": (True, False, False, True),
