@@ -25,7 +25,7 @@ obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix$(EXEEXT)
+.DEFAULT_GOAL := .build/build
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
@@ -43,15 +43,15 @@ mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
-build:
-	rm -f $@
+.build/build: mfix$(EXEEXT)
+	@rm -f $@
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: TAGS test $(LIBMFIX)
+.PHONY: TAGS test $(LIBMFIX) .build/build
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) $(notdir $@)
+	$(MAKE) -C $(top_builddir) $(bin_PROGRAMS)
 
 $(LIBMFIX).md5: $(LIBMFIX)
 	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>334</width>
-    <height>440</height>
+    <width>353</width>
+    <height>478</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout_21">
@@ -35,7 +35,7 @@
       <enum>QFrame::Plain</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_48">
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QSpinBox" name="mfix_port">
         <property name="minimum">
          <number>1024</number>
@@ -48,31 +48,38 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_126">
         <property name="text">
          <string>Port</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label_125">
         <property name="text">
          <string>Host</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QLineEdit" name="mfix_host">
         <property name="text">
          <string>localhost</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QPushButton" name="connect_mfix_button">
         <property name="text">
          <string>Connect to running MFIX Job</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="run_mfix_button">
+        <property name="text">
+         <string>RUN</string>
         </property>
        </widget>
       </item>
@@ -103,31 +110,45 @@
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="smp_button">
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_128">
         <property name="text">
-         <string>OpenMP Support (SMP)</string>
+         <string>Tstop</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="dmp_button">
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_130">
         <property name="text">
-         <string>MPI Support (DMP)</string>
+         <string>DT</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QPushButton" name="build_mfix_button">
-        <property name="text">
-         <string>Build MFIX</string>
+      <item row="10" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
+        <property name="decimals">
+         <number>10</number>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QPushButton" name="run_mfix_button">
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_129">
         <property name="text">
-         <string>Build and Run MFIX</string>
+         <string>Time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_time">
+        <property name="decimals">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_131">
+        <property name="text">
+         <string>DT_MAX</string>
         </property>
        </widget>
       </item>
@@ -180,54 +201,15 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_128">
-        <property name="text">
-         <string>Tstop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="label_130">
-        <property name="text">
-         <string>DT</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
-       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
-        <property name="decimals">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_129">
-        <property name="text">
-         <string>Time</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="DoubleSpinBox" name="doublespinbox_keyword_time">
-        <property name="decimals">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="0">
-       <widget class="QLabel" name="label_131">
-        <property name="text">
-         <string>DT_MAX</string>
-        </property>
-       </widget>
-      </item>
       <item row="11" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
         <property name="decimals">
          <number>10</number>
         </property>
        </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="ComboBox" name="combobox_keyword_run_type"/>
       </item>
       <item row="7" column="0">
        <widget class="QPushButton" name="clear_output_button">
@@ -243,8 +225,22 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="ComboBox" name="combobox_keyword_run_type"/>
+      <item row="0" column="0" colspan="2">
+       <widget class="QComboBox" name="mfix_executables"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="openmp_threads">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Number OpenMP threads</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -258,13 +254,13 @@
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>SpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>DoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
+   <class>SpinBox</class>
+   <extends>QSpinBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
