@@ -221,10 +221,20 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox_keyXXword_solver">
+       <widget class="QComboBox" name="combobox_solver">
+        <item>
+         <property name="text">
+          <string>Single phase</string>
+         </property>
+        </item>
         <item>
          <property name="text">
           <string>MFIX-TFM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>MFIX-DEM</string>
          </property>
         </item>
         <item>
@@ -234,7 +244,7 @@
         </item>
         <item>
          <property name="text">
-          <string>MFIX-DEM</string>
+          <string>MFIX-Hybrid</string>
          </property>
         </item>
        </widget>
