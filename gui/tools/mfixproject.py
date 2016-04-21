@@ -98,7 +98,7 @@ class KeyWord(object):
         self.comment = comment
         self.args = args
 
-        self.regX_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+        self.regex_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -205,7 +205,7 @@ class KeyWord(object):
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.regX_expression.findall(str(value)) and self.dtype == float:
+        elif self.regex_expression.findall(str(value)) and self.dtype == float:
             self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
@@ -593,12 +593,12 @@ class Project(object):
         self.thermoindex = None
 
         # Regular Expressions
-        self.regX_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
-        self.regX_float_exp = re.compile("^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$")
-        self.regX_float = re.compile("^[+-]?[0-9]+\.([0-9]+)?$")
-        self.regX_expression = re.compile('@\(([ 0-9.eEpiPI+-/*\(\))]+)\)')
-        #self.regX_stringShortHand = re.compile("""(\d+\*["'].+?["'])""")
-        self.regX_stringShortHand = re.compile("""([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))""")
+        self.regex_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
+        self.regex_float_exp = re.compile("^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$")
+        self.regex_float = re.compile("^[+-]?[0-9]+\.([0-9]+)?$")
+        self.regex_expression = re.compile('@\(([ 0-9.eEpiPI+-/*\(\))]+)\)')
+        #self.regex_stringShortHand = re.compile("""(\d+\*["'].+?["'])""")
+        self.regex_stringShortHand = re.compile("""([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))""")
 
         self.__initDataStructure__()
 
@@ -682,7 +682,7 @@ class Project(object):
 
     def parseKeywordLine(self, text):
 
-        matchs = self.regX_keyValue.findall(text)
+        matchs = self.regex_keyValue.findall(text)
         if matchs:
             for match in matchs:
                 # match chould be: [keyword, args, value,
@@ -698,13 +698,13 @@ class Project(object):
                 valString = match[2].strip()
                 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.regX_expression.findall(valString)
+                exps = self.regex_expression.findall(valString)
                 for exp in exps:
                     valString = valString.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
                 # Replace short hand string
-                shortHandList = self.regX_stringShortHand.findall(valString)
+                shortHandList = self.regex_stringShortHand.findall(valString)
                 if shortHandList:
                     for shortHand in shortHandList:
                         # check for expression
@@ -1062,9 +1062,9 @@ class Project(object):
                 cleanVal = True
             elif '.f.' == string.lower() or '.false.' == string.lower():
                 cleanVal = False
-            elif self.regX_expression.findall(string):
-                cleanVal = Equation(self.regX_expression.findall(string)[0])
-            elif self.regX_float_exp.findall(string):
+            elif self.regex_expression.findall(string):
+                cleanVal = Equation(self.regex_expression.findall(string)[0])
+            elif self.regex_float_exp.findall(string):
                 cleanVal = FloatExp(string.lower().replace('d', 'e'))
             elif any([val.isdigit() for val in string]):
                 try:

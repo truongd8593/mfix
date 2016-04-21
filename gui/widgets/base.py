@@ -71,8 +71,8 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
 
         self.dtype = str
 
-        self.regX_expression = re.compile('@\(([0-9.eEpiPI\+\-/*\(\))]+)\)')
-        self.regX_mathOp = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+        self.regex_expression = re.compile('@\(([0-9.eEpiPI\+\-/*\(\))]+)\)')
+        self.regex_mathOp = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
     @property
     def value(self):
@@ -81,7 +81,7 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
         if self.dtype == str:
             return str(self.text())
         elif self.dtype == float:
-            if self.regX_mathOp.findall(str(self.text())):
+            if self.regex_mathOp.findall(str(self.text())):
                 return Equation(self.text())
             else:
                 return float(str(self.text())) # TODO: validate input - cgw
@@ -91,8 +91,8 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
     def updateValue(self, key, newValue, args=None):
 
         if newValue:
-            if self.regX_expression.findall(str(newValue)):
-                self.setText(self.regX_expression.findall(str(newValue))[0])
+            if self.regex_expression.findall(str(newValue)):
+                self.setText(self.regex_expression.findall(str(newValue))[0])
             else:
                 self.setText(str(newValue).replace("'", '').replace('"', ''))
         else:

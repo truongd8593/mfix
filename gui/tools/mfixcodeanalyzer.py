@@ -33,8 +33,8 @@ class MfixCodeAnalyzer(object):
     def __init__(self):
         # Checking Regular Expressions
         self.re_allvariables = re.compile("(\w+(?:\(\d+\))?)\s*")
-        self.regX_keyValue = re.compile(r'(\w+(?:\(([ \d,]+)\))?)\s*=\s*(.*?)(?=(!|$|\w+(\(\d+\))?\s*=))')
-        self.regX_float_exp = re.compile("^[+-]?[0-9]+\.([0-9]+)?(?:[eEdD][+-]?[0-9]+)?$")
+        self.regex_keyValue = re.compile(r'(\w+(?:\(([ \d,]+)\))?)\s*=\s*(.*?)(?=(!|$|\w+(\(\d+\))?\s*=))')
+        self.regex_float_exp = re.compile("^[+-]?[0-9]+\.([0-9]+)?(?:[eEdD][+-]?[0-9]+)?$")
 
         sqstring = r"(\b[rRuU])?'[^'\\\n]*(\\.[^'\\\n]*)*'?"
         dqstring = r'(\b[rRuU])?"[^"\\\n]*(\\.[^"\\\n]*)*"?'
@@ -97,7 +97,7 @@ class MfixCodeAnalyzer(object):
             if not chemSection[0] and not thermoSection and line>chemSection[2]:
 
                 # Look for key, value pair
-                for match in self.regX_keyValue.findall(code):
+                for match in self.regex_keyValue.findall(code):
                     try:
                         vals = shlex.split( match[2].strip())
                     except ValueError:
