@@ -63,14 +63,14 @@ class Equation(object):
 
     def __nonzero__(self):
         # Python 2
-        if float(self) == float('nan'):
+        if float(self) == float('nan'): #XXX
             return False
         else:
             return True
 
     def __bool__(self):
         # Python 3
-        if float(self) == float('nan'):
+        if float(self) == float('nan'):#XXX
             return False
         else:
             return True
@@ -138,7 +138,7 @@ class KeyWord(object):
             return False
         elif self.value == '':
             return False
-        elif float(self) == float('nan'):
+        elif float(self) == float('nan'): #XXX nothing is equal to nan! use 'math.isnan'
             return False
         else:
             return True
@@ -151,7 +151,7 @@ class KeyWord(object):
             return False
         elif self.value == '':
             return False
-        elif float(self) == float('nan'):
+        elif float(self) == float('nan'): # XXX
             return False
         else:
             return True
@@ -696,7 +696,7 @@ class Project(object):
 
                 # values
                 valString = match[2].strip()
-                
+
                 # remove spaces from equations: @( 2*pi)
                 exps = self.regex_expression.findall(valString)
                 for exp in exps:

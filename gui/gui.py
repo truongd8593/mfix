@@ -809,7 +809,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.project.load_mfix_dat(mfix_dat)
 
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
-
+        # cgw - lots more model setup todo here
 
 # --- Threads ---
 class MfixThread(QThread):
