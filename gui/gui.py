@@ -710,7 +710,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def get_mfix_dat(self):
-        name = str(self.project.run_name)
+        name = self.project.run_name.value
         for char in ('.', '"', '/', '\\', ':'):
             name = name.replace(char, '_')
         mfix_dat = name + '.mfx'
