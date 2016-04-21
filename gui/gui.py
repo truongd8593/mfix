@@ -261,9 +261,9 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def set_solver(self, index):
         """ handler for "Solver" combobox in Model Setup """
-        # NB.  This depends on strings matching items in the ui.
-
-        solver_name = self.ui.model_setup.combobox_solver.currentText()
+        # NB.  This depends on strings matching items in the ui file
+        model_setup = self.ui.model_setup
+        solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %d: %s" % (index, solver_name))
 
         item_names =  ("Solids", "Continuum Solids Model",
@@ -278,10 +278,26 @@ class MfixGui(QtWidgets.QMainWindow):
         for item_name, state in zip(item_names, states[solver_name]):
             self.set_navigation_item_state(item_name, state)
 
+        # Options which require TFM, DEM, or PIC
+        enabled = 0 < index < 4
+        interphase = model_setup.groupbox_interphase
+        interphase.setEnabled(enabled)
+
+        # TFM only
+        # use a groupbox here, instead of accessing combox + label?
+        enabled = (index == 1)
+        model_setup.combobox_subgrid_model.setEnabled(enabled)
+        model_setup.label_subgrid_model.setEnabled(enabled)
+        model_setup.groupbox_subgrid_params.setEnabled(enabled and
+                                                       self.subgrid_model > 0)
+
+
+
     def disable_fluid_solver(self, state):
         self.set_navigation_item_state("Fluid", not state)
 
     def set_subgrid_model(self, index):
+        self.subgrid_model = index
         groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
