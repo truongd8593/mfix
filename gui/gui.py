@@ -281,6 +281,10 @@ class MfixGui(QtWidgets.QMainWindow):
     def disable_fluid_solver(self, state):
         self.set_navigation_item_state("Fluid", not state)
 
+    def set_subgrid_model(self, index):
+        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
+        groupbox_subgrid_params.setEnabled(index > 0)
+
     def __setup_other_widgets(self):
         """ setup widgets which are not tied to a simple keyword
         """
@@ -292,6 +296,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
         checkbox_disable_fluid_solver = model_setup.checkbox_disable_fluid_solver
         checkbox_disable_fluid_solver.stateChanged.connect(self.disable_fluid_solver)
+        self.disable_fluid_solver(False)
+
+        combobox_subgrid_model = model_setup.combobox_subgrid_model
+        combobox_subgrid_model.currentIndexChanged.connect(self.set_subgrid_model)
+        self.set_subgrid_model(0)
 
     def __setup_simple_keyword_widgets(self):
         """

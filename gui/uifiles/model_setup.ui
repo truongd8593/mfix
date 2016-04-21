@@ -42,19 +42,6 @@
      </property>
     </spacer>
    </item>
-   <item row="9" column="0">
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>120</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="5" column="0">
     <spacer name="verticalSpacer_9">
      <property name="orientation">
@@ -103,7 +90,7 @@
     </widget>
    </item>
    <item row="6" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBox_interphase">
      <property name="title">
       <string>Interphase Transfer</string>
      </property>
@@ -145,46 +132,6 @@
         <item>
          <property name="text">
           <string>Gunn, 1979</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="8" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_6">
-     <property name="title">
-      <string>Advanced</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_13">
-      <property name="margin">
-       <number>5</number>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_26">
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>Momentum Formulation</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox_5">
-        <item>
-         <property name="text">
-          <string>Model A</string>
          </property>
         </item>
        </widget>
@@ -247,6 +194,124 @@
           <string>MFIX-Hybrid</string>
          </property>
         </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="14" column="0">
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>120</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="8" column="0" rowspan="2" colspan="2">
+    <widget class="QGroupBox" name="groupBox_advanced">
+     <property name="title">
+      <string>Advanced</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_13">
+      <property name="margin">
+       <number>5</number>
+      </property>
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_26">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="text">
+         <string>Momentum Formulation</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboBox_5">
+        <item>
+         <property name="text">
+          <string>Model A</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Model B</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Jackson</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Ishi</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="combobox_subgrid_model">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Milio</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Subgrid Model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QGroupBox" name="groupbox_subgrid_params">
+        <property name="title">
+         <string>Subgrid Parameters</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Filter size ratio</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Enable wall correction</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
