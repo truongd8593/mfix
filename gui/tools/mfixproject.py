@@ -33,6 +33,8 @@ from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, is_string, is_unicode)
 
 
+NaN = float('NaN')
+
 class FloatExp(float):
     fmt = '4'
 
@@ -53,7 +55,7 @@ class Equation(object):
         if len(self.eq) == 0:
             return 0
         elif self.eq is None or self.eq == 'None':
-            return float('nan')
+            return NaN
         else:
             try:
                 return simple_eval(self.eq.lower(),
@@ -61,24 +63,16 @@ class Equation(object):
             except SyntaxError:
                 return 0
 
-    def __nonzero__(self):
-        # Python 2
-        if float(self) == float('nan'): #XXX
-            return False
-        else:
-            return True
+    def __nonzero__(self): # Python 2
+        return not math.isnan(self._eval())
 
-    def __bool__(self):
-        # Python 3
-        if float(self) == float('nan'):#XXX
-            return False
-        else:
-            return True
+    __bool__ = __nonzero__ # Python 3
 
     def __float__(self):
         return float(self._eval())
 
     def __int__(self):
+        # Will raise ValueError if equation evaluates to NaN
         return int(self._eval())
 
     def __repr__(self):
@@ -114,10 +108,8 @@ class KeyWord(object):
     def __float__(self):
         try:
             return float(self.value)
-        except ValueError:
-            return float('nan')
-        except TypeError:
-            return float('nan')
+        except (ValueError, TypeError, ZeroDivisionError):
+            return NaN
 
     def __int__(self):
         return int(self.value)
@@ -130,31 +122,19 @@ class KeyWord(object):
         elif self.value < other:
             return -1
 
-    def __nonzero__(self):
-        # python 2
+    def __nonzero__(self): # python 2
         if self.dtype == bool:
             return bool(self.value)
         elif self.value is None:
             return False
         elif self.value == '':
             return False
-        elif float(self) == float('nan'): #XXX nothing is equal to nan! use 'math.isnan'
+        elif math.isnan(float(self)):
             return False
         else:
             return True
 
-    def __bool__(self):
-        # python 3
-        if self.dtype == bool:
-            return bool(self.value)
-        elif self.value is None:
-            return False
-        elif self.value == '':
-            return False
-        elif float(self) == float('nan'): # XXX
-            return False
-        else:
-            return True
+    __bool__ == __nonzero__ # python 3
 
     def __str__(self):
         if self.dtype == FloatExp:
