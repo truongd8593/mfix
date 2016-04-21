@@ -134,7 +134,7 @@ class KeyWord(object):
         else:
             return True
 
-    __bool__ == __nonzero__ # python 3
+    __bool__ = __nonzero__ # python 3
 
     def __str__(self):
         if self.dtype == FloatExp:
