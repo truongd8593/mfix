@@ -106,8 +106,8 @@ class Mfix:
                 else:
                     cls.do_step()
 
-                if RUN.steady_state:
-                    break
+                    if RUN.steady_state:
+                        break
 
         MAIN.finalize()
 
