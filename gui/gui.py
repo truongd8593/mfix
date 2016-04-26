@@ -695,6 +695,8 @@ class MfixGui(QtWidgets.QMainWindow):
     def update_run(self):
         """Enable/disable run options based on selected executable """
         mfix_exe = self.ui.run.mfix_executables.currentText()
+        if not mfix_exe:  # TODO:  warn user that MFIX is not available
+            return
         config = self.monitor_executables.output[mfix_exe]
         self.ui.run.openmp_threads.setEnabled('smp' in config)
         if 'dmp' not in config:
@@ -1017,23 +1019,31 @@ class MonitorExecutablesThread(QThread):
         paths = {}
         build = os.path.join(self.mfix_home,'build')
         all_builddirs = os.path.join(build,'*')
-        # FIXME: support Windows, glob for mfix.exe
-        for path in glob.glob(os.path.join(all_builddirs,'mfix')):
-            paths[path] = path
-        for path in glob.glob(os.path.join(all_builddirs,'pymfix')):
-            paths[path] = path
+        for exe in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+            for path in glob.glob(os.path.join(all_builddirs, exe)):
+                paths[path] = path
+
+        PATH = os.environ.get("PATH")
+        if PATH:
+            for dir in PATH.split(os.pathsep):
+                for exe in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+                    path = os.path.join(dir, exe)
+                    if os.path.exists(path):
+                        paths[path] = path
+
         run_dir = self.parent.get_project_dir()
         if run_dir is not None:
             dot_build = os.path.join(run_dir,'.build')
-            for path in os.listdir(dot_build):
-                path = os.path.join(dot_build,path)
-                if os.path.islink(path):
-                    mfix_exe = os.path.join(run_dir,'mfix')
-                    if os.path.isfile(mfix_exe):
-                        paths[mfix_exe] = path
-                    pymfix_exe = os.path.join(run_dir,'pymfix')
-                    if os.path.isfile(pymfix_exe):
-                        paths[pymfix_exe] = path
+            if os.path.isdir(dot_build):
+                for path in os.listdir(dot_build):
+                    path = os.path.join(dot_build,path)
+                    if os.path.islink(path):
+                        mfix_exe = os.path.join(run_dir,'mfix')
+                        if os.path.isfile(mfix_exe):
+                            paths[mfix_exe] = path
+                        pymfix_exe = os.path.join(run_dir,'pymfix')
+                        if os.path.isfile(pymfix_exe):
+                            paths[pymfix_exe] = path
         return paths
 
     def run(self):
