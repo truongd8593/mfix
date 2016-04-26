@@ -233,7 +233,11 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.run.mfix_executables.clear()
             output = self.monitor_executables.get_output()
             for executable in output:
-                self.ui.run.mfix_executables.addItem(str(executable))
+                self.ui.run.mfix_executables.addItem(executable)
+            mfix_available = bool(output)
+            self.ui.run.mfix_executables.setVisible(mfix_available)
+            self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
+
 
         self.run_thread.line_printed.connect(
             make_handler(self.ui.command_output))
@@ -405,7 +409,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def __setup_regions(self):
         " setup the region connections etc."
-        
+
         self.ui.regions.combobox_regions_shape.addItems(['box', 'sphere',
                                                          'point'])
 
@@ -703,17 +707,20 @@ class MfixGui(QtWidgets.QMainWindow):
         if not mfix_exe:  # TODO:  warn user that MFIX is not available
             return
         config = self.monitor_executables.output[mfix_exe]
-        self.ui.run.openmp_threads.setEnabled('smp' in config)
-        if 'dmp' not in config:
+        smp_enabled = 'smp' in config
+        dmp_enabled = 'dmp' in config
+        pymfix_enabled = 'pymfix' in mfix_exe
+        self.ui.run.openmp_threads.setEnabled(smp_enabled)
+        if not dmp_enabled:
             self.ui.run.spinbox_keyword_nodesi.setValue(1)
             self.ui.run.spinbox_keyword_nodesj.setValue(1)
             self.ui.run.spinbox_keyword_nodesk.setValue(1)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled('dmp' in config)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled('dmp' in config)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled('dmp' in config)
-        self.ui.run.mfix_host.setEnabled(mfix_exe.endswith('pymfix'))
-        self.ui.run.mfix_port.setEnabled(mfix_exe.endswith('pymfix'))
-        self.ui.run.connect_mfix_button.setEnabled(mfix_exe.endswith('pymfix'))
+        self.ui.run.spinbox_keyword_nodesi.setEnabled(dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesj.setEnabled(dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
+        self.ui.run.mfix_host.setEnabled(pymfix_enabled)
+        self.ui.run.mfix_port.setEnabled(pymfix_enabled)
+        self.ui.run.connect_mfix_button.setEnabled(pymfix_enabled)
 
     def clear_output(self):
         """ build mfix """
@@ -875,7 +882,7 @@ class MfixGui(QtWidgets.QMainWindow):
         name = get_unique_string('new', list(data.keys()))
 
         data[name] = {'shape': 'box', 'from': [0, 0, 0], 'to': [0, 0, 0]}
-        
+
         self.vtkwidget.new_region(name, data[name])
 
         self.ui.regions.tablewidget_regions.set_value(data)
@@ -912,7 +919,7 @@ class MfixGui(QtWidgets.QMainWindow):
             data[new_name] = new_region
 
             self.ui.regions.tablewidget_regions.set_value(data)
-            
+
             self.vtkwidget.new_region(new_name, data[new_name])
 
     def update_region_parameters(self):
@@ -967,12 +974,12 @@ class MfixGui(QtWidgets.QMainWindow):
             new_name = get_unique_string(value.values()[0], list(data.keys()))
             data = OrderedDict([(new_name, v) if k == name else (k, v) for
                                 k, v in data.items()])
-                                
+
             self.vtkwidget.change_region_name(name, new_name)
 
         elif 'shape' in key:
             data[name]['shape'] = value.values()[0]
-            
+
             self.vtkwidget.change_region_shape(name, data[name])
 
         self.vtkwidget.update_region(name, data[name])
@@ -1032,39 +1039,44 @@ class MonitorExecutablesThread(QThread):
         self.output = self.get_output()
 
     def get_output(self):
-        """ returns a dict of (mfix,pymfix) paths to strings. The strings are
+        """ returns a dict mapping full (mfix,pymfix) paths to
+        configuration options. The strings are
         the directory names of the BUILDDIR the executables were built with,
         which indicate the options used to configure_mfix (--dmp, --smp, etc.) """
 
-        paths = {}
+        config_options = {}
+
+        # Check system PATH dirs first
+        PATH = os.environ.get("PATH")
+        if PATH:
+            for dir in PATH.split(os.pathsep):
+                for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+                    path = os.path.join(dir, name)
+                    if os.path.isfile(path):
+                        config_options[path] = '' # Unknown configuration options
+
+
+        # Look in subdirs build dir
         build = os.path.join(self.mfix_home,'build')
         all_builddirs = os.path.join(build,'*')
         for exe in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
             for path in glob.glob(os.path.join(all_builddirs, exe)):
-                paths[path] = path
+                config_options[path] = '' # Unknown configuration options
 
-        PATH = os.environ.get("PATH")
-        if PATH:
-            for dir in PATH.split(os.pathsep):
-                for exe in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                    path = os.path.join(dir, exe)
-                    if os.path.exists(path):
-                        paths[path] = path
-
+        # Look for named symlinks in run_dir/.build
         run_dir = self.parent.get_project_dir()
         if run_dir is not None:
             dot_build = os.path.join(run_dir,'.build')
             if os.path.isdir(dot_build):
-                for path in os.listdir(dot_build):
-                    path = os.path.join(dot_build,path)
-                    if os.path.islink(path):
-                        mfix_exe = os.path.join(run_dir,'mfix')
-                        if os.path.isfile(mfix_exe):
-                            paths[mfix_exe] = path
-                        pymfix_exe = os.path.join(run_dir,'pymfix')
-                        if os.path.isfile(pymfix_exe):
-                            paths[pymfix_exe] = path
-        return paths
+                for subdir in os.listdir(dot_build):
+                    path = os.path.join(dot_build, subdir)
+                    if os.path.islink(path): # Symlink name indicates config options
+                        for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+                            exe = os.path.join(run_dir, name)
+                            if os.path.isfile(exe):
+                                config_options[exe] = subdir
+
+        return config_options
 
     def run(self):
         while True:
