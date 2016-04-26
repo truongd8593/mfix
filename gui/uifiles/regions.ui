@@ -271,28 +271,7 @@ QHeaderView::section:vertical{
        </widget>
       </item>
       <item row="1" column="1" colspan="3">
-       <widget class="ComboBox" name="combobox_regions_shape">
-        <item>
-         <property name="text">
-          <string>box</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>sphere</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>point</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>plane</string>
-         </property>
-        </item>
-       </widget>
+       <widget class="ComboBox" name="combobox_regions_shape"/>
       </item>
       <item row="0" column="1" colspan="3">
        <widget class="LineEdit" name="lineedit_regions_name"/>

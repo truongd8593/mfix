@@ -2,6 +2,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 import os
+import copy
 from collections import OrderedDict
 
 # 3rd party imports
@@ -126,6 +127,8 @@ class VtkWidget(QtWidgets.QWidget):
         # --- data ---
         self.geometrydict = {}
         self.geometry_visible = True
+        self.regions_visible = True
+        self.region_dict = {}
 
         self.booleanbtndict = {
             'union':        self.ui.geometry.toolbutton_geometry_union,
@@ -141,20 +144,20 @@ class VtkWidget(QtWidgets.QWidget):
             ])
 
         self.parametricdict = OrderedDict([
-            ('torus',    vtk.vtkParametricTorus),
-            ('boy', vtk.vtkParametricBoy),
-            ('conic_spiral', vtk.vtkParametricConicSpiral),
-            ('cross_cap', vtk.vtkParametricCrossCap),
-            ('dini', vtk.vtkParametricDini),
-            ('ellipsoid', vtk.vtkParametricEllipsoid),
-            ('enneper', vtk.vtkParametricEnneper),
-            ('figure_8_klein', vtk.vtkParametricFigure8Klein),
-            ('klein', vtk.vtkParametricKlein),
-            ('mobius', vtk.vtkParametricMobius),
-            ('random_hills', vtk.vtkParametricRandomHills),
-            ('roman', vtk.vtkParametricRoman),
+            ('torus',           vtk.vtkParametricTorus),
+            ('boy',             vtk.vtkParametricBoy),
+            ('conic_spiral',    vtk.vtkParametricConicSpiral),
+            ('cross_cap',       vtk.vtkParametricCrossCap),
+            ('dini',            vtk.vtkParametricDini),
+            ('ellipsoid',       vtk.vtkParametricEllipsoid),
+            ('enneper',         vtk.vtkParametricEnneper),
+            ('figure_8_klein',  vtk.vtkParametricFigure8Klein),
+            ('klein',           vtk.vtkParametricKlein),
+            ('mobius',          vtk.vtkParametricMobius),
+            ('random_hills',    vtk.vtkParametricRandomHills),
+            ('roman',           vtk.vtkParametricRoman),
             ('super_ellipsoid', vtk.vtkParametricSuperEllipsoid),
-            ('super_toroid', vtk.vtkParametricSuperToroid),
+            ('super_toroid',    vtk.vtkParametricSuperToroid),
             ])
 
         self.filterdict = OrderedDict([
@@ -180,9 +183,6 @@ class VtkWidget(QtWidgets.QWidget):
             'background_mesh':     QtGui.QColor(100, 182, 247),
             'geometry':            QtGui.QColor(224, 224, 224),
             'regions':             QtGui.QColor(224, 224, 224),
-            'initial_conditions':  QtGui.QColor(224, 224, 224),
-            'boundary_conditions': QtGui.QColor(224, 224, 224),
-            'point_sources':       QtGui.QColor(224, 224, 224),
             }
 
         # add edge color
@@ -397,8 +397,7 @@ class VtkWidget(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(self.visible_menu)
         layout.setContentsMargins(5, 5, 5, 5)
         for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
-                                 'Regions', 'Initial Conditions',
-                                 'Boundary Conditions', 'Point Sources']):
+                                 'Regions',]):
 
             # tool button
             toolbutton = QtWidgets.QToolButton()
@@ -432,8 +431,11 @@ class VtkWidget(QtWidgets.QWidget):
             # opacity
             slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
             slider.setRange(0, 100)
-            slider.setValue(100)
-            slider.setFixedWidth(30)
+            if geo == 'Regions':
+                slider.setValue(50)
+            else:
+                slider.setValue(100)
+            slider.setFixedWidth(40)
             slider.valueChanged.connect(make_callback(self.change_opacity,
                                                       geo.lower(),
                                                       slider
@@ -835,7 +837,6 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkrenderer.AddActor(actor)
 
-        self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()
 
         # add to dict
@@ -1361,6 +1362,142 @@ class VtkWidget(QtWidgets.QWidget):
         if not self.geometry_visible:
             actor.VisibilityOff()
 
+    # --- regions ---
+    def update_region_source(self, name):
+        """
+        Update the specified primitive
+        """
+        primtype = self.region_dict[name]['shape']
+        props = self.region_dict[name]
+
+        if 'source' in self.region_dict[name]:
+            source = self.region_dict[name]['source']
+        else:
+            source = None
+
+        lengths = [float(to) - float(f) for
+                   f, to in zip(props['from'], props['to'])]
+        center= [min(f) + l / 2.0 for f, l in
+                 zip(zip(props['from'], props['to']),
+                     lengths)]
+
+        # update source
+        if primtype == 'sphere':
+            source.SetRadius(min(lengths)/2.0)
+
+        elif primtype == 'point':
+            source.SetRadius(.1)
+
+        elif primtype == 'box':
+            source.SetXLength(lengths[0])
+            source.SetYLength(lengths[1])
+            source.SetZLength(lengths[2])
+
+#        elif primtype == 'cone':
+#            source.SetRadius(props['radius'])
+#            source.SetHeight(props['height'])
+#            source.SetDirection(props['directionx'],
+#                                props['directiony'],
+#                                props['directionz'])
+#
+#        elif primtype == 'cylinder':
+#            source.SetRadius(props['radius'])
+#            source.SetHeight(props['height'])
+
+        else:
+            return
+
+        # common props
+        if source is not None:
+            source.SetCenter(*center)
+
+            source.Update()
+
+        return source
+
+    def new_region(self, name, region):
+        self.region_dict[name] = copy.deepcopy(region)
+
+        if region['shape'] == 'point':
+            shape = 'sphere'
+        else:
+            shape = region['shape']
+
+        source = self.primitivedict[shape]()
+        self.region_dict[name]['source'] = source
+        self.update_region_source(name)
+
+        # Create a mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(source.GetOutputPort())
+
+        # Create an actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        self.set_region_actor_props(actor, name)
+
+        self.vtkrenderer.AddActor(actor)
+
+        self.vtkRenderWindow.Render()
+
+        self.region_dict[name]['actor'] = actor
+        self.region_dict[name]['mapper'] = mapper
+
+    def delete_region(self, name):
+        region = self.region_dict.pop(name)
+        self.vtkrenderer.RemoveActor(region['actor'])
+
+    def update_region(self, name, region):
+        self.region_dict[name].update(copy.deepcopy(region))
+        self.update_region_source(name)
+        self.vtkRenderWindow.Render()
+
+    def change_region_shape(self, name, region):
+        " change the shape of a region "
+
+        self.region_dict[name].update(copy.deepcopy(region))
+
+        if region['shape'] == 'point':
+            shape = 'sphere'
+        else:
+            shape = region['shape']
+
+        source = self.primitivedict[shape]()
+        self.region_dict[name]['source'] = source
+        self.update_region_source(name)
+
+        self.region_dict[name]['mapper'].SetInputConnection(
+            source.GetOutputPort())
+
+        self.vtkRenderWindow.Render()
+
+    def change_region_name(self, old_name, new_name):
+        " change the name of a region "
+
+        self.region_dict = [(new_name, v) if k == old_name else (k, v) for
+                            k, v in self.region_dict.items()]
+
+    def set_region_actor_props(self, actor, name):
+        """ set the geometry proprerties to the others in the scene """
+
+        # copy properties from an exsiting actor
+        if len(self.region_dict) > 1:
+            other_actor = list(self.region_dict.keys())
+            other_actor.remove(name)
+            other_actor = self.region_dict[other_actor[0]]['actor']
+            actor.GetProperty().DeepCopy(other_actor.GetProperty())
+            opacity = other_actor.GetProperty().GetOpacity()
+            actor.GetProperty().SetOpacity(opacity)
+        else:
+            actor.GetProperty().SetRepresentationToWireframe()
+            actor.GetProperty().SetOpacity(0.5)
+
+        actor.GetProperty().SetColor(*np.random.random(3))
+
+        # check visibility
+        if not self.regions_visible:
+            actor.VisibilityOff()
+
     # --- output files ---
     def export_stl(self, file_name):
         """ expoort visivle toplevel geometry """
@@ -1723,6 +1860,13 @@ class VtkWidget(QtWidgets.QWidget):
                 self.geometry_visible = False
             else:
                 self.geometry_visible = True
+        elif name == 'regions':
+            actors = [geo['actor'] for geo in self.region_dict.values()]
+
+            if toolbutton.isChecked():
+                self.region_visible = False
+            else:
+                self.region_visible = True
 
         if toolbutton.isChecked():
             toolbutton.setIcon(
@@ -1749,6 +1893,8 @@ class VtkWidget(QtWidgets.QWidget):
             actors = self.grid_viewer_dict['actors']
         elif name == 'geometry':
             actors = [geo['actor'] for geo in self.geometrydict.values()]
+        elif name == 'regions':
+            actors = [geo['actor'] for geo in self.region_dict.values()]
 
         if actors is not None:
             for actor in actors:
@@ -1807,6 +1953,8 @@ class VtkWidget(QtWidgets.QWidget):
             actors = self.grid_viewer_dict['actors']
         elif name == 'geometry':
             actors = [geo['actor'] for geo in self.geometrydict.values()]
+        elif name == 'regions':
+            actors = [geo['actor'] for geo in self.region_dict.values()]
 
         if actors is not None:
             for actor in actors:
