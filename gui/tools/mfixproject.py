@@ -63,10 +63,10 @@ class Equation(object):
             except SyntaxError:
                 return 0
 
-    def __nonzero__(self): # Python 2
+    def __nonzero__(self):  # Python 2
         return not math.isnan(self._eval())
 
-    __bool__ = __nonzero__ # Python 3
+    __bool__ = __nonzero__  # Python 3
 
     def __float__(self):
         return float(self._eval())
@@ -77,6 +77,18 @@ class Equation(object):
 
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
+
+    def __add__(self, value):
+        return float(self._eval()) + float(value)
+
+    def __sub__(self, value):
+        return float(self._eval()) - float(value)
+
+    def __mul__(self, value):
+        return float(self._eval()) * float(value)
+
+    def __pow__(self, value):
+        return float(self._eval()) ** float(value)
 
 
 class Keyword(object):

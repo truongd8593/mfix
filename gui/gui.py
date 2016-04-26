@@ -405,6 +405,9 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def __setup_regions(self):
         " setup the region connections etc."
+        
+        self.ui.regions.combobox_regions_shape.addItems(['box', 'sphere',
+                                                         'point'])
 
         self.ui.regions.toolbutton_region_add.pressed.connect(
             self.new_region)
@@ -418,8 +421,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.regions.tablewidget_regions.set_columns(['shape', 'from',
                                                          'to'])
         self.ui.regions.tablewidget_regions.show_vertical_header(True)
-        self.ui.regions.tablewidget_regions.setValue(OrderedDict())
+        self.ui.regions.tablewidget_regions.set_value(OrderedDict())
         self.ui.regions.tablewidget_regions.auto_update_rows(True)
+        self.ui.regions.tablewidget_regions.set_selection_model('cell',
+                                                                multi=False)
 
         self.ui.regions.tablewidget_regions.new_selection.connect(
             self.update_region_parameters)
@@ -867,26 +872,34 @@ class MfixGui(QtWidgets.QMainWindow):
 
         name = get_unique_string('new', list(data.keys()))
 
-        data[name] = {'shape': ' box', 'from': [0, 0, 0], 'to': [0, 0, 0]}
+        data[name] = {'shape': 'box', 'from': [0, 0, 0], 'to': [0, 0, 0]}
+        
+        self.vtkwidget.new_region(name, data[name])
 
-        self.ui.regions.tablewidget_regions.setValue(data)
+        self.ui.regions.tablewidget_regions.set_value(data)
         self.ui.regions.tablewidget_regions.fit_to_contents()
 
     def delete_region(self):
         'remove the currently selected region'
 
-        row = self.ui.regions.tablewidget_regions.currentRow()
+        row = self.ui.regions.tablewidget_regions.current_row()
 
         if row >= 0:
             data = self.ui.regions.tablewidget_regions.value
             name = list(data.keys())[row]
             data.pop(name)
-            self.ui.regions.tablewidget_regions.setValue(data)
+            self.ui.regions.tablewidget_regions.set_value(data)
+            self.vtkwidget.delete_region(name)
+
+            if data:
+                self.ui.regions.groupbox_region_parameters.setEnabled(True)
+            else:
+                self.ui.regions.groupbox_region_parameters.setEnabled(False)
 
     def copy_region(self):
         'copy the currently selected region'
 
-        row = self.ui.regions.tablewidget_regions.currentRow()
+        row = self.ui.regions.tablewidget_regions.current_row()
 
         if row >= 0:
             data = self.ui.regions.tablewidget_regions.value
@@ -896,17 +909,18 @@ class MfixGui(QtWidgets.QMainWindow):
             new_name = get_unique_string(name, list(data.keys()))
             data[new_name] = new_region
 
-            self.ui.regions.tablewidget_regions.setValue(data)
+            self.ui.regions.tablewidget_regions.set_value(data)
+            
+            self.vtkwidget.new_region(new_name, data[new_name])
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
 
-        row = self.ui.regions.tablewidget_regions.currentRow()
+        row = self.ui.regions.tablewidget_regions.current_row()
 
         if row >= 0:
             self.ui.regions.groupbox_region_parameters.setEnabled(True)
 
-            row = self.ui.regions.tablewidget_regions.currentRow()
             data = self.ui.regions.tablewidget_regions.value
             name = list(data.keys())[row]
 
@@ -936,7 +950,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def region_value_changed(self, widget, value, args):
 
-        row = self.ui.regions.tablewidget_regions.currentRow()
+        row = self.ui.regions.tablewidget_regions.current_row()
         data = self.ui.regions.tablewidget_regions.value
         name = list(data.keys())[row]
         key = value.keys()[0]
@@ -951,11 +965,17 @@ class MfixGui(QtWidgets.QMainWindow):
             new_name = get_unique_string(value.values()[0], list(data.keys()))
             data = OrderedDict([(new_name, v) if k == name else (k, v) for
                                 k, v in data.items()])
+                                
+            self.vtkwidget.change_region_name(name, new_name)
 
         elif 'shape' in key:
             data[name]['shape'] = value.values()[0]
+            
+            self.vtkwidget.change_region_shape(name, data[name])
 
-        self.ui.regions.tablewidget_regions.setValue(data)
+        self.vtkwidget.update_region(name, data[name])
+
+        self.ui.regions.tablewidget_regions.set_value(data)
 
 
 # --- Threads ---

@@ -284,8 +284,8 @@ class Table(QtWidgets.QTableView, CommonBase):
     new_selection = QtCore.Signal(object, object)
 
     def __init__(self, parent=None, dtype=None, columns=[], rows=[],
-                 columnDelegate={}, rowDelegate={}, selectionBehavior='row',
-                 selectionMode='single'):
+                 column_delegate={}, row_delegate={}, selection_behavior='row',
+                 multi_selection=False):
 
         QtWidgets.QTableView.__init__(self, parent)
         CommonBase.__init__(self)
@@ -302,25 +302,9 @@ class Table(QtWidgets.QTableView, CommonBase):
         if rows is None:
             self.verticalHeader().hide()
 
-        # setup selection model
-        if selectionBehavior == 'col' or selectionBehavior == 'column':
-            self.setSelectionBehavior(
-                QtWidgets.QAbstractItemView.SelectColumns)
-        elif selectionBehavior == 'row':
-            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        else:
-            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
+        self.set_delegate(col=column_delegate, row=row_delegate)
 
-        if selectionMode == 'multi':
-            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        else:
-            self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-
-        if self.selectionModel():
-            selectionmodel = self.selectionModel()
-            selectionmodel.selectionChanged.connect(self.selectionChangedEvent)
-
-        self.set_delegate(col=columnDelegate, row=rowDelegate)
+        self.set_selection_model(selection_behavior, multi_selection)
 
     def _setModel(self):
 
@@ -349,9 +333,30 @@ class Table(QtWidgets.QTableView, CommonBase):
             # Need a reference or it segfaults with pyside
             # http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
             selectModel = self.selectionModel()
-            selectModel.selectionChanged.connect(self.selectionChangedEvent)
+            selectModel.selectionChanged.connect(self.selection_changed_event)
 
-    def selectionChangedEvent(self):
+    def set_selection_model(self, behavior='row', multi=False):
+        " set the selection model "
+
+        if behavior == 'col' or behavior == 'column':
+            self.setSelectionBehavior(
+                QtWidgets.QAbstractItemView.SelectColumns)
+        elif behavior == 'row':
+            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        else:
+            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
+
+        if multi == 'multi':
+            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        else:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+        if self.selectionModel():
+            selectionmodel = self.selectionModel()
+            selectionmodel.selectionChanged.connect(
+                self.selection_changed_event)
+
+    def selection_changed_event(self):
         selection = self.selectionModel().selection().indexes()
         if not self.block_selection_change_event:
             if selection:
@@ -371,7 +376,7 @@ class Table(QtWidgets.QTableView, CommonBase):
         else:
             return None
 
-    def setValue(self, value):
+    def set_value(self, value):
         if self.dtype != type(value):
             raise TypeError('Selected table model does not support type'
                             '{}'.format(type(value)))
@@ -450,27 +455,30 @@ class Table(QtWidgets.QTableView, CommonBase):
         # build context menu
         self.menu = QtWidgets.QMenu(self)
         applyAction = QtWidgets.QAction('Apply to Column', self)
-        applyAction.triggered.connect(self.applyValToColumn)
+        applyAction.triggered.connect(self.apply_val_to_column)
         self.menu.addAction(applyAction)
 
         # popup context menu
         self.menu.popup(QtWidgets.QCursor.pos())
 
-    def applyValToColumn(self):
+    def apply_val_to_column(self):
         i = self.selectionModel().selection().indexes()[-1]
+        value = self.model().data(i, QtCore.Qt.EditRole)
+        self.model().apply_to_column(i.column(), value)
 
-        delegate = self.itemDelegate(i)
-        wid = delegate.createEditor(self, None, i)
-        wid.updateValue(None, self.model().data(i, QtCore.Qt.EditRole))
-        self.model().applyToColumn(i.column(), wid.value)
+    def current_row(self):
+        i = self.selectionModel().selection().indexes()
+        if i:
+            return i[-1].row()
+        else:
+            return -1
 
-    def currentRow(self):
-        i = self.selectionModel().selection().indexes()[-1]
-        return i.row()
-
-    def currentColumn(self):
-        i = self.selectionModel().selection().indexes()[-1]
-        return i.column()
+    def current_column(self):
+        i = self.selectionModel().selection().indexes()
+        if i:
+            return i[-1].column()
+        else:
+            return -1
 
     def clear(self):
         self.model().update({})
@@ -633,7 +641,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             self.datatable[i][j] = value
             self.value_updated.emit(self.datatable)
 
-    def applyToColumn(self, col, val):
+    def apply_to_column(self, col, val):
         for i in range(self.rowCount()):
             self.setData(col=col, row=i, value=val)
 
