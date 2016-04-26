@@ -735,9 +735,9 @@ class MfixGui(QtWidgets.QMainWindow):
             mfix_exe = '{} {}'.format(sys.executable, mfix_exe)
 
         if 'dmp' in config:
-            nodesi = int(self.ui.nodesi.text()) # FIXME this is not right
-            nodesj = int(self.ui.nodesj.text())
-            nodesk = int(self.ui.nodesk.text())
+            nodesi = self.project.nodesi
+            nodesj = self.project.nodesj
+            nodesk = self.project.nodesk
             total = nodesi * nodesj * nodesk
             # FIXME: maybe we should save NODES* keywords to runname.mfx instead of passing them on command line?
             mfix_exe = 'mpirun -np {} {} NODESI={} NODESJ={} NODESK={}'.format(
@@ -777,7 +777,6 @@ class MfixGui(QtWidgets.QMainWindow):
     # --- open/save/new ---
     def save_project(self):
         project_dir = self.settings.value('project_dir')
-
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
