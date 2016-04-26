@@ -1045,6 +1045,8 @@ class MonitorExecutablesThread(QThread):
         which indicate the options used to configure_mfix (--dmp, --smp, etc.) """
 
         config_options = {}
+        # TODO: get config options from mfix itself, via 'mfix --print-config',
+        # rather than inferring from build dir names
 
         # Check system PATH dirs first
         PATH = os.environ.get("PATH")
