@@ -6,18 +6,27 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>308</width>
+    <width>381</width>
     <height>552</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>5</number>
    </property>
    <property name="spacing">
     <number>5</number>
    </property>
-   <item row="3" column="2">
+   <item row="3" column="4">
     <spacer name="verticalSpacer_41">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -43,14 +52,37 @@
      </property>
     </spacer>
    </item>
-   <item row="4" column="0" colspan="3">
+   <item row="5" column="4">
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
+      <string>Remove Mesh</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QPushButton" name="pushbutton_generate_mesh">
+     <property name="text">
+      <string>Generate Mesh</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="6">
     <widget class="QStackedWidget" name="stackedwidget_mesh">
      <property name="currentIndex">
       <number>0</number>
      </property>
      <widget class="QWidget" name="uniform">
       <layout class="QGridLayout" name="gridLayout_34">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <property name="spacing">
@@ -74,7 +106,14 @@
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="LineEdit" name="lineedit_keyword_zmin"/>
+        <widget class="LineEdit" name="lineedit_keyword_zmin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
        </item>
        <item row="4" column="3">
         <widget class="LineEdit" name="lineedit_keyword_kmax">
@@ -107,7 +146,14 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="LineEdit" name="lineedit_keyword_xmin"/>
+        <widget class="LineEdit" name="lineedit_keyword_xmin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="3">
         <widget class="LineEdit" name="lineedit_keyword_zlength"/>
@@ -155,7 +201,14 @@
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="LineEdit" name="lineedit_keyword_ymin"/>
+        <widget class="LineEdit" name="lineedit_keyword_ymin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
        </item>
        <item row="0" column="3">
         <widget class="CheckBox" name="checkbox_keyword_no_k">
@@ -176,7 +229,16 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -206,7 +268,16 @@
      </widget>
      <widget class="QWidget" name="control_points">
       <layout class="QGridLayout" name="gridLayout_7">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <property name="spacing">
@@ -221,7 +292,16 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_51">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -264,7 +344,16 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <property name="margin">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
               <number>0</number>
              </property>
              <item>
@@ -315,7 +404,16 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_50">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -358,7 +456,16 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <property name="margin">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
               <number>0</number>
              </property>
              <item>
@@ -409,13 +516,22 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_49">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <property name="horizontalSpacing">
            <number>5</number>
           </property>
           <property name="verticalSpacing">
-           <number>0</number>
-          </property>
-          <property name="margin">
            <number>0</number>
           </property>
           <item row="1" column="0">
@@ -455,7 +571,16 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <property name="margin">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
               <number>0</number>
              </property>
              <item>
@@ -501,6 +626,21 @@
      </widget>
      <widget class="QWidget" name="mesher">
       <layout class="QGridLayout" name="gridLayout_35">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>5</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label_127">
          <property name="text">
@@ -520,7 +660,16 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_55">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -529,10 +678,22 @@
           <item row="1" column="0">
            <widget class="QStackedWidget" name="stackedwidget_mesher_options">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="vtkTableBasedClipDataSet">
              <layout class="QGridLayout" name="gridLayout_56">
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="horizontalSpacing">
+               <number>5</number>
+              </property>
               <item row="1" column="0">
                <widget class="QLabel" name="label_164">
                 <property name="text">
@@ -577,6 +738,18 @@
             </widget>
             <widget class="QWidget" name="vtkThreshold">
              <layout class="QGridLayout" name="gridLayout_58">
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
+               <number>5</number>
+              </property>
               <item row="1" column="0">
                <widget class="QCheckBox" name="checkbox_threshold_interface">
                 <property name="text">
@@ -688,14 +861,7 @@
      </widget>
     </widget>
    </item>
-   <item row="5" column="1" colspan="2">
-    <widget class="QPushButton" name="pushbutton_generate_mesh">
-     <property name="text">
-      <string>Generate Mesh</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="3">
+   <item row="1" column="0" colspan="6">
     <widget class="QFrame" name="frame">
      <property name="font">
       <font>
@@ -730,7 +896,16 @@ QPushButton:checked {
       <enum>QFrame::Plain</enum>
      </property>
      <layout class="QGridLayout" name="gridlayout_mesh_tab_btns">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <property name="spacing">
@@ -829,6 +1004,41 @@ QPushButton:checked {
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushbutton_mesh_uniform</tabstop>
+  <tabstop>checkbox_keyword_no_k</tabstop>
+  <tabstop>lineedit_keyword_xmin</tabstop>
+  <tabstop>lineedit_keyword_ymin</tabstop>
+  <tabstop>lineedit_keyword_zmin</tabstop>
+  <tabstop>lineedit_keyword_xlength</tabstop>
+  <tabstop>lineedit_keyword_ylength</tabstop>
+  <tabstop>lineedit_keyword_zlength</tabstop>
+  <tabstop>pushbutton_mesh_autosize</tabstop>
+  <tabstop>lineedit_keyword_imax</tabstop>
+  <tabstop>lineedit_keyword_jmax</tabstop>
+  <tabstop>lineedit_keyword_kmax</tabstop>
+  <tabstop>lineedit_mesh_cells_size_x</tabstop>
+  <tabstop>lineedit_mesh_cells_size_y</tabstop>
+  <tabstop>lineedit_mesh_cells_size_z</tabstop>
+  <tabstop>pushbutton_mesh_controlpoints</tabstop>
+  <tabstop>toolbutton_mesh_add_x</tabstop>
+  <tabstop>toolbutton_mesh_remove_x</tabstop>
+  <tabstop>tablewidget_mesh_control_points_x</tabstop>
+  <tabstop>toolbutton_mesh_add_y</tabstop>
+  <tabstop>toolbutton_mesh_remove_y</tabstop>
+  <tabstop>tablewidget_mesh_control_points_y</tabstop>
+  <tabstop>toolbutton_mesh_add_z</tabstop>
+  <tabstop>toolbutton_mesh_remove_z</tabstop>
+  <tabstop>tablewidget_mesh_control_points_z</tabstop>
+  <tabstop>pushbutton_mesh_mesher</tabstop>
+  <tabstop>combobox_mesher</tabstop>
+  <tabstop>checkbox_mesh_inside</tabstop>
+  <tabstop>lineedit_vtk_mesh_merge</tabstop>
+  <tabstop>checkbox_threshold_inside</tabstop>
+  <tabstop>checkbox_threshold_interface</tabstop>
+  <tabstop>lineedit_mesh_cells</tabstop>
+  <tabstop>plaintextedit_mesh_cell_types</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

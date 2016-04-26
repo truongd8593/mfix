@@ -11,6 +11,8 @@ import signal
 import subprocess
 import sys
 import time
+from collections import OrderedDict
+import copy
 
 try:
     # For Python 3.0 and later
@@ -21,7 +23,8 @@ except ImportError:
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui
-from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings, Qt
+from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings,
+                         Qt)
 
 # TODO: add pyside?
 try:
@@ -32,9 +35,10 @@ except ImportError:
 
 # local imports
 from widgets.vtkwidget import VtkWidget
-from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox)
+from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
+                          Table)
 from tools.mfixproject import Project, Keyword
-from tools.general import (make_callback, get_icon,
+from tools.general import (make_callback, get_icon, get_unique_string,
                            widget_iter, set_script_directory)
 from tools.namelistparser import buildKeywordDoc
 
@@ -76,6 +80,7 @@ class MfixGui(QtWidgets.QMainWindow):
                               'ComboBox':      ComboBox,
                               'DoubleSpinBox': DoubleSpinBox,
                               'SpinBox':       SpinBox,
+                              'Table':         Table,
                               }
 
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
@@ -243,6 +248,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.__setup_simple_keyword_widgets()
         self.__setup_other_widgets()
 
+        self.__setup_regions()
+
         # --- vtk setup ---
         self.__setup_vtk_widget()
 
@@ -395,6 +402,46 @@ class MfixGui(QtWidgets.QMainWindow):
         # Build default node library
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
+
+    def __setup_regions(self):
+        " setup the region connections etc."
+
+        self.ui.regions.toolbutton_region_add.pressed.connect(
+            self.new_region)
+        self.ui.regions.toolbutton_region_delete.pressed.connect(
+            self.delete_region)
+        self.ui.regions.toolbutton_region_copy.pressed.connect(
+            self.copy_region)
+
+        self.ui.regions.tablewidget_regions.dtype = OrderedDict
+        self.ui.regions.tablewidget_regions._setModel()
+        self.ui.regions.tablewidget_regions.set_columns(['shape', 'from',
+                                                         'to'])
+        self.ui.regions.tablewidget_regions.show_vertical_header(True)
+        self.ui.regions.tablewidget_regions.setValue(OrderedDict())
+        self.ui.regions.tablewidget_regions.auto_update_rows(True)
+
+        self.ui.regions.tablewidget_regions.new_selection.connect(
+            self.update_region_parameters)
+
+        for widget in widget_iter(self.ui.regions.groupbox_region_parameters):
+            if hasattr(widget, 'value_updated'):
+                widget.value_updated.connect(self.region_value_changed)
+
+                # lineedit_regions_to_x
+                name = str(widget.objectName())
+                if '_to_' in name:
+                    widget.key = '_'.join(name.split('_')[-2:])
+                    widget.dtype = float
+                elif '_from_' in str(widget.objectName()):
+                    widget.key = '_'.join(name.split('_')[-2:])
+                    widget.dtype = float
+                elif 'name' in name:
+                    widget.key = 'name'
+                    widget.dtype = str
+                elif 'shape' in name:
+                    widget.key = 'shape'
+                    widget.dtype = str
 
     def get_project_dir(self):
         " get the current project directory "
@@ -809,7 +856,107 @@ class MfixGui(QtWidgets.QMainWindow):
         self.project.load_mfix_dat(mfix_dat)
 
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
+
         # cgw - lots more model setup todo here
+
+    # --- region methods ---
+    def new_region(self):
+        'create a new region'
+
+        data = self.ui.regions.tablewidget_regions.value
+
+        name = get_unique_string('new', list(data.keys()))
+
+        data[name] = {'shape': ' box', 'from': [0, 0, 0], 'to': [0, 0, 0]}
+
+        self.ui.regions.tablewidget_regions.setValue(data)
+        self.ui.regions.tablewidget_regions.fit_to_contents()
+
+    def delete_region(self):
+        'remove the currently selected region'
+
+        row = self.ui.regions.tablewidget_regions.currentRow()
+
+        if row >= 0:
+            data = self.ui.regions.tablewidget_regions.value
+            name = list(data.keys())[row]
+            data.pop(name)
+            self.ui.regions.tablewidget_regions.setValue(data)
+
+    def copy_region(self):
+        'copy the currently selected region'
+
+        row = self.ui.regions.tablewidget_regions.currentRow()
+
+        if row >= 0:
+            data = self.ui.regions.tablewidget_regions.value
+            name = list(data.keys())[row]
+            new_region = copy.deepcopy(data[name])
+
+            new_name = get_unique_string(name, list(data.keys()))
+            data[new_name] = new_region
+
+            self.ui.regions.tablewidget_regions.setValue(data)
+
+    def update_region_parameters(self):
+        'a new region was selected, update region widgets'
+
+        row = self.ui.regions.tablewidget_regions.currentRow()
+
+        if row >= 0:
+            self.ui.regions.groupbox_region_parameters.setEnabled(True)
+
+            row = self.ui.regions.tablewidget_regions.currentRow()
+            data = self.ui.regions.tablewidget_regions.value
+            name = list(data.keys())[row]
+
+            self.ui.regions.lineedit_regions_name.updateValue(None, name)
+            self.ui.regions.combobox_regions_shape.updateValue(
+                None,
+                data[name]['shape'])
+
+            for widget, value in zip([self.ui.regions.lineedit_regions_from_x,
+                                      self.ui.regions.lineedit_regions_from_y,
+                                      self.ui.regions.lineedit_regions_from_z],
+                                     data[name]['from']
+                                     ):
+                widget.updateValue(None, value)
+
+            for widget, value in zip([self.ui.regions.lineedit_regions_to_x,
+                                      self.ui.regions.lineedit_regions_to_y,
+                                      self.ui.regions.lineedit_regions_to_z],
+                                     data[name]['to']
+                                     ):
+                widget.updateValue(None, value)
+
+            self.ui.regions.tablewidget_regions.fit_to_contents()
+
+        else:
+            self.ui.regions.groupbox_region_parameters.setEnabled(False)
+
+    def region_value_changed(self, widget, value, args):
+
+        row = self.ui.regions.tablewidget_regions.currentRow()
+        data = self.ui.regions.tablewidget_regions.value
+        name = list(data.keys())[row]
+        key = value.keys()[0]
+
+        if 'to' in key or 'from' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            data[name][item[0]][index] = value.values()[0]
+
+        elif 'name' in key:
+
+            new_name = get_unique_string(value.values()[0], list(data.keys()))
+            data = OrderedDict([(new_name, v) if k == name else (k, v) for
+                                k, v in data.items()])
+
+        elif 'shape' in key:
+            data[name]['shape'] = value.values()[0]
+
+        self.ui.regions.tablewidget_regions.setValue(data)
+
 
 # --- Threads ---
 class MfixThread(QThread):
@@ -876,16 +1023,17 @@ class MonitorExecutablesThread(QThread):
         for path in glob.glob(os.path.join(all_builddirs,'pymfix')):
             paths[path] = path
         run_dir = self.parent.get_project_dir()
-        dot_build = os.path.join(run_dir,'.build')
-        for path in os.listdir(dot_build):
-            path = os.path.join(dot_build,path)
-            if os.path.islink(path):
-                mfix_exe = os.path.join(run_dir,'mfix')
-                if os.path.isfile(mfix_exe):
-                    paths[mfix_exe] = path
-                pymfix_exe = os.path.join(run_dir,'pymfix')
-                if os.path.isfile(pymfix_exe):
-                    paths[pymfix_exe] = path
+        if run_dir is not None:
+            dot_build = os.path.join(run_dir,'.build')
+            for path in os.listdir(dot_build):
+                path = os.path.join(dot_build,path)
+                if os.path.islink(path):
+                    mfix_exe = os.path.join(run_dir,'mfix')
+                    if os.path.isfile(mfix_exe):
+                        paths[mfix_exe] = path
+                    pymfix_exe = os.path.join(run_dir,'pymfix')
+                    if os.path.isfile(pymfix_exe):
+                        paths[pymfix_exe] = path
         return paths
 
     def run(self):
