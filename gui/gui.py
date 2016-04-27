@@ -324,21 +324,26 @@ class MfixGui(QtWidgets.QMainWindow):
         groupbox_subgrid_params.setEnabled(index > 0)
 
     def __setup_other_widgets(self):
-        """ setup widgets which are not tied to a simple keyword
-        """
+        """ setup widgets which are not tied to a simple keyword """
+
         # move to another file - cgw
         model_setup = self.ui.model_setup
-        combobox_solver = model_setup.combobox_solver
-        combobox_solver.currentIndexChanged.connect(self.set_solver)
+        combobox = model_setup.combobox_solver
+        combobox.currentIndexChanged.connect(self.set_solver)
         self.set_solver(0) # Default - Single Phase - (?)
 
-        checkbox_disable_fluid_solver = model_setup.checkbox_disable_fluid_solver
-        checkbox_disable_fluid_solver.stateChanged.connect(self.disable_fluid_solver)
+        checkbox = model_setup.checkbox_disable_fluid_solver
+        checkbox.stateChanged.connect(self.disable_fluid_solver)
         self.disable_fluid_solver(False)
 
-        combobox_subgrid_model = model_setup.combobox_subgrid_model
-        combobox_subgrid_model.currentIndexChanged.connect(self.set_subgrid_model)
+        combobox = model_setup.combobox_subgrid_model
+        combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
+
+        # Fluid species - factor this out - cgw
+        # Automate the connecting?
+        self.ui.toolbutton_fluid_species_add.clicked.connect(
+            self.fluid_species_add)
 
     def __setup_simple_keyword_widgets(self):
         """
@@ -409,28 +414,26 @@ class MfixGui(QtWidgets.QMainWindow):
     def __setup_regions(self):
         " setup the region connections etc."
 
-        self.ui.regions.combobox_regions_shape.addItems(['box', 'sphere',
+        regions = self.ui.regions
+        regions.combobox_regions_shape.addItems(['box', 'sphere',
                                                          'point'])
 
-        self.ui.regions.toolbutton_region_add.pressed.connect(
+        regions.toolbutton_region_add.pressed.connect(
             self.new_region)
-        self.ui.regions.toolbutton_region_delete.pressed.connect(
+        regions.toolbutton_region_delete.pressed.connect(
             self.delete_region)
-        self.ui.regions.toolbutton_region_copy.pressed.connect(
+        regions.toolbutton_region_copy.pressed.connect(
             self.copy_region)
 
-        self.ui.regions.tablewidget_regions.dtype = OrderedDict
-        self.ui.regions.tablewidget_regions._setModel()
-        self.ui.regions.tablewidget_regions.set_columns(['shape', 'from',
-                                                         'to'])
-        self.ui.regions.tablewidget_regions.show_vertical_header(True)
-        self.ui.regions.tablewidget_regions.set_value(OrderedDict())
-        self.ui.regions.tablewidget_regions.auto_update_rows(True)
-        self.ui.regions.tablewidget_regions.set_selection_model('cell',
-                                                                multi=False)
-
-        self.ui.regions.tablewidget_regions.new_selection.connect(
-            self.update_region_parameters)
+        tablewidget = regions.tablewidget_regions
+        tablewidget.dtype = OrderedDict
+        tablewidget._setModel()
+        tablewidget.set_columns(['shape', 'from', 'to'])
+        tablewidget.show_vertical_header(True)
+        tablewidget.set_value(OrderedDict())
+        tablewidget.auto_update_rows(True)
+        tablewidget.set_selection_model('cell', multi=False)
+        tablewidget.new_selection.connect(self.update_region_parameters)
 
         for widget in widget_iter(self.ui.regions.groupbox_region_parameters):
             if hasattr(widget, 'value_updated'):
@@ -868,9 +871,15 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.project.load_mfix_dat(mfix_dat)
 
+        # Set non-keyword gui items based on loaded project
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
-
         # cgw - lots more model setup todo here
+
+    # --- fluid species methods ---
+    def fluid_species_add(self):
+        table =  self.ui.tablewidget_fluid_species
+        item = QtWidgets.QTableWidgetItem("New")
+        table.setItem(1,0, item)
 
     # --- region methods ---
     def new_region(self):
