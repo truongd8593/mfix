@@ -1026,40 +1026,42 @@ class MonitorExecutablesThread(QThread):
     def get_output(self):
         """ returns a dict mapping full (mfix,pymfix) paths
         to configuration options."""
-
+        # TODO: cache timestamps, only run mfix --print-flags if file changed
         config_options = {}
-        # TODO: get config options from mfix itself, via 'mfix --print-config',
-        # rather than inferring from build dir names
+
+        def mfix_print_flags(mfix_exe):
+            popen = subprocess.Popen(mfix_exe + " --print-flags",
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     shell=True)
+            out = popen.stdout.read()
+            err = popen.stderr.read()
+
+            return '' if err else out
 
         # Check system PATH dirs first
         PATH = os.environ.get("PATH")
         if PATH:
-            for dir in PATH.split(os.pathsep):
-                for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                    path = os.path.join(dir, name)
-                    if os.path.isfile(path):
-                        config_options[path] = '' # Unknown configuration options
-
+            dirs =  PATH.split(os.pathsep)
+        else:
+            dirs = []
 
         # Look in subdirs of build dir
-        build = os.path.join(self.mfix_home,'build')
-        all_builddirs = os.path.join(build,'*')
-        for exe in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-            for path in glob.glob(os.path.join(all_builddirs, exe)):
-                config_options[path] = '' # Unknown configuration options
-
-        # Look for named symlinks in run_dir/.build
+        build_dir = os.path.join(self.mfix_home,'build')
+        if os.path.exists(build_dir):
+            dirs.extend(os.path.join(build_dir, subdir)
+                         for subdir in os.listdir(build_dir))
+        # Check run_dir
         run_dir = self.parent.get_project_dir()
-        if run_dir is not None:
-            dot_build = os.path.join(run_dir,'.build')
-            if os.path.isdir(dot_build):
-                for subdir in os.listdir(dot_build):
-                    path = os.path.join(dot_build, subdir)
-                    if os.path.islink(path): # Symlink name indicates config options
-                        for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                            exe = os.path.join(run_dir, name)
-                            if os.path.isfile(exe):
-                                config_options[exe] = subdir
+        if run_dir:
+            dirs.append(run_dir)
+
+        # Now look for mfix/pymfix in these dirs
+        for dir in dirs:
+            for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+                exe = os.path.join(dir, name)
+                if os.path.isfile(exe):
+                    config_options[exe] = mfix_print_flags(exe)
 
         return config_options
 
