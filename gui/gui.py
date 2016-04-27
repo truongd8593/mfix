@@ -1021,23 +1021,35 @@ class MonitorExecutablesThread(QThread):
         QThread.__init__(self)
         self.parent = parent
         self.mfix_home = get_mfix_home()
+        self.cache = {}
         self.output = self.get_output()
 
     def get_output(self):
-        """ returns a dict mapping full (mfix,pymfix) paths
+        """ returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
-        # TODO: cache timestamps, only run mfix --print-flags if file changed
-        config_options = {}
 
-        def mfix_print_flags(mfix_exe):
+        def mfix_print_flags(mfix_exe, cache=self.cache):
+            """ Determine mfix configuration by running mfix --print-flags.  Cache results"""
+            try: # Possible race, file may have been deleted/renamed since isfile check!
+                stat = os.stat(mfix_exe)
+            except OSError:
+                return ''
+
+            cached_stat, cached_flags = cache.get(mfix_exe, (None, None))
+            if cached_stat and cached_stat == stat:
+                return cached_flags
+
             popen = subprocess.Popen(mfix_exe + " --print-flags",
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE,
                                      shell=True)
             out = popen.stdout.read()
             err = popen.stderr.read()
+            flags = '' if err else out
+            cache[mfix_exe] = (stat, flags)
+            return flags
 
-            return '' if err else out
+        config_options = {}
 
         # Check system PATH dirs first
         PATH = os.environ.get("PATH")
