@@ -211,9 +211,8 @@ class MfixGui(QtWidgets.QMainWindow):
         def make_handler(qtextbrowser):
             " make a closure to read output from external process "
 
-            def handle_line(line, color=None):
+            def handle_line(line, color=None): # Combine with print_internal
                 " closure to read output from external process "
-
                 log = logging.getLogger(__name__)
                 log.debug(str(line).strip())
                 cursor = qtextbrowser.textCursor()
@@ -242,7 +241,7 @@ class MfixGui(QtWidgets.QMainWindow):
             make_handler(self.ui.command_output))
         self.clear_thread.line_printed.connect(
             make_handler(self.ui.command_output))
-        update_run_executables()
+        #update_run_executables()
 
         self.monitor_executables_thread.sig.connect(update_run_executables)
         self.monitor_executables_thread.start()
@@ -265,12 +264,13 @@ class MfixGui(QtWidgets.QMainWindow):
         self.change_pane('geometry')
 
         # autoload last project
-        if self.get_project_dir():
-            self.open_project(self.get_project_dir())
-
+        proj_dir = self.get_project_dir()
+        if proj_dir:
+            self.open_project(proj_dir)
+            self.print_internal("Loaded %s" % proj_dir, color='blue')
         # print number of keywords
-        self.print_internal('Registered {} keywords'.format(
-            len(self.project.registered_keywords)))
+        self.print_internal('Registered %d keywords' %
+                            len(self.project.registered_keywords), color='blue')
 
     def set_navigation_item_state(self, item_name, state):
         on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
@@ -688,17 +688,20 @@ class MfixGui(QtWidgets.QMainWindow):
 
         return result
 
-    def print_internal(self, text):
-        if not text.endswith('\n'):
-            text += '\n'
-        LOG.info(str(text).strip())
-        cursor = self.ui.command_output.textCursor()
+    def print_internal(self, line, color=None): # basically same as handle_line
+        qtextbrowser = self.ui.command_output
+        if not line.endswith('\n'):
+            line += '\n'
+        LOG.info(str(line).strip())
+        cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
-        cursor.insertText(text)
-        cursor.movePosition(cursor.End)
-        vbar = self.ui.command_output.verticalScrollBar()
-        vbar.triggerAction(QtWidgets.QAbstractSlider.SliderToMaximum)
-        self.ui.command_output.ensureCursorVisible()
+        char_format = QtGui.QTextCharFormat()
+        if color:
+            char_format.setForeground(QtGui.QColor(color))
+        cursor.setCharFormat(char_format)
+        cursor.insertText(line)
+        scrollbar = qtextbrowser.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     def update_run(self):
         """Enable/disable run options based on selected executable """
@@ -1010,7 +1013,7 @@ class MfixThread(QThread):
                 self.line_printed.emit(str(line), None)
             lines_iterator = iter(popen.stderr.readline, b"")
             for line in lines_iterator:
-                self.line_prvinted.emit(str(line), "red")
+                self.line_printed.emit(str(line), "red")
 
 
 class MonitorExecutablesThread(QThread):
@@ -1226,8 +1229,11 @@ if __name__ == '__main__':
     qapp = QtWidgets.QApplication(sys.argv)
 
     mfix = MfixGui(qapp)
-
     mfix.show()
+
+    # Print something to force textbrowser to
+    # scroll to bottom (after widget visible)
+    mfix.print_internal('Ready', color='blue')
 
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
