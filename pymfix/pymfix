@@ -488,9 +488,9 @@ def get_residuals():
 def parse_command_line_arguments():
     "handle command line arguments"
     port = 5000 # Flask default
-    usage_string = "Usage: pymfix [-f, --file <mfix.dat>] [-h, --help] [ -p, --port <port> ] [ -s, --start ] [<keyword>=<keywordvalue> ...]"
+    usage_string = "Usage: pymfix [-f, --file <mfix.dat>] [-h, --help] [-p,--print-flags] [-P, --port <port>] [-s, --start] [<keyword>=<keywordvalue> ...]"
     try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hsp:", ["port=", ])
+        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hspP:", ["port=", ])
     except getopt.GetoptError:
         print(usage_string)
         sys.exit(1)
@@ -504,7 +504,10 @@ def parse_command_line_arguments():
             sys.exit(0)
         elif opt in ("-s", "--start"):
             Mfix.mfix_stopped = False
-        elif opt in ("-p", "--port"):
+        elif opt in ("-p", "--print-flags"):
+            MAIN.print_flags()
+            sys.exit(1)
+        elif opt in ("-P", "--port"):
             port = arg
             try:
                 port = int(port)

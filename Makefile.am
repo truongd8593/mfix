@@ -142,6 +142,7 @@ endif
 if MKL
 AM_FCFLAGS += -mkl
 AM_LDFLAGS += -mkl
+AM_FCFLAGS += $(FC_DEFINE)MKL
 else
 libmfix_a_SOURCES += model/BLAS.f
 libmfix_a_SOURCES += model/DGTSV.f

@@ -131,22 +131,22 @@
 ! there is difficulties opening it.
       inquire(file=filename,exist=lEXISTS)
       IF(.NOT.lEXISTS) THEN
-         IF(myPE == PE_IO) WRITE(*,1000)
+         IF(myPE == PE_IO) WRITE(*,1000) FILENAME
          CALL MFIX_EXIT(myPE)
 
  1000 FORMAT(2/,1X,70('*')/' From: READ_NAMELIST',/' Error 1000: ',    &
-         'The input data file, mfix.dat, is missing. Aborting.',/1x,   &
+         'Cannot find the input data file: ',A/,'Aborting.',/1x,   &
          70('*'),2/)
 
       ELSE
          OPEN(UNIT=UNIT_DAT, FILE=filename, STATUS='OLD', IOSTAT=IOS)
          IF(IOS /= 0) THEN
-            IF(myPE == PE_IO) WRITE (*,1001)
+            IF(myPE == PE_IO) WRITE (*,1001) FILENAME
             CALL MFIX_EXIT(myPE)
          ENDIF
 
  1001 FORMAT(2/,1X,70('*')/' From: READ_NAMELIST',/' Error 1001: ',    &
-         'Unable to open the mfix.dat file. Aborting.',/1x,70('*'),2/)
+         'Unable to open input data file: ',A/,'Aborting.',/1x,70('*'),2/)
       ENDIF
 
 
@@ -170,9 +170,9 @@
          ENDIF
 
  1100 FORMAT(//1X,70('*')/1x,'From: READ_NAMELIST',/1x,'Error 1100: ', &
-         'Line ',A,' in mfix.dat has is too long. Input lines should', &
+         'Line ',A,' in input file is too long. Input lines should', &
          /1x,'not pass column ',A,'.',2/3x,A,2/1x,'Please correct ',   &
-         'the mfix.dat file.',/1X,70('*'),2/)
+         'the input file.',/1X,70('*'),2/)
 
 ! All subsequent lines are thermochemical data
          IF(LINE_STRING(1:11) == 'THERMO DATA') EXIT READ_LP

@@ -1191,14 +1191,14 @@
    end subroutine do_abort
 
    !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !  Subroutine: ADD_COMMAND_LINE_ARGUMENT                               !
+   !  Subroutine: ADD_COMMAND_LINE_KEYWORD                                !
    !  Author: M.Meredith                                 Date: 03-FEB-16  !
    !                                                                      !
    !  Purpose: Save command line arguments in CMD_LINE_ARGS array.        !
    !           Used by both mfix.f and pymfix.                            !
    !                                                                      !
    !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-   SUBROUTINE ADD_COMMAND_LINE_ARGUMENT(ARG)
+   SUBROUTINE ADD_COMMAND_LINE_KEYWORD(ARG)
       implicit none
       CHARACTER(LEN=80), INTENT(IN) :: ARG
 
@@ -1212,6 +1212,40 @@
 
       CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
 
-   END SUBROUTINE ADD_COMMAND_LINE_ARGUMENT
+   END SUBROUTINE ADD_COMMAND_LINE_KEYWORD
+
+   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+   !  Subroutine: PRINT_OPTIONS                                           !
+   !  Author: M.Meredith                                 Date: 27-APR-16  !
+   !                                                                      !
+   !  Purpose: Print the configure flags MFIX was built with.             !
+   !                                                                      !
+   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+   SUBROUTINE PRINT_FLAGS
+      implicit none
+
+#ifdef MPI
+      write(*,"(A)",advance="no") "dmp "
+#endif
+
+#ifdef MKL
+      write(*,"(A)",advance="no") "mkl "
+#endif
+
+#ifdef NETCDF
+      write(*,"(A)",advance="no") "netcdf "
+#endif
+
+#ifdef PYMFIX
+      write(*,"(A)",advance="no") "python "
+#endif
+
+#ifdef _OPENMP
+      write(*,"(A)",advance="no") "smp "
+#endif
+
+      write(*,"(A)",advance="yes") ""
+
+   END SUBROUTINE PRINT_FLAGS
 
 END MODULE MAIN

@@ -69,7 +69,7 @@
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
-      USE MAIN, ONLY: ADD_COMMAND_LINE_ARGUMENT, INITIALIZE, INITIALIZE_2, FINALIZE, EXIT_SIGNAL, MFIX_DAT
+      USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD, INITIALIZE, INITIALIZE_2, FINALIZE, EXIT_SIGNAL, MFIX_DAT, PRINT_OPTIONS
       USE READ_INPUT, ONLY: GET_DATA
       USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
@@ -95,11 +95,22 @@
             CALL GET_COMMAND_ARGUMENT(II,tmp)
          ENDIF
 
-         IF (tmp=='-f') THEN
+         IF (tmp=='-h'.or.tmp=='--help') THEN
+            print *, "Usage: mfix [-h,--help] [-p,--print-flags] [-f,--file <filename>] [<KEYWORD>=<VALUE> ...]"
+            print *, "       -h,--help: display this help message"
+            print *, "       -p,--print-flags: print flags MFIX was built with (if any): dmp mkl netcdf python smp"
+            print *, "       -f,--file <filename>: specify filename of input file (Default: mfix.dat)"
+            print *, "       <KEYWORD>=<VALUE>: specify keyword on command line, overrides values in mfix.dat"
+            STOP
+         ELSE IF (tmp=='-p'.or.tmp=='--print-flags') THEN
+            CALL PRINT_FLAGS
+            STOP
+         ELSE IF (tmp=='-f'.or.tmp=='--file') THEN
             read_dat = .true.
             CYCLE
+         ELSE
+            CALL ADD_COMMAND_LINE_KEYWORD(tmp)
          ENDIF
-         CALL ADD_COMMAND_LINE_ARGUMENT(tmp)
       ENDDO
 
 ! Initialize the simulation
