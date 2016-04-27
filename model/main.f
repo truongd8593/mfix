@@ -1215,7 +1215,7 @@
    END SUBROUTINE ADD_COMMAND_LINE_KEYWORD
 
    !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !  Subroutine: PRINT_OPTIONS                                           !
+   !  Subroutine: PRINT_FLAGS                                             !
    !  Author: M.Meredith                                 Date: 27-APR-16  !
    !                                                                      !
    !  Purpose: Print the configure flags MFIX was built with.             !
