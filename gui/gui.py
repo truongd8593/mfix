@@ -248,7 +248,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
-        self.__setup_other_widgets()
+        self.__setup_other_widgets()  # refactor/rename - cgw
 
         self.__setup_regions()
 
@@ -342,8 +342,24 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # Fluid species - factor this out - cgw
         # Automate the connecting?
-        self.ui.toolbutton_fluid_species_add.clicked.connect(
-            self.fluid_species_add)
+        toolbutton = self.ui.toolbutton_fluid_species_add
+        toolbutton.clicked.connect(self.fluid_species_add)
+
+        # lineedit = self.ui.lineedit_fluid_species_name
+        # class FluidSpeciesNameValidator(QtGui.QValidator):
+        #     def validate(self, text, pos):
+        #         if text == "":
+        #             return (QtGui.QValidator.Intermediate, text, pos)
+        #         elif not isalpha(text[0]):
+        #             return (QtGui.QValidator.Invalid, text, pos)
+        #         # additional constraints, ie no spaces, etc? - cgw
+
+        #         return (QtGui.QValidator.Acceptable, text, pos)
+
+        #     # see http://stackoverflow.com/questions/26759623/why-is-the-return-of-qtgui-qvalidator-validate-so-inconsistent-robust-way-to
+        # lineedit.setValidator(FluidSpeciesNameValidator())
+
+
 
     def __setup_simple_keyword_widgets(self):
         """
@@ -877,9 +893,20 @@ class MfixGui(QtWidgets.QMainWindow):
 
     # --- fluid species methods ---
     def fluid_species_add(self):
-        table =  self.ui.tablewidget_fluid_species
-        item = QtWidgets.QTableWidgetItem("New")
-        table.setItem(1,0, item)
+        pass
+        # table =  self.ui.tablewidget_fluid_species
+        # n = table.rowCount()
+        # table.setRowCount(n+1)
+        # for i in range(table.columnCount()):
+        #     item = QtWidgets.QTableWidgetItem("New" if i==0 else "")
+        #     item.setFlags(item.flags() ^ Qt.ItemIsEditable)
+        #     table.setItem(n, i, item)
+        # table.setCurrentCell(n, 0)
+        # lineedit =  self.ui.lineedit_fluid_species_name
+        # lineedit.clear()
+        # lineedit.insert("New")
+        # lineedit.selectAll()
+        # lineedit.setFocus()
 
     # --- region methods ---
     def new_region(self):

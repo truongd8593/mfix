@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1030</width>
-    <height>742</height>
+    <width>1045</width>
+    <height>783</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -667,7 +667,7 @@ background-color:white;
                       <item>
                        <widget class="QLabel" name="label_27">
                         <property name="text">
-                         <string>Name</string>
+                         <string>Phase Name</string>
                         </property>
                        </widget>
                       </item>
@@ -682,45 +682,353 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="QCheckBox" name="momentum_x_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq">
                      <property name="text">
                       <string>Solve U-Momentum Equation</string>
                      </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QCheckBox" name="momentum_y_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq">
                      <property name="text">
                       <string>Solve V-Momentum Equation</string>
                      </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="momentum_z_eq">
-                     <property name="text">
-                      <string>Solve W-Momentum Equation</string>
+                     <property name="checked">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QCheckBox" name="species_eq">
+                    <widget class="CheckBox" name="chekcbox_keyword_momentum_z_eq">
+                     <property name="text">
+                      <string>Solve W-Momentum Equation</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="CheckBox" name="checkbox_keyword_species_eq">
                      <property name="text">
                       <string>Enable Species Equations</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <spacer name="verticalSpacer_14">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
+                    <widget class="QFrame" name="splitter_scalar_eq">
+                     <property name="minimumSize">
                       <size>
-                       <width>20</width>
-                       <height>40</height>
+                       <width>0</width>
+                       <height>0</height>
                       </size>
                      </property>
-                    </spacer>
+                     <widget class="QCheckBox" name="checkbox_enable_scalar_eq">
+                      <property name="geometry">
+                       <rect>
+                        <x>0</x>
+                        <y>0</y>
+                        <width>161</width>
+                        <height>16</height>
+                       </rect>
+                      </property>
+                      <property name="text">
+                       <string>Enable Scalar Equations</string>
+                      </property>
+                     </widget>
+                     <widget class="QSpinBox" name="spinbox_nscalar">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                      <property name="geometry">
+                       <rect>
+                        <x>180</x>
+                        <y>0</y>
+                        <width>39</width>
+                        <height>20</height>
+                       </rect>
+                      </property>
+                     </widget>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="groupBox_8">
+                     <property name="title">
+                      <string>Models</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_14">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="comboBox_7">
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Ideal Gas Law</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>UDF</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QComboBox" name="comboBox_8">
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Sutherland's Law</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>UDF</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QComboBox" name="comboBox_9">
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Mixture</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_31">
+                        <property name="text">
+                         <string>Specific Heat:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_30">
+                        <property name="text">
+                         <string>Molecular Weight:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_28">
+                        <property name="text">
+                         <string>Density:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_29">
+                        <property name="text">
+                         <string>Viscosity:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="QLabel" name="label_36">
+                        <property name="text">
+                         <string>Conductivity:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="1">
+                       <widget class="QComboBox" name="comboBox_12">
+                        <property name="currentIndex">
+                         <number>1</number>
+                        </property>
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Temperature dependent (air)</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>UDF</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_37">
+                        <property name="text">
+                         <string>Diffusivity:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="1">
+                       <widget class="QComboBox" name="comboBox_11">
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Mixture</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>UDF</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_model_constant_density"/>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QComboBox" name="comboBox_13">
+                        <property name="currentIndex">
+                         <number>1</number>
+                        </property>
+                        <item>
+                         <property name="text">
+                          <string>Constant</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>Dilute Mixture Approximation (air)</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>UDF</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_viscosity"/>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_mw"/>
+                      </item>
+                      <item row="3" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_sh"/>
+                      </item>
+                      <item row="4" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_conductivity"/>
+                      </item>
+                      <item row="5" column="2">
+                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_diffusion"/>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="QLabel" name="label_2">
+                        <property name="font">
+                         <font>
+                          <weight>50</weight>
+                          <italic>true</italic>
+                          <bold>false</bold>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>kg/m³ </string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="3">
+                       <widget class="QLabel" name="label_3">
+                        <property name="font">
+                         <font>
+                          <italic>true</italic>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>Pa.s</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="3">
+                       <widget class="QLabel" name="label_4">
+                        <property name="font">
+                         <font>
+                          <italic>true</italic>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>kg/kmol</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="3">
+                       <widget class="QLabel" name="label_5">
+                        <property name="font">
+                         <font>
+                          <italic>true</italic>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>kJ/(kg.K)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="3">
+                       <widget class="QLabel" name="label_6">
+                        <property name="font">
+                         <font>
+                          <italic>true</italic>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>W/(m.K)</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="3">
+                       <widget class="QLabel" name="label_7">
+                        <property name="font">
+                         <font>
+                          <italic>true</italic>
+                         </font>
+                        </property>
+                        <property name="text">
+                         <string>m²/s </string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
                    </item>
                    <item>
                     <widget class="QGroupBox" name="groupBox_7">
@@ -845,147 +1153,6 @@ background-color:white;
                       </item>
                      </layout>
                     </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_15">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QGroupBox" name="groupBox_8">
-                     <property name="title">
-                      <string>Properties</string>
-                     </property>
-                     <property name="flat">
-                      <bool>true</bool>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_14">
-                      <property name="leftMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="spacing">
-                       <number>5</number>
-                      </property>
-                      <item row="1" column="2">
-                       <widget class="QLineEdit" name="lineEdit_14"/>
-                      </item>
-                      <item row="3" column="1">
-                       <widget class="QComboBox" name="comboBox_9"/>
-                      </item>
-                      <item row="4" column="0">
-                       <widget class="QLabel" name="label_31">
-                        <property name="text">
-                         <string>Specific Heat</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="0">
-                       <widget class="QLabel" name="label_30">
-                        <property name="text">
-                         <string>Molecular Weight</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="2">
-                       <widget class="QLineEdit" name="lineEdit_16"/>
-                      </item>
-                      <item row="1" column="1">
-                       <widget class="QComboBox" name="comboBox_7"/>
-                      </item>
-                      <item row="2" column="1">
-                       <widget class="QComboBox" name="comboBox_8"/>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="QLabel" name="label_28">
-                        <property name="text">
-                         <string>Density</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="2" column="2">
-                       <widget class="QLineEdit" name="lineEdit_15"/>
-                      </item>
-                      <item row="2" column="0">
-                       <widget class="QLabel" name="label_29">
-                        <property name="text">
-                         <string>Viscosity</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="QLabel" name="label_36">
-                        <property name="text">
-                         <string>Conductivity</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="1">
-                       <widget class="QComboBox" name="comboBox_12"/>
-                      </item>
-                      <item row="6" column="0">
-                       <widget class="QLabel" name="label_37">
-                        <property name="text">
-                         <string>Diffusion Coeff.</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="4" column="1">
-                       <widget class="QComboBox" name="comboBox_11"/>
-                      </item>
-                      <item row="4" column="2">
-                       <widget class="QLineEdit" name="lineEdit_24"/>
-                      </item>
-                      <item row="6" column="1">
-                       <widget class="QComboBox" name="comboBox_13"/>
-                      </item>
-                      <item row="5" column="2">
-                       <widget class="QLineEdit" name="lineEdit_25"/>
-                      </item>
-                      <item row="6" column="2">
-                       <widget class="QLineEdit" name="lineEdit_26"/>
-                      </item>
-                      <item row="0" column="0">
-                       <widget class="QLabel" name="label_2">
-                        <property name="text">
-                         <string>Name</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="1" colspan="2">
-                       <widget class="QLineEdit" name="lineEdit_2"/>
-                      </item>
-                     </layout>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_18">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
                    </item>
                   </layout>
                  </widget>
@@ -1132,7 +1299,7 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>500</width>
+                         <width>277</width>
                          <height>551</height>
                         </rect>
                        </property>
