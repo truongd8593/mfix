@@ -805,7 +805,7 @@ class Project(object):
                         try:
                             self.updateKeyword(key, value, args, keywordComment)
                         except ValueError:
-                            warnings.warn("Skipping line:"+line)
+                            warnings.warn("Skipping line %d: %s" % (i, line))
 
     def updateKeyword(self, key, value, args=[],  keywordComment=''):
         '''
