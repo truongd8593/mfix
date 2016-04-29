@@ -802,7 +802,10 @@ class Project(object):
                     if key is None:
                         self.dat_file_list.append(line+commentedline)
                     else:
-                        self.updateKeyword(key, value, args, keywordComment)
+                        try:
+                            self.updateKeyword(key, value, args, keywordComment)
+                        except ValueError:
+                            warnings.warn("Skipping line:"+line)
 
     def updateKeyword(self, key, value, args=[],  keywordComment=''):
         '''
@@ -1012,8 +1015,7 @@ class Project(object):
             self._recursiveAddKeyToKeywordDict(keywordobject,
                                                [key]+args)
         else:
-            warnings.warn('Could not parse {}, {}, {}'.format(
-                key, args, value))
+            raise ValueError
 
         return keywordobject
 

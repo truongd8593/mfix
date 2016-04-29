@@ -1252,6 +1252,7 @@ class ProjectManager(Project):
             for keyword in self.keywordItems():
                 self.submit_change(None, {keyword.key: keyword.value},
                                    args=keyword.args, forceUpdate=True)
+            # report any errors
             for w in ws:
                 self.parent.print_internal("Warning: %s" % w.message, color='red')
 
