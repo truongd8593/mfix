@@ -682,7 +682,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_0">
                      <property name="text">
                       <string>Solve U-Momentum Equation</string>
                      </property>
@@ -692,7 +692,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq_args_0">
                      <property name="text">
                       <string>Solve V-Momentum Equation</string>
                      </property>
@@ -702,7 +702,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="CheckBox" name="chekcbox_keyword_momentum_z_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_momentum_z_eq_args_0">
                      <property name="text">
                       <string>Solve W-Momentum Equation</string>
                      </property>
@@ -712,7 +712,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="CheckBox" name="checkbox_keyword_species_eq">
+                    <widget class="CheckBox" name="checkbox_keyword_species_eq_args_0">
                      <property name="text">
                       <string>Enable Species Equations</string>
                      </property>
