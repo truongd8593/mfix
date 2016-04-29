@@ -13,6 +13,7 @@ import sys
 import time
 from collections import OrderedDict
 import copy
+import warnings
 
 try:
     # For Python 3.0 and later
@@ -1235,7 +1236,7 @@ class ProjectManager(Project):
                 str(updatedValue))
         else:
             keystring = '{} = {}'.format(key, str(updatedValue))
-        self.parent.print_internal(keystring, font="Courier")
+        self.parent.print_internal(keystring, font="Monospace")
 
         if updatedValue is not None:
             for wid, keys in self.widgetList: # potentially slow
@@ -1245,12 +1246,14 @@ class ProjectManager(Project):
 
     def load_mfix_dat(self, mfixDat):
 
-        self.parsemfixdat(fname=mfixDat)
-
-        # emit loaded keys
-        for keyword in self.keywordItems():
-            self.submit_change('Loading', {keyword.key: keyword.value},
-                               args=keyword.args, forceUpdate=True)
+        with warnings.catch_warnings(record=True) as ws:
+            self.parsemfixdat(fname=mfixDat)
+            # emit loaded keys
+            for keyword in self.keywordItems():
+                self.submit_change(None, {keyword.key: keyword.value},
+                                   args=keyword.args, forceUpdate=True)
+            for w in ws:
+                self.parent.print_internal("Warning: %s" % w.message, color='red')
 
     def register_widget(self, widget, keys=None, args=None):
         '''
@@ -1273,7 +1276,6 @@ class ProjectManager(Project):
 
 if __name__ == '__main__':
     qapp = QtWidgets.QApplication(sys.argv)
-
     mfix = MfixGui(qapp)
     mfix.show()
 
