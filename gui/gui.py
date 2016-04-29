@@ -421,7 +421,7 @@ class MfixGui(QtWidgets.QMainWindow):
                             widget.addItems(list(doc['valids'].keys()))
 
                 # register the widget with the project manager
-                self.project.register_widget(widget, keys=[keyword],args=args)
+                self.project.register_widget(widget, keys=[keyword], args=args)
 
                 # connect to unsaved method
                 widget.value_updated.connect(self.unsaved)
@@ -1245,23 +1245,28 @@ class ProjectManager(Project):
         self.parent.print_internal(keystring, font="Monospace")
 
         if updatedValue is not None:
-            for wid, keys in self.widgetList: # potentially slow
-                if not wid == widget:
-                    if key in keys or 'all' in keys:
-                        wid.updateValue(key, updatedValue, args)
+            # potentially slow
+            for (w, k, a) in self.widgetList:
+                if w == widget:
+                    continue
+                if a != args:
+                    continue
+                if k in keys or 'all' in keys:
+                    wid.updateValue(key, updatedValue, args)
 
     def load_mfix_dat(self, mfixDat):
 
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
-            # prevent  RuntimeError: dictionary changed size during iteration
-            # FIXME
-            kwitems = list(self.keywordItems())
-
-            for keyword in kwitems: #self.keywordItems():
+            for keyword in self.keywordItems():
+                if keyword.key == 'momentum_x_eq':
+                    if keyword.args == [0]:
+                        import traceback
+                        traceback.print_stack()
                 self.submit_change(None, {keyword.key: keyword.value},
                                    args=keyword.args, forceUpdate=True)
+
             # report any errors
             for w in ws:
                 self.parent.print_internal("Warning: %s" % w.message, color='red')
@@ -1281,7 +1286,7 @@ class ProjectManager(Project):
                 widget.objectName(),
                 keys, args)
             )
-        self.widgetList.append([widget, keys]) # args?
+        self.widgetList.append([widget, keys, args])
         widget.value_updated.connect(self.submit_change)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
