@@ -810,7 +810,10 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def get_mfix_dat(self):
-        name = self.project.run_name.value
+        if hasattr(self.project, 'run_name'):
+            name = self.project.run_name.value
+        else:
+            name = 'new_file'
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         mfix_dat = name + '.mfx'
@@ -829,52 +832,16 @@ class MfixGui(QtWidgets.QMainWindow):
         project_dir = self.settings.value('project_dir')
         self.setWindowTitle('MFIX - %s *' % project_dir)
 
-    def new_project(self, project_dir=None):
-        if not project_dir:
-            project_dir = str(
-                QtWidgets.QFileDialog.getExistingDirectory(
-                    self, 'Create Project in Directory',
-                    "",
-                    QtWidgets.QFileDialog.ShowDirsOnly))
-        if len(project_dir) < 1:
-            return
-        try:
-            shutil.copyfile('mfix.dat.template',
-                            os.path.join(project_dir, 'mfix.dat'))
-        except IOError:
-            self.message(title='Warning',
-                         icon='warning',
-                         text=('You do not have write access to this '
-                               'directory.\n'),
-                         buttons=['ok'],
-                         default='ok',
-                         )
-            return
-        self.open_project(project_dir)
-
-    def open_project(self, project_dir=None):
-        """
-        Open MFiX Project
-        """
-        if not project_dir:
-            project_dir = str(
-                 QtWidgets.QFileDialog.getExistingDirectory(
-                     self, 'Open Project Directory',
-                     "",
-                     QtWidgets.QFileDialog.ShowDirsOnly))
-
-        if len(project_dir) < 1:
-            return
-
-        writable = True
+    def check_writable(self, directory):
+        " check whether directory is writable "
         try:
             import tempfile
             testfile = tempfile.TemporaryFile(dir=project_dir)
             testfile.close()
+            return True
         except IOError:
             writable = False
 
-        if not writable:
             self.message(title='Warning',
                          icon='warning',
                          text=('You do not have write access to this '
@@ -882,31 +849,72 @@ class MfixGui(QtWidgets.QMainWindow):
                          buttons=['ok'],
                          default='ok',
                          )
+            return False
+
+    def new_project(self, project_path=None):
+        if not project_path:
+            project_path = str(
+                QtWidgets.QFileDialog.getOpenFileName(
+                    self, 'Create Project in Directory',
+                    ""))
+        if len(project_path) < 1:
             return
 
-        mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
+        if os.path.isdir(project_path):
+            project_dir = project_path
+            project_path = os.path.join(project_dir, 'mfix.dat')
+        else:
+            project_dir = os.path.dirname(project_path)
 
-        if not os.path.exists(mfix_dat):
-            self.message(title='Warning',
-                         icon='warning',
-                         text=('mfix.dat file does not exist in this '
-                               'directory.\n'),
-                         buttons=['ok'],
-                         default='ok',
-                         )
+        if not self.check_writable(project_dir):
             return
 
+        shutil.copyfile('mfix.dat.template',project_path)
+
+        self.open_project(project_path)
+
+    def open_project(self, project_path=None):
+        """
+        Open MFiX Project
+        """
+
+        if not project_path:
+            project_path = QtWidgets.QFileDialog.getOpenFileName(
+                self, 'Open Project Directory',self.get_project_dir())
+
+            if len(project_path) < 1:
+                return
+
+            project_path = project_path[0]
+
+            if not os.path.exists(project_path):
+                self.message(title='Warning',
+                             icon='warning',
+                             text=('mfix.dat file does not exist in this '
+                                   'directory.\n'),
+                             buttons=['ok'],
+                             default='ok',
+                            )
+                return
+
+        if os.path.isdir(project_path):
+            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+
+        if not os.path.exists(project_path):
+            return
+
+        project_dir = os.path.dirname(project_path)
         self.settings.setValue('project_dir', project_dir)
         self.setWindowTitle('MFIX - %s' % project_dir)
 
         # read the file
-        with open(mfix_dat, 'r') as mfix_dat_file:
+        with open(project_path, 'r') as mfix_dat_file:
             src = mfix_dat_file.read()
         self.ui.mfix_dat_source.setPlainText(src)
         # self.mode_changed('developer')
 
-        self.project.load_mfix_dat(mfix_dat)
-        self.print_internal("Loaded %s/mfix.dat" % project_dir, color='blue')
+        self.project.load_mfix_dat(project_path)
+        self.print_internal("Loaded %s" % project_path, color='blue')
 
         # Set non-keyword gui items based on loaded project
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
