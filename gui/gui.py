@@ -1255,7 +1255,11 @@ class ProjectManager(Project):
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
-            for keyword in self.keywordItems():
+            # prevent  RuntimeError: dictionary changed size during iteration
+            # FIXME
+            kwitems = list(self.keywordItems())
+
+            for keyword in kwitems: #self.keywordItems():
                 self.submit_change(None, {keyword.key: keyword.value},
                                    args=keyword.args, forceUpdate=True)
             # report any errors
