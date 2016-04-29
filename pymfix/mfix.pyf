@@ -212,11 +212,6 @@ python module mfix ! in
                 double precision intent(in) :: ode_dt
                 integer :: ierr
             end subroutine stiff_chem_solver
-            function calc_reactions(ijk) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
-                use rxns, only: no_of_rxns
-                integer intent(in) :: ijk
-                logical :: calc_reactions
-            end function calc_reactions
             subroutine calc_ode_coeff(lneq,ijk) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
                 use run, only: species_eq
                 use fldvar, only: ep_s
@@ -1479,6 +1474,9 @@ python module mfix ! in
                 external write_usrs1
             end subroutine time_step_end
         end module step
+        module toleranc ! in :mfix:/mfix/model/toleranc.f
+           double precision :: tmax
+        end module toleranc
         module usr_dispatch ! in :mfix:/mfix/model/usr_dispatch.f
             subroutine mfix_usrs(usr_sub_name) ! in :mfix:/mfix/model/usr_dispatch.f:usr_dispatch
                 character*(*) intent(in) :: usr_sub_name

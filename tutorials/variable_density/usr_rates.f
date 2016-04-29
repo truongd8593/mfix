@@ -74,6 +74,8 @@
       DOUBLE PRECISION :: c_Biomass
       DOUBLE PRECISION :: c_Moisture
 
+      call abort
+
 ! Bound the gas and solids phase temperatures.
       TgX  = min(TMAX, T_g(IJK))
       TsX  = min(TMAX, T_s(IJK,1))

@@ -76,7 +76,7 @@ MODULE STIFF_CHEM
 !     Reviewer:                                         Date:             C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STIFF_CHEM_SOLVER(ODE_DT, iErr)
+      SUBROUTINE STIFF_CHEM_SOLVER(ODE_DT, iErr, USRS_RATES)
 
 ! External Module Procedures:
 !---------------------------------------------------------------------//
@@ -88,6 +88,7 @@ MODULE STIFF_CHEM
       use output,   only : FULL_LOG
       use param1,   only : zero
       use run,      only : TIME
+      use rxns,   only : NO_OF_RXNS
 
       use mpi_utility
 
@@ -96,6 +97,7 @@ MODULE STIFF_CHEM
       use functions
 
       implicit none
+      EXTERNAL USRS_RATES
 
 ! Passed Variables:
 !----------------------------------------------------------------------!
@@ -153,6 +155,10 @@ MODULE STIFF_CHEM
       LOGICAL :: lReset
       LOGICAL :: lIncpt
 
+      LOGICAL :: CALC_REACTIONS
+      DOUBLE PRECISION :: RATES(NO_OF_RXNS)
+      DOUBLE PRECISION, PARAMETER :: rLimit = 1.0d-8
+
       lErr_l = .FALSE.
 
       CALL INIT_STIFF_CHEM_STATS
@@ -196,7 +202,18 @@ MODULE STIFF_CHEM
 ! the time interval. The default value is 500.
             IWORK(6) = STIFF_CHEM_MAX_STEPS
 
-            IF(CALC_REACTIONS(IJK)) THEN
+            ! Initialize
+            RATES = 0.0d0
+
+            ! Calculate user defined reaction rates.
+            CALL USRS_RATES(IJK, SIZE(RATES), RATES, RATES)
+
+            ! If there is little to no reaction in the cell, then set the ODE
+            ! Time to zero to avoid calling the stiff solver.
+            CALC_REACTIONS = .TRUE.
+            if(maxval(RATES) < rLimit) CALC_REACTIONS = .FALSE.
+
+            IF(CALC_REACTIONS) THEN
 
 ! Map MFIX variables to ODE variables.
                CALL mapMFIXtoODE(NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
@@ -305,45 +322,6 @@ MODULE STIFF_CHEM
 
       RETURN
       END SUBROUTINE STIFF_CHEM_SOLVER
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: CALC_REACTIONS                                         !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date: 07-Feb-13  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION CALC_REACTIONS(IJK)
-
-      use rxns,   only : NO_OF_RXNS
-
-      implicit none
-
-      INTEGER, intent(in) :: IJK
-
-      DOUBLE PRECISION :: RATES(NO_OF_RXNS)
-
-      DOUBLE PRECISION, parameter :: rLimit = 1.0d-8
-
-! Initialize
-      RATES = 0.0d0
-
-! Calculate user defined reaction rates.
-      CALL USR_RATES(IJK, RATES)
-
-! If there is little to no reaction in the cell, then set the ODE
-! Time to zero to avoid calling the stiff solver.
-      CALC_REACTIONS = .TRUE.
-      if(maxval(RATES) < rLimit) CALC_REACTIONS = .FALSE.
-
-
-      RETURN
-      END FUNCTION CALC_REACTIONS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

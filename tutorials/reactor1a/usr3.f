@@ -50,6 +50,7 @@
 !
 !  Insert user-defined code here
 !
+      call abort
       IJK1 = FUNIJK(2, 1, 1)
       IJK2 = FUNIJK(2, JMAX1, 1)
       conv =  1. -  ( (X_g(IJK2, 1) * ROP_g(IJK2) * V_g(IJK2))   &

@@ -62,8 +62,8 @@ def pymfix_usrs_rates(ijk, rates):
         print("Python override of: ",usr_filename)
         usr_py = open(usr_filename)
         mod = importlib.import_module(mod_name)
-        print "rates has size", len(rates)
-        print "rates is", rates
+        print("rates has size", len(rates))
+        print("rates is", rates)
         getattr(mod,mod_name)(ijk, rates)
     else:
         # print("No Python override of: ",usr_filename)

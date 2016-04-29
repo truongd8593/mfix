@@ -7,9 +7,9 @@ fi
 post_script=AUTOTEST/post.script.NEW
 
 if [ -n "${MPIRANKS}" ]; then
-    mpirun -np ${MPIRANKS} ./mfix${EXEEXT}
+    mpirun -np ${MPIRANKS} ./pymfix${EXEEXT} -s
 else
-    ./mfix${EXEEXT}
+    ./pymfix${EXEEXT} -s
 fi
 if [ -e ${post_script} ]; then
     OMP_NUM_THREADS=1 ./postmfix${EXEEXT} < ${post_script}

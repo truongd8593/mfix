@@ -146,6 +146,7 @@ pymfix_src = \
 	$(top_srcdir)/model/rrates0.f \
 	$(top_srcdir)/model/run_mod.f \
 	$(top_srcdir)/model/time_step.f \
+	$(top_srcdir)/model/toleranc_mod.f \
 	$(top_srcdir)/model/usr_dispatch.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
@@ -184,15 +185,19 @@ endif
 F2PY_FLAGS = -lgomp --noopt --noarch
 
 if MPI
+
 AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
 F2PY_FLAGS += $(FC_DEFINE)MPI
 
-test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
+test: postmfix$(EXEEXT) pymfix ## Run tests
 	MPIRANKS=$(MPIRANKS) ${top_srcdir}/build-aux/runtests.sh
+
 else
-test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
+
+test: postmfix$(EXEEXT) pymfix ## Run tests
 	${top_srcdir}/build-aux/runtests.sh
+
 endif
 
 ################################################################
