@@ -1313,17 +1313,19 @@ class VtkWidget(QtWidgets.QWidget):
                 append_filter.AddInputData(
                     self.get_input_data(str(item.text(0))).GetOutput())
 
-        # check to make sure there is geometry
-        if append_filter.GetTotalNumberOfInputConnections() <= 0:
-            self.parent.message(title='Warning',
-                                icon='warning',
-                                text='There is no visible geometry. Aborting',
-                                buttons=['ok'],
-                                default='ok',
-                                infoText=None,
-                                detailedtext=None,
-                                )
-            raise ValueError('There is no visible geometry. Aborting')
+        # FIXME: need to implement loading visible geometry from case file in open_project()
+        # FIXME: in the meantime don't abort when saving
+        # # check to make sure there is geometry
+        # if append_filter.GetTotalNumberOfInputConnections() <= 0:
+        #     self.parent.message(title='Warning',
+        #                         icon='warning',
+        #                         text='There is no visible geometry',
+        #                         buttons=['ok'],
+        #                         default='ok',
+        #                         infoText=None,
+        #                         detailedtext=None,
+        #                         )
+        #     raise ValueError('There is no visible geometry. Aborting')
 
         append_filter.Update()
 

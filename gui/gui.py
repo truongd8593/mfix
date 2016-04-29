@@ -1279,6 +1279,10 @@ if __name__ == '__main__':
     # scroll to bottom (after widget visible)
     mfix.print_internal('Ready', color='blue')
 
+    if len(sys.argv) > 1:
+        case_dir = sys.argv[-1]
+        mfix.open_project(case_dir)
+
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
