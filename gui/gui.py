@@ -64,6 +64,12 @@ def get_mfix_home():
     return os.path.dirname(
         os.path.dirname(os.path.realpath(__file__)))
 
+def format_key_with_args(key, args=None):
+    if args:
+        return "%s(%s)" % (key, ','.join(str(a) for a in args))
+    else:
+        return str(key)
+
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
     '''
@@ -1195,7 +1201,7 @@ class ProjectManager(Project):
         Project.__init__(self, keyword_doc=keyword_doc)
 
         self.parent = parent
-        self.widgetList = []
+        self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
 
     def submit_change(self, widget, newValueDict, args=None,
@@ -1243,24 +1249,28 @@ class ProjectManager(Project):
 
         updatedValue = self.updateKeyword(key, newValue, args)
 
-        if args:
-            keystring = '{}({}) = {}'.format(
-                key,
-                ','.join([str(arg) for arg in args]),
-                str(updatedValue))
-        else:
-            keystring = '{} = {}'.format(key, str(updatedValue))
-        self.parent.print_internal(keystring, font="Monospace")
 
-        if updatedValue is not None:
-            # potentially slow
-            for (w, k, a) in self.widgetList:
-                if w == widget:
-                    continue
-                if a != args:
-                    continue
-                if k in keys or 'all' in keys:
-                    wid.updateValue(key, updatedValue, args)
+        k_a = tuple([key]+args)
+        widgets_to_update = self.keyword_and_args_to_widget.get(k_a)
+        warn = False
+        if widgets_to_update == None:
+            warn = True
+            widgets_to_update = []
+
+        # Are we using the 'all' mechanism?
+        #widgets_to_update.extend(
+        #    self.keyword_and_args_to_widget.get("all", []))
+
+        for w in widgets_to_update:
+            if w == widget: # Avoid circular updates
+                continue
+            w.updateValue(key, updatedValue, args)
+
+
+        self.parent.print_internal("%s = %s" % (format_key_with_args(key, args),
+                                                updatedValue),
+                                   font="Monospace", color='red' if warn else None)
+
 
     def load_mfix_dat(self, mfixDat):
 
@@ -1294,7 +1304,14 @@ class ProjectManager(Project):
                 widget.objectName(),
                 keys, args)
             )
-        self.widgetList.append([widget, keys, args])
+        if args is None:
+            args = []
+        for k in keys:
+            k_a = tuple([k]+args)
+        d = self.keyword_and_args_to_widget
+        if k_a not in d:
+            d[k_a] = []
+        d[k_a].append(widget)
         widget.value_updated.connect(self.submit_change)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
