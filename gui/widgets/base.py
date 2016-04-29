@@ -130,7 +130,7 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QCheckBox.__init__(self, parent)
         CommonBase.__init__(self)
-        self.released.connect(self.emitUpdatedValue)
+        self.stateChanged.connect(self.emitUpdatedValue)
 
     @property
     def value(self):
@@ -277,7 +277,7 @@ class Table(QtWidgets.QTableView, CommonBase):
     lost_focus:
         emits when the widget has lost focus
     new_selection:
-        emits the from and to indices of a slection change.
+        emits the from and to indices of a selection change.
     '''
     value_changed = QtCore.Signal(object)
     lost_focus = QtCore.Signal(object)
