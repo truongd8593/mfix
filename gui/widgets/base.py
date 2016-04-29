@@ -30,9 +30,10 @@ class CommonBase(QtCore.QObject):
     def __init__(self):
         self.key = None
         self.defaultValue = None
+        self.args = None
 
     def emitUpdatedValue(self):
-        self.value_updated.emit(self, {self.key: self.value}, None)
+        self.value_updated.emit(self, {self.key: self.value}, self.args)
 
     def validator(self):
         return False
@@ -65,7 +66,7 @@ class CommonBase(QtCore.QObject):
             self.defaultValue = val
 
         if self.defaultValue is not None:
-            self.updateValue(self.key, self.defaultValue, args=None)
+            self.updateValue(self.key, self.defaultValue, args=self.args)
 
 
 class LineEdit(QtWidgets.QLineEdit, CommonBase):
@@ -119,7 +120,7 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
             self.defaultValue = val
 
         if self.defaultValue is not None:
-            self.updateValue(self.key, self.defaultValue, args=None)
+            self.updateValue(self.key, self.defaultValue, args=self.args)
         else:
             self.clear()
 
