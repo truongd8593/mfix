@@ -268,7 +268,7 @@ class MfixGui(QtWidgets.QMainWindow):
         proj_dir = self.get_project_dir()
         if proj_dir:
             self.open_project(proj_dir)
-            self.print_internal("Loaded %s" % proj_dir, color='blue')
+            self.print_internal("Loaded %s/mfix.dat" % proj_dir, color='blue')
         # print number of keywords
         self.print_internal('Registered %d keywords' %
                             len(self.project.registered_keywords), color='blue')
@@ -1255,6 +1255,11 @@ class ProjectManager(Project):
             # report any errors
             for w in ws:
                 self.parent.print_internal("Warning: %s" % w.message, color='red')
+            n_errs = len(ws)
+            if n_errs:
+                self.parent.print_internal("Warning: %d errors" % n_errs, color='red')
+            else:
+                self.parent.print_internal("0 errors", color='darkgreen')
 
     def register_widget(self, widget, keys=None, args=None):
         '''
