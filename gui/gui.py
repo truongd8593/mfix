@@ -264,14 +264,19 @@ class MfixGui(QtWidgets.QMainWindow):
         self.mode_changed('modeler')
         self.change_pane('geometry')
 
+        # --- print welcome message
+        self.print_internal("MFiX-GUI version %s" % self.get_version())
+
         # autoload last project
-        proj_dir = self.get_project_dir()
-        if proj_dir:
-            self.open_project(proj_dir)
-            self.print_internal("Loaded %s/mfix.dat" % proj_dir, color='blue')
+        project_dir = self.get_project_dir()
+        if project_dir:
+            self.open_project(project_dir)
         # print number of keywords
         self.print_internal('Registered %d keywords' %
                             len(self.project.registered_keywords), color='blue')
+
+    def get_version(self):
+        return "0.2x" # placeholder
 
     def set_navigation_item_state(self, item_name, state):
         on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
@@ -901,6 +906,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # self.mode_changed('developer')
 
         self.project.load_mfix_dat(mfix_dat)
+        self.print_internal("Loaded %s/mfix.dat" % project_dir, color='blue')
 
         # Set non-keyword gui items based on loaded project
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
