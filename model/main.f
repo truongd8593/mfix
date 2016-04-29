@@ -143,7 +143,7 @@
    END SUBROUTINE INITIALIZE
 
 
-      SUBROUTINE INITIALIZE_2
+      SUBROUTINE INITIALIZE_2(USRS)
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
@@ -180,6 +180,8 @@
       USE vtk, only: write_vtk_files
       IMPLICIT NONE
 
+      EXTERNAL USRS
+
       !$    INTEGER num_threads, threads_specified, omp_id
       !$    INTEGER omp_get_num_threads
       !$    INTEGER omp_get_thread_num
@@ -196,11 +198,11 @@
       CALL CHECK_DATA
 
 ! Write the initial part of the standard output file
-      CALL WRITE_OUT0
+      CALL WRITE_OUT0(USRS)
       IF(.NOT.CARTESIAN_GRID)  CALL WRITE_FLAGS
 
 ! Write the initial part of the special output file(s)
-      CALL WRITE_USR0
+      IF (CALL_USR) CALL USRS("WRITE_USR0")
 
 !$    CALL START_LOG
 !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
@@ -429,7 +431,7 @@
       CALL PARSE_RESID_STRING ()
 
 ! Call user-defined subroutine to set constants, check data, etc.
-      IF (CALL_USR) CALL USR0
+      IF (CALL_USR) CALL USRS("USR0")
 
       CALL RRATES_INIT()
 
@@ -615,7 +617,7 @@
 
       END SUBROUTINE CHECK_DATA
 
-      SUBROUTINE FINALIZE
+      SUBROUTINE FINALIZE(USRS)
 
       USE cutcell, only: cartesian_grid
       USE dashboard
@@ -627,8 +629,9 @@
       USE time_cpu
       IMPLICIT NONE
 
+      EXTERNAL USRS
 ! Call user-defined subroutine after time-loop.
-      IF (CALL_USR) CALL USR3
+      IF (CALL_USR) CALL USRS("USR3")
 
 ! Get the final value of CPU time.  The difference gives the
 ! CPU time used for the computations.

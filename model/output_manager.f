@@ -9,7 +9,7 @@ MODULE output_man
 !  was done to simplify the time_march code.                           !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE OUTPUT_MANAGER(EXIT_SIGNAL, FINISHED)
+      SUBROUTINE OUTPUT_MANAGER(EXIT_SIGNAL, FINISHED, USRS, WRITE_USRS1)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -34,6 +34,9 @@ MODULE output_man
       use vtp, only: write_vtp_file
 
       IMPLICIT NONE
+
+      EXTERNAL USRS
+      EXTERNAL WRITE_USRS1
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -113,7 +116,7 @@ MODULE output_man
 ! Write standard output, if needed
       IF(CHECK_TIME(OUT_TIME)) THEN
          OUT_TIME = NEXT_TIME(OUT_DT)
-         CALL WRITE_OUT1
+         CALL WRITE_OUT1(USRS)
          CALL NOTIFY_USER('.OUT;')
       ENDIF
 
@@ -122,7 +125,7 @@ MODULE output_man
       DO LC = 1, DIMENSION_USR
          IF(CHECK_TIME(USR_TIME(LC))) THEN
             USR_TIME(LC) = NEXT_TIME(USR_DT(LC))
-            CALL WRITE_USR1 (LC)
+            CALL WRITE_USRS1 (LC)
             CALL NOTIFY_USER('.USR:',EXT_END(LC:LC))
             IDX = IDX + 1
          ENDIF

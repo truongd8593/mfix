@@ -73,6 +73,7 @@
       USE READ_INPUT, ONLY: GET_DATA
       USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
+      USE USR_DISPATCH, ONLY: MFIX_USRS, MFIX_USRS_RATES, MFIX_WRITE_USRS1
 
       IMPLICIT NONE
 
@@ -118,39 +119,39 @@
 ! Read input data
       CALL GET_DATA
 ! finish initializing the simulation
-      CALL INITIALIZE_2
+      CALL INITIALIZE_2(MFIX_USRS)
 
 ! Time march loop.
 
       IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
 
 ! Uncoupled discrete element simulations
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH(MFIX_USRS)
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH(MFIX_USRS, MFIX_WRITE_USRS1)
 
       ELSE
 
 ! Transient or steady state simulation
          DO WHILE (TIME + 0.1d0*DT < TSTOP .AND. .NOT. EXIT_SIGNAL)
-            CALL TIME_STEP_INIT
+            CALL TIME_STEP_INIT(MFIX_USRS, MFIX_USRS_RATES, MFIX_WRITE_USRS1)
             DO
                CALL ITERATE_INIT
                DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
                   NIT = NIT + 1
-                  CALL DO_ITERATION
+                  CALL DO_ITERATION(MFIX_USRS, MFIX_USRS_RATES)
                ENDDO
 
                CALL POST_ITERATE
 
                IF(STEADY_STATE) EXIT
-               IF(.NOT.ADJUSTDT()) EXIT
+               IF(.NOT.ADJUSTDT(MFIX_USRS_RATES)) EXIT
             ENDDO
-            CALL TIME_STEP_END
+            CALL TIME_STEP_END(MFIX_USRS, MFIX_USRS_RATES, MFIX_WRITE_USRS1)
             IF (STEADY_STATE) EXIT
          ENDDO
 
       ENDIF
-      CALL FINALIZE
+      CALL FINALIZE(MFIX_USRS)
 
       STOP
       END PROGRAM MFIX

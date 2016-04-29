@@ -5,7 +5,7 @@
 
 ! If .TRUE. call user-defined physical properties
       LOGICAL :: USR_ROG
-      LOGICAL :: USR_CPG 
+      LOGICAL :: USR_CPG
       LOGICAL :: USR_ROS(DIM_M)
       LOGICAL :: USR_CPS(DIM_M)
 
@@ -28,7 +28,7 @@
          ENUMERATOR :: Gas_SpecificHeat, Solids_SpecificHeat
          ENUMERATOR :: Gas_Viscosity, Solids_Viscosity
          ENUMERATOR :: Gas_Conductivity, Solids_Conductivity
-         ENUMERATOR :: Gas_Diffusivity, Solids_Diffusivity 
+         ENUMERATOR :: Gas_Diffusivity, Solids_Diffusivity
          ENUMERATOR :: GasSolids_Drag, SolidsSolids_Drag
          ENUMERATOR :: GasSolids_HeatTransfer
          ENUMERATOR :: BLANK
@@ -39,7 +39,7 @@
       CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_USR_PROP                                           C 
+!  Subroutine: CALC_USR_PROP                                           C
 !  Purpose: Driver routine to calculate user defined physical,         C
 !  transport, exchange terms that appear in the governing equations.   C
 !                                                                      C
@@ -78,10 +78,10 @@
 !     Gama (gas-solids heat transfere coefficient)
       INTEGER, INTENT(IN) :: lprop
 
-! Phase index 
+! Phase index
       INTEGER, OPTIONAL, INTENT(IN) :: lM
 
-! Phase index 
+! Phase index
       INTEGER, OPTIONAL, INTENT(IN) :: lL
 
 ! Error index
@@ -115,11 +115,11 @@
       ELSE
          L = lL
       ENDIF
-         
+
       N = UNDEFINED_I
 
       SELECT CASE(lProp)
-      
+
 ! Gas physical properties: density
       CASE(Gas_Density)
          wHeader = .TRUE.
@@ -187,7 +187,7 @@
                ENDIF
             ENDDO
          ENDDO
- 
+
 ! Solids physical properties: density
       CASE(Solids_Density)
          wHeader = .TRUE.
@@ -288,10 +288,9 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
  1001 FORMAT('Error 1101: Unknown Property= ', A)
          CALL FINL_ERR_MSG
-      END SELECT   ! end selection of user property 
- 
+      END SELECT   ! end selection of user property
+
       RETURN
       END SUBROUTINE CALC_USR_PROP
 
       end module usr_prop
-

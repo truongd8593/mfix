@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: STIFF_CHEM_RRATES(IER)                                  C
@@ -9,7 +10,7 @@
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STIFF_CHEM_RRATES(lNEQ, lTime, Y, YDOT)
+      SUBROUTINE STIFF_CHEM_RRATES(lNEQ, lTime, Y, YDOT, USRS_RATES)
 
 ! External Module Procedures:
 !---------------------------------------------------------------------//
@@ -65,6 +66,7 @@
 
       implicit none
 
+      EXTERNAL USRS_RATES
 ! Passed Variables: Dummy argument format required by ODEPACK.
 !---------------------------------------------------------------------//
 ! (1) Number of ODEs to be solve
@@ -127,7 +129,7 @@
       DOUBLE PRECISION, external :: CALC_H
 
 ! UDF for Reaction Rates:
-      external USR_RATES
+      EXTERNAL USR_RATES
 
 ! Initialize variables:
       IJK    = lNEQ(2)
@@ -141,7 +143,7 @@
       CALL mapODEtoMFIX(NEQ_DIMN, lNEQ, ODE_DIMN_all, Y)
 
 ! Calculate user defined reaction rates.
-      CALL USR_RATES(IJK, RATES)
+      CALL USRS_RATES(IJK, SIZE(RATES), RATES, RATES)
 
 ! Loop over reactions.
       RXN_LP: DO H = 1, NO_OF_RXNS

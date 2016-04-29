@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: RRATES0(IER)                                           C
@@ -25,7 +26,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RRATES0()
+      SUBROUTINE RRATES0(ier, USRS_RATES)
 
 ! Global domain parameters.
 !`````````````````````````````````````````````````````````````````````//
@@ -105,6 +106,9 @@
       use functions
 
       implicit none
+      INTEGER, intent(out) :: ier
+
+      EXTERNAL USRS_RATES
 
 ! Local variables:
 !`````````````````````````````````````````````````````````````````````//
@@ -179,7 +183,7 @@
       RATES(:) = ZERO
 
 ! Calculate user defined reaction rates.
-      CALL USR_RATES(IJK, RATES)
+      CALL USRS_RATES(ijk, size(rates), rates, rates)
 
 ! Loop over reactions.
       RXN_LP: DO H = 1, NO_OF_RXNS

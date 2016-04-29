@@ -1,10 +1,11 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !  Subroutine: PIC_TIME_MARCH                                          !
 !  Author: R. Garg                                                     !
 !                                                                      !
 !  Purpose: Main PIC driver routine.                                   !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE PIC_TIME_MARCH
+      SUBROUTINE PIC_TIME_MARCH(USRS, WRITE_USRS1)
 
 ! Global variables
 !---------------------------------------------------------------------//
@@ -36,6 +37,9 @@
       use output_man, only: output_manager
 
       IMPLICIT NONE
+
+      EXTERNAL USRS
+      EXTERNAL WRITE_USRS1
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -95,7 +99,7 @@
 
          IF (DO_OLD) CALL CFUPDATEOLD
 
-         CALL INTEGRATE_TIME_PIC 
+         CALL INTEGRATE_TIME_PIC
 
 !         CALL WRITE_PARTICLE(6010)
 
@@ -136,7 +140,8 @@
             TIME = S_TIME
             NSTEP = NSTEP + 1
 ! Call the output manager to write RES and SPx data.
-            CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
+            CALL OUTPUT_MANAGER(.FALSE., .FALSE., USRS, WRITE_USRS1)
+            CALL USRS('USRS1')
          ENDIF  ! end if (.not.des_continuum_coupled)
 
       ENDDO
@@ -251,4 +256,3 @@
 
       RETURN
       END SUBROUTINE WRITE_PARTICLE
-

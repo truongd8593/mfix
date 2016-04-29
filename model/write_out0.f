@@ -6,7 +6,7 @@
 !  Purpose: Echo user input.                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE WRITE_OUT0
+      SUBROUTINE WRITE_OUT0(USRS)
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -41,6 +41,8 @@
       USE visc_g, only: mu_gmax
 
       IMPLICIT NONE
+
+      EXTERNAL :: USRS
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -656,7 +658,7 @@
 !  Echo user defined input data
 !
       WRITE (UNIT_OUT, '(/,1X,1A1)') CHAR(12)
-      IF (CALL_USR) CALL USR_WRITE_OUT0
+      IF (CALL_USR) CALL USRS('USR_WRITE_OUT0')
 !
       RETURN
  1000 FORMAT(17X,'MM      MM  FFFFFFFFFF    IIIIII    XX      XX',/17X,&
@@ -1079,5 +1081,3 @@
          'the characters will be over-written in the above order',/1X,A1)
          RETURN
          END SUBROUTINE WRITE_FLAGS
-
-

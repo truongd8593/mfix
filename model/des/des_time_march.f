@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !     Subroutine: DES_TIME_MARCH                                       !
@@ -6,7 +7,7 @@
 !     Purpose: Main DEM driver routine                                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_TIME_MARCH
+      SUBROUTINE DES_TIME_MARCH(USRS, WRITE_USRS1)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -47,6 +48,9 @@
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
 
+      EXTERNAL USRS
+      EXTERNAL WRITE_USRS1
+
 !......................................................................!
 
 ! In case of restarts assign S_TIME from MFIX TIME
@@ -67,7 +71,7 @@
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID))
          DT = DTSOLID
-         CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
+         CALL OUTPUT_MANAGER(.FALSE., .FALSE., USRS, WRITE_USRS1)
       ENDIF   ! end if/else (des_continuum_coupled)
 
       NP = PIP - IGHOST_CNT
@@ -83,7 +87,7 @@
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
  1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'DEM NITs: ',A)
 
-      IF(CALL_USR) CALL USR0_DES
+      IF(CALL_USR) CALL USRS('USR0_DES')
 
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(DES_EXPLICITLY_COUPLED) THEN
@@ -129,7 +133,7 @@
          CALL CALC_THERMO_DES
 ! Call user functions.
 
-         IF(CALL_USR) CALL USR1_DES
+         IF(CALL_USR) CALL USRS('USR1_DES')
 
          ! sap = multisap%saps(0)
          ! ! CHECK SORT
@@ -210,17 +214,17 @@
             TIME = S_TIME
             NSTEP = NSTEP + 1
 ! Call the output manager to write RES and SPx data.
-            CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
+            CALL OUTPUT_MANAGER(.FALSE., .FALSE., USRS, WRITE_USRS1)
          ENDIF  ! end if (.not.des_continuum_coupled)
 
-         IF(CALL_USR) CALL USR2_DES
+         IF(CALL_USR) CALL USRS('USR2_DES')
 
       ENDDO ! end do NN = 1, FACTOR
 
 ! END DEM time loop
 !-----------------------------------------------------------------<<<
 
-      IF(CALL_USR) CALL USR3_DES
+      IF(CALL_USR) CALL USRS('USR3_DES')
 
 ! Reset the discrete time step to original value.
       DTSOLID = DTSOLID_TMP

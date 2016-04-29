@@ -15,9 +15,8 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE TIME_STEP_INIT
+      SUBROUTINE TIME_STEP_INIT(USRS, USRS_RATES, WRITE_USRS1)
 
-      !f2py threadsafe
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
@@ -37,10 +36,15 @@
 
       IMPLICIT NONE
 
+      EXTERNAL USRS
+      EXTERNAL USRS_RATES
+      EXTERNAL WRITE_USRS1
+
+
 ! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
 
-      IF (CALL_USR) CALL USR1
+      IF (CALL_USR) CALL USRS('USR1')
 
 ! Remove solids from cells containing very small quantities of solids
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
@@ -66,13 +70,13 @@
       CALL SET_EP_FACTORS
 
 
-      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .FALSE.)
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .FALSE., USRS, WRITE_USRS1)
 
 ! Update previous-time-step values of field variables
       CALL UPDATE_OLD
 
 ! Calculate coefficients
-      CALL CALC_COEFF_ALL (0, IER)
+      CALL CALC_COEFF_ALL (0, IER, USRS_RATES)
 
 ! Calculate the stress tensor trace and cross terms for all phases.
       CALL CALC_TRD_AND_TAU()
@@ -87,7 +91,7 @@
          IF (DNCHECK < 256) DNCHECK = DNCHECK*2
          NCHECK = NCHECK + DNCHECK
 ! Upate the reaction rates for checking
-         CALL CALC_RRATE(IER)
+         CALL CALC_RRATE(IER, USRS_RATES)
          CALL CHECK_DATA_30
       ENDIF
 
@@ -112,7 +116,7 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE TIME_STEP_END
+      SUBROUTINE TIME_STEP_END(USRS, USRS_RATES, WRITE_USRS1)
 
       USE check, only: check_mass_balance
       USE compar, only: mype
@@ -131,6 +135,10 @@
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       use discretelement, only: DES_EXPLICITLY_COUPLED
       IMPLICIT NONE
+
+      EXTERNAL USRS
+      EXTERNAL USRS_RATES
+      EXTERNAL WRITE_USRS1
 
       IF(DT < DT_MIN) THEN
 
@@ -157,10 +165,10 @@
       CALL CHECK_MASS_BALANCE (1)
 
 ! Other solids model implementations
-      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+      IF (DEM_SOLIDS) CALL DES_TIME_MARCH(USRS)
+      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH(USRS, WRITE_USRS1)
       IF (QMOMK) CALL QMOMK_TIME_MARCH
-      IF (CALL_DQMOM) CALL USR_DQMOM
+      IF (CALL_DQMOM) CALL USRS('USR_DQMOM')
 
 ! Advance the time step and continue
       IF((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
@@ -191,7 +199,7 @@
 
       FLUSH (6)
 
-      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .TRUE.)
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .TRUE., USRS, WRITE_USRS1)
 
       END SUBROUTINE TIME_STEP_END
 

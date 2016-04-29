@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      !
 !  Subroutine: CALC_COEFF_ALL                                          !
@@ -14,7 +15,7 @@
 !  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_COEFF_ALL(FLAG, IER)
+      SUBROUTINE CALC_COEFF_ALL(FLAG, IER, USRS_RATES)
 
 ! Global variables:
 !-----------------------------------------------------------------------
@@ -30,6 +31,8 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
       implicit none
+
+      EXTERNAL USRS_RATES
 
 ! Dummy arguments
 !-----------------------------------------------------------------------
@@ -61,7 +64,7 @@
       CALL CALC_COEFF(IER, 2)
 
 ! Calculate reaction rates and interphase mass transfer.
-      CALL CALC_RRATE(IER)
+      CALL CALC_RRATE(IER, USRS_RATES)
 
 ! Restore all coefficient underrelaxation factors to original values.
       IF(FLAG == 0) THEN
@@ -138,7 +141,7 @@
 !           mass transfer. if present, calculate discrete reactions    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_RRATE(IER)
+      SUBROUTINE CALC_RRATE(IER, USRS_RATES)
 
 !-----------------------------------------------
 ! Modules
@@ -150,6 +153,8 @@
       use error_manager
 
       IMPLICIT NONE
+
+      EXTERNAL USRS_RATES
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
@@ -172,7 +177,7 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ELSE
-            CALL RRATES0 (IER)
+            CALL RRATES0 (IER, USRS_RATES)
          ENDIF
 
 ! DES Chemical reactions

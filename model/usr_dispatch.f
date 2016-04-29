@@ -1,0 +1,76 @@
+! -*- f90 -*-
+MODULE USR_DISPATCH
+   CONTAINS
+SUBROUTINE MFIX_USRS(usr_sub_name)
+   character(len=*), intent(in) :: usr_sub_name
+   CHARACTER(LEN=512) :: UPPERCASE_NAME
+
+   uppercase_name = usr_sub_name
+
+   call MAKE_UPPER_CASE(uppercase_name,len(usr_sub_name))
+
+   SELECT CASE(usr_sub_name)
+   CASE('USR0')
+      CALL USR0
+
+   CASE('USR1')
+      CALL USR1
+
+   CASE('USR2')
+      CALL USR2
+
+   CASE('USR3')
+      CALL USR3
+
+   CASE('USR0_DES')
+      CALL USR0_DES
+
+   CASE('USR1_DES')
+      CALL USR1_DES
+
+   CASE('USR2_DES')
+      CALL USR2_DES
+
+   CASE('USR3_DES')
+      CALL USR3_DES
+
+   CASE('USR_WRITE_OUT0')
+      CALL USR_WRITE_OUT0
+
+   CASE('USR_WRITE_OUT1')
+      CALL USR_WRITE_OUT1
+
+   CASE('WRITE_USR0')
+      CALL WRITE_USR0
+
+   CASE('USR_DQMOM')
+      CALL USR_DQMOM
+   END SELECT
+END SUBROUTINE MFIX_USRS
+
+SUBROUTINE MFIX_WRITE_USRS1(L)
+   IMPLICIT NONE
+   INTEGER L
+   CALL WRITE_USR1(L)
+END SUBROUTINE MFIX_WRITE_USRS1
+
+SUBROUTINE MFIX_USRS_RATES(IJK, RATES)
+   USE rxns, ONLY: no_of_rxns
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: IJK
+   ! DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: RATES
+   DOUBLE PRECISION, DIMENSION(NO_OF_RXNS), INTENT(OUT) :: RATES
+   CALL USR_RATES(IJK, RATES)
+END SUBROUTINE MFIX_USRS_RATES
+
+! SUBROUTINE USRS_RATES_DES(NP, pM, IJK, DES_RATES)
+!    IMPLICIT NONE
+!    INTEGER, INTENT(IN) :: NP  ! Global index of particle
+!    INTEGER, INTENT(IN) :: pM  ! Solid phase index of particle NP
+!    INTEGER, INTENT(IN) :: IJK ! Fluid cell index containing NP
+
+!    ! Calculated reaction rates. (reacted moles per sec)
+!    DOUBLE PRECISION, INTENT(OUT) :: DES_RATES(:)
+!    CALL USR_RATES_DES(NP, pM, IJK, DES_RATES)
+! END SUBROUTINE USRS_RATES_DES
+END MODULE USR_DISPATCH

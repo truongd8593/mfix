@@ -1,4 +1,5 @@
-      MODULE STIFF_CHEM
+! -*- f90 -*-
+MODULE STIFF_CHEM
 
 ! External Routines.
 !---------------------------------------------------------------------//

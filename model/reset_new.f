@@ -9,7 +9,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RESET_NEW
+      SUBROUTINE RESET_NEW(USRS_RATES)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -20,6 +20,8 @@
       USE trace, only: trd_s_c, trd_s_co
       use turb, only: k_epsilon
       IMPLICIT NONE
+
+      EXTERNAL USRS_RATES
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -75,8 +77,7 @@
       END DO
 
 ! Recalculate all coefficients
-      CALL CALC_COEFF_ALL (0, IER)
+      CALL CALC_COEFF_ALL (0, IER, USRS_RATES)
 
       RETURN
       END SUBROUTINE RESET_NEW
-

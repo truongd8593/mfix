@@ -697,6 +697,7 @@ libmfix_src = \
 	model/usr1.f \
 	model/usr2.f \
 	model/usr3.f \
+	model/usr_dispatch.f \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \

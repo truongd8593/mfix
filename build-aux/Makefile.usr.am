@@ -115,7 +115,7 @@ DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 
 postmfix$(EXEEXT): $(LIBMFIX).md5
 	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
+	@rm -f $@
 	$(LN_S) $(top_builddir)/$@ $@
 
 ################################################################
@@ -126,27 +126,46 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 
 if PYTHON
 pymfix_src = \
-	$(top_srcdir)/model/param_mod.f \
-	$(top_srcdir)/model/param1_mod.f \
+	$(top_srcdir)/model/calc_coeff.f \
+	$(top_srcdir)/model/chem/stiff_chem_mod.f \
+	$(top_srcdir)/model/chem/stiff_chem_rrates.f \
+	$(top_srcdir)/model/constant_mod.f \
+	$(top_srcdir)/model/des/des_time_march.f \
+	$(top_srcdir)/model/des/discretelement_mod.f \
+	$(top_srcdir)/model/des/pic/time_march_pic.f \
 	$(top_srcdir)/model/dmp_modules/compar_mod.f \
 	$(top_srcdir)/model/fldvar_mod.f \
-	$(top_srcdir)/model/des/discretelement_mod.f \
-	$(top_srcdir)/model/iterate.f \
-	$(top_srcdir)/model/residual_mod.f \
-	$(top_srcdir)/model/time_step.f \
-	$(top_srcdir)/model/main.f \
+	$(top_srcdir)/model/geometry_mod.f \
 	$(top_srcdir)/model/get_data.f \
-	$(top_srcdir)/model/run_mod.f
+	$(top_srcdir)/model/iterate.f \
+	$(top_srcdir)/model/main.f \
+	$(top_srcdir)/model/param1_mod.f \
+	$(top_srcdir)/model/param_mod.f \
+	$(top_srcdir)/model/physprop_mod.f \
+	$(top_srcdir)/model/residual_mod.f \
+	$(top_srcdir)/model/rrates0.f \
+	$(top_srcdir)/model/run_mod.f \
+	$(top_srcdir)/model/time_step.f \
+	$(top_srcdir)/model/usr_dispatch.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 pymfix: mfix.so
-	rm -f $@
+	@rm -f $@
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
+mfix.pyf: $(pymfix_src)
+	@rm -f $@
+	$(F2PY) -h $@ -m mfix $^
+
 mfix.so: $(LIBMFIX).md5
-mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
-	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+
+mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT) $(top_srcdir)/pymfix/mfix.pyf
+	$(F2PY) -c $(filter-out $(LIBMFIX).md5, $^) $(LIBMFIX) \
+	-m mfix $(F2PY_FLAGS) \
+	-I$(top_builddir)/model \
+	--f90exec=$(FC) --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" \
+	--f77exec=$(FC) --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp"
 endif
 
 ################################################################
@@ -162,7 +181,7 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
-F2PY_FLAGS =
+F2PY_FLAGS = -lgomp --noopt --noarch
 
 if MPI
 AM_FCFLAGS += $(FC_DEFINE)MPI

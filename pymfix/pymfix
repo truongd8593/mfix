@@ -4,6 +4,7 @@
 interactive control of the run."""
 
 import getopt
+import importlib
 import json
 import os
 import sys
@@ -26,6 +27,7 @@ from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import read_input as READ_INPUT
 from mfix import step as STEP
+from mfix import usr_dispatch as USR_DISPATCH
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
@@ -37,6 +39,50 @@ residuals = None
 # import logging
 # log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
+
+def pymfix_usrs(sub_name):
+    """ call <sub_name>.py if it exists, otherwise call the Fortran version """
+    mod_name = sub_name.lower()
+    usr_filename = os.path.join(os.getcwd(), '%s.py' % mod_name)
+    if os.path.isfile(usr_filename):
+        print("Python override of: ",usr_filename)
+        usr_py = open(usr_filename)
+        mod = importlib.import_module(mod_name)
+        getattr(mod,mod_name)()
+    else:
+        print("No Python override of: ",usr_filename)
+        USR_DISPATCH.mfix_usrs(sub_name.upper())
+    return 0
+
+def pymfix_usrs_rates(ijk, rates):
+    """ call usr_rates.py if it exists, otherwise call the Fortran version """
+    mod_name = 'usr_rates'
+    usr_filename = os.path.join(os.getcwd(), '%s.py' % mod_name)
+    if os.path.isfile(usr_filename):
+        print("Python override of: ",usr_filename)
+        usr_py = open(usr_filename)
+        mod = importlib.import_module(mod_name)
+        print "rates has size", len(rates)
+        print "rates is", rates
+        getattr(mod,mod_name)(ijk, rates)
+    else:
+        # print("No Python override of: ",usr_filename)
+        USR_DISPATCH.mfix_usrs_rates(ijk, rates)
+    return rates
+
+def pymfix_write_usrs1(LL):
+    """ call <sub_name>.py if it exists, otherwise call the Fortran version """
+    mod_name = 'WRITE_USR1'
+    usr_filename = os.path.join(os.getcwd(), '%s.py' % mod_name)
+    if os.path.isfile(usr_filename):
+        print("Python override of: ",usr_filename)
+        usr_py = open(usr_filename)
+        mod = importlib.import_module(mod_name)
+        getattr(mod,mod_name)(L)
+    else:
+        print("No Python override of: ",usr_filename)
+        USR_DISPATCH.mfix_write_usrs1(LL)
+    return 0
 
 def main():
     """The main function starts MFIX on a separate thread, then start the Flask server. """
@@ -90,7 +136,7 @@ class Mfix:
 
         MAIN.initialize()
         READ_INPUT.get_data()
-        MAIN.initialize_2()
+        MAIN.initialize_2(pymfix_usrs)
 
         if (DEM.discrete_element and not DEM.des_continuum_coupled):
             if RUN.dem_solids:
@@ -109,27 +155,27 @@ class Mfix:
                     if RUN.steady_state:
                         break
 
-        MAIN.finalize()
+        MAIN.finalize(pymfix_usrs)
 
     @classmethod
     def do_step(cls):
         "Run one timestep"
-        STEP.time_step_init()
+        STEP.time_step_init(pymfix_usrs, pymfix_usrs_rates, pymfix_write_usrs1)
 
         step_incomplete = True
         while step_incomplete:
             ITERATE.iterate_init()
             while ITERATE.nit < ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged):
                 ITERATE.nit = ITERATE.nit + 1
-                ITERATE.do_iteration()
+                ITERATE.do_iteration(pymfix_usrs,pymfix_usrs_rates)
                 cls.check_requests()
                 cls.emit_residuals()
 
             ITERATE.post_iterate()
 
-            step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
+            step_incomplete = ITERATE.adjustdt(pymfix_usrs_rates) and not RUN.steady_state
 
-        STEP.time_step_end()
+        STEP.time_step_end(pymfix_usrs, pymfix_usrs_rates, pymfix_write_usrs1)
 
 
     @classmethod

@@ -1,0 +1,1499 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module adjustdt__user__routines
+   interface adjustdt_user_interface
+      subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/calc_coeff.f:calc_coeff_all:unknown_interface
+         integer, intent(in) :: ijk
+         integer, intent(in) :: no_of_rxns=len(rates)
+         double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+         double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+      end subroutine usrs_rates
+   end interface adjustdt_user_interface
+end program module adjustdt__user__routines
+python module calc_coeff_all__user__routines
+    interface calc_coeff_all_user_interface
+       subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/calc_coeff.f:calc_coeff_all:unknown_interface
+          integer, intent(in) :: ijk
+          integer, intent(in) :: no_of_rxns=len(rates)
+          double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+          double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+       end subroutine usrs_rates
+    end interface calc_coeff_all_user_interface
+end python module calc_coeff_all__user__routines
+python module calc_rrate__user__routines
+    interface calc_rrate_user_interface
+       subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/calc_coeff.f:calc_rrate:unknown_interface
+          integer, intent(in) :: ijk
+          integer, intent(in) :: no_of_rxns=len(rates)
+          double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+          double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+       end subroutine usrs_rates
+    end interface calc_rrate_user_interface
+end python module calc_rrate__user__routines
+python module stiff_chem_rrates__user__routines
+    interface stiff_chem_rrates_user_interface
+        subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/chem/stiff_chem_rrates.f:stiff_chem_rrates:unknown_interface
+           integer, intent(in) :: ijk
+           integer, intent(in) :: no_of_rxns=len(rates)
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+        end subroutine usrs_rates
+    end interface stiff_chem_rrates_user_interface
+end python module stiff_chem_rrates__user__routines
+python module des_time_march__user__routines
+    interface des_time_march_user_interface
+        subroutine usrs(e__usr0_des_err) ! in :mfix:/mfix/model/des/des_time_march.f:des_time_march:unknown_interface
+            character*(*) :: e__usr0_des_err
+        end subroutine usrs
+        subroutine write_usrs1(e__usr0_des_err) ! in :mfix:/mfix/model/des/des_time_march.f:des_time_march:unknown_interface
+           integer :: LL
+        end subroutine write_usrs1
+    end interface des_time_march_user_interface
+end python module des_time_march__user__routines
+python module pic_time_march__user__routines
+    interface pic_time_march_user_interface
+        subroutine usrs(e__usrs1_err) ! in :mfix:/mfix/model/des/pic/time_march_pic.f:pic_time_march:unknown_interface
+            character*(*) :: e__usrs1_err
+        end subroutine usrs
+        subroutine write_usrs1(LL) ! in :mfix:/mfix/model/des/pic/time_march_pic.f:pic_time_march:unknown_interface
+           integer :: LL
+        end subroutine write_usrs1
+    end interface pic_time_march_user_interface
+end python module pic_time_march__user__routines
+python module do_iteration__user__routines
+    interface do_iteration_user_interface
+       subroutine usrs(e__usrs1_err) ! in :mfix:/mfix/model/des/pic/time_march_pic.f:pic_time_march:unknown_interface
+          character*(*) :: e__usrs1_err
+       end subroutine usrs
+        subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/iterate.f:iterate:do_iteration:unknown_interface
+           integer, intent(in) :: ijk
+           integer, intent(in) :: no_of_rxns=len(rates)
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+        end subroutine usrs_rates
+    end interface do_iteration_user_interface
+end python module do_iteration__user__routines
+python module initialize_2__user__routines
+    interface initialize_2_user_interface
+        subroutine usrs(e__write_usr0_err) ! in :mfix:/mfix/model/main.f:main:initialize_2:unknown_interface
+            character*(*) :: e__write_usr0_err
+        end subroutine usrs
+    end interface initialize_2_user_interface
+end python module initialize_2__user__routines
+python module finalize__user__routines
+    interface finalize_user_interface
+        subroutine usrs(e__usr3_err) ! in :mfix:/mfix/model/main.f:main:finalize:unknown_interface
+            character*(*) :: e__usr3_err
+        end subroutine usrs
+    end interface finalize_user_interface
+end python module finalize__user__routines
+python module rrates0__user__routines
+    interface rrates0_user_interface
+        subroutine usrs_rates(ijk,no_of_rxns,rates,rates_out) ! in :mfix:/mfix/model/rrates0.f:rrates0:unknown_interface
+           integer, intent(in) :: ijk
+           integer, intent(in) :: no_of_rxns=len(rates)
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+        end subroutine usrs_rates
+    end interface rrates0_user_interface
+end python module rrates0__user__routines
+python module time_step_init__user__routines
+    interface time_step_init_user_interface
+        subroutine usrs(e__usr1_err) ! in :mfix:/mfix/model/time_step.f:step:time_step_init:unknown_interface
+            character*(*) :: e__usr1_err
+        end subroutine usrs
+        subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/calc_coeff.f:calc_coeff_all:unknown_interface
+           integer, intent(in) :: ijk
+           integer, intent(in) :: no_of_rxns=len(rates)
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+        end subroutine usrs_rates
+        subroutine write_usrs1(e__usr0_des_err) ! in :mfix:/mfix/model/des/des_time_march.f:des_time_march:unknown_interface
+           integer :: LL
+        end subroutine write_usrs1
+    end interface time_step_init_user_interface
+end python module time_step_init__user__routines
+python module time_step_end__user__routines
+    interface time_step_end_user_interface
+        subroutine usrs(e__usr_dqmom_err) ! in :mfix:/mfix/model/time_step.f:step:time_step_end:unknown_interface
+            character*(*) :: e__usr_dqmom_err
+        end subroutine usrs
+        subroutine usrs_rates(ijk, no_of_rxns, rates, rates_out) ! in :mfix:/mfix/model/calc_coeff.f:calc_coeff_all:unknown_interface
+           integer, intent(in) :: ijk
+           integer, intent(in) :: no_of_rxns=len(rates)
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(in) :: rates
+           double precision dimension(no_of_rxns),depend(no_of_rxns),intent(out) :: rates_out
+        end subroutine usrs_rates
+        subroutine write_usrs1(e__usr0_des_err) ! in :mfix:/mfix/model/des/des_time_march.f:des_time_march:unknown_interface
+           integer :: LL
+        end subroutine write_usrs1
+    end interface time_step_end_user_interface
+end python module time_step_end__user__routines
+python module mfix ! in
+    interface  ! in :mfix
+        subroutine calc_coeff_all(flag,ier,usrs_rates) ! in :mfix:/mfix/model/calc_coeff.f
+            use calc_coeff_all__user__routines
+            use ur_facs, only: ur_kth_sml
+            use rxns
+            use discretelement, only: des_explicitly_coupled
+            use param1, only: one
+            integer intent(in) :: flag
+            integer intent(inout) :: ier
+            external usrs_rates
+        end subroutine calc_coeff_all
+        subroutine calc_coeff(ier,plevel) ! in :mfix:/mfix/model/calc_coeff.f
+            use discretelement, only: des_explicitly_coupled
+            integer intent(inout) :: ier
+            integer intent(in) :: plevel
+        end subroutine calc_coeff
+        subroutine calc_rrate(ier,usrs_rates) ! in :mfix:/mfix/model/calc_coeff.f
+            use discretelement, only: discrete_element
+            use rxns
+            use run, only: any_species_eq
+            use calc_rrate__user__routines
+            use error_manager
+            integer intent(inout) :: ier
+            external usrs_rates
+        end subroutine calc_rrate
+        subroutine calc_trd_and_tau ! in :mfix:/mfix/model/calc_coeff.f
+            use visc_g, only: trd_g
+            use run, only: jackson
+            use tau_g, only: ctau_v_g,ctau_w_g,ctau_u_g
+            use discretelement, only: des_continuum_hybrid
+            use visc_s, only: trd_s
+            use param1, only: zero
+            use tau_s, only: tau_u_s,tau_v_s,tau_w_s
+        end subroutine calc_trd_and_tau
+        module stiff_chem ! in :mfix:/mfix/model/chem/stiff_chem_mod.f
+            logical, allocatable,dimension(:) :: notowner
+            integer :: neq_dimn
+            logical :: stiff_chemistry
+            integer :: stiff_chem_max_steps
+            integer :: ode_itol
+            double precision dimension(1) :: ode_rtol
+            double precision, allocatable,dimension(:) :: ode_atol
+            integer :: ode_jt
+            integer :: ode_lrw
+            integer :: ode_dimn_all
+            logical :: unlimited_steps
+            integer :: ode_liw
+            integer :: ode_dimn_g
+            interface  ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
+                subroutine dlsoda(f,neq,y,t,tout,itol,rtol,atol,itask,istate,iopt,rwork,lrw,iwork,liw,jac,jt) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem:unknown_interface
+                    external f
+                    integer dimension(2) :: neq
+                    double precision dimension(neq(1)),depend(neq) :: y
+                    double precision :: t
+                    double precision :: tout
+                    integer :: itol
+                    double precision dimension(1) :: rtol
+                    double precision dimension(neq(1)),depend(neq) :: atol
+                    integer :: itask
+                    integer :: istate
+                    integer :: iopt
+                    double precision dimension(lrw) :: rwork
+                    integer, optional,check(len(rwork)>=lrw),depend(rwork) :: lrw=len(rwork)
+                    integer dimension(liw) :: iwork
+                    integer, optional,check(len(iwork)>=liw),depend(iwork) :: liw=len(iwork)
+                    double precision :: jac
+                    integer :: jt
+                end subroutine dlsoda
+            end interface
+            subroutine stiff_chem_solver(ode_dt,ierr) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
+                use functions
+                use run, only: time
+                use stiff_chem_stats
+                use stiff_chem_dbg
+                use param1, only: zero
+                use stiff_chem_maps, only: mapmfixtoode
+                use output, only: full_log
+                use mpi_utility
+                double precision intent(in) :: ode_dt
+                integer :: ierr
+            end subroutine stiff_chem_solver
+            function calc_reactions(ijk) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
+                use rxns, only: no_of_rxns
+                integer intent(in) :: ijk
+                logical :: calc_reactions
+            end function calc_reactions
+            subroutine calc_ode_coeff(lneq,ijk) ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
+                use run, only: species_eq
+                use fldvar, only: ep_s
+                use physprop, only: mmax
+                ! integer dimension((neq_dimn)) :: lneq
+                integer intent(in) :: ijk
+            end subroutine calc_ode_coeff
+            subroutine finalize_stiff_solver ! in :mfix:/mfix/model/chem/stiff_chem_mod.f:stiff_chem
+                use functions
+                use physprop, only: nmax
+                use constant, only: gas_const
+                use compar
+                use utilities
+                use param1, only: one
+                use mpi_utility
+                use fldvar, only: x_s
+                use sendrecv
+            end subroutine finalize_stiff_solver
+        end module stiff_chem
+        subroutine stiff_chem_rrates(lneq,ltime,y,ydot,usrs_rates) ! in :mfix:/mfix/model/chem/stiff_chem_rrates.f
+            use physprop, only: c_ps
+            use run, only: units
+            use stiff_chem_rrates__user__routines
+            use stiff_chem_maps, only: mapodetomfix
+            use param, only: dimension_n_s
+            use param1, only: zero
+            use fldvar, only: rop_s
+            use stiff_chem, only: neq_dimn
+            use rxns, only: no_of_rxns
+            ! integer dimension((neq_dimn)),intent(in) :: lneq
+            double precision intent(in) :: ltime
+            ! double precision dimension((ode_dimn_all)),intent(in) :: y
+            ! double precision dimension((ode_dimn_all)) :: ydot
+            external usrs_rates
+        end subroutine stiff_chem_rrates
+        module constant ! in :mfix:/mfix/model/constant_mod.f
+            use param, only: dimension_c,dim_m
+            logical, parameter,optional :: switch_ia=.true.
+            double precision :: phip0
+            double precision, parameter,optional :: n_pc=2.0
+            double precision, parameter,optional :: delta=0.01
+            double precision :: phi
+            double precision, parameter,optional :: n_pf=1.03
+            double precision :: ep_star
+            double precision, parameter,optional :: d_pc=5.0
+            double precision :: breakage_eff
+            double precision, parameter,optional :: switch_bn=1.d0
+            double precision :: eps_f_min
+            double precision :: drag_c1
+            double precision :: max_delp
+            double precision :: gravity
+            double precision :: sin2_phi
+            double precision, parameter,optional :: pi=4.d0*atan(1.d0)
+            double precision, parameter,optional :: fr=0.5
+            double precision :: k4phi
+            double precision :: c_e
+            double precision :: c_f
+            double precision :: aggregation_eff
+            double precision :: v_ex
+            double precision :: f_phi
+            double precision :: gravity_z
+            double precision :: gravity_x
+            double precision :: gravity_y
+            double precision :: tan_phi_w
+            double precision, parameter,optional :: alpha=1.6d0
+            double precision :: to_si
+            double precision dimension(500) :: c
+            double precision :: e_w
+            double precision :: gas_const
+            double precision :: phi_w
+            double precision, parameter,optional :: sqrt_pi=2.d0*sqrt(atan(1.d0))
+            double precision :: drag_d1
+            double precision :: sin_phi
+            double precision :: eta
+            double precision :: phip
+            double precision, parameter,optional :: gas_const_cal=1.987207d0
+            double precision :: segregation_slope_coefficient
+        end module constant
+        subroutine des_time_march(usrs,write_usrs1) ! in :mfix:/mfix/model/des/des_time_march.f
+            use des_bc, only: dem_bcmi,dem_bcmo
+            use des_thermo, only: calc_radt_des
+            use functions
+            use error_manager
+            use output_man, only: output_manager
+            use mpi_funs_des, only: des_par_exchange
+            use desgrid, only: desgrid_pic
+            use machine
+            use discretelement
+            use calc_collision_wall, only: calc_dem_thermo_with_wall_stl
+            use run, only: tstop,dt,time
+            use mpi_utility
+            use des_time_march__user__routines
+            use sendrecv
+            external usrs
+            external write_usrs1
+        end subroutine des_time_march
+        module discretelement ! in :mfix:/mfix/model/des/discretelement_mod.f
+            use param, only: dim_m
+            integer, allocatable,dimension(:) :: neighbors
+            integer, parameter,optional :: lsd=1
+            integer, parameter,optional :: exiting_particle=3
+            logical :: discrete_element
+            double precision :: eta_t_w
+            double precision :: des_eps_xstart
+            double precision :: s_time
+            double precision, allocatable,dimension(:,:) :: rot_acc_old
+            logical :: van_der_waals
+            integer :: des_mmax
+            integer :: max_isize
+            double precision, allocatable,dimension(:,:,:) :: sstencil
+            double precision, allocatable,dimension(:,:) :: des_vel_new
+            integer :: tecplot_findex
+            double precision, allocatable,dimension(:) :: postcohesive
+            logical :: print_des_data
+            double precision, allocatable,dimension(:,:) :: des_acc_old
+            double precision, allocatable,dimension(:,:) :: des_pos_new
+            integer :: desgridsearch_imax
+            double precision :: eta_n_w
+            integer :: des_usr_var_size
+            integer :: nwalls
+            double precision, allocatable,dimension(:) :: omoi
+            double precision, allocatable,dimension(:,:) :: wall_normal
+            double precision, allocatable,dimension(:,:,:,:) :: vstencil
+            character(len=7) :: interp_scheme
+            double precision, allocatable,dimension(:) :: yn
+            integer, allocatable,dimension(:) :: neighbor_index_old
+            double precision, allocatable,dimension(:) :: ro_sol
+            double precision :: surface_energy
+            integer :: neighbor_search_n
+            double precision, allocatable,dimension(:) :: f_gp
+            double precision, allocatable,dimension(:,:) :: realpart_mphase_byic
+            double precision :: sz1
+            integer, allocatable,dimension(:,:) :: wall_collision_facet_id
+            integer, parameter,optional :: entering_particle=2
+            integer, allocatable,dimension(:,:) :: part_mphase_byic
+            double precision :: mew_w
+            logical :: intg_euler
+            integer :: max_pip
+            logical :: debug_des
+            double precision :: kn
+            double precision dimension(3) :: grav
+            double precision :: by1
+            double precision, allocatable,dimension(:,:,:) :: wall_collision_pft
+            integer :: des_coll_model_enum
+            double precision :: vw_poisson_actual
+            logical :: use_cohesion
+            double precision :: kt_w_fac
+            double precision :: vdw_inner_cutoff
+            character(len=255) :: vtp_dir
+            double precision, allocatable,dimension(:) :: global_gran_energy
+            double precision :: des_eps_zstart
+            double precision :: kt_w
+            integer :: tot_par
+            double precision, allocatable,dimension(:,:) :: pft_neighbor
+            double precision, allocatable,dimension(:) :: zt
+            double precision, allocatable,dimension(:,:) :: ppos
+            double precision :: kt_fac
+            double precision :: des_etat_w_fac
+            integer, allocatable,dimension(:) :: neighbors_old
+            logical :: intg_adams_bashforth
+            logical :: des_calc_bedheight
+            integer, allocatable,dimension(:,:) :: pijk
+            double precision :: factor_rlm
+            integer :: particles
+            double precision, allocatable,dimension(:,:,:,:) :: psgradstencil
+            double precision, allocatable,dimension(:,:) :: drag_bm
+            double precision, allocatable,dimension(:) :: des_vol_node
+            double precision :: ew_young_actual
+            logical :: use_vdh_dem_model
+            double precision, allocatable,dimension(:) :: bed_height
+            double precision, allocatable,dimension(:) :: postcluster
+            double precision, allocatable,dimension(:) :: vxf_gds
+            character(len=4) :: des_le_shear_dir
+            logical :: minimize_des_facet_list
+            integer, optional :: collision_array_max=8
+            integer, parameter,optional :: nonexistent=0
+            double precision :: mew
+            double precision :: overlap_max
+            double precision, allocatable,dimension(:,:) :: des_usr_var
+            double precision, allocatable,dimension(:) :: des_radius
+            double precision, allocatable,dimension(:,:) :: sdrag_am
+            double precision :: max_radius
+            logical :: des_continuum_hybrid
+            logical :: do_old
+            double precision, allocatable,dimension(:) :: vol_ic_region
+            integer :: nfactor
+            logical :: des_explicitly_coupled
+            integer, parameter,optional :: normal_particle=1
+            logical, allocatable,dimension(:) :: ighost_updated
+            logical :: des_continuum_coupled
+            double precision, allocatable,dimension(:,:) :: fc
+            character(len=64) :: des_output_type
+            integer :: desgridsearch_jmax
+            double precision, allocatable,dimension(:,:) :: omega_new
+            double precision, allocatable,dimension(:,:) :: des_vel_old
+            integer :: ighost_cnt
+            double precision, allocatable,dimension(:) :: xe
+            double precision :: wall_hamaker_constant
+            logical :: des_oneway_coupled
+            double precision :: vw_poisson
+            double precision :: kn_w
+            double precision, allocatable,dimension(:,:,:,:) :: pgradstencil
+            double precision :: nz2
+            double precision :: kt
+            double precision :: des_le_rel_vel
+            double precision, allocatable,dimension(:,:) :: tow
+            double precision, allocatable,dimension(:) :: des_vel_avg
+            integer :: des_neighbor_search
+            double precision, allocatable,dimension(:,:,:,:) :: gstencil
+            double precision :: des_ke
+            character(len=7) :: scheme
+            double precision :: wall_vdw_outer_cutoff
+            integer, allocatable,dimension(:) :: dg_pijk
+            double precision :: vdw_outer_cutoff
+            double precision, allocatable,dimension(:) :: drag_am
+            double precision :: min_radius
+            integer, allocatable,dimension(:) :: iglobal_id
+            double precision, allocatable,dimension(:,:) :: p_force
+            integer :: imax_global_id
+            double precision, allocatable,dimension(:,:) :: vxf_sds
+            character(len=64) :: des_coll_model
+            double precision dimension(55) :: des_et_input
+            integer :: neigh_num
+            double precision, allocatable,dimension(:,:) :: des_pos_old
+            logical, optional :: particle_orientation=.false.
+            double precision, allocatable,dimension(:,:,:,:,:) :: vel_sol_stencil
+            double precision, allocatable,dimension(:,:) :: des_rops_node
+            double precision, allocatable,dimension(:,:,:) :: des_vel_node
+            integer :: focus_particle
+            logical :: des_le_bc
+            double precision, allocatable,dimension(:) :: pvol
+            double precision :: dtsolid
+            logical :: print_des_screen
+            double precision, allocatable,dimension(:,:) :: orientation
+            logical :: des_periodic_walls_y
+            logical :: des_periodic_walls_x
+            integer, allocatable,dimension(:) :: neighbor_index
+            integer :: ob2r
+            double precision, allocatable,dimension(:,:,:,:) :: wtderivp
+            integer, parameter,optional :: hertzian=0
+            integer :: pip
+            double precision :: pvel_stdev
+            integer :: ob2l
+            double precision, allocatable,dimension(:) :: global_gran_temp
+            double precision :: des_etat_fac
+            double precision :: pvel_mean
+            integer :: desgridsearch_kmax
+            double precision, allocatable,dimension(:,:,:) :: sdrag_bm
+            double precision :: wall_surface_energy
+            double precision, allocatable,dimension(:) :: pmass
+            character(len=64) :: des_intg_method
+            double precision :: eta_des_n
+            integer, parameter,optional :: normal_ghost=4
+            logical :: des_periodic_walls
+            double precision :: eta_des_t
+            double precision dimension(55) :: des_en_input
+            double precision :: ex2
+            double precision :: ty2
+            double precision, allocatable,dimension(:,:) :: drag_fc
+            logical :: des_periodic_walls_z
+            double precision, allocatable,dimension(:) :: f_gds
+            integer, parameter,optional :: exiting_ghost=6
+            integer(kind=1), allocatable,dimension(:) :: particle_state
+            integer, allocatable,dimension(:) :: dg_pijkprv
+            logical :: gener_part_config
+            double precision :: wall_vdw_inner_cutoff
+            double precision, allocatable,dimension(:) :: des_vel_max
+            double precision, pointer,dimension(:,:,:) :: weightp
+            integer, parameter,optional :: dimn=3
+            double precision :: grav_mag
+            double precision :: des_pe
+            logical :: square_well
+            logical :: do_nsearch
+            integer :: vtp_findex
+            double precision :: des_eps_ystart
+            double precision, allocatable,dimension(:,:) :: pft_neighbor_old
+            double precision, allocatable,dimension(:,:) :: f_sds
+            double precision :: des_rote
+            double precision :: wx1
+            double precision :: hamaker_constant
+            logical :: tsuji_drag
+            double precision :: neighbor_search_rad_ratio
+            double precision, allocatable,dimension(:,:) :: omega_old
+            integer :: order
+            integer, parameter,optional :: entering_ghost=5
+            integer, allocatable,dimension(:) :: pinc
+            double precision :: ew_young
+            double precision, optional,dimension(3) :: init_orientation=(/0.0,1.0,0.0/)
+            double precision :: asperities
+            interface  ! in :mfix:/mfix/model/des/discretelement_mod.f:discretelement
+                function des_getindexfrompos(lim1,lim2,part_pos,grid_pos,axis,axis_index) ! in :mfix:/mfix/model/des/discretelement_mod.f:discretelement:unknown_interface
+                    integer :: lim1
+                    integer :: lim2
+                    double precision :: part_pos
+                    double precision dimension(:) :: grid_pos
+                    character*1 :: axis
+                    character*1 :: axis_index
+                    integer :: des_getindexfrompos
+                end function des_getindexfrompos
+            end interface
+            function des_crossprdct(xx,yy) ! in :mfix:/mfix/model/des/discretelement_mod.f:discretelement
+                double precision dimension(3),intent(in) :: xx
+                double precision dimension(3),intent(in) :: yy
+                double precision dimension(3) :: des_crossprdct
+            end function des_crossprdct
+        end module discretelement
+        subroutine pic_time_march(usrs,write_usrs1) ! in :mfix:/mfix/model/des/pic/time_march_pic.f
+            use pic_bc, only: pic_bcmo,pic_bcmi
+            use error_manager
+            use run, only: call_usr
+            use mpi_funs_des, only: des_par_exchange
+            use desgrid, only: desgrid_pic
+            use discretelement, only: des_explicitly_coupled
+            use output_man, only: output_manager
+            use mpi_utility, only: global_all_sum
+            use mfix_pic, only: dtpic_cfl,dtpic_max,dtpic_taup
+            use pic_time_march__user__routines
+            external usrs
+            external write_usrs1
+        end subroutine pic_time_march
+        subroutine write_particle(np) ! in :mfix:/mfix/model/des/pic/time_march_pic.f
+            use discretelement
+            use usr
+            use compar
+            integer intent(in) :: np
+        end subroutine write_particle
+        module compar ! in :mfix:/mfix/model/dmp_modules/compar_mod.f
+            use mpi
+            integer, allocatable,dimension(:) :: new_ijksize3_all
+            integer, allocatable,dimension(:) :: kstart2_all
+            integer :: nodesk
+            integer :: nodesj
+            integer :: nodesi
+            integer, allocatable,dimension(:) :: east_array_of
+            integer, allocatable,dimension(:) :: imap_c
+            integer :: ngc_bottom
+            integer, allocatable,dimension(:) :: kmap
+            integer, allocatable,dimension(:) :: ijksize4_all
+            integer :: mpierr
+            integer :: kstart4
+            integer :: kstart1
+            integer :: kstart2
+            integer :: kstart3
+            integer, allocatable,dimension(:) :: iend3_all
+            integer, allocatable,dimension(:) :: jstart2_all
+            integer, allocatable,dimension(:) :: ncpp_uniform
+            integer :: kend3
+            integer :: kend2
+            integer :: kend1
+            integer, allocatable,dimension(:) :: displs
+            integer, allocatable,dimension(:) :: isize_all
+            integer, allocatable,dimension(:) :: iend4_all
+            integer :: ijkend3
+            integer :: ijkend4
+            integer, allocatable,dimension(:) :: jstart_all
+            integer, allocatable,dimension(:) :: ijkstart3_all
+            integer :: jstart1
+            integer :: jstart3
+            integer :: jstart2
+            integer, allocatable,dimension(:) :: jmap
+            integer :: jstart4
+            integer, allocatable,dimension(:) :: istart2_all
+            integer, allocatable,dimension(:) :: jend3_all
+            integer, allocatable,dimension(:) :: jp_array_of
+            integer, allocatable,dimension(:) :: iend1_all
+            integer, allocatable,dimension(:) :: kp_array_of
+            integer :: jstart
+            integer :: kend
+            integer :: ngc_north
+            integer, allocatable,dimension(:) :: iend2_all
+            integer :: ngc_top
+            integer, allocatable,dimension(:) :: north_array_of
+            integer, allocatable,dimension(:) :: top_array_of
+            character(len=5) :: fbname
+            integer, allocatable,dimension(:,:,:) :: funijk_map_c
+            logical, optional :: ncpp_uniform_backed_up=.false.
+            integer, allocatable,dimension(:) :: iend_all
+            integer, allocatable,dimension(:) :: kend1_all
+            integer, allocatable,dimension(:) :: istart_all
+            logical, allocatable,dimension(:,:,:) :: dead_cell_at
+            integer, optional :: nlayers_bicgs=1
+            integer, allocatable,dimension(:) :: lgc_bottom
+            logical, optional :: short_gridmap_init=.false.
+            integer :: ngc_south
+            integer :: c2_3
+            integer, allocatable,dimension(:) :: jend_all
+            integer :: numpes
+            integer, optional :: idbg=1
+            integer :: istart
+            integer, allocatable,dimension(:) :: jsize_all
+            integer :: ijkstart4
+            integer, allocatable,dimension(:) :: west_array_of
+            integer :: ijkstart3
+            integer, allocatable,dimension(:) :: ksize_all
+            integer :: c1_3
+            integer, allocatable,dimension(:) :: kend2_all
+            integer, allocatable,dimension(:) :: kstart3_all
+            integer, allocatable,dimension(:) :: jmap_c
+            integer :: c0_3
+            integer, allocatable,dimension(:) :: bottom_array_of
+            integer :: ngc_east
+            integer :: istart4
+            integer :: istart2
+            integer :: jend
+            integer, allocatable,dimension(:) :: ijksize3_all
+            integer :: istart1
+            integer, allocatable,dimension(:) :: ip_array_of
+            integer, allocatable,dimension(:) :: ijkend4_all
+            integer, allocatable,dimension(:) :: istart4_all
+            integer, allocatable,dimension(:,:,:) :: ijk_array_of
+            integer, allocatable,dimension(:) :: ijkstart4_all
+            integer :: iend2
+            integer :: istart3
+            integer, allocatable,dimension(:) :: ijkend3_all
+            integer :: kstart
+            integer, allocatable,dimension(:) :: im_array_of
+            integer :: c2
+            integer :: c1
+            integer :: c0
+            integer, allocatable,dimension(:) :: imap
+            integer, allocatable,dimension(:) :: kstart1_all
+            integer, allocatable,dimension(:) :: kmap_c
+            integer, optional :: pe_io=0
+            integer, allocatable,dimension(:) :: kend3_all
+            logical, optional :: domain_size_adjusted=.false.
+            integer, allocatable,dimension(:) :: lgc_west
+            integer, allocatable,dimension(:) :: lgc_top
+            integer, optional :: root=0
+            integer :: mype
+            integer :: ngc_west
+            integer, allocatable,dimension(:) :: jstart4_all
+            integer, allocatable,dimension(:) :: jm_array_of
+            integer, allocatable,dimension(:) :: south_array_of
+            integer :: kend4
+            integer, allocatable,dimension(:) :: km_array_of
+            integer, allocatable,dimension(:) :: jend4_all
+            integer :: ijksize4
+            integer, allocatable,dimension(:) :: istart1_all
+            integer, allocatable,dimension(:) :: kend_all
+            integer, allocatable,dimension(:) :: jend2_all
+            integer :: jend4
+            integer :: jend2
+            integer :: jend3
+            integer :: jend1
+            integer, allocatable,dimension(:) :: kend4_all
+            integer, allocatable,dimension(:) :: jend1_all
+            integer, allocatable,dimension(:) :: jstart1_all
+            integer :: ijksize3
+            integer, allocatable,dimension(:) :: jstart3_all
+            logical :: increment_arrays_allocated
+            integer :: iend4
+            integer :: iend1
+            integer :: iend3
+            integer, allocatable,dimension(:) :: lgc_north
+            integer, allocatable,dimension(:) :: lgc_east
+            integer, allocatable,dimension(:) :: kstart4_all
+            integer, allocatable,dimension(:) :: lgc_south
+            integer, allocatable,dimension(:) :: istart3_all
+            integer :: iend
+            integer, allocatable,dimension(:) :: kstart_all
+        end module compar
+        module fldvar ! in :mfix:/mfix/model/fldvar_mod.f
+            double precision, allocatable,dimension(:) :: epg_ifac
+            double precision, allocatable,dimension(:,:) :: x_g
+            double precision, allocatable,dimension(:,:) :: ro_s
+            double precision, allocatable,dimension(:,:) :: v_s
+            double precision, allocatable,dimension(:) :: rop_g
+            double precision, allocatable,dimension(:) :: p_g
+            double precision, allocatable,dimension(:) :: w_g
+            double precision, allocatable,dimension(:,:) :: eps_ifac
+            double precision, allocatable,dimension(:) :: rop_go
+            double precision, allocatable,dimension(:,:) :: d_po
+            double precision, allocatable,dimension(:,:) :: scalar
+            double precision, allocatable,dimension(:) :: v_g
+            double precision, allocatable,dimension(:,:,:) :: x_s
+            double precision, allocatable,dimension(:,:) :: rop_s
+            double precision, allocatable,dimension(:,:) :: p_s
+            double precision, allocatable,dimension(:,:) :: w_s
+            double precision, allocatable,dimension(:,:) :: u_s
+            double precision, allocatable,dimension(:,:) :: theta_mo
+            double precision, allocatable,dimension(:) :: u_g
+            double precision, allocatable,dimension(:) :: ep_g
+            double precision, allocatable,dimension(:) :: ro_go
+            double precision, allocatable,dimension(:,:,:) :: x_so
+            double precision, allocatable,dimension(:,:) :: p_s_c
+            double precision, allocatable,dimension(:) :: p_s_f
+            double precision, allocatable,dimension(:) :: t_g
+            double precision, allocatable,dimension(:) :: w_go
+            double precision, allocatable,dimension(:,:) :: u_so
+            double precision, allocatable,dimension(:,:) :: ro_so
+            double precision, allocatable,dimension(:,:) :: t_s
+            double precision, allocatable,dimension(:) :: p_s_p
+            double precision, allocatable,dimension(:) :: p_s_v
+            double precision, allocatable,dimension(:) :: p_star
+            double precision, allocatable,dimension(:,:) :: t_so
+            double precision, allocatable,dimension(:,:) :: err_array
+            double precision, allocatable,dimension(:) :: ep_go
+            double precision, allocatable,dimension(:,:) :: scalaro
+            double precision, allocatable,dimension(:) :: epg_jfac
+            double precision, allocatable,dimension(:) :: v_go
+            double precision, allocatable,dimension(:) :: u_go
+            double precision, allocatable,dimension(:) :: t_go
+            double precision, allocatable,dimension(:,:) :: rop_so
+            double precision, allocatable,dimension(:) :: e_turb_g
+            double precision, allocatable,dimension(:,:) :: v_so
+            double precision, allocatable,dimension(:,:) :: d_p
+            double precision, allocatable,dimension(:,:) :: theta_m
+            double precision, allocatable,dimension(:,:) :: x_go
+            double precision, allocatable,dimension(:) :: p_staro
+            double precision, allocatable,dimension(:) :: e_turb_go
+            double precision, allocatable,dimension(:) :: k_turb_go
+            double precision, allocatable,dimension(:,:,:) :: ep_ss
+            double precision, allocatable,dimension(:) :: k_turb_g
+            double precision, allocatable,dimension(:) :: ro_g
+            double precision, allocatable,dimension(:,:) :: w_so
+            double precision, allocatable,dimension(:) :: p_go
+            function ep_s(ijk,xxm) ! in :mfix:/mfix/model/fldvar_mod.f:fldvar
+                integer intent(in) :: ijk
+                integer intent(in) :: xxm
+                double precision :: ep_s
+            end function ep_s
+        end module fldvar
+        module geometry ! in :mfix:/mfix/model/geometry_mod.f
+            use param, only: dim_j,dim_k,dim_i
+            integer :: core_iend
+            integer :: imax4
+            double precision, allocatable,dimension(:) :: x_e
+            integer :: imax2
+            integer :: imax3
+            double precision, allocatable,dimension(:) :: axy_v
+            integer :: imax1
+            double precision, allocatable,dimension(:) :: odz
+            double precision, allocatable,dimension(:) :: fx_e_bar
+            double precision, allocatable,dimension(:) :: axy_u
+            double precision, allocatable,dimension(:) :: ody_n
+            logical :: cyclic_z_pd
+            double precision, allocatable,dimension(:) :: z_t
+            logical :: cyclic_y_mf
+            character(len=3), pointer,dimension(:) :: icbc_flag
+            logical :: cyclic_x_pd
+            character(len=16) :: coordinates
+            integer :: imin1
+            double precision, allocatable,dimension(:) :: fx_bar
+            integer :: kmax3
+            double precision, allocatable,dimension(:) :: ayz
+            logical :: cyclic_x_mf
+            integer :: core_kend
+            logical :: no_i
+            logical :: no_j
+            logical :: no_k
+            integer :: jmax4
+            double precision, allocatable,dimension(:) :: vol_w
+            double precision, allocatable,dimension(:) :: vol_v
+            double precision, allocatable,dimension(:) :: vol_u
+            integer :: ijkmin1
+            logical :: cylindrical_2d
+            double precision, allocatable,dimension(:) :: vol_surr
+            integer :: kmax
+            ! double precision dimension((dim_k)+1) :: dz
+            integer :: imax
+            ! double precision dimension((dim_i)+1) :: dx
+            ! double precision dimension((dim_j)+1) :: dy
+            logical :: cyclic_z
+            integer :: kmin1
+            double precision, allocatable,dimension(:) :: z
+            double precision, allocatable,dimension(:) :: axy_w
+            integer :: core_jstart
+            integer :: jmax1
+            integer :: jmax3
+            integer :: jmax2
+            double precision, allocatable,dimension(:) :: axz_w
+            double precision, allocatable,dimension(:) :: axz_v
+            double precision, allocatable,dimension(:) :: axz_u
+            integer :: jmin4
+            integer :: jmin3
+            integer :: jmin2
+            integer :: jmin1
+            integer :: ijmax2
+            integer :: jmax
+            double precision, allocatable,dimension(:) :: x
+            double precision, allocatable,dimension(:) :: ayz_v
+            logical :: cyclic_z_mf
+            integer :: imin4
+            integer :: ijkmax1
+            double precision, allocatable,dimension(:) :: ody
+            integer :: ijkmax3
+            integer :: ijkmax2
+            integer :: ijkmax4
+            integer :: ijkmin4
+            double precision, allocatable,dimension(:) :: vol
+            logical :: do_j
+            integer :: kmin4
+            integer :: kmin2
+            integer :: kmin3
+            integer :: i_cyl_transition
+            logical :: do_k
+            double precision, allocatable,dimension(:) :: fy_n
+            double precision :: xmin
+            double precision, allocatable,dimension(:) :: fz_t
+            logical :: do_i
+            integer :: core_jend
+            double precision, allocatable,dimension(:) :: ox_e
+            double precision, allocatable,dimension(:) :: fx_e
+            integer, allocatable,dimension(:) :: flag_t
+            logical :: cyclic_y_pd
+            double precision, allocatable,dimension(:) :: ayz_w
+            logical :: cyclic
+            integer, allocatable,dimension(:) :: flag_e
+            integer :: core_istart
+            logical :: use_corecell_loop
+            integer, allocatable,dimension(:) :: flag_n
+            logical :: cyclic_x
+            logical :: cyclic_y
+            double precision :: ylength
+            double precision, allocatable,dimension(:) :: fx
+            double precision :: zlength
+            double precision, allocatable,dimension(:) :: odx
+            integer, allocatable,dimension(:) :: flag3
+            double precision, allocatable,dimension(:) :: odx_e
+            logical :: cylindrical
+            double precision, allocatable,dimension(:) :: ayz_u
+            integer :: core_kstart
+            double precision :: xlength
+            double precision, allocatable,dimension(:) :: cyl_x
+            integer :: imin2
+            double precision, allocatable,dimension(:) :: cyl_x_e
+            double precision, allocatable,dimension(:) :: odz_t
+            integer :: imin3
+            double precision, allocatable,dimension(:) :: axz
+            double precision, allocatable,dimension(:) :: axy
+            integer, allocatable,dimension(:) :: flag
+            integer :: i_cyl_num
+            integer :: kmax1
+            integer :: kmax2
+            double precision, allocatable,dimension(:) :: fz_t_bar
+            integer :: kmax4
+            double precision, allocatable,dimension(:) :: ox
+            double precision, allocatable,dimension(:) :: fy_n_bar
+        end module geometry
+        module read_input ! in :mfix:/mfix/model/get_data.f
+            subroutine get_data ! in :mfix:/mfix/model/get_data.f:read_input
+                use des_rxns
+                use des_thermo
+                use turb, only: l_scale,l_scale0,k_epsilon
+                use run
+                use compar
+                use funits
+                use leqsol
+                use param
+                use mfix_pic
+                use discretelement
+                use cutcell
+                use dashboard
+                use param1
+                use visc_g, only: mu_gmax
+                use iterate, only: max_nit
+                use main, only: mfix_dat
+                use parallel
+            end subroutine get_data
+        end module read_input
+        module iterate ! in :mfix:/mfix/model/iterate.f
+            use run, only: ier,tunit,time
+            use exit, only: mfix_exit
+            integer :: mustit
+            logical :: setg
+            double precision :: ress
+            double precision :: normg
+            double precision :: tleft
+            logical :: converged
+            logical :: diverged
+            logical :: sets
+            double precision :: norms
+            double precision, allocatable,dimension(:) :: errorpercent
+            double precision :: smass
+            character(len=32) :: lmsg
+            double precision :: resg
+            integer :: nit
+            integer :: max_nit
+            subroutine iterate_init ! in :mfix:/mfix/model/iterate.f:iterate
+                use run, only: run_type,nsteprst,dt_prev,steady_state,time,cn_on,tstop,dt,nstep,get_tunit
+                use compar, only: pe_io,mype
+                use geometry, only: cyclic
+                use leqsol, only: leq_adjust
+                use cutcell, only: cartesian_grid
+                use time_cpu
+                use param1, only: zero,small_number,undefined,one
+                use toleranc, only: norm_g,norm_s
+                use output, only: full_log
+            end subroutine iterate_init
+            subroutine do_iteration(usrs,usrs_rates) ! in :mfix:/mfix/model/iterate.f:iterate
+                use physprop, only: mmax,smax,ro_g0
+                use cont, only: solve_continuity
+                use do_iteration__user__routines
+                use geometry, only: cylindrical,cyclic
+                use leqsol, only: leq_adjust
+                use rxns
+                use residual, only: resid_p,resid
+                use mms, only: use_mms
+                use turb, only: k_epsilon
+                use scalars, only: nscalar
+                use discretelement, only: des_continuum_hybrid,discrete_element
+                use cutcell, only: cartesian_grid
+                use run, only: steady_state,dt,ier,energy_eq,phip_out_iter
+                use param1, only: zero,undefined_i,undefined,small_number
+                use pscor, only: mcp,k_cp
+                use fldvar, only: rop_g,p_star,rop_s,ep_g,ro_g
+                use qmom_kinetic_equation, only: qmomk
+                external usrs
+                external usrs_rates
+            end subroutine do_iteration
+            subroutine post_iterate ! in :mfix:/mfix/model/iterate.f:iterate
+                use machine, only: end_log,start_log
+                use funits, only: unit_log,unit_out,dmp_log
+                use run, only: dt,time
+                use compar, only: pe_io,mype
+            end subroutine post_iterate
+            subroutine log_diverged ! in :mfix:/mfix/model/iterate.f:iterate
+                use funits, only: unit_log,dmp_log
+                use run, only: tstop,dt,get_tunit,time
+                use compar, only: pe_io,mype
+                use machine, only: end_log,start_log
+                use time_cpu, only: cpuos
+                use dashboard, only: f_dashboard,n_dashboard,run_status,write_dashboard
+                use output, only: full_log
+            end subroutine log_diverged
+            subroutine log_converged ! in :mfix:/mfix/model/iterate.f:iterate
+                use funits, only: unit_log,dmp_log
+                use error_manager, only: err_msg
+                use run, only: energy_eq,time,tstop,dt,nstep,get_tunit
+                use compar, only: pe_io,mype
+                use geometry, only: do_j,do_k,do_i
+                use machine, only: end_log,start_log
+                use physprop, only: mmax,smax
+                use time_cpu, only: cpu_nlog,time_nlog,cpu0,cpuos
+                use dashboard, only: f_dashboard,n_dashboard,run_status,write_dashboard
+                use output, only: nlog,full_log
+            end subroutine log_converged
+            subroutine goalseekmassflux(nit,mustit,doit) ! in :mfix:/mfix/model/iterate.f:iterate
+                use time_cpu
+                use constant
+                use compar
+                use bc
+                use geometry
+                use utilities, only: mfix_isnan
+                use exit, only: mfix_exit
+                use param1, only: one
+                use run
+                integer intent(inout) :: nit
+                integer intent(inout) :: mustit
+                logical intent(in) :: doit
+            end subroutine goalseekmassflux
+            function adjustdt(usrs_rates) ! in :mfix:/mfix/model/iterate.f:iterate
+                use adjustdt__user__routines
+                use error_manager
+                use run, only: steady_state,dt,odt,dt_dir
+                use param1, only: zero,undefined,one
+                logical :: adjustdt
+                external usrs_rates
+            end function adjustdt
+        end module iterate
+        module main ! in :mfix:/mfix/model/main.f
+            use exit, only: mfix_exit
+            double precision :: walltime_used
+            character(len=80), optional :: mfix_dat="mfix.dat"
+            integer :: ncheck
+            double precision :: cputime_used
+            logical, optional :: exit_signal=.false.
+            character(len=512) :: version
+            integer :: dncheck
+            character(len=80) dimension(100) :: cmd_line_args
+            double precision :: cpu1
+            integer, optional :: cmd_line_args_count=0
+            integer :: nit_total
+            subroutine initialize ! in :mfix:/mfix/model/main.f:main
+                use funits, only: unit_log,unit_res,dmp_log
+                use cont, only: do_cont
+                use qmom_kinetic_equation, only: qmomk
+                use check, only: check_mass_balance
+                use parallel_mpi, only: parallel_init,parallel_fin
+                use pscor, only: e_t,switch_4_p_s,phase_4_p_s,do_p_s,e_e,e_n,mcp
+                use compar, only: pe_io,mype,mpierr
+                use vtk, only: write_vtk_files
+                use machine, only: end_log,start_log,wall_time,get_run_id,pc_quickwin,machine_cons
+                use cdist, only: bglobalnetcdf,bstart_with_one_res,bdist_io,bwrite_netcdf
+                use pgcor, only: phase_4_p_g,d_n,switch_4_p_g,d_t,d_e
+                use run, only: v_sh,run_type,pic_solids,iter_restart,time,dt,nstep,shear
+                use check_data_cg, only: report_best_processor_size,check_bc_flags
+                use mpi, only: mpi_comm_world,mpi_barrier
+                use drag, only: f_gs
+                use physprop, only: mmax
+                use time_cpu, only: cpu_nlog,cpu_io,time_nlog,cpu0,cpuos
+                use output_man, only: output_manager,init_output_vars
+                use error_manager, only: finl_err_msg,init_err_msg
+                use coeff, only: init_coeff
+                use mfix_netcdf, only: mfix_usingnetcdf
+                use discretelement, only: discrete_element
+                use cutcell, only: cartesian_grid,re_indexing,set_corner_cells
+                use param1, only: n_spx,zero,undefined
+                use output, only: dbgprn_layout
+                use fldvar, only: rop_g,rop_s
+            end subroutine initialize
+            subroutine initialize_2(usrs) ! in :mfix:/mfix/model/main.f:main
+                use funits, only: unit_log,unit_res,dmp_log
+                use cont, only: do_cont
+                use qmom_kinetic_equation, only: qmomk
+                use check, only: check_mass_balance
+                use parallel_mpi, only: parallel_init,parallel_fin
+                use pscor, only: e_t,switch_4_p_s,phase_4_p_s,do_p_s,e_e,e_n,mcp
+                use compar, only: pe_io,mype,mpierr
+                use initialize_2__user__routines
+                use vtk, only: write_vtk_files
+                use machine, only: end_log,start_log,wall_time,get_run_id,pc_quickwin,machine_cons
+                use cdist, only: bglobalnetcdf,bstart_with_one_res,bdist_io,bwrite_netcdf
+                use pgcor, only: phase_4_p_g,d_n,switch_4_p_g,d_t,d_e
+                use run, only: v_sh,run_type,pic_solids,iter_restart,time,dt,nstep,shear
+                use check_data_cg, only: report_best_processor_size,check_bc_flags
+                use mpi, only: mpi_comm_world,mpi_barrier
+                use drag, only: f_gs
+                use physprop, only: mmax
+                use time_cpu, only: cpu_nlog,cpu_io,time_nlog,cpu0,cpuos
+                use output_man, only: output_manager,init_output_vars
+                use error_manager, only: finl_err_msg,init_err_msg
+                use coeff, only: init_coeff
+                use mfix_netcdf, only: mfix_usingnetcdf
+                use discretelement, only: discrete_element
+                use cutcell, only: cartesian_grid,re_indexing,set_corner_cells
+                use param1, only: n_spx,zero,undefined
+                use output, only: dbgprn_layout
+                use fldvar, only: rop_g,rop_s
+                external usrs
+            end subroutine initialize_2
+            subroutine check_data ! in :mfix:/mfix/model/main.f:main
+                use error_manager
+                use run, only: run_type,time,run_name
+                use cut_cell_preproc, only: cut_cell_preprocessing
+                use qmom_kinetic_equation, only: qmomk
+                use stl_preproc_des, only: des_stl_preprocessing
+                use check_data_cg, only: adjust_ijk_size,check_data_cartesian
+                use desgrid, only: desgrid_init
+                use discretelement, only: discrete_element
+                use cutcell, only: cartesian_grid
+                use mpi_init_des, only: desmpi_init
+                use dashboard, only: nit_min,nit_max,init_time,smmax,dtmax,n_dashboard,dtmin,smmin
+                use param1, only: n_spx,large_number
+                use iterate, only: max_nit
+                use des_allocate
+                use gridmap
+            end subroutine check_data
+            subroutine finalize(usrs) ! in :mfix:/mfix/model/main.f:main
+                use parallel_mpi, only: parallel_fin
+                use error_manager, only: finl_err_msg
+                use run, only: dt,call_usr,dt_min,get_tunit,tunit
+                use cut_cell_preproc, only: close_cut_cell_files
+                use machine, only: wall_time
+                use cutcell, only: cartesian_grid
+                use time_cpu
+                use dashboard
+                use finalize__user__routines
+                external usrs
+            end subroutine finalize
+            subroutine set_constants ! in :mfix:/mfix/model/main.f:main
+                use run, only: units,lam_hys
+                use error_manager, only: flush_err_msg
+                use constant, only: to_si
+                use param1, only: zero,undefined,one
+            end subroutine set_constants
+            subroutine gen_log_basename ! in :mfix:/mfix/model/main.f:main
+                use compar, only: fbname
+            end subroutine gen_log_basename
+            subroutine debug_write_layout ! in :mfix:/mfix/model/main.f:main
+                use funits
+                use functions
+                use run
+                use compar
+                use geometry
+                use leqsol
+                use param
+                use parallel
+                use sendrecv3
+                use time_cpu
+                use param1
+                use indices
+                use cdist
+                use mpi_utility
+                use sendrecv
+            end subroutine debug_write_layout
+            subroutine write_parallel_info ! in :mfix:/mfix/model/main.f:main
+                use funits
+                use functions
+                use run
+                use compar
+                use geometry
+                use leqsol
+                use param
+                use sendrecv3
+                use time_cpu
+                use param1
+                use indices
+                use mpi_utility
+                use parallel
+                use sendrecv
+            end subroutine write_parallel_info
+            function do_mpi_bcast(str) ! in :mfix:/mfix/model/main.f:main
+                use mpi
+                character*100000 intent(in) :: str
+                character dimension(100000) :: do_mpi_bcast
+            end function do_mpi_bcast
+            subroutine do_write_dbg_vtu_and_vtp_files ! in :mfix:/mfix/model/main.f:main
+            end subroutine do_write_dbg_vtu_and_vtp_files
+            subroutine do_backupres ! in :mfix:/mfix/model/main.f:main
+                use output_man, only: backup_res
+            end subroutine do_backupres
+            subroutine do_reinit(filename) ! in :mfix:/mfix/model/main.f:main
+                use reinit, only: reinitialize
+                character*(*) intent(in) :: filename
+            end subroutine do_reinit
+            subroutine do_abort ! in :mfix:/mfix/model/main.f:main
+                use compar, only: mype
+            end subroutine do_abort
+            subroutine add_command_line_keyword(arg) ! in :mfix:/mfix/model/main.f:main
+                character*80 intent(in) :: arg
+            end subroutine add_command_line_keyword
+        end module main
+        module param1 ! in :mfix:/mfix/model/param1_mod.f
+            integer, parameter,optional :: n_spx=11
+            double precision, parameter,optional :: undefined=9.87654321d31
+            double precision, parameter,optional :: large_number=1.0d32
+            integer :: dimension_lm
+            double precision, parameter,optional :: one=1.0d0
+            integer :: dimension_n_all
+            double precision, parameter,optional :: zero=0.0d0
+            integer, parameter,optional :: undefined_i=987654321
+            integer, parameter,optional :: max_class=1000000
+            integer, parameter,optional :: max_ncorn=4000
+            double precision, parameter,optional :: half=0.5d0
+            character, parameter,optional :: undefined_c=' '
+            double precision, parameter,optional :: small_number=1.0d-15
+            subroutine filler1 ! in :mfix:/mfix/model/param1_mod.f:param1
+            end subroutine filler1
+        end module param1
+        module param ! in :mfix:/mfix/model/param_mod.f
+            integer :: dimension_n_s
+            integer, parameter,optional :: dim_n_s=100
+            integer :: dimension_3g
+            integer :: dimension_3l
+            integer, parameter,optional :: dimension_ic=500
+            integer, parameter,optional :: dim_n_g=100
+            integer :: dimension_3p
+            integer, parameter,optional :: dimension_ps=5000
+            integer, parameter,optional :: north=2
+            integer, parameter,optional :: dimension_is=500
+            integer, parameter,optional :: dimension_c=500
+            integer, parameter,optional :: bottom=-3
+            integer :: dimension_j
+            integer :: dimension_k
+            integer, parameter,optional :: top=3
+            integer :: dimension_i
+            integer, parameter,optional :: dimension_bc=500
+            integer :: dimension_m
+            integer :: dimension_scalar
+            integer, parameter,optional :: dim_scalar=100
+            integer, parameter,optional :: dimension_rxn=100
+            integer, parameter,optional :: east=1
+            integer, parameter,optional,depend(dim_n_s,dim_n_g) :: dim_n=100
+            integer, parameter,optional :: dim_m=10
+            integer, parameter,optional :: dim_j=5000
+            integer, parameter,optional :: dim_k=5000
+            integer, parameter,optional :: dim_i=5000
+            integer :: dim_scalar2
+            integer :: dimension_n_g
+            integer, parameter,optional :: dim_eqs=10
+            integer, parameter,optional :: dimension_usr=5
+            integer :: dimension_3
+            integer :: dimension_4
+            integer, parameter,optional :: west=-1
+            ! integer, parameter,optional,depend(dim_n,dim_n_s,dim_n_g) :: dim_n_all=max(dimmax(dim
+            integer, parameter,optional :: south=-2
+            subroutine filler ! in :mfix:/mfix/model/param_mod.f:param
+            end subroutine filler
+        end module param
+        module physprop ! in :mfix:/mfix/model/physprop_mod.f
+            use param, only: dim_n,dim_n_g,dim_m,dim_n_s
+            integer dimension(11) :: nmax
+            double precision, allocatable,dimension(:,:) :: c_ps
+            double precision :: k_g0
+            double precision :: ro_g0
+            double precision dimension(11,100) :: thigh
+            integer dimension(10) :: inert_species
+            double precision :: mu_g0
+            integer :: smax
+            double precision, allocatable,dimension(:,:) :: dif_g
+            double precision dimension(11,100) :: icpor_h
+            double precision, allocatable,dimension(:) :: c_pg
+            double precision :: mw_avg
+            double precision, allocatable,dimension(:,:) :: kth_s
+            double precision, allocatable,dimension(:,:,:) :: dif_s
+            double precision :: cv
+            double precision dimension(10,100) :: mw_s
+            integer :: mmax
+            logical, optional :: database_read=.true.
+            double precision dimension(10) :: dif_s0
+            double precision, allocatable,dimension(:) :: mw_mix_g
+            double precision, allocatable,dimension(:,:) :: kphi_s
+            double precision, allocatable,dimension(:) :: mu_g
+            double precision dimension(10) :: dil_inert_x_vsd
+            double precision dimension(11,100) :: tcom
+            double precision dimension(11,100) :: hfrefor
+            double precision :: dil_factor_vsd
+            double precision :: c_pg0
+            integer dimension(10) :: nmax_s
+            double precision dimension(10) :: mu_s0
+            double precision dimension(11,100) :: tlow
+            double precision dimension(10) :: d_p0
+            double precision dimension(7,11,100) :: ahigh
+            double precision dimension(10) :: ro_s0
+            double precision dimension(100) :: mw_g
+            double precision :: dif_g0
+            integer :: nmax_g
+            double precision dimension(10) :: k_s0
+            double precision, parameter,optional :: t_ref=298
+            double precision dimension(10) :: shape_factor
+            logical dimension(10) :: close_packed
+            double precision, allocatable,dimension(:,:) :: k_s
+            double precision dimension(10,100) :: ro_xs0
+            double precision dimension(7,11,100) :: alow
+            double precision dimension(10,100) :: x_s0
+            double precision dimension(10) :: c_ps0
+            double precision, allocatable,dimension(:) :: k_g
+            double precision dimension(11,100) :: icpor_l
+            function calc_mw(x_g,dim,l,nmax,mw_g) ! in :mfix:/mfix/model/physprop_mod.f:physprop
+                use toleranc
+                use param1
+                use param
+                double precision dimension(dim,nmax) :: x_g
+                integer, optional,check(shape(x_g,0)==dim),depend(x_g) :: dim=shape(x_g,0)
+                integer :: l
+                integer, optional,check(shape(x_g,1)==nmax),depend(x_g) :: nmax=shape(x_g,1)
+                double precision dimension(nmax),depend(nmax) :: mw_g
+                double precision :: calc_mw
+            end function calc_mw
+            function blend_function(ijk) ! in :mfix:/mfix/model/physprop_mod.f:physprop
+                use functions
+                use constant
+                use fun_avg
+                use compar
+                use geometry
+                use param
+                use toleranc
+                use visc_s
+                use param1
+                use indices
+                use run
+                use fldvar
+                integer intent(in) :: ijk
+                double precision :: blend_function
+            end function blend_function
+        end module physprop
+        module residual ! in :mfix:/mfix/model/residual_mod.f
+            use param, only: dim_n,dim_m
+            character(len=4) dimension(8) :: resid_string
+            double precision, allocatable,dimension(:) :: resid_pack
+            integer, parameter,optional :: species_grp=4
+            integer, parameter,optional :: ke_grp=6
+            integer, parameter,optional :: nprefix=10
+            integer, parameter,optional :: resid_th=7
+            double precision, allocatable,dimension(:,:) :: den_resid
+            integer, parameter,optional :: energy_grp=3
+            integer, parameter,optional :: resid_t=6
+            integer, parameter,optional :: scalar_grp=5
+            integer, parameter,optional :: nresid=108
+            integer, parameter,optional :: resid_ke=9
+            integer, parameter,optional :: resid_ro=2
+            integer, parameter,optional :: theta_grp=2
+            character, parameter,optional,dimension(10) :: resid_prefix=(/'p', 'r', 'u', 'v', 'w', 't', 'g', 's', 'k', 'x'/)
+            integer, parameter,optional :: resid_p=1
+            integer, parameter,optional :: resid_w=5
+            integer, parameter,optional :: resid_v=4
+            integer, parameter,optional :: resid_u=3
+            character(len=8) dimension(6) :: resid_grp_string
+            integer, parameter,optional :: resid_x=10
+            double precision dimension(6) :: resid_grp
+            integer, parameter,optional :: max_resid_index=8
+            double precision, allocatable,dimension(:,:) :: max_resid
+            double precision, allocatable,dimension(:,:) :: resid
+            double precision, allocatable,dimension(:,:) :: num_resid
+            double precision dimension(10) :: accum_resid_s
+            integer dimension(8,2) :: resid_index
+            double precision :: sum5_resid
+            logical :: group_resid
+            double precision :: accum_resid_g
+            integer, parameter,optional :: hydro_grp=1
+            integer, allocatable,dimension(:,:) :: ijk_resid
+            integer, parameter,optional :: resid_sc=8
+            function get_resid_string(index_bn) ! in :mfix:/mfix/model/residual_mod.f:residual
+                integer intent(in) :: index_bn
+                character(len=4) :: get_resid_string
+            end function get_resid_string
+            function get_resid_grp_string(index_bn) ! in :mfix:/mfix/model/residual_mod.f:residual
+                integer intent(in) :: index_bn
+                character(len=8) :: get_resid_grp_string
+            end function get_resid_grp_string
+            function get_resid(index_bn) ! in :mfix:/mfix/model/residual_mod.f:residual
+                integer intent(in) :: index_bn
+                double precision :: get_resid
+            end function get_resid
+            function get_resid_grp(index_bn) ! in :mfix:/mfix/model/residual_mod.f:residual
+                integer intent(in) :: index_bn
+                double precision :: get_resid_grp
+            end function get_resid_grp
+        end module residual
+        subroutine rrates0(ier,usrs_rates) ! in :mfix:/mfix/model/rrates0.f
+            use functions
+            use rxns, only: reaction
+            use run, only: units
+            use compar
+            use geometry
+            use energy, only: hor_s
+            use param, only: dimension_n_s
+            use toleranc
+            use discretelement, only: des_continuum_hybrid
+            use physprop, only: nmax
+            use rrates0__user__routines
+            use param1, only: zero
+            use indices
+            use fldvar, only: t_s
+            integer :: ier
+            external usrs_rates
+        end subroutine rrates0
+        module run ! in :mfix:/mfix/model/run_mod.f
+            use derived_types
+            use param1, only: undefined_i
+            use param, only: dim_m,dim_eqs
+            double precision :: time
+            logical :: fpfoi
+            integer :: nsteprst
+            logical :: energy_eq
+            logical :: cn_on
+            logical :: ishii
+            logical :: automatic_restart
+            logical :: detect_stall
+            logical :: fedors_landel
+            logical :: friction
+            integer :: m_am
+            logical :: added_mass
+            logical :: subgrid_wall
+            double precision :: dt_prev
+            logical :: persistent_mode
+            double precision :: term_buffer
+            double precision :: dt_min
+            integer :: nstep
+            double precision :: c_fac
+            integer, optional :: dt_dir=-1
+            integer :: ier
+            integer dimension(2) :: timestep_fail_rate
+            logical :: steady_state
+            double precision :: dt_fac
+            logical :: shear
+            double precision :: batch_wallclock
+            logical :: model_b
+            logical :: call_usr
+            logical :: auto_restart
+            logical dimension(11) :: momentum_y_eq
+            logical :: jenkins
+            double precision :: dt
+            double precision :: v_sh
+            logical :: debug_resid
+            character(len=64) :: cd_function
+            logical :: ahmadi
+            character(len=4) :: tunit
+            character(len=10) :: id_version
+            double precision :: dt_max
+            integer :: phip_out_iter
+            logical :: pic_solids
+            logical, optional :: interactive=.false.
+            integer dimension(10) :: discretize
+            logical :: schaeffer
+            character(len=3) dimension(10) :: solids_model
+            logical :: tanh_blend
+            double precision :: odt
+            character(len=60) :: run_name
+            logical :: yu_standish
+            logical dimension(11) :: momentum_z_eq
+            integer :: savage
+            logical :: chi_scheme
+            double precision :: filter_size_ratio
+            logical :: jackson
+            logical dimension(11) :: momentum_x_eq
+            logical :: phip_out_jj
+            logical :: bc_jj_m
+            character(len=16) :: units
+            logical dimension(11) :: species_eq
+            logical :: dem_solids
+            logical dimension(10) :: solve_ros
+            logical :: chk_batchq_end
+            integer, optional :: pic_count=0
+            character(len=16) :: run_type
+            double precision :: lam_hys
+            character(len=60) :: description
+            logical, optional :: reinitializing=.false.
+            logical :: any_species_eq
+            logical :: granular_energy
+            logical :: sigm_blend
+            logical :: def_cor
+            integer, optional :: dem_count=0
+            logical :: call_dqmom
+            logical :: use_dt_prev
+            logical :: blending_stress
+            logical :: tfm_solids
+            integer :: iter_restart
+            logical :: any_solve_ros
+            logical :: simonin
+            double precision :: tstop
+            integer, optional :: tfm_count=0
+            common /run_dp/ time
+            subroutine get_tunit(tleft,tunit) ! in :mfix:/mfix/model/run_mod.f:run
+                double precision intent(inout) :: tleft
+                character*4 :: tunit
+            end subroutine get_tunit
+        end module run
+        module step ! in :mfix:/mfix/model/time_step.f
+            use run, only: ier
+            use main, only: exit_signal,ncheck,dncheck,nit_total
+            use exit, only: mfix_exit
+            subroutine time_step_init(usrs,usrs_rates,write_usrs1) ! in :mfix:/mfix/model/time_step.f:step
+                use error_manager, only: flush_err_msg
+                use output_man, only: output_manager
+                use compar, only: mype
+                use time_step_init__user__routines
+                use qmom_kinetic_equation, only: qmomk
+                use utilities, only: max_vel_inlet
+                use toleranc, only: max_inlet_vel
+                use discretelement, only: des_continuum_coupled,des_continuum_hybrid,discrete_element
+                use run, only: run_type,use_dt_prev,nsteprst,odt,pic_solids,time,units,tstop,nstep
+                use dashboard, only: run_status,write_dashboard
+                use param1, only: undefined,small_number
+                use stiff_chem, only: stiff_chem_solver,stiff_chemistry
+                use output, only: res_dt
+                use check, only: check_mass_balance
+                external usrs
+                external usrs_rates
+                external write_usrs1
+            end subroutine time_step_init
+            subroutine time_step_end(usrs,usrs_rates,write_usrs1) ! in :mfix:/mfix/model/time_step.f:step
+                use error_manager, only: flush_err_msg
+                use output_man, only: output_manager
+                use compar, only: mype
+                use time_step_end__user__routines
+                use leqsol, only: solver_statistics,report_solver_stats
+                use discretelement, only: des_explicitly_coupled
+                use run, only: run_type,use_dt_prev,nsteprst,odt,pic_solids,steady_state,time,units,tstop,nstep
+                use dashboard, only: run_status,write_dashboard
+                use param1, only: undefined,small_number
+                use output, only: res_dt
+                use stiff_chem, only: stiff_chem_solver,stiff_chemistry
+                use iterate, only: nit
+                use check, only: check_mass_balance
+                use qmom_kinetic_equation, only: qmomk
+                external usrs
+                external usrs_rates
+                external write_usrs1
+            end subroutine time_step_end
+        end module step
+        module usr_dispatch ! in :mfix:/mfix/model/usr_dispatch.f
+            subroutine mfix_usrs(usr_sub_name) ! in :mfix:/mfix/model/usr_dispatch.f:usr_dispatch
+                character*(*) intent(in) :: usr_sub_name
+            end subroutine mfix_usrs
+            subroutine mfix_write_usrs1(l) ! in :mfix:/mfix/model/usr_dispatch.f:usr_dispatch
+                integer :: l
+            end subroutine mfix_write_usrs1
+            subroutine mfix_usrs_rates(ijk,rates) ! in :mfix:/mfix/model/usr_dispatch.f:usr_dispatch
+                use rxns, only: no_of_rxns
+                integer intent(in) :: ijk
+                double precision dimension(*) :: rates
+            end subroutine mfix_usrs_rates
+        end module usr_dispatch
+    end interface
+end python module mfix
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

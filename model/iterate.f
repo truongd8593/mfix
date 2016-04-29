@@ -140,7 +140,7 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DO_ITERATION
+      SUBROUTINE DO_ITERATION(USRS, USRS_RATES)
 
       USE cont, only: solve_continuity
          USE cutcell, only: cartesian_grid
@@ -161,10 +161,15 @@
          use run, only: phip_out_iter, energy_eq, dt, ier, steady_state
          USE scalars, only: nscalar
          use turb, only: k_epsilon
+         use rxns
 
       IMPLICIT NONE
 
+      EXTERNAL USRS
+      EXTERNAL USRS_RATES
+
       INTEGER :: M
+      DOUBLE PRECISION, DIMENSION(NO_OF_RXNS) :: RATES
 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
@@ -185,7 +190,7 @@
 
 ! Call user-defined subroutine to set quantities that need to be updated
 ! every iteration
-      IF (CALL_USR) CALL USR2
+      IF (CALL_USR) CALL USRS('USR2')
 
 ! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
@@ -212,7 +217,8 @@
       IF (IER_MANAGER()) return
 
 ! Calculate chemical reactions.
-      CALL CALC_RRATE(IER)
+      CALL CALC_RRATE(IER, USRS_RATES)
+      CALL USRS_RATES(IER, SIZE(RATES), RATES, RATES)
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
@@ -818,7 +824,7 @@
 !  Purpose: Automatically adjust time step.                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION ADJUSTDT()
+      LOGICAL FUNCTION ADJUSTDT(USRS_RATES)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -848,6 +854,8 @@
       use error_manager
 
       IMPLICIT NONE
+
+      EXTERNAL USRS_RATES
 
 ! Dummy Arguments:
 
@@ -955,7 +963,7 @@
             WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G12.5,' :-)')") DT
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-            CALL RESET_NEW
+            CALL RESET_NEW(USRS_RATES)
 
 ! Iterate again with new dt
             ADJUSTDT = .TRUE.
