@@ -241,7 +241,7 @@ class MfixGui(QtWidgets.QMainWindow):
             make_handler(self.ui.command_output))
         self.clear_thread.line_printed.connect(
             make_handler(self.ui.command_output))
-        #update_run_executables()
+        #update_run_executables() - not needed, the thread will do it
 
         self.monitor_executables_thread.sig.connect(update_run_executables)
         self.monitor_executables_thread.start()
@@ -306,7 +306,7 @@ class MfixGui(QtWidgets.QMainWindow):
         interphase.setEnabled(enabled)
 
         # TFM only
-        # use a groupbox here, instead of accessing combox + label?
+        # use a groupbox here, instead of accessing combobox + label?
         enabled = (index == 1)
         model_setup.combobox_subgrid_model.setEnabled(enabled)
         model_setup.label_subgrid_model.setEnabled(enabled)
@@ -323,10 +323,9 @@ class MfixGui(QtWidgets.QMainWindow):
         groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
-    def __setup_other_widgets(self):
+    def __setup_other_widgets(self): # rename/refactor
         """ setup widgets which are not tied to a simple keyword """
 
-        # move to another file - cgw
         model_setup = self.ui.model_setup
         combobox = model_setup.combobox_solver
         combobox.currentIndexChanged.connect(self.set_solver)
@@ -340,7 +339,7 @@ class MfixGui(QtWidgets.QMainWindow):
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
 
-        # Fluid species - factor this out - cgw
+        # Fluid species
         # Automate the connecting?
         toolbutton = self.ui.toolbutton_fluid_species_add
         toolbutton.clicked.connect(self.fluid_species_add)
@@ -370,15 +369,30 @@ class MfixGui(QtWidgets.QMainWindow):
         lineedit_keyword_run_name
         """
 
+        def try_int(str):
+            try:
+                return int(str)
+            except ValueError:
+                return str
+
         # loop through all widgets looking for *_keyword_<keyword>
         for widget in widget_iter(self.ui):
             name_list = str(widget.objectName()).lower().split('_')
 
-            if 'keyword' in name_list: # perf - cgw
-                keyword = '_'.join(name_list[name_list.index('keyword')+1:])
+
+            if 'keyword' in name_list:
+                keyword_idx = name_list.index('keyword')
+                args = None
+                if 'args' in name_list:
+                    args_idx = name_list.index('args')
+                    args = map(try_int, name_list[args_idx+1:])
+                    keyword = '_'.join(name_list[keyword_idx+1:args_idx])
+                else:
+                    keyword = '_'.join(name_list[keyword_idx+1:])
 
                 # set the key attribute to the keyword
                 widget.key = keyword
+                widget.args = args
 
                 # add info from keyword documentation
                 if keyword in self.keyword_doc:
@@ -386,24 +400,22 @@ class MfixGui(QtWidgets.QMainWindow):
                     widget.setdtype(doc['dtype'])
                     if 'required' in doc:
                         widget.setValInfo(
-                            req=doc['required'] == 'true')
+                            req=(doc['required'] == 'true'))
                     if 'validrange' in doc:
-                        if 'max' in doc['validrange']:
-                            widget.setValInfo(
-                                _max = doc['validrange']['max'])
+                        vr = doc['validrange']
+                        if 'max' in vr:
+                            widget.setValInfo(_max=vr['max'])
                         if 'min' in doc['validrange']:
-                            widget.setValInfo(
-                                _min = doc['validrange']['min'])
+                            widget.setValInfo(_min=vr['min'])
 
                     if 'initpython' in doc:
-                        widget.default(
-                            self.keyword_doc[keyword]['initpython'])
+                        widget.default(doc['initpython'])
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
 
                 # register the widget with the project manager
-                self.project.register_widget(widget, [keyword])
+                self.project.register_widget(widget, keys=[keyword],args=args)
 
                 # connect to unsaved method
                 widget.value_updated.connect(self.unsaved)
@@ -1224,7 +1236,7 @@ class ProjectManager(Project):
         self.parent.print_internal(keystring)
 
         if updatedValue is not None:
-            for wid, keys in self.widgetList:
+            for wid, keys in self.widgetList: # potentially slow
                 if not wid == widget:
                     if key in keys or 'all' in keys:
                         wid.updateValue(key, updatedValue, args)
@@ -1238,21 +1250,17 @@ class ProjectManager(Project):
             self.submit_change('Loading', {keyword.key: keyword.value},
                                args=keyword.args, forceUpdate=True)
 
-    def register_widget(self, widget, keys=None):
+    def register_widget(self, widget, keys=None, args=None):
         '''
         Register a widget with the project manager. The widget must have a
-        valueUpdated signal to connect to.
-
-        Example:
-        registerWidget(widget, ['list', 'of', 'keys'])
+        value_updated signal to connect to.
         '''
-
         LOG.debug(
-            'ProjectManager: Registering {} with keys {}'.format(
+            'ProjectManager: Registering {} with keys {}, args {}'.format(
                 widget.objectName(),
-                keys)
+                keys, args)
             )
-        self.widgetList.append([widget, keys])
+        self.widgetList.append([widget, keys]) # args?
         widget.value_updated.connect(self.submit_change)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
