@@ -719,7 +719,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         return result
 
-    def print_internal(self, line, color=None): # basically same as handle_line
+    def print_internal(self, line, color=None, font=None): # basically same as handle_line
         qtextbrowser = self.ui.command_output
         if not line.endswith('\n'):
             line += '\n'
@@ -729,6 +729,8 @@ class MfixGui(QtWidgets.QMainWindow):
         char_format = QtGui.QTextCharFormat()
         if color:
             char_format.setForeground(QtGui.QColor(color))
+        if font:
+            char_format.setFontFamily(font)
         cursor.setCharFormat(char_format)
         cursor.insertText(line)
         scrollbar = qtextbrowser.verticalScrollBar()
@@ -1224,7 +1226,7 @@ class ProjectManager(Project):
         if args is None:
             args = []
 
-        updatedValue = self.addKeyword(key, newValue, args)
+        updatedValue = self.updateKeyword(key, newValue, args)
 
         if args:
             keystring = '{}({}) = {}'.format(
@@ -1233,7 +1235,7 @@ class ProjectManager(Project):
                 str(updatedValue))
         else:
             keystring = '{} = {}'.format(key, str(updatedValue))
-        self.parent.print_internal(keystring)
+        self.parent.print_internal(keystring, font="Courier")
 
         if updatedValue is not None:
             for wid, keys in self.widgetList: # potentially slow

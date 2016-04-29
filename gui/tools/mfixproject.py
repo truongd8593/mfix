@@ -245,7 +245,7 @@ class Base(object):
     def __len__(self):
         return len(self._keyword_dict)
 
-#    def addKeyword(self, key, value, args=[]):
+#    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
 
     def deleteDict(self):
@@ -802,9 +802,9 @@ class Project(object):
                     if key is None:
                         self.dat_file_list.append(line+commentedline)
                     else:
-                        self.addKeyword(key, value, args, keywordComment)
+                        self.updateKeyword(key, value, args, keywordComment)
 
-    def addKeyword(self, key, value, args=[],  keywordComment=''):
+    def updateKeyword(self, key, value, args=[],  keywordComment=''):
         '''
         Add a keyword to the project.
 
