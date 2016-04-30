@@ -34,6 +34,15 @@ except ImportError:
     from PyQt4 import uic
 
 
+# Debugging hooks
+def debug_trace():
+  '''Set a tracepoint in the Python debugger that works with Qt'''
+  from qtpy.QtCore import pyqtRemoveInputHook
+  from pdb import set_trace
+  pyqtRemoveInputHook()
+  set_trace()
+
+
 # local imports
 from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
