@@ -23,6 +23,8 @@ from qtpy import QtWidgets, QtCore
 from tools.mfixproject import Keyword, Equation
 from tools.general import to_text_string
 
+# comment - the mixture of 'update' and 'change' terminology
+# makes this code a bit confusing
 
 class CommonBase(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
@@ -102,7 +104,6 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
             return int(float(str(self.text())))
 
     def updateValue(self, key, newValue, args=None):
-
         if newValue is not None:
             if self.regex_expression.findall(str(newValue)):
                 self.setText(self.regex_expression.findall(str(newValue))[0])
@@ -140,11 +141,7 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
     def updateValue(self, key, newValue, args=None):
         if isinstance(newValue, Keyword):
             newValue = newValue.value
-
-        if newValue and isinstance(newValue, bool):
-            self.setChecked(newValue)
-        else:
-            self.setChecked(False)
+        self.setChecked(newValue)
 
 
 class ComboBox(QtWidgets.QComboBox, CommonBase):
@@ -172,7 +169,6 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
     def updateValue(self, key, newValue, args=None):
         if isinstance(newValue, Keyword):
             newValue = newValue.value
-
         self.setCurrentText(newValue)
 
     def setCurrentText(self, newValue):
@@ -191,18 +187,15 @@ class SpinBox(QtWidgets.QSpinBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
         CommonBase.__init__(self)
-
         self.valueChanged.connect(self.emitUpdatedValue)
-
         self.dtype = int
 
-    def emitUpdatedValue(self):
-        self.value_updated.emit(self, {self.key: self.value()}, None)
+    def emitUpdatedValue(self): # why not use def. in base class?
+        self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
     def updateValue(self, key, newValue, args=None):
         if isinstance(newValue, Keyword):
             newValue = newValue.value
-
         self.setValue(int(newValue))
 
     def setValInfo(self, _max=None, _min=None, req=False):
@@ -223,13 +216,12 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
 
         self.dtype = float
 
-    def emitUpdatedValue(self):
-        self.value_updated.emit(self, {self.key: self.value()}, None)
+    def emitUpdatedValue(self):  # why not use def. in base class?
+        self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
     def updateValue(self, key, newValue, args=None):
         if isinstance(newValue, Keyword):
             newValue = newValue.value
-
         self.setValue(float(newValue))
 
     def setValInfo(self, _max=None, _min=None, req=False):
@@ -556,7 +548,6 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def eventFilter(self, widget, event):
-
         if isinstance(widget, ComboBox):
             # print(event, event.type())
             # TODO: there is a bug here that doesn't return focus to the
@@ -763,11 +754,9 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         return len(self.datatable)
 
     def columnCount(self, parent=QtCore.QModelIndex()):
-        if (isinstance(self.datatable, list) or
-                isinstance(self.datatable, tuple)) and \
-                len(self.datatable) > 0:
-            if isinstance(self.datatable[0], list) or \
-                    isinstance(self.datatable[0], tuple):
+        if (isinstance(self.datatable, (list, tuple)) and
+                len(self.datatable) > 0):
+            if isinstance(self.datatable[0], (list, tuple)):
                 return len(self.datatable[0])
             else:
                 return 1
@@ -819,5 +808,5 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return None
 
     def flags(self, index):
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | \
-            QtCore.Qt.ItemIsSelectable
+        return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |
+                QtCore.Qt.ItemIsSelectable)

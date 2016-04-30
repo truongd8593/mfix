@@ -207,7 +207,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.released.connect(make_callback(self.mode_changed, mode))
+            btn.clicked.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
         self.ui.treewidget_model_navigation.itemSelectionChanged.connect(
