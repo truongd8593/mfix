@@ -257,7 +257,7 @@ class MfixGui(QtWidgets.QMainWindow):
             make_handler(self.ui.command_output))
         self.clear_thread.line_printed.connect(
             make_handler(self.ui.command_output))
-        #update_run_executables() - not needed, the thread will do it
+        update_run_executables()
 
         self.monitor_executables_thread.sig.connect(update_run_executables)
         self.monitor_executables_thread.start()
