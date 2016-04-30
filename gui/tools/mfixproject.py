@@ -192,7 +192,6 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
-
         if value is None:
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
@@ -215,7 +214,7 @@ class Keyword(object):
 
 class Base(object):
     def __init__(self, ind):
-        self.ind = ind
+        self.ind = ind # index
         self._keyword_dict = {}
         self.delete = False
 
@@ -417,7 +416,7 @@ class Collection(list):
             return False
 
     def __getitem__(self, item):
-        for itm in self:
+        for itm in self: # XX FIXME - O(n^2)
             if itm.ind == item:
                 return itm
 
