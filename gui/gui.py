@@ -400,7 +400,6 @@ class MfixGui(QtWidgets.QMainWindow):
         for widget in widget_iter(self.ui):
             name_list = str(widget.objectName()).lower().split('_')
 
-
             if 'keyword' in name_list:
                 keyword_idx = name_list.index('keyword')
                 args = None
@@ -928,8 +927,9 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.mfix_dat_source.setPlainText(src)
         # self.mode_changed('developer')
 
+        self.print_internal("Loading %s" % project_path, color='blue')
         self.project.load_mfix_dat(project_path)
-        self.print_internal("Loaded %s" % project_path, color='blue')
+
 
         # Set non-keyword gui items based on loaded project
         self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
@@ -1212,9 +1212,10 @@ class ProjectManager(Project):
         self.parent = parent
         self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
+        self._widget_update_stack = [] # prevent circular updates
 
     def submit_change(self, widget, newValueDict, args=None,
-                      forceUpdate=False):
+                      forceUpdate=False): # forceUpdate unused (?)
         '''
         Submit a value change
 
@@ -1222,11 +1223,14 @@ class ProjectManager(Project):
         submitChange(lineEdit, {'run_name':'new run name'}, args)
         '''
 
+        # Note, this may be a callback from Qt (in which case 'widget' is
+        # the widget that the user activated), or from the initial mfix
+        # loading (in which case widget == None)
+
         if isinstance(args, int):
             args = [args]
 
         for key, newValue in newValueDict.items():
-
             if isinstance(newValue, dict):
                 if args:
                     for ind, value in newValue.items():
@@ -1242,25 +1246,26 @@ class ProjectManager(Project):
 
         self._cleanDeletedItems()
 
+
     def _change(self, widget, key, newValue, args=None, forceUpdate=False):
+        # prevent circular updates, from this widget or any higher in stack
+        if widget in self._widget_update_stack:
+            return
 
         key = key.lower()
         updatedValue = None
-
-        if isinstance(newValue, Keyword):
+        if isinstance(newValue, Keyword): # why needed?
             keyword = newValue
             newValue = keyword.value
         else:
             keyword = None
-
         if args is None:
             args = []
 
         updatedValue = self.updateKeyword(key, newValue, args)
 
-
-        k_a = tuple([key]+args)
-        widgets_to_update = self.keyword_and_args_to_widget.get(k_a)
+        keytuple = tuple([key]+args)
+        widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
         warn = False
         if widgets_to_update == None:
             warn = True
@@ -1271,10 +1276,10 @@ class ProjectManager(Project):
         #    self.keyword_and_args_to_widget.get("all", []))
 
         for w in widgets_to_update:
-            if w == widget: # Avoid circular updates
-                continue
+            # Prevent circular updates
+            self._widget_update_stack.append(w)
             w.updateValue(key, updatedValue, args)
-
+            self._widget_update_stack.pop()
 
         self.parent.print_internal("%s = %s" % (format_key_with_args(key, args),
                                                 updatedValue),
@@ -1282,15 +1287,12 @@ class ProjectManager(Project):
 
 
     def load_mfix_dat(self, mfixDat):
+        """Load an MFiX project file."""
 
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
             for keyword in self.keywordItems():
-                if keyword.key == 'momentum_x_eq':
-                    if keyword.args == [0]:
-                        import traceback
-                        traceback.print_stack()
                 self.submit_change(None, {keyword.key: keyword.value},
                                    args=keyword.args, forceUpdate=True)
 
@@ -1308,19 +1310,21 @@ class ProjectManager(Project):
         Register a widget with the project manager. The widget must have a
         value_updated signal to connect to.
         '''
-        LOG.debug(
-            'ProjectManager: Registering {} with keys {}, args {}'.format(
-                widget.objectName(),
-                keys, args)
-            )
         if args is None:
             args = []
-        for k in keys:
-            k_a = tuple([k]+args)
+
+        LOG.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
+            widget.objectName(),
+            keys, args))
+
+        # add widget to dictionary of widgets to update
         d = self.keyword_and_args_to_widget
-        if k_a not in d:
-            d[k_a] = []
-        d[k_a].append(widget)
+        for key in keys:
+            keytuple = tuple([key]+args)
+            if keytuple not in d:
+                d[keytuple] = []
+            d[keytuple].append(widget)
+
         widget.value_updated.connect(self.submit_change)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
