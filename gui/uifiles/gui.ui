@@ -785,7 +785,7 @@ background-color:white;
                        <number>5</number>
                       </property>
                       <item row="0" column="1">
-                       <widget class="QComboBox" name="comboBox_7">
+                       <widget class="QComboBox" name="combobox_fluid_density_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -804,7 +804,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="1">
-                       <widget class="QComboBox" name="comboBox_8">
+                       <widget class="QComboBox" name="combobox_fluid_viscosity_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -823,7 +823,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="2" column="1">
-                       <widget class="QComboBox" name="comboBox_9">
+                       <widget class="QComboBox" name="combobox_fluid_molecular_weight_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -872,7 +872,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="4" column="1">
-                       <widget class="QComboBox" name="comboBox_12">
+                       <widget class="QComboBox" name="combobox_fluid_conductivity_model">
                         <property name="currentIndex">
                          <number>1</number>
                         </property>
@@ -901,7 +901,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="3" column="1">
-                       <widget class="QComboBox" name="comboBox_11">
+                       <widget class="QComboBox" name="combobox_fluid_specific_heat_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -920,10 +920,10 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="0" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_model_constant_density"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_ro_g0"/>
                       </item>
                       <item row="5" column="1">
-                       <widget class="QComboBox" name="comboBox_13">
+                       <widget class="QComboBox" name="combobox_fluid_diffusion_model">
                         <property name="currentIndex">
                          <number>1</number>
                         </property>
@@ -945,19 +945,19 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_viscosity"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_mu_g0"/>
                       </item>
                       <item row="2" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_mw"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_mw_avg"/>
                       </item>
                       <item row="3" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_sh"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_cp_g0"/>
                       </item>
                       <item row="4" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_conductivity"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_k_g0"/>
                       </item>
                       <item row="5" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_diffusion"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_dif_g0"/>
                       </item>
                       <item row="0" column="3">
                        <widget class="QLabel" name="label_2">
