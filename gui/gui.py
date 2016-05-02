@@ -377,7 +377,7 @@ class MfixGui(QtWidgets.QMainWindow):
                      # more
                      ):
             item.setEnabled(state)
-        if state:
+        if state: # cp_g0 == specific heat, but this is obscure
             self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
         else:
             ui.spinbox_keyword_cp_g0.setEnabled(False)
@@ -385,7 +385,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def enable_fluid_scalar_eq(self, state):
         self.ui.spinbox_fluid_nscalar_eq.setEnabled(state)
         if state:
-            self.set_fluid_nscalar_eq(self, self.fluid_nscalar_eq)
+            self.set_fluid_nscalar_eq(self.fluid_nscalar_eq)
 
     def set_fluid_nscalar_eq(self, value):
         # TODO:  load from mfix.dat (do we save this explicitly,
@@ -505,11 +505,15 @@ class MfixGui(QtWidgets.QMainWindow):
 
         checkbox = model_setup.checkbox_keyword_energy_eq
         checkbox.stateChanged.connect(self.enable_energy_eq)
-        #self.enable_energy_eq(False) # Default (?)
 
         combobox = model_setup.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
+
+        self.enable_energy_eq(False)
+        # something is wrong, we shouldn't have to explicitly uncheck this box
+        self.model_setup.checkbox_keyword_energy_eq.setChecked(False)
+
 
         # Fluid phase
         self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
@@ -1475,7 +1479,10 @@ class ProjectManager(Project):
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
-            for keyword in self.keywordItems():
+            # some of these changes may cause new keywords to be instantiated,
+            # so iterate over a copy of the list, which may change
+            kwlist = list(self.keywordItems())
+            for keyword in kwlist:
                 self.submit_change(None, {keyword.key: keyword.value},
                                    args=keyword.args, forceUpdate=True)
 
