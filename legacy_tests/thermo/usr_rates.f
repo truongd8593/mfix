@@ -45,6 +45,7 @@
 ! Reaction specific variables:
 !`````````````````````````````````````````````````````````````````````//
       INTEGER :: L
+call abort
 
 ! This case is designed so that there is one fluid cell for each
 ! reaction. The first fluid cell start with and IJK value of 50.

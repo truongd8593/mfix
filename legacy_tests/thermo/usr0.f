@@ -34,6 +34,7 @@
 
       INTEGER :: L
       TYPE(REACTION_BLOCK), POINTER :: RxN
+call abort
 
 ! Open the POST data file and write out the recation data table.
       OPEN(678,FILE='POST_Thermo.dat', status='NEW')

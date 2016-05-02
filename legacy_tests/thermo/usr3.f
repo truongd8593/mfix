@@ -22,6 +22,7 @@
       DOUBLE PRECISION :: tHORg, tHORs(1:3)
 ! File unit
       INTEGER, parameter :: lUnit = 668
+call abort
 
 
 ! Initialize the 'sum' variables for the gas and solids phase heates

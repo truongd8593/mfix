@@ -43,6 +43,7 @@
 !
 !  Insert user-defined code here
 !
+call abort
       OPEN(6,FILE='POST_Aflame.dat')
       write(6,'(A,G10.3)') 'Adiabatic Flame Temperature = ', T_g(5)
       write(6,'(A,G10.3)') 'P_g = ', P_g(5)

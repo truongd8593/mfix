@@ -47,6 +47,7 @@
       DOUBLE PRECISION c_O2    ! Oxygen concentration mol/cm^3
       DOUBLE PRECISION c_CH4   ! Methane concentration mol/cm^3
 
+      call abort
 
 ! CH4_Comb:  CH4 + 2O2 --> CO2 + 2H2O  (mol/cm^3.s)
 !---------------------------------------------------------------------//
