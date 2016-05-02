@@ -221,7 +221,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- Connect Signals to Slots---
         # open/save/new project
-        self.ui.toolbutton_open.clicked.connect(self.open_project)
+        self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
 
         # mode (modeler, workflow, developer)
@@ -298,6 +298,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.mode_changed('modeler')
         self.change_pane('geometry')
 
+        # --- print welcome message
+        self.print_internal("MFiX-GUI version %s" % self.get_version())
 
     def get_version(self):
         return "0.2x" # placeholder
@@ -706,12 +708,12 @@ class MfixGui(QtWidgets.QMainWindow):
                     widget.key = 'shape'
                     widget.dtype = str
 
-    def get_project_dir(self):
+    def get_project_path(self):
         " get the current project directory "
 
-        last_dir = self.settings.value('project_dir')
-        if last_dir:
-            return last_dir
+        last = self.settings.value('project_path')
+        if last:
+            return last
         else:
             return None
 
@@ -984,7 +986,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def clear_output(self):
         self.run_thread.start_command(
             cmd='rm -v -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
-            cwd=self.get_project_dir())
+            cwd=self.get_project_path())
 
     def run_mfix(self):
         mfix_exe = self.ui.run.mfix_executables.currentText()
@@ -1004,7 +1006,8 @@ class MfixGui(QtWidgets.QMainWindow):
                 total, mfix_exe, nodesi, nodesj, nodesk)
 
         run_cmd = '{} -f {}'.format(mfix_exe, self.get_mfix_dat())
-        self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
+        project_dir = os.path.dirname(self.get_project_path())
+        self.run_thread.start_command(cmd=run_cmd, cwd=project_dir)
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -1026,35 +1029,28 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.change_pane('interact')
 
-
-    def get_mfix_dat(self):
-        if hasattr(self.project, 'run_name'):
-            name = self.project.run_name.value
-        else:
-            name = 'new_file'
-        for char in ('.', '"', "'", '/', '\\', ':'):
-            name = name.replace(char, '_')
-        mfix_dat = name + '.mfx'
-        return os.path.join(self.get_project_dir(), mfix_dat)
-
     # --- open/save/new ---
     def save_project(self):
-        project_dir = self.settings.value('project_dir')
+        project_path = self.settings.value('project_path')
+        project_dir = os.path.dirname(project_path)
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
-        self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.writeDatFile(self.get_mfix_dat())
+        self.project.writeDatFile(project_path)
+        with open(project_path, 'r') as mfx:
+            src = mfx.read()
+        self.ui.mfix_dat_source.setPlainText(src)
+        self.setWindowTitle('MFIX - %s' % project_path)
 
     def unsaved(self):
-        project_dir = self.settings.value('project_dir')
-        self.setWindowTitle('MFIX - %s *' % project_dir)
+        project_path = self.settings.value('project_path')
+        self.setWindowTitle('MFIX - %s *' % project_path)
 
     def check_writable(self, directory):
         " check whether directory is writable "
         try:
             import tempfile
-            testfile = tempfile.TemporaryFile(dir=project_dir)
+            testfile = tempfile.TemporaryFile(dir=directory)
             testfile.close()
             return True
         except IOError:
@@ -1091,49 +1087,66 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_path)
 
-    def open_project(self, project_path=None):
-        """
-        Open MFiX Project
-        """
+    def handle_open_action(self):
+        project_dir = os.path.dirname(self.get_project_path())
+        project_path = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Open Project Directory', project_dir)
 
-        if not project_path:
-            project_path = QtWidgets.QFileDialog.getOpenFileName(
-                self, 'Open Project Directory',self.get_project_dir())
+        if len(project_path) < 1:
+            return
 
-            if len(project_path) < 1:
-                return
-
-            project_path = project_path[0]
-
-            if not os.path.exists(project_path):
-                self.message(title='Warning',
-                             icon='warning',
-                             text=('mfix.dat file does not exist in this '
-                                   'directory.\n'),
-                             buttons=['ok'],
-                             default='ok',
-                            )
-                return
-
-        if os.path.isdir(project_path):
-            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+        project_path = project_path[0]
 
         if not os.path.exists(project_path):
             return
 
-        project_dir = os.path.dirname(project_path)
-        self.settings.setValue('project_dir', project_dir)
-        self.setWindowTitle('MFIX - %s' % project_dir)
+        self.open_project(project_path)
 
-        # read the file
-        with open(project_path, 'r') as mfix_dat_file:
-            src = mfix_dat_file.read()
-        self.ui.mfix_dat_source.setPlainText(src)
-        # self.mode_changed('developer')
+    def open_project(self, project_path):
+        """
+        Open MFiX Project
+        """
+
+        if os.path.isdir(project_path):
+            project_dir = project_path
+            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+        else:
+            project_dir = os.path.dirname(project_path)
+
+        if not os.path.exists(project_path):
+            return
 
         self.print_internal("Loading %s" % project_path, color='blue')
         self.project.load_mfix_dat(project_path)
         self.print_internal("Loaded %s" % project_path, color='blue')
+
+        if hasattr(self.project, 'run_name'):
+            name = self.project.run_name.value
+        else:
+            name = 'new_file'
+        for char in ('.', '"', "'", '/', '\\', ':'):
+            name = name.replace(char, '_')
+        runname_mfx = name + '.mfx'
+
+        if not project_path.endswith(runname_mfx):
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
+                         buttons=['ok'],
+                         default='ok',
+            )
+            project_path = os.path.join(project_dir, runname_mfx)
+            self.project.writeDatFile(project_path)
+
+        # project_dir = os.path.dirname(project_path)
+        self.settings.setValue('project_path', project_path)
+        self.setWindowTitle('MFIX - %s' % project_path)
+
+        # read the file
+        with open(project_path, 'r') as mfx:
+            src = mfx.read()
+        self.ui.mfix_dat_source.setPlainText(src)
+        # self.mode_changed('developer')
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1352,7 +1365,7 @@ class MonitorExecutablesThread(QThread):
             dirs.extend(os.path.join(build_dir, subdir)
                          for subdir in os.listdir(build_dir))
         # Check run_dir
-        run_dir = self.parent.get_project_dir()
+        run_dir = os.path.dirname(self.parent.get_project_path())
         if run_dir:
             dirs.append(run_dir)
 
@@ -1549,18 +1562,16 @@ if __name__ == '__main__':
     mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
     if len(sys.argv) > 1:
-        case_dir = sys.argv[-1]
-        mfix.open_project(case_dir)
+        mfix.open_project(sys.argv[-1])
     else:
         # autoload last project
-        project_dir = mfix.get_project_dir()
-        if project_dir:
-            mfix.open_project(project_dir)
+        project_path = self.get_project_path()
+        if project_path:
+            self.open_project(project_path)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
                         len(mfix.project.registered_keywords), color='blue')
-
 
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
