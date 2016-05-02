@@ -84,6 +84,7 @@ def format_key_with_args(key, args=None):
 # Solver types
 # must match combobox_solver in model_setup.ui
 SINGLE, TFM, DEM, PIC, HYBRID = range(5)
+CONSTANT, AIR, UDF = 0, 1, 2
 
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
@@ -177,7 +178,15 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
-        self.solid_nscalar_eq = 0
+        self.solid_nscalar_eq = 0 # Infer these from phase4scalar?
+        # Defaults
+        self.solver = SINGLE
+        self.fluid_density_model = CONSTANT
+        self.fluid_viscosity_model = CONSTANT
+        self.fluid_molecular_weight_model = CONSTANT
+        self.fluid_specific_heat_model = CONSTANT
+        self.fluid_conductivity_model = AIR
+        self.fluid_diffusion_model = AIR
 
         # --- icons ---
         # loop through all widgets, because I am lazy
@@ -359,6 +368,20 @@ class MfixGui(QtWidgets.QMainWindow):
             self.print_internal("unset %s" %
                                 format_key_with_args(key, args))
 
+    def enable_energy_eq(self, state):
+        # Additional callback on top of automatic keyword update,
+        # since this has to change availabilty of a bunch of other GUI items
+        ui = self.ui
+        for item in (ui.combobox_fluid_specific_heat_model,
+                     ui.combobox_fluid_conductivity_model,
+                     # more
+                     ):
+            item.setEnabled(state)
+        if state:
+            self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
+        else:
+            ui.spinbox_keyword_cp_g0.setEnabled(False)
+
     def enable_fluid_scalar_eq(self, state):
         self.ui.spinbox_fluid_nscalar_eq.setEnabled(state)
         if state:
@@ -380,13 +403,13 @@ class MfixGui(QtWidgets.QMainWindow):
         # Enable spinbox for constant density model
         spinbox = self.ui.spinbox_keyword_ro_g0
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT:
             self.set_keyword("ro_g0", spinbox.value())
             self.unset_keyword("usr_rog")
         elif value == 1: # Ideal Gas Law
             self.unset_keyword("ro_g0")
             self.unset_keyword("usr_rog")
-        elif value == 2: # UDF
+        elif value == UDF:
             self.unset_keyword("ro_g0")
             self.set_keyword("usr_rog", True)
 
@@ -394,13 +417,13 @@ class MfixGui(QtWidgets.QMainWindow):
         # Enable spinbox for constant viscosity model
         spinbox = self.ui.spinbox_keyword_mu_g0
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT:
             self.set_keyword("mu_g0", spinbox.value())
             self.unset_keyword("usr_mug")
         elif value == 1: # Sutherland's Law
             self.unset_keyword("mu_g0")
             self.unset_keyword("usr_mug")
-        elif value == 2: # UDF
+        elif value == UDF:
             self.unset_keyword("mu_g0")
             self.set_keyword("usr_mug", True)
 
@@ -408,7 +431,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # Enable spinbox for constant molecular_weight model
         spinbox = self.ui.spinbox_keyword_mw_avg
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT:
             self.set_keyword("mw_avg", spinbox.value())
         elif value == 1: # Mixture
             # TODO: require mw for all component species
@@ -416,31 +439,32 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def set_fluid_specific_heat_model(self, value):
         # Enable spinbox for constant specific_heat model
+        self.fluid_specific_heat_model = value
         spinbox = self.ui.spinbox_keyword_cp_g0
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT:
             self.set_keyword("cp_g0", spinbox.value())
             self.unset_keyword("usr_cpg")
         elif value == 1: # Mixture
-            # TODO: reuquire cp for all component species
+            # TODO: require cp for all component species
             self.unset_keyword("cp_g0")
             self.unset_keyword("usr_mug")
-        elif value == 2: # UDF
+        elif value == UDF:
             self.unset_keyword("cp_g0")
             self.set_keyword("usr_cpg", True)
 
     def set_fluid_conductivity_model(self, value):
-        # Enable spinbox for constant thermal conductivity model
+        # Enable spinbox for constant (thermal) conductivity model
         spinbox = self.ui.spinbox_keyword_k_g0
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT:
             self.set_keyword("k_g0", spinbox.value())
             self.unset_keyword("usr_kg")
         elif value == 1: # Temperature dep.
             # TODO: require cp for all component species
             self.unset_keyword("k_g0")
             self.unset_keyword("usr_kg")
-        elif value == 2: # UDF
+        elif value == UDF:
             self.unset_keyword("k_g0")
             self.set_keyword("usr_kg", True)
 
@@ -448,14 +472,14 @@ class MfixGui(QtWidgets.QMainWindow):
         # Enable spinbox for constant diffusion model
         spinbox = self.ui.spinbox_keyword_dif_g0
         spinbox.setEnabled(value==0)
-        if value == 0: # Constant
+        if value == CONSTANT: # Constant
             self.set_keyword("dif_g0", spinbox.value())
             self.unset_keyword("usr_difg")
         elif value == 1: # Temperature dep.
             # TODO: require temperature field for full domain
             self.unset_keyword("dif_g0")
             self.unset_keyword("usr_difg")
-        elif value == 2: # UDF
+        elif value == UDF:
             self.unset_keyword("dif_g0")
             self.set_keyword("usr_difg", True)
 
@@ -473,11 +497,15 @@ class MfixGui(QtWidgets.QMainWindow):
         model_setup = self.ui.model_setup
         combobox = model_setup.combobox_solver
         combobox.currentIndexChanged.connect(self.set_solver)
-        self.set_solver(SINGLE) # Default - Single Phase - (?)
+        self.set_solver(self.solver) # Default - Single Phase - (?)
 
         checkbox = model_setup.checkbox_disable_fluid_solver
         checkbox.stateChanged.connect(self.disable_fluid_solver)
         self.disable_fluid_solver(False)
+
+        checkbox = model_setup.checkbox_keyword_energy_eq
+        checkbox.stateChanged.connect(self.enable_energy_eq)
+        #self.enable_energy_eq(False) # Default (?)
 
         combobox = model_setup.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
@@ -493,27 +521,27 @@ class MfixGui(QtWidgets.QMainWindow):
         # Density
         self.ui.combobox_fluid_density_model.currentIndexChanged.connect(
             self.set_fluid_density_model)
-        self.set_fluid_density_model(0) # Constant - default
+        self.set_fluid_density_model(self.fluid_density_model)
         # Viscosity
         self.ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
             self.set_fluid_viscosity_model)
-        self.set_fluid_viscosity_model(0) # Constant - default
+        self.set_fluid_viscosity_model(self.fluid_viscosity_model)
         # Molecular Weight
         self.ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
             self.set_fluid_molecular_weight_model)
-        self.set_fluid_molecular_weight_model(0) # Constant - default
+        self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
         # Specific Heat
         self.ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
             self.set_fluid_specific_heat_model)
-        self.set_fluid_specific_heat_model(0) # Constant - default
+        self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
         # (Thermal) Conductivity
         self.ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
             self.set_fluid_conductivity_model)
-        self.set_fluid_conductivity_model(1) # Air - default
+        self.set_fluid_conductivity_model(self.fluid_conductivity_model)
         # Diffusion (Coefficient)
         self.ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
             self.set_fluid_diffusion_model)
-        self.set_fluid_diffusion_model(1) # Air - default
+        self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
         # Automate the connecting?
@@ -1085,9 +1113,9 @@ class MfixGui(QtWidgets.QMainWindow):
         self.print_internal("Loading %s" % project_path, color='blue')
         self.project.load_mfix_dat(project_path)
 
-
-        # Set non-keyword gui items based on loaded project
-        self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
+        # Additional GUI setup based on loaded projects (not handled
+        # by keyword updates)
+        self.enable_energy_eq(self.project['energy_eq'])
         # cgw - lots more model setup todo here
 
     # --- fluid species methods ---
