@@ -357,6 +357,9 @@ class MfixGui(QtWidgets.QMainWindow):
             self.handle_fluid_nscalar_eq(self, self.fluid_nscalar_eq)
 
     def handle_fluid_nscalar_eq(self, value):
+        # TODO:  load from mfix.dat (do we save this explicitly,
+        # or infer from PHASE4SCALAR settings?
+
         self.fluid_nscalar_eq = value
         self.project.submit_change(None,{"nscalar":
                                          self.fluid_nscalar_eq + self.solid_nscalar_eq})
