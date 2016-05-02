@@ -91,8 +91,14 @@ class Equation(object):
         return float(self._eval()) ** float(value)
 
 
+def format_key_with_args(key, args=None):
+    if args:
+        return "%s(%s)" % (key, ','.join(str(a) for a in args))
+    else:
+        return str(key)
+
 class Keyword(object):
-    def __init__(self, key, val, comment='', dtype=None, args=[]):
+    def __init__(self, key, val, comment='', dtype=None, args=None):
 
         self.key = key
         self.value = val
@@ -102,6 +108,8 @@ class Keyword(object):
         self.valids = None
         self.fmt = None
         self.comment = comment
+        if args is None:
+            args = []
         self.args = args
 
         self.regex_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
@@ -247,9 +255,9 @@ class Base(object):
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
 
-    def deleteDict(self):
-        self.delete = True
-        return dict([(key, None) for key, val in self._keyword_dict.items()])
+#    def deleteDict(self):
+#        self.delete = True
+#        return dict([(key, None) for key, val in self._keyword_dict.items()])
 
 
 class CondBase(Base):
@@ -806,7 +814,7 @@ class Project(object):
                         except ValueError:
                             warnings.warn("Skipping line %d: %s" % (i, line))
 
-    def updateKeyword(self, key, value, args=[],  keywordComment=''):
+    def updateKeyword(self, key, value, args=None,  keywordComment=''):
         '''
         Add a keyword to the project.
 
@@ -820,11 +828,13 @@ class Project(object):
         value (int, float, bool, str):
             the value of the keyword
         args (list):
-            list of arguments for the keyword (default: [])
+            list of arguments for the keyword, or None
         keywordComment (str):
             a comment to be included with the keyword (default: '')
         '''
 
+        if args is None:
+            args = []
         # check to see if the keyword already exists
         if [key]+args in self:
             self[[key]+args].updateValue(value)
@@ -837,7 +847,6 @@ class Project(object):
 
         # If args
         if args:
-
             # Find condition keywords and separate
             if key.startswith('ic_'):
                 cond = self.ics
@@ -1001,7 +1010,7 @@ class Project(object):
 
         # no args
         else:
-            keywordobject = Keyword(key, value, args=[],
+            keywordobject = Keyword(key, value, args=None,
                                     comment=keywordComment)
 
         # add keyword to other data structures
@@ -1024,9 +1033,9 @@ class Project(object):
             keywordDict = keywordDict.setdefault(key, {})
         keywordDict[keys[-1]] = keyword
 
-    def _recursiveRemoveKeyToKeywordDict(self, keys=()):
+    def _recursiveRemoveKeyToKeywordDict(self, keys=(), warn=True):
         keywordDict = self._keyword_dict
-        for key in keys[:-1]:
+        for key in keys[:-1]: # ? Why ?
             keywordDict = keywordDict[key]
         keywordDict.pop(keys[-1])
 
@@ -1039,7 +1048,6 @@ class Project(object):
                 keywordDict.pop(keys[-1])
 
     def keywordItems(self):
-
         for keys, value in recurse_dict_empty(self._keyword_dict):
             yield value
 
@@ -1086,12 +1094,17 @@ class Project(object):
                     splitString[1]))]
         return ' '.join(expandList)
 
-    def removeKeyword(self, key, args):
-        '''
-        Remove a keyword from the project
-        '''
+    def removeKeyword(self, key, args=None, warn=True):
+        '''Remove a keyword from the project.  Returns True if item deleted.'''
 
-        keyword = self.keywordLookup(key, args)
+        if args is None:
+            args = []
+        keyword = self.keywordLookup(key, args, warn=False)
+        if not keyword:
+            if warn:
+                raise KeyError(key)
+            else:
+                return False
 
         # pop from dat_file_list
         self.dat_file_list.remove(keyword)
@@ -1099,18 +1112,17 @@ class Project(object):
             self.thermoindex -= 1
 
         # remove from dict
-        self._recursiveRemoveKeyToKeywordDict([key]+args)
+        self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
         for i in range(len(args)):
             self._purgeemptydicts()
 
         # purge
         keyword.delete = True
         self._cleanDeletedItems()
+        return True
 
     def _cleanDeletedItems(self):
-        '''
-        Purge objects marked with self.delete==True.
-        '''
+        '''Purge objects marked with self.delete==True.'''
 
         for condType in [self.ics, self.bcs, self.pss, self.iss]:
             for cond in condType:
@@ -1164,7 +1176,7 @@ class Project(object):
             if vargrid.delete:
                 self.variablegrid.delete(vargrid)
 
-    def keywordLookup(self, keyword, args=[]):
+    def keywordLookup(self, keyword, args=None, warn=True):
         '''
         Search the project for a keyword and return the Keyword object, else
         raise an exception.
@@ -1182,6 +1194,9 @@ class Project(object):
             the Keyword object
         '''
 
+        if args is None:
+            args = []
+
         keyword = keyword.lower()
         keywordobject = None
 
@@ -1197,11 +1212,12 @@ class Project(object):
                     continue
 
         if keywordobject is None:
-            raise ValueError('{} does not exist in the project'.format(keyword))
+            if warn:
+                raise KeyError(keyword)
 
         return keywordobject
 
-    def changekeywordvalue(self, key, value, args=[]):
+    def changekeywordvalue(self, key, value, args=None):
         '''
         Change a value of a keyword.
 
@@ -1214,6 +1230,9 @@ class Project(object):
         args (list):
             a list of arguments for that keyword
         '''
+
+        if args is None:
+            args = []
 
         keywordobject = self.keywordLookup(key, args)
 
