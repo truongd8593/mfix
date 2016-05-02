@@ -298,16 +298,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.mode_changed('modeler')
         self.change_pane('geometry')
 
-        # --- print welcome message
-        self.print_internal("MFiX-GUI version %s" % self.get_version())
-
-        # autoload last project
-        project_dir = self.get_project_dir()
-        if project_dir:
-            self.open_project(project_dir)
-        # print number of keywords
-        self.print_internal('Registered %d keywords' %
-                            len(self.project.registered_keywords), color='blue')
 
     def get_version(self):
         return "0.2x" # placeholder
@@ -1116,6 +1106,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.print_internal("Loading %s" % project_path, color='blue')
         self.project.load_mfix_dat(project_path)
+        self.print_internal("Loaded %s" % project_path, color='blue')
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1527,14 +1518,22 @@ if __name__ == '__main__':
     qapp = QtWidgets.QApplication(sys.argv)
     mfix = MfixGui(qapp)
     mfix.show()
-
-    # Print something to force textbrowser to
-    # scroll to bottom (after widget visible)
-    mfix.print_internal('Ready', color='blue')
+    # --- print welcome message
+    mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
     if len(sys.argv) > 1:
         case_dir = sys.argv[-1]
         mfix.open_project(case_dir)
+    else:
+        # autoload last project
+        project_dir = mfix.get_project_dir()
+        if project_dir:
+            mfix.open_project(project_dir)
+
+    # print number of keywords
+    mfix.print_internal('Registered %d keywords' %
+                        len(mfix.project.registered_keywords), color='blue')
+
 
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
