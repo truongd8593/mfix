@@ -79,6 +79,12 @@ def format_key_with_args(key, args=None):
     else:
         return str(key)
 
+# Constants
+
+# Solver types
+# must match combobox_solver in model_setup.ui
+SINGLE, TFM, DEM, PIC, HYBRID = range(5)
+
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
     '''
@@ -168,6 +174,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
+
+        # ---- parameters which do not map neatly to keywords
+        self.fluid_nscalar_eq = 0
+        self.solid_nscalar_eq = 0
 
         # --- icons ---
         # loop through all widgets, because I am lazy
@@ -309,17 +319,20 @@ class MfixGui(QtWidgets.QMainWindow):
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %d: %s" % (index, solver_name))
 
+        self.solver = index
+
         item_names =  ("Solids", "Continuum Solids Model",
                        "Discrete Element Model", "Particle in Cell Model")
 
-        states = {"Single phase": (False, False, False, False),
-                  "MFIX-TFM": (True, True, False, False),
-                  "MFIX-DEM": (True, False, True, False),
-                  "MFIX-PIC": (True, False, False, True),
-                  "MFIX-Hybrid": (True, True, True, False)}
+        item_states = {SINGLE: (False, False, False, False),
+                       TFM: (True, True, False, False),
+                       DEM: (True, False, True, False),
+                       PIC: (True, False, False, True),
+                       HYBRID: (True, True, True, False)}
 
-        for item_name, state in zip(item_names, states[solver_name]):
-            self.set_navigation_item_state(item_name, state)
+
+        for item_name, item_state in zip(item_names, item_states[index]):
+            self.set_navigation_item_state(item_name, item_state)
 
         # Options which require TFM, DEM, or PIC
         enabled = 0 < index < 4
@@ -328,13 +341,27 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # TFM only
         # use a groupbox here, instead of accessing combobox + label?
-        enabled = (index == 1)
+        enabled = (self.solver == TFM)
         model_setup.combobox_subgrid_model.setEnabled(enabled)
         model_setup.label_subgrid_model.setEnabled(enabled)
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
+        self.ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
+        self.ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
+            and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
 
+    def enable_fluid_scalar_eq(self, state):
+        self.ui.spinbox_fluid_nscalar_eq.setEnabled(state)
+        if state:
+            self.handle_fluid_nscalar_eq(self, self.fluid_nscalar_eq)
+
+    def handle_fluid_nscalar_eq(self, value):
+        self.fluid_nscalar_eq = value
+        self.project.submit_change(None,{"nscalar":
+                                         self.fluid_nscalar_eq + self.solid_nscalar_eq})
+        for i in range(1,1+value):
+            self.project.submit_change(None,{"phase4scalar":0},args=i)
 
     def disable_fluid_solver(self, state):
         self.set_navigation_item_state("Fluid", not state)
@@ -350,7 +377,7 @@ class MfixGui(QtWidgets.QMainWindow):
         model_setup = self.ui.model_setup
         combobox = model_setup.combobox_solver
         combobox.currentIndexChanged.connect(self.set_solver)
-        self.set_solver(0) # Default - Single Phase - (?)
+        self.set_solver(SINGLE) # Default - Single Phase - (?)
 
         checkbox = model_setup.checkbox_disable_fluid_solver
         checkbox.stateChanged.connect(self.disable_fluid_solver)
@@ -360,7 +387,13 @@ class MfixGui(QtWidgets.QMainWindow):
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
 
-        # Fluid species
+        # Fluid phase
+        self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
+            self.enable_fluid_scalar_eq)
+        self.ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
+            self.handle_fluid_nscalar_eq)
+
+        # fluid species
         # Automate the connecting?
         toolbutton = self.ui.toolbutton_fluid_species_add
         toolbutton.clicked.connect(self.fluid_species_add)

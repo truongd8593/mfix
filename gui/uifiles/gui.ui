@@ -650,7 +650,7 @@ background-color:white;
                     <number>5</number>
                    </property>
                    <item>
-                    <widget class="QFrame" name="frame_19">
+                    <widget class="QFrame" name="frame_fluid_phase_name">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
                      </property>
@@ -719,43 +719,49 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="splitter_scalar_eq">
+                    <widget class="QFrame" name="splitter_fluid_scalar_eq">
                      <property name="minimumSize">
                       <size>
                        <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
-                     <widget class="QCheckBox" name="checkbox_enable_scalar_eq">
-                      <property name="geometry">
-                       <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>161</width>
-                        <height>16</height>
-                       </rect>
-                      </property>
-                      <property name="text">
-                       <string>Enable Scalar Equations</string>
-                      </property>
-                     </widget>
-                     <widget class="QSpinBox" name="spinbox_nscalar">
-                      <property name="enabled">
-                       <bool>false</bool>
-                      </property>
-                      <property name="geometry">
-                       <rect>
-                        <x>180</x>
-                        <y>0</y>
-                        <width>39</width>
-                        <height>20</height>
-                       </rect>
-                      </property>
-                     </widget>
+                     <layout class="QHBoxLayout" name="horizontalLayout_3">
+                      <item>
+                       <widget class="QCheckBox" name="checkbox_enable_fluid_scalar_eq">
+                        <property name="text">
+                         <string>Enable Scalar Equations</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="spinbox_fluid_nscalar_eq">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="suffix">
+                         <string/>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_2">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>286</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QGroupBox" name="groupBox_8">
+                    <widget class="QGroupBox" name="groupbox_fluid_phase_models">
                      <property name="title">
                       <string>Models</string>
                      </property>
@@ -1031,7 +1037,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="QGroupBox" name="groupBox_7">
+                    <widget class="QGroupBox" name="groupbox_fluid_phase_species">
                      <property name="title">
                       <string>Species</string>
                      </property>
