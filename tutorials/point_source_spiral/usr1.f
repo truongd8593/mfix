@@ -41,6 +41,8 @@
 
       INTEGER :: M
 
+      call abort
+
 ! One reveloution over a three second period.
       lRad = (2.0d0*Pi*time)/3.0d0
 

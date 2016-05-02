@@ -169,7 +169,6 @@
       EXTERNAL USRS_RATES
 
       INTEGER :: M
-      DOUBLE PRECISION, DIMENSION(NO_OF_RXNS) :: RATES
 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
@@ -218,7 +217,6 @@
 
 ! Calculate chemical reactions.
       CALL CALC_RRATE(IER, USRS_RATES)
-      CALL USRS_RATES(IER, SIZE(RATES), RATES, RATES)
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases

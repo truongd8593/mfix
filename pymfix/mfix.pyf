@@ -1135,6 +1135,14 @@ python module mfix ! in
                 character*80 intent(in) :: arg
             end subroutine add_command_line_keyword
         end module main
+        module ps ! in :mfix:/mfix/model/ps_mod.f
+           double precision dimension(5000) :: ps_u_g
+           double precision dimension(5000) :: ps_v_g
+           double precision dimension(5000) :: ps_w_g
+           double precision dimension(5000,10) :: ps_u_s
+           double precision dimension(5000,10) :: ps_v_s
+           double precision dimension(5000,10) :: ps_w_s
+        end module ps
         module param1 ! in :mfix:/mfix/model/param1_mod.f
             integer, parameter,optional :: n_spx=11
             double precision, parameter,optional :: undefined=9.87654321d31

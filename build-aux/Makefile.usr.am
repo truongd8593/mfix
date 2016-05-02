@@ -142,6 +142,7 @@ pymfix_src = \
 	$(top_srcdir)/model/param1_mod.f \
 	$(top_srcdir)/model/param_mod.f \
 	$(top_srcdir)/model/physprop_mod.f \
+	$(top_srcdir)/model/ps_mod.f \
 	$(top_srcdir)/model/residual_mod.f \
 	$(top_srcdir)/model/rrates0.f \
 	$(top_srcdir)/model/run_mod.f \

@@ -167,7 +167,7 @@ class Mfix:
             ITERATE.iterate_init()
             while ITERATE.nit < ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged):
                 ITERATE.nit = ITERATE.nit + 1
-                ITERATE.do_iteration(pymfix_usrs,pymfix_usrs_rates)
+                ITERATE.do_iteration(pymfix_usrs, pymfix_usrs_rates)
                 cls.check_requests()
                 cls.emit_residuals()
 
