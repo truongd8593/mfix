@@ -276,7 +276,7 @@ def to_unicode_from_fs(string):
         if is_binary_string(string):
             try:
                 unic = string.decode(FS_ENCODING)
-            except (UnicodeError, TypeError):
+            except (UnicodeDecodeError, TypeError):
                 pass
             else:
                 return unic
