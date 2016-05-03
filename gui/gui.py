@@ -1137,8 +1137,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
             self.project.load_project_file(project_file)
-            #self.print_internal("Loaded %s" % project_file, color='blue')
-        except:
+
+        except Exception, e:
             msg = 'Failed to load %s' % project_file
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
@@ -1146,7 +1146,7 @@ class MfixGui(QtWidgets.QMainWindow):
                          text=('Failed to load %s' % project_file),
                          buttons=['ok'],
                          default='ok')
-
+            raise
             return
 
         if hasattr(self.project, 'run_name'):
@@ -1418,7 +1418,7 @@ class ProjectManager(Project):
             try:
                 w.updateValue(key, updatedValue, args)
             except Exception, e:
-                raise ValueError("%s = %s" % (format_key_with_args(key, args),
+                raise ValueError("Cannot set %s = %s" % (format_key_with_args(key, args),
                                               updatedValue))
             finally:
                 self._widget_update_stack.pop()
@@ -1447,7 +1447,7 @@ class ProjectManager(Project):
 
             # report any errors
             for w in errlist + ws:
-                self.parent.print_internal("Warning: cannot set %s" % w.message, color='red')
+                self.parent.print_internal("Warning: %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)
             if n_errs:
                 self.parent.print_internal("Warning: %s loading %s" %

@@ -826,14 +826,19 @@ class Project(object):
                     keywordComment = ''
 
                 # loop through all keywords in the line
-                for key, args, value in self.parseKeywordLine(line):
-                    if key is None:
-                        self.dat_file_list.append(line+commentedline)
-                    else:
-                        try:
-                            self.updateKeyword(key, value, args, keywordComment)
-                        except ValueError:
-                            warnings.warn("Skipping line %d: %s" % (i, line))
+                try:
+                    for (key, args, value) in self.parseKeywordLine(line):
+                        if key is None:
+                            self.dat_file_list.append(line+commentedline)
+                        else:
+                            try:
+                                self.updateKeyword(key, value, args, keywordComment)
+                            except ValueError:
+                                # error at line i
+                                warnings.warn("Cannot set %s=%s" % (format_key_with_args(key, args), value))
+                except Exception, e:
+                    warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
+
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
         '''
