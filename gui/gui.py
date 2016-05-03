@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ MFIX GUI """
 
 
@@ -1146,7 +1147,6 @@ class MfixGui(QtWidgets.QMainWindow):
                          text=('Failed to load %s' % project_file),
                          buttons=['ok'],
                          default='ok')
-            raise
             return
 
         if hasattr(self.project, 'run_name'):
