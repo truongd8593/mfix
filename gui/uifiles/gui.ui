@@ -36,7 +36,16 @@ QTreeView::item:selected {
 }</string>
    </property>
    <layout class="QGridLayout" name="gridLayout_52">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item row="1" column="0">
@@ -84,7 +93,16 @@ QPushButton:checked {
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -191,7 +209,16 @@ QPushButton:checked {
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -216,7 +243,16 @@ QPushButton:checked {
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
@@ -248,6 +284,9 @@ QPushButton:checked {
               </property>
               <item row="0" column="0">
                <widget class="QToolButton" name="toolbutton_new">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="toolTip">
                  <string>New Project</string>
                 </property>
@@ -305,6 +344,9 @@ QPushButton:checked {
               </item>
               <item row="0" column="4">
                <widget class="QToolButton" name="toolbutton_compile">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Compile</string>
                 </property>
@@ -324,6 +366,9 @@ QPushButton:checked {
               </item>
               <item row="0" column="5">
                <widget class="QToolButton" name="toolbutton_run">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Run</string>
                 </property>
@@ -372,6 +417,9 @@ QPushButton:checked {
               </item>
               <item row="0" column="6">
                <widget class="QToolButton" name="toolbutton_restart">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Restart</string>
                 </property>
@@ -391,6 +439,9 @@ QPushButton:checked {
               </item>
               <item row="0" column="7">
                <widget class="QToolButton" name="toolbutton_interact">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Interact</string>
                 </property>
@@ -432,7 +483,16 @@ background-color:white;
                <property name="spacing">
                 <number>0</number>
                </property>
-               <property name="margin">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
                 <number>0</number>
                </property>
                <item>
@@ -646,11 +706,20 @@ background-color:white;
                    <property name="spacing">
                     <number>5</number>
                    </property>
-                   <property name="margin">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
                     <number>5</number>
                    </property>
                    <item>
-                    <widget class="QFrame" name="frame_19">
+                    <widget class="QFrame" name="frame_fluid_phase_name">
                      <property name="frameShape">
                       <enum>QFrame::NoFrame</enum>
                      </property>
@@ -661,7 +730,16 @@ background-color:white;
                       <property name="spacing">
                        <number>5</number>
                       </property>
-                      <property name="margin">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
                        <number>0</number>
                       </property>
                       <item>
@@ -719,43 +797,49 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="QFrame" name="splitter_scalar_eq">
+                    <widget class="QFrame" name="splitter_fluid_scalar_eq">
                      <property name="minimumSize">
                       <size>
                        <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
-                     <widget class="QCheckBox" name="checkbox_enable_scalar_eq">
-                      <property name="geometry">
-                       <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>161</width>
-                        <height>16</height>
-                       </rect>
-                      </property>
-                      <property name="text">
-                       <string>Enable Scalar Equations</string>
-                      </property>
-                     </widget>
-                     <widget class="QSpinBox" name="spinbox_nscalar">
-                      <property name="enabled">
-                       <bool>false</bool>
-                      </property>
-                      <property name="geometry">
-                       <rect>
-                        <x>180</x>
-                        <y>0</y>
-                        <width>39</width>
-                        <height>20</height>
-                       </rect>
-                      </property>
-                     </widget>
+                     <layout class="QHBoxLayout" name="horizontalLayout_3">
+                      <item>
+                       <widget class="QCheckBox" name="checkbox_enable_fluid_scalar_eq">
+                        <property name="text">
+                         <string>Enable Scalar Equations</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="spinbox_fluid_nscalar_eq">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="suffix">
+                         <string/>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_2">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>286</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QGroupBox" name="groupBox_8">
+                    <widget class="QGroupBox" name="groupbox_fluid_phase_models">
                      <property name="title">
                       <string>Models</string>
                      </property>
@@ -779,7 +863,7 @@ background-color:white;
                        <number>5</number>
                       </property>
                       <item row="0" column="1">
-                       <widget class="QComboBox" name="comboBox_7">
+                       <widget class="QComboBox" name="combobox_fluid_density_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -798,7 +882,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="1">
-                       <widget class="QComboBox" name="comboBox_8">
+                       <widget class="QComboBox" name="combobox_fluid_viscosity_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -817,7 +901,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="2" column="1">
-                       <widget class="QComboBox" name="comboBox_9">
+                       <widget class="QComboBox" name="combobox_fluid_molecular_weight_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -866,7 +950,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="4" column="1">
-                       <widget class="QComboBox" name="comboBox_12">
+                       <widget class="QComboBox" name="combobox_fluid_conductivity_model">
                         <property name="currentIndex">
                          <number>1</number>
                         </property>
@@ -895,7 +979,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="3" column="1">
-                       <widget class="QComboBox" name="comboBox_11">
+                       <widget class="QComboBox" name="combobox_fluid_specific_heat_model">
                         <item>
                          <property name="text">
                           <string>Constant</string>
@@ -914,10 +998,17 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="0" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_model_constant_density"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_ro_g0">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="5" column="1">
-                       <widget class="QComboBox" name="comboBox_13">
+                       <widget class="QComboBox" name="combobox_fluid_diffusion_model">
                         <property name="currentIndex">
                          <number>1</number>
                         </property>
@@ -939,19 +1030,54 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_viscosity"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_mu_g0">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="2" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_mw"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_mw_avg">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="3" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_sh"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_cp_g0">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="4" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_conductivity"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_k_g0">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="5" column="2">
-                       <widget class="QDoubleSpinBox" name="spinbox_fluid_species_diffusion"/>
+                       <widget class="DoubleSpinBox" name="spinbox_keyword_dif_g0">
+                        <property name="decimals">
+                         <number>4</number>
+                        </property>
+                        <property name="singleStep">
+                         <double>0.001000000000000</double>
+                        </property>
+                       </widget>
                       </item>
                       <item row="0" column="3">
                        <widget class="QLabel" name="label_2">
@@ -1031,7 +1157,7 @@ background-color:white;
                     </widget>
                    </item>
                    <item>
-                    <widget class="QGroupBox" name="groupBox_7">
+                    <widget class="QGroupBox" name="groupbox_fluid_phase_species">
                      <property name="title">
                       <string>Species</string>
                      </property>
@@ -1069,7 +1195,16 @@ background-color:white;
                          <property name="spacing">
                           <number>0</number>
                          </property>
-                         <property name="margin">
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
                           <number>0</number>
                          </property>
                          <item>
@@ -1161,7 +1296,16 @@ background-color:white;
                    <property name="spacing">
                     <number>5</number>
                    </property>
-                   <property name="margin">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
                     <number>5</number>
                    </property>
                    <item>
@@ -1176,7 +1320,16 @@ background-color:white;
                       <property name="spacing">
                        <number>0</number>
                       </property>
-                      <property name="margin">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
                        <number>0</number>
                       </property>
                       <item>
@@ -1299,12 +1452,21 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>277</width>
-                         <height>551</height>
+                         <width>307</width>
+                         <height>540</height>
                         </rect>
                        </property>
                        <layout class="QGridLayout" name="gridLayout_53">
-                        <property name="margin">
+                        <property name="leftMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>5</number>
+                        </property>
+                        <property name="bottomMargin">
                          <number>5</number>
                         </property>
                         <property name="spacing">
@@ -1545,7 +1707,16 @@ background-color:white;
                               <property name="spacing">
                                <number>0</number>
                               </property>
-                              <property name="margin">
+                              <property name="leftMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="bottomMargin">
                                <number>0</number>
                               </property>
                               <item>
@@ -1613,7 +1784,16 @@ background-color:white;
                            <enum>QFrame::Plain</enum>
                           </property>
                           <layout class="QGridLayout" name="gridLayout_71">
-                           <property name="margin">
+                           <property name="leftMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="bottomMargin">
                             <number>0</number>
                            </property>
                            <property name="spacing">
@@ -1708,14 +1888,23 @@ background-color:white;
                  </widget>
                  <widget class="QWidget" name="continuum_solids_model">
                   <layout class="QGridLayout" name="gridLayout_70">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
                    <property name="horizontalSpacing">
                     <number>5</number>
                    </property>
                    <property name="verticalSpacing">
                     <number>15</number>
-                   </property>
-                   <property name="margin">
-                    <number>5</number>
                    </property>
                    <item row="0" column="0">
                     <widget class="QFrame" name="frame_35">
@@ -1726,7 +1915,16 @@ background-color:white;
                       <enum>QFrame::Plain</enum>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_69">
-                      <property name="margin">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
                        <number>0</number>
                       </property>
                       <property name="spacing">
@@ -1871,7 +2069,16 @@ background-color:white;
                       <bool>true</bool>
                      </property>
                      <layout class="QGridLayout" name="gridLayout_68">
-                      <property name="margin">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
                        <number>0</number>
                       </property>
                       <property name="spacing">
@@ -2005,14 +2212,23 @@ background-color:white;
                  </widget>
                  <widget class="QWidget" name="discrete_element_model">
                   <layout class="QGridLayout" name="gridLayout_64">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <property name="horizontalSpacing">
                     <number>0</number>
                    </property>
                    <property name="verticalSpacing">
                     <number>5</number>
-                   </property>
-                   <property name="margin">
-                    <number>0</number>
                    </property>
                    <item row="0" column="0">
                     <widget class="QScrollArea" name="scrollarea_des_model">
@@ -2036,8 +2252,8 @@ background-color:white;
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>416</width>
-                        <height>1003</height>
+                        <width>465</width>
+                        <height>1136</height>
                        </rect>
                       </property>
                       <property name="autoFillBackground">
@@ -2049,7 +2265,16 @@ background-color:transparent;
 }</string>
                       </property>
                       <layout class="QGridLayout" name="gridLayout_65">
-                       <property name="margin">
+                       <property name="leftMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="bottomMargin">
                         <number>5</number>
                        </property>
                        <property name="spacing">
@@ -2608,14 +2833,23 @@ background-color:transparent;
                  </widget>
                  <widget class="QWidget" name="particle_in_cell_model">
                   <layout class="QGridLayout" name="gridLayout_63">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
                    <property name="horizontalSpacing">
                     <number>5</number>
                    </property>
                    <property name="verticalSpacing">
                     <number>15</number>
-                   </property>
-                   <property name="margin">
-                    <number>5</number>
                    </property>
                    <item row="3" column="0">
                     <widget class="QGroupBox" name="groupBox_17">
@@ -2937,7 +3171,16 @@ background-color:transparent;
                <property name="spacing">
                 <number>0</number>
                </property>
-               <property name="margin">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
                 <number>0</number>
                </property>
                <item>
@@ -2956,7 +3199,16 @@ background-color:transparent;
                    <property name="spacing">
                     <number>0</number>
                    </property>
-                   <property name="margin">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
                     <number>0</number>
                    </property>
                   </layout>
@@ -2972,7 +3224,16 @@ background-color:transparent;
                    <property name="spacing">
                     <number>0</number>
                    </property>
-                   <property name="margin">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
                     <number>0</number>
                    </property>
                    <item>
@@ -3037,7 +3298,16 @@ background-color:transparent;
            <property name="spacing">
             <number>0</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
@@ -3072,7 +3342,16 @@ background-color:transparent;
                 <property name="spacing">
                  <number>0</number>
                 </property>
-                <property name="margin">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
                  <number>0</number>
                 </property>
                </layout>
@@ -3101,8 +3380,8 @@ background-color:transparent;
                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'.SF NS Text'; font-size:13pt;&quot;&gt;residuals&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;residuals&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
@@ -3120,7 +3399,16 @@ p, li { white-space: pre-wrap; }
                <property name="spacing">
                 <number>0</number>
                </property>
-               <property name="margin">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
                 <number>0</number>
                </property>
                <item>
@@ -3168,6 +3456,11 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets/base</header>
@@ -3175,11 +3468,6 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>ComboBox</class>
    <extends>QComboBox</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
-   <class>DoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>

@@ -82,6 +82,17 @@ def format_key_with_args(key, args=None):
     else:
         return str(key)
 
+def plural(n, word):
+    fmt = "%d %s" if n==1 else "%d %ss"
+    return fmt % (n, word)
+
+# Constants
+
+# Solver types
+# must match combobox_solver in model_setup.ui
+SINGLE, TFM, DEM, PIC, HYBRID = range(5)
+CONSTANT, AIR, UDF = 0, 1, 2
+
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
     '''
@@ -171,6 +182,18 @@ class MfixGui(QtWidgets.QMainWindow):
         self.animating = False
         self.stack_animation = None
 
+        # ---- parameters which do not map neatly to keywords
+        self.fluid_nscalar_eq = 0
+        self.solid_nscalar_eq = 0 # Infer these from phase4scalar?
+        # Defaults
+        self.solver = SINGLE
+        self.fluid_density_model = CONSTANT
+        self.fluid_viscosity_model = CONSTANT
+        self.fluid_molecular_weight_model = CONSTANT
+        self.fluid_specific_heat_model = CONSTANT
+        self.fluid_conductivity_model = AIR
+        self.fluid_diffusion_model = AIR
+
         # --- icons ---
         # loop through all widgets, because I am lazy
         for widget in widget_iter(self.ui):
@@ -204,7 +227,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- Connect Signals to Slots---
         # open/save/new project
-        self.ui.toolbutton_open.clicked.connect(self.open_project)
+        self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
 
         # mode (modeler, workflow, developer)
@@ -282,14 +305,6 @@ class MfixGui(QtWidgets.QMainWindow):
         # --- print welcome message
         self.print_internal("MFiX-GUI version %s" % self.get_version())
 
-        # autoload last project
-        project_dir = self.get_project_dir()
-        if project_dir:
-            self.open_project(project_dir)
-        # print number of keywords
-        self.print_internal('Registered %d keywords' %
-                            len(self.project.registered_keywords), color='blue')
-
     def get_version(self):
         return "0.2x" # placeholder
 
@@ -304,7 +319,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def set_solver(self, index):
         """ handler for "Solver" combobox in Model Setup """
-        # NB.  This depends on strings matching items in the ui file
+        self.solver = index
+
         model_setup = self.ui.model_setup
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %d: %s" % (index, solver_name))
@@ -312,29 +328,180 @@ class MfixGui(QtWidgets.QMainWindow):
         item_names =  ("Solids", "Continuum Solids Model",
                        "Discrete Element Model", "Particle in Cell Model")
 
-        states = {"Single phase": (False, False, False, False),
-                  "MFIX-TFM": (True, True, False, False),
-                  "MFIX-DEM": (True, False, True, False),
-                  "MFIX-PIC": (True, False, False, True),
-                  "MFIX-Hybrid": (True, True, True, False)}
+        item_states = {SINGLE: (False, False, False, False),
+                       TFM: (True, True, False, False),
+                       DEM: (True, False, True, False),
+                       PIC: (True, False, False, True),
+                       HYBRID: (True, True, True, False)}
 
-        for item_name, state in zip(item_names, states[solver_name]):
-            self.set_navigation_item_state(item_name, state)
+        for item_name, item_state in zip(item_names, item_states[index]):
+            self.set_navigation_item_state(item_name, item_state)
 
         # Options which require TFM, DEM, or PIC
-        enabled = 0 < index < 4
+        enabled = self.solver in (TFM, DEM, PIC)
         interphase = model_setup.groupbox_interphase
         interphase.setEnabled(enabled)
 
         # TFM only
         # use a groupbox here, instead of accessing combobox + label?
-        enabled = (index == 1)
+        enabled = (self.solver == TFM)
         model_setup.combobox_subgrid_model.setEnabled(enabled)
         model_setup.label_subgrid_model.setEnabled(enabled)
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
+        self.ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
+        self.ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
+            and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
 
+    def set_keyword(self, key, value, args=None):
+        self.project.submit_change(None, {key:value}, args)
+
+    def unset_keyword(self, key, args=None):
+        if self.project.removeKeyword(key, args, warn=False):
+            self.print_internal("unset %s" %
+                                format_key_with_args(key, args))
+
+    def enable_energy_eq(self, state):
+        # Additional callback on top of automatic keyword update,
+        # since this has to change availabilty of a bunch of other GUI items
+        ui = self.ui
+        for item in (ui.combobox_fluid_specific_heat_model,
+                     ui.combobox_fluid_conductivity_model,
+                     # more ?
+                     ):
+            item.setEnabled(state)
+
+
+        spinbox = ui.spinbox_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
+        if state:
+            spinbox.setEnabled(self.fluid_specific_heat_model == CONSTANT)
+        else:
+            spinbox.setEnabled(False)
+
+    def enable_fluid_species_eq(self, state):
+        ui = self.ui
+        for item in (ui.combobox_fluid_diffusion_model,
+                     # more ?
+                     ):
+            item.setEnabled(state)
+        spinbox = ui.spinbox_keyword_dif_g0 # dif_g0 == diffusion coeff model
+        if state:
+            spinbox.setEnabled(self.fluid_diffusion_model == CONSTANT)
+        else:
+            spinbox.setEnabled(False)
+
+    def enable_fluid_scalar_eq(self, state):
+        self.ui.spinbox_fluid_nscalar_eq.setEnabled(state)
+        if state:
+            self.set_fluid_nscalar_eq(self.fluid_nscalar_eq)
+
+    def set_fluid_nscalar_eq(self, value):
+        # TODO:  load from mfix.dat (do we save this explicitly,
+        # or infer from PHASE4SCALAR settings?
+        self.fluid_nscalar_eq = value
+        self.project.submit_change(None,{"nscalar":
+                                         self.fluid_nscalar_eq + self.solid_nscalar_eq})
+        for i in range(1,1+value):
+            self.project.submit_change(None,{"phase4scalar":0},args=i)
+
+    # note, the set_fluid_*_model methods have a lot of repeated code
+
+    def set_fluid_density_model(self, value):
+        self.fluid_density_model = value
+
+        # Enable spinbox for constant density model
+        spinbox = self.ui.spinbox_keyword_ro_g0
+        spinbox.setEnabled(value==0)
+        if value == CONSTANT:
+            self.set_keyword("ro_g0", spinbox.value())
+            self.unset_keyword("usr_rog")
+        elif value == 1: # Ideal Gas Law
+            self.unset_keyword("ro_g0")
+            self.unset_keyword("usr_rog")
+        elif value == UDF:
+            self.unset_keyword("ro_g0")
+            self.set_keyword("usr_rog", True)
+
+    def set_fluid_viscosity_model(self, value):
+        self.fluid_viscosity_model = value
+
+        # Enable spinbox for constant viscosity model
+        spinbox = self.ui.spinbox_keyword_mu_g0
+        spinbox.setEnabled(value==0)
+        if value == CONSTANT:
+            self.set_keyword("mu_g0", spinbox.value())
+            self.unset_keyword("usr_mug")
+        elif value == 1: # Sutherland's Law
+            self.unset_keyword("mu_g0")
+            self.unset_keyword("usr_mug")
+        elif value == UDF:
+            self.unset_keyword("mu_g0")
+            self.set_keyword("usr_mug", True)
+
+    def set_fluid_molecular_weight_model(self, value):
+        self.fluid_molecular_weight_model = value
+
+        # Enable spinbox for constant molecular_weight model
+        spinbox = self.ui.spinbox_keyword_mw_avg
+        spinbox.setEnabled(value==0)
+        if value == CONSTANT:
+            self.set_keyword("mw_avg", spinbox.value())
+        elif value == 1: # Mixture
+            # TODO: require mw for all component species
+            self.unset_keyword("mw_avg")
+
+    def set_fluid_specific_heat_model(self, value):
+        self.fluid_specific_heat_model = value
+
+        # Enable spinbox for constant specific_heat model
+        spinbox = self.ui.spinbox_keyword_cp_g0
+        spinbox.setEnabled(value==0)
+        if value == CONSTANT:
+            self.set_keyword("cp_g0", spinbox.value())
+            self.unset_keyword("usr_cpg")
+        elif value == 1: # Mixture
+            # TODO: require cp for all component species
+            self.unset_keyword("cp_g0")
+            self.unset_keyword("usr_mug")
+        elif value == UDF:
+            self.unset_keyword("cp_g0")
+            self.set_keyword("usr_cpg", True)
+
+    def set_fluid_conductivity_model(self, value):
+        self.fluid_conductivity_model = value
+
+        # Enable spinbox for constant (thermal) conductivity model
+        spinbox = self.ui.spinbox_keyword_k_g0
+        spinbox.setEnabled(value==0)
+        if value == CONSTANT:
+            self.set_keyword("k_g0", spinbox.value())
+            self.unset_keyword("usr_kg")
+        elif value == 1: # Temperature dep.
+            # TODO: require cp for all component species
+            self.unset_keyword("k_g0")
+            self.unset_keyword("usr_kg")
+        elif value == UDF:
+            self.unset_keyword("k_g0")
+            self.set_keyword("usr_kg", True)
+
+    def set_fluid_diffusion_model(self, value):
+        self.fluid_diffusion_model = value
+
+        # Enable spinbox for constant diffusion model
+        spinbox = self.ui.spinbox_keyword_dif_g0
+        spinbox.setEnabled(value==CONSTANT)
+
+        if value == CONSTANT:
+            self.set_keyword("dif_g0", spinbox.value())
+            self.unset_keyword("usr_difg")
+        elif value == AIR: # Temperature dep.
+            # TODO: require temperature field for full domain
+            self.unset_keyword("dif_g0")
+            self.unset_keyword("usr_difg")
+        elif value == UDF:
+            self.unset_keyword("dif_g0")
+            self.set_keyword("usr_difg", True)
 
     def disable_fluid_solver(self, state):
         self.set_navigation_item_state("Fluid", not state)
@@ -350,15 +517,58 @@ class MfixGui(QtWidgets.QMainWindow):
         model_setup = self.ui.model_setup
         combobox = model_setup.combobox_solver
         combobox.currentIndexChanged.connect(self.set_solver)
-        self.set_solver(0) # Default - Single Phase - (?)
+        self.set_solver(self.solver) # Default - Single Phase - (?)
 
         checkbox = model_setup.checkbox_disable_fluid_solver
         checkbox.stateChanged.connect(self.disable_fluid_solver)
         self.disable_fluid_solver(False)
 
+        checkbox = model_setup.checkbox_keyword_energy_eq
+        checkbox.stateChanged.connect(self.enable_energy_eq)
+
+        checkbox = self.ui.checkbox_keyword_species_eq_args_0
+        checkbox.stateChanged.connect(self.enable_fluid_species_eq)
+
         combobox = model_setup.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
+
+        self.enable_energy_eq(False)
+        # something is wrong, we shouldn't have to explicitly uncheck this box
+        self.model_setup.checkbox_keyword_energy_eq.setChecked(False)
+
+
+        # Fluid phase
+        self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
+            self.enable_fluid_scalar_eq)
+        self.ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
+            self.set_fluid_nscalar_eq)
+
+        # Fluid phase models
+        # Density
+        self.ui.combobox_fluid_density_model.currentIndexChanged.connect(
+            self.set_fluid_density_model)
+        self.set_fluid_density_model(self.fluid_density_model)
+        # Viscosity
+        self.ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
+            self.set_fluid_viscosity_model)
+        self.set_fluid_viscosity_model(self.fluid_viscosity_model)
+        # Molecular Weight
+        self.ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
+            self.set_fluid_molecular_weight_model)
+        self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
+        # Specific Heat
+        self.ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
+            self.set_fluid_specific_heat_model)
+        self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
+        # (Thermal) Conductivity
+        self.ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
+            self.set_fluid_conductivity_model)
+        self.set_fluid_conductivity_model(self.fluid_conductivity_model)
+        # Diffusion (Coefficient)
+        self.ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
+            self.set_fluid_diffusion_model)
+        self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
         # Automate the connecting?
@@ -462,12 +672,12 @@ class MfixGui(QtWidgets.QMainWindow):
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
 
-    def get_project_dir(self):
+    def get_project_path(self):
         " get the current project directory "
 
-        last_dir = self.settings.value('project_dir')
-        if last_dir:
-            return last_dir
+        last = self.settings.value('project_path')
+        if last:
+            return last
         else:
             return None
 
@@ -740,7 +950,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def clear_output(self):
         self.run_thread.start_command(
             cmd='rm -v -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
-            cwd=self.get_project_dir())
+            cwd=self.get_project_path())
 
     def run_mfix(self):
         mfix_exe = self.ui.run.mfix_executables.currentText()
@@ -760,7 +970,8 @@ class MfixGui(QtWidgets.QMainWindow):
                 total, mfix_exe, nodesi, nodesj, nodesk)
 
         run_cmd = '{} -f {}'.format(mfix_exe, self.get_mfix_dat())
-        self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
+        project_dir = os.path.dirname(self.get_project_path())
+        self.run_thread.start_command(cmd=run_cmd, cwd=project_dir)
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -782,35 +993,28 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.change_pane('interact')
 
-
-    def get_mfix_dat(self):
-        if hasattr(self.project, 'run_name'):
-            name = self.project.run_name.value
-        else:
-            name = 'new_file'
-        for char in ('.', '"', "'", '/', '\\', ':'):
-            name = name.replace(char, '_')
-        mfix_dat = name + '.mfx'
-        return os.path.join(self.get_project_dir(), mfix_dat)
-
     # --- open/save/new ---
     def save_project(self):
-        project_dir = self.settings.value('project_dir')
+        project_path = self.settings.value('project_path')
+        project_dir = os.path.dirname(project_path)
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
-        self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.writeDatFile(self.get_mfix_dat())
+        self.project.writeDatFile(project_path)
+        with open(project_path, 'r') as mfx:
+            src = mfx.read()
+        self.ui.mfix_dat_source.setPlainText(src)
+        self.setWindowTitle('MFIX - %s' % project_path)
 
     def unsaved(self):
-        project_dir = self.settings.value('project_dir')
-        self.setWindowTitle('MFIX - %s *' % project_dir)
+        project_path = self.settings.value('project_path')
+        self.setWindowTitle('MFIX - %s *' % project_path)
 
     def check_writable(self, directory):
         " check whether directory is writable "
         try:
             import tempfile
-            testfile = tempfile.TemporaryFile(dir=project_dir)
+            testfile = tempfile.TemporaryFile(dir=directory)
             testfile.close()
             return True
         except IOError:
@@ -847,52 +1051,70 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_path)
 
-    def open_project(self, project_path=None):
-        """
-        Open MFiX Project
-        """
+    def handle_open_action(self):
+        project_dir = os.path.dirname(self.get_project_path())
+        project_path = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Open Project Directory', project_dir)
 
-        if not project_path:
-            project_path = QtWidgets.QFileDialog.getOpenFileName(
-                self, 'Open Project Directory',self.get_project_dir())
+        if len(project_path) < 1:
+            return
 
-            if len(project_path) < 1:
-                return
-
-            project_path = project_path[0]
-
-            if not os.path.exists(project_path):
-                self.message(title='Warning',
-                             icon='warning',
-                             text=('mfix.dat file does not exist in this '
-                                   'directory.\n'),
-                             buttons=['ok'],
-                             default='ok',
-                            )
-                return
-
-        if os.path.isdir(project_path):
-            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+        project_path = project_path[0]
 
         if not os.path.exists(project_path):
             return
 
-        project_dir = os.path.dirname(project_path)
-        self.settings.setValue('project_dir', project_dir)
-        self.setWindowTitle('MFIX - %s' % project_dir)
+        self.open_project(project_path)
 
-        # read the file
-        with open(project_path, 'r') as mfix_dat_file:
-            src = mfix_dat_file.read()
-        self.ui.mfix_dat_source.setPlainText(src)
-        # self.mode_changed('developer')
+    def open_project(self, project_path):
+        """
+        Open MFiX Project
+        """
+
+        if os.path.isdir(project_path):
+            project_dir = project_path
+            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+        else:
+            project_dir = os.path.dirname(project_path)
+
+        if not os.path.exists(project_path):
+            return
 
         self.print_internal("Loading %s" % project_path, color='blue')
         self.project.load_mfix_dat(project_path)
+        self.print_internal("Loaded %s" % project_path, color='blue')
 
+        if hasattr(self.project, 'run_name'):
+            name = self.project.run_name.value
+        else:
+            name = 'new_file'
+        for char in ('.', '"', "'", '/', '\\', ':'):
+            name = name.replace(char, '_')
+        runname_mfx = name + '.mfx'
 
-        # Set non-keyword gui items based on loaded project
-        self.ui.model_setup.energy_eq.setChecked(self.project['energy_eq'])
+        if not project_path.endswith(runname_mfx):
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
+                         buttons=['ok'],
+                         default='ok',
+            )
+            project_path = os.path.join(project_dir, runname_mfx)
+            self.project.writeDatFile(project_path)
+
+        # project_dir = os.path.dirname(project_path)
+        self.settings.setValue('project_path', project_path)
+        self.setWindowTitle('MFIX - %s' % project_path)
+
+        # read the file
+        with open(project_path, 'r') as mfx:
+            src = mfx.read()
+        self.ui.mfix_dat_source.setPlainText(src)
+        # self.mode_changed('developer')
+
+        # Additional GUI setup based on loaded projects (not handled
+        # by keyword updates)
+        self.enable_energy_eq(self.project['energy_eq'])
         # cgw - lots more model setup todo here
 
     # --- fluid species methods ---
@@ -994,9 +1216,11 @@ class MonitorExecutablesThread(QThread):
             dirs.extend(os.path.join(build_dir, subdir)
                          for subdir in os.listdir(build_dir))
         # Check run_dir
-        run_dir = self.parent.get_project_dir()
-        if run_dir:
-            dirs.append(run_dir)
+        project_path = self.parent.get_project_path()
+        if project_path:
+            run_dir = os.path.dirname(project_path)
+            if run_dir:
+                dirs.append(run_dir)
 
         # Now look for mfix/pymfix in these dirs
         for dir in dirs:
@@ -1125,8 +1349,13 @@ class ProjectManager(Project):
         for w in widgets_to_update:
             # Prevent circular updates
             self._widget_update_stack.append(w)
-            w.updateValue(key, updatedValue, args)
-            self._widget_update_stack.pop()
+            try:
+                w.updateValue(key, updatedValue, args)
+            except Exception, e:
+                raise ValueError("%s = %s" % (format_key_with_args(key, args),
+                                              updatedValue))
+            finally:
+                self._widget_update_stack.pop()
 
         self.parent.print_internal("%s = %s" % (format_key_with_args(key, args),
                                                 updatedValue),
@@ -1135,20 +1364,27 @@ class ProjectManager(Project):
 
     def load_mfix_dat(self, mfixDat):
         """Load an MFiX project file."""
-
+        n_errs = 0
+        errlist = []
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
-            for keyword in self.keywordItems():
-                self.submit_change(None, {keyword.key: keyword.value},
-                                   args=keyword.args, forceUpdate=True)
+            # some of these changes may cause new keywords to be instantiated,
+            # so iterate over a copy of the list, which may change
+            kwlist = list(self.keywordItems())
+            for keyword in kwlist:
+                try:
+                    self.submit_change(None, {keyword.key: keyword.value},
+                                       args=keyword.args, forceUpdate=True)
+                except ValueError, e:
+                    errlist.append(e)
 
             # report any errors
-            for w in ws:
+            for w in errlist + ws:
                 self.parent.print_internal("Warning: %s" % w.message, color='red')
-            n_errs = len(ws)
+            n_errs = len(errlist) + len(ws)
             if n_errs:
-                self.parent.print_internal("Warning: %d errors" % n_errs, color='red')
+                self.parent.print_internal("Warning: %s" % plural(n_errs, "error"), color='red')
             else:
                 self.parent.print_internal("0 errors", color='darkgreen')
 
@@ -1184,14 +1420,20 @@ if __name__ == '__main__':
     qapp = QtWidgets.QApplication(sys.argv)
     mfix = MfixGui(qapp)
     mfix.show()
-
-    # Print something to force textbrowser to
-    # scroll to bottom (after widget visible)
-    mfix.print_internal('Ready', color='blue')
+    # --- print welcome message
+    mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
     if len(sys.argv) > 1:
-        case_dir = sys.argv[-1]
-        mfix.open_project(case_dir)
+        mfix.open_project(sys.argv[-1])
+    else:
+        # autoload last project
+        project_path = mfix.get_project_path()
+        if project_path:
+            mfix.open_project(project_path)
+
+    # print number of keywords
+    mfix.print_internal('Registered %d keywords' %
+                        len(mfix.project.registered_keywords), color='blue')
 
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()

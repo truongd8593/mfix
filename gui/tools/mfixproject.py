@@ -12,7 +12,8 @@ Please see the LICENSE.md for more information.
 """
 
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
+from builtins import *
 
 # Python core imports
 import shlex
@@ -91,8 +92,14 @@ class Equation(object):
         return float(self._eval()) ** float(value)
 
 
+def format_key_with_args(key, args=None):
+    if args:
+        return "%s(%s)" % (key, ','.join(str(a) for a in args))
+    else:
+        return str(key)
+
 class Keyword(object):
-    def __init__(self, key, val, comment='', dtype=None, args=[]):
+    def __init__(self, key, val, comment='', dtype=None, args=None):
 
         self.key = key
         self.value = val
@@ -102,9 +109,13 @@ class Keyword(object):
         self.valids = None
         self.fmt = None
         self.comment = comment
+        if args is None:
+            args = []
         self.args = args
 
-        self.regex_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+        # FIXME:  this is not just matching 'pi' but any jumble of p's and i's
+        # see also def in Project.__init__
+        self.re_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -196,7 +207,7 @@ class Keyword(object):
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.regex_expression.findall(str(value)) and self.dtype == float:
+        elif self.re_expression.findall(str(value)) and self.dtype == float:
             self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
@@ -247,9 +258,9 @@ class Base(object):
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
 
-    def deleteDict(self):
-        self.delete = True
-        return dict([(key, None) for key, val in self._keyword_dict.items()])
+#    def deleteDict(self):
+#        self.delete = True
+#        return dict([(key, None) for key, val in self._keyword_dict.items()])
 
 
 class CondBase(Base):
@@ -584,12 +595,33 @@ class Project(object):
         self.thermoindex = None
 
         # Regular Expressions
-        self.regex_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
-        self.regex_float_exp = re.compile("^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$")
-        self.regex_float = re.compile("^[+-]?[0-9]+\.([0-9]+)?$")
-        self.regex_expression = re.compile('@\(([ 0-9.eEpiPI+-/*\(\))]+)\)')
-        #self.regex_stringShortHand = re.compile("""(\d+\*["'].+?["'])""")
-        self.regex_stringShortHand = re.compile("""([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))""")
+        self.re_keyValue = re.compile(r"""
+            (\w+)                           # Alphanumeric, key name
+            (?:\(([\d, ]+)\))?              # Indices, :(NUM,)
+            \s*                             # Possible whitespace
+            =                               # Equal sign
+            \s*                             # Possible whitespace
+            (.*?)                           # Value
+            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?
+        """, re.VERBOSE)
+
+        self.re_float_exp = re.compile(r"""
+            ^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$
+        """, re.VERBOSE)
+
+        self.re_float = re.compile(r"""
+            ^[+-]?[0-9]+\.([0-9]+)?$
+        """, re.VERBOSE)
+
+        self.re_expression = re.compile(r"""
+            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)
+        """, re.VERBOSE)
+
+        self.re_stringShortHand = re.compile(r"""
+            ([\d\.]+\*
+            ((["']+?.+?["']+?)|([\d\.]+))
+            )
+        """, re.VERBOSE)
 
         self.__initDataStructure__()
 
@@ -672,11 +704,10 @@ class Project(object):
             return
 
     def parseKeywordLine(self, text):
-
-        matchs = self.regex_keyValue.findall(text)
-        if matchs:
-            for match in matchs:
-                # match chould be: [keyword, args, value,
+        matches = self.re_keyValue.findall(text)
+        if matches:
+            for match in matches:
+                # match could be: [keyword, args, value,
                 #                   nextKeywordInLine, something]
 
                 # convert to list
@@ -689,21 +720,19 @@ class Project(object):
                 valString = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.regex_expression.findall(valString)
+                exps = self.re_expression.findall(valString)
                 for exp in exps:
                     valString = valString.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
                 # Replace short hand string
-                shortHandList = self.regex_stringShortHand.findall(valString)
+                shortHandList = self.re_stringShortHand.findall(valString)
                 if shortHandList:
                     for shortHand in shortHandList:
                         # check for expression
                         if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
                             valString = valString.replace(shortHand[0],
-                                                          self.expandshorthand(
-                                                          shortHand[0])
-                                                          )
+                                                          self.expandshorthand(shortHand[0]))
 
                 # split values using shlex, it will keep quoted strings
                 # together.
@@ -729,7 +758,7 @@ class Project(object):
                         [str(arg['min']) for arg in
                          self.keyword_doc[key]['args'].values()])
 
-                # clean up arguemnts
+                # clean up arguments
                 if match[1]:
                     args = [int(arg) for arg in match[1].split(',')]
                 else:
@@ -806,7 +835,7 @@ class Project(object):
                         except ValueError:
                             warnings.warn("Skipping line %d: %s" % (i, line))
 
-    def updateKeyword(self, key, value, args=[],  keywordComment=''):
+    def updateKeyword(self, key, value, args=None,  keywordComment=''):
         '''
         Add a keyword to the project.
 
@@ -820,11 +849,13 @@ class Project(object):
         value (int, float, bool, str):
             the value of the keyword
         args (list):
-            list of arguments for the keyword (default: [])
+            list of arguments for the keyword, or None
         keywordComment (str):
             a comment to be included with the keyword (default: '')
         '''
 
+        if args is None:
+            args = []
         # check to see if the keyword already exists
         if [key]+args in self:
             self[[key]+args].updateValue(value)
@@ -837,7 +868,6 @@ class Project(object):
 
         # If args
         if args:
-
             # Find condition keywords and separate
             if key.startswith('ic_'):
                 cond = self.ics
@@ -1001,7 +1031,7 @@ class Project(object):
 
         # no args
         else:
-            keywordobject = Keyword(key, value, args=[],
+            keywordobject = Keyword(key, value, args=None,
                                     comment=keywordComment)
 
         # add keyword to other data structures
@@ -1024,9 +1054,9 @@ class Project(object):
             keywordDict = keywordDict.setdefault(key, {})
         keywordDict[keys[-1]] = keyword
 
-    def _recursiveRemoveKeyToKeywordDict(self, keys=()):
+    def _recursiveRemoveKeyToKeywordDict(self, keys=(), warn=True):
         keywordDict = self._keyword_dict
-        for key in keys[:-1]:
+        for key in keys[:-1]: # ? Why ?
             keywordDict = keywordDict[key]
         keywordDict.pop(keys[-1])
 
@@ -1039,7 +1069,6 @@ class Project(object):
                 keywordDict.pop(keys[-1])
 
     def keywordItems(self):
-
         for keys, value in recurse_dict_empty(self._keyword_dict):
             yield value
 
@@ -1055,9 +1084,9 @@ class Project(object):
                 cleanVal = True
             elif '.f.' == string.lower() or '.false.' == string.lower():
                 cleanVal = False
-            elif self.regex_expression.findall(string):
-                cleanVal = Equation(self.regex_expression.findall(string)[0])
-            elif self.regex_float_exp.findall(string):
+            elif self.re_expression.findall(string):
+                cleanVal = Equation(self.re_expression.findall(string)[0])
+            elif self.re_float_exp.findall(string):
                 cleanVal = FloatExp(string.lower().replace('d', 'e'))
             elif any([val.isdigit() for val in string]):
                 try:
@@ -1086,12 +1115,17 @@ class Project(object):
                     splitString[1]))]
         return ' '.join(expandList)
 
-    def removeKeyword(self, key, args):
-        '''
-        Remove a keyword from the project
-        '''
+    def removeKeyword(self, key, args=None, warn=True):
+        '''Remove a keyword from the project.  Returns True if item deleted.'''
 
-        keyword = self.keywordLookup(key, args)
+        if args is None:
+            args = []
+        keyword = self.keywordLookup(key, args, warn=False)
+        if not keyword:
+            if warn:
+                raise KeyError(key)
+            else:
+                return False
 
         # pop from dat_file_list
         self.dat_file_list.remove(keyword)
@@ -1099,18 +1133,17 @@ class Project(object):
             self.thermoindex -= 1
 
         # remove from dict
-        self._recursiveRemoveKeyToKeywordDict([key]+args)
+        self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
         for i in range(len(args)):
             self._purgeemptydicts()
 
         # purge
         keyword.delete = True
         self._cleanDeletedItems()
+        return True
 
     def _cleanDeletedItems(self):
-        '''
-        Purge objects marked with self.delete==True.
-        '''
+        '''Purge objects marked with self.delete==True.'''
 
         for condType in [self.ics, self.bcs, self.pss, self.iss]:
             for cond in condType:
@@ -1164,7 +1197,7 @@ class Project(object):
             if vargrid.delete:
                 self.variablegrid.delete(vargrid)
 
-    def keywordLookup(self, keyword, args=[]):
+    def keywordLookup(self, keyword, args=None, warn=True):
         '''
         Search the project for a keyword and return the Keyword object, else
         raise an exception.
@@ -1182,6 +1215,9 @@ class Project(object):
             the Keyword object
         '''
 
+        if args is None:
+            args = []
+
         keyword = keyword.lower()
         keywordobject = None
 
@@ -1197,11 +1233,12 @@ class Project(object):
                     continue
 
         if keywordobject is None:
-            raise ValueError('{} does not exist in the project'.format(keyword))
+            if warn:
+                raise KeyError(keyword)
 
         return keywordobject
 
-    def changekeywordvalue(self, key, value, args=[]):
+    def changekeywordvalue(self, key, value, args=None):
         '''
         Change a value of a keyword.
 
@@ -1214,6 +1251,9 @@ class Project(object):
         args (list):
             a list of arguments for that keyword
         '''
+
+        if args is None:
+            args = []
 
         keywordobject = self.keywordLookup(key, args)
 
