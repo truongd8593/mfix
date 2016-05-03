@@ -596,11 +596,13 @@ class Project(object):
 
         # Regular Expressions
         self.re_keyValue = re.compile(r"""
-            (\w+)                           # Alphanumeric
-            (?:\(([\d, ]+)\))?              # non-capturing group, :(NUM,)
-            \s*=\s*                         #
-            (.*?)                           #
-            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) #
+            (\w+)                           # Alphanumeric, key name
+            (?:\(([\d, ]+)\))?              # Indices, :(NUM,)
+            \s*                             # Possible whitespace
+            =                               # Equal sign
+            \s*                             # Possible whitespace
+            (.*?)                           # Value
+            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?
         """, re.VERBOSE)
 
         self.re_float_exp = re.compile(r"""
@@ -616,7 +618,9 @@ class Project(object):
         """, re.VERBOSE)
 
         self.re_stringShortHand = re.compile(r"""
-            ([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))
+            ([\d\.]+\*
+            ((["']+?.+?["']+?)|([\d\.]+))
+            )
         """, re.VERBOSE)
 
         self.__initDataStructure__()
@@ -724,15 +728,11 @@ class Project(object):
                 # Replace short hand string
                 shortHandList = self.re_stringShortHand.findall(valString)
                 if shortHandList:
-                    print("SHL", shortHandList, valString)
                     for shortHand in shortHandList:
-                        print("SH=", shortHand)
                         # check for expression
                         if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
-                            print("SREPLACE0", valString)
                             valString = valString.replace(shortHand[0],
                                                           self.expandshorthand(shortHand[0]))
-                            print("SREPLACE1", valString)
 
                 # split values using shlex, it will keep quoted strings
                 # together.
@@ -758,7 +758,7 @@ class Project(object):
                         [str(arg['min']) for arg in
                          self.keyword_doc[key]['args'].values()])
 
-                # clean up arguemnts
+                # clean up arguments
                 if match[1]:
                     args = [int(arg) for arg in match[1].split(',')]
                 else:
