@@ -12,7 +12,8 @@ Please see the LICENSE.md for more information.
 """
 
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
+from builtins import *
 
 # Python core imports
 import shlex
