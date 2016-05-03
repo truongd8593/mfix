@@ -79,6 +79,10 @@ def format_key_with_args(key, args=None):
     else:
         return str(key)
 
+def plural(n, word):
+    fmt = "%d %s" if n==1 else "%d %ss"
+    return fmt % (n, word)
+
 # Constants
 
 # Solver types
@@ -1498,8 +1502,13 @@ class ProjectManager(Project):
         for w in widgets_to_update:
             # Prevent circular updates
             self._widget_update_stack.append(w)
-            w.updateValue(key, updatedValue, args)
-            self._widget_update_stack.pop()
+            try:
+                w.updateValue(key, updatedValue, args)
+            except Exception, e:
+                raise ValueError("%s = %s" % (format_key_with_args(key, args),
+                                              updatedValue))
+            finally:
+                self._widget_update_stack.pop()
 
         self.parent.print_internal("%s = %s" % (format_key_with_args(key, args),
                                                 updatedValue),
@@ -1508,7 +1517,8 @@ class ProjectManager(Project):
 
     def load_mfix_dat(self, mfixDat):
         """Load an MFiX project file."""
-
+        n_errs = 0
+        errlist = []
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=mfixDat)
             # emit loaded keys
@@ -1516,15 +1526,18 @@ class ProjectManager(Project):
             # so iterate over a copy of the list, which may change
             kwlist = list(self.keywordItems())
             for keyword in kwlist:
-                self.submit_change(None, {keyword.key: keyword.value},
-                                   args=keyword.args, forceUpdate=True)
+                try:
+                    self.submit_change(None, {keyword.key: keyword.value},
+                                       args=keyword.args, forceUpdate=True)
+                except ValueError, e:
+                    errlist.append(e)
 
             # report any errors
-            for w in ws:
+            for w in errlist + ws:
                 self.parent.print_internal("Warning: %s" % w.message, color='red')
-            n_errs = len(ws)
+            n_errs = len(errlist) + len(ws)
             if n_errs:
-                self.parent.print_internal("Warning: %d errors" % n_errs, color='red')
+                self.parent.print_internal("Warning: %s" % plural(n_errs, "error"), color='red')
             else:
                 self.parent.print_internal("0 errors", color='darkgreen')
 
