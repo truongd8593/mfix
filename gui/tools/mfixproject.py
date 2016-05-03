@@ -113,7 +113,9 @@ class Keyword(object):
             args = []
         self.args = args
 
-        self.regex_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+        # FIXME:  this is not just matching 'pi' but any jumble of p's and i's
+        # see also def in Project.__init__
+        self.re_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -205,7 +207,7 @@ class Keyword(object):
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.regex_expression.findall(str(value)) and self.dtype == float:
+        elif self.re_expression.findall(str(value)) and self.dtype == float:
             self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
@@ -593,12 +595,29 @@ class Project(object):
         self.thermoindex = None
 
         # Regular Expressions
-        self.regex_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
-        self.regex_float_exp = re.compile("^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$")
-        self.regex_float = re.compile("^[+-]?[0-9]+\.([0-9]+)?$")
-        self.regex_expression = re.compile('@\(([ 0-9.eEpiPI+-/*\(\))]+)\)')
-        #self.regex_stringShortHand = re.compile("""(\d+\*["'].+?["'])""")
-        self.regex_stringShortHand = re.compile("""([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))""")
+        self.re_keyValue = re.compile(r"""
+            (\w+)                           # Alphanumeric
+            (?:\(([\d, ]+)\))?              # non-capturing group, :(NUM,)
+            \s*=\s*                         #
+            (.*?)                           #
+            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) #
+        """, re.VERBOSE)
+
+        self.re_float_exp = re.compile(r"""
+            ^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$
+        """, re.VERBOSE)
+
+        self.re_float = re.compile(r"""
+            ^[+-]?[0-9]+\.([0-9]+)?$
+        """, re.VERBOSE)
+
+        self.re_expression = re.compile(r"""
+            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)
+        """, re.VERBOSE)
+
+        self.re_stringShortHand = re.compile(r"""
+            ([\d\.]+\*((["']+?.+?["']+?)|([\d\.]+)))
+        """, re.VERBOSE)
 
         self.__initDataStructure__()
 
@@ -681,11 +700,10 @@ class Project(object):
             return
 
     def parseKeywordLine(self, text):
-
-        matchs = self.regex_keyValue.findall(text)
-        if matchs:
-            for match in matchs:
-                # match chould be: [keyword, args, value,
+        matches = self.re_keyValue.findall(text)
+        if matches:
+            for match in matches:
+                # match could be: [keyword, args, value,
                 #                   nextKeywordInLine, something]
 
                 # convert to list
@@ -698,21 +716,23 @@ class Project(object):
                 valString = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.regex_expression.findall(valString)
+                exps = self.re_expression.findall(valString)
                 for exp in exps:
                     valString = valString.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
                 # Replace short hand string
-                shortHandList = self.regex_stringShortHand.findall(valString)
+                shortHandList = self.re_stringShortHand.findall(valString)
                 if shortHandList:
+                    print("SHL", shortHandList, valString)
                     for shortHand in shortHandList:
+                        print("SH=", shortHand)
                         # check for expression
                         if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
+                            print("SREPLACE0", valString)
                             valString = valString.replace(shortHand[0],
-                                                          self.expandshorthand(
-                                                          shortHand[0])
-                                                          )
+                                                          self.expandshorthand(shortHand[0]))
+                            print("SREPLACE1", valString)
 
                 # split values using shlex, it will keep quoted strings
                 # together.
@@ -1064,9 +1084,9 @@ class Project(object):
                 cleanVal = True
             elif '.f.' == string.lower() or '.false.' == string.lower():
                 cleanVal = False
-            elif self.regex_expression.findall(string):
-                cleanVal = Equation(self.regex_expression.findall(string)[0])
-            elif self.regex_float_exp.findall(string):
+            elif self.re_expression.findall(string):
+                cleanVal = Equation(self.re_expression.findall(string)[0])
+            elif self.re_float_exp.findall(string):
                 cleanVal = FloatExp(string.lower().replace('d', 'e'))
             elif any([val.isdigit() for val in string]):
                 try:
