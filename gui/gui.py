@@ -1140,11 +1140,11 @@ class MfixGui(QtWidgets.QMainWindow):
             self.project.load_project_file(project_file)
 
         except Exception, e:
-            msg = 'Failed to load %s' % project_file
+            msg = 'Failed to load %s: %s' % (project_file, e)
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
                          icon='warning',
-                         text=('Failed to load %s' % project_file),
+                         text=msg,
                          buttons=['ok'],
                          default='ok')
             return
