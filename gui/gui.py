@@ -1485,14 +1485,21 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
-    qapp = QtWidgets.QApplication(sys.argv)
+    args = sys.argv
+    qapp = QtWidgets.QApplication(args)
     mfix = MfixGui(qapp)
     mfix.show()
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    if len(sys.argv) > 1:
-        mfix.open_project(sys.argv[-1])
+    # TODO: real argument handling
+    quit = '-quit' in args # For testing
+    if quit:
+        args.remove('-quit')
+
+    if len(args) > 1:
+        for arg in args[1:]:
+            mfix.open_project(arg)
     else:
         # autoload last project
         project_file = mfix.get_project_file()
@@ -1509,7 +1516,8 @@ if __name__ == '__main__':
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    qapp.exec_()
+    if not quit:
+        qapp.exec_()
 
     qapp.deleteLater()
     sys.exit()
