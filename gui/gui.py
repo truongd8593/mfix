@@ -1365,9 +1365,11 @@ class MonitorExecutablesThread(QThread):
             dirs.extend(os.path.join(build_dir, subdir)
                          for subdir in os.listdir(build_dir))
         # Check run_dir
-        run_dir = os.path.dirname(self.parent.get_project_path())
-        if run_dir:
-            dirs.append(run_dir)
+        project_path = self.parent.get_project_path()
+        if project_path:
+            run_dir = os.path.dirname(project_path)
+            if run_dir:
+                dirs.append(run_dir)
 
         # Now look for mfix/pymfix in these dirs
         for dir in dirs:
@@ -1565,9 +1567,9 @@ if __name__ == '__main__':
         mfix.open_project(sys.argv[-1])
     else:
         # autoload last project
-        project_path = self.get_project_path()
+        project_path = mfix.get_project_path()
         if project_path:
-            self.open_project(project_path)
+            mfix.open_project(project_path)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
