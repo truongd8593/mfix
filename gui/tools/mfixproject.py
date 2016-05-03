@@ -602,7 +602,7 @@ class Project(object):
             =                               # Equal sign
             \s*                             # Possible whitespace
             (.*?)                           # Value
-            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?
+            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ?
         """, re.VERBOSE)
 
         self.re_float_exp = re.compile(r"""
@@ -674,11 +674,8 @@ class Project(object):
         return Project(''.join(self.convertToString()))
 
     def parsemfixdat(self, fname=None):
-        """
-        Parse the mfix.dat file with regular expressions.
-
+        """Parse the mfix.dat file with regular expressions.
         fname can be a StringIO instance, path, or a plain string.
-
         Saves the results in self.mfixDatKeyDict dictionary.
         """
         if fname:
@@ -730,6 +727,9 @@ class Project(object):
                 if shortHandList:
                     for shortHand in shortHandList:
                         # check for expression
+                        # XXX FIXME we are calling expandshorthand for the line
+                        #  bc_massflow_s(2,1) = @(PI*20.*20.*5.0)
+                        #  ie this check is not working.
                         if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
                             valString = valString.replace(shortHand[0],
                                                           self.expandshorthand(shortHand[0]))
@@ -821,7 +821,7 @@ class Project(object):
                     commentedline = line
                     line = ''
                 elif '#' in line or '!' in line:
-                    line, keywordComment = re.split('[#!]', line)[:2]
+                    line, keywordComment = re.split('[#!]', line, maxsplit=1)
                 else:
                     keywordComment = ''
 

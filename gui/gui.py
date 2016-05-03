@@ -318,7 +318,7 @@ class MfixGui(QtWidgets.QMainWindow):
         items[0].setFlags(on if state else off)
 
     def set_solver(self, index):
-        """ handler for "Solver" combobox in Model Setup """
+        """handler for "Solver" combobox in Model Setup"""
         self.solver = index
 
         model_setup = self.ui.model_setup
@@ -512,7 +512,7 @@ class MfixGui(QtWidgets.QMainWindow):
         groupbox_subgrid_params.setEnabled(index > 0)
 
     def __setup_other_widgets(self): # rename/refactor
-        """ setup widgets which are not tied to a simple keyword """
+        """setup widgets which are not tied to a simple keyword"""
 
         model_setup = self.ui.model_setup
         combobox = model_setup.combobox_solver
@@ -592,13 +592,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def __setup_simple_keyword_widgets(self):
-        """
-        Look for and connect simple keyword widgets to the project manager.
+        """Look for and connect simple keyword widgets to the project manager.
         Keyword information from the namelist doc strings is added to each
         keyword widget. The widget must be named: *_keyword_<keyword> where
         <keyword> is the actual keyword. For example:
-        lineedit_keyword_run_name
-        """
+        lineedit_keyword_run_name"""
 
         def try_int(str):
             try:
@@ -672,17 +670,72 @@ class MfixGui(QtWidgets.QMainWindow):
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
 
-    def get_project_path(self):
-        " get the current project directory "
+    def __setup_regions(self):
+        " setup the region connections etc."
 
-        last = self.settings.value('project_path')
+        regions = self.ui.regions
+        regions.combobox_regions_shape.addItems(['box', 'sphere',
+                                                         'point'])
+
+        regions.toolbutton_region_add.pressed.connect(
+            self.new_region)
+        regions.toolbutton_region_delete.pressed.connect(
+            self.delete_region)
+        regions.toolbutton_region_copy.pressed.connect(
+            self.copy_region)
+
+        tablewidget = regions.tablewidget_regions
+        tablewidget.dtype = OrderedDict
+        tablewidget._setModel()
+        tablewidget.set_columns(['shape', 'from', 'to'])
+        tablewidget.show_vertical_header(True)
+        tablewidget.set_value(OrderedDict())
+        tablewidget.auto_update_rows(True)
+        tablewidget.set_selection_model('cell', multi=False)
+        tablewidget.new_selection.connect(self.update_region_parameters)
+
+        for widget in widget_iter(self.ui.regions.groupbox_region_parameters):
+            if hasattr(widget, 'value_updated'):
+                widget.value_updated.connect(self.region_value_changed)
+
+                # lineedit_regions_to_x
+                name = str(widget.objectName())
+                if '_to_' in name:
+                    widget.key = '_'.join(name.split('_')[-2:])
+                    widget.dtype = float
+                elif '_from_' in str(widget.objectName()):
+                    widget.key = '_'.join(name.split('_')[-2:])
+                    widget.dtype = float
+                elif 'name' in name:
+                    widget.key = 'name'
+                    widget.dtype = str
+                elif 'shape' in name:
+                    widget.key = 'shape'
+                    widget.dtype = str
+
+    def get_project_file(self):
+        "get the current project directory"
+        last = self.settings.value('project_file')
+        if last:
+            return last
+        else:
+            return None
+
+    def get_project_dir(self):
+        "get the current project directory"
+        file = self.get_project_file()
+        return os.path.dirname(file) if file else None
+
+    def get_project_file(self):
+        "get the current project filename, including full path"
+        last = self.settings.value('project_dir')
         if last:
             return last
         else:
             return None
 
     def mode_changed(self, mode):
-        " change the Modeler, Workflow, Developer tab"
+        "change the Modeler, Workflow, Developer tab"
 
         current_index = 0
         for i in range(self.ui.stackedwidget_mode.count()):
@@ -701,7 +754,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
-        """ change to the specified pane """
+        """change to the specified pane"""
 
         clist = self.ui.treewidget_model_navigation.findItems(
                     name,
@@ -716,7 +769,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.navigation_changed()
 
     def navigation_changed(self):
-        """ an item in the tree was selected, change panes """
+        """an item in the tree was selected, change panes"""
         current_selection = self.ui.treewidget_model_navigation.selectedItems()
 
         if current_selection:
@@ -740,7 +793,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
                                btn_layout=None):
-        """ animate changing of qstackedwidget """
+        """animate changing of qstackedwidget"""
 
         # check to see if already animating
         if self.animating and self.stack_animation is not None:
@@ -833,7 +886,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, line=None):
-        """ cleanup after animation """
+        """cleanup after animation"""
         if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
             widget.setCurrentIndex(to)
             from_widget = widget.widget(from_)
@@ -927,7 +980,7 @@ class MfixGui(QtWidgets.QMainWindow):
         scrollbar.setValue(scrollbar.maximum())
 
     def update_run(self):
-        """Enable/disable run options based on selected executable """
+        """Enable/disable run options based on selected executable"""
         mfix_exe = self.ui.run.mfix_executables.currentText()
         if not mfix_exe:
             return
@@ -950,7 +1003,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def clear_output(self):
         self.run_thread.start_command(
             cmd='rm -v -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
-            cwd=self.get_project_path())
+            cwd=self.get_project_dir())
 
     def run_mfix(self):
         mfix_exe = self.ui.run.mfix_executables.currentText()
@@ -970,8 +1023,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 total, mfix_exe, nodesi, nodesj, nodesk)
 
         run_cmd = '{} -f {}'.format(mfix_exe, self.get_mfix_dat())
-        project_dir = os.path.dirname(self.get_project_path())
-        self.run_thread.start_command(cmd=run_cmd, cwd=project_dir)
+        self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -979,7 +1031,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.mfix_browser.setHTML('')
 
     def connect_mfix(self):
-        """ connect to running instance of mfix """
+        """connect to running instance of mfix"""
         url = "http://{}:{}".format(self.ui.run.mfix_host.text(),
                                     self.ui.run.mfix_port.text())
         log = logging.getLogger(__name__)
@@ -995,20 +1047,20 @@ class MfixGui(QtWidgets.QMainWindow):
 
     # --- open/save/new ---
     def save_project(self):
-        project_path = self.settings.value('project_path')
-        project_dir = os.path.dirname(project_path)
+        project_dir = self.get_project_dir()
+        project_file = self.get_project_file()
+
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
-        self.project.writeDatFile(project_path)
-        with open(project_path, 'r') as mfx:
+        self.project.writeDatFile(project_file)
+        with open(project_file, 'r') as mfx:
             src = mfx.read()
         self.ui.mfix_dat_source.setPlainText(src)
-        self.setWindowTitle('MFIX - %s' % project_path)
+        self.setWindowTitle('MFIX - %s' % project_dir)
 
     def unsaved(self):
-        project_path = self.settings.value('project_path')
-        self.setWindowTitle('MFIX - %s *' % project_path)
+        self.setWindowTitle('MFIX - %s *' % self.get_project_file())
 
     def check_writable(self, directory):
         " check whether directory is writable "
@@ -1029,60 +1081,72 @@ class MfixGui(QtWidgets.QMainWindow):
                          )
             return False
 
-    def new_project(self, project_path=None):
-        if not project_path:
-            project_path = str(
+    def new_project(self, project_dir=None):
+        if not project_dir:
+            project_dir = str(
                 QtWidgets.QFileDialog.getOpenFileName(
                     self, 'Create Project in Directory',
                     ""))
-        if len(project_path) < 1:
+        if len(project_dir) < 1:
             return
 
         if os.path.isdir(project_path):
             project_dir = project_path
-            project_path = os.path.join(project_dir, 'mfix.dat')
+            project_file = os.path.join(project_dir, 'mfix.dat')
         else:
             project_dir = os.path.dirname(project_path)
-
+            project_file = proj
         if not self.check_writable(project_dir):
             return
 
         shutil.copyfile('mfix.dat.template',project_path)
 
-        self.open_project(project_path)
+        self.open_project(project_file)
 
     def handle_open_action(self):
-        project_dir = os.path.dirname(self.get_project_path())
+        project_dir = self.get_project_dir()
         project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
-        if len(project_path) < 1:
-            return
-
-        project_path = project_path[0]
-
-        if not os.path.exists(project_path):
+        if len(project_path) < 1 or  not os.path.exists(project_path):
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('Cannot load %s' % project_path),
+                         buttons=['ok'],
+                         default='ok')
             return
 
         self.open_project(project_path)
 
     def open_project(self, project_path):
-        """
-        Open MFiX Project
-        """
-
+        """Open MFiX Project"""
         if os.path.isdir(project_path):
             project_dir = project_path
-            project_path = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
+            project_file = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
         else:
             project_dir = os.path.dirname(project_path)
+            project_file = project_path
 
-        if not os.path.exists(project_path):
+
+        if not os.path.exists(project_file):
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('%s does not exist' % project_file),
+                         buttons=['ok'],
+                         default='ok')
             return
 
         self.print_internal("Loading %s" % project_path, color='blue')
-        self.project.load_mfix_dat(project_path)
-        self.print_internal("Loaded %s" % project_path, color='blue')
+        try:
+            self.project.load_mfix_dat(project_path)
+            self.print_internal("Loaded %s" % project_path, color='blue')
+        except:
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('Failed to load %s' % project_file),
+                         buttons=['ok'],
+                         default='ok')
+            return
 
         if hasattr(self.project, 'run_name'):
             name = self.project.run_name.value
@@ -1092,21 +1156,21 @@ class MfixGui(QtWidgets.QMainWindow):
             name = name.replace(char, '_')
         runname_mfx = name + '.mfx'
 
-        if not project_path.endswith(runname_mfx):
-            self.message(title='Warning',
-                         icon='warning',
-                         text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
-                         buttons=['ok'],
-                         default='ok',
-            )
-            project_path = os.path.join(project_dir, runname_mfx)
-            self.project.writeDatFile(project_path)
+        if False: # Disable this for now - cgw
+            if not project_path.endswith(runname_mfx):
+                self.message(title='Warning',
+                             icon='warning',
+                             text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
+                             buttons=['ok'],
+                             default='ok',
+                )
+                project_file = os.path.join(project_dir, runname_mfx)
+                self.project.writeDatFile(project_file)
 
-        # project_dir = os.path.dirname(project_path)
-        self.settings.setValue('project_path', project_path)
-        self.setWindowTitle('MFIX - %s' % project_path)
+        self.settings.setValue('project_file', project_file)
+        self.setWindowTitle('MFIX - %s' % project_file)
 
-        # read the file
+        # read the file (again)
         with open(project_path, 'r') as mfx:
             src = mfx.read()
         self.ui.mfix_dat_source.setPlainText(src)
@@ -1177,11 +1241,11 @@ class MonitorExecutablesThread(QThread):
         self.output = self.get_output()
 
     def get_output(self):
-        """ returns a dict mapping full [mfix|pymfix] paths
+        """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
 
         def mfix_print_flags(mfix_exe, cache=self.cache):
-            """ Determine mfix configuration by running mfix --print-flags.  Cache results"""
+            """Determine mfix configuration by running mfix --print-flags.  Cache results"""
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
             except OSError:
@@ -1216,11 +1280,9 @@ class MonitorExecutablesThread(QThread):
             dirs.extend(os.path.join(build_dir, subdir)
                          for subdir in os.listdir(build_dir))
         # Check run_dir
-        project_path = self.parent.get_project_path()
-        if project_path:
-            run_dir = os.path.dirname(project_path)
-            if run_dir:
-                dirs.append(run_dir)
+        project_dir = self.parent.get_project_dir()
+        if project_dir:
+            dirs.append(project_dir)
 
         # Now look for mfix/pymfix in these dirs
         for dir in dirs:
@@ -1381,12 +1443,12 @@ class ProjectManager(Project):
 
             # report any errors
             for w in errlist + ws:
-                self.parent.print_internal("Warning: %s" % w.message, color='red')
+                self.parent.print_internal("Warning: cannot set %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)
             if n_errs:
-                self.parent.print_internal("Warning: %s" % plural(n_errs, "error"), color='red')
+                self.parent.print_internal("Warning: %s loading project" % plural(n_errs, "error"), color='red')
             else:
-                self.parent.print_internal("0 errors", color='darkgreen')
+                self.parent.print_internal("0 errors loading project", color='darkgreen')
 
     def register_widget(self, widget, keys=None, args=None):
         '''
@@ -1421,15 +1483,15 @@ if __name__ == '__main__':
     mfix = MfixGui(qapp)
     mfix.show()
     # --- print welcome message
-    mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
+    #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
     if len(sys.argv) > 1:
         mfix.open_project(sys.argv[-1])
     else:
         # autoload last project
-        project_path = mfix.get_project_path()
-        if project_path:
-            mfix.open_project(project_path)
+        project_file = mfix.get_project_file()
+        if project_file:
+            mfix.open_project(project_file)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
