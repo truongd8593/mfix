@@ -714,25 +714,14 @@ class MfixGui(QtWidgets.QMainWindow):
                     widget.dtype = str
 
     def get_project_file(self):
-        "get the current project directory"
+        "get the current project filename, including full path"
         last = self.settings.value('project_file')
-        if last:
-            return last
-        else:
-            return None
+        return last if last else None
 
     def get_project_dir(self):
         "get the current project directory"
         file = self.get_project_file()
         return os.path.dirname(file) if file else None
-
-    def get_project_file(self):
-        "get the current project filename, including full path"
-        last = self.settings.value('project_dir')
-        if last:
-            return last
-        else:
-            return None
 
     def mode_changed(self, mode):
         "change the Modeler, Workflow, Developer tab"
@@ -1293,7 +1282,7 @@ class MonitorExecutablesThread(QThread):
         if project_dir:
             dirs.add(project_dir)
         # Check mfix home
-        dirs.add(get_mfix_home())
+        dirs.add(self.mfix_home)
 
         # Now look for mfix/pymfix in these dirs
         for dir in dirs:
