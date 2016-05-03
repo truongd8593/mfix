@@ -244,6 +244,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.clear_output_button.clicked.connect(self.clear_output)
         self.ui.run.mfix_executables.activated.connect(self.update_run)
 
+        # Print welcome message.  Do this early so it appears before any
+        # other messages that may occur during this __init__
+        self.print_welcome()
+
         # --- Threads ---
         self.run_thread = MfixThread(self)
         self.clear_thread = MfixThread(self)
@@ -302,8 +306,9 @@ class MfixGui(QtWidgets.QMainWindow):
         self.mode_changed('modeler')
         self.change_pane('geometry')
 
-        # --- print welcome message
-        self.print_internal("MFiX-GUI version %s" % self.get_version())
+    def print_welcome(self):
+        self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov", color='blue')
+        self.print_internal("MFIX-GUI version %s" % self.get_version(), color='blue')
 
     def get_version(self):
         return "0.2x" # placeholder
@@ -588,7 +593,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
         #     # see http://stackoverflow.com/questions/26759623/why-is-the-return-of-qtgui-qvalidator-validate-so-inconsistent-robust-way-to
         # lineedit.setValidator(FluidSpeciesNameValidator())
-
 
 
     def __setup_simple_keyword_widgets(self):
