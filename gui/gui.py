@@ -920,6 +920,9 @@ class MfixGui(QtWidgets.QMainWindow):
         infotext = 'extended information text'
         detailedtext = 'Some details'
         '''
+
+        # TODO: tie this in with logging & print_internal
+
         msgBox = QtWidgets.QMessageBox(self)
         msgBox.setWindowTitle(title)
 
@@ -1022,7 +1025,7 @@ class MfixGui(QtWidgets.QMainWindow):
             mfix_exe = 'mpirun -np {} {} NODESI={} NODESJ={} NODESK={}'.format(
                 total, mfix_exe, nodesi, nodesj, nodesk)
 
-        run_cmd = '{} -f {}'.format(mfix_exe, self.get_mfix_dat())
+        run_cmd = '{} -f {}'.format(mfix_exe, self.get_project_file())
         self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
 
     def update_residuals(self):
@@ -1099,7 +1102,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if not self.check_writable(project_dir):
             return
 
-        shutil.copyfile('mfix.dat.template',project_path)
+        shutil.copyfile('mfix.dat.template', project_path)
 
         self.open_project(project_file)
 
@@ -1109,9 +1112,11 @@ class MfixGui(QtWidgets.QMainWindow):
             self, 'Open Project Directory', project_dir)
 
         if len(project_path) < 1 or  not os.path.exists(project_path):
+            msg = 'Cannot load %s' % project_path
+            self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
                          icon='warning',
-                         text=('Cannot load %s' % project_path),
+                         text=msg,
                          buttons=['ok'],
                          default='ok')
             return
@@ -1136,16 +1141,19 @@ class MfixGui(QtWidgets.QMainWindow):
                          default='ok')
             return
 
-        self.print_internal("Loading %s" % project_path, color='blue')
+        self.print_internal("Loading %s" % project_file, color='blue')
         try:
-            self.project.load_mfix_dat(project_path)
-            self.print_internal("Loaded %s" % project_path, color='blue')
+            self.project.load_project_file(project_file)
+            #self.print_internal("Loaded %s" % project_file, color='blue')
         except:
+            msg = 'Failed to load %s' % project_file
+            self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
                          icon='warning',
                          text=('Failed to load %s' % project_file),
                          buttons=['ok'],
                          default='ok')
+
             return
 
         if hasattr(self.project, 'run_name'):
@@ -1171,7 +1179,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.setWindowTitle('MFIX - %s' % project_file)
 
         # read the file (again)
-        with open(project_path, 'r') as mfx:
+        with open(project_file, 'r') as mfx:
             src = mfx.read()
         self.ui.mfix_dat_source.setPlainText(src)
         # self.mode_changed('developer')
@@ -1270,19 +1278,22 @@ class MonitorExecutablesThread(QThread):
         # Check system PATH dirs first
         PATH = os.environ.get("PATH")
         if PATH:
-            dirs =  PATH.split(os.pathsep)
+            dirs = set(PATH.split(os.pathsep))
         else:
-            dirs = []
+            dirs = set()
 
         # Look in subdirs of build dir
         build_dir = os.path.join(self.mfix_home,'build')
         if os.path.exists(build_dir):
-            dirs.extend(os.path.join(build_dir, subdir)
-                         for subdir in os.listdir(build_dir))
+            for subdir in os.listdir(build_dir):
+                dirs.add(os.path.join(build_dir, subdir))
+
         # Check run_dir
         project_dir = self.parent.get_project_dir()
         if project_dir:
-            dirs.append(project_dir)
+            dirs.add(project_dir)
+        # Check mfix home
+        dirs.add(get_mfix_home())
 
         # Now look for mfix/pymfix in these dirs
         for dir in dirs:
@@ -1424,12 +1435,12 @@ class ProjectManager(Project):
                                    font="Monospace", color='red' if warn else None)
 
 
-    def load_mfix_dat(self, mfixDat):
+    def load_project_file(self, project_file):
         """Load an MFiX project file."""
         n_errs = 0
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
-            self.parsemfixdat(fname=mfixDat)
+            self.parsemfixdat(fname=project_file)
             # emit loaded keys
             # some of these changes may cause new keywords to be instantiated,
             # so iterate over a copy of the list, which may change
@@ -1446,9 +1457,11 @@ class ProjectManager(Project):
                 self.parent.print_internal("Warning: cannot set %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)
             if n_errs:
-                self.parent.print_internal("Warning: %s loading project" % plural(n_errs, "error"), color='red')
+                self.parent.print_internal("Warning: %s loading %s" %
+                                           (plural(n_errs, "error") , project_file),
+                                           color='red')
             else:
-                self.parent.print_internal("0 errors loading project", color='darkgreen')
+                self.parent.print_internal("Loaded %s, 0 errors" % project_file, color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
         '''
