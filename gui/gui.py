@@ -27,7 +27,9 @@ from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings,
                          Qt)
 
-# TODO: add pyside?
+# TODO: add pyside? There is an issue to add this to qtpy:
+# https://github.com/spyder-ide/qtpy/issues/16
+# TODO: cache ui file to a py file, use the ui file if newer, else py file
 try:
     from PyQt5 import uic
 except ImportError:
@@ -47,9 +49,10 @@ def debug_trace():
 from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
+from widgets.regions import RegionsWidget
 from tools.mfixproject import Project, Keyword
 from tools.general import (make_callback, get_icon, get_unique_string,
-                           widget_iter, set_script_directory)
+                           widget_iter, set_script_directory, CellColor)
 from tools.namelistparser import buildKeywordDoc
 
 # look for pyqtnode
@@ -113,8 +116,7 @@ class MfixGui(QtWidgets.QMainWindow):
         uic.loadUi(os.path.join('uifiles', 'mesh.ui'), self.ui.mesh)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
 
-        self.ui.regions = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'regions.ui'), self.ui.regions)
+        self.ui.regions = RegionsWidget()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
         self.ui.model_setup = QtWidgets.QWidget()
@@ -265,8 +267,6 @@ class MfixGui(QtWidgets.QMainWindow):
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
         self.__setup_other_widgets()  # refactor/rename - cgw
-
-        self.__setup_regions()
 
         # --- vtk setup ---
         self.__setup_vtk_widget()
@@ -452,55 +452,15 @@ class MfixGui(QtWidgets.QMainWindow):
                                       'zmin', 'zlength', 'imax', 'jmax',
                                       'kmax'])
 
+        # add reference to other widgets
+        self.ui.regions.vtkwidget = self.vtkwidget
+
     def __setup_workflow_widget(self):
 
         self.nodeChart = NodeWidget(showtoolbar=False)
         # Build default node library
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
-
-    def __setup_regions(self):
-        " setup the region connections etc."
-
-        regions = self.ui.regions
-        regions.combobox_regions_shape.addItems(['box', 'sphere',
-                                                         'point'])
-
-        regions.toolbutton_region_add.pressed.connect(
-            self.new_region)
-        regions.toolbutton_region_delete.pressed.connect(
-            self.delete_region)
-        regions.toolbutton_region_copy.pressed.connect(
-            self.copy_region)
-
-        tablewidget = regions.tablewidget_regions
-        tablewidget.dtype = OrderedDict
-        tablewidget._setModel()
-        tablewidget.set_columns(['shape', 'from', 'to'])
-        tablewidget.show_vertical_header(True)
-        tablewidget.set_value(OrderedDict())
-        tablewidget.auto_update_rows(True)
-        tablewidget.set_selection_model('cell', multi=False)
-        tablewidget.new_selection.connect(self.update_region_parameters)
-
-        for widget in widget_iter(self.ui.regions.groupbox_region_parameters):
-            if hasattr(widget, 'value_updated'):
-                widget.value_updated.connect(self.region_value_changed)
-
-                # lineedit_regions_to_x
-                name = str(widget.objectName())
-                if '_to_' in name:
-                    widget.key = '_'.join(name.split('_')[-2:])
-                    widget.dtype = float
-                elif '_from_' in str(widget.objectName()):
-                    widget.key = '_'.join(name.split('_')[-2:])
-                    widget.dtype = float
-                elif 'name' in name:
-                    widget.key = 'name'
-                    widget.dtype = str
-                elif 'shape' in name:
-                    widget.key = 'shape'
-                    widget.dtype = str
 
     def get_project_dir(self):
         " get the current project directory "
@@ -951,119 +911,6 @@ class MfixGui(QtWidgets.QMainWindow):
         # lineedit.insert("New")
         # lineedit.selectAll()
         # lineedit.setFocus()
-
-    # --- region methods ---
-    def new_region(self):
-        'create a new region'
-
-        data = self.ui.regions.tablewidget_regions.value
-
-        name = get_unique_string('new', list(data.keys()))
-
-        data[name] = {'shape': 'box', 'from': [0, 0, 0], 'to': [0, 0, 0]}
-
-        self.vtkwidget.new_region(name, data[name])
-
-        self.ui.regions.tablewidget_regions.set_value(data)
-        self.ui.regions.tablewidget_regions.fit_to_contents()
-
-    def delete_region(self):
-        'remove the currently selected region'
-
-        row = self.ui.regions.tablewidget_regions.current_row()
-
-        if row >= 0:
-            data = self.ui.regions.tablewidget_regions.value
-            name = list(data.keys())[row]
-            data.pop(name)
-            self.ui.regions.tablewidget_regions.set_value(data)
-            self.vtkwidget.delete_region(name)
-
-            if data:
-                self.ui.regions.groupbox_region_parameters.setEnabled(True)
-            else:
-                self.ui.regions.groupbox_region_parameters.setEnabled(False)
-
-    def copy_region(self):
-        'copy the currently selected region'
-
-        row = self.ui.regions.tablewidget_regions.current_row()
-
-        if row >= 0:
-            data = self.ui.regions.tablewidget_regions.value
-            name = list(data.keys())[row]
-            new_region = copy.deepcopy(data[name])
-
-            new_name = get_unique_string(name, list(data.keys()))
-            data[new_name] = new_region
-
-            self.ui.regions.tablewidget_regions.set_value(data)
-
-            self.vtkwidget.new_region(new_name, data[new_name])
-
-    def update_region_parameters(self):
-        'a new region was selected, update region widgets'
-
-        row = self.ui.regions.tablewidget_regions.current_row()
-
-        if row >= 0:
-            self.ui.regions.groupbox_region_parameters.setEnabled(True)
-
-            data = self.ui.regions.tablewidget_regions.value
-            name = list(data.keys())[row]
-
-            self.ui.regions.lineedit_regions_name.updateValue(None, name)
-            self.ui.regions.combobox_regions_shape.updateValue(
-                None,
-                data[name]['shape'])
-
-            for widget, value in zip([self.ui.regions.lineedit_regions_from_x,
-                                      self.ui.regions.lineedit_regions_from_y,
-                                      self.ui.regions.lineedit_regions_from_z],
-                                     data[name]['from']
-                                     ):
-                widget.updateValue(None, value)
-
-            for widget, value in zip([self.ui.regions.lineedit_regions_to_x,
-                                      self.ui.regions.lineedit_regions_to_y,
-                                      self.ui.regions.lineedit_regions_to_z],
-                                     data[name]['to']
-                                     ):
-                widget.updateValue(None, value)
-
-            self.ui.regions.tablewidget_regions.fit_to_contents()
-
-        else:
-            self.ui.regions.groupbox_region_parameters.setEnabled(False)
-
-    def region_value_changed(self, widget, value, args):
-
-        row = self.ui.regions.tablewidget_regions.current_row()
-        data = self.ui.regions.tablewidget_regions.value
-        name = list(data.keys())[row]
-        key = value.keys()[0]
-
-        if 'to' in key or 'from' in key:
-            item = key.split('_')
-            index = ['x', 'y', 'z'].index(item[1])
-            data[name][item[0]][index] = value.values()[0]
-
-        elif 'name' in key:
-
-            new_name = get_unique_string(value.values()[0], list(data.keys()))
-            data = OrderedDict([(new_name, v) if k == name else (k, v) for
-                                k, v in data.items()])
-
-            self.vtkwidget.change_region_name(name, new_name)
-
-        elif 'shape' in key:
-            data[name]['shape'] = value.values()[0]
-
-            self.vtkwidget.change_region_shape(name, data[name])
-
-        self.vtkwidget.update_region(name, data[name])
-
-        self.ui.regions.tablewidget_regions.set_value(data)
 
 
 # --- Threads ---

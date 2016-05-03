@@ -13,7 +13,7 @@ import sys
 import locale
 
 # import qt
-from qtpy import QtGui
+from qtpy import QtGui, QtWidgets
 
 SCRIPT_DIRECTORY = './'
 PY2 = sys.version[0] == '2'
@@ -281,3 +281,32 @@ def to_unicode_from_fs(string):
             else:
                 return unic
     return string
+
+
+class CellColor(object):
+    """
+    A class to store color information and return '' if str or print is called
+    on it. This is used to store colors in cells of a table.
+    """
+    def __init__(self, color=[1, 0, 0], text=''):
+
+        self.color = color
+        self.text = text
+
+    @property
+    def color_int(self):
+        return [255*c for c in self.color]
+
+    @property
+    def color_float(self):
+        return self.color
+        
+    @property
+    def qcolor(self):
+        return QtWidgets.QColor(*self.color_int)
+
+    def __repr__(self):
+        return self.text
+
+
+

@@ -6,6 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals
 
 import re
 from collections import OrderedDict
+from qtpy import QtWidgets, QtCore
 
 # optional imports
 try:
@@ -19,7 +20,6 @@ except ImportError:
     pd = None
 
 # local imports
-from qtpy import QtWidgets, QtCore
 from tools.mfixproject import Keyword, Equation
 from tools.general import to_text_string
 
@@ -404,6 +404,22 @@ class Table(QtWidgets.QTableView, CommonBase):
         else:
             self.verticalHeader().show()
 
+    @property
+    def column_colors(self):
+        return self.delegate.column_color_dict
+
+    @column_colors.setter
+    def column_colors(self, color_dict):
+        self.delegate.column_color_dict = color_dict
+
+    @property
+    def row_colors(self):
+        return self.delegate.row_color_dict
+
+    @row_colors.setter
+    def row_colors(self, color_dict):
+        self.delegate.row_color_dict = color_dict
+
     def auto_update_rows(self, b):
         self.model().update_rows = b
 
@@ -421,8 +437,8 @@ class Table(QtWidgets.QTableView, CommonBase):
 
     def set_delegate(self, col, row):
 
-        self.delegate = CustomDelegate(columnDict=col,
-                                       rowDict=row)
+        self.delegate = CustomDelegate(column_dict=col,
+                                       row_dict=row)
         self.setItemDelegate(self.delegate)
 
     def fit_to_contents(self):
@@ -478,23 +494,26 @@ class Table(QtWidgets.QTableView, CommonBase):
 
 
 class CustomDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, columnDict={}, rowDict={}):
+    def __init__(self, column_dict={}, row_dict={}, column_color_dict={},
+                 row_color_dict={}):
         QtWidgets.QStyledItemDelegate.__init__(self)
 
-        self.columnDict = columnDict
-        self.rowDict = rowDict
+        self.column_dict = column_dict
+        self.row_dict = row_dict
+        self.row_color_dict = row_color_dict
+        self.column_color_dict = column_color_dict
 
-    def setColumnWidgets(self, columnW):
-        self.columnDict.update(columnW)
+    def set_column_widgets(self, column_dict):
+        self.column_dict.update(column_dict)
 
-    def setRowWidgets(self, rowW):
-        self.rowDict.update(rowW)
+    def set_row_widgets(self, row_dict):
+        self.row_dict.update(row_dict)
 
     def createEditor(self, parent, option, index):
-        if self.columnDict and index.column() in self.columnDict:
-            widgetData = self.columnDict[index.column()]
-        elif self.rowDict and index.row() in self.rowDict:
-            widgetData = self.rowDict[index.row()]
+        if self.column_dict and index.column() in self.column_dict:
+            widgetData = self.column_dict[index.column()]
+        elif self.row_dict and index.row() in self.row_dict:
+            widgetData = self.row_dict[index.row()]
         else:
             widgetData = {'widget': 'lineedit'}
 
@@ -570,6 +589,20 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         return False
 
+    def paint(self, painter, options, index):
+
+        color = None
+        if self.column_color_dict and index.column() in self.column_color_dict:
+            color = self.column_color_dict[index.column()]
+        elif self.row_color_dict and index.row() in self.row_color_dict:
+            color = self.row_color_dict[index.row()]
+        elif hasattr(index.data(QtCore.Qt.EditRole), 'qcolor'):
+            color = index.data(QtCore.Qt.EditRole).qcolor
+        if color:
+            painter.fillRect(options.rect, QtWidgets.QBrush(color))
+
+        QtWidgets.QStyledItemDelegate.paint(self, painter, options, index)
+
 
 class DictTableModel(QtCore.QAbstractTableModel):
     '''
@@ -638,18 +671,23 @@ class DictTableModel(QtCore.QAbstractTableModel):
             self.setData(col=col, row=i, value=val)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
+        'return the row count'
         if self.datatable.keys():
             return len(self.datatable.keys())
         else:
             return 0
 
     def columnCount(self, parent=QtCore.QModelIndex()):
-        maxKeys = 0
+        'return the column count'
 
-        for value in self.datatable.values():
-            maxKeys = max(maxKeys, len(value))
+        if self._columns:
+            cols = len(self._columns)
+        else:
+            cols = 0
+            for value in self.datatable.values():
+                cols = max(cols, len(value))
 
-        return maxKeys
+        return cols
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         i = index.row()

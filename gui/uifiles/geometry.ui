@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>490</width>
+    <width>420</width>
     <height>556</height>
    </rect>
   </property>
@@ -14,16 +14,7 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <property name="leftMargin">
-    <number>5</number>
-   </property>
-   <property name="topMargin">
-    <number>5</number>
-   </property>
-   <property name="rightMargin">
-    <number>5</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>5</number>
    </property>
    <item>
@@ -38,16 +29,7 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
@@ -256,16 +238,7 @@ background-color: transparent;
         <widget class="QWidget" name="none"/>
         <widget class="QWidget" name="sphere">
          <layout class="QGridLayout" name="gridLayout_3">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -345,16 +318,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -394,16 +358,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -422,6 +377,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="box">
          <layout class="QGridLayout" name="gridLayout_6">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="2" column="1">
            <widget class="QFrame" name="frame_15">
             <property name="frameShape">
@@ -434,16 +395,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -503,16 +455,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -549,16 +492,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -577,16 +511,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="cone">
          <layout class="QGridLayout" name="gridLayout_5">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -676,16 +601,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -712,16 +628,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -758,16 +665,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -786,16 +684,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="cylinder">
          <layout class="QGridLayout" name="gridLayout_4">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -875,16 +764,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -921,16 +801,7 @@ background-color: transparent;
              <property name="spacing">
               <number>5</number>
              </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
+             <property name="margin">
               <number>0</number>
              </property>
              <item>
@@ -949,16 +820,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="torus">
          <layout class="QGridLayout" name="gridLayout_8">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1045,16 +907,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="boy">
          <layout class="QGridLayout" name="gridLayout_9">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1128,13 +981,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="conic_spiral">
          <layout class="QGridLayout" name="gridLayout_10">
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1247,6 +1094,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="cross_cap">
          <layout class="QGridLayout" name="gridLayout_33">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_79">
             <property name="text">
@@ -1302,16 +1155,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="dini">
          <layout class="QGridLayout" name="gridLayout_37">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1398,16 +1242,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="ellipsoid">
          <layout class="QGridLayout" name="gridLayout_38">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1487,16 +1322,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="enneper">
          <layout class="QGridLayout" name="gridLayout_39">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1557,16 +1383,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="figure_8_klein">
          <layout class="QGridLayout" name="gridLayout_40">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1640,16 +1457,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="klein">
          <layout class="QGridLayout" name="gridLayout_41">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1710,16 +1518,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="mobius">
          <layout class="QGridLayout" name="gridLayout_42">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1793,16 +1592,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="random_hills">
          <layout class="QGridLayout" name="gridLayout_43">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1961,16 +1751,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="roman">
          <layout class="QGridLayout" name="gridLayout_44">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -2044,16 +1825,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="super_ellipsoid">
          <layout class="QGridLayout" name="gridLayout_45">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -2159,16 +1931,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="super_toroid">
          <layout class="QGridLayout" name="gridLayout_46">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -2300,16 +2063,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="stl">
          <layout class="QGridLayout" name="gridLayout_11">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -2511,6 +2265,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="clean">
          <layout class="QGridLayout" name="gridLayout_26">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkbox_clean_lines_to_points">
             <property name="text">
@@ -2549,16 +2309,7 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="fill_holes">
          <layout class="QGridLayout" name="gridLayout_24">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -2594,6 +2345,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="triangle">
          <layout class="QGridLayout" name="gridLayout_27">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkbox_traingle_process_vertices">
             <property name="text">
@@ -2631,6 +2388,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="decimate">
          <layout class="QGridLayout" name="gridLayout_28">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_59">
             <property name="text">
@@ -2682,6 +2445,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="quadric_decimation">
          <layout class="QGridLayout" name="gridLayout_29">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_60">
             <property name="text">
@@ -2712,6 +2481,12 @@ background-color: transparent;
         </widget>
         <widget class="QWidget" name="quadric_clustering">
          <layout class="QGridLayout" name="gridLayout_30">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_61">
             <property name="text">
@@ -2753,8 +2528,185 @@ background-color: transparent;
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="linear_subdivision"/>
+        <widget class="QWidget" name="loop_subdivision"/>
+        <widget class="QWidget" name="butterfly_subdivision"/>
+        <widget class="QWidget" name="smooth">
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Iterations</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineedit_iterations"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Relaxation Factor</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineedit_relaxation"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Edge angle</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="lineedit_edgeangle"/>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_boundarysmoothing">
+            <property name="text">
+             <string>Smooth boundary</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_featureedgesmoothing">
+            <property name="text">
+             <string>Smooth sharp internal edges</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Feature Angle</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="lineedit_featureangle"/>
+          </item>
+          <item row="6" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>137</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="windowed_sinc">
+         <layout class="QGridLayout" name="gridLayout">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="lineedit_passband"/>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_normalize">
+            <property name="text">
+             <string>Normalize coordinates</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Passband value</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineedit_windowed_sinc_iterations"/>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_windowed_sinc_featureedgesmoothing">
+            <property name="text">
+             <string>Smooth sharp internal edges</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Iterations</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineedit_windowed_sinc_edgeangle"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Edge angle</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="lineedit_windowed_sinc_featureangle"/>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Feature Angle</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_windowed_sinc_boundarysmoothing">
+            <property name="text">
+             <string>Smooth boundary</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkbox_manifoldsmoothing">
+            <property name="text">
+             <string>Smooth non-manifold vertices</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
         <widget class="QWidget" name="boolean">
          <layout class="QGridLayout" name="gridLayout_31">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>5</number>
+          </property>
           <item row="0" column="0">
            <widget class="QPushButton" name="pushbutton_boolean_flip_order">
             <property name="text">

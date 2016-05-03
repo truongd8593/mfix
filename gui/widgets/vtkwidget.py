@@ -161,12 +161,17 @@ class VtkWidget(QtWidgets.QWidget):
             ])
 
         self.filterdict = OrderedDict([
-            ('clean',              vtk.vtkCleanPolyData),
-            ('fill_holes',         vtk.vtkFillHolesFilter),
-            ('triangle',           vtk.vtkTriangleFilter),
-            ('decimate',           vtk.vtkDecimatePro),
-            ('quadric_decimation', vtk.vtkQuadricDecimation),
-            ('quadric_clustering', vtk.vtkQuadricClustering)
+            ('clean',                 vtk.vtkCleanPolyData),
+            ('fill_holes',            vtk.vtkFillHolesFilter),
+            ('triangle',              vtk.vtkTriangleFilter),
+            ('decimate',              vtk.vtkDecimatePro),
+            ('quadric_decimation',    vtk.vtkQuadricDecimation),
+            ('quadric_clustering',    vtk.vtkQuadricClustering),
+            ('linear_subdivision',    vtk.vtkLinearSubdivisionFilter),
+            ('loop_subdivision',      vtk.vtkLoopSubdivisionFilter),
+            ('butterfly_subdivision', vtk.vtkButterflySubdivisionFilter),
+            ('smooth',                vtk.vtkSmoothPolyDataFilter),
+            ('windowed_sinc',         vtk.vtkWindowedSincPolyDataFilter),
         ])
 
         self.rectilinear_grid = vtk.vtkRectilinearGrid()
@@ -207,7 +212,7 @@ class VtkWidget(QtWidgets.QWidget):
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
         self.vtkrenderer.GradientBackgroundOn()
-        self.vtkrenderer.SetBackground(.4, .4, .4)
+        self.vtkrenderer.SetBackground(0.4, 0.4, 0.4)
         self.vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
 
         self.vtkRenderWindow = self.vtkWindowWidget.GetRenderWindow()
@@ -255,6 +260,18 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkrenderer.ResetCamera()
 
+        # --- balloon widget ---
+        # there seems to be issues with this widget, text doesn't show and the
+        # interactor behaves differently...
+#        self.balloon_rep = vtk.vtkBalloonRepresentation()
+#        self.balloon_rep.SetBalloonLayoutToImageRight()
+#        self.balloon_rep.GetTextProperty().SetColor(1,1,1)
+#
+#        self.balloon_widget = vtk.vtkBalloonWidget()
+#        self.balloon_widget.SetInteractor(self.vtkiren)
+#        self.balloon_widget.SetRepresentation(self.balloon_rep)
+#        self.balloon_widget.EnabledOn()
+
         # --- setup vtk mappers/actors ---
         self.mesh = None
         self.mesh_mapper = vtk.vtkDataSetMapper()
@@ -289,7 +306,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         # --- geometry button ---
         self.add_geometry_menu = QtWidgets.QMenu(self)
-        self.ui.geometry.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
+        self.ui.geometry.toolbutton_add_geometry.setMenu(
+            self.add_geometry_menu)
 
         action = QtWidgets.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
@@ -307,7 +325,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         for geo in self.parametricdict.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '),
-                                   self.add_geometry_menu)
+                                       self.add_geometry_menu)
             action.triggered.connect(
                 make_callback(self.add_parametric, geo))
             self.add_geometry_menu.addAction(action)
@@ -318,7 +336,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         for geo in self.filterdict.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '),
-                                   self.add_filter_menu)
+                                       self.add_filter_menu)
             action.triggered.connect(
                 make_callback(self.add_filter, geo))
             self.add_filter_menu.addAction(action)
@@ -335,7 +353,8 @@ class VtkWidget(QtWidgets.QWidget):
                 make_callback(self.boolean_operation, key))
 
         # connect parameter widgets
-        for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
+        for widget in widget_iter(
+                self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtWidgets.QLineEdit):
                 widget.editingFinished.connect(
                     make_callback(self.parameter_edited, widget))
@@ -391,13 +410,14 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.visible_menu = QtWidgets.QMenu(self)
         self.toolbutton_visible.setMenu(self.visible_menu)
-        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.toolbutton_visible.setPopupMode(
+            QtWidgets.QToolButton.InstantPopup)
 
         # --- visual representation menu ---
         layout = QtWidgets.QGridLayout(self.visible_menu)
         layout.setContentsMargins(5, 5, 5, 5)
         for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
-                                 'Regions',]):
+                                 'Regions', ]):
 
             # tool button
             toolbutton = QtWidgets.QToolButton()
@@ -492,6 +512,7 @@ class VtkWidget(QtWidgets.QWidget):
         if len(current_selection) == 1 and \
                 self.ui.geometry.treeWidgetGeometry.indexOfTopLevelItem(
                 current_selection[0]) > -1:
+
             self.ui.geometry.toolbutton_remove_geometry.setEnabled(True)
             self.ui.geometry.toolbutton_add_filter.setEnabled(True)
             self.ui.geometry.toolbutton_copy_geometry.setEnabled(True)
@@ -506,7 +527,8 @@ class VtkWidget(QtWidgets.QWidget):
             current_index = 0
             for i in range(
                     self.ui.geometry.stackedWidgetGeometryDetails.count()):
-                widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(i)
+                widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(
+                                                                             i)
                 if str(widget.objectName()) == self.geometrydict[text]['type']:
                     current_index = i
                     break
@@ -654,7 +676,7 @@ class VtkWidget(QtWidgets.QWidget):
             if isinstance(widget, QtWidgets.QLineEdit):
                 string = str(widget.text())
                 if any([s in parameter for s in ['divisions', 'resolution',
-                                                 'nhills']]):
+                                                 'nhills', 'iterations']]):
                     value = int(string)
                 else:
                     value = float(string)
@@ -1198,6 +1220,50 @@ class VtkWidget(QtWidgets.QWidget):
                 vtkfilter.AutoAdjustNumberOfDivisionsOn()
             else:
                 vtkfilter.AutoAdjustNumberOfDivisionsOff()
+        elif filtertype == 'smooth':
+            vtkfilter.SetEdgeAngle(self.geometrydict[name]['edgeangle'])
+            vtkfilter.SetFeatureAngle(self.geometrydict[name]['featureangle'])
+            vtkfilter.SetNumberOfIterations(
+                self.geometrydict[name]['iterations'])
+            vtkfilter.SetRelaxationFactor(
+                self.geometrydict[name]['relaxation'])
+
+            if not self.geometrydict[name]['featureedgesmoothing']:
+                vtkfilter.FeatureEdgeSmoothingOn()
+            else:
+                vtkfilter.FeatureEdgeSmoothingOff()
+
+            if self.geometrydict[name]['boundarysmoothing']:
+                vtkfilter.BoundarySmoothingOn()
+            else:
+                vtkfilter.BoundarySmoothingOff()
+
+        elif filtertype == 'windowed_sinc':
+            vtkfilter.SetEdgeAngle(self.geometrydict[name]['edgeangle'])
+            vtkfilter.SetFeatureAngle(self.geometrydict[name]['featureangle'])
+            vtkfilter.SetNumberOfIterations(
+                self.geometrydict[name]['iterations'])
+            vtkfilter.SetPassBand(self.geometrydict[name]['passband'])
+
+            if not self.geometrydict[name]['featureedgesmoothing']:
+                vtkfilter.FeatureEdgeSmoothingOn()
+            else:
+                vtkfilter.FeatureEdgeSmoothingOff()
+
+            if self.geometrydict[name]['boundarysmoothing']:
+                vtkfilter.BoundarySmoothingOn()
+            else:
+                vtkfilter.BoundarySmoothingOff()
+
+            if self.geometrydict[name]['manifoldsmoothing']:
+                vtkfilter.NonManifoldSmoothingOn()
+            else:
+                vtkfilter.NonManifoldSmoothingOff()
+
+            if self.geometrydict[name]['normalize']:
+                vtkfilter.NormalizeCoordinatesOn()
+            else:
+                vtkfilter.NormalizeCoordinatesOff()
 
         vtkfilter.Update()
 
@@ -1217,23 +1283,32 @@ class VtkWidget(QtWidgets.QWidget):
             vtkfilter = self.filterdict[filtertype]()
 
             self.geometrydict[name] = {
-                'type':                filtertype,
-                'filter':              vtkfilter,
-                'linestopoints':       True,
-                'polystolines':        True,
-                'stripstopolys':       True,
-                'maximumholesize':     1.0,
-                'processvertices':     True,
-                'processlines':        True,
-                'targetreduction':     0.2,
-                'preservetopology':    True,
-                'splitmesh':           True,
-                'deletevertices':      False,
-                'divisionsx':          10,
-                'divisionsy':          10,
-                'divisionsz':          10,
-                'autoadjustdivisions': True,
-                'visible':             True,
+                'type':                 filtertype,
+                'filter':               vtkfilter,
+                'linestopoints':        True,
+                'polystolines':         True,
+                'stripstopolys':        True,
+                'maximumholesize':      1.0,
+                'processvertices':      True,
+                'processlines':         True,
+                'targetreduction':      0.2,
+                'preservetopology':     True,
+                'splitmesh':            True,
+                'deletevertices':       False,
+                'divisionsx':           10,
+                'divisionsy':           10,
+                'divisionsz':           10,
+                'autoadjustdivisions':  True,
+                'visible':              True,
+                'relaxation':           0.01,
+                'iterations':           20,
+                'boundarysmoothing':    True,
+                'featureangle':         45.0,
+                'featureedgesmoothing': False,
+                'edgeangle':            15.0,
+                'passband':             0.1,
+                'manifoldsmoothing':    False,
+                'normalize':            False,
                 }
 
             inputdata = self.get_input_data(selection_text)
@@ -1369,7 +1444,7 @@ class VtkWidget(QtWidgets.QWidget):
         """
         Update the specified primitive
         """
-        primtype = self.region_dict[name]['shape']
+        primtype = self.region_dict[name]['type']
         props = self.region_dict[name]
 
         if 'source' in self.region_dict[name]:
@@ -1377,35 +1452,38 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             source = None
 
-        lengths = [float(to) - float(f) for
+        lengths = [abs(float(to) - float(f)) for
                    f, to in zip(props['from'], props['to'])]
-        center= [min(f) + l / 2.0 for f, l in
-                 zip(zip(props['from'], props['to']),
-                     lengths)]
+        center = [min(f) + l / 2.0 for f, l in
+                  zip(zip(props['from'], props['to']),
+                      lengths)]
 
         # update source
         if primtype == 'sphere':
             source.SetRadius(min(lengths)/2.0)
-
         elif primtype == 'point':
-            source.SetRadius(.1)
-
+            source.SetRadius(.01)
+            center = props['from']
         elif primtype == 'box':
             source.SetXLength(lengths[0])
             source.SetYLength(lengths[1])
             source.SetZLength(lengths[2])
-
-#        elif primtype == 'cone':
-#            source.SetRadius(props['radius'])
-#            source.SetHeight(props['height'])
-#            source.SetDirection(props['directionx'],
-#                                props['directiony'],
-#                                props['directionz'])
-#
-#        elif primtype == 'cylinder':
-#            source.SetRadius(props['radius'])
-#            source.SetHeight(props['height'])
-
+        elif primtype == 'XY-plane':
+            source.SetXLength(lengths[0])
+            source.SetYLength(lengths[1])
+            source.SetZLength(0)
+        elif primtype == 'XZ-plane':
+            source.SetXLength(lengths[0])
+            source.SetYLength(0)
+            source.SetZLength(lengths[2])
+        elif primtype == 'YZ-plane':
+            source.SetXLength(0)
+            source.SetYLength(lengths[1])
+            source.SetZLength(lengths[2])
+        elif primtype == 'STL':
+            source.SetXLength(lengths[0])
+            source.SetYLength(lengths[1])
+            source.SetZLength(lengths[2])
         else:
             return
 
@@ -1420,10 +1498,10 @@ class VtkWidget(QtWidgets.QWidget):
     def new_region(self, name, region):
         self.region_dict[name] = copy.deepcopy(region)
 
-        if region['shape'] == 'point':
+        if region['type'] == 'point':
             shape = 'sphere'
         else:
-            shape = region['shape']
+            shape = 'box'
 
         source = self.primitivedict[shape]()
         self.region_dict[name]['source'] = source
@@ -1436,14 +1514,16 @@ class VtkWidget(QtWidgets.QWidget):
         # Create an actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        self.set_region_actor_props(actor, name)
+        color = self.set_region_actor_props(actor, name)
 
         self.vtkrenderer.AddActor(actor)
+#        self.balloon_widget.AddBalloon(actor, name, None)
 
         self.vtkRenderWindow.Render()
 
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
+        return color
 
     def delete_region(self, name):
         region = self.region_dict.pop(name)
@@ -1454,15 +1534,15 @@ class VtkWidget(QtWidgets.QWidget):
         self.update_region_source(name)
         self.vtkRenderWindow.Render()
 
-    def change_region_shape(self, name, region):
-        " change the shape of a region "
+    def change_region_type(self, name, region):
+        " change the type of a region "
 
         self.region_dict[name].update(copy.deepcopy(region))
 
-        if region['shape'] == 'point':
+        if region['type'] == 'point':
             shape = 'sphere'
         else:
-            shape = region['shape']
+            shape = 'box'
 
         source = self.primitivedict[shape]()
         self.region_dict[name]['source'] = source
@@ -1476,8 +1556,8 @@ class VtkWidget(QtWidgets.QWidget):
     def change_region_name(self, old_name, new_name):
         " change the name of a region "
 
-        self.region_dict = [(new_name, v) if k == old_name else (k, v) for
-                            k, v in self.region_dict.items()]
+        region = self.region_dict.pop(old_name)
+        self.region_dict[new_name] = region
 
     def set_region_actor_props(self, actor, name):
         """ set the geometry proprerties to the others in the scene """
@@ -1494,11 +1574,14 @@ class VtkWidget(QtWidgets.QWidget):
             actor.GetProperty().SetRepresentationToWireframe()
             actor.GetProperty().SetOpacity(0.5)
 
-        actor.GetProperty().SetColor(*np.random.random(3))
+        color = np.random.random(3)
+        actor.GetProperty().SetColor(*color)
 
         # check visibility
         if not self.regions_visible:
             actor.VisibilityOff()
+
+        return color
 
     # --- output files ---
     def export_stl(self, file_name):
