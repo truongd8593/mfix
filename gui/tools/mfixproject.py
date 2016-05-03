@@ -700,8 +700,8 @@ class Project(object):
             self._parsemfixdat(StringIO(self.dat_file))
             return
 
-    def parseKeywordLine(self, text):
-        matches = self.re_keyValue.findall(text)
+    def parseKeywordLine(self, line):
+        matches = self.re_keyValue.findall(line)
         if matches:
             for match in matches:
                 # match could be: [keyword, args, value,
@@ -740,7 +740,7 @@ class Project(object):
                     vals = shlex.split(valString.strip())
                 except ValueError:
                     if 'description' in key:
-                        vals = [shlex.split(text.strip())[-1]]
+                        vals = [shlex.split(line.strip())[-1]]
                     else:
                         vals = []
 
@@ -790,7 +790,16 @@ class Project(object):
                         yield (key, keyWordArgs, cleanVal)
 
                 else:
-                    yield (key, args, cleanVals[0])
+                    if cleanVals:
+                        yield (key, args, cleanVals[0])
+                    else:
+                        # FIXME. Should not get here!
+                        # but we do... this was triggered by a line
+#                           DESCRIPTION           = 'Flow over a Cylinder , Re = 200'
+                        # which looks like it has a second keyword, 'Re', but this is in quotes.
+                        # Note, regex-based parsing is not able to recognize quoted conline!
+                        warnings.warn("Parser found pseudo-keyword '%s' in line %s" % (key, line))
+
         else:
             yield (None, None, None)
 
