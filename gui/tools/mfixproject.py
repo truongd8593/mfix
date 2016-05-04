@@ -618,9 +618,14 @@ class Project(object):
         """, re.VERBOSE)
 
         self.re_stringShortHand = re.compile(r"""
-            ([\d\.]+\*
-            ((["']+?.+?["']+?)|([\d\.]+))
-            )
+            [\d]+                                      # unsigned integer
+            \*                                         # literal *
+            (?:                                        # non-capturing group
+              '[\w]+'                                  # single-quoted word
+            | "[\w]+"                                  # double-quoted word
+            | \.[\w]+\.                                # .TOKEN.
+            | [-+]?[\d]+\.?[\d]*(?:[dDeE][-+]?[\d]+)?  # number
+            )                                          # end group
         """, re.VERBOSE)
 
         self.__initDataStructure__()
@@ -714,30 +719,35 @@ class Project(object):
                 key = match[0].lower().strip()
 
                 # values
-                valString = match[2].strip()
+                val_string = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.re_expression.findall(valString)
+                exps = self.re_expression.findall(val_string)
                 for exp in exps:
-                    valString = valString.replace(exp, exp.replace(' ',''))
+                    val_string = val_string.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
                 # Replace short hand string
-                shortHandList = self.re_stringShortHand.findall(valString)
-                if shortHandList:
-                    for shortHand in shortHandList:
-                        # check for expression
-                        # XXX FIXME we are calling expandshorthand for the line
-                        #  bc_massflow_s(2,1) = @(PI*20.*20.*5.0)
-                        #  ie this check is not working.
-                        if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
-                            valString = valString.replace(shortHand[0],
-                                                          self.expandshorthand(shortHand[0]))
 
+                for shorthand in self.re_stringShortHand.findall(val_string):
+                    # check for expression
+                    #if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',val_string):
+                    # XXX FIXME we are calling expandshorthand for the line
+                    #  bc_massflow_s(2,1) = @(PI*20.*20.*5.0)
+                    #  ie this check is not working.
+                    # also ./legacy_tests/ssfGHD/mfix.dat:
+                    # IC_ROP_s(1,1)   =   @(0.1d0*1.131768484d0)
+
+                    # The code below is simpler and is a provisional fix for the above problem
+                    if not val_string.startswith('@('):
+                        print("PRE_EXPAND", val_string)
+                        val_string = val_string.replace(shorthand,
+                                                      self.expandshorthand(shorthand))
+                        print("POST_EXPAND", val_string)
                 # split values using shlex, it will keep quoted strings
                 # together.
                 try:
-                    vals = shlex.split(valString.strip())
+                    vals = shlex.split(val_string.strip())
                 except ValueError:
                     if 'description' in key:
                         vals = [shlex.split(line.strip())[-1]]
@@ -798,7 +808,10 @@ class Project(object):
 #                           DESCRIPTION           = 'Flow over a Cylinder , Re = 200'
                         # which looks like it has a second keyword, 'Re', but this is in quotes.
                         # Note, regex-based parsing is not able to recognize quoted conline!
-                        warnings.warn("Parser found pseudo-keyword '%s' in line %s" % (key, line))
+                        if 'description' in line.lower():
+                            pass # special-case 'description' line, which may have quoted '=' sign
+                        else:
+                            warnings.warn("Parser found pseudo-keyword '%s' in line %s" % (key, line))
 
         else:
             yield (None, None, None)
@@ -815,7 +828,6 @@ class Project(object):
 
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip('\n')
-
             if '@(RXNS)' in line:
                 reactionSection = True
             elif '@(END)' in line and reactionSection:
@@ -847,7 +859,6 @@ class Project(object):
                                 warnings.warn("Cannot set %s=%s" % (format_key_with_args(key, args), value))
                 except Exception, e:
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
-
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
         '''
@@ -1114,20 +1125,14 @@ class Project(object):
                 cleanVal = string
         return cleanVal
 
-    def expandshorthand(self, string):
+    def expandshorthand(self, shorthand):
+        """Expand mfix.dat shorthand:
+        expandShortHand("5*'IKE'") = "'IKE' 'IKE' 'IKE' 'IKE' 'IKE'"
         """
-        Expand mfix.dat short hands:
-
-        expandShortHand("key = 6*'ISIS'") = ['ISIS','ISIS','ISIS','ISIS',
-                                             'ISIS','ISIS']
-        """
-        splitString = string.split('*')
-        expandList = [string]
-        if len(splitString) == 2:
-            if splitString[0].isdigit():
-                expandList = int(splitString[0])*[str(self.cleanstring(
-                    splitString[1]))]
-        return ' '.join(expandList)
+        count, word = shorthand.split('*', 1)
+        count = int(count)
+        ret =' '.join(count * [word])
+        return ret
 
     def removeKeyword(self, key, args=None, warn=True):
         '''Remove a keyword from the project.  Returns True if item deleted.'''
