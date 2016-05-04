@@ -710,6 +710,7 @@ class Project(object):
 
     def parseKeywordLine(self, line):
         matches = self.re_keyValue.findall(line)
+        single_key = False
         if matches:
             for match in matches:
                 # match could be: [keyword, args, value,
@@ -730,29 +731,20 @@ class Project(object):
                     val_string = val_string.replace(exp, exp.replace(' ',''))
 
                 # look for shorthand [count]*[value] and expand.
-                # Replace short hand string
-
-                for shorthand in self.re_stringShortHand.findall(val_string):
-                    # check for expression
-                    #if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',val_string):
-                    # XXX FIXME we are calling expandshorthand for the line
-                    #  bc_massflow_s(2,1) = @(PI*20.*20.*5.0)
-                    #  ie this check is not working.
-                    # also ./legacy_tests/ssfGHD/mfix.dat:
-                    # IC_ROP_s(1,1)   =   @(0.1d0*1.131768484d0)
-
-                    # The code below is simpler and is a provisional fix for the above problem
-                    if not val_string.startswith('@('):
+                # Don't expand shorthand inside $( or 'description' field
+                if not (val_string.startswith('@(') or 'description' in key):
+                    for shorthand in self.re_stringShortHand.findall(val_string):
                         val_string = val_string.replace(shorthand,
-                                                      self.expandshorthand(shorthand))
+                                                        self.expandshorthand(shorthand))
                 # split values using shlex, it will keep quoted strings
                 # together.
-                try:
-                    vals = shlex.split(val_string.strip())
-                except ValueError:
-                    if 'description' in key:
-                        vals = [shlex.split(line.strip())[-1]]
-                    else:
+                if 'description' in key:
+                    vals = [shlex.split(line.strip())[-1]]
+                    single_key = True
+                else:
+                    try:
+                        vals = shlex.split(val_string.strip())
+                    except ValueError:
                         vals = []
 
                 # clean the values converting to python types
@@ -763,11 +755,10 @@ class Project(object):
                         cleanVals.append(val)
 
                 # check keyword_doc to see if the keyword is an array
-                if self.keyword_doc is not None and key in self.keyword_doc \
-                        and not match[1] and self.keyword_doc[key]['args']:
-                    match[1] = ','.join(
-                        [str(arg['min']) for arg in
-                         self.keyword_doc[key]['args'].values()])
+                if (self.keyword_doc is not None and key in self.keyword_doc
+                        and not match[1] and self.keyword_doc[key]['args']):
+                    match[1] = ','.join(str(arg['min']) for arg in
+                                        self.keyword_doc[key]['args'].values())
 
                 # clean up arguments
                 if match[1]:
@@ -777,14 +768,14 @@ class Project(object):
 
                 # If multiple values, split apart into multiple key, args, values
                 if len(cleanVals) > 1:
-                    keyWordArgList = []
+                    keywordArgList = []
 
                     numVals = len(cleanVals)
 
                     if numVals > 1:
                         if args:
                             for val in range(0, numVals):
-                                keyWordArgList.append([val+args[0]]+args[1:])
+                                keywordArgList.append([val+args[0]]+args[1:])
                         else:
                             # hack for species eq
                             if key == 'species_eq':
@@ -793,27 +784,18 @@ class Project(object):
                                 start = 1
 
                             for val in range(start, numVals+1):
-                                keyWordArgList.append([val]+args[1:])
+                                keywordArgList.append([val]+args[1:])
                     else:
-                        keyWordArgList.append(args)
+                        keywordArgList.append(args)
 
-                    for keyWordArgs, cleanVal in zip(keyWordArgList, cleanVals):
-                        yield (key, keyWordArgs, cleanVal)
+                    for keywordArgs, cleanVal in zip(keywordArgList, cleanVals):
+                        yield (key, keywordArgs, cleanVal)
 
                 else:
-                    if cleanVals:
-                        yield (key, args, cleanVals[0])
-                    else:
-                        # FIXME. Should not get here!
-                        # but we do... this was triggered by a line
-#                           DESCRIPTION           = 'Flow over a Cylinder , Re = 200'
-                        # which looks like it has a second keyword, 'Re', but this is in quotes.
-                        # Note, regex-based parsing is not able to recognize quoted conline!
-                        if 'description' in line.lower():
-                            pass # special-case 'description' line, which may have quoted '=' sign
-                        else:
-                            warnings.warn("Parser found pseudo-keyword '%s' in line %s" % (key, line))
+                    yield (key, args, cleanVals[0])
 
+                if single_key:
+                    break # no more keywords on this line
         else:
             yield (None, None, None)
 
