@@ -282,16 +282,13 @@ QPushButton:checked {
               <property name="verticalSpacing">
                <number>0</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QToolButton" name="toolbutton_new">
+              <item row="0" column="6">
+               <widget class="QToolButton" name="toolbutton_restart">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
-                <property name="toolTip">
-                 <string>New Project</string>
-                </property>
                 <property name="text">
-                 <string>New</string>
+                 <string>Resume</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -307,7 +304,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="6">
+              <item row="0" column="7">
                <spacer name="horizontalSpacer">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -320,32 +317,16 @@ QPushButton:checked {
                 </property>
                </spacer>
               </item>
-              <item row="0" column="2">
-               <widget class="QToolButton" name="toolbutton_save">
+              <item row="0" column="0">
+               <widget class="QToolButton" name="toolbutton_new">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="toolTip">
-                 <string>Save Project</string>
+                 <string>New Project</string>
                 </property>
                 <property name="text">
-                 <string>Save</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>24</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="toolButtonStyle">
-                 <enum>Qt::ToolButtonTextUnderIcon</enum>
-                </property>
-                <property name="autoRaise">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QToolButton" name="toolbutton_run">
-                <property name="text">
-                 <string>Run</string>
+                 <string>New</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -383,26 +364,64 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="3" rowspan="2">
+              <item row="0" column="4" rowspan="2">
                <widget class="Line" name="line_3">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
-               <widget class="QToolButton" name="toolbutton_restart">
-                <property name="enabled">
-                 <bool>false</bool>
+              <item row="0" column="2">
+               <widget class="QToolButton" name="toolbutton_save">
+                <property name="toolTip">
+                 <string>Save Project</string>
                 </property>
                 <property name="text">
-                 <string>Resume</string>
+                 <string>Save</string>
                 </property>
                 <property name="iconSize">
                  <size>
                   <width>24</width>
                   <height>24</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="5">
+               <widget class="QToolButton" name="toolbutton_run">
+                <property name="text">
+                 <string>Run</string>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>24</width>
+                  <height>24</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <widget class="QToolButton" name="toolbutton_saveas">
+                <property name="toolTip">
+                 <string>Save Project As ...</string>
+                </property>
+                <property name="statusTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Save As</string>
                 </property>
                 <property name="toolButtonStyle">
                  <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -1405,8 +1424,8 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>307</width>
-                         <height>540</height>
+                         <width>295</width>
+                         <height>648</height>
                         </rect>
                        </property>
                        <layout class="QGridLayout" name="gridLayout_53">
@@ -2205,8 +2224,8 @@ background-color:white;
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>465</width>
-                        <height>1136</height>
+                        <width>453</width>
+                        <height>1162</height>
                        </rect>
                       </property>
                       <property name="autoFillBackground">
@@ -3333,8 +3352,8 @@ background-color:transparent;
                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;residuals&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'.SF NS Text'; font-size:13pt;&quot;&gt;residuals&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                  </widget>
                 </item>
