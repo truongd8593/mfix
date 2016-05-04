@@ -1379,7 +1379,7 @@ class MonitorThread(QThread):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.join(dir, name)
                 if os.path.isfile(exe):
-                    config_options[exe] = mfix_print_flags(exe)
+                    config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
 
