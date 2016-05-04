@@ -1211,7 +1211,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_path)
 
-    def open_project(self, project_path, auto_rename=False):
+    def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
         if os.path.isdir(project_path):
             project_dir = project_path
