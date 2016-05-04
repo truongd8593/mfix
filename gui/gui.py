@@ -1211,7 +1211,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_path)
 
-    def open_project(self, project_path):
+    def open_project(self, project_path, auto_rename=False):
         """Open MFiX Project"""
         if os.path.isdir(project_path):
             project_dir = project_path
@@ -1251,7 +1251,7 @@ class MfixGui(QtWidgets.QMainWindow):
             name = name.replace(char, '_')
         runname_mfx = name + '.mfx'
 
-        if not project_path.endswith(runname_mfx):
+        if autorename and not project_path.endswith(runname_mfx):
             self.message(title='Warning',
                             icon='warning',
                             text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
