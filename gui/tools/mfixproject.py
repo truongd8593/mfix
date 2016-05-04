@@ -28,6 +28,9 @@ except ImportError:
     # Python 3.X
     from io import StringIO
 
+import logging
+log = logging.getLogger()
+
 # local imports
 from tools.simpleeval import simple_eval
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
@@ -860,10 +863,8 @@ class Project(object):
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
         '''
-        Add a keyword to the project.
-
-        Note: If the keyword already exists, the keywords value will be
-        updated.
+        Update or add a keyword to the project.  Raises ValueError if there is a
+        problem with the key or value.
 
         Parameters
         ----------
@@ -876,7 +877,7 @@ class Project(object):
         keywordComment (str):
             a comment to be included with the keyword (default: '')
         '''
-
+        # TODO:  refactor
         if args is None:
             args = []
         # check to see if the keyword already exists
@@ -884,12 +885,10 @@ class Project(object):
             self[[key]+args].updateValue(value)
             if keywordComment:
                 self[[key]+args].comment = keywordComment
-
             return self[[key]+args]
 
         keywordobject = None
 
-        # If args
         if args:
             # Find condition keywords and separate
             if key.startswith('ic_'):
@@ -971,33 +970,27 @@ class Project(object):
                         spec = solid.addSpecies(args[1])
                     else:
                         spec = solid.species[args[1]]
-
                     keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     spec[key] = keywordobject
-
             # Gas Species
             elif key in ['species_g', 'species_alias_g', 'mw_g']:
                 if args[0] not in self.gasSpecies:
                     spec = self.gasSpecies.new(args[0])
                 else:
                     spec = self.gasSpecies[args[0]]
-
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spec[key] = keywordobject
-
             # Species_eq
             elif key in ['species_eq']:
                 if args[0] not in self.speciesEq:
                     leq = self.speciesEq.new(args[0])
                 else:
                     leq = self.speciesEq[args[0]]
-
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 leq[key] = keywordobject
-
             # LEQ
             elif key in ['leq_method', 'leq_tol', 'leq_it', 'leq_sweep',
                          'leq_pc', 'ur_fac', ]:
@@ -1005,22 +998,18 @@ class Project(object):
                     leq = self.linearEq.new(args[0])
                 else:
                     leq = self.linearEq[args[0]]
-
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 leq[key] = keywordobject
-
             # SPX
             elif key in ['spx_dt']:
                 if args[0] not in self.spx:
                     spx = self.spx.new(args[0])
                 else:
                     spx = self.spx[args[0]]
-
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spx[key] = keywordobject
-
             # VTK
             elif key in ['vtk_var']:
                 if args[0] not in self.vtkvar:
@@ -1031,29 +1020,22 @@ class Project(object):
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 vtkvar[key] = keywordobject
-
             # variable grid
             elif key in ['cpx', 'ncx', 'erx', 'first_dx', 'last_dx', 'cpy',
                          'ncy', 'ery', 'first_dy', 'last_dy', 'cpz', 'ncz',
                          'erz', 'first_dz', 'last_dz']:
-
                 if args[0] not in self.variablegrid:
                     variablegrid = self.variablegrid.new(args[0])
                 else:
                     variablegrid = self.variablegrid[args[0]]
-
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
-
                 variablegrid[key] = keywordobject
-
             # Save everything else
             else:
                 keywordobject = Keyword(key, value, args=args,
                                         comment=keywordComment)
-
-        # no args
-        else:
+        else: # no args
             keywordobject = Keyword(key, value, args=None,
                                     comment=keywordComment)
 
