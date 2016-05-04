@@ -937,6 +937,15 @@ class Project(object):
                         keywordobject = Keyword(key, value, args=args,
                                                 comment=keywordComment)
                         spec[key] = keywordobject
+                else:
+                    # Create keyword objects for other keys not handled above,
+                    # eg IC_THETA_M(IC, Phase),
+                    # (see 'save everything else' comment below)
+                    # TODO - is there more to do here?
+                    keywordobject = Keyword(key, value, args=args,
+                                            comment=keywordComment)
+                    log.debug("Created keyword object for",
+                              format_key_with_args(key, args))
             # Solid Species
             elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
                          'ro_s', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
