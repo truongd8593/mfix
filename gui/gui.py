@@ -1410,7 +1410,7 @@ class MonitorThread(QThread):
         output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
         logger = logging.getLogger(__name__)
-        logger.info("outputs are"+ str( output_paths ))
+        logger.debug("outputs are"+ str( output_paths ))
         return reduce(lambda a, b: a+b, output_paths, [])
 
     def run(self):
