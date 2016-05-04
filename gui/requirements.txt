@@ -1,0 +1,6 @@
+In order to run the MFiX GUI you will need to install the following packages:
+
+qtpy
+future
+thermopy
+MORE?
