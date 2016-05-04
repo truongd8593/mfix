@@ -901,66 +901,50 @@ class Project(object):
                 cond = self.iss
             else:
                 cond = None
-
             # Save conditions
             if cond is not None:
-                if len(args) == 1:
+                if len(args) == 1: # 1-dimensional
                     keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     cond[args[0]][key] = keywordobject
-
                 # Gas Keys
                 elif len(args) == 2 and key.endswith('_g'):
-
                     condItm = cond[args[0]]
-
                     if args[1] not in condItm.gasSpecies:
                         spec = condItm.gasSpecies.new(args[1])
                     else:
                         spec = condItm.gasSpecies[args[1]]
-
                     keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
-
                     spec[key] = keywordobject
-
                 # Solid Keys
                 elif key.endswith('_s'):
-
                     condItm = cond[args[0]]
-
                     if args[1] not in condItm.solids:
                         solid = condItm.solids.new(
                             args[1])
                     else:
                         solid = condItm.solids[args[1]]
-
                     if len(args) == 2:
                         keywordobject = Keyword(key, value, args=args,
                                                 comment=keywordComment)
                         solid[key] = keywordobject
-
                     elif len(args) == 3:
                         if args[2] not in solid.species:
                             spec = solid.addSpecies(args[2])
                         else:
                             spec = solid.species[args[2]]
-
                         keywordobject = Keyword(key, value, args=args,
                                                 comment=keywordComment)
-
                         spec[key] = keywordobject
-
             # Solid Species
             elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
                          'ro_s', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
                          'solids_model', 'close_packed', ]:
-
                 if args[0] not in self.solids:
                     solid = self.solids.new(args[0])
                 else:
                     solid = self.solids[args[0]]
-
                 if len(args) == 1:
                     keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
