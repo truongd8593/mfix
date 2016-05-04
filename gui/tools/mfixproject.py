@@ -840,7 +840,7 @@ class Project(object):
                             except ValueError:
                                 # error at line i
                                 warnings.warn("Cannot set %s=%s" % (format_key_with_args(key, args), value))
-                except Exception, e:
+                except Exception as e:
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):

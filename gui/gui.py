@@ -151,10 +151,6 @@ class MfixGui(QtWidgets.QMainWindow):
         uic.loadUi(os.path.join('uifiles', 'run.ui'), self.ui.run)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
 
-        self.ui.interact = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'interact.ui'), self.ui.interact)
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.interact)
-
         self.ui.post_processing = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'post_processing.ui'), self.ui.post_processing)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
@@ -845,7 +841,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos")
+        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
         animnow.setDuration(self.animation_speed)
         animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnow.setStartValue(
@@ -856,7 +852,7 @@ class MfixGui(QtWidgets.QMainWindow):
                           0 - offsety))
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos")
+        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
         animnext.setDuration(self.animation_speed)
         animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnext.setStartValue(
@@ -869,7 +865,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # line
         animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos")
+            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
             animline.setDuration(self.animation_speed)
             animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
             animline.setStartValue(
@@ -1061,21 +1057,6 @@ class MfixGui(QtWidgets.QMainWindow):
         if self.update_residuals_thread.job_done:
             self.ui.mfix_browser.setHTML('')
 
-    def connect_mfix(self):
-        """connect to running instance of mfix"""
-        url = "http://{}:{}".format(self.ui.run.mfix_host.text(),
-                                    self.ui.run.mfix_port.text())
-        log = logging.getLogger(__name__)
-        log.debug("trying to connect to {}".format(url))
-        qurl = QUrl(url)
-        self.ui.interact.mfix_browser.load(qurl)
-
-        self.update_residuals_thread = UpdateResidualsThread()
-        self.update_residuals_thread.sig.connect(self.update_residuals)
-        self.update_residuals_thread.start()
-
-        self.change_pane('interact')
-
     # --- open/save/new ---
     def save_project(self):
         project_dir = self.get_project_dir()
@@ -1237,7 +1218,7 @@ class MfixGui(QtWidgets.QMainWindow):
         try:
             self.project.load_project_file(project_file)
 
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to load %s: %s' % (project_file, e)
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
@@ -1403,19 +1384,22 @@ class MonitorThread(QThread):
         return config_options
 
     def get_res(self):
-	if not self.parent.get_project_dir():
-	    return
+        if not self.parent.get_project_dir():
+            return
         globb = os.path.join(self.parent.get_project_dir(),'*.RES')
         return glob.glob(globb)
 
     def get_outputs(self):
-	if not self.parent.get_project_dir():
-	    return
+        if not self.parent.get_project_dir():
+            return
         output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
         logger = logging.getLogger(__name__)
         logger.debug("outputs are"+ str( output_paths ))
-        return reduce(lambda a, b: a+b, output_paths, [])
+        outputs = []
+        for path in output_paths:
+            outputs += path
+        return outputs
 
     def run(self):
         self.sig.emit()
@@ -1528,7 +1512,7 @@ class ProjectManager(Project):
             self._widget_update_stack.append(w)
             try:
                 w.updateValue(key, updatedValue, args)
-            except Exception, e:
+            except Exception as e:
                 raise ValueError("Cannot set %s = %s" % (format_key_with_args(key, args),
                                               updatedValue))
             finally:
@@ -1553,7 +1537,7 @@ class ProjectManager(Project):
                 try:
                     self.submit_change(None, {keyword.key: keyword.value},
                                        args=keyword.args, forceUpdate=True)
-                except ValueError, e:
+                except ValueError as e:
                     errlist.append(e)
 
             # report any errors
@@ -1574,6 +1558,8 @@ class ProjectManager(Project):
         '''
         if args is None:
             args = []
+        else:
+            args = list(args)
 
         LOG.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
             widget.objectName(),

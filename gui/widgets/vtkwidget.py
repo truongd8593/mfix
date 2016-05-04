@@ -13,7 +13,12 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 # VTK imports
 import vtk
-from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+try:
+    # Try Qt 5.x
+    from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+except ImportError:
+    # Fall back to Qt 4.x
+    from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
