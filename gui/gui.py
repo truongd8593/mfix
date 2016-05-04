@@ -211,10 +211,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
 
-        self.ui.toolbutton_compile.setIcon(get_icon('build.png'))
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
         self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
-        self.ui.toolbutton_interact.setIcon(get_icon('flash.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -241,9 +239,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # build/run/connect MFIX
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
-        self.ui.run.connect_mfix_button.clicked.connect(self.connect_mfix)
-        self.ui.run.clear_output_button.clicked.connect(self.clear_output)
-        self.ui.run.mfix_executables.activated.connect(self.update_run)
+        self.ui.toolbutton_run.clicked.connect(self.run_mfix)
+        self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -251,8 +248,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- Threads ---
         self.run_thread = MfixThread(self)
-        self.clear_thread = MfixThread(self)
-        self.monitor_executables_thread = MonitorExecutablesThread(self)
+        self.monitor_thread = MonitorThread(self)
 
         def make_handler(qtextbrowser):
             " make a closure to read output from external process "
@@ -273,24 +269,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
             return handle_line
 
-        def update_run_executables(*args):
-            "Updates the list of executables available"
-            self.ui.run.mfix_executables.clear()
-            output = self.monitor_executables_thread.get_output()
-            for executable in output:
-                self.ui.run.mfix_executables.addItem(executable)
-            mfix_available = bool(output)
-            self.ui.run.mfix_executables.setVisible(mfix_available)
-            self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
-
         self.run_thread.line_printed.connect(
             make_handler(self.ui.command_output))
-        self.clear_thread.line_printed.connect(
-            make_handler(self.ui.command_output))
-        update_run_executables()
 
-        self.monitor_executables_thread.sig.connect(update_run_executables)
-        self.monitor_executables_thread.start()
+        self.monitor_thread.sig.connect(self.update_whats_enabled)
+        self.monitor_thread.start()
 
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
@@ -306,6 +289,40 @@ class MfixGui(QtWidgets.QMainWindow):
         # --- default ---
         self.mode_changed('modeler')
         self.change_pane('geometry')
+
+    def update_whats_enabled(self):
+        "Updates the list of executables available"
+        not_running = (self.run_thread.popen is None)
+
+        self.ui.run.mfix_executables.setEnabled(not_running)
+        self.ui.run.run_mfix_button.setEnabled(not_running)
+        self.ui.run.resume_mfix_button.setEnabled(not_running)
+        self.ui.toolbutton_run.setEnabled(not_running)
+        self.ui.toolbutton_restart.setEnabled(not_running)
+        self.ui.run.openmp_threads.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
+
+        if not not_running:
+            return
+
+        self.handle_select_executable()
+
+        current_selection = self.ui.run.mfix_executables.currentText()
+        self.ui.run.mfix_executables.clear()
+        output = self.monitor_thread.get_executables()
+        for executable in output:
+            self.ui.run.mfix_executables.addItem(executable)
+        mfix_available = bool(output)
+        self.ui.run.mfix_executables.setVisible(mfix_available)
+        self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
+        if current_selection in self.monitor_thread.executables:
+            self.ui.run.mfix_executables.setEditText(current_selection)
+
+        res_file_exists = bool(self.monitor_thread.get_res())
+        self.ui.run.resume_mfix_button.setEnabled(res_file_exists)
+        self.ui.toolbutton_restart.setEnabled(res_file_exists)
 
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov", color='blue')
@@ -976,12 +993,12 @@ class MfixGui(QtWidgets.QMainWindow):
         scrollbar = qtextbrowser.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-    def update_run(self):
+    def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
         mfix_exe = self.ui.run.mfix_executables.currentText()
         if not mfix_exe:
             return
-        config = self.monitor_executables_thread.output[mfix_exe]
+        config = self.monitor_thread.executables[mfix_exe]
         smp_enabled = 'smp' in config
         dmp_enabled = 'dmp' in config
         pymfix_enabled = 'pymfix' in mfix_exe
@@ -993,22 +1010,30 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesi.setEnabled(dmp_enabled)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
-        self.ui.run.mfix_host.setEnabled(pymfix_enabled)
-        self.ui.run.mfix_port.setEnabled(pymfix_enabled)
-        self.ui.run.connect_mfix_button.setEnabled(pymfix_enabled)
-
-    def clear_output(self):
-        self.run_thread.start_command(
-            cmd='rm -v -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
-            cwd=self.get_project_dir())
 
     def run_mfix(self):
+
+        output_paths = self.monitor_thread.get_outputs()
+        if output_paths:
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('Deleting output files'+str(output_paths)),
+                         buttons=['ok'],
+                         default='ok',
+                         )
+            for path in output_paths:
+                logger = logging.getLogger(__name__)
+                logger.debug('deleting path: '+path)
+                os.remove(path)
+
         mfix_exe = self.ui.run.mfix_executables.currentText()
-        config = self.monitor_executables_thread.output[mfix_exe]
+        config = self.monitor_thread.get_executables()[mfix_exe]
 
         if mfix_exe.endswith('pymfix'):
             # run with python or python3, depending on sys.executable
-            mfix_exe = '{} {}'.format(sys.executable, mfix_exe)
+            run_cmd = [sys.executable, mfix_exe]
+        else:
+            run_cmd = [mfix_exe,]
 
         if 'dmp' in config:
             nodesi = self.project.nodesi
@@ -1016,11 +1041,18 @@ class MfixGui(QtWidgets.QMainWindow):
             nodesk = self.project.nodesk
             total = nodesi * nodesj * nodesk
             # FIXME: maybe we should save NODES* keywords to runname.mfx instead of passing them on command line?
-            mfix_exe = 'mpirun -np {} {} NODESI={} NODESJ={} NODESK={}'.format(
-                total, mfix_exe, nodesi, nodesj, nodesk)
+            run_cmd += ['mpirun', '-np', str(total)] + run_cmd + [
+                'NODESI=%s' % nodesi,
+                'NODESJ=%s' % nodesj,
+                'NODESJ=%s' % nodesj
+            ]
 
-        run_cmd = '{} -f {}'.format(mfix_exe, self.get_project_file())
+        project_filename = os.path.basename(self.get_project_file())
+        run_cmd += ['-f', project_filename]
+        logger = logging.getLogger(__name__)
+        logger.debug('running MFIX as: '+str( run_cmd ))
         self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
+        self.update_whats_enabled()
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -1157,16 +1189,15 @@ class MfixGui(QtWidgets.QMainWindow):
             name = name.replace(char, '_')
         runname_mfx = name + '.mfx'
 
-        if False: # Disable this for now - cgw
-            if not project_path.endswith(runname_mfx):
-                self.message(title='Warning',
-                             icon='warning',
-                             text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
-                             buttons=['ok'],
-                             default='ok',
-                )
-                project_file = os.path.join(project_dir, runname_mfx)
-                self.project.writeDatFile(project_file)
+        if not project_path.endswith(runname_mfx):
+            self.message(title='Warning',
+                            icon='warning',
+                            text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
+                            buttons=['ok'],
+                            default='ok',
+            )
+            project_file = os.path.join(project_dir, runname_mfx)
+            self.project.writeDatFile(project_file)
 
         self.settings.setValue('project_file', project_file)
         self.setWindowTitle('MFIX - %s' % project_file)
@@ -1208,6 +1239,7 @@ class MfixThread(QThread):
         super(MfixThread, self).__init__(parent)
         self.cmd = None
         self.cwd = None
+        self.popen = None
 
     def start_command(self, cmd, cwd):
         log = logging.getLogger(__name__)
@@ -1218,19 +1250,25 @@ class MfixThread(QThread):
 
     def run(self):
         if self.cmd:
-            popen = subprocess.Popen(self.cmd,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     shell=True, cwd=self.cwd)
-            lines_iterator = iter(popen.stdout.readline, b"")
+            self.popen = subprocess.Popen(self.cmd,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE,
+                                          universal_newlines = True,
+                                          shell=False, cwd=self.cwd)
+            self.popen.wait()
+
+            lines_iterator = iter(self.popen.stdout.readline,b"")
             for line in lines_iterator:
                 self.line_printed.emit(str(line), None)
-            lines_iterator = iter(popen.stderr.readline, b"")
+
+            lines_iterator = iter(self.popen.stderr.readline,b"")
             for line in lines_iterator:
                 self.line_printed.emit(str(line), "red")
 
+            self.popen = None
+            self.parent.update_whats_enabled()
 
-class MonitorExecutablesThread(QThread):
+class MonitorThread(QThread):
 
     sig = QtCore.pyqtSignal()
 
@@ -1239,9 +1277,10 @@ class MonitorExecutablesThread(QThread):
         self.parent = parent
         self.mfix_home = get_mfix_home()
         self.cache = {}
-        self.output = self.get_output()
+        self.executables = self.get_executables()
+        self.outputs = self.get_outputs()
 
-    def get_output(self):
+    def get_executables(self):
         """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
 
@@ -1297,26 +1336,28 @@ class MonitorExecutablesThread(QThread):
 
         return config_options
 
+    def get_res(self):
+        globb = os.path.join(self.parent.get_project_dir(),'*.RES')
+        return glob.glob(globb)
+
+    def get_outputs(self):
+        output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
+        logger = logging.getLogger(__name__)
+        logger.info("outputs are"+ str( output_paths ))
+        return reduce(lambda a, b: a+b, output_paths, [])
+
     def run(self):
+        self.sig.emit()
         while True:
-            output = self.get_output()
-            if output != self.output:
-                self.output = output
+            tmp = self.get_outputs()
+            if tmp != self.outputs:
+                self.outputs = tmp
                 self.sig.emit()
-            time.sleep(1)
-
-class MonitorOutputFilesThread(QThread):
-
-    sig = QtCore.pyqtSignal(object)
-
-    def run(self):
-        while True:
-            self.job_done = False
-            output = glob.glob(run_name+'*')
-            if output:
-                self.sig.emit('output')
-            else:
-                self.sig.emit('no_output')
+            tmp = self.get_executables()
+            if tmp != self.executables:
+                self.executables = tmp
+                self.sig.emit()
             time.sleep(1)
 
 
