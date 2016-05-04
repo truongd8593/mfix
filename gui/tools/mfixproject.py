@@ -1067,7 +1067,7 @@ class Project(object):
             self._recursiveAddKeyToKeywordDict(keywordobject,
                                                [key]+args)
         else:
-            raise ValueError
+            raise ValueError(format_key_with_args(key, args))
 
         return keywordobject
 
