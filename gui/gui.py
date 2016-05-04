@@ -1337,10 +1337,14 @@ class MonitorThread(QThread):
         return config_options
 
     def get_res(self):
+	if not self.parent.get_project_dir():
+	    return
         globb = os.path.join(self.parent.get_project_dir(),'*.RES')
         return glob.glob(globb)
 
     def get_outputs(self):
+	if not self.parent.get_project_dir():
+	    return
         output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
         logger = logging.getLogger(__name__)
