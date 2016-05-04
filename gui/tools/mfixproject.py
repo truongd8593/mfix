@@ -740,10 +740,8 @@ class Project(object):
 
                     # The code below is simpler and is a provisional fix for the above problem
                     if not val_string.startswith('@('):
-                        print("PRE_EXPAND", val_string)
                         val_string = val_string.replace(shorthand,
                                                       self.expandshorthand(shorthand))
-                        print("POST_EXPAND", val_string)
                 # split values using shlex, it will keep quoted strings
                 # together.
                 try:
