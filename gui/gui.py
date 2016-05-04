@@ -1102,6 +1102,10 @@ class MfixGui(QtWidgets.QMainWindow):
             os.path.join(project_dir, self.project.run_name.value + ".mfx"),
             "*.mfx")
 
+        # qt4/qt5 compat hack
+        if type(project_path) == tuple:
+            project_path = project_path[0]
+
         # must be a better way to know the user clicked cancel
         if len(project_path) == 0:
             return
