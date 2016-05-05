@@ -33,7 +33,7 @@ def buildKeywordDoc(mfixSourcePath):
     mfixKeywordDict = {'keywordlist':[], 'categories':[]}
 
     searchPathList = []
-    for root, dir, file in os.walk(searchPath):
+    for root, directory, filename in os.walk(searchPath):
         searchPathList += findNamePath(os.path.join(searchPath,root))
 
     sortedPathListTemp = searchPathList
