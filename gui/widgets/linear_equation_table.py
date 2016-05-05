@@ -27,7 +27,9 @@ class LinearEquationTable(QtWidgets.QWidget):
             'Preconditioner':   'leq_pc',
             'Under Relaxation': 'ur_fac',
             }
-            
+        # Build inverse dictionary
+        self.key_to_name = dict((v, k) for (k, v) in self.name_to_key.items())
+
         self.rows = ['Gas Press', 'Vol Frac', 'U', 'V', 'W', 'Energy',
                      'Mass Frac', 'Gran. T', 'K-Ep, Scl.']
 
@@ -150,8 +152,9 @@ class LinearEquationTable(QtWidgets.QWidget):
     def updateValue(self, key, value, args):
         if isinstance(value, Keyword):
             value = value.value
-        
-        key = (k for k, v in self.name_to_key.items() if v == key).next()        
 
-        self.solverdict[self.rows[args[0]]][key] = value
-        self.table.update(self.solverdict)
+        #key = (k for k, v in self.name_to_key.items() if v == key).next()
+        name = self.key_to_name[key]
+
+        self.solverdict[self.rows[args[0]]][name] = value
+        self.table.update()
