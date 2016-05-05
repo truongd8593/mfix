@@ -437,11 +437,11 @@ class Collection(list):
     def _checkind(self, ind):
         currentSet = [itm.ind for itm in self]
         if ind in currentSet:
-            raise Exception("An index of {} already exsits".format(ind))
+            raise Exception("An index of {} already exists".format(ind))
 
         if ind < self.indStart:
-            raise Exception("An index of {} not allowed. \
-                             Range starts at {}".format(ind, self.indStart))
+            raise Exception("An index of {} not allowed. "
+                            "Range starts at {}".format(ind, self.indStart))
 
         if ind is None:
             if len(currentSet) < 1:
