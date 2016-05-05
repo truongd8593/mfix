@@ -40,6 +40,8 @@ def parse_section(section):
             l1, l2, l3, l4 = data_block[i*4 : i*4+4]
             name = l1[:18].strip()
             phase = l1[44]
+            if phase == ' ':
+                phase = l1[43] # C2HCl5
             words = l1[45:].split()
             tmin = float(words[0])
             tmax = float(words[1])
@@ -49,6 +51,8 @@ def parse_section(section):
                 mol_weight = mol_weight[1:]
             mol_weight = float(mol_weight)
             coeffs = list(extract_coeffs(' '.join((l2,l3,l4))))
+            if len(coeffs) == 14:
+                coeffs.append(NaN)
             yield (name, phase, tmin, tmax, mol_weight, coeffs, comment)
 
 def extract_coeffs(text):
