@@ -1605,19 +1605,21 @@ if __name__ == '__main__':
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
+    auto_rename = True
     # TODO: real argument handling
     quit = '-quit' in args # For testing
     if quit:
         args.remove('-quit')
+        auto_rename = False
 
     if len(args) > 1:
         for arg in args[1:]:
-            mfix.open_project(arg)
+            mfix.open_project(arg, auto_rename)
     else:
         # autoload last project
         project_file = mfix.get_project_file()
         if project_file:
-            mfix.open_project(project_file)
+            mfix.open_project(project_file, auto_rename)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
