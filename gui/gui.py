@@ -620,7 +620,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.numerics.gridlayout_leq.addWidget(self.ui.linear_eq_table)
         self.project.register_widget(self.ui.linear_eq_table,
                                      ['leq_method', 'leq_tol', 'leq_it',
-                                      'leq_sweep', 'leq_pc', 'ur_fac'])
+                                      'leq_sweep', 'leq_pc', 'ur_fac'],
+                                     args='*')
 
 
     def __setup_simple_keyword_widgets(self):
@@ -1514,10 +1515,16 @@ class ProjectManager(Project):
 
         keytuple = tuple([key]+args)
         widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
+        keytuple_star = tuple([key]+['*'])
+        widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
+
         warn = False
         if widgets_to_update == None:
-            warn = True
             widgets_to_update = []
+        if widgets_star:
+            widgets_to_update.extend(widgets_star)
+        if not widgets_to_update:
+            warn = True
 
         # Are we using the 'all' mechanism?
         #widgets_to_update.extend(
@@ -1529,8 +1536,12 @@ class ProjectManager(Project):
             try:
                 w.updateValue(key, updatedValue, args)
             except Exception as e:
-                raise ValueError("Cannot set %s = %s" % (format_key_with_args(key, args),
-                                              updatedValue))
+                # TODO:  log exception
+                msg = "Cannot set %s = %s" % (format_key_with_args(key, args), updatedValue)
+                if widget: # We're in a callback, not loading
+                    self.parent.print_internal(msg, color='red')
+                raise ValueError(msg)
+
             finally:
                 self._widget_update_stack.pop()
 
