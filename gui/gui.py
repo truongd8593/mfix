@@ -51,6 +51,7 @@ from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
 from widgets.regions import RegionsWidget
+from widgets.linear_equation_table import LinearEquationTable
 from tools.mfixproject import Project, Keyword
 from tools.general import (make_callback, get_icon, get_unique_string,
                            widget_iter, set_script_directory, CellColor)
@@ -609,6 +610,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
         #     # see http://stackoverflow.com/questions/26759623/why-is-the-return-of-qtgui-qvalidator-validate-so-inconsistent-robust-way-to
         # lineedit.setValidator(FluidSpeciesNameValidator())
+
+        # numerics
+        self.ui.linear_eq_table = LinearEquationTable(self.ui.numerics)
+        self.ui.numerics.gridlayout_leq.addWidget(self.ui.linear_eq_table)
+        self.project.register_widget(self.ui.linear_eq_table,
+                                     ['leq_method', 'leq_tol', 'leq_it',
+                                      'leq_sweep', 'leq_pc', 'ur_fac'])
 
 
     def __setup_simple_keyword_widgets(self):
@@ -1184,7 +1192,11 @@ class MfixGui(QtWidgets.QMainWindow):
         project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
-        if len(project_path) < 1 or  not os.path.exists(project_path):
+        # qt4/qt5 compat hack
+        if type(project_path) == tuple:
+            project_path = project_path[0]
+
+        if len(project_path) < 1 or not os.path.exists(project_path):
             msg = 'Cannot load %s' % project_path
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
