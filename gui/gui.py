@@ -386,6 +386,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of a bunch of other GUI items
+        self.model_setup.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
         for item in (ui.combobox_fluid_specific_heat_model,
                      ui.combobox_fluid_conductivity_model,
@@ -393,7 +394,7 @@ class MfixGui(QtWidgets.QMainWindow):
                      ):
             item.setEnabled(state)
 
-
+        # TODO: these should probably be lineEdits not spinboxes
         spinbox = ui.spinbox_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
         if state:
             spinbox.setEnabled(self.fluid_specific_heat_model == CONSTANT)
@@ -525,7 +526,13 @@ class MfixGui(QtWidgets.QMainWindow):
             self.set_keyword("usr_difg", True)
 
     def disable_fluid_solver(self, state):
-        self.set_navigation_item_state("Fluid", not state)
+        enabled = not state # "disable"
+        self.set_navigation_item_state("Fluid", enabled)
+        ms = self.ui.model_setup
+        checkbox = ms.checkbox_enable_turbulence
+        checkbox.setEnabled(enabled)
+        ms.combobox_turbulence_model.setEnabled(enabled and
+                                                checkbox.isChecked())
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
@@ -555,9 +562,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.set_subgrid_model(0)
 
         self.enable_energy_eq(False)
-        # something is wrong, we shouldn't have to explicitly uncheck this box
-        self.model_setup.checkbox_keyword_energy_eq.setChecked(False)
-
 
         # Fluid phase
         self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
