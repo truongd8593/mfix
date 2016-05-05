@@ -153,6 +153,7 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
         self.activated.connect(self.emitUpdatedValue)
 
         self.dtype = str
+        self.is_pop_up = False
 
     @property
     def value(self):
@@ -241,7 +242,7 @@ class Table(QtWidgets.QTableView, CommonBase):
     ----------
     parent (QObject):
         parent of the widget (default None)
-    dtype (str):
+    dtype (type):
         the type of data, should be either `dict` for displaying
         `dict(dict())`, `list` for displaying `list(list())`, 2D
         `numpy.array`, or Pandas `DataFrame` (default None)
@@ -249,17 +250,17 @@ class Table(QtWidgets.QTableView, CommonBase):
         a list of column names, if `None`, hides column names (default [])
     rows (list):
         a list of row names, if `None`, hides row names  (default [])
-    columnDelegate (dict):
+    column_delegate (dict):
         a dictionary describing delegates for editing cells, column wise
         (default {})
-    rowDelegate (dict):
+    row_delegate (dict):
         a dictionary describing delegates for editing cells, row wise
         (default {})
-    selectionBehavior (str):
+    selection_behavior (str):
         a string describing the selection behavior. Either 'row', 'col', or
         'cell' for row selection, column selection, or single cell selection,
         respectively (default 'cell')
-    selectionMode (str):
+    selection_mode (str):
         a string describing the selection mode. Either 'single', or 'multi' for
         single selection or multiple selections (default 'single')
 
@@ -272,7 +273,7 @@ class Table(QtWidgets.QTableView, CommonBase):
     new_selection:
         emits the from and to indices of a selection change.
     '''
-    value_changed = QtCore.Signal(object)
+    value_changed = QtCore.Signal(object, object, object)
     lost_focus = QtCore.Signal(object)
     new_selection = QtCore.Signal(object, object)
 
@@ -319,8 +320,7 @@ class Table(QtWidgets.QTableView, CommonBase):
         if model is not None:
             QtWidgets.QTableView.setModel(self, model)
     #        self.model().modelReset.connect(self.hideRows)
-            self.model().value_updated.connect(
-                lambda: self.value_changed.emit(self.value))
+            self.model().value_updated.connect(self.value_changed.emit)
             self.model().modelAboutToBeReset.connect(self.save_selection)
 
             # Need a reference or it segfaults with pyside
@@ -534,7 +534,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         if editor:
             if 'dtype' in widgetData:
-                editor.setDtype(widgetData['dtype'])
+                editor.setdtype(widgetData['dtype'])
 
             if 'max' in widgetData:
                 _max = widgetData['max']
@@ -557,7 +557,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         if widget.dtype is None:
             widget.dtype = type(value)
-        widget.setValue(value)
+        widget.updateValue('none', value)
 
     def setModelData(self, widget, model, index):
         model.setData(index, widget.dtype(widget.value), QtCore.Qt.EditRole)
@@ -572,10 +572,10 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
             # TODO: there is a bug here that doesn't return focus to the
             # tableview
             if event.type() == QtCore.QEvent.FocusOut:
-                if widget.isPopup:
+                if widget.is_pop_up:
                     return True
                 else:
-                    widget.isPopup = True
+                    widget.is_pop_up = True
                     return False
             else:
                 return QtWidgets.QStyledItemDelegate.eventFilter(self,
@@ -620,7 +620,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
     parent (QObject):
         parent of the model (default None)
     '''
-    value_updated = QtCore.Signal(object)
+    value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, columns=[], rows=[], parent=None, ):
         QtCore.QAbstractTableModel.__init__(self, parent)
@@ -664,7 +664,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
                 self.datatable[i] = {}
 
             self.datatable[i][j] = value
-            self.value_updated.emit(self.datatable)
+            self.value_updated.emit(i, j, value)
 
     def apply_to_column(self, col, val):
         for i in range(self.rowCount()):
