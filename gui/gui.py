@@ -69,8 +69,8 @@ logging.basicConfig(stream=sys.stdout,
 
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-LOG = logging.getLogger(__name__)
-LOG.debug(SCRIPT_DIRECTORY)
+log = logging.getLogger(__name__)
+log.debug(SCRIPT_DIRECTORY)
 set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
 
 def get_mfix_home():
@@ -254,7 +254,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
             def handle_line(line, color=None): # Combine with print_internal
                 " closure to read output from external process "
-                log = logging.getLogger(__name__)
                 log.debug(str(line).strip())
                 cursor = qtextbrowser.textCursor()
                 cursor.movePosition(cursor.End)
@@ -991,7 +990,11 @@ class MfixGui(QtWidgets.QMainWindow):
         qtextbrowser = self.ui.command_output
         if not line.endswith('\n'):
             line += '\n'
-        LOG.info(str(line).strip())
+        lower = line.lower()
+        if 'warning:' in lower or 'error:' in lower:
+            log.warn(line.strip())
+        else:
+            log.info(line.strip())
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
@@ -1033,8 +1036,7 @@ class MfixGui(QtWidgets.QMainWindow):
                          default='ok',
                          )
             for path in output_paths:
-                logger = logging.getLogger(__name__)
-                logger.debug('deleting path: '+path)
+                log.debug('deleting path: '+path)
                 os.remove(path)
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
@@ -1060,8 +1062,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
-        logger = logging.getLogger(__name__)
-        logger.debug('running MFIX as: '+str( run_cmd ))
+        log.debug('running MFIX as: '+str( run_cmd ))
         self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
         self.update_whats_enabled()
 
@@ -1306,7 +1307,6 @@ class MfixThread(QThread):
         self.popen = None
 
     def start_command(self, cmd, cwd):
-        log = logging.getLogger(__name__)
         log.debug("Running in %s : %s", cwd, cmd)
         self.cmd = cmd
         self.cwd = cwd
@@ -1411,8 +1411,7 @@ class MonitorThread(QThread):
             return
         output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
-        logger = logging.getLogger(__name__)
-        logger.debug("outputs are"+ str( output_paths ))
+        log.debug("outputs are"+ str( output_paths ))
         outputs = []
         for path in output_paths:
             outputs += path
@@ -1442,7 +1441,6 @@ class UpdateResidualsThread(QThread):
             try:
                 self.residuals = urlopen('http://localhost:5000/residuals').read()
             except Exception:
-                log = logging.getLogger(__name__)
                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")
                 self.job_done = True
                 return
@@ -1536,8 +1534,9 @@ class ProjectManager(Project):
             try:
                 w.updateValue(key, updatedValue, args)
             except Exception as e:
-                # TODO:  log exception
-                msg = "Cannot set %s = %s" % (format_key_with_args(key, args), updatedValue)
+                ka = format_key_with_args(key, args)
+                #log.warn("%s: %s" % (e, ka))
+                msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
                 if widget: # We're in a callback, not loading
                     self.parent.print_internal(msg, color='red')
                 raise ValueError(msg)
@@ -1588,7 +1587,7 @@ class ProjectManager(Project):
         else:
             args = list(args)
 
-        LOG.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
+        log.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
             widget.objectName(),
             keys, args))
 
