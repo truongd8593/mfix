@@ -1277,6 +1277,11 @@ class MfixGui(QtWidgets.QMainWindow):
         # by keyword updates)
         self.enable_energy_eq(self.project['energy_eq'])
         # cgw - lots more model setup todo here
+        
+        # Look for geometry.stl and load automatically
+        geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+        if os.path.exists(geometry):
+            self.vtkwidget.add_stl(None, filename=geometry)
 
     # --- fluid species methods ---
     def fluid_species_add(self):

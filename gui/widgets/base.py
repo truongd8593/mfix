@@ -5,6 +5,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 import re
+import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore
 
@@ -668,7 +669,8 @@ class DictTableModel(QtCore.QAbstractTableModel):
 
     def apply_to_column(self, col, val):
         for i in range(self.rowCount()):
-            self.setData(col=col, row=i, value=val)
+            self.setData(col=col, row=i,
+                         value=copy.deepcopy(val))
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         'return the row count'

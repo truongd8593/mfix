@@ -581,20 +581,21 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkRenderWindow.Render()
 
-    def add_stl(self):
+    def add_stl(self, widget, filename=None):
         """
         Open browse dialog and load selected stl file
         """
 
-        filename = QtWidgets.QFileDialog.getOpenFileName(
-            self, 'Select an STL File',
-            self.parent.get_project_dir(),
-            'STL File (*.stl)',)
+        if filename is None:
+            filename = QtWidgets.QFileDialog.getOpenFileName(
+                self, 'Select an STL File',
+                self.parent.get_project_dir(),
+                'STL File (*.stl)',)
 
-        if isinstance(filename, tuple) or isinstance(filename, list):
-            filename = filename[0]
+            if isinstance(filename, tuple) or isinstance(filename, list):
+                filename = filename[0]
 
-        filename = str(filename)
+            filename = str(filename)
 
         if filename:
             name = os.path.basename(filename).lower()
