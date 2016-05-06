@@ -1478,14 +1478,17 @@ class VtkWidget(QtWidgets.QWidget):
             source.SetXLength(lengths[0])
             source.SetYLength(lengths[1])
             source.SetZLength(0)
+            center[2] = props['from'][2]
         elif primtype == 'XZ-plane':
             source.SetXLength(lengths[0])
             source.SetYLength(0)
             source.SetZLength(lengths[2])
+            center[1] = props['from'][1]
         elif primtype == 'YZ-plane':
             source.SetXLength(0)
             source.SetYLength(lengths[1])
             source.SetZLength(lengths[2])
+            center[0] = props['from'][0]
         elif primtype == 'STL':
             source.SetXLength(lengths[0])
             source.SetYLength(lengths[1])
