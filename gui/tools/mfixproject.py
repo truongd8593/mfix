@@ -437,11 +437,11 @@ class Collection(list):
     def _checkind(self, ind):
         currentSet = [itm.ind for itm in self]
         if ind in currentSet:
-            raise Exception("An index of {} already exsits".format(ind))
+            raise Exception("An index of {} already exists".format(ind))
 
         if ind < self.indStart:
-            raise Exception("An index of {} not allowed. \
-                             Range starts at {}".format(ind, self.indStart))
+            raise Exception("An index of {} not allowed. "
+                            "Range starts at {}".format(ind, self.indStart))
 
         if ind is None:
             if len(currentSet) < 1:
@@ -777,12 +777,8 @@ class Project(object):
                             for val in range(0, numVals):
                                 keywordArgList.append([val+args[0]]+args[1:])
                         else:
-                            # hack for species eq
-                            if key == 'species_eq':
-                                start = 0
-                            else:
-                                start = 1
-
+                            # hack for species eq (why?)
+                            start = 0 if key == 'species_eq' else 1
                             for val in range(start, numVals+1):
                                 keywordArgList.append([val]+args[1:])
                     else:

@@ -51,6 +51,7 @@ from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
 from widgets.regions import RegionsWidget
+from widgets.linear_equation_table import LinearEquationTable
 from tools.mfixproject import Project, Keyword
 from tools.general import (make_callback, get_icon, get_unique_string,
                            widget_iter, set_script_directory, CellColor)
@@ -68,8 +69,8 @@ logging.basicConfig(stream=sys.stdout,
 
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-LOG = logging.getLogger(__name__)
-LOG.debug(SCRIPT_DIRECTORY)
+log = logging.getLogger(__name__)
+log.debug(SCRIPT_DIRECTORY)
 set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
 
 def get_mfix_home():
@@ -253,7 +254,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
             def handle_line(line, color=None): # Combine with print_internal
                 " closure to read output from external process "
-                log = logging.getLogger(__name__)
                 log.debug(str(line).strip())
                 cursor = qtextbrowser.textCursor()
                 cursor.movePosition(cursor.End)
@@ -387,6 +387,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of a bunch of other GUI items
+        self.model_setup.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
         for item in (ui.combobox_fluid_specific_heat_model,
                      ui.combobox_fluid_conductivity_model,
@@ -394,7 +395,7 @@ class MfixGui(QtWidgets.QMainWindow):
                      ):
             item.setEnabled(state)
 
-
+        # TODO: these should probably be lineEdits not spinboxes
         spinbox = ui.spinbox_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
         if state:
             spinbox.setEnabled(self.fluid_specific_heat_model == CONSTANT)
@@ -526,7 +527,13 @@ class MfixGui(QtWidgets.QMainWindow):
             self.set_keyword("usr_difg", True)
 
     def disable_fluid_solver(self, state):
-        self.set_navigation_item_state("Fluid", not state)
+        enabled = not state # "disable"
+        self.set_navigation_item_state("Fluid", enabled)
+        ms = self.ui.model_setup
+        checkbox = ms.checkbox_enable_turbulence
+        checkbox.setEnabled(enabled)
+        ms.combobox_turbulence_model.setEnabled(enabled and
+                                                checkbox.isChecked())
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
@@ -556,9 +563,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.set_subgrid_model(0)
 
         self.enable_energy_eq(False)
-        # something is wrong, we shouldn't have to explicitly uncheck this box
-        self.model_setup.checkbox_keyword_energy_eq.setChecked(False)
-
 
         # Fluid phase
         self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
@@ -610,6 +614,14 @@ class MfixGui(QtWidgets.QMainWindow):
 
         #     # see http://stackoverflow.com/questions/26759623/why-is-the-return-of-qtgui-qvalidator-validate-so-inconsistent-robust-way-to
         # lineedit.setValidator(FluidSpeciesNameValidator())
+
+        # numerics
+        self.ui.linear_eq_table = LinearEquationTable(self.ui.numerics)
+        self.ui.numerics.gridlayout_leq.addWidget(self.ui.linear_eq_table)
+        self.project.register_widget(self.ui.linear_eq_table,
+                                     ['leq_method', 'leq_tol', 'leq_it',
+                                      'leq_sweep', 'leq_pc', 'ur_fac'],
+                                     args='*')
 
 
     def __setup_simple_keyword_widgets(self):
@@ -979,7 +991,11 @@ class MfixGui(QtWidgets.QMainWindow):
         qtextbrowser = self.ui.command_output
         if not line.endswith('\n'):
             line += '\n'
-        LOG.info(str(line).strip())
+        lower = line.lower()
+        if 'warning:' in lower or 'error:' in lower:
+            log.warn(line.strip())
+        else:
+            log.info(line.strip())
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
@@ -1021,8 +1037,7 @@ class MfixGui(QtWidgets.QMainWindow):
                          default='ok',
                          )
             for path in output_paths:
-                logger = logging.getLogger(__name__)
-                logger.debug('deleting path: '+path)
+                log.debug('deleting path: '+path)
                 os.remove(path)
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
@@ -1066,11 +1081,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
-        LOG.info('running MFIX as: {}'.format(str(run_cmd)))
+
+        log.debug('running MFIX as: '+str( run_cmd ))
         self.run_thread.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
+
         self.update_whats_enabled()
 
     def update_residuals(self):
@@ -1205,7 +1222,11 @@ class MfixGui(QtWidgets.QMainWindow):
         project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
-        if len(project_path) < 1 or  not os.path.exists(project_path):
+        # qt4/qt5 compat hack
+        if type(project_path) == tuple:
+            project_path = project_path[0]
+
+        if len(project_path) < 1 or not os.path.exists(project_path):
             msg = 'Cannot load %s' % project_path
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
@@ -1489,8 +1510,7 @@ class MonitorThread(QThread):
             return
         output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
-        logger = logging.getLogger(__name__)
-        logger.debug("outputs are"+ str( output_paths ))
+        log.debug("outputs are"+ str( output_paths ))
         outputs = []
         for path in output_paths:
             outputs += path
@@ -1521,7 +1541,6 @@ class UpdateResidualsThread(QThread):
             try:
                 self.residuals = urlopen('http://localhost:5000/residuals').read()
             except Exception:
-                log = logging.getLogger(__name__)
                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")
                 self.job_done = True
                 return
@@ -1590,14 +1609,27 @@ class ProjectManager(Project):
         if args is None:
             args = []
 
-        updatedValue = self.updateKeyword(key, newValue, args)
+        try:
+            updatedValue = self.updateKeyword(key, newValue, args)
+        except Exception as e:
+            self.parent.print_internal("Warning: %s: %s" %
+                                       (format_key_with_args(key, args), e),
+                                       color='red')
+            return
+
 
         keytuple = tuple([key]+args)
         widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
+        keytuple_star = tuple([key]+['*'])
+        widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
+
         warn = False
         if widgets_to_update == None:
-            warn = True
             widgets_to_update = []
+        if widgets_star:
+            widgets_to_update.extend(widgets_star)
+        if not widgets_to_update:
+            warn = True
 
         # Are we using the 'all' mechanism?
         #widgets_to_update.extend(
@@ -1609,8 +1641,13 @@ class ProjectManager(Project):
             try:
                 w.updateValue(key, updatedValue, args)
             except Exception as e:
-                raise ValueError("Cannot set %s = %s" % (format_key_with_args(key, args),
-                                              updatedValue))
+                ka = format_key_with_args(key, args)
+                #log.warn("%s: %s" % (e, ka))
+                msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
+                if widget: # We're in a callback, not loading
+                    self.parent.print_internal(msg, color='red')
+                raise ValueError(msg)
+
             finally:
                 self._widget_update_stack.pop()
 
@@ -1657,7 +1694,7 @@ class ProjectManager(Project):
         else:
             args = list(args)
 
-        LOG.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
+        log.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
             widget.objectName(),
             keys, args))
 
@@ -1686,19 +1723,21 @@ if __name__ == '__main__':
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
+    auto_rename = True
     # TODO: real argument handling
     quit = '-quit' in args # For testing
     if quit:
         args.remove('-quit')
+        auto_rename = False
 
     if len(args) > 1:
         for arg in args[1:]:
-            mfix.open_project(arg)
+            mfix.open_project(arg, auto_rename)
     else:
         # autoload last project
         project_file = mfix.get_project_file()
         if project_file:
-            mfix.open_project(project_file)
+            mfix.open_project(project_file, auto_rename)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
