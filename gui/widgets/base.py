@@ -590,20 +590,6 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         return False
 
-    def paint(self, painter, options, index):
-
-        color = None
-        if self.column_color_dict and index.column() in self.column_color_dict:
-            color = self.column_color_dict[index.column()]
-        elif self.row_color_dict and index.row() in self.row_color_dict:
-            color = self.row_color_dict[index.row()]
-        elif hasattr(index.data(QtCore.Qt.EditRole), 'qcolor'):
-            color = index.data(QtCore.Qt.EditRole).qcolor
-        if color:
-            painter.fillRect(options.rect, QtWidgets.QBrush(color))
-
-        QtWidgets.QStyledItemDelegate.paint(self, painter, options, index)
-
 
 class DictTableModel(QtCore.QAbstractTableModel):
     '''
@@ -713,6 +699,8 @@ class DictTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == QtCore.Qt.EditRole:
             return value
+        elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
+            return value.qcolor
         else:
             return None
 
@@ -777,7 +765,6 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             elif col is not None and row is not None:
                 i = row
                 j = col
-
             if pd and isinstance(self.datatable, pd.DataFrame):
                 j = self.datatable.columns[j]
                 self.datatable[j][i] = value
@@ -786,9 +773,10 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
 
             self.value_updated.emit(self.datatable)
 
-    def applyToColumn(self, col, val):
+    def apply_to_column(self, col, val):
         for i in range(self.rowCount()):
-            self.setData(col=col, row=i, value=val)
+            self.setData(col=col, row=i,
+                         value=copy.deepcopy(val))
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.datatable)
@@ -828,6 +816,8 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == QtCore.Qt.EditRole:
             return value
+        elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
+            return value.qcolor
         else:
             return None
 
