@@ -1026,15 +1026,14 @@ class MfixGui(QtWidgets.QMainWindow):
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
-        env = os.environ
 
-        if not mfix_exe.startswith('mfix'):
+        if not mfix_exe.endswith('mfix'):
             # run pymfix.  python or python3, depending on sys.executable
-            run_cmd = [mfix_exe,]
+            run_cmd = [sys.executable, mfix_exe]
 
         else:
             # run mfix
-            executable = [sys.executable, mfix_exe]
+            executable = [mfix_exe,]
 
             # todo: does pymfix accept and pass on dmp setup options? if
             # so, swap this if statement back to original logic
@@ -1052,7 +1051,10 @@ class MfixGui(QtWidgets.QMainWindow):
                 # adjust environment for to-be called process
                 # assume user knows what they are doing and don't override vars
                 if not os.environ.has_key("OMP_NUM_THREADS"):
-                    env = dict(os.environ, ("OMP_NUM_THREADS", dmptotal))
+                    os.environ["OMP_NUM_THREADS"] = str(dmptotal)
+                LOG.info(
+                    'will run MFIX with OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
+                                                              
 
             else:
                 # no dmp support, but maybe we should check for smp support and
@@ -1066,7 +1068,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.run_thread.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
-            env=env)
+            env=os.environ)
         self.update_whats_enabled()
 
     def update_residuals(self):
