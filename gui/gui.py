@@ -1029,26 +1029,29 @@ class MfixGui(QtWidgets.QMainWindow):
 
         if mfix_exe.endswith('pymfix'):
             # run with python or python3, depending on sys.executable
-            run_cmd = [sys.executable, mfix_exe]
+            executable = [sys.executable, mfix_exe]
         else:
-            run_cmd = [mfix_exe,]
+            executable = [mfix_exe,]
 
         if 'dmp' in config:
-            nodesi = self.project.nodesi
-            nodesj = self.project.nodesj
-            nodesk = self.project.nodesk
+            nodesi = self.project.nodesi.value
+            nodesj = self.project.nodesj.value
+            nodesk = self.project.nodesk.value
             total = nodesi * nodesj * nodesk
             # FIXME: maybe we should save NODES* keywords to runname.mfx instead of passing them on command line?
-            run_cmd += ['mpirun', '-np', str(total)] + run_cmd + [
+            run_cmd = ['mpirun', '-np', str(total)] + executable + [
                 'NODESI=%s' % nodesi,
                 'NODESJ=%s' % nodesj,
-                'NODESJ=%s' % nodesj
+                'NODESK=%s' % nodesj
             ]
+        else:
+            # no dmp support, but maybe we should check for smp support and set
+            # required environment vars?
+            run_cmd = executable
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
-        logger = logging.getLogger(__name__)
-        logger.debug('running MFIX as: '+str( run_cmd ))
+        LOG.info('running MFIX as: {}'.format(str(run_cmd)))
         self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
         self.update_whats_enabled()
 
@@ -1297,13 +1300,19 @@ class MfixThread(QThread):
 
     def run(self):
         if self.cmd:
+            # this ought to be determined elsewhere
+            self.env = dict( os.environ, OMP_NUM_THREADS="1" )
             self.popen = subprocess.Popen(self.cmd,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE,
                                           universal_newlines = True,
-                                          shell=False, cwd=self.cwd)
-            self.popen.wait()
+                                          shell=False, cwd=self.cwd,
+                                          env=self.env)
+            LOG.info("popen'd {} in {}".format(str(self.cmd), self.cwd))
 
+            #self.popen.wait()
+
+            """
             lines_iterator = iter(self.popen.stdout.readline,b"")
             for line in lines_iterator:
                 self.line_printed.emit(str(line), None)
@@ -1312,8 +1321,41 @@ class MfixThread(QThread):
             for line in lines_iterator:
                 self.line_printed.emit(str(line), "red")
 
+            """
+
+            childpid = self.popen.pid
+
+            while True:
+                # spin reading stdout and stderr from child proc
+                # check child.poll every pass and break when child has
+                # exited.
+                # this burns a lot of cpu for what it is. select.poll or 
+                # thread.Timer would work better.
+                # plus the readline calls will block until a linebreak ...
+                # 
+                # TODO: Also listen for a terminate event
+
+                if self.popen.poll() is not None:
+                    # child has exited. Do something special with returncode?
+                    #self.popen.returncode
+                    # other cleanup tasks?
+                    # signal the parent that the mfix proc has exited
+                    #PyQt4 only it seems:
+                    #self.emit(SIGNAL(something))
+                    break
+
+                #if signal.terminate
+                #   self.popen.pid
+
+                self.line_printed.emit(str(self.popen.stdout.readline()), None)
+
+                # readline blocks, so stderr is ignored for the moment.
+                #self.line_printed.emit(str(self.popen.stderr.readline()),'red')
+
+
             self.popen = None
             self.parent.update_whats_enabled()
+
 
 class MonitorThread(QThread):
 
@@ -1330,6 +1372,14 @@ class MonitorThread(QThread):
     def get_executables(self):
         """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
+
+        # get_executables is getting called multiple times during gui setup:
+        #   MfixGui.update_whats_enabled
+        #   MonitorThread.__init__
+        #   MonitorThread.run
+        # it is also called repeatedly from MonitorThread.run so 
+        # we could be changing the target executable throughout the run of
+        # the gui. That seems unpredictable to me. -eh
 
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
@@ -1376,9 +1426,10 @@ class MonitorThread(QThread):
 
         # Now look for mfix/pymfix in these dirs
         for directory in dirs:
-            for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+            for name in ['pymfix', 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
                 exe = os.path.join(directory, name)
                 if os.path.isfile(exe):
+                    LOG.info("found {} executable in {}".format(name, directory))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
