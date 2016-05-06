@@ -1473,7 +1473,7 @@ class MonitorThread(QThread):
             for name in ['pymfix', 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
                 exe = os.path.join(directory, name)
                 if os.path.isfile(exe):
-                    LOG.info("found {} executable in {}".format(name, directory))
+                    LOG.debug("found {} executable in {}".format(name, directory))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
@@ -1678,7 +1678,7 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
-    LOG.info("starting application at " +  str(time.time()))
+    LOG.debug("starting application at " +  str(time.time()))
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     mfix = MfixGui(qapp)
@@ -1707,13 +1707,13 @@ if __name__ == '__main__':
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
-    LOG.info("finished loading application at " +  str(time.time()))
+    LOG.debug("finished loading application at " +  str(time.time()))
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if not quit:
         qapp.exec_()
 
-    LOG.info("exiting application at " +  str(time.time()))
+    LOG.debug("exiting application at " +  str(time.time()))
     qapp.deleteLater()
     sys.exit()
