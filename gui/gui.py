@@ -1026,10 +1026,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
+        env = os.environ
 
         if not mfix_exe.startswith('mfix'):
             # run pymfix.  python or python3, depending on sys.executable
-            executable = [mfix_exe,]
+            run_cmd = [mfix_exe,]
 
         else:
             # run mfix
@@ -1048,21 +1049,24 @@ class MfixGui(QtWidgets.QMainWindow):
                     'NODESI=%s' % nodesi,
                     'NODESJ=%s' % nodesj,
                     'NODESK=%s' % nodesj]
+                # adjust environment for to-be called process
+                # assume user knows what they are doing and don't override vars
+                if not os.environ.has_key("OMP_NUM_THREADS"):
+                    env = dict(os.environ, ("OMP_NUM_THREADS", dmptotal))
+
             else:
                 # no dmp support, but maybe we should check for smp support and
                 # set required environment vars?
                 run_cmd = executable
 
 
-        # adjust environment for to-be called process
-        # assume user knows what they are doing and don't override vars
-        if not os.environment.has_key("OMP_NUM_THREADS"):
-            env = dict(os.environment, ("OMP_NUM_THREADS", dmptotal))
-
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
         LOG.info('running MFIX as: {}'.format(str(run_cmd)))
-        self.run_thread.start_command(cmd=run_cmd, cwd=self.get_project_dir())
+        self.run_thread.start_command(
+            cmd=run_cmd,
+            cwd=self.get_project_dir(),
+            env=env)
         self.update_whats_enabled()
 
     def update_residuals(self):
