@@ -147,14 +147,13 @@ class LinearEquationTable(QtWidgets.QWidget):
         key = self.name_to_key[column]
         self.value_updated.emit(self,
                                 {key: Keyword(key, value)},
-                                self.rows.index(row))
+                                # 1-based indexing
+                                1 + self.rows.index(row))
 
     def updateValue(self, key, value, args):
         if isinstance(value, Keyword):
             value = value.value
-
-        #key = (k for k, v in self.name_to_key.items() if v == key).next()
         name = self.key_to_name[key]
-
-        self.solverdict[self.rows[args[0]]][name] = value
+        row_num = args[0] - 1         # 1-based indexing
+        self.solverdict[self.rows[row_num]][name] = value
         self.table.update()
