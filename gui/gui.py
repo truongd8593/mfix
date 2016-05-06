@@ -1509,7 +1509,14 @@ class ProjectManager(Project):
         if args is None:
             args = []
 
-        updatedValue = self.updateKeyword(key, newValue, args)
+        try:
+            updatedValue = self.updateKeyword(key, newValue, args)
+        except Exception as e:
+            self.parent.print_internal("Warning: %s: %s" %
+                                       (format_key_with_args(key, args), e),
+                                       color='red')
+            return
+
 
         keytuple = tuple([key]+args)
         widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
