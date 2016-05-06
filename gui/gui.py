@@ -1027,27 +1027,37 @@ class MfixGui(QtWidgets.QMainWindow):
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
 
-        if mfix_exe.endswith('pymfix'):
-            # run with python or python3, depending on sys.executable
-            executable = [sys.executable, mfix_exe]
-        else:
+        if not mfix_exe.startswith('mfix'):
+            # run pymfix.  python or python3, depending on sys.executable
             executable = [mfix_exe,]
 
-        if 'dmp' in config:
-            nodesi = self.project.nodesi.value
-            nodesj = self.project.nodesj.value
-            nodesk = self.project.nodesk.value
-            total = nodesi * nodesj * nodesk
-            # FIXME: maybe we should save NODES* keywords to runname.mfx instead of passing them on command line?
-            run_cmd = ['mpirun', '-np', str(total)] + executable + [
-                'NODESI=%s' % nodesi,
-                'NODESJ=%s' % nodesj,
-                'NODESK=%s' % nodesj
-            ]
         else:
-            # no dmp support, but maybe we should check for smp support and set
-            # required environment vars?
-            run_cmd = executable
+            # run mfix
+            executable = [sys.executable, mfix_exe]
+
+            # todo: does pymfix accept and pass on dmp setup options? if
+            # so, swap this if statement back to original logic
+            if 'dmp' in config:
+                nodesi = self.project.nodesi.value
+                nodesj = self.project.nodesj.value
+                nodesk = self.project.nodesk.value
+                dmptotal = nodesi * nodesj * nodesk
+                # FIXME: maybe we should save NODES* keywords to runname.mfx
+                # instead of passing them on command line?
+                run_cmd = ['mpirun', '-np', str(dmptotal)] + executable + [
+                    'NODESI=%s' % nodesi,
+                    'NODESJ=%s' % nodesj,
+                    'NODESK=%s' % nodesj]
+            else:
+                # no dmp support, but maybe we should check for smp support and
+                # set required environment vars?
+                run_cmd = executable
+
+
+        # adjust environment for to-be called process
+        # assume user knows what they are doing and don't override vars
+        if not os.environment.has_key("OMP_NUM_THREADS"):
+            env = dict(os.environment, ("OMP_NUM_THREADS", dmptotal))
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
@@ -1291,17 +1301,27 @@ class MfixThread(QThread):
         self.cwd = None
         self.popen = None
 
-    def start_command(self, cmd, cwd):
+    def start_command(self, cmd, cwd, env):
+        """ Initialize local logging object, set local command and
+        working directory to those provided.
+
+        :param cmd: list of subprocess.Popen compatible ['command','arg'...]
+        :param cwd: string containing the working directory for the command
+
+        """
         log = logging.getLogger(__name__)
         log.debug("Running in %s : %s", cwd, cmd)
         self.cmd = cmd
         self.cwd = cwd
+        self.env = env
         self.start()
 
     def run(self):
+        """ Run a subprocess, with executable and arguments obtained
+        from class-local self.cmd (provided in call to start())
+
+        """
         if self.cmd:
-            # this ought to be determined elsewhere
-            self.env = dict( os.environ, OMP_NUM_THREADS="1" )
             self.popen = subprocess.Popen(self.cmd,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE,
@@ -1310,9 +1330,12 @@ class MfixThread(QThread):
                                           env=self.env)
             LOG.info("popen'd {} in {}".format(str(self.cmd), self.cwd))
 
-            #self.popen.wait()
 
             """
+            # original output readers
+
+            self.popen.wait()
+
             lines_iterator = iter(self.popen.stdout.readline,b"")
             for line in lines_iterator:
                 self.line_printed.emit(str(line), None)
@@ -1329,11 +1352,18 @@ class MfixThread(QThread):
                 # spin reading stdout and stderr from child proc
                 # check child.poll every pass and break when child has
                 # exited.
-                # this burns a lot of cpu for what it is. select.poll or 
-                # thread.Timer would work better.
+                # this burns a lot of cpu for what it is. 15% cpu on my system
+                # 
                 # plus the readline calls will block until a linebreak ...
                 # 
-                # TODO: Also listen for a terminate event
+                # TODO: Also listen for a terminate signal, pass to child
+                # TODO: look at QTimer as an exit trigger from
+                #       blocking readline
+                # TODO: buffer some lines of the child output streams and
+                #       update the gui less frequently than every line
+                # TODO: use a signals to the parent thread:
+                #       - signal when child proc has started
+                #       - signal when child proc has exited
 
                 if self.popen.poll() is not None:
                     # child has exited. Do something special with returncode?
@@ -1350,6 +1380,8 @@ class MfixThread(QThread):
                 self.line_printed.emit(str(self.popen.stdout.readline()), None)
 
                 # readline blocks, so stderr is ignored for the moment.
+                # maybe something can be done with signals and timerEvent to
+                # break out of the readline call
                 #self.line_printed.emit(str(self.popen.stderr.readline()),'red')
 
 
