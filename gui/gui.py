@@ -238,6 +238,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # build/run/connect MFIX
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
+        self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
         self.ui.toolbutton_run.clicked.connect(self.run_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
@@ -294,6 +295,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
+        self.ui.run.stop_mfix_button.setEnabled(False)
         self.ui.run.resume_mfix_button.setEnabled(not_running)
         self.ui.toolbutton_run.setEnabled(not_running)
         self.ui.toolbutton_restart.setEnabled(not_running)
@@ -303,13 +305,14 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
 
         if not not_running:
+            self.ui.run.stop_mfix_button.setEnabled(True)
             return
 
         self.handle_select_executable()
 
         current_selection = self.ui.run.mfix_executables.currentText()
         self.ui.run.mfix_executables.clear()
-        LOG.debug("qui.py:MfixGui().update_whats_enabled() calling get_executables")
+        log.debug("qui.py:MfixGui().update_whats_enabled() calling get_executables")
         output = self.monitor_thread.get_executables()
         for executable in output:
             self.ui.run.mfix_executables.addItem(executable)
@@ -1041,7 +1044,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 os.remove(path)
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
-        LOG.debug("qui.py:MfixGui().run_mfix() calling get_executables")
+        log.debug("qui.py:MfixGui().run_mfix() calling get_executables")
         config = self.monitor_thread.get_executables()[mfix_exe]
 
         if not mfix_exe.endswith('mfix'):
@@ -1065,30 +1068,47 @@ class MfixGui(QtWidgets.QMainWindow):
                     'NODESI=%s' % nodesi,
                     'NODESJ=%s' % nodesj,
                     'NODESK=%s' % nodesj]
-                # adjust environment for to-be called process
-                # assume user knows what they are doing and don't override vars
-                if not os.environ.has_key("OMP_NUM_THREADS"):
-                    os.environ["OMP_NUM_THREADS"] = str(dmptotal)
-                LOG.info(
-                    'will run MFIX with OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
+
 
 
             else:
-                # no dmp support, but maybe we should check for smp support and
-                # set required environment vars?
+                # no dmp support
                 run_cmd = executable
+                dmptotal = 1
+
+            # adjust environment for to-be called process
+            # assume user knows what they are doing and don't override vars
+
+            # NOTE: not sure this is correct for non-dmp mfix, but I can't get
+            # my local mfix builds to run in the background without it -- mfix
+            # always interactively prompts for thread count and hangs w/o a tty
+            if not os.environ.has_key("OMP_NUM_THREADS"):
+                os.environ["OMP_NUM_THREADS"] = str(dmptotal)
+            log.info(
+                'will run MFIX with DMP and OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
 
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
 
-        log.debug('running MFIX as: '+str( run_cmd ))
+        log.debug('running MFIX as: {}'.format(str(run_cmd)))
+
         self.run_thread.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
 
+        log.info("updating controls")
         self.update_whats_enabled()
+
+
+    def stop_mfix(self):
+        """ stop locally running instance of mfix
+        """
+
+        self.run_thread.stop_mfix()
+        self.update_whats_enabled()
+
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -1322,6 +1342,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 # --- Threads ---
 class MfixThread(QThread):
+
     line_printed = pyqtSignal(str, str)
 
     def __init__(self, parent):
@@ -1330,11 +1351,31 @@ class MfixThread(QThread):
         self.cwd = None
         self.popen = None
 
+    def stop_mfix(self):
+        """ kill a locally running instance of mfix
+        """
+
+        self.mfixproc.terminate()
+        log.info("asked mfix (pid {}) to exit".format(self.mfixproc.pid))
+
+        # how long should we wait after asking politely?
+        wait_duration = 30 #seconds
+
+        # haven't tested this yet
+        while self.mfixproc.returncode is None:
+            time.sleep(2)
+            wait_duration -= 2 
+            if wait_duration > 2:
+                continue
+            self.mfixproc.kill() 
+            log.info("killing mfix (pid {})".format(self.mfixproc.pid))
+
+
     def start_command(self, cmd, cwd, env):
         """ Initialize local logging object, set local command and
         working directory to those provided.
 
-        :param cmd: list of subprocess.Popen compatible ['command','arg'...]
+        :param cmd: list to be passed to subprocess.Popen
         :param cwd: string containing the working directory for the command
 
         """
@@ -1350,28 +1391,48 @@ class MfixThread(QThread):
         from class-local self.cmd (provided in call to start())
 
         """
+
         if self.cmd:
-            self.popen = subprocess.Popen(self.cmd,
+            self.mfixproc = subprocess.Popen(self.cmd,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE,
                                           universal_newlines = True,
                                           shell=False, cwd=self.cwd,
                                           env=self.env)
-            LOG.info("popen'd {} in {}".format(str(self.cmd), self.cwd))
 
+            log.info("MFIX (pid {}) is running".format(str(self.mfixproc.pid)))
+            log.info("Full MFIX startup parameters: {}".format(str(self.cmd)))
+            log.debug("starting mfix output monitor threads")
 
-            """
-            # original output readers
+            stdout_thread = MfixOutput(
+                                name='stdout',
+                                pipe=self.mfixproc.stdout,
+                                signal=self.line_printed)
 
-            self.popen.wait()
+            stderr_thread = MfixOutput(
+                                name='stderr',
+                                pipe=self.mfixproc.stderr,
+                                signal=self.line_printed,
+                                color='red')
 
-            lines_iterator = iter(self.popen.stdout.readline,b"")
-            for line in lines_iterator:
-                self.line_printed.emit(str(line), None)
+            stdout_thread.start()
+            stderr_thread.start()
 
-            lines_iterator = iter(self.popen.stderr.readline,b"")
-            for line in lines_iterator:
-                self.line_printed.emit(str(line), "red")
+            # let's rename this exposed class attribute to something obvious
+            self.popen = True
+
+            self.mfixproc.wait()
+
+            # this doesn't work as we've inherited from QThread directly
+            #self.parent.update_whats_enabled()
+
+            log.info("MFIX (pid {}) has stopped".format(str(self.mfixproc.pid)))
+
+            stderr_thread.quit()
+            stdout_thread.quit()
+
+            self.popen = None
+
 
             """
 
@@ -1386,9 +1447,7 @@ class MfixThread(QThread):
                 # plus the readline calls will block until a linebreak ...
                 # 
                 # TODO: Also listen for a terminate signal, pass to child
-                # TODO: look at QTimer(?) or Queue as a way to avoid the
-                #       blocking readline calls
-                # TODO: buffer some lines of the child output streams and
+                # TODO: (?) buffer some lines of the child output streams and
                 #       update the gui less frequently than every line
                 # TODO: use a signals to the parent thread:
                 #       - signal when child proc has started
@@ -1413,9 +1472,32 @@ class MfixThread(QThread):
                 # break out of the readline call
                 #self.line_printed.emit(str(self.popen.stderr.readline()),'red')
 
+                """
 
-            self.popen = None
-            self.parent.update_whats_enabled()
+class MfixOutput(QThread):
+    """ Generic class to handle streaming from a pipe and emiting read
+        lines into a signal handler.
+    """
+
+    def __init__(self, name, pipe, signal, color=None):
+        super(MfixOutput, self).__init__()
+        log = logging.getLogger(__name__)
+        log.info("Running thread {}".format(name))
+        self.signal = signal
+        self.pipe = pipe
+        self.color = color
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+
+        lines_iterator = iter(self.pipe.readline, b"")
+        for line in lines_iterator:
+            self.signal.emit(str(line), self.color)
+
+
+
 
 
 class MonitorThread(QThread):
@@ -1427,7 +1509,7 @@ class MonitorThread(QThread):
         self.parent = parent
         self.mfix_home = get_mfix_home()
         self.cache = {}
-        LOG.debug("qui.py:MonitorThread().__init__() calling get_executables")
+        log.debug("qui.py:MonitorThread().__init__() calling get_executables")
         self.executables = self.get_executables()
         self.outputs = self.get_outputs()
 
@@ -1461,8 +1543,7 @@ class MonitorThread(QThread):
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE,
                                      shell=True)
-            out = popen.stdout.read()
-            err = popen.stderr.read()
+            (out, err) = popen.communicate()
             flags = '' if err else out
             cache[mfix_exe] = (stat, flags)
             return flags
@@ -1491,10 +1572,10 @@ class MonitorThread(QThread):
 
         # Now look for mfix/pymfix in these dirs
         for directory in dirs:
-            for name in ['pymfix', 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+            for name in ['dummymfix', 'pymfix', 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
                 exe = os.path.join(directory, name)
                 if os.path.isfile(exe):
-                    LOG.debug("found {} executable in {}".format(name, directory))
+                    log.debug("found {} executable in {}".format(name, directory))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
@@ -1523,7 +1604,7 @@ class MonitorThread(QThread):
             if tmp != self.outputs:
                 self.outputs = tmp
                 self.sig.emit()
-            LOG.debug("qui.py:MonitorThread().run() calling get_executables")
+            log.debug("qui.py:MonitorThread().run() calling get_executables")
             tmp = self.get_executables()
             if tmp != self.executables:
                 self.executables = tmp
@@ -1715,7 +1796,7 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
-    LOG.debug("starting application at " +  str(time.time()))
+    log.debug("starting application at " +  str(time.time()))
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     mfix = MfixGui(qapp)
@@ -1746,13 +1827,13 @@ if __name__ == '__main__':
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
-    LOG.debug("finished loading application at " +  str(time.time()))
+    log.debug("finished loading application at " +  str(time.time()))
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if not quit:
         qapp.exec_()
 
-    LOG.debug("exiting application at " +  str(time.time()))
+    log.debug("exiting application at " +  str(time.time()))
     qapp.deleteLater()
     sys.exit()
