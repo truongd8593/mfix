@@ -309,6 +309,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         current_selection = self.ui.run.mfix_executables.currentText()
         self.ui.run.mfix_executables.clear()
+        LOG.debug("qui.py:MfixGui().update_whats_enabled() calling get_executables")
         output = self.monitor_thread.get_executables()
         for executable in output:
             self.ui.run.mfix_executables.addItem(executable)
@@ -1025,6 +1026,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 os.remove(path)
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
+        LOG.debug("qui.py:MfixGui().run_mfix() calling get_executables")
         config = self.monitor_thread.get_executables()[mfix_exe]
 
         if not mfix_exe.endswith('mfix'):
@@ -1054,7 +1056,7 @@ class MfixGui(QtWidgets.QMainWindow):
                     os.environ["OMP_NUM_THREADS"] = str(dmptotal)
                 LOG.info(
                     'will run MFIX with OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
-                                                              
+
 
             else:
                 # no dmp support, but maybe we should check for smp support and
@@ -1363,8 +1365,8 @@ class MfixThread(QThread):
                 # plus the readline calls will block until a linebreak ...
                 # 
                 # TODO: Also listen for a terminate signal, pass to child
-                # TODO: look at QTimer as an exit trigger from
-                #       blocking readline
+                # TODO: look at QTimer(?) or Queue as a way to avoid the
+                #       blocking readline calls
                 # TODO: buffer some lines of the child output streams and
                 #       update the gui less frequently than every line
                 # TODO: use a signals to the parent thread:
@@ -1404,6 +1406,7 @@ class MonitorThread(QThread):
         self.parent = parent
         self.mfix_home = get_mfix_home()
         self.cache = {}
+        LOG.debug("qui.py:MonitorThread().__init__() calling get_executables")
         self.executables = self.get_executables()
         self.outputs = self.get_outputs()
 
@@ -1415,9 +1418,12 @@ class MonitorThread(QThread):
         #   MfixGui.update_whats_enabled
         #   MonitorThread.__init__
         #   MonitorThread.run
+
         # it is also called repeatedly from MonitorThread.run so 
         # we could be changing the target executable throughout the run of
-        # the gui. That seems unpredictable to me. -eh
+        # the gui. That seems unpredictable to me, as the state of the gui
+        # may enable incompatible options if the target binary changes
+        # (dmp for example) -eh
 
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
@@ -1497,6 +1503,7 @@ class MonitorThread(QThread):
             if tmp != self.outputs:
                 self.outputs = tmp
                 self.sig.emit()
+            LOG.debug("qui.py:MonitorThread().run() calling get_executables")
             tmp = self.get_executables()
             if tmp != self.executables:
                 self.executables = tmp
@@ -1671,6 +1678,7 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
+    LOG.info("starting application at " +  str(time.time()))
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     mfix = MfixGui(qapp)
@@ -1699,11 +1707,13 @@ if __name__ == '__main__':
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
+    LOG.info("finished loading application at " +  str(time.time()))
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if not quit:
         qapp.exec_()
 
+    LOG.info("exiting application at " +  str(time.time()))
     qapp.deleteLater()
     sys.exit()
