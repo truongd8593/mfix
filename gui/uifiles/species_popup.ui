@@ -32,17 +32,20 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="comboBox"/>
+        <widget class="QComboBox" name="comboBox">
+         <item>
+          <property name="text">
+           <string>BURCAT</string>
+          </property>
+         </item>
+        </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="label_search">
          <property name="text">
           <string>Search:</string>
          </property>
         </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit"/>
        </item>
        <item row="2" column="0" colspan="2">
         <widget class="QTableWidget" name="tablewidget_search">
@@ -76,6 +79,9 @@
           <string>Import from database ⇒</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineedit_search"/>
        </item>
       </layout>
      </item>
@@ -248,7 +254,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>kg/m3</string>
+         <string>kg/m³</string>
         </property>
        </widget>
       </item>
@@ -305,7 +311,7 @@
         <item row="1" column="0" colspan="3">
          <widget class="QLabel" name="label_specific_heat_equation">
           <property name="text">
-           <string>   Cp(T) = a1 + a2T + a3T^2 + a4T^3 + a5T^4 + a6T^5 + a7T^6</string>
+           <string>   Cp(T) = a1 + a2T + a3T² + a4T³ + a5T⁴ + a6T⁵ + a7T⁶</string>
           </property>
          </widget>
         </item>

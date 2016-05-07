@@ -3,7 +3,7 @@
 import os
 import sys
 import cPickle
-
+import time
 
 prelude = True
 cas_id = None
@@ -123,6 +123,10 @@ for line in infile:
         if line.startswith('-----'):
             prelude = False
         continue
+
+    if "REST IN PEACE" in line:
+        time.sleep(1)
+
     if line.startswith("Troughout"): # sic
         # Done, we reached the comments at end of file
         break
