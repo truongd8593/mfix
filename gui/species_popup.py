@@ -110,25 +110,50 @@ class SpeciesPopup(QtWidgets.QDialog):
         species = self.current_species
         data = self.defined_species.get(species)
         ui = self.ui
-        ui.label_species_source.setText(data['source'])
-        ui.label_species.setText(species)
-        ui.lineedit_alias.setText(data['alias'])
-        ui.lineedit_molecular_weight.setText(str(data['molecular_weight']))
-        ui.lineedit_heat_of_formation.setText(str(data['heat_of_formation']))
-        table = ui.tablewidget_params
-        def mkitem(val):
+        def make_item(val, key=None):
             item = QLineEdit(table)
             item.setText(str(val))
              #item = QTableWidgetItem(str(val))
             item.setValidator(QDoubleValidator(item))
             item.setFrame(False)
+            if key:
+                item.textEdited.connect(make_handler(key=key))
             return item
-        table.setCellWidget(0, 0, mkitem(data['tmin']))
-        table.setCellWidget(0, 1, mkitem(data['tmax']))
+
+        def make_handler(key):
+            def handler(val, key=key):
+                if not self.current_species:
+                    print("Error, no current species")
+                try:
+                    data = self.defined_species[self.current_species]
+                    val = float(val)
+                    if type(key) is tuple:
+                        data[key[0]][key[1]] = val
+                    else:
+                        data[key] = val
+                    data['source'] = 'User Defined' # Data has been modified
+                    ui.label_species_source.setText(data['source'])
+                except ValueError:
+                    # reset field to prev. value
+                    pass
+
+            return handler
+        ui.label_species_source.setText(data['source'])
+        ui.label_species.setText(species)
+        ui.lineedit_alias.setText(data['alias'])
+        ui.lineedit_molecular_weight.setText(str(data['molecular_weight']))
+        ui.lineedit_molecular_weight.textEdited.connect(make_handler('molecular_weight'))
+        ui.lineedit_heat_of_formation.setText(str(data['heat_of_formation']))
+        ui.lineedit_heat_of_formation.textEdited.connect(make_handler('heat_of_formation'))
+        # Density - disabled
+
+        table = ui.tablewidget_params
+        table.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
+        table.setCellWidget(0, 1, make_item(data['tmax'], key='tmax'))
         for (i,x) in enumerate(data['a_low'], 1):
-            table.setCellWidget(i, 0, mkitem(x))
+            table.setCellWidget(i, 0, make_item(x, key=('a_low', i)))
         for (i,x) in enumerate(data['a_high'], 1):
-            table.setCellWidget(i, 1, mkitem(x))
+            table.setCellWidget(i, 1, make_item(x, key=('a_high', i)))
 
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
@@ -187,6 +212,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.defined_species[species] = species_data
         self.add_defined_species_row(species)
+        self.set_save_button(True)
 
     def add_defined_species_row(self, species):
         species_data = self.defined_species[species]
@@ -222,6 +248,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.user_species_names.remove(current_species)
         self.current_species = None
         self.clear_species_panel()
+        self.set_save_button(True)
 
     def handle_new(self):
         phase = self.default_phase
@@ -292,21 +319,30 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.pushbutton_delete.clicked.connect(self.handle_delete)
 
         class AliasValidator(QValidator):
+
+            # Make sure aliases are unique
             def __init__(self, parent=None):
                 super(AliasValidator, self).__init__()
                 self.parent = parent
 
             def validate(self, text, pos):
                 if text=="":
+                    self.parent.set_save_button(False)
                     return (QValidator.Intermediate, text, pos)
                 if " " in text: # ?is space allowed?
                     self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
                     return (QValidator.Invalid, text, pos)
+                current_species = self.parent.current_species
+                current_alias = self.parent.defined_species[current_species]['alias']
                 for (k,v) in self.parent.defined_species.items():
+                    if v['alias'] == current_alias: # Skip selected item
+                        continue
                     if v['alias'] == text:
                         self.parent.set_save_button(False)
+                        # More visual indication of invalid alias?
                         return (QValidator.Intermediate, text, pos)
-                self.parent.  set_save_button(True)
+                self.parent.set_save_button(True)
                 return (QValidator.Acceptable, text, pos)
 
         lineedit = ui.lineedit_alias
