@@ -245,8 +245,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.axes = vtk.vtkAnnotatedCubeActor()
         self.axes.SetXPlusFaceText('E')
         self.axes.SetXMinusFaceText('W')
-        self.axes.SetYMinusFaceText('N')
-        self.axes.SetYPlusFaceText('S')
+        self.axes.SetYMinusFaceText('S')
+        self.axes.SetYPlusFaceText('N')
         self.axes.SetZMinusFaceText('T')
         self.axes.SetZPlusFaceText('B')
         self.axes.GetTextEdgesProperty().SetColor(1, 1, 1)
@@ -581,20 +581,21 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkRenderWindow.Render()
 
-    def add_stl(self):
+    def add_stl(self, widget, filename=None):
         """
         Open browse dialog and load selected stl file
         """
 
-        filename = QtWidgets.QFileDialog.getOpenFileName(
-            self, 'Select an STL File',
-            self.parent.get_project_dir(),
-            'STL File (*.stl)',)
+        if filename is None:
+            filename = QtWidgets.QFileDialog.getOpenFileName(
+                self, 'Select an STL File',
+                self.parent.get_project_dir(),
+                'STL File (*.stl)',)
 
-        if isinstance(filename, tuple) or isinstance(filename, list):
-            filename = filename[0]
+            if isinstance(filename, tuple) or isinstance(filename, list):
+                filename = filename[0]
 
-        filename = str(filename)
+            filename = str(filename)
 
         if filename:
             name = os.path.basename(filename).lower()
@@ -1477,14 +1478,17 @@ class VtkWidget(QtWidgets.QWidget):
             source.SetXLength(lengths[0])
             source.SetYLength(lengths[1])
             source.SetZLength(0)
+            center[2] = props['from'][2]
         elif primtype == 'XZ-plane':
             source.SetXLength(lengths[0])
             source.SetYLength(0)
             source.SetZLength(lengths[2])
+            center[1] = props['from'][1]
         elif primtype == 'YZ-plane':
             source.SetXLength(0)
             source.SetYLength(lengths[1])
             source.SetZLength(lengths[2])
+            center[0] = props['from'][0]
         elif primtype == 'STL':
             source.SetXLength(lengths[0])
             source.SetYLength(lengths[1])
@@ -1519,7 +1523,7 @@ class VtkWidget(QtWidgets.QWidget):
         # Create an actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        color = self.set_region_actor_props(actor, name)
+        self.set_region_actor_props(actor, name, region['color'].color_float)
 
         self.vtkrenderer.AddActor(actor)
 #        self.balloon_widget.AddBalloon(actor, name, None)
@@ -1528,7 +1532,6 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
-        return color
 
     def delete_region(self, name):
         region = self.region_dict.pop(name)
@@ -1538,6 +1541,14 @@ class VtkWidget(QtWidgets.QWidget):
         self.region_dict[name].update(copy.deepcopy(region))
         self.update_region_source(name)
         self.vtkRenderWindow.Render()
+
+    def change_region_color(self, name, color):
+        " change the color of a region "
+        self.region_dict[name]['color'] = copy.deepcopy(color)
+
+        actor = self.region_dict[name]['actor']
+        actor.GetProperty().SetColor(
+            *self.region_dict[name]['color'].color_float)
 
     def change_region_type(self, name, region):
         " change the type of a region "
@@ -1564,7 +1575,7 @@ class VtkWidget(QtWidgets.QWidget):
         region = self.region_dict.pop(old_name)
         self.region_dict[new_name] = region
 
-    def set_region_actor_props(self, actor, name):
+    def set_region_actor_props(self, actor, name, color=None):
         """ set the geometry proprerties to the others in the scene """
 
         # copy properties from an exsiting actor
@@ -1579,18 +1590,16 @@ class VtkWidget(QtWidgets.QWidget):
             actor.GetProperty().SetRepresentationToWireframe()
             actor.GetProperty().SetOpacity(0.5)
 
-        color = np.random.random(3)
-        actor.GetProperty().SetColor(*color)
+        if color:
+            actor.GetProperty().SetColor(*color)
 
         # check visibility
         if not self.regions_visible:
             actor.VisibilityOff()
 
-        return color
-
     # --- output files ---
     def export_stl(self, file_name):
-        """ expoort visivle toplevel geometry """
+        """ export visible toplevel geometry """
 
         geometry = self.collect_toplevel_geometry()
 
@@ -1686,7 +1695,8 @@ class VtkWidget(QtWidgets.QWidget):
         for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
                                 'zmin', 'zlength'],
                                extents):
-            self.emitUpdatedValue(key, extent)
+            if not 'min' in key: # mfix doesn't support mins yet
+                self.emitUpdatedValue(key, extent)
 
         self.update_mesh()
 

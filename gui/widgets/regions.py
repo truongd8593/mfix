@@ -43,7 +43,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
         tablewidget._setModel()
-        tablewidget.set_columns(['color', 'type', 'from', 'to'])
+        tablewidget.set_columns(['visibility', 'color', 'type', 'from', 'to'])
         tablewidget.show_vertical_header(True)
         tablewidget.set_value(OrderedDict())
         tablewidget.auto_update_rows(True)
@@ -97,6 +97,7 @@ class RegionsWidget(QtWidgets.QWidget):
                       'filter':          [0, 0, 0],
                       'stl_shape':       'box',
                       'deviation_angle': 10,
+                      'visibility':      True,
                       }
 
         self.vtkwidget.new_region(name, data[name])
@@ -289,14 +290,16 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
-        
+
         if color.isValid():
             row = self.tablewidget_regions.current_row()
             data = self.tablewidget_regions.value
             name = list(data.keys())[row]
-            
+
             data[name]['color'].color = color.getRgbF()[:-1]
-            
+
             self.toolbutton_color.setStyleSheet(
                 "QToolButton{{ background: rgb({},{},{});}}".format(
                     *data[name]['color'].color_int))
+
+            self.vtkwidget.change_region_color(name, data[name]['color'])

@@ -271,7 +271,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.run_thread.line_printed.connect(
             make_handler(self.ui.command_output))
 
-        self.monitor_thread.sig.connect(self.update_whats_enabled)
+        self.monitor_thread.sig.connect(self.update_run_options)
         self.monitor_thread.start()
 
         # --- setup widgets ---
@@ -289,9 +289,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.mode_changed('modeler')
         self.change_pane('geometry')
 
-    def update_whats_enabled(self):
-        "Updates the list of executables available"
-        not_running = (self.run_thread.mfixproc is None)
+    def update_run_options(self):
+        """Updates list of of mfix executables and sets run dialog options"""
+
+        not_running = (self.run_thread.popen is None)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
@@ -1095,7 +1096,7 @@ class MfixGui(QtWidgets.QMainWindow):
             env=os.environ)
 
         log.info("updating controls")
-        self.update_whats_enabled()
+        self.update_run_options()
 
 
     def stop_mfix(self):
@@ -1103,7 +1104,7 @@ class MfixGui(QtWidgets.QMainWindow):
         """
 
         self.run_thread.stop_mfix()
-        self.update_whats_enabled()
+        self.update_run_options()
 
 
     def update_residuals(self):
@@ -1318,6 +1319,11 @@ class MfixGui(QtWidgets.QMainWindow):
         self.enable_energy_eq(self.project['energy_eq'])
         # cgw - lots more model setup todo here
 
+        # Look for geometry.stl and load automatically
+        geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+        if os.path.exists(geometry):
+            self.vtkwidget.add_stl(None, filename=geometry)
+
     # --- fluid species methods ---
     def fluid_species_add(self):
         pass
@@ -1419,9 +1425,6 @@ class MfixThread(QThread):
 
             self.mfixproc.wait()
 
-            # this doesn't work as we've inherited from QThread directly
-            #self.parent.update_whats_enabled()
-
             log.info("MFIX (pid {}) has stopped".format(str(self.mfixproc.pid)))
 
             stderr_thread.quit()
@@ -1453,8 +1456,8 @@ class MfixOutput(QThread):
         for line in lines_iterator:
             self.signal.emit(str(line), self.color)
 
-
-
+            self.popen = None
+            self.parent.update_run_options()
 
 
 class MonitorThread(QThread):
