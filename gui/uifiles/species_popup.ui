@@ -64,6 +64,9 @@
          <attribute name="horizontalHeaderDefaultSectionSize">
           <number>200</number>
          </attribute>
+         <attribute name="horizontalHeaderHighlightSections">
+          <bool>false</bool>
+         </attribute>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>0</number>
          </attribute>
@@ -71,6 +74,9 @@
           <bool>true</bool>
          </attribute>
          <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderHighlightSections">
           <bool>false</bool>
          </attribute>
          <column>
@@ -146,6 +152,9 @@
          <attribute name="horizontalHeaderDefaultSectionSize">
           <number>200</number>
          </attribute>
+         <attribute name="horizontalHeaderHighlightSections">
+          <bool>false</bool>
+         </attribute>
          <attribute name="horizontalHeaderMinimumSectionSize">
           <number>0</number>
          </attribute>
@@ -153,6 +162,9 @@
           <bool>true</bool>
          </attribute>
          <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderHighlightSections">
           <bool>false</bool>
          </attribute>
          <attribute name="verticalHeaderStretchLastSection">
@@ -264,6 +276,13 @@
         </property>
        </widget>
       </item>
+      <item row="5" column="2">
+       <widget class="QLineEdit" name="lineedit_density">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_14">
         <property name="enabled">
@@ -274,10 +293,10 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="2">
-       <widget class="QLineEdit" name="lineedit_density">
-        <property name="enabled">
-         <bool>false</bool>
+      <item row="6" column="0" colspan="4">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
@@ -288,13 +307,6 @@
         </property>
         <property name="text">
          <string>kg/m³</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="4">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
