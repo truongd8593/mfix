@@ -145,4 +145,4 @@ for line in infile:
                 data[key] = (coeffs, mol_weight, comment)
         section = []
 
-cPickle.dump(data, outfile)
+cPickle.dump(data, outfile,protocol=2)
