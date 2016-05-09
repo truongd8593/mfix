@@ -1086,17 +1086,21 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.mfix_dat_source.setPlainText(src)
         self.setWindowTitle('MFIX - %s' % project_dir)
 
+
+    def get_save_filename(self):
+        """ wrapper for call to getSaveFileName for unit tests to override """
+        return QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Save Project As',
+            os.path.join(self.get_project_dir(), self.project.run_name.value + ".mfx"),
+            "*.mfx")
+
     def handle_saveas_action(self):
         """ Save As user dialog
         updates project.run_name with user-supplied data
         opens the new project
         """
-        project_dir = self.get_project_dir()
 
-        project_path = QtWidgets.QFileDialog.getSaveFileName(
-            self, 'Save Project As',
-            os.path.join(project_dir, self.project.run_name.value + ".mfx"),
-            "*.mfx")
+        project_path = self.get_save_filename()
 
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
