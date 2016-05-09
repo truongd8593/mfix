@@ -1411,7 +1411,7 @@ class MonitorThread(QThread):
         # Now look for mfix/pymfix in these dirs
         for directory in dirs:
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                exe = os.path.join(directory, name)
+                exe = os.path.abspath(os.path.join(directory, name))
                 if os.path.isfile(exe):
                     config_options[exe] = str(mfix_print_flags(exe))
 
