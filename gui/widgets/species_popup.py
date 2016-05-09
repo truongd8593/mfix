@@ -24,6 +24,9 @@ def set_item_noedit(item):
 
 class SpeciesPopup(QtWidgets.QDialog):
 
+    save = QtCore.Signal()
+    cancel = QtCore.Signal()
+
     def load_burcat(self, path):
         if not os.path.exists(path):
             print("%s not found, create it by running read_burcat.py" % path)
@@ -326,6 +329,10 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         ui.pushbutton_new.clicked.connect(self.handle_new)
         ui.pushbutton_delete.clicked.connect(self.handle_delete)
+
+        buttons = ui.buttonbox.buttons()
+        buttons[0].clicked.connect(lambda: self.save.emit())
+        buttons[1].clicked.connect(lambda: self.cancel.emit())
 
         class AliasValidator(QValidator):
 
