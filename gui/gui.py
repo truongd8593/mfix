@@ -292,7 +292,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
 
-        not_running = (self.run_thread.popen is None)
+        not_running = (self.run_thread.mfixproc is None)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
@@ -1095,9 +1095,6 @@ class MfixGui(QtWidgets.QMainWindow):
             cwd=self.get_project_dir(),
             env=os.environ)
 
-        log.info("updating controls")
-        self.update_run_options()
-
 
     def stop_mfix(self):
         """ stop locally running instance of mfix
@@ -1357,22 +1354,30 @@ class MfixThread(QThread):
         """ kill a locally running instance of mfix
         """
 
+        mfixpid = self.mfixproc.pid
         self.mfixproc.terminate()
-        log.info("asked mfix (pid {}) to exit".format(self.mfixproc.pid))
+        log.info("Sent terminate signal to MFIX (pid {})".format(mfixpid))
 
-        # how long should we wait after asking politely?
-        wait_duration = 30 #seconds
+        # wait a bit for the process to exit
+        time.sleep(.2)
 
-        # haven't tested this yet
+        if self.mfixproc is None:
+            # mfix process exited
+            return
+
+        # mfix has not exited, try to kill a few times with short waits
+        kill_attempts = 4
         while self.mfixproc.returncode is None:
-            time.sleep(2)
-            wait_duration -= 2 
-            if wait_duration > 2:
-                continue
+            time.sleep(.2)
+            kill_attempts -= 1 
+            if kill_attempts < 1:
+                # if we get here the mfix process has hung. We should alert
+                # a dialog box also (TODO?)
+                log.info("MFIX process ({}) is unresponsive".format(mfixpid))
+                return
             self.mfixproc.kill() 
-            log.info("killing mfix (pid {})".format(self.mfixproc.pid))
+            log.info("Sending kill signal to MFIX (pid {})".format(mfixpid))
 
-        # TODO: use signal to notify gui
         self.mfixproc = None
 
 
@@ -1404,6 +1409,7 @@ class MfixThread(QThread):
                                           universal_newlines = True,
                                           shell=False, cwd=self.cwd,
                                           env=self.env)
+
 
             log.info("MFIX (pid {}) is running".format(str(self.mfixproc.pid)))
             log.debug("Full MFIX startup parameters: {}".format(str(self.cmd)))
@@ -1456,8 +1462,6 @@ class MfixOutput(QThread):
         for line in lines_iterator:
             self.signal.emit(str(line), self.color)
 
-            self.popen = None
-            self.parent.update_run_options()
 
 
 class MonitorThread(QThread):
