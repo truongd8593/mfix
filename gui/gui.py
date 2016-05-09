@@ -1761,7 +1761,6 @@ class ProjectManager(Project):
 
 
 if __name__ == '__main__':
-    log.debug("starting application at " +  str(time.time()))
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     mfix = MfixGui(qapp)
@@ -1792,13 +1791,11 @@ if __name__ == '__main__':
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
-    log.debug("finished loading application at " +  str(time.time()))
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if not quit:
         qapp.exec_()
 
-    log.debug("exiting application at " +  str(time.time()))
     qapp.deleteLater()
     sys.exit()
