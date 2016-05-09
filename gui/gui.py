@@ -1126,17 +1126,21 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.mfix_dat_source.setPlainText(src)
         self.setWindowTitle('MFIX - %s' % project_dir)
 
+
+    def get_save_filename(self):
+        """ wrapper for call to getSaveFileName for unit tests to override """
+        return QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Save Project As',
+            os.path.join(self.get_project_dir(), self.project.run_name.value + ".mfx"),
+            "*.mfx")
+
     def handle_saveas_action(self):
         """ Save As user dialog
         updates project.run_name with user-supplied data
         opens the new project
         """
-        project_dir = self.get_project_dir()
 
-        project_path = QtWidgets.QFileDialog.getSaveFileName(
-            self, 'Save Project As',
-            os.path.join(project_dir, self.project.run_name.value + ".mfx"),
-            "*.mfx")
+        project_path = self.get_save_filename()
 
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
@@ -1234,10 +1238,17 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_file)
 
-    def handle_open_action(self):
+    def get_open_filename(self):
+        ''' wrapper for call to getSaveFileName for unit tests to override '''
+
         project_dir = self.get_project_dir()
-        project_path = QtWidgets.QFileDialog.getOpenFileName(
+        return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
+
+    def handle_open_action(self):
+        ''' handler for toolbar Open button '''
+
+        project_path = self.get_open_filename()
 
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
@@ -1527,8 +1538,8 @@ class MonitorThread(QThread):
 
         # Now look for mfix/pymfix in these dirs
         for directory in dirs:
-            for name in ['dummymfix', 'pymfix', 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
-                exe = os.path.join(directory, name)
+            for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
+                exe = os.path.abspath(os.path.join(directory, name))
                 if os.path.isfile(exe):
                     log.debug("found {} executable in {}".format(name, directory))
                     config_options[exe] = str(mfix_print_flags(exe))
