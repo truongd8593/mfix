@@ -47,7 +47,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         # build search list, lowercased
         self.haystack = []
         self.comments = {}
-        for phase in 'GLCS':
+        for phase in self.phases: # 'GLCS':
             # TODO - also match comments?
             htmp = [(k[0].lower(), k, phase) for k in self.db[phase].keys()]
             htmp.sort()
@@ -292,11 +292,14 @@ class SpeciesPopup(QtWidgets.QDialog):
     def set_save_button(self, state):
         self.ui.buttonbox.buttons()[0].setEnabled(state)
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app, parent=None, phases='GLCS'):
         super(SpeciesPopup, self).__init__(parent)
         self.app = app
-
+        self.phases = phases
+        self.default_phase = phases[0]
         self.load_burcat('tools/burcat.pickle')
+
+
         ui = self.ui = uic.loadUi('uifiles/species_popup.ui', self)
 
         self.defined_species = {} # key=species, val=data tuple.  can add phase to key if needed
@@ -365,14 +368,13 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.set_save_button(False) # nothing to Save
         self.clear_species_panel()
-        self.default_phase = 'G' # how to enter phase for newly defined species?
 
 
 if __name__ == '__main__':
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     dialog = QtWidgets.QDialog()
-    species_popup = SpeciesPopup(dialog)
+    species_popup = SpeciesPopup(dialog, phases='G')
     species_popup.show()
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
