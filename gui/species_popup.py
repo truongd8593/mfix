@@ -19,6 +19,9 @@ except ImportError:
     from PyQt4 import uic
 
 
+def set_item_noedit(item):
+    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+
 class SpeciesPopup(QtWidgets.QDialog):
 
     def load_burcat(self, path):
@@ -47,7 +50,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         # build search list, lowercased
         self.haystack = []
         self.comments = {}
-        for phase in self.phases: # 'GLCS':
+        for phase in 'GLCS':
             # TODO - also match comments?
             htmp = [(k[0].lower(), k, phase) for k in self.db[phase].keys()]
             htmp.sort()
@@ -62,7 +65,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         needle = string.lower()
         results = []
         for ((key_low, key, phase)) in self.haystack:
-            if needle in key_low:
+            if needle in key_low and phase in self.phases:
                 results.append((key, phase))
         table = self.ui.tablewidget_search
         nrows = len(results)
@@ -223,9 +226,11 @@ class SpeciesPopup(QtWidgets.QDialog):
         alias = species_data['alias']
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
+        set_item_noedit(item)
         item.setData(UserRole, species)
         table.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
+        set_item_noedit(item)
         table.setItem(nrows, 1, item)
 
         self.selected_species_row = nrows
@@ -251,7 +256,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.set_save_button(True)
 
     def handle_new(self):
-        phase = self.default_phase
+        phase = self.default_phase # Note - no way for user to specify phase - FIXME
         species = self.make_user_species_name()
         alias = species.replace(' ', '') #?
         molecular_weight = 0
@@ -376,7 +381,7 @@ if __name__ == '__main__':
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     dialog = QtWidgets.QDialog()
-    species_popup = SpeciesPopup(dialog, phases='G')
+    species_popup = SpeciesPopup(dialog, phases='GL')
     species_popup.show()
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
