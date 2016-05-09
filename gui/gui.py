@@ -291,7 +291,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def update_whats_enabled(self):
         "Updates the list of executables available"
-        not_running = (self.run_thread.popen is None)
+        not_running = (self.run_thread.mfixproc is None)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
@@ -312,7 +312,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
         current_selection = self.ui.run.mfix_executables.currentText()
         self.ui.run.mfix_executables.clear()
-        log.debug("qui.py:MfixGui().update_whats_enabled() calling get_executables")
         output = self.monitor_thread.get_executables()
         for executable in output:
             self.ui.run.mfix_executables.addItem(executable)
@@ -1044,7 +1043,6 @@ class MfixGui(QtWidgets.QMainWindow):
                 os.remove(path)
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
-        log.debug("qui.py:MfixGui().run_mfix() calling get_executables")
         config = self.monitor_thread.get_executables()[mfix_exe]
 
         if not mfix_exe.endswith('mfix'):
@@ -1068,8 +1066,6 @@ class MfixGui(QtWidgets.QMainWindow):
                     'NODESI=%s' % nodesi,
                     'NODESJ=%s' % nodesj,
                     'NODESK=%s' % nodesj]
-
-
 
             else:
                 # no dmp support
@@ -1349,7 +1345,7 @@ class MfixThread(QThread):
         super(MfixThread, self).__init__(parent)
         self.cmd = None
         self.cwd = None
-        self.popen = None
+        self.mfixproc = None
 
     def stop_mfix(self):
         """ kill a locally running instance of mfix
@@ -1370,12 +1366,15 @@ class MfixThread(QThread):
             self.mfixproc.kill() 
             log.info("killing mfix (pid {})".format(self.mfixproc.pid))
 
+        # TODO: use signal to notify gui
+        self.mfixproc = None
+
 
     def start_command(self, cmd, cwd, env):
         """ Initialize local logging object, set local command and
         working directory to those provided.
 
-        :param cmd: list to be passed to subprocess.Popen
+        :param cmd: list to be passed to subprocess.Popen()
         :param cwd: string containing the working directory for the command
 
         """
@@ -1388,7 +1387,7 @@ class MfixThread(QThread):
 
     def run(self):
         """ Run a subprocess, with executable and arguments obtained
-        from class-local self.cmd (provided in call to start())
+        from class-local self.cmd set in start_command()
 
         """
 
@@ -1401,7 +1400,7 @@ class MfixThread(QThread):
                                           env=self.env)
 
             log.info("MFIX (pid {}) is running".format(str(self.mfixproc.pid)))
-            log.info("Full MFIX startup parameters: {}".format(str(self.cmd)))
+            log.debug("Full MFIX startup parameters: {}".format(str(self.cmd)))
             log.debug("starting mfix output monitor threads")
 
             stdout_thread = MfixOutput(
@@ -1418,9 +1417,6 @@ class MfixThread(QThread):
             stdout_thread.start()
             stderr_thread.start()
 
-            # let's rename this exposed class attribute to something obvious
-            self.popen = True
-
             self.mfixproc.wait()
 
             # this doesn't work as we've inherited from QThread directly
@@ -1431,48 +1427,9 @@ class MfixThread(QThread):
             stderr_thread.quit()
             stdout_thread.quit()
 
-            self.popen = None
+            # TODO: use signal to gui thread to handle gui updates?
+            self.mfixproc = None
 
-
-            """
-
-            childpid = self.popen.pid
-
-            while True:
-                # spin reading stdout and stderr from child proc
-                # check child.poll every pass and break when child has
-                # exited.
-                # this burns a lot of cpu for what it is. 15% cpu on my system
-                # 
-                # plus the readline calls will block until a linebreak ...
-                # 
-                # TODO: Also listen for a terminate signal, pass to child
-                # TODO: (?) buffer some lines of the child output streams and
-                #       update the gui less frequently than every line
-                # TODO: use a signals to the parent thread:
-                #       - signal when child proc has started
-                #       - signal when child proc has exited
-
-                if self.popen.poll() is not None:
-                    # child has exited. Do something special with returncode?
-                    #self.popen.returncode
-                    # other cleanup tasks?
-                    # signal the parent that the mfix proc has exited
-                    #PyQt4 only it seems:
-                    #self.emit(SIGNAL(something))
-                    break
-
-                #if signal.terminate
-                #   self.popen.pid
-
-                self.line_printed.emit(str(self.popen.stdout.readline()), None)
-
-                # readline blocks, so stderr is ignored for the moment.
-                # maybe something can be done with signals and timerEvent to
-                # break out of the readline call
-                #self.line_printed.emit(str(self.popen.stderr.readline()),'red')
-
-                """
 
 class MfixOutput(QThread):
     """ Generic class to handle streaming from a pipe and emiting read
@@ -1509,24 +1466,12 @@ class MonitorThread(QThread):
         self.parent = parent
         self.mfix_home = get_mfix_home()
         self.cache = {}
-        log.debug("qui.py:MonitorThread().__init__() calling get_executables")
         self.executables = self.get_executables()
         self.outputs = self.get_outputs()
 
     def get_executables(self):
         """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
-
-        # get_executables is getting called multiple times during gui setup:
-        #   MfixGui.update_whats_enabled
-        #   MonitorThread.__init__
-        #   MonitorThread.run
-
-        # it is also called repeatedly from MonitorThread.run so 
-        # we could be changing the target executable throughout the run of
-        # the gui. That seems unpredictable to me, as the state of the gui
-        # may enable incompatible options if the target binary changes
-        # (dmp for example) -eh
 
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
@@ -1604,7 +1549,6 @@ class MonitorThread(QThread):
             if tmp != self.outputs:
                 self.outputs = tmp
                 self.sig.emit()
-            log.debug("qui.py:MonitorThread().run() calling get_executables")
             tmp = self.get_executables()
             if tmp != self.executables:
                 self.executables = tmp
