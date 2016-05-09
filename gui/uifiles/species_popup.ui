@@ -49,6 +49,9 @@
        </item>
        <item row="2" column="0" colspan="2">
         <widget class="QTableWidget" name="tablewidget_search">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
          <property name="selectionBehavior">
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
@@ -125,6 +128,12 @@
        </item>
        <item row="1" column="0">
         <widget class="QTableWidget" name="tablewidget_defined_species">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
          <attribute name="horizontalHeaderCascadingSectionResizes">
           <bool>true</bool>
          </attribute>
@@ -182,14 +191,14 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Species</string>
+         <string>Species:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
        <widget class="QLabel" name="label_species">
         <property name="text">
-         <string>XX</string>
+         <string/>
         </property>
        </widget>
       </item>
