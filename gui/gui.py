@@ -1198,10 +1198,17 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.open_project(project_file)
 
-    def handle_open_action(self):
+    def get_open_filename(self):
+        ''' wrapper for call to getSaveFileName for unit tests to override '''
+
         project_dir = self.get_project_dir()
-        project_path = QtWidgets.QFileDialog.getOpenFileName(
+        return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
+
+    def handle_open_action(self):
+        ''' handler for toolbar Open button '''
+
+        project_path = self.get_open_filename()
 
         # qt4/qt5 compat hack
         if type(project_path) == tuple:

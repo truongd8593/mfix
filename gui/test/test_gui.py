@@ -32,10 +32,12 @@ class MfixGuiTests(unittest.TestCase):
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
-        arg = '../tutorials/FluidBed_DES/mfix.dat'
+        project_path = '../tutorials/FluidBed_DES/mfix.dat'
 
+        self.mfix.get_open_filename = lambda : project_path
         QtCore.QTimer.singleShot(1000, self.dismiss)
-        self.mfix.open_project(arg, True)
+        self.mfix.handle_open_action()
+
         self.assertEqual("DES_FB1", self.mfix.ui.general.lineedit_keyword_run_name.text())
         mfxfile = '../tutorials/FluidBed_DES/DES_FB1.mfx'
         self.assertTrue(os.path.exists(mfxfile))
