@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Stand-alone test/demo for species selector dialog in MFiX GUI"""
+"""Species selector dialog for MFIX GUI, includes stand-alone test"""
 
 import os
 import sys
@@ -303,11 +303,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.phases = phases
         self.default_phase = phases[0]
         thisdir = os.path.abspath(os.path.dirname(__file__))
-        datadir = os.path.join(thisdir, 'tools')
+        datadir = thisdir
         self.load_burcat(os.path.join(datadir, 'burcat.pickle'))
-
-
-        ui = self.ui = uic.loadUi('uifiles/species_popup.ui', self)
+        uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
+        ui = self.ui = uic.loadUi(os.path.join(uidir, 'species_popup.ui'), self)
 
         self.defined_species = {} # key=species, val=data tuple.  can add phase to key if needed
         self.search_results = []
