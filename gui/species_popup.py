@@ -23,7 +23,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def load_burcat(self, path):
         if not os.path.exists(path):
-            print("%s not found, create it by running read_burcat.py")
+            print("%s not found, create it by running read_burcat.py" % path)
             sys.exit(-1)
         with open(path) as f:
             db = cPickle.load(f)
@@ -297,7 +297,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.app = app
         self.phases = phases
         self.default_phase = phases[0]
-        self.load_burcat('tools/burcat.pickle')
+        thisdir = os.path.abspath(os.path.dirname(__file__))
+        datadir = os.path.join(thisdir, 'tools')
+        self.load_burcat(os.path.join(datadir, 'burcat.pickle'))
 
 
         ui = self.ui = uic.loadUi('uifiles/species_popup.ui', self)
