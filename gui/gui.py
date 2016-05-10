@@ -52,6 +52,7 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
+from widgets.species_popup import SpeciesPopup
 from tools.mfixproject import Project, Keyword
 from tools.general import (make_callback, get_icon, get_unique_string,
                            widget_iter, set_script_directory, CellColor)
@@ -155,6 +156,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.post_processing = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'post_processing.ui'), self.ui.post_processing)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
+
+        self.species_popup = SpeciesPopup(QtWidgets.QDialog())
 
         # load settings
         self.settings = QSettings('MFIX', 'MFIX')
@@ -288,6 +291,10 @@ class MfixGui(QtWidgets.QMainWindow):
         # --- default ---
         self.mode_changed('modeler')
         self.change_pane('geometry')
+
+        # some data fields, these should probably be in Project
+        self.fluid_species = []
+        self.saved_fluid_species = []
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -604,20 +611,6 @@ class MfixGui(QtWidgets.QMainWindow):
         toolbutton = self.ui.toolbutton_fluid_species_add
         toolbutton.clicked.connect(self.fluid_species_add)
 
-        # lineedit = self.ui.lineedit_fluid_species_name
-        # class FluidSpeciesNameValidator(QtGui.QValidator):
-        #     def validate(self, text, pos):
-        #         if text == "":
-        #             return (QtGui.QValidator.Intermediate, text, pos)
-        #         elif not isalpha(text[0]):
-        #             return (QtGui.QValidator.Invalid, text, pos)
-        #         # additional constraints, ie no spaces, etc? - cgw
-
-        #         return (QtGui.QValidator.Acceptable, text, pos)
-
-        #     # see http://stackoverflow.com/questions/26759623/why-is-the-return-of-qtgui-qvalidator-validate-so-inconsistent-robust-way-to
-        # lineedit.setValidator(FluidSpeciesNameValidator())
-
         # numerics
         self.ui.linear_eq_table = LinearEquationTable(self.ui.numerics)
         self.ui.numerics.gridlayout_leq.addWidget(self.ui.linear_eq_table)
@@ -796,6 +789,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
         current_selection = self.ui.treewidget_model_navigation.selectedItems()
+        self.species_popup.done(0)
 
         if current_selection:
 
@@ -1336,21 +1330,22 @@ class MfixGui(QtWidgets.QMainWindow):
             self.vtkwidget.add_stl(None, filename=geometry)
 
     # --- fluid species methods ---
+    def fluid_species_revert(self):
+        self.fluid_species = self.saved_fluid_species
+        self.fluid_species_update_pane()
+
+    def fluid_species_save(self):
+        self.fluid_species = self.species_popup.defined_species
+        self.fluid_species_update_pane()
+
+    def fluid_species_update_pane(self):
+
     def fluid_species_add(self):
-        pass
-        # table =  self.ui.tablewidget_fluid_species
-        # n = table.rowCount()
-        # table.setRowCount(n+1)
-        # for i in range(table.columnCount()):
-        #     item = QtWidgets.QTableWidgetItem("New" if i==0 else "")
-        #     item.setFlags(item.flags() ^ Qt.ItemIsEditable)
-        #     table.setItem(n, i, item)
-        # table.setCurrentCell(n, 0)
-        # lineedit =  self.ui.lineedit_fluid_species_name
-        # lineedit.clear()
-        # lineedit.insert("New")
-        # lineedit.selectAll()
-        # lineedit.setFocus()
+        self.species_popup.phases='GL' # ? is this correct
+        self.saved_fluid_species = copy.deepcopy(self.fluid_species) # So we can revert
+        self.species_popup.cancel.connect(self.fluid_species_revert)
+        self.species_popup.save.connect(self.fluid_species_save)
+        self.species_popup.show()
 
 
 # --- Threads ---
@@ -1383,13 +1378,13 @@ class MfixThread(QThread):
         kill_attempts = 4
         while self.mfixproc.returncode is None:
             time.sleep(.2)
-            kill_attempts -= 1 
+            kill_attempts -= 1
             if kill_attempts < 1:
                 # if we get here the mfix process has hung. We should alert
                 # a dialog box also (TODO?)
                 log.info("MFIX process ({}) is unresponsive".format(mfixpid))
                 return
-            self.mfixproc.kill() 
+            self.mfixproc.kill()
             log.info("Sending kill signal to MFIX (pid {})".format(mfixpid))
 
         self.mfixproc = None
