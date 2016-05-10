@@ -215,7 +215,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
-        self.ui.toolbutton_saveas.setIcon(get_icon('save.png'))
+        self.ui.toolbutton_save_as.setIcon(get_icon('save.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
         self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
@@ -234,7 +234,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # open/save/new project
         self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
-        self.ui.toolbutton_saveas.clicked.connect(self.handle_saveas_action)
+        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as_action)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -1140,20 +1140,21 @@ class MfixGui(QtWidgets.QMainWindow):
             os.path.join(self.get_project_dir(), self.project.run_name.value + ".mfx"),
             "*.mfx")
 
-    def handle_saveas_action(self):
+    def handle_save_as_action(self):
         """ Save As user dialog
         updates project.run_name with user-supplied data
         opens the new project
         """
 
-        project_path = self.get_save_filename()
+        project_file = self.get_save_filename()
 
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
-            project_path = project_path[0]
+            project_file = project_file[0]
 
         # must be a better way to know the user clicked cancel
-        if len(project_path) == 0:
+        #   (yes - connect the cancel button to a different handler)
+        if len(project_file) == 0:
             return
 
         # change project.run_name to user supplied
@@ -1173,11 +1174,11 @@ class MfixGui(QtWidgets.QMainWindow):
         project_dir = os.path.dirname(project_path)
 
         # check that we can write
-        # show warning (in check_writable) and reopen saveas dialog if needed
+        # show warning (in check_writable) and reopen 'save as' dialog if needed
         if not self.check_writable(project_dir):
             # this will recurse for every failed attempt, but user interaction
             # is required to trigger each loop
-            self.handle_saveas_action()
+            self.handle_save_as_action()
             return
 
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
