@@ -362,7 +362,8 @@ class MfixGui(QtWidgets.QMainWindow):
         """handler for "Solver" combobox in Model Setup"""
         self.solver = index
 
-        model_setup = self.ui.model_setup
+        ui = self.ui
+        model_setup = ui.model_setup
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %d: %s" % (index, solver_name))
 
@@ -391,9 +392,40 @@ class MfixGui(QtWidgets.QMainWindow):
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
-        self.ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
-        self.ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
-            and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
+        ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
+        ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
+                    and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
+
+        # Solids Model selection tied to Solver
+        self.setup_solids_model(self.solver)
+
+    def setup_solids_model(self, solver):
+        if solver == SINGLE:
+            # Note, if Single-Phase solver is enabled, this pane is disabled
+            return
+        cb = self.ui.combobox_keyword_solids_model
+        model = cb.model()
+        #          TFM,  DEM,  PIC
+        enabled = [False, False, False]
+        enabled[0] = (solver==TFM or solver==HYBRID)
+        enabled[1] = (solver==DEM or solver==HYBRID)
+        enabled[2] = (solver==PIC)
+        for (i, e) in enumerate(enabled):
+            item = model.item(i, 0)
+            flags = item.flags()
+            if e:
+                flags |= QtCore.Qt.ItemIsEnabled
+            else:
+                flags &= ~QtCore.Qt.ItemIsEnabled
+            item.setFlags(flags)
+        i = cb.currentIndex()
+        if not enabled[i]:
+            # Current selection no longer valid, so pick first valid choice
+            j = enabled.index(True)
+            cb.setCurrentIndex(j)
+            # Why does this not set the keyword?
+            val = cb.currentText()
+            self.set_keyword('solids_model', val)
 
     def set_keyword(self, key, value, args=None):
         self.project.submit_change(None, {key:value}, args)
@@ -1423,10 +1455,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.saved_fluid_species = copy.deepcopy(self.fluid_species)
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
-        if row:
-            sp.tablewidget_defined_species.setCurrentCell(row, 0)
-        else:
+        if row is None:
             sp.tablewidget_defined_species.clearSelection()
+        else:
+            sp.tablewidget_defined_species.setCurrentCell(row, 0)
         sp.setWindowTitle("Fluid Species")
         sp.show()
         sp.raise_()
@@ -1617,11 +1649,11 @@ class MonitorThread(QThread):
         dirs.add(self.mfix_home)
 
         # Now look for mfix/pymfix in these dirs
-        for directory in dirs:
+        for dir_ in dirs:
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                exe = os.path.abspath(os.path.join(directory, name))
+                exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
-                    log.debug("found {} executable in {}".format(name, directory))
+                    log.debug("found {} executable in {}".format(name, dir_))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
