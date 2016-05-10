@@ -9,7 +9,7 @@ import time
 from collections import OrderedDict
 import pickle
 
-from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
+from qtpy import QtCore, QtWidgets, QtGui
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
