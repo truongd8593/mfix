@@ -362,7 +362,8 @@ class MfixGui(QtWidgets.QMainWindow):
         """handler for "Solver" combobox in Model Setup"""
         self.solver = index
 
-        model_setup = self.ui.model_setup
+        ui = self.ui
+        model_setup = ui.model_setup
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %d: %s" % (index, solver_name))
 
@@ -391,9 +392,40 @@ class MfixGui(QtWidgets.QMainWindow):
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
-        self.ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
-        self.ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
-            and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
+        ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
+        ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
+                    and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
+
+        # Solids Model selection tied to Solver
+        self.setup_solids_model(self.solver)
+
+    def setup_solids_model(self, solver):
+        if solver == SINGLE:
+            # Note, if Single-Phase solver is enabled, this pane is disabled
+            return
+        cb = self.ui.combobox_keyword_solids_model
+        model = cb.model()
+        #          TFM,  DEM,  PIC
+        enabled = [False, False, False]
+        enabled[0] = (solver==TFM or solver==HYBRID)
+        enabled[1] = (solver==DEM or solver==HYBRID)
+        enabled[2] = (solver==PIC)
+        for (i, e) in enumerate(enabled):
+            item = model.item(i, 0)
+            flags = item.flags()
+            if e:
+                flags |= QtCore.Qt.ItemIsEnabled
+            else:
+                flags &= ~QtCore.Qt.ItemIsEnabled
+            item.setFlags(flags)
+        i = cb.currentIndex()
+        if not enabled[i]:
+            # Current selection no longer valid, so pick first valid choice
+            j = enabled.index(True)
+            cb.setCurrentIndex(j)
+            # Why does this not set the keyword?
+            val = cb.currentText()
+            self.set_keyword('solids_model', val)
 
     def set_keyword(self, key, value, args=None):
         self.project.submit_change(None, {key:value}, args)
