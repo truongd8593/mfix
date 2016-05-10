@@ -1339,6 +1339,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_species_update_pane()
 
     def fluid_species_update_pane(self):
+        pass
 
     def fluid_species_add(self):
         self.species_popup.phases='GL' # ? is this correct
