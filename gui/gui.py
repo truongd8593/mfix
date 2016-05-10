@@ -24,7 +24,7 @@ except ImportError:
     from urllib2 import urlopen
 
 # import qt
-from qtpy import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings,
                          Qt)
 
@@ -74,6 +74,7 @@ log = logging.getLogger(__name__)
 log.debug(SCRIPT_DIRECTORY)
 set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
 
+# Helper functions
 def get_mfix_home():
     " return the top level directory (since __file__ is mfix_home/gui/gui.py) "
     return os.path.dirname(
@@ -88,6 +89,9 @@ def format_key_with_args(key, args=None):
 def plural(n, word):
     fmt = "%d %s" if n==1 else "%d %ss"
     return fmt % (n, word)
+
+def set_item_noedit(item):
+    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
 
 # Constants
 
@@ -293,8 +297,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.change_pane('geometry')
 
         # some data fields, these should probably be in Project
-        self.fluid_species = []
-        self.saved_fluid_species = []
+        self.fluid_species = OrderedDict()
+        self.saved_fluid_species = None
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -607,9 +611,12 @@ class MfixGui(QtWidgets.QMainWindow):
         self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
-        # Automate the connecting?
         toolbutton = self.ui.toolbutton_fluid_species_add
         toolbutton.clicked.connect(self.fluid_species_add)
+        toolbutton = self.ui.toolbutton_fluid_species_copy
+        toolbutton.clicked.connect(self.fluid_species_edit)
+        toolbutton = self.ui.toolbutton_fluid_species_delete
+        toolbutton.clicked.connect(self.fluid_species_delete)
 
         # numerics
         self.ui.linear_eq_table = LinearEquationTable(self.ui.numerics)
@@ -789,6 +796,8 @@ class MfixGui(QtWidgets.QMainWindow):
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
         current_selection = self.ui.treewidget_model_navigation.selectedItems()
+
+        # Force open popup to close
         self.species_popup.done(0)
 
         if current_selection:
@@ -1322,6 +1331,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
         self.enable_energy_eq(self.project['energy_eq'])
+        # Species
+        self.fluid_species_update_pane()
         # cgw - lots more model setup todo here
 
         # Look for geometry.stl and load automatically
@@ -1339,6 +1350,32 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_species_update_pane()
 
     def fluid_species_update_pane(self):
+        hv = QtWidgets.QHeaderView
+        table = self.ui.tablewidget_fluid_species
+        if PYQT5:
+            resize = table.horizontalHeader().setSectionResizeMode
+        else:
+            resize = table.horizontalHeader().setResizeMode
+        for n in range(5):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
+
+        table.clearContents()
+        if self.fluid_species is None:
+            return
+        nrows = len(self.fluid_species)
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem(str(val))
+            set_item_noedit(item)
+            return item
+        for (row,(k,v)) in enumerate(self.fluid_species.items()):
+            for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
+                                        'heat_of_formation', 'source')):
+                table.setItem(row, col, make_item(v[key]))
+
+
+    def fluid_species_edit(self):
         pass
 
     def fluid_species_add(self):
@@ -1346,7 +1383,20 @@ class MfixGui(QtWidgets.QMainWindow):
         self.saved_fluid_species = copy.deepcopy(self.fluid_species) # So we can revert
         self.species_popup.cancel.connect(self.fluid_species_revert)
         self.species_popup.save.connect(self.fluid_species_save)
+        self.species_popup.defined_species = self.fluid_species
+        self.species_popup.update_defined_species()
         self.species_popup.show()
+
+    def fluid_species_delete(self):
+        table = self.ui.tablewidget_fluid_species
+        rows = set(i.row() for i in table.selectedItems())
+        if len(rows) != 1:
+            return
+        table.clearSelection()
+        row = rows.pop()
+        key = self.fluid_species.keys()[row]
+        del self.fluid_species[key]
+        self.fluid_species_update_pane()
 
 
 # --- Threads ---

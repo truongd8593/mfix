@@ -6,9 +6,10 @@ import os
 import sys
 import signal
 import time
+from collections import OrderedDict
 import cPickle
 
-from qtpy import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
@@ -18,9 +19,15 @@ try:
 except ImportError:
     from PyQt4 import uic
 
-
 def set_item_noedit(item):
     item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+
+if PYQT5:
+    def resize_column(table, col, flags):
+        table.horizontalHeader().setSectionResizeMode(col, flags)
+else:
+    def resize_column(table, col, flags):
+        table.horizontalHeader().setResizeMode(col, flags)
 
 class SpeciesPopup(QtWidgets.QDialog):
 
@@ -217,10 +224,16 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'a_high': a_high}
 
         self.defined_species[species] = species_data
-        self.add_defined_species_row(species)
+        self.add_defined_species_row(species, select=True)
         self.set_save_button(True)
 
-    def add_defined_species_row(self, species):
+    def update_defined_species(self):
+        self.tablewidget_defined_species.clearSelection()
+        self.tablewidget_defined_species.setRowCount(0)
+        for s in self.defined_species.keys():
+            self.add_defined_species_row(s, select=False)
+
+    def add_defined_species_row(self, species, select=False):
         species_data = self.defined_species[species]
         ui = self.ui
         table = ui.tablewidget_defined_species
@@ -237,7 +250,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         table.setItem(nrows, 1, item)
 
         self.selected_species_row = nrows
-        table.setCurrentCell(nrows, 0) # Cause the new row to be selected
+        if select:
+            table.setCurrentCell(nrows, 0) # Cause the new row to be selected
 
     def handle_delete(self):
         table = self.ui.tablewidget_defined_species
@@ -282,7 +296,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.defined_species[species] = species_data
         self.current_species = species
         self.enable_species_panel()
-        self.add_defined_species_row(species)
+        self.add_defined_species_row(species, select=True)
         lineedit = self.ui.lineedit_alias
         lineedit.selectAll()
         lineedit.setFocus()
@@ -311,7 +325,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         ui = self.ui = uic.loadUi(os.path.join(uidir, 'species_popup.ui'), self)
 
-        self.defined_species = {} # key=species, val=data tuple.  can add phase to key if needed
+        # key=species, val=data tuple.  can add phase to key if needed
+        self.defined_species = OrderedDict()
+
         self.search_results = []
         self.user_species_names = set()
         self.selected_search_row = None
@@ -378,6 +394,14 @@ class SpeciesPopup(QtWidgets.QDialog):
             ui.lineedit_heat_of_formation,
             ui.combobox_specific_heat_model,
             ui.tablewidget_params]
+
+        hv = QtWidgets.QHeaderView
+        for tw in (self.tablewidget_search, self.tablewidget_defined_species):
+            resize_column(tw, 0, hv.Stretch)
+            resize_column(tw, 1, hv.ResizeToContents)
+        tw = self.tablewidget_params
+        for i in (0, 1):
+            resize_column(tw, i, hv.Stretch)
 
         self.set_save_button(False) # nothing to Save
         self.clear_species_panel()
