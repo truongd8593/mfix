@@ -377,7 +377,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="0" column="3">
-               <widget class="QToolButton" name="toolbutton_saveas">
+               <widget class="QToolButton" name="toolbutton_save_as">
                 <property name="toolTip">
                  <string>Save Project As ...</string>
                 </property>
