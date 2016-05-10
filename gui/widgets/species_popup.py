@@ -73,7 +73,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         results = {}
         self.ui.tablewidget_search.clearContents()
         results = []
-        if string:
+        match_empty = True
+        if match_empty or string:
             needle = string.lower()
             for ((key_low, key, phase)) in self.haystack:
                 if needle in key_low and phase in self.phases:
@@ -336,7 +337,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # Set up UI
         ui.lineedit_search.textChanged.connect(self.do_search)
-        #self.do_search('')
+        self.do_search('') # initialize to full db?
         ui.pushbutton_import.clicked.connect(self.do_import)
         ui.pushbutton_import.setEnabled(False)
         ui.tablewidget_search.itemSelectionChanged.connect(
