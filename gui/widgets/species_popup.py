@@ -9,18 +9,14 @@ import time
 from collections import OrderedDict
 import pickle
 
-from qtpy import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
 
 try:
     from PyQt5 import uic
-    PYQT5 = True
-    PYQT4 = False
 except ImportError:
-    PYQT4 = True
-    PYQT5 = False
     from PyQt4 import uic
 
 def set_item_noedit(item):
