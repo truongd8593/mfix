@@ -162,6 +162,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
+        #self.species_popup.setModal(True) # ?
 
         # load settings
         self.settings = QSettings('MFIX', 'MFIX')
@@ -797,7 +798,8 @@ class MfixGui(QtWidgets.QMainWindow):
         """an item in the tree was selected, change panes"""
         current_selection = self.ui.treewidget_model_navigation.selectedItems()
 
-        # Force open popup to close
+        # Force any open popup to close
+        # if dialog is modal we don't need this
         self.species_popup.done(0)
 
         if current_selection:
@@ -857,6 +859,7 @@ class MfixGui(QtWidgets.QMainWindow):
         to_widget.setGeometry(0 + offsetx, 0 + offsety, width, height)
         to_widget.show()
         to_widget.raise_()
+        #to_widget.activateWindow() ? needed?
 
         # animate
         # from widget
@@ -1374,18 +1377,18 @@ class MfixGui(QtWidgets.QMainWindow):
                                         'heat_of_formation', 'source')):
                 table.setItem(row, col, make_item(v[key]))
 
-
-    def fluid_species_edit(self):
-        pass
-
     def fluid_species_add(self):
-        self.species_popup.phases='GL' # ? is this correct
+        sp = self.species_popup
+        sp.phases='GL' # ? is this correct
         self.saved_fluid_species = copy.deepcopy(self.fluid_species) # So we can revert
-        self.species_popup.cancel.connect(self.fluid_species_revert)
-        self.species_popup.save.connect(self.fluid_species_save)
-        self.species_popup.defined_species = self.fluid_species
-        self.species_popup.update_defined_species()
-        self.species_popup.show()
+        sp.cancel.connect(self.fluid_species_revert)
+        sp.save.connect(self.fluid_species_save)
+        sp.defined_species = self.fluid_species
+        sp.update_defined_species()
+        sp.setWindowTitle("Fluid Species")
+        sp.show()
+        sp.raise_()
+        sp.activateWindow()
 
     def fluid_species_delete(self):
         table = self.ui.tablewidget_fluid_species
@@ -1397,6 +1400,32 @@ class MfixGui(QtWidgets.QMainWindow):
         key = self.fluid_species.keys()[row]
         del self.fluid_species[key]
         self.fluid_species_update_pane()
+
+        # Sigh, we have to update the row in the popup too.
+        # Should the popup just be modal, to avoid this?
+        sp = self.species_popup
+        sp.defined_species = self.fluid_species
+        sp.update_defined_species()
+
+    def fluid_species_edit(self):
+        table = self.ui.tablewidget_fluid_species
+        rows = set(i.row() for i in table.selectedItems())
+        if len(rows) != 1:
+            row = None
+        else:
+            row = rows.pop()
+        sp = self.species_popup
+        self.saved_fluid_species = copy.deepcopy(self.fluid_species)
+        sp.defined_species = self.fluid_species
+        sp.update_defined_species()
+        if row:
+            sp.tablewidget_defined_species.setCurrentCell(row, 0)
+        else:
+            sp.tablewidget_defined_species.clearSelection()
+        sp.setWindowTitle("Fluid Species")
+        sp.show()
+        sp.raise_()
+        sp.activateWindow()
 
 
 # --- Threads ---
