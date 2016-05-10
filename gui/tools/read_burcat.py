@@ -2,7 +2,7 @@
 
 import os
 import sys
-import cPickle
+import pickle
 import time
 
 prelude = True
@@ -113,8 +113,8 @@ if os.path.exists(outfile_name):
     print("Not clobbering %s" % outfile_name)
     sys.exit(-1)
 
-infile = open(infile_name, 'r')
-outfile = open(outfile_name, 'w')
+infile = open(infile_name, 'rb')
+outfile = open(outfile_name, 'wb')
 
 section = []
 for line in infile:
@@ -145,4 +145,4 @@ for line in infile:
                 data[key] = (coeffs, mol_weight, comment)
         section = []
 
-cPickle.dump(data, outfile,protocol=2)
+pickle.dump(data, outfile, protocol=2)
