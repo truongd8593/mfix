@@ -2,7 +2,8 @@
 #!/usr/bin/env python
 
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
+from builtins import str
 
 import re
 import copy
@@ -84,11 +85,7 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
         QtWidgets.QLineEdit.__init__(self, parent)
         CommonBase.__init__(self)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.emitUpdatedValue)
-        self.timer.setSingleShot(True)
-
-        self.textEdited.connect(self.textEditedEvent)
+        self.editingFinished.connect(self.emitUpdatedValue)
 
         self.dtype = str
 
@@ -117,10 +114,6 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
                 self.setText(str(newValue).replace("'", '').replace('"', ''))
         else:
             self.setText('')
-
-    def textEditedEvent(self, event):
-        self.timer.stop()
-        self.timer.start(100)
 
     def default(self, val=None):
         if val is not None:

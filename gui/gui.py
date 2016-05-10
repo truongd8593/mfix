@@ -1185,7 +1185,7 @@ class MfixGui(QtWidgets.QMainWindow):
         project_file = self.get_save_filename()
 
         # qt4/qt5 compat hack
-        if type(project_path) == tuple:
+        if type(project_file) == tuple:
             project_file = project_file[0]
 
         # must be a better way to know the user clicked cancel
@@ -1194,11 +1194,11 @@ class MfixGui(QtWidgets.QMainWindow):
             return
 
         # change project.run_name to user supplied
-        newprojectfile = os.path.split(project_path)[-1]
+        newprojectfile = os.path.split(project_file)[-1]
         newrunname = os.path.splitext(newprojectfile)[0]
         self.project.run_name.value = newrunname
 
-        self.save_project_as(project_path)
+        self.save_project_as(project_file)
 
     def save_project_as(self, project_path=None):
         """Save current project to a user-supplied location
