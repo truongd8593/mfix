@@ -42,7 +42,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         if not os.path.exists(path):
             print("%s not found, create it by running read_burcat.py" % path)
             sys.exit(-1)
-        with open(path) as f:
+        with open(path, 'rb') as f:
+            print("f=", f)
+
             db = pickle.load(f)
         by_phase = {}
 
