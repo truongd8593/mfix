@@ -7,7 +7,7 @@ import sys
 import signal
 import time
 from collections import OrderedDict
-import cPickle
+import pickle
 
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
@@ -16,7 +16,11 @@ UserRole = QtCore.Qt.UserRole
 
 try:
     from PyQt5 import uic
+    PYQT5 = True
+    PYQT4 = False
 except ImportError:
+    PYQT4 = True
+    PYQT5 = False
     from PyQt4 import uic
 
 def set_item_noedit(item):
@@ -39,7 +43,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             print("%s not found, create it by running read_burcat.py" % path)
             sys.exit(-1)
         with open(path) as f:
-            db = cPickle.load(f)
+            db = pickle.load(f)
         by_phase = {}
 
         for k,v in db.items():
@@ -72,11 +76,12 @@ class SpeciesPopup(QtWidgets.QDialog):
     def do_search(self, string):
         results = {}
         self.ui.tablewidget_search.clearContents()
-        needle = string.lower()
         results = []
-        for ((key_low, key, phase)) in self.haystack:
-            if needle in key_low and phase in self.phases:
-                results.append((key, phase))
+        if string:
+            needle = string.lower()
+            for ((key_low, key, phase)) in self.haystack:
+                if needle in key_low and phase in self.phases:
+                    results.append((key, phase))
         table = self.ui.tablewidget_search
         nrows = len(results)
         self.ui.tablewidget_search.setRowCount(nrows)
@@ -335,7 +340,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # Set up UI
         ui.lineedit_search.textChanged.connect(self.do_search)
-        self.do_search('')
+        #self.do_search('')
         ui.pushbutton_import.clicked.connect(self.do_import)
         ui.pushbutton_import.setEnabled(False)
         ui.tablewidget_search.itemSelectionChanged.connect(
