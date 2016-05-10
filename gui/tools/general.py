@@ -11,6 +11,8 @@ import re
 import os
 import sys
 import locale
+import logging
+log = logging.getLogger(__name__)
 
 # import qt
 from qtpy import QtGui, QtWidgets
@@ -303,10 +305,7 @@ class CellColor(object):
 
     @property
     def qcolor(self):
-        return QtWidgets.QColor(*self.color_int)
+        return QtGui.QColor(*self.color_int)
 
     def __repr__(self):
         return self.text
-
-
-

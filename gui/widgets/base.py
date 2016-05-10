@@ -9,16 +9,21 @@ import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore
 
+import logging
+log = logging.getLogger(__name__)
+
 # optional imports
 try:
     import numpy as np
 except ImportError:
     np = None
+    log.debug("can't import numpy")
 
 try:
     import pandas as pd
 except ImportError:
     pd = None
+    log.debug("can't import pandas")
 
 # local imports
 from tools.mfixproject import Keyword, Equation
@@ -690,7 +695,6 @@ class DictTableModel(QtCore.QAbstractTableModel):
             value = self.datatable[i][j]
         else:
             value = None
-
         if role == QtCore.Qt.DisplayRole:
             if value is None:
                 value = None
