@@ -1423,10 +1423,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.saved_fluid_species = copy.deepcopy(self.fluid_species)
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
-        if row:
-            sp.tablewidget_defined_species.setCurrentCell(row, 0)
-        else:
+        if row is None:
             sp.tablewidget_defined_species.clearSelection()
+        else:
+            sp.tablewidget_defined_species.setCurrentCell(row, 0)
         sp.setWindowTitle("Fluid Species")
         sp.show()
         sp.raise_()
@@ -1617,11 +1617,11 @@ class MonitorThread(QThread):
         dirs.add(self.mfix_home)
 
         # Now look for mfix/pymfix in these dirs
-        for directory in dirs:
+        for dir_ in dirs:
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                exe = os.path.abspath(os.path.join(directory, name))
+                exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
-                    log.debug("found {} executable in {}".format(name, directory))
+                    log.debug("found {} executable in {}".format(name, dir_))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
