@@ -300,7 +300,7 @@ class CellColor(object):
     @property
     def color_float(self):
         return self.color
-        
+
     @property
     def qcolor(self):
         return QtWidgets.QColor(*self.color_int)

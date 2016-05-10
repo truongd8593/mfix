@@ -39,11 +39,11 @@ except ImportError:
 
 # Debugging hooks
 def debug_trace():
-  '''Set a tracepoint in the Python debugger that works with Qt'''
-  from qtpy.QtCore import pyqtRemoveInputHook
-  from pdb import set_trace
-  pyqtRemoveInputHook()
-  set_trace()
+    '''Set a tracepoint in the Python debugger that works with Qt'''
+    from qtpy.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
 
 
 # local imports
@@ -148,6 +148,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.output = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'output.ui'), self.ui.output)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
+
+        self.ui.output_vtk = QtWidgets.QWidget()
+        uic.loadUi(os.path.join('uifiles', 'vtk.ui'), self.ui.output_vtk)
+        self.ui.stackedWidgetTaskPane.addWidget(self.ui.output_vtk)
 
         self.ui.monitors = QtWidgets.QWidget()
         uic.loadUi(os.path.join('uifiles', 'monitors.ui'), self.ui.monitors)
