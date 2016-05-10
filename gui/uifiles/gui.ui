@@ -626,7 +626,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>10</number>
+                  <number>1</number>
                  </property>
                  <widget class="QWidget" name="fluid">
                   <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1703,12 +1703,12 @@ background-color:white;
                              </item>
                              <item>
                               <property name="text">
-                               <string>Particle-in-Cell (PIC)</string>
+                               <string>Discrete Element Model (DEM)</string>
                               </property>
                              </item>
                              <item>
                               <property name="text">
-                               <string>Discrete Element Model (DEM)</string>
+                               <string>Particle-in-Cell (PIC)</string>
                               </property>
                              </item>
                             </widget>
