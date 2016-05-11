@@ -3,7 +3,6 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
-QString = str
 
 import re
 import copy
@@ -696,7 +695,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             if value is None:
                 value = None
             else:
-                value = QString(value)
+                value = str(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
@@ -709,13 +708,13 @@ class DictTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 if len(self._columns) > section:
-                    return QString(self._columns[section])
+                    return self._columns[section]
                 else:
                     return section
 
             elif orientation == QtCore.Qt.Vertical:
                 if self._rows and len(self._rows) > section:
-                    return QString(self._rows[section])
+                    return self._rows[section]
                 else:
                     return section
         else:
@@ -813,7 +812,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             if value is None:
                 value = None
             else:
-                value = QString(value)
+                value = str(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
@@ -826,13 +825,13 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 if self._columns and len(self._columns) > section:
-                    return QString(self._columns[section])
+                    return self._columns[section]
                 else:
                     return section
 
             elif orientation == QtCore.Qt.Vertical:
                 if self._rows and len(self._rows) > section:
-                    return QString(self._rows[section])
+                    return self._rows[section]
                 else:
                     return section
         else:
