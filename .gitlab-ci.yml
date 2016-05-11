@@ -13,6 +13,8 @@ conda:
   script:
     - pip install -q qtpy
     - pip install -q future
+    - cd tutorials/FluidBed_DES
+    - ../../configure_mfix && make -j
     - MFIX_NO_VTK=yes python -m unittest discover -s gui
   only:
     - branches
