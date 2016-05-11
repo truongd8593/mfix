@@ -1364,9 +1364,9 @@ class MfixGui(QtWidgets.QMainWindow):
         runname_mfx = name + '.mfx'
 
         if auto_rename and not project_path.endswith(runname_mfx):
-            self.message(title='Warning',
-                            icon='warning',
-                            text=('Saving %s as %s based on run name\n' % (project_path, runname_mfx)),
+            self.message(title='Info',
+                            icon='info',
+                            text=('Saving %s as %s based on run name' % (project_path, runname_mfx)),
                             buttons=['ok'],
                             default='ok',
             )
