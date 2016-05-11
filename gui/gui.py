@@ -408,7 +408,8 @@ class MfixGui(QtWidgets.QMainWindow):
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
-        cb = self.ui.combobox_solids_model
+        # FIXME: this needs to be per-phase !
+        cb = self.ui.combobox_keyword_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
         enabled = [False, False, False]
@@ -659,7 +660,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # Solid phase
         # Not autoconnecting here b/c the labels don't match the keyword vals
-        cb = ui.combobox_keyword_solids_model
+        #cb = ui.combobox_keyword_solids_model
         #cb.currentIndexChanged.connect(self.set_solids_model)
 
 
