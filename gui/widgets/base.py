@@ -86,6 +86,7 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
         CommonBase.__init__(self)
 
         self.editingFinished.connect(self.emitUpdatedValue)
+        self.textChanged.connect(self.emitUpdatedValue)
 
         self.dtype = str
 

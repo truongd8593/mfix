@@ -75,10 +75,15 @@ class MfixGuiTests(unittest.TestCase):
         self.mfix.ui.treewidget_model_navigation.setCurrentItem(run_treeitem)
 
         description = self.mfix.ui.general.combobox_keyword_description.value
-        new_description = description + u'Παν語'
         self.mfix.ui.general.combobox_keyword_description.setFocus()
-        QTest.keyClicks(self.mfix.ui.general.combobox_keyword_description, 'new description')
+        QTest.keyClick(self.mfix.ui.general.combobox_keyword_description, QtCore.Qt.Key_Right)
+        # FIXME get Qt to accept non-ASCII text
+        # new_text = u'Παν語'
+        new_text = u'some new text'
+        QTest.keyClicks(self.mfix.ui.general.combobox_keyword_description, new_text)
         QTest.mouseClick(self.mfix.ui.toolbutton_save, QtCore.Qt.LeftButton)
+
+        new_description = str(description + new_text)
 
         found = 0
         with open('../tutorials/FluidBed_DES/DES_FB1.mfx') as ff:
