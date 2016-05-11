@@ -10,7 +10,7 @@ stages:
 conda:
   stage: test
   script:
-    - yes | conda install -q vtk
+    - conda install -y -q vtk
     - yes | pip install -q qtpy
     - yes | pip install -q future
     - python -m unittests discover -s gui
