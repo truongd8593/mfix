@@ -1072,8 +1072,9 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesj.setEnabled(dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
 
-    def run_mfix(self):
 
+    def run_mfix(self):
+        """cleanup previous output, start mfix run, report error on failure"""
         output_paths = self.monitor_thread.get_outputs()
         if output_paths:
             confirm = self.message(title='Warning',
@@ -1086,12 +1087,12 @@ class MfixGui(QtWidgets.QMainWindow):
                 return
 
             for path in output_paths:
-                log.debug('deleting path: '+path)
+                log.debug('Deleting path: '+path)
                 try:
                     os.remove(path)
                 except OSError as e:
                     msg = 'Cannot delete %s: %s' % (path, e.strerror)
-                    self.print_internal("Warning: %s" % msg)
+                    self.print_internal("Warning: %s" % msg, color='red')
                     log.warn(msg)
                     self.message(title='Warning',
                                  icon='warning',
@@ -1099,15 +1100,12 @@ class MfixGui(QtWidgets.QMainWindow):
                                  buttons=['ok'],
                                  default=['ok'])
 
-
-
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
 
         if not mfix_exe.endswith('mfix'):
             # run pymfix.  python or python3, depending on sys.executable
             run_cmd = [sys.executable, mfix_exe]
-
         else:
             # run mfix
             executable = [mfix_exe,]
@@ -1142,26 +1140,22 @@ class MfixGui(QtWidgets.QMainWindow):
             log.info(
                 'will run MFIX with DMP and OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
 
-
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
 
-        run_cmd_message = 'Running MFIX command: {}'.format(' '.join(run_cmd))
-        self.print_internal(run_cmd_message)
+        msg = 'Running %s' % ' '.join(run_cmd)
+        log.info(msg)
+        self.print_internal(msg, color='blue')
 
         self.run_thread.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
 
-
     def stop_mfix(self):
-        """ stop locally running instance of mfix
-        """
-
+        """ stop locally running instance of mfix"""
         self.run_thread.stop_mfix()
         self.update_run_options()
-
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
