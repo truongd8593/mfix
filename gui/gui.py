@@ -398,13 +398,17 @@ class MfixGui(QtWidgets.QMainWindow):
                     and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
 
         # Solids Model selection tied to Solver
-        self.setup_solids_model(self.solver)
+        #ui.combobox_keyword_solids_model.value_map = ['TFM', 'DEM', 'PIC']
 
-    def setup_solids_model(self, solver):
+        self.setup_combobox_solids_model(self.solver)
+
+
+    def setup_combobox_solids_model(self, solver):
+        """solids model combobox is tied to solver setting"""
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
-        cb = self.ui.combobox_keyword_solids_model
+        cb = self.ui.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
         enabled = [False, False, False]
@@ -424,9 +428,6 @@ class MfixGui(QtWidgets.QMainWindow):
             # Current selection no longer valid, so pick first valid choice
             j = enabled.index(True)
             cb.setCurrentIndex(j)
-            # Why does this not set the keyword?
-            val = cb.currentText()
-            self.set_keyword('solids_model', val)
 
     def set_keyword(self, key, value, args=None):
         self.project.submit_change(None, {key:value}, args)
@@ -594,8 +595,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def __setup_other_widgets(self): # rename/refactor
         """setup widgets which are not tied to a simple keyword"""
-
-        model_setup = self.ui.model_setup
+        ui = self.ui
+        model_setup = ui.model_setup
         combobox = model_setup.combobox_solver
         combobox.currentIndexChanged.connect(self.set_solver)
         self.set_solver(self.solver) # Default - Single Phase - (?)
@@ -607,7 +608,7 @@ class MfixGui(QtWidgets.QMainWindow):
         checkbox = model_setup.checkbox_keyword_energy_eq
         checkbox.stateChanged.connect(self.enable_energy_eq)
 
-        checkbox = self.ui.checkbox_keyword_species_eq_args_0
+        checkbox = ui.checkbox_keyword_species_eq_args_0
         checkbox.stateChanged.connect(self.enable_fluid_species_eq)
 
         combobox = model_setup.combobox_subgrid_model
@@ -617,49 +618,55 @@ class MfixGui(QtWidgets.QMainWindow):
         self.enable_energy_eq(False)
 
         # Fluid phase
-        self.ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
+        ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
             self.enable_fluid_scalar_eq)
-        self.ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
+        ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
             self.set_fluid_nscalar_eq)
 
         # Fluid phase models
         # Density
-        self.ui.combobox_fluid_density_model.currentIndexChanged.connect(
+        ui.combobox_fluid_density_model.currentIndexChanged.connect(
             self.set_fluid_density_model)
         self.set_fluid_density_model(self.fluid_density_model)
         # Viscosity
-        self.ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
+        ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
             self.set_fluid_viscosity_model)
         self.set_fluid_viscosity_model(self.fluid_viscosity_model)
         # Molecular Weight
-        self.ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
+        ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
             self.set_fluid_molecular_weight_model)
         self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
         # Specific Heat
-        self.ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
+        ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
             self.set_fluid_specific_heat_model)
         self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
         # (Thermal) Conductivity
-        self.ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
+        ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
             self.set_fluid_conductivity_model)
         self.set_fluid_conductivity_model(self.fluid_conductivity_model)
         # Diffusion (Coefficient)
-        self.ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
+        ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
             self.set_fluid_diffusion_model)
         self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
-        toolbutton = self.ui.toolbutton_fluid_species_add
-        toolbutton.clicked.connect(self.fluid_species_add)
-        toolbutton = self.ui.toolbutton_fluid_species_copy
-        toolbutton.clicked.connect(self.fluid_species_edit)
-        toolbutton = self.ui.toolbutton_fluid_species_delete
-        toolbutton.clicked.connect(self.fluid_species_delete)
+        tb = ui.toolbutton_fluid_species_add
+        tb.clicked.connect(self.fluid_species_add)
+        tb = ui.toolbutton_fluid_species_copy
+        tb.clicked.connect(self.fluid_species_edit)
+        tb = ui.toolbutton_fluid_species_delete
+        tb.clicked.connect(self.fluid_species_delete)
+
+        # Solid phase
+        # Not autoconnecting here b/c the labels don't match the keyword vals
+        cb = ui.combobox_keyword_solids_model
+        #cb.currentIndexChanged.connect(self.set_solids_model)
+
 
         # numerics
-        self.ui.linear_eq_table = LinearEquationTable(self.ui.numerics)
-        self.ui.numerics.gridlayout_leq.addWidget(self.ui.linear_eq_table)
-        self.project.register_widget(self.ui.linear_eq_table,
+        ui.linear_eq_table = LinearEquationTable(ui.numerics)
+        ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
+        self.project.register_widget(ui.linear_eq_table,
                                      ['leq_method', 'leq_tol', 'leq_it',
                                       'leq_sweep', 'leq_pc', 'ur_fac'],
                                      args='*')
@@ -685,6 +692,7 @@ class MfixGui(QtWidgets.QMainWindow):
             if 'keyword' in name_list:
                 keyword_idx = name_list.index('keyword')
                 args = None
+                # Look for _args_ following <keyword>
                 if 'args' in name_list:
                     args_idx = name_list.index('args')
                     args = map(try_int, name_list[args_idx+1:])
