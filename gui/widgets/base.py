@@ -132,6 +132,8 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QCheckBox.__init__(self, parent)
         CommonBase.__init__(self)
+        # stateChanged:  called on both user interaction and programmatic change
+        # Can we just connect for user interaction?
         self.stateChanged.connect(self.emitUpdatedValue)
 
     @property
@@ -150,14 +152,14 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QComboBox.__init__(self, parent)
         CommonBase.__init__(self)
+        # activated: only on user setttings, not programmatic change
         self.activated.connect(self.emitUpdatedValue)
-
         self.dtype = str
         self.is_pop_up = False
 
     @property
     def value(self):
-        if self.dtype == int:
+        if self.dtype == int: # Labeled string entries, just return the number
             return int(str(self.currentText()).split('-')[0].strip())
         elif self.dtype == bool:
             if str(self.currentText()).lower() == 'true':
@@ -689,6 +691,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             value = self.datatable[i][j]
         else:
             value = None
+
         if role == QtCore.Qt.DisplayRole:
             if value is None:
                 value = None
