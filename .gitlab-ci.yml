@@ -11,8 +11,8 @@ conda:
   stage: test
   script:
     - conda install -q vtk
-    - pip install -q qtpy
-    - pip install -q future
+    - yes | pip install -q qtpy
+    - yes | pip install -q future
     - python -m unittests discover -s gui
   only:
     - branches
