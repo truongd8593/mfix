@@ -1,7 +1,8 @@
 #image: python:2.7
 
 before_script:
-  - export DISPLAY=dell57:0.0
+  - Xvfb :1 &
+  - export DISPLAY=:1
   - pip install coverage
 
 stages:

@@ -4,9 +4,10 @@ FROM debian:8
 
 MAINTAINER Mark Meredith <mark.meredith@netl.doe.gov>
 
-RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
+RUN apt-get update --fix-missing && apt-get install -y wget ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
-    git gfortran automake autoconf make libgl1-mesa-glx libglu1-mesa libxt6 x11-utils
+    git gfortran automake autoconf make libgl1-mesa-glx libglu1-mesa libxt6 x11-utils xvfb
+RUN apt-get install -y bzip2
 RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
     wget --quiet https://repo.continuum.io/archive/Anaconda2-4.0.0-Linux-x86_64.sh && \
     /bin/bash /Anaconda2-4.0.0-Linux-x86_64.sh -b -p /opt/conda && \
