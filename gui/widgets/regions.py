@@ -25,7 +25,9 @@ class RegionsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
-        uic.loadUi(os.path.join('uifiles', 'regions.ui'), self)
+
+        uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uifiles')
+        uic.loadUi(os.path.join(uifiles, 'regions.ui'), self)
 
         self.combobox_regions_type.addItems(['point', 'XY-plane',
                                              'XZ-plane', 'YZ-plane', 'box',

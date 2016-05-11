@@ -33,14 +33,20 @@ class MfixGuiTests(unittest.TestCase):
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
-        project_path = '../tutorials/FluidBed_DES/mfix.dat'
+        rundir = os.path.dirname(__file__)
+        rundir = os.path.dirname(rundir)
+        rundir = os.path.dirname(rundir)
+        rundir = os.path.join(rundir, 'tutorials')
+        rundir = os.path.join(rundir, 'FluidBed_DES')
+        mfix_dat = os.path.join(rundir, 'mfix.dat')
+        self.rundir = rundir
 
-        self.mfix.get_open_filename = lambda : project_path
+        self.mfix.get_open_filename = lambda : mfix_dat
         QtCore.QTimer.singleShot(100, self.dismiss)
         self.mfix.handle_open_action()
 
         self.assertEqual("DES_FB1", self.mfix.ui.general.lineedit_keyword_run_name.text())
-        mfxfile = '../tutorials/FluidBed_DES/DES_FB1.mfx'
+        mfxfile = os.path.join(rundir,'DES_FB1.mfx')
         self.assertTrue(os.path.exists(mfxfile))
 
     def test_save_as(self):
@@ -61,7 +67,7 @@ class MfixGuiTests(unittest.TestCase):
         QTest.mouseClick(self.mfix.ui.toolbutton_run, QtCore.Qt.LeftButton)
         time.sleep(1)
 
-        logfile = '../tutorials/FluidBed_DES/DES_FB1.LOG'
+        logfile = os.path.join(self.rundir, 'DES_FB1.LOG')
         self.assertTrue(os.path.exists(logfile))
 
     def test_description_unicode(self):
@@ -86,7 +92,7 @@ class MfixGuiTests(unittest.TestCase):
         new_description = str(description + new_text)
 
         found = 0
-        with open('../tutorials/FluidBed_DES/DES_FB1.mfx') as ff:
+        with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
             for line in ff.readlines():
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip()=='description':
@@ -111,7 +117,7 @@ class MfixGuiTests(unittest.TestCase):
         QTest.mouseClick(self.mfix.ui.toolbutton_save, QtCore.Qt.LeftButton)
 
         found = 0
-        with open('../tutorials/FluidBed_DES/DES_FB1.mfx') as ff:
+        with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
             for line in ff.readlines():
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip()=='tstop':

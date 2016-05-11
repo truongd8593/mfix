@@ -120,49 +120,50 @@ class MfixGui(QtWidgets.QMainWindow):
                               'Table':         Table,
                               }
 
-        self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
+        uifiles = os.path.join(os.path.dirname(__file__), 'uifiles')
+        self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
 
         self.ui.general = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'general.ui'), self.ui.general)
+        uic.loadUi(os.path.join(uifiles, 'general.ui'), self.ui.general)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.general)
 
         self.ui.geometry = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'geometry.ui'), self.ui.geometry)
+        uic.loadUi(os.path.join(uifiles, 'geometry.ui'), self.ui.geometry)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.geometry)
 
         self.ui.mesh = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'mesh.ui'), self.ui.mesh)
+        uic.loadUi(os.path.join(uifiles, 'mesh.ui'), self.ui.mesh)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
 
         self.ui.regions = RegionsWidget()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
         self.ui.model_setup = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'model_setup.ui'), self.ui.model_setup)
+        uic.loadUi(os.path.join(uifiles, 'model_setup.ui'), self.ui.model_setup)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
 
         self.ui.numerics = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'numerics.ui'), self.ui.numerics)
+        uic.loadUi(os.path.join(uifiles, 'numerics.ui'), self.ui.numerics)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.numerics)
 
         self.ui.output = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'output.ui'), self.ui.output)
+        uic.loadUi(os.path.join(uifiles, 'output.ui'), self.ui.output)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
 
         self.ui.output_vtk = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'vtk.ui'), self.ui.output_vtk)
+        uic.loadUi(os.path.join(uifiles, 'vtk.ui'), self.ui.output_vtk)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output_vtk)
 
         self.ui.monitors = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'monitors.ui'), self.ui.monitors)
+        uic.loadUi(os.path.join(uifiles, 'monitors.ui'), self.ui.monitors)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.monitors)
 
         self.ui.run = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'run.ui'), self.ui.run)
+        uic.loadUi(os.path.join(uifiles, 'run.ui'), self.ui.run)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
 
         self.ui.post_processing = QtWidgets.QWidget()
-        uic.loadUi(os.path.join('uifiles', 'post_processing.ui'), self.ui.post_processing)
+        uic.loadUi(os.path.join(uifiles, 'post_processing.ui'), self.ui.post_processing)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
