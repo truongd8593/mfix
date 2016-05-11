@@ -1134,7 +1134,8 @@ class MfixGui(QtWidgets.QMainWindow):
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
 
-        log.debug('running MFIX as: {}'.format(str(run_cmd)))
+        run_cmd_message = 'Running MFIX command: {}'.format(' '.join(run_cmd))
+        self.print_internal(run_cmd_message)
 
         self.run_thread.start_command(
             cmd=run_cmd,
