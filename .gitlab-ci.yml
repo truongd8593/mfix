@@ -13,7 +13,7 @@ conda:
   script:
     - pip install -q qtpy
     - pip install -q future
-    - python -m unittest discover -s gui
+    - MFIX_NO_VTK=yes python -m unittest discover -s gui
   only:
     - branches
   tags:

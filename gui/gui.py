@@ -110,6 +110,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # reference to qapp instance
         self.app = app
+        self.use_vtk = 'MFIX_NO_VTK' not in os.environ
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -292,7 +293,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.__setup_other_widgets()  # refactor/rename - cgw
 
         # --- vtk setup ---
-        self.__setup_vtk_widget()
+        if self.use_vtk:
+            self.__setup_vtk_widget()
 
         # --- workflow setup ---
         if NodeWidget is not None:
@@ -1177,7 +1179,8 @@ class MfixGui(QtWidgets.QMainWindow):
         project_file = self.get_project_file()
 
         # export geometry
-        self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        if self.use_vtk:
+            self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.project.writeDatFile(project_file)
         with open(project_file, 'r') as mfx:
@@ -1234,7 +1237,8 @@ class MfixGui(QtWidgets.QMainWindow):
             self.handle_save_as_action()
             return
 
-        self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        if self.use_vtk:
+            self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.project.writeDatFile(project_path)
 
@@ -1918,7 +1922,8 @@ if __name__ == '__main__':
                         len(mfix.project.registered_keywords), color='blue')
 
     # have to initialize vtk after the widget is visible!
-    mfix.vtkwidget.vtkiren.Initialize()
+    if mfix.use_vtk:
+        mfix.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
