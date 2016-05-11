@@ -1077,17 +1077,29 @@ class MfixGui(QtWidgets.QMainWindow):
         output_paths = self.monitor_thread.get_outputs()
         if output_paths:
             confirm = self.message(title='Warning',
-                         icon='warning',
-                         text=('Deleting output files'+str(output_paths)),
-                         buttons=['ok','cancel'],
-                         default='cancel',
-                         )
+                                   icon='warning',
+                                   text=('Deleting output files'+ ' '.join(output_paths)),
+                                   buttons=['ok','cancel'],
+                                   default='cancel')
+
             if confirm != 'ok':
                 return
 
             for path in output_paths:
                 log.debug('deleting path: '+path)
-                os.remove(path)
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    msg = 'Cannot delete %s: %s' % (path, e.strerror)
+                    self.print_internal("Warning: %s" % msg)
+                    log.warn(msg)
+                    self.message(title='Warning',
+                                 icon='warning',
+                                 text=msg,
+                                 buttons=['ok'],
+                                 default=['ok'])
+
+
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
