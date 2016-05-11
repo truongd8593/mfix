@@ -4,7 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 QString = str
-from builtins import str
 
 import re
 import copy

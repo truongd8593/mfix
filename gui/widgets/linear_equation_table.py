@@ -3,7 +3,6 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
-from builtins import str
 
 # local imports
 from qtpy import QtWidgets, QtCore
