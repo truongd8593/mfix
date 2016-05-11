@@ -10,7 +10,7 @@ stages:
 conda:
   stage: test
   script:
-    - apt-get install libgl1-mesa-glx libglu1-mesa libxt6
+    - apt-get -y install libgl1-mesa-glx libglu1-mesa libxt6
     - conda install -y -q vtk
     - pip install -q qtpy
     - pip install -q future
