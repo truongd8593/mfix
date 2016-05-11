@@ -3,6 +3,7 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
+from builtins import *
 import os
 import copy
 from collections import OrderedDict
@@ -217,7 +218,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.vtkwidget.update_region(name, data[name])
 
-        elif 'name' in key:
+        elif 'name' in key and name != value.values()[0]:
 
             new_name = get_unique_string(value.values()[0], list(data.keys()))
             data = OrderedDict([(new_name, v) if k == name else (k, v) for

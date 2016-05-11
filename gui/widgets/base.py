@@ -3,12 +3,13 @@
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
+QString = str
 from builtins import str
 
 import re
 import copy
 from collections import OrderedDict
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtCore, QtGui
 
 import logging
 log = logging.getLogger(__name__)
@@ -470,7 +471,7 @@ class Table(QtWidgets.QTableView, CommonBase):
         self.menu.addAction(applyAction)
 
         # popup context menu
-        self.menu.popup(QtWidgets.QCursor.pos())
+        self.menu.popup(QtGui.QCursor.pos())
 
     def apply_val_to_column(self):
         i = self.selectionModel().selection().indexes()[-1]
@@ -696,7 +697,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             if value is None:
                 value = None
             else:
-                value = str(value)
+                value = QString(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
@@ -709,13 +710,13 @@ class DictTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 if len(self._columns) > section:
-                    return self._columns[section]
+                    return QString(self._columns[section])
                 else:
                     return section
 
             elif orientation == QtCore.Qt.Vertical:
                 if self._rows and len(self._rows) > section:
-                    return self._rows[section]
+                    return QString(self._rows[section])
                 else:
                     return section
         else:
@@ -813,7 +814,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             if value is None:
                 value = None
             else:
-                value = str(value)
+                value = QString(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
@@ -826,13 +827,13 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 if self._columns and len(self._columns) > section:
-                    return self._columns[section]
+                    return QString(self._columns[section])
                 else:
                     return section
 
             elif orientation == QtCore.Qt.Vertical:
                 if self._rows and len(self._rows) > section:
-                    return self._rows[section]
+                    return QString(self._rows[section])
                 else:
                     return section
         else:
