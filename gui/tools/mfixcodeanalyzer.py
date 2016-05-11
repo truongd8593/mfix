@@ -15,7 +15,7 @@ Last update: 07/09/2013
 """
 
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 import re, shlex, logging
 mylogger = logging.getLogger(__name__)

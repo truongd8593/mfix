@@ -5,7 +5,7 @@ Created on Fri Oct 10 16:35:42 2014
 @author: jweber
 """
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 import re
 import numpy as np

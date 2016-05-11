@@ -2,7 +2,8 @@
 #!/usr/bin/env python
 
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
+
 import os
 import copy
 from collections import OrderedDict

@@ -16,7 +16,7 @@ Last update: 12/19/2013
 @author: Justin Weber
 """
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 import re, os, glob
 import json

@@ -5,8 +5,8 @@ https://mfix.netl.doe.gov/
 
 @author: Weberjm
 """
-from __future__ import (division, absolute_import, print_function,
-                        unicode_literals)
+
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 try:
     import cookielib
