@@ -13,7 +13,7 @@ conda:
     - conda install -y -q vtk
     - pip install -q qtpy
     - pip install -q future
-    - python -m unittests discover -s gui
+    - python -m unittest discover -s gui
   only:
     - branches
   tags:
