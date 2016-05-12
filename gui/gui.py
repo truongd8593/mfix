@@ -1190,8 +1190,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 # assume user knows what they are doing and don't override vars
                 if not os.environ.has_key("OMP_NUM_THREADS"):
                     os.environ["OMP_NUM_THREADS"] = str(dmptotal)
-                log.info(
-                    'will run MFIX with OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
+                log.info('Will start mpirun with OMP_NUM_THREADS=%d' % dmptotal)
 
             else:
                 # no dmp support
@@ -1298,16 +1297,12 @@ class MfixGui(QtWidgets.QMainWindow):
             return True
 
         except Exception as e:
-            message_text = "The directory {} is not writable"
-            error_text = e.message
-
-            dialog_text = '\n'.join([
-                message_text.format(directory),
-                error_text])
-
+            # maybe to debug, but not to user dialog
+            #log.debug(e.message)
             self.message(
                 title='Warning',
                 icon='warning',
+                text = "The directory {} is not writable" % directory
                 text=(dialog_text),
                 buttons=['ok'],
                 default='ok')
@@ -1702,7 +1697,7 @@ class MfixOutput(QThread):
     def __init__(self, name, pipe, signal, color=None):
         super(MfixOutput, self).__init__()
         log = logging.getLogger(__name__)
-        log.debug("Started thread {}".format(name))
+        log.debug("Started thread %s" % name)
         self.name = name
         self.signal = signal
         self.pipe = pipe
@@ -1783,7 +1778,7 @@ class MonitorThread(QThread):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
-                    log.debug("found {} executable in {}".format(name, dir_))
+                    log.debug("found %s executable in %s" % (name, dir_))
                     config_options[exe] = str(mfix_print_flags(exe))
 
         return config_options
