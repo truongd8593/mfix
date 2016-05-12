@@ -1154,7 +1154,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
         else:
             spx_files = self.monitor_thread.get_outputs(['*.SP?'])
-            self.remove_output_files(spx_files)
+            if not self.remove_output_files(spx_files):
+                return
             self.set_keyword('run_type', 'restart_2')
 
         self.project.writeDatFile(self.get_project_file())
