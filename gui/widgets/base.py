@@ -218,6 +218,10 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
 
         self.dtype = float
 
+    def textFromValue(self, value):
+        ret = repr(value)
+        return ret
+
     def emitUpdatedValue(self):  # why not use def. in base class?
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
