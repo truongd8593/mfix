@@ -1377,13 +1377,16 @@ class MfixGui(QtWidgets.QMainWindow):
         try:
             self.project.load_project_file(project_file)
         except Exception as e:
-            msg = 'Failed to load %s: %s' % (project_file, e)
+            msg = 'Failed to load %s: %s: %s' % (project_file, e.__class__.__name__, e)
             self.print_internal("Warning: %s" % msg, color='red')
             self.message(title='Warning',
                          icon='warning',
                          text=msg,
                          buttons=['ok'],
                          default='ok')
+            import traceback
+            traceback.print_exception(*sys.exc_info())
+            # Should we stick this in the output window?  no, for now.
             return
 
         if hasattr(self.project, 'run_name'):
