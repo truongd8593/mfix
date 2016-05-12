@@ -1305,8 +1305,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.message(
                 title='Warning',
                 icon='warning',
-                text = "The directory %s is not writable" % directory
-                text=(dialog_text),
+                text="The directory %s is not writable" % directory,
                 buttons=['ok'],
                 default='ok')
 
