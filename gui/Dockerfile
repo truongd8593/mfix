@@ -23,6 +23,9 @@ RUN apt-get install -y curl grep sed dpkg && \
 ENV PATH /opt/conda/bin:$PATH
 
 RUN conda install -y vtk
+RUN pip install -q future
+RUN pip install -q qtpy
+RUN pip install coverage
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
