@@ -204,7 +204,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_nscalar_eq = 0
         self.solid_nscalar_eq = 0 # Infer these from phase4scalar?
         # Defaults
-        self.solver = SINGLE
+        #self.solver = SINGLE - moved to Project
         self.fluid_density_model = CONSTANT
         self.fluid_viscosity_model = CONSTANT
         self.fluid_molecular_weight_model = CONSTANT
@@ -371,12 +371,19 @@ class MfixGui(QtWidgets.QMainWindow):
         assert len(items) == 1, "Multiple menu items matching %s"%item_name
         items[0].setFlags(on if state else off)
 
-    def set_solver(self, index):
+    def set_solver(self, solver):
         """handler for "Solver" combobox in Model Setup"""
-        self.solver = index
+        self.project.solver = solver
+        if solver is None: #
+            log.warn("set_solver called with solver=None")
+            return
 
         ui = self.ui
         model_setup = ui.model_setup
+        cb = model_setup.combobox_solver
+        if cb.currentIndex != solver:
+            cb.setCurrentIndex(solver)
+
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %s" % solver_name)
 
@@ -389,17 +396,17 @@ class MfixGui(QtWidgets.QMainWindow):
                        PIC: (True, False, False, True),
                        HYBRID: (True, True, True, False)}
 
-        for item_name, item_state in zip(item_names, item_states[index]):
+        for item_name, item_state in zip(item_names, item_states[solver]):
             self.set_navigation_item_state(item_name, item_state)
 
         # Options which require TFM, DEM, or PIC
-        enabled = self.solver in (TFM, DEM, PIC)
+        enabled = solver in (TFM, DEM, PIC)
         interphase = model_setup.groupbox_interphase
         interphase.setEnabled(enabled)
 
         # TFM only
         # use a groupbox here, instead of accessing combobox + label?
-        enabled = (self.solver == TFM)
+        enabled = (solver == TFM)
         model_setup.combobox_subgrid_model.setEnabled(enabled)
         model_setup.label_subgrid_model.setEnabled(enabled)
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
@@ -412,7 +419,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # Solids Model selection tied to Solver
         # XXX What to do about solids that are already defined?
         #ui.combobox_keyword_solids_model.value_map = ['TFM', 'DEM', 'PIC']
-        #self.setup_combobox_solids_model(self.solver)
+        #self.setup_combobox_solids_model(solver)
 
 
     def setup_combobox_solids_model(self, solver):
@@ -611,8 +618,8 @@ class MfixGui(QtWidgets.QMainWindow):
         ui = self.ui
         model_setup = ui.model_setup
         combobox = model_setup.combobox_solver
-        combobox.currentIndexChanged.connect(self.set_solver)
-        self.set_solver(self.solver) # Default - Single Phase - (?)
+        # activated: Only on user action, avoid recursive calls in set_solver
+        combobox.activated.connect(self.set_solver)
 
         checkbox = model_setup.checkbox_disable_fluid_solver
         checkbox.stateChanged.connect(self.disable_fluid_solver)
@@ -1272,9 +1279,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if type(project_file) == tuple:
             project_file = project_file[0]
 
-        # must be a better way to know the user clicked cancel
-        #   (yes - connect the cancel button to a different handler)
-        if len(project_file) == 0:
+        if not project_file:
             return
 
         # change project.run_name to user supplied
@@ -1528,10 +1533,10 @@ class MfixGui(QtWidgets.QMainWindow):
         nrows = tw.rowCount()
         tw.setRowCount(nrows + 1)
         name = self.make_solids_name()
-        if self.solver == SINGLE: # Should not get here! this pane is disabled.
+        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
             return
         else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.solver]
+            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
         diameter = 0.0
         density = 0.0
         self.solids[name] = {'model': model,
@@ -1561,7 +1566,6 @@ class MfixGui(QtWidgets.QMainWindow):
             ui.lineedit_solids_name.setText(name)
             cb = ui.combobox_solids_model
             cb.clear()
-
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView
@@ -1852,15 +1856,12 @@ class ProjectManager(Project):
         self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
         self._widget_update_stack = [] # prevent circular updates
+        self.solver = SINGLE # default
 
     def submit_change(self, widget, newValueDict, args=None,
                       forceUpdate=False): # forceUpdate unused (?)
-        '''
-        Submit a value change
-
-        Examples:
-        submitChange(lineEdit, {'run_name':'new run name'}, args)
-        '''
+        """Submit a value change, for example
+        submitChange(lineEdit, {'run_name':'new run name'}, args)"""
 
         # Note, this may be a callback from Qt (in which case 'widget' is
         # the widget that the user activated), or from the initial mfix
@@ -1947,6 +1948,34 @@ class ProjectManager(Project):
                                                 updatedValue),
                                    font="Monospace", color='red' if warn else None)
 
+    def guess_solver(self):
+        """ Attempt to derive solver type, after reading mfix file"""
+        keys = self.keywordItems()
+        mmax = 1 if 'mmax' not in self else self['mmax'].value
+        if mmax == 0:
+            return SINGLE
+
+        solids_model = ['TFM'] * mmax # Default, if not specified
+        for n in range(1, mmax+1): # 1-based
+            if ['solids_model', n] in self:
+                solids_model[n-1] = self['solids_model', n].value
+
+        if all(sm=='TFM' for sm in solids_model):
+            return TFM
+        elif all(sm=='DEM' for sm in solids_model):
+            return DEM
+        elif all(sm=='PIC' for sm in solids_model):
+            return PIC
+        elif all(sm=='TFM' or sm=='DEM' for sm in solids_model):
+            return HYBRID
+
+        # mfix settings are inconsistent, warn user.  (Popup here?)
+        msg = "Warning, cannot deduce solver type"
+        self.parent.print_internal(msg, color='red')
+        log.warn(msg)
+
+        #default
+        return SINGLE
 
     def load_project_file(self, project_file):
         """Load an MFiX project file."""
@@ -1958,6 +1987,10 @@ class ProjectManager(Project):
             # some of these changes may cause new keywords to be instantiated,
             # so iterate over a copy of the list, which may change
             kwlist = list(self.keywordItems())
+            # Let's guess the solver type from the file
+            self.solver = self.guess_solver()
+            # Now put the GUI into the correct state before setting up interface
+            self.parent.set_solver(self.solver)
             for keyword in kwlist:
                 try:
                     self.submit_change(None, {keyword.key: keyword.value},
