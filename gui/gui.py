@@ -1095,7 +1095,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
 
 
-    def remove_output_files(self, output_files): 
+    def remove_output_files(self, output_files):
         """ remove MFIX output files from current project directory
 
         :param list output_files:
@@ -1371,13 +1371,16 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
+        # Make sure path is absolute
+        if not os.path.isabs(project_path):
+            project_path = os.path.abspath(project_path)
+
         if os.path.isdir(project_path):
             project_dir = project_path
             project_file = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
         else:
             project_dir = os.path.dirname(project_path)
             project_file = project_path
-
 
         if not os.path.exists(project_file):
             self.message(title='Warning',
