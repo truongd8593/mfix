@@ -373,7 +373,7 @@ class MfixGui(QtWidgets.QMainWindow):
         ui = self.ui
         model_setup = ui.model_setup
         solver_name = model_setup.combobox_solver.currentText()
-        self.print_internal("set solver to %d: %s" % (index, solver_name))
+        self.print_internal("set solver to %s" % solver_name)
 
         item_names =  ("Solids", "Continuum Solids Model",
                        "Discrete Element Model", "Particle in Cell Model")
@@ -673,7 +673,7 @@ class MfixGui(QtWidgets.QMainWindow):
         tb.clicked.connect(self.solids_add)
         tb = ui.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
-
+        tb.setEnabled(False)
 
 
         # numerics
@@ -1432,7 +1432,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # by keyword updates)
         self.enable_energy_eq(self.project['energy_eq'])
         # Species
-        self.fluid_species_update_pane()
+        self.update_fluid_species_table()
+        self.update_solids_table()
         # cgw - lots more model setup todo here
 
         # Look for geometry.stl and load automatically
@@ -1443,13 +1444,13 @@ class MfixGui(QtWidgets.QMainWindow):
     # --- fluid species methods ---
     def fluid_species_revert(self):
         self.fluid_species = self.saved_fluid_species
-        self.fluid_species_update_pane()
+        self.update_fluid_species_table()
 
     def fluid_species_save(self):
         self.fluid_species = self.species_popup.defined_species
-        self.fluid_species_update_pane()
+        self.update_fluid_species_table()
 
-    def fluid_species_update_pane(self):
+    def update_fluid_species_table(self):
         hv = QtWidgets.QHeaderView
         table = self.ui.tablewidget_fluid_species
         if PYQT5:
@@ -1476,8 +1477,9 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def handle_fluid_species_selection(self):
         row = self.ui.tablewidget_fluid_species.currentRow()
-        self.ui.toolbutton_fluid_species_delete.setEnabled(row >= 0)
-        self.ui.toolbutton_fluid_species_copy.setEnabled(row >= 0)
+        enabled = (row >= 0)
+        self.ui.toolbutton_fluid_species_delete.setEnabled(enabled)
+        self.ui.toolbutton_fluid_species_copy.setEnabled(enabled)
 
     def fluid_species_add(self):
         sp = self.species_popup
@@ -1501,7 +1503,7 @@ class MfixGui(QtWidgets.QMainWindow):
         table.clearSelection()
         key = self.fluid_species.keys()[row]
         del self.fluid_species[key]
-        self.fluid_species_update_pane()
+        self.update_fluid_species_table()
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
@@ -1528,6 +1530,52 @@ class MfixGui(QtWidgets.QMainWindow):
     # --- solids phase methods ---
     def solids_add(self):
         tw = self.ui.tablewidget_solids
+        nrows = tw.rowCount()
+        tw.setRowCount(nrows + 1)
+        name = "Solid %d" % (nrows + 1)
+        if self.solver == SINGLE: # Should not get here! this pane is disabled.
+            return
+        else:
+            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.solver]
+        diameter = 0.0
+        density = 0.0
+        self.solids[name] = {'model': model,
+                             'diameter': diameter,
+                             'density': density} # more?
+        self.update_solids_table()
+        tw.setCurrentCell(nrows, 0) # Select new item
+
+    def handle_solids_table_selection(self):
+        row = self.ui.tablewidget_solids.currentRow()
+        enabled = (row >= 0)
+        self.ui.toolbutton_solids_delete.setEnabled(enabled)
+        self.ui.toolbutton_solids_copy.setEnabled(enabled)
+
+    def update_solids_table(self):
+        hv = QtWidgets.QHeaderView
+        table = self.ui.tablewidget_solids
+        if PYQT5:
+            resize = table.horizontalHeader().setSectionResizeMode
+        else:
+            resize = table.horizontalHeader().setResizeMode
+        for n in range(4):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
+
+        table.clearContents()
+        if self.solids is None:
+            return
+        nrows = len(self.solids)
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem(str(val))
+            set_item_noedit(item)
+            return item
+        for (row,(k,v)) in enumerate(self.solids.items()):
+            table.setItem(row, 0, make_item(k))
+            for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
+                table.setItem(row, col, make_item(v[key]))
+
 
     def solids_delete(self):
         tw = self.ui.tablewidget_solids
@@ -1971,7 +2019,7 @@ if __name__ == '__main__':
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
-                        len(mfix.project.registered_keywords), color='blue')
+                        len(mfix.project.registered_keywords))
 
     # have to initialize vtk after the widget is visible!
     if mfix.use_vtk:

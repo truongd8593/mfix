@@ -94,17 +94,8 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.search_results[i] = (key, phase)
 
     def handle_search_selection(self):
-        table = self.tablewidget_search
-        rows = set(i.row() for i in (table.selectedItems()))
-        if len(rows) == 1: # Multiple selection is disabled
-            self.selected_search_row = rows.pop()
-        else:
-            self.selected_search_row = None
-
-        if self.selected_search_row is None:
-            self.ui.pushbutton_import.setEnabled(False)
-        else:
-            self.ui.pushbutton_import.setEnabled(True)
+        row = self.tablewidget_search.currentRow()
+        self.ui.pushbutton_import.setEnabled(row >= 0)
 
     def clear_species_panel(self):
         for item in self.species_panel_items:
@@ -173,6 +164,7 @@ class SpeciesPopup(QtWidgets.QDialog):
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
         table = self.tablewidget_defined_species
+        row = table.currentRow()
         rows = set(d.row() for d in table.selectedItems())
         species = set(d.data(UserRole) for d in table.selectedItems())
         if None in species:
@@ -180,13 +172,11 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         if len(rows) != 1:
             self.current_species = None
-            self.selected_species_row = None
             self.clear_species_panel()
             self.pushbutton_delete.setEnabled(False)
         else:
             self.pushbutton_delete.setEnabled(True)
             self.current_species = species.pop()
-            self.selected_species_row = rows.pop()
             self.enable_species_panel()
 
     def make_alias(self, species):
@@ -201,7 +191,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         return name
 
     def do_import(self):
-        rowdata = self.search_results[self.selected_search_row]
+        row = self.tablewidget_search.currentRow()
+        if row < 0: # No selection
+            return
+        rowdata = self.search_results[row]
         key, phase = rowdata
         data = self.db[phase][key]
         (species, tmin, tmax) = key
@@ -251,16 +244,14 @@ class SpeciesPopup(QtWidgets.QDialog):
         set_item_noedit(item)
         table.setItem(nrows, 1, item)
 
-        self.selected_species_row = nrows
         if select:
             table.setCurrentCell(nrows, 0) # Cause the new row to be selected
 
     def handle_delete(self):
         table = self.ui.tablewidget_defined_species
-        rows = set(item.row() for item in table.selectedItems())
-        if len(rows)!=1: # multiple selection disabled
+        row = table.currentRow()
+        if row < 0: # No selection
             return
-        row = rows.pop()
         current_species = self.current_species # will be reset when selection cleared
         table.removeRow(row)
         table.clearSelection()
@@ -304,13 +295,13 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit.setFocus()
 
     def handle_alias(self, val):
-        ui = self.ui
-        row = self.selected_species_row
-        if row is None:
+        table = self.ui.tablewidget_defined_species
+        row = table.currentRow()
+        if row < 0: # No selection
             return
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
-        ui.tablewidget_defined_species.setItem(row, 0, item)
+        table.setItem(row, 0, item)
         self.defined_species[self.current_species]['alias'] = val
 
     def set_save_button(self, state):
@@ -332,8 +323,6 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.search_results = []
         self.user_species_names = set()
-        self.selected_search_row = None
-        self.selected_species_row = None
 
         # Set up UI
         ui.lineedit_search.textChanged.connect(self.do_search)
