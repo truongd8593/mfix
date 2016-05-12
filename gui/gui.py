@@ -1348,10 +1348,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
             project_path = project_path[0]
-
         if not project_path:
             return # user pressed Cancel
-
         self.open_project(project_path)
 
     def open_project(self, project_path, auto_rename=True):
@@ -1359,7 +1357,6 @@ class MfixGui(QtWidgets.QMainWindow):
         # Make sure path is absolute
         if not os.path.isabs(project_path):
             project_path = os.path.abspath(project_path)
-
         # "path" may be a directory or a file
         if os.path.isdir(project_path):
             project_dir = project_path
