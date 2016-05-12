@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" MFIX GUI """
+"""MFIX GUI"""
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
@@ -809,19 +809,17 @@ class MfixGui(QtWidgets.QMainWindow):
                     widget.dtype = str
 
     def get_project_file(self):
-        "get the current project filename, including full path"
+        """get the project filename, including full path"""
         last = self.settings.value('project_file')
         return last if last else None
 
     def get_project_dir(self):
-        "get the current project directory"
-
+        """get the current project directory"""
         project_file = self.get_project_file()
         return os.path.dirname(project_file) if project_file else None
 
     def mode_changed(self, mode):
-        "change the Modeler, Workflow, Developer tab"
-
+        """change the Modeler, Workflow, Developer tab"""
         current_index = 0
         for i in range(self.ui.stackedwidget_mode.count()):
             widget = self.ui.stackedwidget_mode.widget(i)
@@ -840,7 +838,6 @@ class MfixGui(QtWidgets.QMainWindow):
     # --- modeler pane navigation ---
     def change_pane(self, name):
         """change to the specified pane"""
-
         clist = self.ui.treewidget_model_navigation.findItems(
                     name,
                     Qt.MatchContains | Qt.MatchRecursive,
@@ -862,17 +859,14 @@ class MfixGui(QtWidgets.QMainWindow):
         self.species_popup.done(0)
 
         if current_selection:
-
             text = str(current_selection[-1].text(0))
             text = '_'.join(text.lower().split(' '))
-
             current_index = 0
             for i in range(self.ui.stackedWidgetTaskPane.count()):
                 widget = self.ui.stackedWidgetTaskPane.widget(i)
                 if text == str(widget.objectName()):
                     current_index = i
                     break
-
             self.animate_stacked_widget(
                 self.ui.stackedWidgetTaskPane,
                 self.ui.stackedWidgetTaskPane.currentIndex(),
@@ -926,8 +920,7 @@ class MfixGui(QtWidgets.QMainWindow):
         animnow.setDuration(self.animation_speed)
         animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnow.setStartValue(
-            QtCore.QPoint(0,
-                          0))
+            QtCore.QPoint(0,0))
         animnow.setEndValue(
             QtCore.QPoint(0 - offsetx,
                           0 - offsety))
@@ -940,8 +933,7 @@ class MfixGui(QtWidgets.QMainWindow):
             QtCore.QPoint(0 + offsetx,
                           0 + offsety))
         animnext.setEndValue(
-            QtCore.QPoint(0,
-                          0))
+            QtCore.QPoint(0,0))
 
         # line
         animline = None
@@ -968,8 +960,7 @@ class MfixGui(QtWidgets.QMainWindow):
             )
         self.stack_animation.stateChanged.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, line)
-            )
+                          stackedwidget, from_, to, btn_layout, line))
 
         self.animating = True
         self.stack_animation.start()
@@ -999,8 +990,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 infoText=None,
                 detailedtext=None,
                 ):
-        '''
-        Create a message box:
+        """Create a message box:
         title = 'title'
         icon = 'warning' or 'info'
         text = 'test to show'
@@ -1008,8 +998,7 @@ class MfixGui(QtWidgets.QMainWindow):
             'discard'
         default = 'ok' the default selected button
         infotext = 'extended information text'
-        detailedtext = 'Some details'
-        '''
+        detailedtext = 'Some details'"""
 
         # TODO: tie this in with logging & print_internal
 
@@ -1096,12 +1085,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def remove_output_files(self, output_files):
-        """ remove MFIX output files from current project directory
+        """remove MFIX output files from current project directory
 
         :param list output_files:
         :return: True for success, False for user cancel
-        :rtype: bool
-        """
+        :rtype: bool"""
 
         if output_files:
             message_text = 'Deleting output files %s' % '\n'.join(output_files)
@@ -1131,7 +1119,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def run_mfix(self):
-
         output_files = self.monitor_thread.get_outputs()
         if len(output_files) > 0:
             if not self.remove_output_files(output_files):
@@ -1143,7 +1130,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def resume_mfix(self):
-        """ resume previously stopped mfix run"""
+        """resume previously stopped mfix run"""
 
         if not self.monitor_thread.get_res():
             log.debug("resume_mfix was called, but there are no resume files")
@@ -1165,7 +1152,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def _start_mfix(self):
-        """ start a new local MFIX run, using pymfix, mpirun or mfix directly"""
+        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
@@ -1218,7 +1205,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def stop_mfix(self):
-        """ stop locally running instance of mfix"""
+        """stop locally running instance of mfix"""
         self.run_thread.stop_mfix()
 
 
@@ -1229,12 +1216,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
     # --- open/save/new ---
     def save_project(self, filename=False):
-        """ save project, optionally as a new project.
+        """save project, optionally as a new project.
 
         :param project_file: Filename of project (including path)
         :type project_file: str
-        :return: None
-        """
+        :return: None"""
 
         if filename:
             project_dir = os.path.dirname(filename)
@@ -1255,11 +1241,10 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def get_save_filename(self):
-        """ wrapper for call to getSaveFileName for unit tests to override
+        """wrapper for call to getSaveFileName for unit tests to override
 
         :return: Filename (including path)
-        :rtype: str
-        """
+        :rtype: str"""
         return QtWidgets.QFileDialog.getSaveFileName(
                             self,
                             'Save Project As',
@@ -1270,10 +1255,10 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def handle_save_as_action(self):
-        """ Save As user dialog
+        """Save As user dialog
         updates project.run_name with user-supplied data
-        opens the new project
-        """
+        opens the new project"""
+
         project_file = self.get_save_filename()
 
         # qt4/qt5 compat hack
@@ -1298,7 +1283,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def check_writable(self, directory):
-        " check whether directory is writable "
+        """check whether directory is writable """
         try:
             import tempfile
             testfile = tempfile.TemporaryFile(dir=directory)
@@ -1345,17 +1330,14 @@ class MfixGui(QtWidgets.QMainWindow):
         self.open_project(project_file)
 
     def get_open_filename(self):
-        ''' wrapper for call to getSaveFileName for unit tests to override '''
-
+        """wrapper for call to getSaveFileName for unit tests to override"""
         project_dir = self.get_project_dir()
         return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
     def handle_open_action(self):
-        ''' handler for toolbar Open button '''
-
+        """handler for toolbar Open button"""
         project_path = self.get_open_filename()
-
         # qt4/qt5 compat hack
         if type(project_path) == tuple:
             project_path = project_path[0]
@@ -1378,6 +1360,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if not os.path.isabs(project_path):
             project_path = os.path.abspath(project_path)
 
+        # "path" may be a directory or a file
         if os.path.isdir(project_path):
             project_dir = project_path
             project_file = os.path.abspath(os.path.join(project_path, 'mfix.dat'))
@@ -1582,7 +1565,6 @@ class MfixGui(QtWidgets.QMainWindow):
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
 
-
     def solids_delete(self):
         tw = self.ui.tablewidget_solids
 
@@ -1600,8 +1582,7 @@ class MfixThread(QThread):
         self.mfixproc = None
 
     def stop_mfix(self):
-        """ Terminate a locally running instance of mfix"""
-
+        """Terminate a locally running instance of mfix"""
         mfixpid = self.mfixproc.pid
         self.mfixproc.terminate()
         self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, 'blue')
@@ -1613,9 +1594,8 @@ class MfixThread(QThread):
         self.mfixproc = None
         self.update_run_options.emit()
 
-
     def start_command(self, cmd, cwd, env):
-        """ Initialize local logging object, set local command and
+        """Initialize local logging object, set local command and
         working directory to those provided.
 
         :param cmd: List to be passed as first parameter to subprocess.Popen()
@@ -1624,9 +1604,7 @@ class MfixThread(QThread):
         :type cwd: str
         :param env: Variables to be set child process environment
         :type env: dict
-        :return: None
-
-        """
+        :return: None"""
         log = logging.getLogger(__name__)
         log.debug("Running in %s : %s", cwd, cmd)
         self.cmd = cmd
@@ -1635,11 +1613,10 @@ class MfixThread(QThread):
         self.start()
 
     def run(self):
-        """ Run a subprocess, with executable and arguments obtained
+        """Run a subprocess, with executable and arguments obtained
         from class-local self.cmd set in start_command()
 
-        :return: None
-        """
+        :return: None"""
 
         if self.cmd:
             self.mfixproc = subprocess.Popen(self.cmd,
@@ -1684,7 +1661,7 @@ class MfixThread(QThread):
 
 
 class MfixOutput(QThread):
-    """ Generic class to handle streaming from a pipe and emiting read
+    """Generic class to handle streaming from a pipe and emiting read
         lines into a signal handler.
 
         :param name: Name of thread
@@ -1694,8 +1671,7 @@ class MfixOutput(QThread):
         :param signal: Signal to be used to pass lines read from pipe
         :type signal: QtCore.pyqtSignal object
         :param color: Color to set when emitting signals
-        :type color: str
-    """
+        :type color: str """
 
     def __init__(self, name, pipe, signal, color=None):
         super(MfixOutput, self).__init__()
@@ -1839,9 +1815,7 @@ class UpdateResidualsThread(QThread):
 
 # --- Project Manager ---
 class ProjectManager(Project):
-    '''
-    Manages the editing of the MFiX.dat file
-    '''
+    """Manages the editing of the MFiX.dat file"""
     def __init__(self, parent=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
 
