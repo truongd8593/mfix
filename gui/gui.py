@@ -1100,7 +1100,7 @@ class MfixGui(QtWidgets.QMainWindow):
         """
 
         if output_files:
-            message_text = 'Deleting output files %s' % ' '.join(output_files)
+            message_text = 'Deleting output files %s' % '\n'.join(output_files)
             confirm = self.message(title='Warning',
                          icon='warning',
                          text=message_text,
