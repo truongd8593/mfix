@@ -1225,34 +1225,52 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
-    def save_project(self):
-        project_dir = self.get_project_dir()
-        project_file = self.get_project_file()
+    def save_project(self, filename=False):
+        """ save project, optionally as a new project.
 
-        # export geometry
+        :param project_file: Filename of project (including path)
+        :type project_file: str
+        :return: None
+        """
+
+        if filename:
+            project_dir = os.path.dirname(filename)
+            project_file = filename
+
+            if not self.check_writable(project_dir):
+                self.handle_save_as_action()
+                return
+        else:
+            project_dir = self.get_project_dir()
+            project_file = self.get_project_file()
+
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         self.project.writeDatFile(project_file)
-        with open(project_file, 'r') as mfx:
-            src = mfx.read()
-        self.ui.mfix_dat_source.setPlainText(src)
-        self.setWindowTitle('MFIX - %s' % project_dir)
+        self.open_project(project_file)
 
 
     def get_save_filename(self):
-        """ wrapper for call to getSaveFileName for unit tests to override """
+        """ wrapper for call to getSaveFileName for unit tests to override
+
+        :return: Filename (including path)
+        :rtype: str
+        """
         return QtWidgets.QFileDialog.getSaveFileName(
-            self, 'Save Project As',
-            os.path.join(self.get_project_dir(), self.project.run_name.value + ".mfx"),
-            "*.mfx")
+                            self,
+                            'Save Project As',
+                            os.path.join(
+                                self.get_project_dir(),
+                                self.project.run_name.value + ".mfx"),
+                            "*.mfx")
+
 
     def handle_save_as_action(self):
         """ Save As user dialog
         updates project.run_name with user-supplied data
         opens the new project
         """
-
         project_file = self.get_save_filename()
 
         # qt4/qt5 compat hack
@@ -1265,41 +1283,11 @@ class MfixGui(QtWidgets.QMainWindow):
             return
 
         # change project.run_name to user supplied
-        newprojectfile = os.path.split(project_file)[-1]
-        newrunname = os.path.splitext(newprojectfile)[0]
-        self.project.run_name.value = newrunname
+        project_file_basename = os.path.basename(project_file)
+        run_name = os.path.splitext(project_file_basename)[0]
+        self.project.run_name.value = run_name
 
-        self.save_project_as(project_file)
-
-    def save_project_as(self, project_path=None):
-        """Save current project to a user-supplied location
-        """
-
-        # duplicated most of save_project in order to handle
-        # directory permissions or other write errors.
-
-        project_dir = os.path.dirname(project_path)
-
-        # check that we can write
-        # show warning (in check_writable) and reopen 'save as' dialog if needed
-        if not self.check_writable(project_dir):
-            # this will recurse for every failed attempt, but user interaction
-            # is required to trigger each loop
-            self.handle_save_as_action()
-            return
-
-        if self.use_vtk:
-            self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
-
-        self.project.writeDatFile(project_path)
-
-        # open new project
-        self.open_project(project_path)
-
-        with open(project_path, 'r') as mfx:
-            src = mfx.read()
-        self.ui.mfix_dat_source.setPlainText(src)
-        self.setWindowTitle('MFIX - %s' % project_path)
+        self.save_project(project_file)
 
 
     def unsaved(self):
