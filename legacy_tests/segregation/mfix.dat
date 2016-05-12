@@ -20,7 +20,7 @@
   TSTOP                 = 1.0
   DT                    = 1.0E-4                        !time step
   DT_MIN                = 1.0D-08
-  DETECT_STALL          = .FALSE
+  DETECT_STALL          = .FALSE.
   CLOSE_PACKED          = .TRUE.  .TRUE.
   ENERGY_EQ             = .FALSE.                         !do not 
   SPECIES_EQ            = .FALSE.    .FALSE.    .FALSE. !do not s
