@@ -2,8 +2,9 @@
 
 cache:
   key: "$CI_BUILD_REF_NAME"
-  untracker: true
-  - build/
+  untracked: true
+  paths:
+    - build/
 
 before_script:
   - Xvfb :1 &
