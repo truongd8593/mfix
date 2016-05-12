@@ -1349,15 +1349,8 @@ class MfixGui(QtWidgets.QMainWindow):
         if type(project_path) == tuple:
             project_path = project_path[0]
 
-        if len(project_path) < 1 or not os.path.exists(project_path):
-            msg = 'Cannot load %s' % project_path
-            self.print_internal("Warning: %s" % msg, color='red')
-            self.message(title='Warning',
-                         icon='warning',
-                         text=msg,
-                         buttons=['ok'],
-                         default='ok')
-            return
+        if not project_path:
+            return # user pressed Cancel
 
         self.open_project(project_path)
 
@@ -1386,7 +1379,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
             self.project.load_project_file(project_file)
-
         except Exception as e:
             msg = 'Failed to load %s: %s' % (project_file, e)
             self.print_internal("Warning: %s" % msg, color='red')
