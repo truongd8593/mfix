@@ -251,6 +251,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # build/run/connect MFIX
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
         self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
+        self.ui.run.resume_mfix_button.clicked.connect(self.resume_mfix)
         self.ui.toolbutton_run.clicked.connect(self.run_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
@@ -810,6 +811,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def get_project_dir(self):
         "get the current project directory"
+
         project_file = self.get_project_file()
         return os.path.dirname(project_file) if project_file else None
 
@@ -1089,20 +1091,26 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
 
 
-    def run_mfix(self):
-        """cleanup previous output, start mfix run, report error on failure"""
-        output_paths = self.monitor_thread.get_outputs()
-        if output_paths:
+    def remove_output_files(self, output_files): 
+        """ remove MFIX output files from current project directory
+
+        :param list output_files:
+        :return: True for success, False for user cancel
+        :rtype: bool
+        """
+
+        if output_files:
+            message_text = 'Deleting output files %s' % ' '.join(output_files)
             confirm = self.message(title='Warning',
-                                   icon='warning',
-                                   text=('Deleting output files'+ ' '.join(output_paths)),
-                                   buttons=['ok','cancel'],
-                                   default='cancel')
-
+                         icon='warning',
+                         text=message_text,
+                         buttons=['ok','cancel'],
+                         default='cancel',
+                         )
             if confirm != 'ok':
-                return
+                return False
 
-            for path in output_paths:
+            for path in output_files:
                 log.debug('Deleting path: '+path)
                 try:
                     os.remove(path)
@@ -1115,46 +1123,84 @@ class MfixGui(QtWidgets.QMainWindow):
                                  text=msg,
                                  buttons=['ok'],
                                  default=['ok'])
+            return True
+
+
+    def run_mfix(self):
+
+        output_files = self.monitor_thread.get_outputs()
+        if len(output_files) > 0:
+            if not self.remove_output_files(output_files):
+                log.info('output files exist and run was cancelled')
+                return
+        self.set_keyword('run_type', 'new')
+        self.project.writeDatFile(self.get_project_file())
+        self._start_mfix()
+
+
+    def resume_mfix(self):
+        """ resume previously stopped mfix run
+        """
+        # check for RES files - MonitorThread().get_res()
+        # alter project file - change RUN_TYPE:
+        #  'RESTART_1' if *SP? files are present, and Use SPX is checked
+        #  'RESTART_2' if Use SPX is unchecked
+
+        if not self.monitor_thread.get_res():
+            log.debug("resume_mfix was called, but there are no resume files")
+            return
+
+        log.info("resuming mfix run")
+        # check SP* files, check 'Use SPX' option
+        # update project file with restart_2, remove '*.SP?' files
+        self.set_keyword('run_type', 'restart_1')
+        self.project.writeDatFile(self.get_project_file())
+        self._start_mfix()
+        self.update_run_options()
+
+
+    def _start_mfix(self):
+        """ start a new local MFIX run, using pymfix, mpirun or mfix directly
+
+        """
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
 
-        if not mfix_exe.endswith('mfix'):
+        if not mfix_exe.endswith('mfix'): # why endswith?
             # run pymfix.  python or python3, depending on sys.executable
             run_cmd = [sys.executable, mfix_exe]
         else:
-            # run mfix
+            log.info('run mfix')
             executable = [mfix_exe,]
 
-            # todo: does pymfix accept and pass on dmp setup options? if
-            # so, swap this if statement back to original logic
             if 'dmp' in config:
-                nodesi = self.project.nodesi.value
-                nodesj = self.project.nodesj.value
-                nodesk = self.project.nodesk.value
-                dmptotal = nodesi * nodesj * nodesk
-                # FIXME: maybe we should save NODES* keywords to runname.mfx
-                # instead of passing them on command line?
-                run_cmd = ['mpirun', '-np', str(dmptotal)] + executable + [
-                    'NODESI=%s' % nodesi,
-                    'NODESJ=%s' % nodesj,
-                    'NODESK=%s' % nodesj]
+                # self.ui.run.spinbox_keyword_nodesi.value()
+                #  or
+                # self.project.nodesi.value
+                nodes = {'NODESI': self.project.nodesi.value,
+                         'NODESJ': self.project.nodesj.value,
+                         'NODESK': self.project.nodesk.value}
+
+                dmptotal = reduce(lambda a,b: a*b, nodes.values())
+
+                for k,v in nodes.items():
+                    self.set_keyword(k, v)
+
+                run_cmd = ['mpirun', '-np', str(dmptotal)] + executable
+
+                # adjust environment for to-be called process
+                # assume user knows what they are doing and don't override vars
+                if not os.environ.has_key("OMP_NUM_THREADS"):
+                    os.environ["OMP_NUM_THREADS"] = str(dmptotal)
+                log.info(
+                    'will run MFIX with OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
 
             else:
                 # no dmp support
                 run_cmd = executable
                 dmptotal = 1
 
-            # adjust environment for to-be called process
-            # assume user knows what they are doing and don't override vars
-
-            # NOTE: not sure this is correct for non-dmp mfix, but I can't get
-            # my local mfix builds to run in the background without it -- mfix
-            # always interactively prompts for thread count and hangs w/o a tty
-            if not os.environ.has_key("OMP_NUM_THREADS"):
-                os.environ["OMP_NUM_THREADS"] = str(dmptotal)
-            log.info(
-                'will run MFIX with DMP and OMP_NUM_THREADS: {}'.format(os.environ["OMP_NUM_THREADS"]))
 
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
@@ -1511,32 +1557,16 @@ class MfixThread(QThread):
         self.mfixproc = None
 
     def stop_mfix(self):
-        """ kill a locally running instance of mfix
-        """
+        """ Terminate a locally running instance of mfix"""
 
         mfixpid = self.mfixproc.pid
         self.mfixproc.terminate()
-        log.info("Sent terminate signal to MFIX (pid {})".format(mfixpid))
+        self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, 'blue')
 
-        # wait a bit for the process to exit
-        time.sleep(.2)
-
-        if self.mfixproc is None:
-            # mfix process exited
-            return
-
-        # mfix has not exited, try to kill a few times with short waits
-        kill_attempts = 4
-        while self.mfixproc.returncode is None:
-            time.sleep(.2)
-            kill_attempts -= 1
-            if kill_attempts < 1:
-                # if we get here the mfix process has hung. We should alert
-                # a dialog box also (TODO?)
-                log.info("MFIX process ({}) is unresponsive".format(mfixpid))
-                return
-            self.mfixproc.kill()
-            log.info("Sending kill signal to MFIX (pid {})".format(mfixpid))
+        # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
+        # os.waitpid has a nohang option, but it's not available on Windows
+        self.mfixproc.wait()
+        self.line_printed.emit("MFIX stopped", 'blue')
 
         self.mfixproc = None
 
@@ -1545,8 +1575,13 @@ class MfixThread(QThread):
         """ Initialize local logging object, set local command and
         working directory to those provided.
 
-        :param cmd: list to be passed to subprocess.Popen()
-        :param cwd: string containing the working directory for the command
+        :param cmd: List to be passed as first parameter to subprocess.Popen()
+        :type cmd: list
+        :param cwd: The working directory for the command
+        :type cwd: str
+        :param env: Variables to be set child process environment
+        :type env: dict
+        :return: None
 
         """
         log = logging.getLogger(__name__)
@@ -1560,6 +1595,7 @@ class MfixThread(QThread):
         """ Run a subprocess, with executable and arguments obtained
         from class-local self.cmd set in start_command()
 
+        :return: None
         """
 
         if self.cmd:
@@ -1569,7 +1605,6 @@ class MfixThread(QThread):
                                           universal_newlines = True,
                                           shell=False, cwd=self.cwd,
                                           env=self.env)
-
 
             log.info("MFIX (pid {}) is running".format(str(self.mfixproc.pid)))
             log.debug("Full MFIX startup parameters: {}".format(str(self.cmd)))
@@ -1603,12 +1638,21 @@ class MfixThread(QThread):
 class MfixOutput(QThread):
     """ Generic class to handle streaming from a pipe and emiting read
         lines into a signal handler.
+
+        :param name: Name of thread
+        :type name: str
+        :param pipe: Iterable object with readline method, assumed to be subprocess.PIPE
+        :type pipe: subprocess.PIPE
+        :param signal: Signal to be used to pass lines read from pipe
+        :type signal: QtCore.pyqtSignal object
+        :param color: Color to set when emitting signals
+        :type color: str
     """
 
     def __init__(self, name, pipe, signal, color=None):
         super(MfixOutput, self).__init__()
         log = logging.getLogger(__name__)
-        log.info("Running thread {}".format(name))
+        log.debug("Started thread {}".format(name))
         self.signal = signal
         self.pipe = pipe
         self.color = color
@@ -1699,11 +1743,13 @@ class MonitorThread(QThread):
         return glob.glob(globb)
 
     def get_outputs(self):
-        if not self.parent.get_project_dir():
+        project_dir = self.parent.get_project_dir()
+        if project_dir is None:
             return
-        output_paths = ['*.LOG', '*.OUT', '*.RES', '*.SP?', '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
-        output_paths = [glob.glob(os.path.join(self.parent.get_project_dir(), path)) for path in output_paths]
-        log.debug("outputs are"+ str( output_paths ))
+        output_names = [
+            '*.LOG', '*.OUT', '*.RES', '*.SP?',
+            '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        output_paths = [glob.glob(os.path.join(project_dir, n)) for n in output_names]
         outputs = []
         for path in output_paths:
             outputs += path

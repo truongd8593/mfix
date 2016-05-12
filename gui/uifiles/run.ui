@@ -35,17 +35,14 @@
       <enum>QFrame::Plain</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_48">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="run_mfix_button">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="use_spx_checkbox">
         <property name="text">
-         <string>RUN</string>
+         <string>Use SPX Files</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QPushButton" name="resume_mfix_button">
         <property name="enabled">
          <bool>false</bool>
@@ -55,17 +52,23 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="checkBox">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="run_mfix_button">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
-         <string>Use SPX Files</string>
+         <string>Run</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="0">
        <widget class="QPushButton" name="stop_mfix_button">
+        <property name="toolTip">
+         <string>Stop MFIX</string>
+        </property>
         <property name="text">
-         <string>STOP</string>
+         <string>Stop</string>
         </property>
        </widget>
       </item>
