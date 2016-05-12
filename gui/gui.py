@@ -344,6 +344,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         res_file_exists = bool(self.monitor_thread.get_res())
         self.ui.run.resume_mfix_button.setEnabled(res_file_exists)
+        self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.toolbutton_restart.setEnabled(res_file_exists)
 
     def print_welcome(self):
@@ -1141,19 +1142,21 @@ class MfixGui(QtWidgets.QMainWindow):
     def resume_mfix(self):
         """ resume previously stopped mfix run
         """
-        # check for RES files - MonitorThread().get_res()
-        # alter project file - change RUN_TYPE:
-        #  'RESTART_1' if *SP? files are present, and Use SPX is checked
-        #  'RESTART_2' if Use SPX is unchecked
 
         if not self.monitor_thread.get_res():
             log.debug("resume_mfix was called, but there are no resume files")
             return
 
-        log.info("resuming mfix run")
-        # check SP* files, check 'Use SPX' option
-        # update project file with restart_2, remove '*.SP?' files
-        self.set_keyword('run_type', 'restart_1')
+        if self.ui.run.use_spx_checkbox.isChecked():
+            self.set_keyword('run_type', 'restart_1')
+
+        else:
+            # remove *.SP?, goofy list comprehension
+            spx_files = self.monitor_thread.get_outputs(['*.SP?'])
+            log.info(spx_files)
+            self.remove_output_files(spx_files)
+            self.set_keyword('run_type', 'restart_2')
+
         self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
         self.update_run_options()
@@ -1730,14 +1733,15 @@ class MonitorThread(QThread):
         globb = os.path.join(self.parent.get_project_dir(),'*.RES')
         return glob.glob(globb)
 
-    def get_outputs(self):
+    def get_outputs(self, patterns=[]):
         project_dir = self.parent.get_project_dir()
         if project_dir is None:
             return
-        output_names = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?',
-            '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
-        output_paths = [glob.glob(os.path.join(project_dir, n)) for n in output_names]
+        if len(patterns) == 0:
+            patterns = [
+                '*.LOG', '*.OUT', '*.RES', '*.SP?',
+                '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        output_paths = [glob.glob(os.path.join(project_dir, n)) for n in patterns]
         outputs = []
         for path in output_paths:
             outputs += path
