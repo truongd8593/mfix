@@ -347,6 +347,7 @@ class MfixGui(QtWidgets.QMainWindow):
         res_file_exists = bool(self.monitor_thread.get_res())
         self.ui.run.resume_mfix_button.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
+        self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
         self.ui.toolbutton_restart.setEnabled(res_file_exists)
 
     def print_welcome(self):
@@ -1152,9 +1153,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.set_keyword('run_type', 'restart_1')
 
         else:
-            # remove *.SP?, goofy list comprehension
             spx_files = self.monitor_thread.get_outputs(['*.SP?'])
-            log.info(spx_files)
             self.remove_output_files(spx_files)
             self.set_keyword('run_type', 'restart_2')
 
