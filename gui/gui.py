@@ -410,6 +410,7 @@ class MfixGui(QtWidgets.QMainWindow):
                     and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
 
         # Solids Model selection tied to Solver
+        # XXX What to do about solids that are already defined?
         #ui.combobox_keyword_solids_model.value_map = ['TFM', 'DEM', 'PIC']
         #self.setup_combobox_solids_model(self.solver)
 
@@ -1557,12 +1558,18 @@ class MfixGui(QtWidgets.QMainWindow):
         self.update_solids_detail_pane(name)
 
     def update_solids_detail_pane(self, name):
-        sa = self.ui.scrollarea_solids_detail
+        ui = self.ui
+        sa = ui.scrollarea_solids_detail
         if name is None:
             sa.setEnabled(False)
             # Clear out all values?
         else:
+            data = self.solids[name]
             sa.setEnabled(True)
+            ui.lineedit_solids_name.setText(name)
+            cb = ui.combobox_solids_model
+            cb.clear()
+
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView

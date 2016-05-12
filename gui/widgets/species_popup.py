@@ -242,7 +242,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
         set_item_noedit(item)
-        item.setData(UserRole, species) # is there a better way to attach data to a row?
+        item.setData(UserRole, species)
         table.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
         set_item_noedit(item)

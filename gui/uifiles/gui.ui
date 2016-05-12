@@ -1660,7 +1660,7 @@ background-color:white;
                             <number>5</number>
                            </property>
                            <item row="1" column="2">
-                            <widget class="QLineEdit" name="lineEdit_27"/>
+                            <widget class="QLineEdit" name="lineedit_solids_name"/>
                            </item>
                            <item row="1" column="0">
                             <widget class="QLabel" name="label_38">
@@ -1677,28 +1677,7 @@ background-color:white;
                             </widget>
                            </item>
                            <item row="0" column="2">
-                            <widget class="ComboBox" name="combobox_keyword_solids_model">
-                             <item>
-                              <property name="text">
-                               <string/>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>Two-Fluid Model (TFM)</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>Discrete Element Model (DEM)</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>Particle-in-Cell (PIC)</string>
-                              </property>
-                             </item>
-                            </widget>
+                            <widget class="ComboBox" name="combobox_solids_model"/>
                            </item>
                           </layout>
                          </widget>
