@@ -184,17 +184,17 @@
         </item>
         <item>
          <property name="text">
-          <string>MFIX-TFM</string>
+          <string>Two-Fluid Model (MFIX-TFM)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>MFIX-DEM</string>
+          <string>Discrete Element Model (MFIX-DEM)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>MFIX-PIC</string>
+          <string>Particle-in-Cell (MFIX-PIC)</string>
          </property>
         </item>
         <item>
