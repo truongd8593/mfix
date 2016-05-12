@@ -4,6 +4,8 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+import copy
+import getopt
 import glob
 import logging
 import os
@@ -12,9 +14,8 @@ import signal
 import subprocess
 import sys
 import time
-from collections import OrderedDict
-import copy
 import warnings
+from collections import OrderedDict
 
 try:
     # For Python 3.0 and later
@@ -64,9 +65,6 @@ try:
 except ImportError:
     NodeWidget = None
 
-logging.basicConfig(stream=sys.stdout,
-                    filemode='w', level=logging.INFO,
-                    format='%(name)s - %(levelname)s - %(message)s')
 
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
@@ -2039,29 +2037,54 @@ class ProjectManager(Project):
         return 'Project Manager'
 
 
-if __name__ == '__main__':
-    args = sys.argv
-    qapp = QtWidgets.QApplication(args)
+def main():
+    """Handle command line options and start the GUI"""
+
+    usage_string = ("Usage: gui [directory, file] [-h, --help] [-l, --log=LEVEL] [-q, --quit] \n\n"
+                    "       directory: open mfix.dat file in specified directory \n"
+                    "       file: open mfix.dat or <RUN_NAME>.mfx project file \n"
+                    "       -h, --help: display this help message \n"
+                    "       -l, --log=LEVEL: set logging level (error,warning,info,debug) \n"
+                    "       -q, --quit: quit after opening file (for testing) \n"
+    )
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hql:", ["help", "quit", "log="])
+    except getopt.GetoptError as err:
+        print(err)
+        print(usage_string)
+        sys.exit(1)
+
+    quit_immediately = False
+    project_file = None
+
+    for opt, arg in opts:
+        if opt in ("-l", "--log"):
+            logging.basicConfig(stream=sys.stdout,
+                                filemode='w', level=getattr(logging, arg.upper()),
+                                format='%(name)s - %(levelname)s - %(message)s')
+        elif opt in ("-h", "--help"):
+            print(usage_string)
+            sys.exit(0)
+        elif opt in ("-q", "--quit"):
+            quit_immediately = True
+        else:
+            project_file = arg
+
+    qapp = QtWidgets.QApplication([])
     mfix = MfixGui(qapp)
     mfix.show()
+
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    auto_rename = True
-    # TODO: real argument handling
-    quit = '-quit' in args # For testing
-    if quit:
-        args.remove('-quit')
-        auto_rename = False
-
-    if len(args) > 1:
-        for arg in args[1:]:
-            mfix.open_project(arg, auto_rename)
+    if args:
+        project_file = args[0]
     else:
         # autoload last project
         project_file = mfix.get_project_file()
-        if project_file:
-            mfix.open_project(project_file, auto_rename)
+
+    if project_file:
+        mfix.open_project(project_file, auto_rename=(not quit_immediately))
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
@@ -2074,8 +2097,11 @@ if __name__ == '__main__':
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    if not quit:
+    if not quit_immediately:
         qapp.exec_()
 
     qapp.deleteLater()
     sys.exit()
+
+if __name__ == '__main__':
+    main()
