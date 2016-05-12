@@ -1155,6 +1155,8 @@ class MfixGui(QtWidgets.QMainWindow):
         else:
             spx_files = self.monitor_thread.get_outputs(['*.SP?'])
             if not self.remove_output_files(spx_files):
+                # pass here reproduces QThread::wait error somewhat reliably
+                #pass
                 return
             self.set_keyword('run_type', 'restart_2')
 
@@ -1646,9 +1648,11 @@ class MfixThread(QThread):
                                           universal_newlines = True,
                                           shell=False, cwd=self.cwd,
                                           env=self.env)
-
-            log.info("MFIX (pid {}) is running".format(str(self.mfixproc.pid)))
-            log.debug("Full MFIX startup parameters: {}".format(str(self.cmd)))
+            mfixproc_pid = self.mfixproc.pid
+            self.line_printed.emit(
+                                "MFIX (pid %d) is running" % mfixproc_pid,
+                                'blue')
+            log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
 
             stdout_thread = MfixOutput(
@@ -1665,18 +1669,18 @@ class MfixThread(QThread):
             stdout_thread.start()
             stderr_thread.start()
 
-            log.info('emitting update_run_options')
             self.update_run_options.emit()
 
             self.mfixproc.wait()
 
-            log.info("MFIX (pid {}) has stopped".format(str(self.mfixproc.pid)))
+            self.line_printed.emit(
+                                "MFIX (pid %s) has stopped" % mfixproc_pid,
+                                'blue')
+            self.update_run_options.emit()
 
             stderr_thread.quit()
             stdout_thread.quit()
 
-            # TODO: use signal to gui thread to handle gui updates?
-            self.mfixproc = None
 
 
 class MfixOutput(QThread):
@@ -1697,11 +1701,13 @@ class MfixOutput(QThread):
         super(MfixOutput, self).__init__()
         log = logging.getLogger(__name__)
         log.debug("Started thread {}".format(name))
+        self.name = name
         self.signal = signal
         self.pipe = pipe
         self.color = color
 
     def __del__(self):
+        # I suspect this is the source of QThread::wait errors
         self.wait()
 
     def run(self):
