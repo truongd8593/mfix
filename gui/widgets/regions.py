@@ -7,7 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import copy
 from collections import OrderedDict
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui, QtCore
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
@@ -18,7 +18,8 @@ except ImportError:
     from PyQt4 import uic
 
 # local imports
-from tools.general import (get_unique_string, widget_iter, CellColor)
+from tools.general import (get_unique_string, widget_iter, CellColor,
+                           get_image_path)
 
 
 class RegionsWidget(QtWidgets.QWidget):
@@ -46,12 +47,13 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
         tablewidget._setModel()
-        tablewidget.set_columns(['visibility', 'color', 'type', 'from', 'to'])
+        tablewidget.set_columns(['visible', 'color', 'type', 'from', 'to'])
         tablewidget.show_vertical_header(True)
         tablewidget.set_value(OrderedDict())
         tablewidget.auto_update_rows(True)
         tablewidget.set_selection_model('cell', multi=False)
         tablewidget.new_selection.connect(self.update_region_parameters)
+        tablewidget.clicked.connect(self.cell_clicked)
 #        tablewidget.value_changed.connect(self.region_value_changed)
 
         for widget in widget_iter(self.groupbox_region_parameters):
@@ -85,12 +87,34 @@ class RegionsWidget(QtWidgets.QWidget):
                     widget.key = 'deviation_angle'
                     widget.dtype = float
 
+    def cell_clicked(self, index):
+        if index.column() == 0:
+            data = self.tablewidget_regions.value
+            name = list(data.keys())[index.row()]
+
+            if data[name]['visibility']:
+                image = QtGui.QPixmap(get_image_path('visibilityofftransparent.png'))
+            else:
+                image = QtGui.QPixmap(get_image_path('visibility.png'))
+
+            data[name]['visibility'] = not data[name]['visibility']
+            self.vtkwidget.change_region_visibility(name, data[name]['visibility'])
+            image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
+                                 QtCore.Qt.SmoothTransformation)
+            data[name]['visible'] = image
+
+            self.tablewidget_regions.set_value(data)
+
     def new_region(self):
         'create a new region'
 
         data = self.tablewidget_regions.value
 
         name = get_unique_string('new', list(data.keys()))
+
+        image = QtGui.QPixmap(get_image_path('visibility.png'))
+        image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
+                             QtCore.Qt.SmoothTransformation)
 
         data[name] = {'type':            'box',
                       'from':            [0, 0, 0],
@@ -101,6 +125,7 @@ class RegionsWidget(QtWidgets.QWidget):
                       'stl_shape':       'box',
                       'deviation_angle': 10,
                       'visibility':      True,
+                      'visible':         image,
                       }
 
         self.vtkwidget.new_region(name, data[name])

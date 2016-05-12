@@ -1551,7 +1551,7 @@ class VtkWidget(QtWidgets.QWidget):
             *self.region_dict[name]['color'].color_float)
 
     def change_region_type(self, name, region):
-        " change the type of a region "
+        """ change the type of a region """
 
         self.region_dict[name].update(copy.deepcopy(region))
 
@@ -1570,13 +1570,24 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkRenderWindow.Render()
 
     def change_region_name(self, old_name, new_name):
-        " change the name of a region "
+        """ change the name of a region """
 
         region = self.region_dict.pop(old_name)
         self.region_dict[new_name] = region
 
+    def change_region_visibility(self, name, visible):
+        """ change the visibility of a region """
+
+        if visible and self.regions_visible:
+            self.region_dict[name]['actor'].VisibilityOn()
+        else:
+            self.region_dict[name]['actor'].VisibilityOff()
+        self.region_dict[name]['visible'] = visible
+
+        self.vtkRenderWindow.Render()
+
     def set_region_actor_props(self, actor, name, color=None):
-        """ set the geometry proprerties to the others in the scene """
+        """ set the geometry properties to the others in the scene """
 
         # copy properties from an exsiting actor
         if len(self.region_dict) > 1:
@@ -1961,12 +1972,13 @@ class VtkWidget(QtWidgets.QWidget):
             else:
                 self.geometry_visible = True
         elif name == 'regions':
-            actors = [geo['actor'] for geo in self.region_dict.values()]
+            actors = [geo['actor'] for geo in self.region_dict.values()
+                      if geo['visible']]
 
             if toolbutton.isChecked():
-                self.region_visible = False
+                self.regions_visible = False
             else:
-                self.region_visible = True
+                self.regions_visible = True
 
         if toolbutton.isChecked():
             toolbutton.setIcon(

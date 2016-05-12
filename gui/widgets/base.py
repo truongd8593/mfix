@@ -694,6 +694,8 @@ class DictTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if value is None:
                 value = None
+            elif isinstance(value, QtGui.QPixmap):
+                value = None
             else:
                 value = str(value)
             return value
@@ -701,6 +703,9 @@ class DictTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
+        elif role == QtCore.Qt.DecorationRole and isinstance(value,
+                                                             QtGui.QPixmap):
+            return value
         else:
             return None
 
@@ -818,6 +823,9 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
+        elif role == QtCore.Qt.DecorationRole and isinstance(value,
+                                                             QtGui.QPixmap):
+            return value
         else:
             return None
 

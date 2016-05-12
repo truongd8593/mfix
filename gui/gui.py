@@ -1090,7 +1090,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def remove_output_files(self, output_files):
-        """remove MFIX output files from current project directory
+        """ remove MFIX output files from current project directory
+
 
         :param list output_files:
         :return: True for success, False for user cancel
