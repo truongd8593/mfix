@@ -1285,6 +1285,21 @@ background-color:white;
                       <property name="frameShadow">
                        <enum>QFrame::Plain</enum>
                       </property>
+                      <property name="selectionMode">
+                       <enum>QAbstractItemView::SingleSelection</enum>
+                      </property>
+                      <property name="selectionBehavior">
+                       <enum>QAbstractItemView::SelectRows</enum>
+                      </property>
+                      <attribute name="horizontalHeaderHighlightSections">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderVisible">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderHighlightSections">
+                       <bool>false</bool>
+                      </attribute>
                       <column>
                        <property name="text">
                         <string>Name</string>
@@ -1663,6 +1678,11 @@ background-color:white;
                            </item>
                            <item row="0" column="2">
                             <widget class="ComboBox" name="combobox_keyword_solids_model">
+                             <item>
+                              <property name="text">
+                               <string/>
+                              </property>
+                             </item>
                              <item>
                               <property name="text">
                                <string>Two-Fluid Model (TFM)</string>
