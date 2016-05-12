@@ -253,6 +253,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
         self.ui.run.resume_mfix_button.clicked.connect(self.resume_mfix)
         self.ui.toolbutton_run.clicked.connect(self.run_mfix)
+        self.ui.toolbutton_restart.clicked.connect(self.run_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -283,6 +284,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.run_thread.line_printed.connect(
             make_handler(self.ui.command_output))
+        self.run_thread.update_run_options.connect(self.update_run_options)
 
         self.monitor_thread.sig.connect(self.update_run_options)
         self.monitor_thread.start()
@@ -1140,8 +1142,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
 
     def resume_mfix(self):
-        """ resume previously stopped mfix run
-        """
+        """ resume previously stopped mfix run"""
 
         if not self.monitor_thread.get_res():
             log.debug("resume_mfix was called, but there are no resume files")
@@ -1159,13 +1160,10 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
-        self.update_run_options()
 
 
     def _start_mfix(self):
-        """ start a new local MFIX run, using pymfix, mpirun or mfix directly
-
-        """
+        """ start a new local MFIX run, using pymfix, mpirun or mfix directly"""
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
@@ -1204,7 +1202,6 @@ class MfixGui(QtWidgets.QMainWindow):
                 run_cmd = executable
                 dmptotal = 1
 
-
         project_filename = os.path.basename(self.get_project_file())
         run_cmd += ['-f', project_filename]
 
@@ -1217,10 +1214,11 @@ class MfixGui(QtWidgets.QMainWindow):
             cwd=self.get_project_dir(),
             env=os.environ)
 
+
     def stop_mfix(self):
         """ stop locally running instance of mfix"""
         self.run_thread.stop_mfix()
-        self.update_run_options()
+
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -1540,6 +1538,7 @@ class MfixGui(QtWidgets.QMainWindow):
 class MfixThread(QThread):
 
     line_printed = pyqtSignal(str, str)
+    update_run_options = pyqtSignal()
 
     def __init__(self, parent):
         super(MfixThread, self).__init__(parent)
@@ -1557,9 +1556,9 @@ class MfixThread(QThread):
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
         self.mfixproc.wait()
-        self.line_printed.emit("MFIX stopped", 'blue')
 
         self.mfixproc = None
+        self.update_run_options.emit()
 
 
     def start_command(self, cmd, cwd, env):
@@ -1614,6 +1613,9 @@ class MfixThread(QThread):
 
             stdout_thread.start()
             stderr_thread.start()
+
+            log.info('emitting update_run_options')
+            self.update_run_options.emit()
 
             self.mfixproc.wait()
 
