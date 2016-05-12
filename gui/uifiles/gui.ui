@@ -626,7 +626,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>1</number>
                  </property>
                  <widget class="QWidget" name="fluid">
                   <layout class="QGridLayout" name="gridLayout_3">
@@ -1204,7 +1204,7 @@ background-color:white;
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QToolButton" name="toolbutton_tfm_solids_add">
+                       <widget class="QToolButton" name="toolbutton_solids_add">
                         <property name="text">
                          <string>Add</string>
                         </property>
@@ -1214,7 +1214,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolbutton_tfm_solids_delete">
+                       <widget class="QToolButton" name="toolbutton_solids_delete">
                         <property name="text">
                          <string>Delete</string>
                         </property>
@@ -1224,19 +1224,12 @@ background-color:white;
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolbutton_tfm_solids_copy">
+                       <widget class="QToolButton" name="toolbutton_solids_copy">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="text">
                          <string>Copy</string>
-                        </property>
-                        <property name="autoRaise">
-                         <bool>true</bool>
-                        </property>
-                       </widget>
-                      </item>
-                      <item>
-                       <widget class="QToolButton" name="toolButtonTFMSolidsDatabase">
-                        <property name="text">
-                         <string>Database</string>
                         </property>
                         <property name="autoRaise">
                          <bool>true</bool>
@@ -1270,7 +1263,7 @@ background-color:white;
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
                      </property>
-                     <widget class="QTableWidget" name="tableWidget_7">
+                     <widget class="QTableWidget" name="tablewidget_solids">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
                         <horstretch>0</horstretch>
@@ -1299,6 +1292,11 @@ background-color:white;
                       </column>
                       <column>
                        <property name="text">
+                        <string>Model</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
                         <string>Diameter</string>
                        </property>
                       </column>
@@ -1309,6 +1307,9 @@ background-color:white;
                       </column>
                      </widget>
                      <widget class="QScrollArea" name="scrollArea">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                         <horstretch>0</horstretch>
@@ -1323,8 +1324,8 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>277</width>
-                         <height>551</height>
+                         <width>525</width>
+                         <height>578</height>
                         </rect>
                        </property>
                        <layout class="QGridLayout" name="gridLayout_53">

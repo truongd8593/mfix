@@ -234,8 +234,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.geometry.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
-        self.ui.toolButtonTFMSolidsDatabase.setIcon(get_icon('download.png'))
-
         # --- Connect Signals to Slots---
         # open/save/new project
         self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
@@ -307,6 +305,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
+        self.solids = OrderedDict()
+
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -401,8 +401,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # Solids Model selection tied to Solver
         #ui.combobox_keyword_solids_model.value_map = ['TFM', 'DEM', 'PIC']
-
-        self.setup_combobox_solids_model(self.solver)
+        #self.setup_combobox_solids_model(self.solver)
 
 
     def setup_combobox_solids_model(self, solver):
@@ -411,7 +410,7 @@ class MfixGui(QtWidgets.QMainWindow):
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
         # FIXME: this needs to be per-phase !
-        cb = self.ui.combobox_keyword_solids_model
+        cb = self.ui.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
         enabled = [False, False, False]
@@ -655,15 +654,21 @@ class MfixGui(QtWidgets.QMainWindow):
         # Fluid species
         tb = ui.toolbutton_fluid_species_add
         tb.clicked.connect(self.fluid_species_add)
-        tb = ui.toolbutton_fluid_species_copy
+        tb = ui.toolbutton_fluid_species_copy # misnomer
         tb.clicked.connect(self.fluid_species_edit)
+        tb.setEnabled(False)
         tb = ui.toolbutton_fluid_species_delete
+        tb.setEnabled(False)
         tb.clicked.connect(self.fluid_species_delete)
+        tw = ui.tablewidget_fluid_species
+        tw.currentCellChanged.connect(self.handle_fluid_species_selection)
 
         # Solid phase
-        # Not autoconnecting here b/c the labels don't match the keyword vals
-        #cb = ui.combobox_keyword_solids_model
-        #cb.currentIndexChanged.connect(self.set_solids_model)
+        tb = ui.toolbutton_solids_add
+        tb.clicked.connect(self.solids_add)
+        tb = ui.toolbutton_solids_delete
+        tb.clicked.connect(self.solids_delete)
+
 
 
         # numerics
@@ -1435,6 +1440,11 @@ class MfixGui(QtWidgets.QMainWindow):
                                         'heat_of_formation', 'source')):
                 table.setItem(row, col, make_item(v[key]))
 
+    def handle_fluid_species_selection(self):
+        row = self.ui.tablewidget_fluid_species.currentRow()
+        self.ui.toolbutton_fluid_species_delete.setEnabled(row >= 0)
+        self.ui.toolbutton_fluid_species_copy.setEnabled(row >= 0)
+
     def fluid_species_add(self):
         sp = self.species_popup
         sp.phases='GL' # ? is this correct
@@ -1450,11 +1460,11 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def fluid_species_delete(self):
         table = self.ui.tablewidget_fluid_species
-        rows = set(i.row() for i in table.selectedItems())
-        if len(rows) != 1:
+        row = table.currentRow()
+        if row < 0: # No selection
+            return
             return
         table.clearSelection()
-        row = rows.pop()
         key = self.fluid_species.keys()[row]
         del self.fluid_species[key]
         self.fluid_species_update_pane()
@@ -1467,16 +1477,12 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def fluid_species_edit(self):
         table = self.ui.tablewidget_fluid_species
-        rows = set(i.row() for i in table.selectedItems())
-        if len(rows) != 1:
-            row = None
-        else:
-            row = rows.pop()
+        row = table.currentRow()
         sp = self.species_popup
         self.saved_fluid_species = copy.deepcopy(self.fluid_species)
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
-        if row is None:
+        if row < 0:
             sp.tablewidget_defined_species.clearSelection()
         else:
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
@@ -1484,6 +1490,13 @@ class MfixGui(QtWidgets.QMainWindow):
         sp.show()
         sp.raise_()
         sp.activateWindow()
+
+    # --- solids phase methods ---
+    def solids_add(self):
+        tw = self.ui.tablewidget_solids
+
+    def solids_delete(self):
+        tw = self.ui.tablewidget_solids
 
 
 # --- Threads ---
