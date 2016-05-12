@@ -22,6 +22,11 @@ except ImportError:
 def set_item_noedit(item):
     item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
 
+def get_selected_row(table):
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedItems())
+    return None if not rows else rows.pop()
+
 if PYQT5:
     def resize_column(table, col, flags):
         table.horizontalHeader().setSectionResizeMode(col, flags)
@@ -94,8 +99,8 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.search_results[i] = (key, phase)
 
     def handle_search_selection(self):
-        row = self.tablewidget_search.currentRow()
-        self.ui.pushbutton_import.setEnabled(row >= 0)
+        row = get_selected_row(self.tablewidget_search)
+        self.ui.pushbutton_import.setEnabled(row is not None)
 
     def clear_species_panel(self):
         for item in self.species_panel_items:
@@ -164,8 +169,7 @@ class SpeciesPopup(QtWidgets.QDialog):
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
         table = self.tablewidget_defined_species
-        row = table.currentRow()
-        rows = set(d.row() for d in table.selectedItems())
+        row = get_selected_row(table)
         species = set(d.data(UserRole) for d in table.selectedItems())
         if None in species:
             species.remove(None)
@@ -191,8 +195,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         return name
 
     def do_import(self):
-        row = self.tablewidget_search.currentRow()
-        if row < 0: # No selection
+        row = get_selected_row(self.tablewidget_search)
+        if row is None: # No selection
             return
         rowdata = self.search_results[row]
         key, phase = rowdata
@@ -238,7 +242,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
         set_item_noedit(item)
-        item.setData(UserRole, species)
+        item.setData(UserRole, species) # is there a better way to attach data to a row?
         table.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
         set_item_noedit(item)
@@ -249,8 +253,8 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_delete(self):
         table = self.ui.tablewidget_defined_species
-        row = table.currentRow()
-        if row < 0: # No selection
+        row = get_selecte_row(table)
+        if row is None: # No selection
             return
         current_species = self.current_species # will be reset when selection cleared
         table.removeRow(row)
@@ -296,8 +300,8 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_alias(self, val):
         table = self.ui.tablewidget_defined_species
-        row = table.currentRow()
-        if row < 0: # No selection
+        row = get_selected_row(table)
+        if row is None: # No selection
             return
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)

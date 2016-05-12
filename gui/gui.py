@@ -93,6 +93,12 @@ def plural(n, word):
 def set_item_noedit(item):
     item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
 
+def get_selected_row(table):
+    """get index of selected row from a QTable"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedItems())
+    return None if not rows else rows.pop()
+
 # Constants
 
 # Solver types
@@ -309,7 +315,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
         self.solids = OrderedDict()
-
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -674,8 +679,8 @@ class MfixGui(QtWidgets.QMainWindow):
         tb = ui.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-
-
+        tw = ui.tablewidget_solids
+        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
         ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
@@ -1465,8 +1470,8 @@ class MfixGui(QtWidgets.QMainWindow):
                 table.setItem(row, col, make_item(v[key]))
 
     def handle_fluid_species_selection(self):
-        row = self.ui.tablewidget_fluid_species.currentRow()
-        enabled = (row >= 0)
+        row = get_selected_row(self.ui.tablewidget_fluid_species)
+        enabled = (row is not None)
         self.ui.toolbutton_fluid_species_delete.setEnabled(enabled)
         self.ui.toolbutton_fluid_species_copy.setEnabled(enabled)
 
@@ -1485,15 +1490,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def fluid_species_delete(self):
         table = self.ui.tablewidget_fluid_species
-        row = table.currentRow()
-        if row < 0: # No selection
-            return
+        row = get_selected_row(table.currentRow)
+        if row is None: # No selection
             return
         table.clearSelection()
         key = self.fluid_species.keys()[row]
         del self.fluid_species[key]
         self.update_fluid_species_table()
-
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
@@ -1502,12 +1505,12 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def fluid_species_edit(self):
         table = self.ui.tablewidget_fluid_species
-        row = table.currentRow()
+        row = get_selected_row(table)
         sp = self.species_popup
         self.saved_fluid_species = copy.deepcopy(self.fluid_species)
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
-        if row < 0:
+        if row is None:
             sp.tablewidget_defined_species.clearSelection()
         else:
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
@@ -1517,11 +1520,20 @@ class MfixGui(QtWidgets.QMainWindow):
         sp.activateWindow()
 
     # --- solids phase methods ---
+    def make_solids_name(self):
+        n = 1
+        while True:
+            name = 'Solid %d' % n
+            if name not in self.solids:
+                break
+            n += 1
+        return name
+
     def solids_add(self):
         tw = self.ui.tablewidget_solids
         nrows = tw.rowCount()
         tw.setRowCount(nrows + 1)
-        name = "Solid %d" % (nrows + 1)
+        name = self.make_solids_name()
         if self.solver == SINGLE: # Should not get here! this pane is disabled.
             return
         else:
@@ -1535,10 +1547,21 @@ class MfixGui(QtWidgets.QMainWindow):
         tw.setCurrentCell(nrows, 0) # Select new item
 
     def handle_solids_table_selection(self):
-        row = self.ui.tablewidget_solids.currentRow()
-        enabled = (row >= 0)
+        tw = self.ui.tablewidget_solids
+        row = get_selected_row(tw)
+        enabled = (row is not None)
         self.ui.toolbutton_solids_delete.setEnabled(enabled)
         self.ui.toolbutton_solids_copy.setEnabled(enabled)
+        name = None if row is None else tw.item(row,0).text()
+        self.update_solids_detail_pane(name)
+
+    def update_solids_detail_pane(self, name):
+        sa = self.ui.scrollarea_solids_detail
+        if name is None:
+            sa.setEnabled(False)
+            # Clear out all values?
+        else:
+            sa.setEnabled(True)
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView
@@ -1567,7 +1590,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def solids_delete(self):
         tw = self.ui.tablewidget_solids
-
+        row = get_selected_row(tw)
+        if row is None: # No selection
+            return
+        name = tw.item(row, 0).text()
+        del self.solids[name]
+        tw.removeRow(row)
+        tw.clearSelection()
 
 # --- Threads ---
 class MfixThread(QThread):

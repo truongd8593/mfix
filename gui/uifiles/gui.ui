@@ -1321,7 +1321,7 @@ background-color:white;
                        </property>
                       </column>
                      </widget>
-                     <widget class="QScrollArea" name="scrollArea">
+                     <widget class="QScrollArea" name="scrollarea_solids_detail">
                       <property name="enabled">
                        <bool>false</bool>
                       </property>
