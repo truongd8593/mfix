@@ -288,8 +288,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
             return handle_line
 
-        self.run_thread.line_printed.connect(
-            make_handler(self.ui.command_output))
+        self.run_thread.line_printed.connect(self.print_internal)
         self.run_thread.update_run_options.connect(self.update_run_options)
 
         self.monitor_thread.sig.connect(self.update_run_options)
@@ -1221,7 +1220,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         msg = 'Running %s' % ' '.join(run_cmd)
         log.info(msg)
-        self.print_internal(msg, color='blue')
+        self.print_internal(msg, color='blue', font='Monospace')
 
         self.run_thread.start_command(
             cmd=run_cmd,
@@ -1629,7 +1628,7 @@ class MfixGui(QtWidgets.QMainWindow):
 # --- Threads ---
 class MfixThread(QThread):
 
-    line_printed = pyqtSignal(str, str)
+    line_printed = pyqtSignal(str, str, str)
     update_run_options = pyqtSignal()
 
     def __init__(self, parent):
@@ -1645,7 +1644,8 @@ class MfixThread(QThread):
             self.mfixproc.terminate()
         except OSError as err:
             log.error("Error terminating process: %s", err)
-        self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, 'blue')
+        self.line_printed.emit("Terminating MFIX process (pid %s)" %
+                                mfixpid, 'blue', 'Monospace')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
@@ -1688,20 +1688,22 @@ class MfixThread(QThread):
             mfixproc_pid = self.mfixproc.pid
             self.line_printed.emit(
                                 "MFIX (pid %d) is running" % mfixproc_pid,
-                                'blue')
+                                'blue', 'Monospace')
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
 
             stdout_thread = MfixOutput(
                                 name='stdout',
                                 pipe=self.mfixproc.stdout,
-                                signal=self.line_printed)
+                                signal=self.line_printed,
+                                font='Monospace')
 
             stderr_thread = MfixOutput(
                                 name='stderr',
                                 pipe=self.mfixproc.stderr,
                                 signal=self.line_printed,
-                                color='red')
+                                color='red',
+                                font='Monospace')
 
             stdout_thread.start()
             stderr_thread.start()
@@ -1712,7 +1714,7 @@ class MfixThread(QThread):
 
             self.line_printed.emit(
                                 "MFIX (pid %s) has stopped" % mfixproc_pid,
-                                'blue')
+                                'blue', 'Monospace')
             self.update_run_options.emit()
 
             stderr_thread.quit()
@@ -1733,7 +1735,7 @@ class MfixOutput(QThread):
         :param color: Color to set when emitting signals
         :type color: str """
 
-    def __init__(self, name, pipe, signal, color=None):
+    def __init__(self, name, pipe, signal, color=None, font=None):
         super(MfixOutput, self).__init__()
         log = logging.getLogger(__name__)
         log.debug("Started thread %s" % name)
@@ -1741,6 +1743,7 @@ class MfixOutput(QThread):
         self.signal = signal
         self.pipe = pipe
         self.color = color
+        self.font = font
 
     def __del__(self):
         # I suspect this is the source of QThread::wait errors
@@ -1750,7 +1753,7 @@ class MfixOutput(QThread):
 
         lines_iterator = iter(self.pipe.readline, b"")
         for line in lines_iterator:
-            self.signal.emit(str(line), self.color)
+            self.signal.emit(str(line), self.color, self.font)
 
 
 
