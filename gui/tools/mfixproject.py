@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 This file is part of the pymfix library
 
-Licence
+License
 -------
 As a work of the United States Government, this project is in the public domain
 within the United States. As such, this code is licensed under
@@ -585,9 +584,9 @@ class  VariableGridCollection(Collection):
 
 
 class Project(object):
-    '''
-    Class for managing a mfix project
-    '''
+    """holds keywords and thermodynamic data for an MFIX project,
+    reads and writes project file"""
+
     def __init__(self, dat_file=None, keyword_doc=None):
 
         self.dat_file = dat_file
@@ -599,24 +598,29 @@ class Project(object):
         # Regular Expressions
         self.re_keyValue = re.compile(r"""
             (\w+)                           # Alphanumeric, key name
-            (?:\(([\d, ]+)\))?              # Indices, :(NUM,)
+            (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
             \s*                             # Possible whitespace
             =                               # Equal sign
             \s*                             # Possible whitespace
             (.*?)                           # Value
-            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ?
+            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
         """, re.VERBOSE)
 
         self.re_float_exp = re.compile(r"""
-            ^([+-]?[0-9]*\.?[0-9]+?(?:[eEdD][+-]?[0-9]+))$
+            ^                              # Beginning of expr
+            [+-]?                          # possible sign
+            [\d]+                          # digits
+            (\.\d*)?                       # optional decimal sign and more digits
+            ([eEdD][+-]?[0-9]+)            # exponent, with 'd' or 'e' (required)
+            $                              # end
         """, re.VERBOSE)
 
         self.re_float = re.compile(r"""
-            ^[+-]?[0-9]+\.([0-9]+)?$
+            ^[+-]?[0-9]+\.[0-9]*$
         """, re.VERBOSE)
 
         self.re_expression = re.compile(r"""
-            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)
+            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
         """, re.VERBOSE)
 
         self.re_stringShortHand = re.compile(r"""
@@ -1052,28 +1056,29 @@ class Project(object):
         Attempt to clean strings of '," and convert .t., .f., .true., .false.
         to booleans, and catch math expressions i.e. @(3*3) and remove the @()
         """
-        cleanVal = None
         string = string.replace("'", '').replace('"', '')
+        s_low = string.lower()
         if len(string) > 0:
-            if '.t.' == string.lower() or '.true.' == string.lower():
-                cleanVal = True
-            elif '.f.' == string.lower() or '.false.' == string.lower():
-                cleanVal = False
-            elif self.re_expression.findall(string):
-                cleanVal = Equation(self.re_expression.findall(string)[0])
-            elif self.re_float_exp.findall(string):
-                cleanVal = FloatExp(string.lower().replace('d', 'e'))
-            elif any([val.isdigit() for val in string]):
+            if s_low in ('.t.',  '.true.'):
+                return True
+            elif s_low in ('.f.', '.false.'):
+                return False
+
+            match = self.re_expression.match(string)
+            if match:
+                return Equation(match[0])
+            match = self.re_float_exp.match(string)
+            if match:
+                return FloatExp(s_low.replace('d', 'e'))
+            if any([val.isdigit() for val in string]):
                 try:
-                    cleanVal = int(string)
+                    return int(string)
                 except ValueError:
                     try:
-                        cleanVal = float(string)
+                        return float(string)
                     except ValueError:
-                        cleanVal = string
-            else:
-                cleanVal = string
-        return cleanVal
+                        return string
+        return string
 
     def expandshorthand(self, shorthand):
         """Expand mfix.dat shorthand:
@@ -1085,7 +1090,7 @@ class Project(object):
         return ret
 
     def removeKeyword(self, key, args=None, warn=True):
-        '''Remove a keyword from the project.  Returns True if item deleted.'''
+        """Remove a keyword from the project.  Returns True if item deleted."""
 
         if args is None:
             args = []
@@ -1112,7 +1117,7 @@ class Project(object):
         return True
 
     def _cleanDeletedItems(self):
-        '''Purge objects marked with self.delete==True.'''
+        """Purge objects marked with self.delete==True."""
 
         for condType in [self.ics, self.bcs, self.pss, self.iss]:
             for cond in condType:
