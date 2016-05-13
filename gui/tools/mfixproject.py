@@ -46,7 +46,6 @@ class FloatExp(float):
 
 class Equation(object):
     def __init__(self, eq):
-
         # Check to make sure eq is not already an equation object
         if isinstance(eq, Equation):
             self.eq = eq.eq
@@ -208,7 +207,7 @@ class Keyword(object):
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.re_expression.findall(str(value)) and self.dtype == float:
+        elif self.re_expression.match(str(value)) and self.dtype == float:
             self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
@@ -1056,28 +1055,40 @@ class Project(object):
         Attempt to clean strings of '," and convert .t., .f., .true., .false.
         to booleans, and catch math expressions i.e. @(3*3) and remove the @()
         """
-        string = string.replace("'", '').replace('"', '')
-        s_low = string.lower()
-        if len(string) > 0:
-            if s_low in ('.t.',  '.true.'):
-                return True
-            elif s_low in ('.f.', '.false.'):
-                return False
+        if not string:
+            return ''
 
-            match = self.re_expression.match(string)
-            if match:
-                return Equation(match[0])
-            match = self.re_float_exp.match(string)
-            if match:
-                return FloatExp(s_low.replace('d', 'e'))
-            if any([val.isdigit() for val in string]):
+        # remove all quotes
+        string = string.replace("'", '').replace('"', '')
+        # lower-case version of string
+        s_low = string.lower()
+
+        if s_low in ('.t.',  '.true.'):
+            return True
+        elif s_low in ('.f.', '.false.'):
+            return False
+
+        # Look for @() expression
+        match = self.re_expression.match(string)
+        if match:
+            return Equation(match.group(1)) # Group inside '@()'
+
+        # Look for exponential-notation
+        match = self.re_float_exp.match(string)
+        if match:
+            return FloatExp(s_low.replace('d', 'e'))
+
+        # Maybe it's a number (would a regex be better?)
+        if any(val.isdigit() for val in string):
+            try:
+                return int(string)
+            except ValueError:
                 try:
-                    return int(string)
+                    return float(string)
                 except ValueError:
-                    try:
-                        return float(string)
-                    except ValueError:
-                        return string
+                    pass
+
+        # default - return string unchanged
         return string
 
     def expandshorthand(self, shorthand):
