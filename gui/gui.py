@@ -2092,6 +2092,7 @@ def Usage(name):
     file: open mfix.dat or <RUN_NAME>.mfx project file
     -h, --help: display this help message
     -l, --log=LEVEL: set logging level (error,warning,info,debug)
+    -n, --new:  open new project (do not autoload previous)
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
 
@@ -2099,13 +2100,14 @@ def main(args):
     """Handle command line options and start the GUI"""
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hql:", ["help", "quit", "log="])
+        opts, args = getopt.getopt(args[1:], "hqnl:", ["help", "quit", "new", "log="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
 
     quit_after_loading = False
     project_file = None
+    new_project = False
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
@@ -2117,6 +2119,8 @@ def main(args):
             sys.exit(0)
         elif opt in ("-q", "--quit"):
             quit_after_loading = True
+        elif opt in ("-n", "--new"):
+            new_project = True
         else:
             Usage(name)
 
@@ -2132,12 +2136,17 @@ def main(args):
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    if project_file is None:
+    if project_file is None and not new_project:
         # autoload last project
         project_file = mfix.get_project_file()
 
     if project_file:
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
+
+    else:
+        mfix.set_solver(SINGLE)
+        # This gets set by guess_solver if we're loading a project, otherwise
+        # we need to set the default.  (Do other defaults need to be set here?)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
