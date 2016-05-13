@@ -1,7 +1,7 @@
 #image: python:2.7
 
 cache:
-  key: "$CI_BUILD_REF_NAME"
+  key: "$CI_BUILD_NAME"
   untracked: true
   paths:
     - build/
@@ -30,6 +30,8 @@ with_exe:
 without_exe:
   stage: test
   script:
+    - find -name mfix | xargs rm
+    - find -name pymfix | xargs rm
     - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
   only:
     - branches
