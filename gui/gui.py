@@ -1995,24 +1995,23 @@ class ProjectManager(Project):
                                                 updatedValue),
                                    font="Monospace", color='red' if warn else None)
 
+
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
         keys = self.keywordItems()
-        mmax = 1 if 'mmax' not in self else self['mmax'].value
+        mmax = self.get_value('mmax', default=1)
+
         if mmax == 0:
             return SINGLE
-        solids_model = ['TFM'] * mmax # Default, if not specified
-        for n in range(1, mmax+1): # 1-based
-            if ['solids_model', n] in self:
-                solids_model[n-1] = self['solids_model', n].value.upper()
-
-        if all(sm=='TFM' for sm in solids_model):
+        solids_models = set(self.get_value(['solids_model', n], default='TFM').upper()
+                           for n in range(1, mmax+1))
+        if solids_models == set(["TFM"]):
             return TFM
-        elif all(sm=='DEM' for sm in solids_model):
+        elif solids_models == set(["DEM"]):
             return DEM
-        elif all(sm=='PIC' for sm in solids_model):
+        elif solids_models == set(["PIC"]):
             return PIC
-        elif all(sm=='TFM' or sm=='DEM' for sm in solids_model):
+        elif solids_models == set(["TFM", "DEM"]):
             return HYBRID
         # mfix settings are inconsistent, warn user.  (Popup here?)
         msg = "Warning, cannot deduce solver type"
@@ -2035,6 +2034,9 @@ class ProjectManager(Project):
             self.solver = self.guess_solver()
             # Now put the GUI into the correct state before setting up interface
             self.parent.set_solver(self.solver)
+
+            # deal with species, since they cause other keywords to be defined
+
             for keyword in kwlist:
                 try:
                     self.submit_change(None, {keyword.key: keyword.value},
