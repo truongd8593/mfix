@@ -1730,6 +1730,7 @@ class MfixThread(QThread):
             self.update_run_options.emit()
 
             self.mfixproc.wait()
+            self.mfixproc = None
 
             self.line_printed.emit(
                                 "MFIX (pid %s) has stopped" % mfixproc_pid,
