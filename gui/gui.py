@@ -26,7 +26,7 @@ except ImportError:
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings,
+from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
                          Qt)
 
 # TODO: add pyside? There is an issue to add this to qtpy:
@@ -313,6 +313,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
         self.solids = OrderedDict()
+        self.update_run_options()
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -342,6 +343,7 @@ class MfixGui(QtWidgets.QMainWindow):
         for executable in output:
             self.ui.run.mfix_executables.addItem(executable)
         mfix_available = bool(output)
+        self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
         self.ui.run.mfix_executables.setVisible(mfix_available)
         self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
         if current_selection in self.monitor_thread.executables:
@@ -1214,11 +1216,13 @@ class MfixGui(QtWidgets.QMainWindow):
             cwd=self.get_project_dir(),
             env=os.environ)
 
+        self.update_run_options()
 
     def stop_mfix(self):
         """stop locally running instance of mfix"""
         self.run_thread.stop_mfix()
 
+        self.update_run_options()
 
     def update_residuals(self):
         self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
@@ -1609,7 +1613,10 @@ class MfixThread(QThread):
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
         mfixpid = self.mfixproc.pid
-        self.mfixproc.terminate()
+        try:
+            self.mfixproc.terminate()
+        except OSError as err:
+            log.error("Error terminating process: %s", err)
         self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, 'blue')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
@@ -1635,6 +1642,12 @@ class MfixThread(QThread):
         self.cmd = cmd
         self.cwd = cwd
         self.env = env
+        self.mfixproc = subprocess.Popen(self.cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        universal_newlines = True,
+                                        shell=False, cwd=self.cwd,
+                                        env=self.env)
         self.start()
 
     def run(self):
@@ -1644,12 +1657,6 @@ class MfixThread(QThread):
         :return: None"""
 
         if self.cmd:
-            self.mfixproc = subprocess.Popen(self.cmd,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE,
-                                          universal_newlines = True,
-                                          shell=False, cwd=self.cwd,
-                                          env=self.env)
             mfixproc_pid = self.mfixproc.pid
             self.line_printed.emit(
                                 "MFIX (pid %d) is running" % mfixproc_pid,

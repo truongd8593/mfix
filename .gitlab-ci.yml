@@ -1,7 +1,7 @@
 #image: python:2.7
 
 cache:
-  key: "$CI_BUILD_REF_NAME"
+  key: "$CI_BUILD_NAME"
   untracked: true
   paths:
     - build/
@@ -13,13 +13,26 @@ before_script:
 stages:
   - test
 
-conda:
+with_exe:
   stage: test
   script:
     - pushd tutorials/FluidBed_DES
-    - ../../configure_mfix && make -j
+    - ../../configure_mfix --python && make -j mfix
     - popd
-    - MFIX_NO_VTK=yes python -m unittest discover -s gui
+    - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
+  only:
+    - branches
+  tags:
+    - docker
+    - anaconda
+    - python2
+
+without_exe:
+  stage: test
+  script:
+    - find . -type f -name mfix -exec rm -f {} \;
+    - find . -type f -name pymfix -exec rm -f {} \;
+    - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
   only:
     - branches
   tags:

@@ -6,25 +6,37 @@
 
 '''
 
+import fnmatch
+import glob
 import os
 import time
 import unittest
 
 from qtpy.QtTest import QTest
 from qtpy import QtCore
-from qtpy import QtGui
 from qtpy import QtWidgets
 
 import gui
 
+def dismiss():
+    ''' dismiss modal QMessageBox '''
+    for widget in QtWidgets.QApplication.instance().topLevelWidgets():
+        if isinstance(widget, QtWidgets.QMessageBox):
+            QTest.keyClick(widget, QtCore.Qt.Key_Enter)
+
+
 class MfixGuiTests(unittest.TestCase):
     ''' unit tests for the GUI '''
 
-    def dismiss(self):
-        ''' dismiss modal QMessageBox '''
-        for widget in QtWidgets.QApplication.instance().topLevelWidgets():
-            if isinstance(widget, QtWidgets.QMessageBox):
-                QTest.keyClick(widget, QtCore.Qt.Key_Enter)
+    def find_exes(self):
+        """find all mfix and pymfix executables"""
+        matches = []
+        for root, dirnames, filenames in os.walk(self.mfix_home):
+            for filename in fnmatch.filter(filenames, 'mfix'):
+                matches.append(os.path.join(root, filename))
+            for filename in fnmatch.filter(filenames, 'pymfix'):
+                matches.append(os.path.join(root, filename))
+        return matches
 
     def setUp(self):
         ''' open FluidBed_DES for testing '''
@@ -33,29 +45,33 @@ class MfixGuiTests(unittest.TestCase):
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
-        rundir = os.path.dirname(__file__)
-        rundir = os.path.dirname(rundir)
-        rundir = os.path.dirname(rundir)
-        rundir = os.path.join(rundir, 'tutorials')
-        rundir = os.path.join(rundir, 'FluidBed_DES')
-        mfix_dat = os.path.join(rundir, 'mfix.dat')
-        self.rundir = rundir
+        self.rundir = os.path.dirname(os.path.dirname(__file__))
+        self.mfix_home = os.path.dirname(self.rundir)
+        self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
+        mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
         self.mfix.get_open_filename = lambda : mfix_dat
-        QtCore.QTimer.singleShot(100, self.dismiss)
-        self.mfix.handle_open_action()
+        QtCore.QTimer.singleShot(100, dismiss)
+        QTest.mouseClick(self.mfix.ui.toolbutton_open, QtCore.Qt.LeftButton)
 
         self.assertEqual("DES_FB1", self.mfix.ui.general.lineedit_keyword_run_name.text())
-        mfxfile = os.path.join(rundir,'DES_FB1.mfx')
+        mfxfile = os.path.join(self.rundir, 'DES_FB1.mfx')
         self.assertTrue(os.path.exists(mfxfile))
 
+    def tearDown(self):
+        patterns = [
+            '*.LOG', '*.OUT', '*.RES', '*.SP?',
+            '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
+            for path in paths:
+                os.remove(path)
     def test_save_as(self):
         ''' Test the Save As button on the toolbar '''
 
         newname = 'DES_FB1_new_name'
 
         self.mfix.get_save_filename = lambda : newname
-        QtCore.QTimer.singleShot(100, self.dismiss)
+        QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
 
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
@@ -63,9 +79,40 @@ class MfixGuiTests(unittest.TestCase):
     def test_run(self):
         ''' Test the Run button on the toolbar '''
 
-        QtCore.QTimer.singleShot(100, self.dismiss)
+        if not self.find_exes():
+            self.skipTest("Only valid when executables are present")
+
+        # before running
+        self.assertTrue(self.mfix.ui.run.mfix_executables.isVisibleTo(self.mfix.ui.run))
+        self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
+        self.assertTrue(self.mfix.ui.run.run_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())
+
+        QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_run, QtCore.Qt.LeftButton)
         time.sleep(1)
+        QtCore.QTimer.singleShot(100, dismiss)
+
+        # during running
+        self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.run_mfix_button.isEnabled())
+        self.assertTrue(self.mfix.ui.run.stop_mfix_button.isEnabled())
+
+        QTest.mouseClick(self.mfix.ui.run.stop_mfix_button, QtCore.Qt.LeftButton)
+
+        # after running
+        self.assertTrue(self.mfix.ui.run.resume_mfix_button.isEnabled())
+        self.assertTrue(self.mfix.ui.run.run_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())
+
+        QTest.mouseClick(self.mfix.ui.run.resume_mfix_button, QtCore.Qt.LeftButton)
+
+        # after resuming
+        self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.run_mfix_button.isEnabled())
+        self.assertTrue(self.mfix.ui.run.stop_mfix_button.isEnabled())
+
+        QTest.mouseClick(self.mfix.ui.run.resume_mfix_button, QtCore.Qt.LeftButton)
 
         logfile = os.path.join(self.rundir, 'DES_FB1.LOG')
         self.assertTrue(os.path.exists(logfile))
@@ -99,7 +146,7 @@ class MfixGuiTests(unittest.TestCase):
                     self.assertEqual(kv[1].strip()[1:-1], new_description)
                     found += 1
 
-        self.assertEquals(found, 1)
+        self.assertEqual(found, 1)
 
     def test_tstop(self):
         ''' Test setting TSTOP on the Run pane '''
@@ -124,4 +171,15 @@ class MfixGuiTests(unittest.TestCase):
                     self.assertAlmostEqual(float(kv[1]), new_tstop)
                     found += 1
 
-        self.assertEquals(found, 1)
+        self.assertEqual(found, 1)
+
+
+    def test_run_disabled_no_exe(self):
+        """ check that run is disabled when there is no executable """
+
+        if self.find_exes():
+            self.skipTest("Only valid when executables are not present")
+        self.assertFalse(self.mfix.ui.run.mfix_executables.isVisibleTo(self.mfix.ui.run))
+        self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.run_mfix_button.isEnabled())
+        self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())
