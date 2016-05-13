@@ -16,6 +16,7 @@ import sys
 import time
 import warnings
 from collections import OrderedDict
+import requests
 
 try:
     # For Python 3.0 and later
@@ -1170,12 +1171,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
         mfix_exe = self.ui.run.mfix_executables.currentText()
         config = self.monitor_thread.get_executables()[mfix_exe]
+        self.mfix_exe = 'pymfix' if 'pymfix' in mfix_exe[-10:] else 'mfix'
 
-        if not mfix_exe.endswith('mfix'): # why endswith?
+        if self.mfix_exe == 'pymfix':
             # run pymfix.  python or python3, depending on sys.executable
             run_cmd = [sys.executable, mfix_exe]
+
         else:
-            log.info('run mfix')
             executable = [mfix_exe,]
 
             if 'dmp' in config:
@@ -1216,10 +1218,29 @@ class MfixGui(QtWidgets.QMainWindow):
             cwd=self.get_project_dir(),
             env=os.environ)
 
+        if self.mfix_exe == 'pymfix':
+            # get last pymfix url from config
+            # compare last to ui.run.{something} to pick up user change
+            # also set this elsewhere ...
+            time.sleep(5) # crude and vulgar, but give the app a moment to start
+            # pymfix api calls should probably be in yet another thread ...
+            self.pymfix_url = 'http://127.0.0.1:5000/'
+            requests.put(self.pymfix_url + 'start')
+
         self.update_run_options()
+
+    def pause_mfix(self):
+        if self.mfix_exe != 'pymfix':
+            return
+        requests.put(self.pymfix_url + 'stop')
+
 
     def stop_mfix(self):
         """stop locally running instance of mfix"""
+        if self.mfix_exe == 'pymfix':
+            requests.put(self.pymfix_url + 'exit')
+        # check whether pymfix has stopped mfix then
+        # do something here
         self.run_thread.stop_mfix()
 
         self.update_run_options()
