@@ -107,10 +107,15 @@ CONSTANT, AIR, UDF = 0, 1, 2
 
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
-    '''
-    Main window class handling all gui interactions
-    '''
-    def __init__(self, app, parent=None):
+
+    """Main window class handling all gui interactions"""
+
+    def __init__(self, app, parent=None, project_file=None):
+        # load settings early so get_project_file returns the right thing.
+        self.settings = QSettings('MFIX', 'MFIX')
+        if project_file:
+            self.set_project_file(project_file)
+
         QtWidgets.QMainWindow.__init__(self, parent)
 
         # reference to qapp instance
@@ -174,9 +179,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
-
-        # load settings
-        self.settings = QSettings('MFIX', 'MFIX')
 
         # set title and icon
         self.setWindowTitle('MFIX')
@@ -829,6 +831,9 @@ class MfixGui(QtWidgets.QMainWindow):
         last = self.settings.value('project_file')
         return last if last else None
 
+    def set_project_file(self, value):
+        self.settings.setValue('project_file', value)
+
     def get_project_dir(self):
         """get the current project directory"""
         project_file = self.get_project_file()
@@ -1017,6 +1022,7 @@ class MfixGui(QtWidgets.QMainWindow):
         detailedtext = 'Some details'"""
 
         # TODO: tie this in with logging & print_internal
+        # TODO: suppress popups in 'test mode'
 
         msgBox = QtWidgets.QMessageBox(self)
         msgBox.setWindowTitle(title)
@@ -1306,7 +1312,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # qt4/qt5 compat hack
         if type(project_file) == tuple:
             project_file = project_file[0]
-
+        # User pressed "cancel"
         if not project_file:
             return
 
@@ -1314,13 +1320,10 @@ class MfixGui(QtWidgets.QMainWindow):
         project_file_basename = os.path.basename(project_file)
         run_name = os.path.splitext(project_file_basename)[0]
         self.project.run_name.value = run_name
-
         self.save_project(project_file)
-
 
     def unsaved(self):
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
-
 
     def check_writable(self, directory):
         """check whether directory is writable """
@@ -1426,17 +1429,31 @@ class MfixGui(QtWidgets.QMainWindow):
         runname_mfx = name + '.mfx'
 
         if auto_rename and not project_path.endswith(runname_mfx):
-            self.message(title='Info',
-                            icon='info',
-                            text=('Saving %s as %s based on run name' % (project_path, runname_mfx)),
-                            buttons=['ok'],
-                            default='ok',
-            )
-            project_file = os.path.join(project_dir, runname_mfx)
-            self.project.writeDatFile(project_file)
+            ok_to_write = False
+            save_msg = 'Saving %s as %s based on run name' % (project_path, runname_mfx)
+            response = self.message(title='Info',
+                                    icon='info',
+                                    text=save_msg,
+                                    buttons=['ok', 'cancel'],
+                                    default='ok')
+            if response == 'ok':
+                ok_to_write = True
+                renamed_project_file = os.path.join(project_dir, runname_mfx)
+                if os.path.exists(renamed_project_file):
+                    clobber_msg = '%s exists, replace?' % renamed_project_file
+                    response = self.message(title='Warning',
+                                    icon='warning',
+                                    text=clobber_msg,
+                                    buttons=['yes', 'no'],
+                                    default='no')
+                    if response == 'no':
+                        ok_to_write = False
 
-        self.settings.setValue('project_file', project_file)
-        self.setWindowTitle('MFIX - %s' % project_file)
+        if ok_to_write:
+            project_file = renamed_project_file
+            self.print_internal(save_msg, color='blue')
+            self.set_project_file(project_file)
+            self.setWindowTitle('MFIX - %s' % project_file)
 
         # read the file (again)
         with open(project_file, 'r') as mfx:
@@ -2035,7 +2052,7 @@ class ProjectManager(Project):
                                            (plural(n_errs, "error") , project_file),
                                            color='red')
             else:
-                self.parent.print_internal("Loaded %s, 0 errors" % project_file, color='blue')
+                self.parent.print_internal("Loaded %s" % project_file, color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
         '''
@@ -2066,25 +2083,25 @@ class ProjectManager(Project):
     def objectName(self):
         return 'Project Manager'
 
+def Usage(name):
+    print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
+    directory: open mfix.dat file in specified directory
+    file: open mfix.dat or <RUN_NAME>.mfx project file
+    -h, --help: display this help message
+    -l, --log=LEVEL: set logging level (error,warning,info,debug)
+    -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
+    sys.exit(1)
 
-def main():
+def main(args):
     """Handle command line options and start the GUI"""
-
-    usage_string = ("Usage: gui [directory, file] [-h, --help] [-l, --log=LEVEL] [-q, --quit] \n\n"
-                    "       directory: open mfix.dat file in specified directory \n"
-                    "       file: open mfix.dat or <RUN_NAME>.mfx project file \n"
-                    "       -h, --help: display this help message \n"
-                    "       -l, --log=LEVEL: set logging level (error,warning,info,debug) \n"
-                    "       -q, --quit: quit after opening file (for testing) \n"
-    )
+    name = args[0]
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hql:", ["help", "quit", "log="])
+        opts, args = getopt.getopt(args[1:], "hql:", ["help", "quit", "log="])
     except getopt.GetoptError as err:
         print(err)
-        print(usage_string)
-        sys.exit(1)
+        Usage(name)
 
-    quit_immediately = False
+    quit_after_loading = False
     project_file = None
 
     for opt, arg in opts:
@@ -2096,25 +2113,28 @@ def main():
             print(usage_string)
             sys.exit(0)
         elif opt in ("-q", "--quit"):
-            quit_immediately = True
+            quit_after_loading = True
         else:
-            project_file = arg
+            Usage(name)
+
+    if len(args) > 1:
+        Usage(name)
+    if args:
+        project_file = args[0]
 
     qapp = QtWidgets.QApplication([])
-    mfix = MfixGui(qapp)
+    mfix = MfixGui(qapp, project_file=project_file)
     mfix.show()
 
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    if args:
-        project_file = args[0]
-    else:
+    if project_file is None:
         # autoload last project
         project_file = mfix.get_project_file()
 
     if project_file:
-        mfix.open_project(project_file, auto_rename=(not quit_immediately))
+        mfix.open_project(project_file, auto_rename=(not quit_after_loading))
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
@@ -2127,11 +2147,11 @@ def main():
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    if not quit_immediately:
+    if not quit_after_loading:
         qapp.exec_()
 
     qapp.deleteLater()
     sys.exit()
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
