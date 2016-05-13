@@ -1878,7 +1878,8 @@ class UpdateResidualsThread(QThread):
 
 # --- Project Manager ---
 class ProjectManager(Project):
-    """Manages the editing of the MFiX.dat file"""
+    """handles interaction between gui (parent) and mfix project (Project)"""
+
     def __init__(self, parent=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
 
@@ -1984,11 +1985,10 @@ class ProjectManager(Project):
         mmax = 1 if 'mmax' not in self else self['mmax'].value
         if mmax == 0:
             return SINGLE
-
         solids_model = ['TFM'] * mmax # Default, if not specified
         for n in range(1, mmax+1): # 1-based
             if ['solids_model', n] in self:
-                solids_model[n-1] = self['solids_model', n].value
+                solids_model[n-1] = self['solids_model', n].value.upper()
 
         if all(sm=='TFM' for sm in solids_model):
             return TFM
@@ -1998,12 +1998,10 @@ class ProjectManager(Project):
             return PIC
         elif all(sm=='TFM' or sm=='DEM' for sm in solids_model):
             return HYBRID
-
         # mfix settings are inconsistent, warn user.  (Popup here?)
         msg = "Warning, cannot deduce solver type"
         self.parent.print_internal(msg, color='red')
         log.warn(msg)
-
         #default
         return SINGLE
 
