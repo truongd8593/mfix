@@ -321,12 +321,13 @@ class MfixGui(QtWidgets.QMainWindow):
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
 
-        not_running = (self.run_thread.mfixproc is None)
+        running = (self.run_thread.mfixproc is not None)
+        not_running = not running
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
-        self.ui.run.pause_mfix_button.setEnabled(not_running)
-        self.ui.run.stop_mfix_button.setEnabled(False)
+        self.ui.run.pause_mfix_button.setEnabled(running)
+        self.ui.run.stop_mfix_button.setEnabled(running)
         self.ui.run.resume_mfix_button.setEnabled(not_running)
         self.ui.toolbutton_run.setEnabled(not_running)
         self.ui.toolbutton_restart.setEnabled(not_running)
@@ -334,11 +335,6 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
-
-        if not not_running:
-            self.ui.run.stop_mfix_button.setEnabled(True)
-            self.ui.run.pause_mfix_button.setEnabled(True)
-            return
 
         self.handle_select_executable()
 
