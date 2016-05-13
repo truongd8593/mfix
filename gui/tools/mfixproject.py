@@ -679,6 +679,14 @@ class Project(object):
         except KeyError:
             return False
 
+    def get_value(self, key, default=None):
+        if not isinstance(key, list) and not isinstance(key, tuple):
+            key = [key]
+        try:
+            return get_from_dict(self._keyword_dict, key).value
+        except KeyError:
+            return default
+
     def __deepcopy__(self, memo):
         # TODO: this is not efficient
         return Project(''.join(self.convertToString()))
