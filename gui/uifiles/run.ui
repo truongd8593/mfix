@@ -640,7 +640,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="pause_pymfix_button">
+       <widget class="QPushButton" name="pause_mfix_button">
         <property name="text">
          <string>Pause</string>
         </property>

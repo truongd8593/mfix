@@ -255,6 +255,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # build/run/connect MFIX
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
+        self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
         self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
         self.ui.run.resume_mfix_button.clicked.connect(self.resume_mfix)
         self.ui.toolbutton_run.clicked.connect(self.run_mfix)
@@ -323,6 +324,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.ui.run.mfix_executables.setEnabled(not_running)
         self.ui.run.run_mfix_button.setEnabled(not_running)
+        self.ui.run.pause_mfix_button.setEnabled(not_running)
         self.ui.run.stop_mfix_button.setEnabled(False)
         self.ui.run.resume_mfix_button.setEnabled(not_running)
         self.ui.toolbutton_run.setEnabled(not_running)
@@ -334,6 +336,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         if not not_running:
             self.ui.run.stop_mfix_button.setEnabled(True)
+            self.ui.run.pause_mfix_button.setEnabled(True)
             return
 
         self.handle_select_executable()
@@ -1144,6 +1147,13 @@ class MfixGui(QtWidgets.QMainWindow):
         self._start_mfix()
 
 
+    def pause_mfix(self):
+        if self.mfix_exe != 'pymfix':
+            return
+        requests.put(self.pymfix_url + 'stop')
+        self.update_run_options()
+
+
     def resume_mfix(self):
         """resume previously stopped mfix run"""
 
@@ -1222,17 +1232,14 @@ class MfixGui(QtWidgets.QMainWindow):
             # get last pymfix url from config
             # compare last to ui.run.{something} to pick up user change
             # also set this elsewhere ...
-            time.sleep(5) # crude and vulgar, but give the app a moment to start
-            # pymfix api calls should probably be in yet another thread ...
+
+            time.sleep(2) # this has to go away .. put pymfix api calls
+            # into another thread, attach signals to update ui
+
             self.pymfix_url = 'http://127.0.0.1:5000/'
             requests.put(self.pymfix_url + 'start')
 
         self.update_run_options()
-
-    def pause_mfix(self):
-        if self.mfix_exe != 'pymfix':
-            return
-        requests.put(self.pymfix_url + 'stop')
 
 
     def stop_mfix(self):
