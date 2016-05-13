@@ -30,8 +30,8 @@ with_exe:
 without_exe:
   stage: test
   script:
-    - find -name mfix | xargs rm
-    - find -name pymfix | xargs rm
+    - find . -type f -name mfix -exec rm -f {} \;
+    - find . -type f -name pymfix -exec rm -f {} \;
     - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
   only:
     - branches
