@@ -1619,7 +1619,10 @@ class MfixThread(QThread):
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
         mfixpid = self.mfixproc.pid
-        self.mfixproc.terminate()
+        try:
+            self.mfixproc.terminate()
+        except OSError as err:
+            log.error("Error terminating process: %s", err)
         self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, 'blue')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
