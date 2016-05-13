@@ -2,6 +2,6 @@ In order to run the MFiX GUI you will need to install the following packages:
 
 qtpy
 vtk
-future
+#future - not used currently
 #thermochem - not used currently
 MORE?
