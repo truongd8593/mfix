@@ -2104,12 +2104,11 @@ def main(args):
     quit_after_loading = False
     project_file = None
     new_project = False
+    log_level = 'WARN'
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
-            logging.basicConfig(stream=sys.stdout,
-                                filemode='w', level=getattr(logging, arg.upper()),
-                                format='%(name)s - %(levelname)s - %(message)s')
+            log_level = arg
         elif opt in ("-h", "--help"):
             print(usage_string)
             sys.exit(0)
