@@ -269,21 +269,20 @@ FS_ENCODING = getfilesystemencoding()
 
 
 def to_unicode_from_fs(string):
-    """
-    Return a unicode version of string decoded using the file system encoding.
-    """
+    """Return a unicode version of string decoded using the file system encoding."""
     if not is_string(string):  # string is a QString
         string = to_text_string(string.toUtf8(), 'utf-8')
     else:
         if is_binary_string(string):
             try:
-                unic = string.decode(FS_ENCODING)
-            except (UnicodeDecodeError, TypeError):
-                pass
-            else:
-                return unic
+                return string.decode(encoding=FS_ENCODING, errors='replace')
+            except (UnicodeDecodeError, TypeError) as e:
+                log.warn("%s: %s" % (e, string))
+
     return string
 
+def to_fs_from_unicode(string):
+    return string.encode(encoding=FS_ENCODING, errors='replace')
 
 class CellColor(object):
     """

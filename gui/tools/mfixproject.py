@@ -32,8 +32,8 @@ log = logging.getLogger()
 # local imports
 from tools.simpleeval import simple_eval
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
-                           to_unicode_from_fs, is_string, is_unicode)
-
+                           to_unicode_from_fs, to_fs_from_unicode,
+                           is_string, is_unicode)
 
 NaN = float('NaN')
 
@@ -700,7 +700,7 @@ class Project(object):
 
         # Try to open the file
         try:
-            with open(self.dat_file) as dat_file:
+            with open(self.dat_file, 'rb') as dat_file:
                 self._parsemfixdat(dat_file)
             return
         except (IOError, OSError):
@@ -798,9 +798,7 @@ class Project(object):
             yield (None, None, None)
 
     def _parsemfixdat(self, fobject):
-        """
-        This does the actual parsing.
-        """
+        """This does the actual parsing."""
         reactionSection = False
         self.comments = {}
         self._keyword_dict = {}
@@ -1051,10 +1049,9 @@ class Project(object):
             yield value
 
     def cleanstring(self, string):
-        """
-        Attempt to clean strings of '," and convert .t., .f., .true., .false.
-        to booleans, and catch math expressions i.e. @(3*3) and remove the @()
-        """
+        """Attempt to clean strings of '," and convert .t., .f., .true., .false.
+        to booleans, and catch math expressions i.e. @(3*3) and remove the @()"""
+
         if not string:
             return ''
 
@@ -1239,11 +1236,8 @@ class Project(object):
 
         if args is None:
             args = []
-
         keywordobject = self.keywordLookup(key, args)
-
         keywordobject.updateValue(value)
-
         return keywordobject
 
     def convertToString(self):
@@ -1251,19 +1245,12 @@ class Project(object):
             if hasattr(line, 'line'):
                 yield line.line()+'\n'
             else:
-                yield str(line)+'\n'
+                yield to_fs_from_unicode(line + '\n')
+
 
     def writeDatFile(self, fname):
-        '''
-        Write the project to a text file.
-
-        Parameters
-        ----------
-        fname (str):
-            the file name to write the project to
-        '''
-
-        with open(fname, 'w') as dat_file:
+        """ Write the project to specified text file"""
+        with open(fname, 'wb') as dat_file:
             for line in self.convertToString():
                 dat_file.write(line)
 
