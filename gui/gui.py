@@ -1222,7 +1222,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         msg = 'Running %s' % ' '.join(run_cmd)
         log.info(msg)
-        self.print_internal(msg, color='blue', font='Monospace')
+        self.print_internal(msg, color='blue')
 
         self.run_thread.start_command(
             cmd=run_cmd,
@@ -1703,7 +1703,7 @@ class MfixThread(QThread):
             mfixproc_pid = self.mfixproc.pid
             self.line_printed.emit(
                                 "MFIX (pid %d) is running" % mfixproc_pid,
-                                'blue', 'Monospace')
+                                'blue', '')
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
 
@@ -1730,7 +1730,7 @@ class MfixThread(QThread):
 
             self.line_printed.emit(
                                 "MFIX (pid %s) has stopped" % mfixproc_pid,
-                                'blue', 'Monospace')
+                                'blue', '')
             self.update_run_options.emit()
 
             stderr_thread.quit()
@@ -2036,7 +2036,9 @@ class ProjectManager(Project):
             self.parent.set_solver(self.solver)
 
             # deal with species, since they cause other keywords to be defined
+            nmax_g = self.get_value('nmax_g', 0)
 
+            # Now submit all remaining keyword updates
             for keyword in kwlist:
                 try:
                     self.submit_change(None, {keyword.key: keyword.value},
