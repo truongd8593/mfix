@@ -1449,11 +1449,13 @@ class MfixGui(QtWidgets.QMainWindow):
                     if response == 'no':
                         ok_to_write = False
 
-        if ok_to_write:
-            project_file = renamed_project_file
-            self.print_internal(save_msg, color='blue')
-            self.set_project_file(project_file)
-            self.setWindowTitle('MFIX - %s' % project_file)
+            if ok_to_write:
+                project_file = renamed_project_file
+                self.project.writeDatFile(project_file)
+                self.print_internal(save_msg, color='blue')
+
+        self.set_project_file(project_file)
+        self.setWindowTitle('MFIX - %s' % project_file)
 
         # read the file (again)
         with open(project_file, 'r') as mfx:
