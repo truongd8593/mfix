@@ -684,7 +684,7 @@ class MfixGui(QtWidgets.QMainWindow):
         tb.setEnabled(False)
         tb.clicked.connect(self.fluid_species_delete)
         tw = ui.tablewidget_fluid_species
-        tw.currentCellChanged.connect(self.handle_fluid_species_selection)
+        tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
 
         # Solid phase
         tb = ui.toolbutton_solids_add
@@ -1531,7 +1531,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def fluid_species_delete(self):
         table = self.ui.tablewidget_fluid_species
-        row = get_selected_row(table.currentRow)
+        row = get_selected_row(table)
         if row is None: # No selection
             return
         table.clearSelection()

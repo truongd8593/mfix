@@ -170,17 +170,14 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.ui.tablewidget_search.clearSelection() # is this right?
         table = self.tablewidget_defined_species
         row = get_selected_row(table)
-        species = set(d.data(UserRole) for d in table.selectedItems())
-        if None in species:
-            species.remove(None)
 
-        if len(rows) != 1:
+        if row is None:
             self.current_species = None
             self.clear_species_panel()
             self.pushbutton_delete.setEnabled(False)
         else:
             self.pushbutton_delete.setEnabled(True)
-            self.current_species = species.pop()
+            self.current_species = table.item(row, 0).data(UserRole)
             self.enable_species_panel()
 
     def make_alias(self, species):
@@ -253,7 +250,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_delete(self):
         table = self.ui.tablewidget_defined_species
-        row = get_selecte_row(table)
+        row = get_selected_row(table)
         if row is None: # No selection
             return
         current_species = self.current_species # will be reset when selection cleared
@@ -303,6 +300,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         row = get_selected_row(table)
         if row is None: # No selection
             return
+        #NB making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
         table.setItem(row, 0, item)
