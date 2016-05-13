@@ -2119,6 +2119,10 @@ def main(args):
         else:
             Usage(name)
 
+    logging.basicConfig(stream=sys.stdout,
+                        filemode='w', level=getattr(logging, log_level.upper()),
+                        format='%(name)s - %(levelname)s - %(message)s')
+
     if len(args) > 1:
         Usage(name)
     if args:
