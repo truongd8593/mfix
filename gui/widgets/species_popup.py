@@ -7,6 +7,7 @@ import sys
 import signal
 import time
 from collections import OrderedDict
+import textwrap
 import pickle
 
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
@@ -56,18 +57,14 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.db = by_phase
 
         def format_comment(comment):
-            lines = []
-            while comment:
-                line, comment = comment[:80], comment[80:]
-                lines.append(line)
+            lines = textwrap.wrap(comment, 80)
             return '\n'.join(lines)
 
         # build search list, lowercased
         self.haystack = []
         self.comments = {}
         for phase in 'GLCS':
-            # TODO - also match comments?
-            htmp = [(k[0].lower(), k, phase) for k in self.db[phase].keys()]
+            htmp = [((k[0].lower(), v[2].lower()), k, phase) for (k,v) in self.db[phase].items()]
             htmp.sort()
             self.haystack.extend(htmp)
             # comment fields
@@ -81,8 +78,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         match_empty = True
         if match_empty or string:
             needle = string.lower()
-            for ((key_low, key, phase)) in self.haystack:
-                if needle in key_low and phase in self.phases:
+            for ((k, key, phase)) in self.haystack:
+                if ( (needle in k[0] and phase in self.phases) or
+                     (self.include_comments and needle in k[1] and phase in self.phases) ):
                     results.append((key, phase))
         table = self.ui.tablewidget_search
         nrows = len(results)
@@ -101,6 +99,10 @@ class SpeciesPopup(QtWidgets.QDialog):
     def handle_search_selection(self):
         row = get_selected_row(self.tablewidget_search)
         self.ui.pushbutton_import.setEnabled(row is not None)
+
+    def handle_include_comments(self, val):
+        self.include_comments = val
+        self.do_search(self.ui.lineedit_search.text())
 
     def clear_species_panel(self):
         for item in self.species_panel_items:
@@ -313,6 +315,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         super(SpeciesPopup, self).__init__(parent)
         self.app = app
         self.phases = phases
+        self.include_comments = False
         self.default_phase = phases[0]
         thisdir = os.path.abspath(os.path.dirname(__file__))
         datadir = thisdir
@@ -338,6 +341,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         ui.pushbutton_new.clicked.connect(self.handle_new)
         ui.pushbutton_delete.clicked.connect(self.handle_delete)
+        ui.checkbox_include_comments.clicked.connect(self.handle_include_comments)
 
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
