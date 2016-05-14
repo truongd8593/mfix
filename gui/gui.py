@@ -83,10 +83,20 @@ try:
 except ImportError:
     NodeWidget = None
 
-
+from uifiles.general import Ui_general
+from uifiles.geometry import Ui_geometry
+from uifiles.gui import Ui_MainWindow
+from uifiles.mesh import Ui_mesh
+from uifiles.model_setup import Ui_model_setup
+from uifiles.monitors import Ui_monitors
+from uifiles.numerics import Ui_numerics
+from uifiles.output import Ui_output
+from uifiles.post_processing import Ui_post_processing
+from uifiles.run import Ui_run
+from uifiles.vtk import Ui_vtk
 
 # --- Main Gui ---
-class MfixGui(QtWidgets.QMainWindow):
+class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
 
     """Main window class handling all gui interactions"""
 
@@ -112,49 +122,90 @@ class MfixGui(QtWidgets.QMainWindow):
                               }
 
         uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
-        self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
-        self.ui.general = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'general.ui'), self.ui.general)
+        class GeneralPane(QtWidgets.QWidget, Ui_general):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.general = GeneralPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.general)
 
-        self.ui.geometry = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'geometry.ui'), self.ui.geometry)
+        class GeometryPane(QtWidgets.QWidget, Ui_geometry):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.geometry = GeometryPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.geometry)
 
-        self.ui.mesh = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'mesh.ui'), self.ui.mesh)
+        class MeshPane(QtWidgets.QWidget, Ui_mesh):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.mesh = MeshPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
 
         self.ui.regions = RegionsWidget()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
 
-        self.ui.model_setup = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'model_setup.ui'), self.ui.model_setup)
+        class ModelSetupPane(QtWidgets.QWidget, Ui_model_setup):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.model_setup = ModelSetupPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
 
-        self.ui.numerics = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'numerics.ui'), self.ui.numerics)
+        class NumericsPane(QtWidgets.QWidget, Ui_numerics):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.numerics = NumericsPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.numerics)
 
-        self.ui.output = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'output.ui'), self.ui.output)
+        class OutputPane(QtWidgets.QWidget, Ui_output):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.output = OutputPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
 
-        self.ui.output_vtk = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'vtk.ui'), self.ui.output_vtk)
+        class VtkPane(QtWidgets.QWidget, Ui_vtk):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.output_vtk = VtkPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.output_vtk)
 
-        self.ui.monitors = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'monitors.ui'), self.ui.monitors)
+        class MonitorsPane(QtWidgets.QWidget, Ui_monitors):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.monitors = MonitorsPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.monitors)
 
-        self.ui.run = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'run.ui'), self.ui.run)
+        class RunPane(QtWidgets.QWidget, Ui_run):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
+        self.ui.run = RunPane()
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
 
+        class PostProcessingPane(QtWidgets.QWidget, Ui_post_processing):
+            def __init__(self):
+                QtWidgets.QWidget.__init__(self, parent)
+                self.setupUi(self)
+
         self.ui.post_processing = QtWidgets.QWidget()
-        uic.loadUi(os.path.join(uifiles, 'post_processing.ui'), self.ui.post_processing)
         self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
@@ -195,7 +246,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- icons ---
         # loop through all widgets, because I am lazy
-        for widget in widget_iter(self.ui):
+        for widget in widget_iter(self):
             if isinstance(widget, QtWidgets.QToolButton):
                 name = str(widget.objectName())
                 if 'add' in name:
@@ -441,7 +492,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of a bunch of other GUI items
-        self.model_setup.checkbox_keyword_energy_eq.setChecked(state)
+        self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
         for item in (ui.combobox_fluid_specific_heat_model,
                      ui.combobox_fluid_conductivity_model,
@@ -693,7 +744,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 return str
 
         # loop through all widgets looking for *_keyword_<keyword>
-        for widget in widget_iter(self.ui):
+        for widget in widget_iter(self):
             name_list = str(widget.objectName()).lower().split('_')
 
             if 'keyword' in name_list:

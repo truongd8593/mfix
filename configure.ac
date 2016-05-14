@@ -67,6 +67,12 @@ AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
 
 if test "$python" = "true"; then
 
+AC_CHECK_PROGS(PYUIC,pyuic pyuic4 pyuic5,pyuic)
+
+if test x"$PYUIC" = x; then
+AC_MSG_ERROR([Enabling python support requires pyuic to be in PATH])
+fi
+
 AC_CHECK_PROG(F2PY,f2py,f2py)
 
 if test x"$F2PY" = x; then

@@ -116,6 +116,37 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 
 ################################################################
 #                                                              #
+#           MFIX GUI                                           #
+#                                                              #
+################################################################
+
+if PYTHON
+ui_files = \
+	$(top_srcdir)/gui/uifiles/general.ui \
+	$(top_srcdir)/gui/uifiles/geometry.ui \
+	$(top_srcdir)/gui/uifiles/gui.ui \
+	$(top_srcdir)/gui/uifiles/mesh.ui \
+	$(top_srcdir)/gui/uifiles/model_setup.ui \
+	$(top_srcdir)/gui/uifiles/monitors.ui \
+	$(top_srcdir)/gui/uifiles/numerics.ui \
+	$(top_srcdir)/gui/uifiles/output.ui \
+	$(top_srcdir)/gui/uifiles/post_processing.ui \
+	$(top_srcdir)/gui/uifiles/regions.ui \
+	$(top_srcdir)/gui/uifiles/run.ui \
+	$(top_srcdir)/gui/uifiles/species_popup.ui \
+	$(top_srcdir)/gui/uifiles/vtk.ui
+
+.ui.py:
+	$(PYUIC) -o $@ $^
+
+ui_py = $(ui_files:%.ui=%.py)
+
+ui: $(ui_py)
+
+endif
+
+################################################################
+#                                                              #
 #           pymfix Python module                               #
 #                                                              #
 ################################################################
