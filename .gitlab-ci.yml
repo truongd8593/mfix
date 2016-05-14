@@ -30,6 +30,9 @@ with_exe:
 without_exe:
   stage: test
   script:
+    - pushd gui
+    - ../configure_mfix --python && make -j ui
+    - popd
     - find . -type f -name mfix -exec rm -f {} \;
     - find . -type f -name pymfix -exec rm -f {} \;
     - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
