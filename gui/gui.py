@@ -359,7 +359,6 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
         self.ui.run.run_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running)
         self.ui.run.stop_mfix_button.setEnabled(running)
-        self.ui.run.resume_mfix_button.setEnabled(not_running)
         self.ui.toolbutton_run.setEnabled(not_running)
         self.ui.toolbutton_restart.setEnabled(not_running)
         self.ui.run.openmp_threads.setEnabled(not_running)
@@ -382,7 +381,7 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
             self.ui.run.mfix_executables.setEditText(current_selection)
 
         res_file_exists = bool(self.monitor_thread.get_res())
-        self.ui.run.resume_mfix_button.setEnabled(res_file_exists)
+        self.ui.run.resume_mfix_button.setEnabled(res_file_exists and not_running)
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
         self.ui.toolbutton_restart.setEnabled(res_file_exists)
