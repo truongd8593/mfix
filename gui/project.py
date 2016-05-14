@@ -1135,7 +1135,7 @@ class Project(object):
             else:
                 return False
 
-        # pop from dat_file_list
+        # remove from dat_file_list
         self.dat_file_list.remove(keyword)
         if self.thermoindex is not None:
             self.thermoindex -= 1
@@ -1158,7 +1158,7 @@ class Project(object):
                 for gas in cond.gasSpecies:
                     if gas.delete:
                         cond.gasSpecies.delete(gas)
-                        self.dat_file_list.pop(gas)
+                        self.dat_file_list.remove(gas)
                 for solid in cond.solids:
                     for species in solid.species:
                         if species.delete:
