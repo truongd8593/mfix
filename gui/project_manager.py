@@ -155,10 +155,26 @@ class ProjectManager(Project):
 
             # deal with species, since they can cause other widgets to instantiate
             nmax_g = self.get_value('nmax_g', 0)
-            for i in range(1, nmax_g+1):
-                species = self.get_value(['species_g', i])
-                alias = self.get_value(['species_alias_g', i])
-                #self.init_species_g(i, species, alias)
+            if len(self.gasSpecies) != nmax_g:
+                warnings.warn("nmax_g = %d, %d gas species defined" %
+                              (nmax_g, len(self.gasSpecies)))
+
+            # Make sure they are sorted by index before inserting into gui
+            self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
+            # TODO: integrate project.gasSpecies with gui.fluid_species
+            for g in self.gasSpecies:
+                # Get this data from burcat, if not in mfix.dat file
+                species_data = {'source': 'X',
+                                'phase': g.phase.upper(),
+                                'alias': g.species_alias_g,
+                                'molecular_weight': 1.23,
+                                'heat_of_formation': 4.56,
+                                'tmin': -1000,
+                                'tmax': 9999,
+                                'a_low': [0]*7,
+                                'a_high': [0]*7}
+
+                self.gui.fluid_species[g.species_g] = species_data
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
