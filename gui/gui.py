@@ -220,6 +220,10 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
                                                         os.pardir, 'model'))
 
         # create project manager
+        # NOTE.  it's a ProjectManager, not a Project.  But
+        # ProjectManager is a subclass of Project.  Please
+        # do not "fix" the code by renaming self.project to
+        # self.project_manager
         self.project = ProjectManager(self, self.keyword_doc)
 
         # --- data ---
