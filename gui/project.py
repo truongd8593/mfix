@@ -609,8 +609,9 @@ class Project(object):
         self.dat_file = dat_file
         self.keyword_doc = keyword_doc
         self._keyword_dict = {}
-        self.dat_file_list = []
-        self.thermoindex = None
+        self.dat_file_list = [] # contains the project file, lines are replaced with
+                            # keywords as parsed
+        self.thermo_index = None  # Index into dat_file_list where THERMO DATA section starts
 
         # Regular Expressions
         self.re_keyValue = re.compile(r"""
@@ -838,7 +839,7 @@ class Project(object):
             elif '@(END)' in line and reactionSection:
                 reactionSection = False
             elif 'thermo data' in line.lower():
-                self.thermoindex = i
+                self.thermo_index = i
                 self.dat_file_list.append(line)
             elif not reactionSection:
                 # remove comments
@@ -1038,9 +1039,9 @@ class Project(object):
 
         # add keyword to other data structures
         if keywordobject is not None:
-            if self.thermoindex is not None:
-                self.dat_file_list.insert(self.thermoindex, keywordobject)
-                self.thermoindex += 1
+            if self.thermo_index is not None:
+                self.dat_file_list.insert(self.thermo_index, keywordobject)
+                self.thermo_index += 1
             else:
                 self.dat_file_list.append(keywordobject)
             self._recursiveAddKeyToKeywordDict(keywordobject,
@@ -1137,8 +1138,8 @@ class Project(object):
 
         # remove from dat_file_list
         self.dat_file_list.remove(keyword)
-        if self.thermoindex is not None:
-            self.thermoindex -= 1
+        if self.thermo_index is not None:
+            self.thermo_index -= 1
 
         # remove from dict
         self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
@@ -1221,6 +1222,7 @@ class Project(object):
                 raise KeyError(keyword)
 
         return keywordobject
+
 
     def changekeywordvalue(self, key, value, args=None):
         '''
