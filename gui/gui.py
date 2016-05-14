@@ -4,6 +4,8 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+
+
 import copy
 import getopt
 import glob
@@ -11,19 +13,21 @@ import logging
 import os
 import shutil
 import signal
-import subprocess
 import sys
 import time
-import warnings
 from collections import OrderedDict
-import requests
+
+# Initialize logger early
+SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
+sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
+log = logging.getLogger(__name__)
+log.debug(SCRIPT_DIRECTORY)
 
 try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
+    import requests
 except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
+    requests = None
+    log.warn("requests module not available")
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
@@ -38,27 +42,40 @@ try:
 except ImportError:
     from PyQt4 import uic
 
-
 # Debugging hooks
-def debug_trace():
-    '''Set a tracepoint in the Python debugger that works with Qt'''
+def debug_trace(__name__):
+    """Set a tracepoint in the Python debugger that works with Qt"""
     from qtpy.QtCore import pyqtRemoveInputHook
     from pdb import set_trace
-    pyqtRemoveInputHook()
-    set_trace()
+    pyqtRemoveInputHook(__name__)
+    set_trace(__name__)
 
 
 # local imports
+from project import Project, Keyword
+from project_manager import ProjectManager
+from mfix_threads import MfixThread, MonitorThread
+
 from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
-from tools.mfixproject import Project, Keyword
+
+
 from tools.general import (make_callback, get_icon, get_unique_string,
-                           widget_iter, set_script_directory, CellColor)
+                           widget_iter, set_script_directory, CellColor,
+                           format_key_with_args, get_mfix_home, plural,
+                           set_item_noedit, get_selected_row)
+
+set_script_directory(SCRIPT_DIRECTORY)
+
+
 from tools.namelistparser import buildKeywordDoc
+
+from constants import *
+
 
 # look for pyqtnode
 try:
@@ -67,43 +84,6 @@ except ImportError:
     NodeWidget = None
 
 
-SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
-sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-log = logging.getLogger(__name__)
-log.debug(SCRIPT_DIRECTORY)
-set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
-
-# Helper functions
-def get_mfix_home():
-    " return the top level directory (since __file__ is mfix_home/gui/gui.py) "
-    return os.path.dirname(
-        os.path.dirname(os.path.realpath(__file__)))
-
-def format_key_with_args(key, args=None):
-    if args:
-        return "%s(%s)" % (key, ','.join(str(a) for a in args))
-    else:
-        return str(key)
-
-def plural(n, word):
-    fmt = "%d %s" if n==1 else "%d %ss"
-    return fmt % (n, word)
-
-def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
-
-def get_selected_row(table):
-    """get index of selected row from a QTable"""
-    # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
-    return None if not rows else rows.pop()
-
-# Constants
-
-# Solver types
-# must match combobox_solver in model_setup.ui
-SINGLE, TFM, DEM, PIC, HYBRID = range(5)
-CONSTANT, AIR, UDF = 0, 1, 2
 
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow):
@@ -131,7 +111,7 @@ class MfixGui(QtWidgets.QMainWindow):
                               'Table':         Table,
                               }
 
-        uifiles = os.path.join(os.path.dirname(__file__), 'uifiles')
+        uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
         self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
 
         self.ui.general = QtWidgets.QWidget()
@@ -1151,7 +1131,8 @@ class MfixGui(QtWidgets.QMainWindow):
     def pause_mfix(self):
         if self.mfix_exe != 'pymfix':
             return
-        requests.put(self.pymfix_url + 'stop')
+        if requests:
+            requests.put(self.pymfix_url + 'stop')
         self.update_run_options()
 
 
@@ -1238,7 +1219,8 @@ class MfixGui(QtWidgets.QMainWindow):
             # into another thread, attach signals to update ui
 
             self.pymfix_url = 'http://127.0.0.1:5000/'
-            requests.put(self.pymfix_url + 'start')
+            if requests:
+                requests.put(self.pymfix_url + 'start')
 
         self.update_run_options()
 
@@ -1246,7 +1228,8 @@ class MfixGui(QtWidgets.QMainWindow):
     def stop_mfix(self):
         """stop locally running instance of mfix"""
         if self.mfix_exe == 'pymfix':
-            requests.put(self.pymfix_url + 'exit')
+            if requests:
+                requests.put(self.pymfix_url + 'exit')
         # check whether pymfix has stopped mfix then
         # do something here
         self.run_thread.stop_mfix()
@@ -1640,451 +1623,7 @@ class MfixGui(QtWidgets.QMainWindow):
         tw.removeRow(row)
         tw.clearSelection()
 
-# --- Threads ---
-class MfixThread(QThread):
 
-    line_printed = pyqtSignal(str, str, str)
-    update_run_options = pyqtSignal()
-
-    def __init__(self, parent):
-        super(MfixThread, self).__init__(parent)
-        self.cmd = None
-        self.cwd = None
-        self.mfixproc = None
-
-    def stop_mfix(self):
-        """Terminate a locally running instance of mfix"""
-        mfixpid = self.mfixproc.pid
-        try:
-            self.mfixproc.terminate()
-        except OSError as err:
-            log.error("Error terminating process: %s", err)
-        self.line_printed.emit("Terminating MFIX process (pid %s)" %
-                                mfixpid, 'blue', 'Monospace')
-
-        # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
-        # os.waitpid has a nohang option, but it's not available on Windows
-        self.mfixproc.wait()
-
-        self.mfixproc = None
-        self.update_run_options.emit()
-
-    def start_command(self, cmd, cwd, env):
-        """Initialize local logging object, set local command and
-        working directory to those provided.
-
-        :param cmd: List to be passed as first parameter to subprocess.Popen()
-        :type cmd: list
-        :param cwd: The working directory for the command
-        :type cwd: str
-        :param env: Variables to be set child process environment
-        :type env: dict
-        :return: None"""
-        log = logging.getLogger(__name__)
-        log.debug("Running in %s : %s", cwd, cmd)
-        self.cmd = cmd
-        self.cwd = cwd
-        self.env = env
-        self.mfixproc = subprocess.Popen(self.cmd,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        universal_newlines = True,
-                                        shell=False, cwd=self.cwd,
-                                        env=self.env)
-        self.start()
-
-    def run(self):
-        """Run a subprocess, with executable and arguments obtained
-        from class-local self.cmd set in start_command()
-
-        :return: None"""
-
-        if self.cmd:
-            mfixproc_pid = self.mfixproc.pid
-            self.line_printed.emit(
-                                "MFIX (pid %d) is running" % mfixproc_pid,
-                                'blue', '')
-            log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
-            log.debug("starting mfix output monitor threads")
-
-            stdout_thread = MfixOutput(
-                                name='stdout',
-                                pipe=self.mfixproc.stdout,
-                                signal=self.line_printed,
-                                font='Monospace')
-
-            stderr_thread = MfixOutput(
-                                name='stderr',
-                                pipe=self.mfixproc.stderr,
-                                signal=self.line_printed,
-                                color='red',
-                                font='Monospace')
-
-            stdout_thread.start()
-            stderr_thread.start()
-
-            self.update_run_options.emit()
-
-            self.mfixproc.wait()
-            self.mfixproc = None
-
-            self.line_printed.emit(
-                                "MFIX (pid %s) has stopped" % mfixproc_pid,
-                                'blue', '')
-            self.update_run_options.emit()
-
-            stderr_thread.quit()
-            stdout_thread.quit()
-
-
-
-class MfixOutput(QThread):
-    """Generic class to handle streaming from a pipe and emiting read
-        lines into a signal handler.
-
-        :param name: Name of thread
-        :type name: str
-        :param pipe: Iterable object with readline method, assumed to be subprocess.PIPE
-        :type pipe: subprocess.PIPE
-        :param signal: Signal to be used to pass lines read from pipe
-        :type signal: QtCore.pyqtSignal object
-        :param color: Color to set when emitting signals
-        :type color: str """
-
-    def __init__(self, name, pipe, signal, color=None, font=None):
-        super(MfixOutput, self).__init__()
-        log = logging.getLogger(__name__)
-        log.debug("Started thread %s" % name)
-        self.name = name
-        self.signal = signal
-        self.pipe = pipe
-        self.color = color
-        self.font = font
-
-    def __del__(self):
-        # I suspect this is the source of QThread::wait errors
-        self.wait()
-
-    def run(self):
-
-        lines_iterator = iter(self.pipe.readline, b"")
-        for line in lines_iterator:
-            self.signal.emit(str(line), self.color, self.font)
-
-
-
-class MonitorThread(QThread):
-
-    sig = QtCore.pyqtSignal()
-
-    def __init__(self, parent):
-        QThread.__init__(self)
-        self.parent = parent
-        self.mfix_home = get_mfix_home()
-        self.cache = {}
-        self.executables = self.get_executables()
-        self.outputs = self.get_outputs()
-
-    def get_executables(self):
-        """returns a dict mapping full [mfix|pymfix] paths
-        to configuration options."""
-
-        def mfix_print_flags(mfix_exe, cache=self.cache):
-            """Determine mfix configuration by running mfix --print-flags.  Cache results"""
-            try: # Possible race, file may have been deleted/renamed since isfile check!
-                stat = os.stat(mfix_exe)
-            except OSError:
-                return ''
-
-            cached_stat, cached_flags = cache.get(mfix_exe, (None, None))
-            if cached_stat and cached_stat == stat:
-                return cached_flags
-
-            popen = subprocess.Popen(mfix_exe + " --print-flags",
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE,
-                                     shell=True)
-            (out, err) = popen.communicate()
-            flags = '' if err else out
-            cache[mfix_exe] = (stat, flags)
-            return flags
-
-        config_options = {}
-
-        # Check system PATH dirs first
-        PATH = os.environ.get("PATH")
-        if PATH:
-            dirs = set(PATH.split(os.pathsep))
-        else:
-            dirs = set()
-
-        # Look in subdirs of build dir
-        build_dir = os.path.join(self.mfix_home,'build')
-        if os.path.exists(build_dir):
-            for subdir in os.listdir(build_dir):
-                dirs.add(os.path.join(build_dir, subdir))
-
-        # Check run_dir
-        project_dir = self.parent.get_project_dir()
-        if project_dir:
-            dirs.add(project_dir)
-        # Check mfix home
-        dirs.add(self.mfix_home)
-
-        # Now look for mfix/pymfix in these dirs
-        for dir_ in dirs:
-            for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                exe = os.path.abspath(os.path.join(dir_, name))
-                if os.path.isfile(exe):
-                    log.debug("found %s executable in %s" % (name, dir_))
-                    config_options[exe] = str(mfix_print_flags(exe))
-
-        return config_options
-
-    def get_res(self):
-        if not self.parent.get_project_dir():
-            return
-        globb = os.path.join(self.parent.get_project_dir(),'*.RES')
-        return glob.glob(globb)
-
-    def get_outputs(self, patterns=[]):
-        project_dir = self.parent.get_project_dir()
-        if project_dir is None:
-            return
-        if len(patterns) == 0:
-            patterns = [
-                '*.LOG', '*.OUT', '*.RES', '*.SP?',
-                '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
-        output_paths = [glob.glob(os.path.join(project_dir, n)) for n in patterns]
-        outputs = []
-        for path in output_paths:
-            outputs += path
-        return outputs
-
-    def run(self):
-        self.sig.emit()
-        while True:
-            tmp = self.get_outputs()
-            if tmp != self.outputs:
-                self.outputs = tmp
-                self.sig.emit()
-            tmp = self.get_executables()
-            if tmp != self.executables:
-                self.executables = tmp
-                self.sig.emit()
-            time.sleep(1)
-
-
-class UpdateResidualsThread(QThread):
-
-    sig = QtCore.pyqtSignal(object)
-
-    def run(self):
-        while True:
-            self.job_done = False
-            try:
-                self.residuals = urlopen('http://localhost:5000/residuals').read()
-            except Exception:
-                log.debug("cannot retrieve residuals; pymfix process must have terminated.")
-                self.job_done = True
-                return
-            time.sleep(1)
-            self.sig.emit('update')
-
-
-# --- Project Manager ---
-class ProjectManager(Project):
-    """handles interaction between gui (parent) and mfix project (Project)"""
-
-    def __init__(self, parent=None, keyword_doc=None):
-        Project.__init__(self, keyword_doc=keyword_doc)
-
-        self.parent = parent
-        self.keyword_and_args_to_widget = {}
-        self.registered_keywords = set()
-        self._widget_update_stack = [] # prevent circular updates
-        self.solver = SINGLE # default
-
-    def submit_change(self, widget, newValueDict, args=None,
-                      forceUpdate=False): # forceUpdate unused (?)
-        """Submit a value change, for example
-        submitChange(lineEdit, {'run_name':'new run name'}, args)"""
-
-        # Note, this may be a callback from Qt (in which case 'widget' is
-        # the widget that the user activated), or from the initial mfix
-        # loading (in which case widget == None)
-
-        if isinstance(args, int):
-            args = [args]
-
-        for key, newValue in newValueDict.items():
-            if isinstance(newValue, dict):
-                if args:
-                    for ind, value in newValue.items():
-                        self._change(widget, key, value, args=args+[ind],
-                                     forceUpdate=forceUpdate)
-                else:
-                    for ind, value in newValue.items():
-                        self._change(widget, key, value, args=[ind],
-                                     forceUpdate=forceUpdate)
-            else:
-                self._change(widget, key, newValue, args=args,
-                             forceUpdate=forceUpdate)
-
-        self._cleanDeletedItems()
-
-
-    def _change(self, widget, key, newValue, args=None, forceUpdate=False):
-        # prevent circular updates, from this widget or any higher in stack
-        if widget in self._widget_update_stack:
-            return
-
-        key = key.lower()
-        updatedValue = None
-        if isinstance(newValue, Keyword): # why needed?
-            keyword = newValue
-            newValue = keyword.value
-        else:
-            keyword = None
-        if args is None:
-            args = []
-
-        try:
-            updatedValue = self.updateKeyword(key, newValue, args)
-        except Exception as e:
-            self.parent.print_internal("Warning: %s: %s" %
-                                       (format_key_with_args(key, args), e),
-                                       color='red')
-            return
-
-
-        keytuple = tuple([key]+args)
-        widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
-        keytuple_star = tuple([key]+['*'])
-        widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
-
-        warn = False
-        if widgets_to_update == None:
-            widgets_to_update = []
-        if widgets_star:
-            widgets_to_update.extend(widgets_star)
-        if not widgets_to_update:
-            warn = True
-
-        # Are we using the 'all' mechanism?
-        #widgets_to_update.extend(
-        #    self.keyword_and_args_to_widget.get("all", []))
-
-        for w in widgets_to_update:
-            # Prevent circular updates
-            self._widget_update_stack.append(w)
-            try:
-                w.updateValue(key, updatedValue, args)
-            except Exception as e:
-                ka = format_key_with_args(key, args)
-                #log.warn("%s: %s" % (e, ka))
-                msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
-                if widget: # We're in a callback, not loading
-                    self.parent.print_internal(msg, color='red')
-                raise ValueError(msg)
-
-            finally:
-                self._widget_update_stack.pop()
-
-        self.parent.print_internal("%s = %s" % (format_key_with_args(key, args),
-                                                updatedValue),
-                                   font="Monospace", color='red' if warn else None)
-
-
-    def guess_solver(self):
-        """ Attempt to derive solver type, after reading mfix file"""
-        keys = self.keywordItems()
-        mmax = self.get_value('mmax', default=1)
-
-        if mmax == 0:
-            return SINGLE
-        solids_models = set(self.get_value(['solids_model', n], default='TFM').upper()
-                           for n in range(1, mmax+1))
-        if solids_models == set(["TFM"]):
-            return TFM
-        elif solids_models == set(["DEM"]):
-            return DEM
-        elif solids_models == set(["PIC"]):
-            return PIC
-        elif solids_models == set(["TFM", "DEM"]):
-            return HYBRID
-        # mfix settings are inconsistent, warn user.  (Popup here?)
-        msg = "Warning, cannot deduce solver type"
-        self.parent.print_internal(msg, color='red')
-        log.warn(msg)
-        #default
-        return SINGLE
-
-    def load_project_file(self, project_file):
-        """Load an MFiX project file."""
-        n_errs = 0
-        errlist = []
-        with warnings.catch_warnings(record=True) as ws:
-            self.parsemfixdat(fname=project_file)
-            # emit loaded keys
-            # some of these changes may cause new keywords to be instantiated,
-            # so iterate over a copy of the list, which may change
-            kwlist = list(self.keywordItems())
-            # Let's guess the solver type from the file
-            self.solver = self.guess_solver()
-            # Now put the GUI into the correct state before setting up interface
-            self.parent.set_solver(self.solver)
-
-            # deal with species, since they cause other keywords to be defined
-            nmax_g = self.get_value('nmax_g', 0)
-
-            # Now submit all remaining keyword updates
-            for keyword in kwlist:
-                try:
-                    self.submit_change(None, {keyword.key: keyword.value},
-                                       args=keyword.args, forceUpdate=True)
-                except ValueError as e:
-                    errlist.append(e)
-
-            # report any errors
-            for w in errlist + ws:
-                self.parent.print_internal("Warning: %s" % w.message, color='red')
-            n_errs = len(errlist) + len(ws)
-            if n_errs:
-                self.parent.print_internal("Warning: %s loading %s" %
-                                           (plural(n_errs, "error") , project_file),
-                                           color='red')
-            else:
-                self.parent.print_internal("Loaded %s" % project_file, color='blue')
-
-    def register_widget(self, widget, keys=None, args=None):
-        '''
-        Register a widget with the project manager. The widget must have a
-        value_updated signal to connect to.
-        '''
-        if args is None:
-            args = []
-        else:
-            args = list(args)
-
-        log.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
-            widget.objectName(),
-            keys, args))
-
-        # add widget to dictionary of widgets to update
-        d = self.keyword_and_args_to_widget
-        for key in keys:
-            keytuple = tuple([key]+args)
-            if keytuple not in d:
-                d[keytuple] = []
-            d[keytuple].append(widget)
-
-        widget.value_updated.connect(self.submit_change)
-
-        self.registered_keywords = self.registered_keywords.union(set(keys))
-
-    def objectName(self):
-        return 'Project Manager'
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
@@ -2168,5 +1707,5 @@ def main(args):
     qapp.deleteLater()
     sys.exit()
 
-if __name__ == '__main__':
+if __name__  == '__main__':
     main(sys.argv)

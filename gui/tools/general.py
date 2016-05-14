@@ -14,8 +14,10 @@ import locale
 import logging
 log = logging.getLogger(__name__)
 
+
+# TODO: factor out util funcs which don't require Qt
 # import qt
-from qtpy import QtGui, QtWidgets
+from qtpy import QtGui, QtWidgets, QtCore
 
 SCRIPT_DIRECTORY = './'
 PY2 = sys.version[0] == '2'
@@ -27,12 +29,34 @@ def set_script_directory(script):
     SCRIPT_DIRECTORY = script
 
 
-def num_to_time(time, unit='s', outunit='time'):
-    '''
-    Function to convert time with a unit to another unit.
-    '''
-    unit = unit.lower()
+# Helper functions
+def get_mfix_home():
+    " return the top level directory (since __file__ is mfix_home/gui/gui.py) "
+    return os.path.dirname(
+        os.path.dirname(os.path.realpath(__file__)))
 
+def format_key_with_args(key, args=None):
+    if args:
+        return "%s(%s)" % (key, ','.join(str(a) for a in args))
+    else:
+        return str(key)
+
+def plural(n, word):
+    fmt = "%d %s" if n==1 else "%d %ss"
+    return fmt % (n, word)
+
+def set_item_noedit(item):
+    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+
+def get_selected_row(table):
+    """get index of selected row from a QTable"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedItems())
+    return None if not rows else rows.pop()
+
+def num_to_time(time, unit='s', outunit='time'):
+    """Convert time with a unit to another unit."""
+    unit = unit.lower()
     time = float(time)
 
     # convert time to seconds
@@ -70,7 +94,7 @@ def num_to_time(time, unit='s', outunit='time'):
 
 
 def get_image_path(name):
-    " get path to images "
+    """"get path to images"""
     path = os.path.join(SCRIPT_DIRECTORY, 'icons', name)
 
     if os.name == 'nt':
@@ -80,9 +104,8 @@ def get_image_path(name):
 
 
 def make_callback(func, *args, **kwargs):
-    '''
-    Helper function to make sure lambda functions are cached and not lost.
-    '''
+    """Helper function to make sure lambda functions are cached and not lost."""
+
     return lambda: func(*args, **kwargs)
 
 
@@ -110,17 +133,17 @@ def get_icon(name, default=None, resample=False):
 
 
 def get_unique_string(base, listofstrings):
-    " uniquify a string "
+    "uniquify a string"
     if base in listofstrings:
         # look for number at end
-        nums = re.findall('[\d]+', base)
+        nums = re.findall('[\d]+$', base)
         if nums:
             number = int(nums[-1]) + 1
             base = base.replace(nums[-1], '')
         else:
             number = 1
-
-        base = get_unique_string(''.join([base, str(number)]), listofstrings)
+        # Fixme - loop instead of recursing
+        base = get_unique_string(base + str(number), listofstrings)
 
     return base
 

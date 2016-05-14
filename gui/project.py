@@ -1,6 +1,6 @@
 """
-This file is part of the pymfix library
 
+This file was originally part of the pymfix library
 License
 -------
 As a work of the United States Government, this project is in the public domain
@@ -27,13 +27,15 @@ except ImportError:
     from io import StringIO
 
 import logging
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 # local imports
 from tools.simpleeval import simple_eval
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, to_fs_from_unicode,
                            is_string, is_unicode)
+
+from constants import *
 
 NaN = float('NaN')
 
@@ -1263,6 +1265,6 @@ class Project(object):
                 dat_file.write(line)
 
 
-if __name__ == '__main__':
+if  __name__ == '__main__':
     proj = Project()
     print(list(proj.parseKeywordLine('key = @( 2* 10)')))
