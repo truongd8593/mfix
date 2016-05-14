@@ -1548,6 +1548,7 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
     def fluid_species_add(self):
         sp = self.species_popup
         sp.phases='GL' # ? is this correct
+        # how to avoid this if dialog open already?
         self.saved_fluid_species = copy.deepcopy(self.fluid_species) # So we can revert
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
