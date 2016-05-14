@@ -1,6 +1,22 @@
 """
 
-This file was originally part of the pymfix library
+This module defines Project and Keyword classes.
+
+A Project holds Keyword settings representing an mfix project.
+It can read/write files in 'mfix.dat' format
+
+Keyword values are coerced to lower-case.
+
+Keywords can take arguments, which are typically indices representing
+phase number, eg   momentum_x_eq(0)  for phase 0.   Some keywords take
+multiple arguments.
+
+Keyword objects have a 'key' (the string) and a 'value'.
+
+History
+-------
+
+This file was derived from the pymfix library
 License
 -------
 As a work of the United States Government, this project is in the public domain
