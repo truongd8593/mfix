@@ -1163,47 +1163,23 @@ class Project(object):
                     for species in solid.species:
                         if species.delete:
                             solid.species.delete(species)
+                            # dat file list?
                     if solid.delete:
                         cond.solids.delete(solid)
 
                 if cond.delete:
                     condType.delete(cond)
 
-        # Species/solids
-        for species in self.gasSpecies:
-            if species.delete:
-                self.gasSpecies.delete(species)
+        for collection in (self.gasSpecies, self.solids, self.speciesEq,
+                     self.linearEq, self.speciesEq, self.spx,
+                     self.vtkvar, self.variablegrid):
+            if hasattr(collection, 'species'):
+                for item in collection.species:
+                    if item.delete:
+                        collection.species.delete(item)
+            for item in collection:
+                collection.delete(item)
 
-        for solid in self.solids:
-            for species in solid.species:
-                if species.delete:
-                    solid.species.delete(species)
-            if solid.delete:
-                self.solids.delete(solid)
-
-        for specieseq in self.speciesEq:
-            if specieseq.delete:
-                self.speciesEq.delete(specieseq)
-
-        # LEQ
-        for lineq in self.linearEq:
-            if lineq.delete:
-                self.linearEq.delete(lineq)
-
-        # SPX
-        for spx in self.spx:
-            if spx.delete:
-                self.spx.delete(spx)
-
-        # VTK_VAR
-        for vtk in self.vtkvar:
-            if vtk.delete:
-                self.vtkvar.delete(vtk)
-
-        # variablegrid
-        for vargrid in self.variablegrid:
-            if vargrid.delete:
-                self.variablegrid.delete(vargrid)
 
     def keywordLookup(self, keyword, args=None, warn=True):
         '''
