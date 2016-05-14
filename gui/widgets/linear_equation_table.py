@@ -7,7 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 # local imports
 from qtpy import QtWidgets, QtCore
 from .base import Table
-from tools.mfixproject import Keyword
+from project import Keyword
 
 
 class LinearEquationTable(QtWidgets.QWidget):

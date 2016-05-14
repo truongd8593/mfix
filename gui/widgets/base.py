@@ -26,7 +26,7 @@ except ImportError:
     log.debug("can't import pandas")
 
 # local imports
-from tools.mfixproject import Keyword, Equation
+from project import Keyword, Equation
 from tools.general import to_text_string
 
 # comment - the mixture of 'update' and 'change' terminology

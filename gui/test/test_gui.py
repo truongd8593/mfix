@@ -50,6 +50,13 @@ class MfixGuiTests(unittest.TestCase):
         self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
+        patterns = [
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', '*.mfx',
+            '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
+            for path in paths:
+                os.remove(path)
+
         self.mfix.get_open_filename = lambda : mfix_dat
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_open, QtCore.Qt.LeftButton)
@@ -60,17 +67,19 @@ class MfixGuiTests(unittest.TestCase):
 
     def tearDown(self):
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', '*.mfx',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
                 os.remove(path)
+
     def test_save_as(self):
         ''' Test the Save As button on the toolbar '''
 
         newname = 'DES_FB1_new_name'
+        newpath = os.path.join(self.rundir, newname)
 
-        self.mfix.get_save_filename = lambda : newname
+        self.mfix.get_save_filename = lambda : newpath
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
 

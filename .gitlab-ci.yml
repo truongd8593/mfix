@@ -16,8 +16,8 @@ stages:
 with_exe:
   stage: test
   script:
-    - pushd tutorials/FluidBed_DES
-    - ../../configure_mfix --python && make -j mfix
+    - pushd gui
+    - ../configure_mfix --python && make -j mfix ui
     - popd
     - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
   only:

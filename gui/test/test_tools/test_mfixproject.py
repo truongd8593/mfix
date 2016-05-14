@@ -5,7 +5,7 @@ import unittest
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(myPath, os.pardir, os.pardir))
 
-from gui.tools.mfixproject import Keyword, Equation, Project
+from project import Keyword, Equation, Project
 
 class TestEquation(unittest.TestCase):
     """ Unit tests for equation """
