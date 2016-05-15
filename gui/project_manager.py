@@ -6,8 +6,9 @@ import warnings
 
 from project import Project, Keyword
 from constants import *
-from tools.general import format_key_with_args
 
+from tools.general import (format_key_with_args, plural)
+from tools import read_burcat
 
 # --- Project Manager ---
 class ProjectManager(Project):
@@ -159,22 +160,71 @@ class ProjectManager(Project):
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
 
+            # TODO:  make sure aliases are unique
+
             # Make sure they are sorted by index before inserting into gui
             self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
             # TODO: integrate project.gasSpecies with gui.fluid_species
-            for g in self.gasSpecies:
-                # Get this data from burcat, if not in mfix.dat file
-                species_data = {'source': 'X',
-                                'phase': g.phase.upper(),
-                                'alias': g.species_alias_g,
-                                'molecular_weight': 1.23,
-                                'heat_of_formation': 4.56,
-                                'tmin': -1000,
-                                'tmax': 9999,
-                                'a_low': [0]*7,
-                                'a_high': [0]*7}
+            db = self.gui.species_popup.db
 
-                self.gui.fluid_species[g.species_g] = species_data
+            # Note that parsemfixdat does not modify the THERMO DATA section into
+            # Species objects
+
+            user_species = {}
+            if self.thermo_index is not None:
+                thermo_data = self.dat_file_list[self.thermo_index:]
+                thermo_data.append('') # slight hack, add blank line to force parsing last block
+                section = []
+                for line in thermo_data:
+                    line = line.strip()
+                    if not line: # sections separated by blank lines
+                        if not section:
+                            continue # multiple blank lines
+                        # slight hack: read_burcat expects a CAS ID and a comment block
+                        # Note, currently this comment is not exposed to the user ... only
+                        #  comments from BURCAT.THR wind up in the gui.
+                        section.insert(0, 'User defined,')
+                        section.insert(1, 'loaded from %s' % project_file)
+                        data = read_burcat.parse_section(section)
+                        for (species, phase, tmin, tmax, mol_weight, coeffs, comment) in data:
+                            user_species[(species, phase)] = (tmin, tmax, mol_weight, coeffs, comment)
+                        section = []
+                    else:
+                        section.append(line)
+
+
+            for g in self.gasSpecies:
+                # First look for definition in THERMO DATA section
+                phase = g.phase.upper()
+                species = g.species_g
+                alias = g.species_alias_g
+                # TODO:  make sure alias is set & unique
+                tmp = user_species.get((species, phase))
+                if tmp:
+                    (tmin, tmax, mol_weight, coeffs, comment) = tmp
+                    species_data = {'source': 'User Defined',
+                                    'phase': phase,
+                                    'alias': alias,
+                                    'molecular_weight': mol_weight,
+                                    'heat_of_formation': coeffs[14],
+                                    'tmin': tmin,
+                                    'tmax': tmax,
+                                    'a_low': coeffs[:7],
+                                    'a_high': coeffs[7:14]}
+
+
+                else:
+                    # get this from the species popup so we don't have to load
+                    # another copy of the database.  currently the database is
+                    # owned by the species popup.
+                    species_data = self.gui.species_popup.get_species_data(species, phase)
+                    if species_data:
+                        species_data['alias'] = alias
+
+                if species_data:
+                    self.gui.fluid_species[species] = species_data
+                else:
+                    warnings.warn("species %s not defined" % species)
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
