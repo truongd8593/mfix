@@ -96,6 +96,31 @@ class SpeciesPopup(QtWidgets.QDialog):
             table.setItem(i, 1, item)
             self.search_results[i] = (key, phase)
 
+    def get_species_data(self, key, phase):
+        """exposes species database to external clients"""
+        db = self.db.get(phase)
+        if not db:
+            return None
+        # FIXME, this is inefficient.  remove tmin/tmax from key tuple.
+        #  also, it's possible that there are multiple definitions for the
+        #  same species, with different temp. ranges.  This just returns
+        #  the first one
+        for (keytuple, data) in db.items():
+            (species, tmin, tmax) = keytuple
+            if species == key:
+                (coeffs, molecular_weight, comment) = data
+                a_low = coeffs[:7]
+                a_high = coeffs[7:14]
+                heat_of_formation = coeffs[14]
+                return {'source': 'BURCAT',
+                        'phase': phase,
+                        'molecular_weight': molecular_weight,
+                        'heat_of_formation': heat_of_formation,
+                        'tmin':  tmin,
+                        'tmax': tmax,
+                        'a_low': a_low,
+                        'a_high': a_high}
+
     def handle_search_selection(self):
         row = get_selected_row(self.tablewidget_search)
         self.ui.pushbutton_import.setEnabled(row is not None)
