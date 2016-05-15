@@ -83,17 +83,22 @@ try:
 except ImportError:
     NodeWidget = None
 
-from uifiles.general import Ui_general
-from uifiles.geometry import Ui_geometry
-from uifiles.gui import Ui_MainWindow
-from uifiles.mesh import Ui_mesh
-from uifiles.model_setup import Ui_model_setup
-from uifiles.monitors import Ui_monitors
-from uifiles.numerics import Ui_numerics
-from uifiles.output import Ui_output
-from uifiles.post_processing import Ui_post_processing
-from uifiles.run import Ui_run
-from uifiles.vtk import Ui_vtk
+try:
+    from uifiles.general import Ui_general
+    from uifiles.geometry import Ui_geometry
+    from uifiles.gui import Ui_MainWindow
+    from uifiles.mesh import Ui_mesh
+    from uifiles.model_setup import Ui_model_setup
+    from uifiles.monitors import Ui_monitors
+    from uifiles.numerics import Ui_numerics
+    from uifiles.output import Ui_output
+    from uifiles.post_processing import Ui_post_processing
+    from uifiles.run import Ui_run
+    from uifiles.vtk import Ui_vtk
+except ImportError:
+    print("You must compile ui files!  cd uifiles; make")
+    sys.exit(1)
+
 
 # --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
