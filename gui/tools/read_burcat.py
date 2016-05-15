@@ -103,46 +103,49 @@ def expand_tabs(line):
             r += c
     return r
 
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: %s infile outfile" % sys.argv[0])
 
-if len(sys.argv) != 3:
-    print("Usage: %s infile outfile" % sys.argv[0])
+    infile_name = sys.argv[1]
+    outfile_name = sys.argv[2]
+    if os.path.exists(outfile_name):
+        print("Not clobbering %s" % outfile_name)
+        sys.exit(-1)
 
-infile_name = sys.argv[1]
-outfile_name = sys.argv[2]
-if os.path.exists(outfile_name):
-    print("Not clobbering %s" % outfile_name)
-    sys.exit(-1)
+    infile = open(infile_name, 'rb')
+    outfile = open(outfile_name, 'wb')
 
-infile = open(infile_name, 'rb')
-outfile = open(outfile_name, 'wb')
-
-section = []
-for line in infile:
-    line = expand_tabs(line).strip()
-    if prelude:
-        if line.startswith('-----'):
-            prelude = False
-        continue
-
-    if "REST IN PEACE" in line:
-        time.sleep(1)
-
-    if line.startswith("Troughout"): # sic
-        # Done, we reached the comments at end of file
-        break
-
-    if line:
-        section.append(line)
-    else: # sections separated by blanks
-        if not section: # extra blank lines
+    section = []
+    for line in infile:
+        line = expand_tabs(line).strip()
+        if prelude:
+            if line.startswith('-----'):
+                prelude = False
             continue
-        for (name, phase, tmin, tmax, mol_weight, coeffs, comment) in parse_section(section):
-            key = (name, phase, tmin, tmax)
-            if key in data:
-                # uniquify names? not now, just skip
-                print("duplicate key %s, skipping"% str(key))
-            else:
-                data[key] = (coeffs, mol_weight, comment)
-        section = []
 
-pickle.dump(data, outfile, protocol=2)
+        if "REST IN PEACE" in line:
+            time.sleep(1)
+
+        if line.startswith("Troughout"): # sic
+            # Done, we reached the comments at end of file
+            break
+
+        if line:
+            section.append(line)
+        else: # sections separated by blanks
+            if not section: # extra blank lines
+                continue
+            for (name, phase, tmin, tmax, mol_weight, coeffs, comment) in parse_section(section):
+                key = (name, phase, tmin, tmax)
+                if key in data:
+                    # uniquify names? not now, just skip
+                    print("duplicate key %s, skipping"% str(key))
+                else:
+                    data[key] = (coeffs, mol_weight, comment)
+            section = []
+
+    pickle.dump(data, outfile, protocol=2)
+
+if __name__ == '__main__':
+    main()
