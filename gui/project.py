@@ -1159,7 +1159,10 @@ class Project(object):
                 for gas in cond.gasSpecies:
                     if gas.delete:
                         cond.gasSpecies.delete(gas)
-                        self.dat_file_list.remove(gas)
+                        #self.dat_file_list.remove(gas) FIXME this won't work
+                        #  since 'gas' object is not in dat_file_list - just
+                        #  the raw text representation, which spans multiple
+                        #  lines
                 for solid in cond.solids:
                     for species in solid.species:
                         if species.delete:
