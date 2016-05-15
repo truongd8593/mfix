@@ -12,20 +12,20 @@ PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT) *.so
-MODDIR=$(top_builddir)/model
+MODDIR=$(top_builddir)/../model
 
 # Current directory takes precedence over model/include/ and model/
-INCS = $(FC_MODINC)$(top_srcdir)/model/include \
+INCS = $(FC_MODINC)$(top_srcdir)/../model/include \
        $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS = $(INCS)
 AM_LDFLAGS =
 
-src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
+src_overrides := $(filter-out model/% post_mfix/%, $(sort $(wildcard *.f) $(wildcard **/*.f)))
 obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
@@ -47,7 +47,7 @@ mfix_LDADD += $(LIBMFIX)
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) $(bin_PROGRAMS)
+	$(MAKE) -C $(top_builddir) mfix
 
 $(LIBMFIX).md5: $(LIBMFIX)
 	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi
@@ -58,23 +58,23 @@ clean-local:
 # mfix.f needs to be built under $(builddir)
 $(builddir)/.build/mfix.f:  $(LIBMFIX).md5
 	@mkdir -p .build
-	cp $(top_srcdir)/model/mfix.f $@
+	cp $(top_srcdir)/../model/mfix.f $@
 
 $(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX).md5
 $(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX).md5
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
-$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/../model/read_namelist.f
 	@mkdir -p .build
 	$(PPFCCOMPILE) -c -o $@ $<
 
 # read_database needs rebuilt to use the correct path to BURCAT.THR
-$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/../model/read_database.f
 	@mkdir -p .build
-	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/../model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
-	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
+	RUN_DIR=. $(top_srcdir)/../config/rxn_preproc.sh
 
 ################################################################
 #                                                              #
@@ -87,9 +87,9 @@ species.inc: mfix.dat
 DEP_IGN := -i omp_lib -i netcdf -i mpi
 
 .f.d:
-	$(top_builddir)/build-aux/fdep $(DEP_IGN) $(INCS) -m $(MODDIR) -o $(@D) $^
+	$(top_builddir)/fdep $(DEP_IGN) $(INCS) -m $(MODDIR) -o $(@D) $^
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/update-usrdeps $@
 	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
 	    echo "$${main_mod}: ${LIBMFIX}" >> $@; \
 	done;
@@ -122,19 +122,19 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 
 if PYTHON
 ui_files = \
-	$(top_srcdir)/gui/uifiles/general.ui \
-	$(top_srcdir)/gui/uifiles/geometry.ui \
-	$(top_srcdir)/gui/uifiles/gui.ui \
-	$(top_srcdir)/gui/uifiles/mesh.ui \
-	$(top_srcdir)/gui/uifiles/model_setup.ui \
-	$(top_srcdir)/gui/uifiles/monitors.ui \
-	$(top_srcdir)/gui/uifiles/numerics.ui \
-	$(top_srcdir)/gui/uifiles/output.ui \
-	$(top_srcdir)/gui/uifiles/post_processing.ui \
-	$(top_srcdir)/gui/uifiles/regions.ui \
-	$(top_srcdir)/gui/uifiles/run.ui \
-	$(top_srcdir)/gui/uifiles/species_popup.ui \
-	$(top_srcdir)/gui/uifiles/vtk.ui
+	$(top_srcdir)/../gui/uifiles/general.ui \
+	$(top_srcdir)/../gui/uifiles/geometry.ui \
+	$(top_srcdir)/../gui/uifiles/gui.ui \
+	$(top_srcdir)/../gui/uifiles/mesh.ui \
+	$(top_srcdir)/../gui/uifiles/model_setup.ui \
+	$(top_srcdir)/../gui/uifiles/monitors.ui \
+	$(top_srcdir)/../gui/uifiles/numerics.ui \
+	$(top_srcdir)/../gui/uifiles/output.ui \
+	$(top_srcdir)/../gui/uifiles/post_processing.ui \
+	$(top_srcdir)/../gui/uifiles/regions.ui \
+	$(top_srcdir)/../gui/uifiles/run.ui \
+	$(top_srcdir)/../gui/uifiles/species_popup.ui \
+	$(top_srcdir)/../gui/uifiles/vtk.ui
 
 .ui.py:
 	$(PYUIC) -o $@ $^
@@ -153,23 +153,23 @@ endif
 
 if PYTHON
 pymfix_src = \
-	$(top_srcdir)/model/param_mod.f \
-	$(top_srcdir)/model/param1_mod.f \
-	$(top_srcdir)/model/dmp_modules/compar_mod.f \
-	$(top_srcdir)/model/fldvar_mod.f \
-	$(top_srcdir)/model/des/discretelement_mod.f \
-	$(top_srcdir)/model/iterate.f \
-	$(top_srcdir)/model/residual_mod.f \
-	$(top_srcdir)/model/time_step.f \
-	$(top_srcdir)/model/main.f \
-	$(top_srcdir)/model/get_data.f \
-	$(top_srcdir)/model/run_mod.f
+	$(top_srcdir)/../model/param_mod.f \
+	$(top_srcdir)/../model/param1_mod.f \
+	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/../model/fldvar_mod.f \
+	$(top_srcdir)/../model/des/discretelement_mod.f \
+	$(top_srcdir)/../model/iterate.f \
+	$(top_srcdir)/../model/residual_mod.f \
+	$(top_srcdir)/../model/time_step.f \
+	$(top_srcdir)/../model/main.f \
+	$(top_srcdir)/../model/get_data.f \
+	$(top_srcdir)/../model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 pymfix: mfix.so
 	rm -f $@
-	$(LN_S) $(top_srcdir)/pymfix/$@ $@
+	$(LN_S) $(top_srcdir)/../pymfix/$@ $@
 
 mfix.so: $(LIBMFIX).md5
 mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
@@ -197,10 +197,10 @@ AM_LDFLAGS += $(FC_DEFINE)MPI
 F2PY_FLAGS += $(FC_DEFINE)MPI
 
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
-	MPIRANKS=$(MPIRANKS) ${top_srcdir}/build-aux/runtests.sh
+	MPIRANKS=$(MPIRANKS) ${top_srcdir}/runtests.sh
 else
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
-	${top_srcdir}/build-aux/runtests.sh
+	${top_srcdir}/runtests.sh
 endif
 
 ################################################################

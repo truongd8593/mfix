@@ -3,12 +3,12 @@
 
 AC_PREREQ([2.69])
 AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
-AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_AUX_DIR([../build-aux])
 
-m4_include([build-aux/ax_check_compile_flag.m4])
-m4_include([build-aux/ax_prog_fc_mpi.m4])
-m4_include([build-aux/netcdf.m4])
-m4_include([build-aux/netcdff.m4])
+m4_include([ax_check_compile_flag.m4])
+m4_include([ax_prog_fc_mpi.m4])
+m4_include([netcdf.m4])
+m4_include([netcdff.m4])
 
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([])
@@ -120,7 +120,7 @@ fi
 AC_PATH_PROGS([MD5SUM], [md5sum md5],
               [Unable to find a MD5 program])
 
-AC_CONFIG_SRCDIR([model/mfix.f])
+AC_CONFIG_SRCDIR([../model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
 # Uncomment the following line when doing "make dist" to create a release
@@ -190,8 +190,8 @@ AC_FC_IMPLICIT_NONE
 AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
 
-AC_CONFIG_FILES([Makefile build-aux/Makefile.usr])
-AC_CONFIG_FILES([build-aux/fdep], [chmod +x build-aux/fdep])
+AC_CONFIG_FILES([Makefile Makefile.usr])
+AC_CONFIG_FILES([fdep], [chmod +x fdep])
 
 # Define Autoconf variables so Automake doesn't see GNU Make conditionals
 make_ifnotclean='
