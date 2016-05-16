@@ -169,9 +169,6 @@ class ProjectManager(Project):
 
             # Note that parsemfixdat does not modify the THERMO DATA section into
             # Species objects
-
-
-
             user_species = {}
             if self.thermo_data is not None:
                 thermo_data = self.thermo_data[:]
@@ -272,5 +269,33 @@ class ProjectManager(Project):
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
+    def update_thermo_data(self, species_dict):
+        new_thermo_data = []
+        for (species,data) in species_dict.items():
+            if data['source'] == 'BURCAT':
+                continue
+            replace = False
+            for line in self.thermo_data:
+                if replace:
+                    if line:
+                        continue
+                    else:
+                        replace = False
+
+                if line.startswith(species):
+                    replace = True
+                    new_thermo_data.extend(format_burcat(species, data))
+                    continue
+
+                new_thermo_data.append(line)
+
+
     def objectName(self):
         return 'Project Manager'
+
+def format_burcat(species, data):
+    """Return a list of lines in BURCAT.THR format"""
+    ## move this somewhere else
+    line1 = '%-18sUser Defined' % species
+    print(line1)
+    return ([])
