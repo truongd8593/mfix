@@ -4,8 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-
-
 import copy
 import getopt
 import glob
@@ -36,11 +34,14 @@ from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
-# TODO: cache ui file to a py file, use the ui file if newer, else py file
-try:
-    from PyQt5 import uic
-except ImportError:
-    from PyQt4 import uic
+
+PRECOMPILE_UI = False
+
+if not PRECOMPILE_UI:
+    try:
+        from PyQt5 import uic
+    except ImportError:
+        from PyQt4 import uic
 
 # Debugging hooks
 def debug_trace(__name__):
@@ -83,25 +84,28 @@ try:
 except ImportError:
     NodeWidget = None
 
-try:
-    from uifiles.general import Ui_general
-    from uifiles.geometry import Ui_geometry
-    from uifiles.gui import Ui_MainWindow
-    from uifiles.mesh import Ui_mesh
-    from uifiles.model_setup import Ui_model_setup
-    from uifiles.monitors import Ui_monitors
-    from uifiles.numerics import Ui_numerics
-    from uifiles.output import Ui_output
-    from uifiles.post_processing import Ui_post_processing
-    from uifiles.run import Ui_run
-    from uifiles.vtk import Ui_vtk
-except ImportError:
-    print("You must compile ui files!  cd uifiles; make")
-    sys.exit(1)
+if PRECOMPILE_UI:
+    try:
+        from uifiles.general import Ui_general
+        from uifiles.geometry import Ui_geometry
+        from uifiles.gui import Ui_MainWindow
+        from uifiles.mesh import Ui_mesh
+        from uifiles.model_setup import Ui_model_setup
+        from uifiles.monitors import Ui_monitors
+        from uifiles.numerics import Ui_numerics
+        from uifiles.output import Ui_output
+        from uifiles.post_processing import Ui_post_processing
+        from uifiles.run import Ui_run
+        from uifiles.vtk import Ui_vtk
+    except ImportError:
+        print("You must compile ui files!  cd uifiles; make")
+        sys.exit(1)
 
 
 # --- Main Gui ---
-class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
+
+
+class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     """Main window class handling all gui interactions"""
 
@@ -126,92 +130,48 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
                               'Table':         Table,
                               }
 
-        uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
+        if PRECOMPILE_UI:
+            self.ui = Ui_MainWindow()
+            self.ui.setupUi(self)
 
-        class GeneralPane(QtWidgets.QWidget, Ui_general):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
+            def make_widget(cls):
+                # Create an instance of a new class which is a subclass
+                # of QWidget and the specified class
+                class C(QtWidgets.QWidget, cls):
+                    def __init__(self):
+                        QtWidgets.QWidget.__init__(self, parent)
+                        self.setupUi(self)
+                return C()
 
-        self.ui.general = GeneralPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.general)
+            for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
+                        Ui_model_setup, Ui_numerics, Ui_output, Ui_vtk,
+                        Ui_monitors, Ui_run):
+                if cls == RegionsWidget: # not loaded from ui file
+                    widget = RegionsWidget()
+                    name = 'regions'
+                else:
+                    widget = make_widget(cls)
+                    name = cls.__name__.split('_',1)[1] # part after "Ui_"
+                # assign 'self.ui.general', etc
+                setattr(self.ui, name, widget)
+                self.ui.stackedWidgetTaskPane.addWidget(widget)
 
-        class GeometryPane(QtWidgets.QWidget, Ui_geometry):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
+        else:  # not precompiled
+            uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
+            self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
 
-        self.ui.geometry = GeometryPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.geometry)
-
-        class MeshPane(QtWidgets.QWidget, Ui_mesh):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.mesh = MeshPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.mesh)
-
-        self.ui.regions = RegionsWidget()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.regions)
-
-        class ModelSetupPane(QtWidgets.QWidget, Ui_model_setup):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.model_setup = ModelSetupPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.model_setup)
-
-        class NumericsPane(QtWidgets.QWidget, Ui_numerics):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.numerics = NumericsPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.numerics)
-
-        class OutputPane(QtWidgets.QWidget, Ui_output):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.output = OutputPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.output)
-
-        class VtkPane(QtWidgets.QWidget, Ui_vtk):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.output_vtk = VtkPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.output_vtk)
-
-        class MonitorsPane(QtWidgets.QWidget, Ui_monitors):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.monitors = MonitorsPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.monitors)
-
-        class RunPane(QtWidgets.QWidget, Ui_run):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.run = RunPane()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.run)
-
-        class PostProcessingPane(QtWidgets.QWidget, Ui_post_processing):
-            def __init__(self):
-                QtWidgets.QWidget.__init__(self, parent)
-                self.setupUi(self)
-
-        self.ui.post_processing = QtWidgets.QWidget()
-        self.ui.stackedWidgetTaskPane.addWidget(self.ui.post_processing)
+            for name in ('general', 'geometry', 'mesh', 'regions',
+                         'model_setup', 'numerics', 'output', 'vtk',
+                         'monitors', 'run'):
+                if name == 'regions':  # not loaded from .ui file
+                    widget = RegionsWidget()
+                else:
+                    widget = QtWidgets.QWidget()
+                    uic.loadUi(os.path.join(uifiles, name+'.ui'), widget)
+                    # assign 'self.ui.general', etc
+                setattr(self.ui, name, widget)
+                self.ui.stackedWidgetTaskPane.addWidget(widget)
+        # end of ui loading
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
