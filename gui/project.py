@@ -1252,6 +1252,8 @@ class Project(object):
             else:
                 yield to_fs_from_unicode(line + '\n')
 
+        for line in self.thermo_data:
+            yield line+'\n'
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
