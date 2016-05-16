@@ -3044,6 +3044,12 @@ background-color:transparent;
           </layout>
          </widget>
          <widget class="QFrame" name="frame_right">
+          <property name="minimumSize">
+           <size>
+            <width>600</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
