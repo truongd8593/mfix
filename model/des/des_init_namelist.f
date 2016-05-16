@@ -886,6 +886,8 @@
       CFL_PIC = 0.1
 !</keyword>
 
+! Time interval at which particle load is displayed (sec)
+      PLD_DT = UNDEFINED
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !                            UNSUPPORTED KEYWORDS                      !
@@ -923,5 +925,7 @@
 ! not a well supported feature and not generic either. So removing
 ! from namelists
       DES_CALC_BEDHEIGHT = .FALSE.
+
+
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

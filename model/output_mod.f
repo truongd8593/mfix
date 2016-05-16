@@ -49,6 +49,12 @@
       DOUBLE PRECISION :: SPX_TIME(N_SPX)
 ! Time at which standard output is to be written
       DOUBLE PRECISION :: OUT_TIME
+! Logical to trigger particle load display
+      LOGICAL :: PLD = .FALSE.
+! Time at which particle load is displayed.
+      DOUBLE PRECISION :: PLD_TIME
+
+
 
 ! The approximate amount (in MB) of space needed to write
 ! one time step of data into the indexed SPX file.

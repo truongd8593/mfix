@@ -547,6 +547,11 @@
       logical,dimension(:),allocatable :: ighost_updated
       integer :: max_isize
 
+! Particle load
+      DOUBLE PRECISION :: PREVIOUS_MAX_LOAD = 0.0, CURRENT_MAX_LOAD
+! Interval at which particle load is displayed.
+      DOUBLE PRECISION :: PLD_DT
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

@@ -58,4 +58,7 @@
          PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, PIC_REPORT_MIN_EPG, &
 
 ! Flag to turn on/off optimizing the list of facets at each des grid cell
-         MINIMIZE_DES_FACET_LIST
+         MINIMIZE_DES_FACET_LIST, &
+
+! Time interval at which particle load is displayed
+         PLD_DT

@@ -15,7 +15,7 @@ MODULE output_man
 !---------------------------------------------------------------------//
 
       use compar, only: myPE, PE_IO
-      use discretelement, only: DISCRETE_ELEMENT
+      use discretelement, only: DISCRETE_ELEMENT,PLD_DT
       use machine, only: wall_time
       use output, only: DISK, DISK_TOT
       use output, only: OUT_TIME, OUT_DT
@@ -23,6 +23,7 @@ MODULE output_man
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
       use output, only: USR_TIME, USR_DT
+      use output, only: PLD,PLD_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use qmom_kinetic_equation, only: QMOMK
@@ -128,6 +129,14 @@ MODULE output_man
          ENDIF
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
+
+      IF(PLD) THEN
+         IF(CHECK_TIME(PLD_TIME)) THEN
+            PLD_TIME = NEXT_TIME(PLD_DT)
+            CALL DISPLAY_PARTICLE_LOAD
+         ENDIF
+      ENDIF
+      PLD = .FALSE.
 
       CALL FLUSH_NOTIFY_USER
 
@@ -298,6 +307,8 @@ MODULE output_man
             WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(TNITs))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
          ENDIF
+
+
  1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'Remaining DEM NITs: ',A)
 
          WALL_NOW = WALL_TIME()
@@ -350,6 +361,7 @@ MODULE output_man
       use output, only: USR_TIME, USR_DT
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
       use output, only: RES_BACKUPS
+      use output, only: PLD_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use param1, only: UNDEFINED
@@ -434,6 +446,9 @@ MODULE output_man
             ENDIF
          ENDIF
       ENDDO
+
+! Initialize VTK_TIME
+      PLD_TIME = TIME
 
 ! Initialize VTK_TIME
 
@@ -578,4 +593,74 @@ MODULE output_man
       END SUBROUTINE SET_FNAME
 
       END SUBROUTINE BACKUP_RES
+
+
+!----------------------------------------------------------------------!
+! Subroutine: DISPLAY_PARTICLE_LOAD                                    !
+! Purpose: Display the particle load balance (based on particle count) !
+!----------------------------------------------------------------------!
+      SUBROUTINE DISPLAY_PARTICLE_LOAD
+
+      use discretelement     
+      use error_manager      
+      use functions          
+      use machine            
+      use mpi_utility        
+      use run, only: TIME
+      use sendrecv 
+      use compar, only:MyPE
+      use usr
+
+      implicit none
+      INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
+      INTEGER :: NP=0  ! Number of particles 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: NP_ALL
+      INTEGER :: MIN_NP, MIN_NPP, MAX_NP, MAX_NPP, IDEAL_NP
+      DOUBLE PRECISION :: MIN_LOAD, MAX_LOAD
+
+
+
+      IF(NumPEs==1) RETURN  ! Nothing to do in serial
+
+      ! print*,'DISPLAY_DEM_LOAD,MyPE,PIP,IGHOST_CNT,NP=',MyPE,PIP,IGHOST_CNT,NP
+
+      NP = PIP - IGHOST_CNT                                                                                                                              
+      ALLOCATE( NP_ALL(0:NumPEs-1))
+      CALL ALLGATHER_1I (NP,NP_ALL,IERR)
+      CALL GLOBAL_ALL_SUM(NP)
+      ! if(MyPE==0) print*,'DISPLAY_DEM_LOAD,NP_ALL,NP=',NP_ALL,NP,NumPEs
+      MIN_NP   = MINVAL(NP_ALL)
+      MIN_NPP  = MINLOC(NP_ALL,1)-1
+      MAX_NP   = MAXVAL(NP_ALL)
+      MAX_NPP  = MAXLOC(NP_ALL,1)-1
+      IDEAL_NP = INT(NP/NumPEs)
+      MIN_LOAD = DFLOAT(MIN_NP)/DFLOAT(IDEAL_NP)
+      MAX_LOAD = DFLOAT(MAX_NP)/DFLOAT(IDEAL_NP)
+      CURRENT_MAX_LOAD = MAX_LOAD
+      WRITE(ERR_MSG, 1000) trim(iVAL(NP)), &
+                           trim(iVal(MIN_NP)), trim(iVal(MIN_NPP)), &
+                           trim(iVal(MAX_NP)), trim(iVal(MAX_NPP)), &
+                           trim(ival(IDEAL_NP))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      WRITE(ERR_MSG, 1100) TIME,MIN_LOAD,MAX_LOAD
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      IF(MyPE==0) THEN
+         ACTIVE_PEs = 0
+         DO L = 0,NumPEs - 1
+            IF(NP_ALL(L)>0) ACTIVE_PEs = ACTIVE_PEs + 1
+         ENDDO
+         INACTIVE_PEs = NumPEs - ACTIVE_PEs
+         WRITE(ERR_MSG, 1200) trim(iVal(ACTIVE_PEs)), trim(iVal(INACTIVE_PEs)), trim(iVal(NumPes))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      ENDIF
+
+1000 FORMAT(/'Particle count: Total: ', A,1x,', Min: ',A,1x,'(PE=',A,'), &
+              Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
+1100 FORMAT('Particle load at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
+1200 FORMAT('Number of active/inactive PEs = ', A,1x,'/ ',A,1x,'of ',A//)
+
+      RETURN
+      END SUBROUTINE DISPLAY_PARTICLE_LOAD
+
+
 END MODULE output_man

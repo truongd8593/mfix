@@ -18,6 +18,7 @@
       use error_manager
       use functions
       use machine
+      use output, only: PLD,PLD_TIME
       use mpi_funs_des, only: DESMPI_SEND_RECV_FIELD_VARS
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
@@ -210,6 +211,7 @@
             TIME = S_TIME
             NSTEP = NSTEP + 1
 ! Call the output manager to write RES and SPx data.
+            PLD = .TRUE.
             CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
          ENDIF  ! end if (.not.des_continuum_coupled)
 
