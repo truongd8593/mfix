@@ -1109,10 +1109,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     def remove_output_files(self, output_files):
         """ remove MFIX output files from current project directory
 
-
         :param list output_files:
-        :return: True for success, False for user cancel
-        :rtype: bool"""
+        :return: True for success, False for user cancel"""
 
         if output_files:
             message_text = 'Deleting output files %s' % '\n'.join(output_files)
@@ -1283,8 +1281,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     def get_save_filename(self):
         """wrapper for call to getSaveFileName for unit tests to override
 
-        :return: Filename (including path)
-        :rtype: str"""
+        :return: Filename (including path)"""
+
         return QtWidgets.QFileDialog.getSaveFileName(
                             self,
                             'Save Project As',
@@ -1501,6 +1499,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
                                         'heat_of_formation', 'source')):
                 table.setItem(row, col, make_item(v[key]))
+        self.project.update_thermo_data(self.fluid_species)
 
     def handle_fluid_species_selection(self):
         row = get_selected_row(self.ui.tablewidget_fluid_species)
