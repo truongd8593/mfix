@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1045</width>
-    <height>1015</height>
+    <width>908</width>
+    <height>903</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -203,6 +203,24 @@ QPushButton:checked {
           <bool>true</bool>
          </property>
          <widget class="QFrame" name="frame_left">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>800</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
@@ -422,7 +440,7 @@ background-color:white;
                <item>
                 <widget class="QTreeWidget" name="treewidget_model_navigation">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
@@ -435,7 +453,7 @@ background-color:white;
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>150</width>
+                   <width>175</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -619,11 +637,17 @@ background-color:white;
                </item>
                <item>
                 <widget class="QStackedWidget" name="stackedWidgetTaskPane">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>3</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="autoFillBackground">
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <widget class="QWidget" name="fluid">
                   <layout class="QGridLayout" name="gridLayout_3">
@@ -1273,12 +1297,6 @@ background-color:white;
                         <height>100</height>
                        </size>
                       </property>
-                      <property name="baseSize">
-                       <size>
-                        <width>0</width>
-                        <height>300</height>
-                       </size>
-                      </property>
                       <property name="frameShadow">
                        <enum>QFrame::Plain</enum>
                       </property>
@@ -1336,8 +1354,8 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>525</width>
-                         <height>578</height>
+                         <width>299</width>
+                         <height>551</height>
                         </rect>
                        </property>
                        <layout class="QGridLayout" name="gridLayout_53">
@@ -3044,9 +3062,15 @@ background-color:transparent;
           </layout>
          </widget>
          <widget class="QFrame" name="frame_right">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>5</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
-            <width>600</width>
+            <width>400</width>
             <height>0</height>
            </size>
           </property>
