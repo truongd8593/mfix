@@ -84,8 +84,9 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
         QtWidgets.QLineEdit.__init__(self, parent)
         CommonBase.__init__(self)
 
+        # Why connect to both?
         self.editingFinished.connect(self.emitUpdatedValue)
-        self.textChanged.connect(self.emitUpdatedValue)
+        self.textChanged.connect(self.emitUpdatedValue) # will trigger on each key
 
         self.dtype = str
 
@@ -152,7 +153,8 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
         QtWidgets.QComboBox.__init__(self, parent)
         CommonBase.__init__(self)
         # activated: only on user setttings, not programmatic change
-        self.activated.connect(self.emitUpdatedValue)
+        #self.activated.connect(self.emitUpdatedValue)
+        self.currentIndexChanged.connect(self.emitUpdatedValue)
         self.dtype = str
         self.is_pop_up = False
 
