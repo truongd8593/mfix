@@ -1233,12 +1233,15 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
 
         else:
             if self.dmp_enabled:
-                np = self.project.nodesi.value * self.project.nodesj.value * self.project.nodesk.value
+                np = (self.project.nodesi.value *
+                      self.project.nodesj.value *
+                      self.project.nodesk.value)
+
                 run_cmd = ['mpirun', '-np', str(np), mfix_exe]
 
                 # adjust environment for to-be called process
                 # assume user knows what they are doing and don't override vars
-                if not os.environ.has_key("OMP_NUM_THREADS"):
+                if not "OMP_NUM_THREADS" in environ:
                     os.environ["OMP_NUM_THREADS"] = str(np)
                 log.info('Will start mpirun with OMP_NUM_THREADS=%d' % np)
 
@@ -1248,11 +1251,11 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
                 np = 1
 
         project_filename = os.path.basename(self.get_project_file())
-        # Warning, not all versions of mfix support '-f'
+        # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
 
         msg = 'Running %s' % ' '.join(run_cmd)
-        log.info(msg)
+        #log.info(msg) # print_internal logs
         self.print_internal(msg, color='blue')
 
         self.run_thread.start_command(
