@@ -429,7 +429,7 @@ background-color:white;
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>85</width>
                    <height>0</height>
                   </size>
                  </property>
