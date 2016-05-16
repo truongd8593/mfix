@@ -1125,20 +1125,25 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
     def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
         mfix_exe = self.ui.run.mfix_executables.currentText()
+        self.mfix_exe = mfix_exe
         if not mfix_exe:
             return
         config = self.monitor_thread.executables[mfix_exe]
-        smp_enabled = 'smp' in config
-        dmp_enabled = 'dmp' in config
-        pymfix_enabled = 'pymfix' in mfix_exe
-        self.ui.run.openmp_threads.setEnabled(smp_enabled)
-        if not dmp_enabled:
+        self.mfix_config = config
+        self.smp_enabled = 'smp' in config
+        self.dmp_enabled = 'dmp' in config
+
+        self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
+                                  for x in ('pymfix', 'pymfix.exe'))
+
+        self.ui.run.openmp_threads.setEnabled(self.smp_enabled)
+        if not self.dmp_enabled:
             self.ui.run.spinbox_keyword_nodesi.setValue(1)
             self.ui.run.spinbox_keyword_nodesj.setValue(1)
             self.ui.run.spinbox_keyword_nodesk.setValue(1)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled(dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled(dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled(dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
 
 
     def remove_output_files(self, output_files):
@@ -1188,7 +1193,7 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def pause_mfix(self):
-        if self.mfix_exe != 'pymfix':
+        if not self.pymfix_enabled:
             return
         if requests:
             requests.put(self.pymfix_url + 'stop')
@@ -1220,44 +1225,30 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
 
-        mfix_exe = self.ui.run.mfix_executables.currentText()
-        config = self.monitor_thread.get_executables()[mfix_exe]
-        self.mfix_exe = 'pymfix' if 'pymfix' in mfix_exe[-10:] else 'mfix'
+        mfix_exe = self.mfix_exe
 
-        if self.mfix_exe == 'pymfix':
+        if self.pymfix_enabled:
             # run pymfix.  python or python3, depending on sys.executable
             run_cmd = [sys.executable, mfix_exe]
 
         else:
-            executable = [mfix_exe,]
-
-            if 'dmp' in config:
-                # self.ui.run.spinbox_keyword_nodesi.value()
-                #  or
-                # self.project.nodesi.value
-                nodes = {'NODESI': self.project.nodesi.value,
-                         'NODESJ': self.project.nodesj.value,
-                         'NODESK': self.project.nodesk.value}
-
-                dmptotal = reduce(lambda a,b: a*b, nodes.values())
-
-                for k,v in nodes.items():
-                    self.set_keyword(k, v)
-
-                run_cmd = ['mpirun', '-np', str(dmptotal)] + executable
+            if self.dmp_enabled:
+                np = self.project.nodesi.value * self.project.nodesj.value * self.project.nodesk.value
+                run_cmd = ['mpirun', '-np', str(np), mfix_exe]
 
                 # adjust environment for to-be called process
                 # assume user knows what they are doing and don't override vars
                 if not os.environ.has_key("OMP_NUM_THREADS"):
-                    os.environ["OMP_NUM_THREADS"] = str(dmptotal)
-                log.info('Will start mpirun with OMP_NUM_THREADS=%d' % dmptotal)
+                    os.environ["OMP_NUM_THREADS"] = str(np)
+                log.info('Will start mpirun with OMP_NUM_THREADS=%d' % np)
 
             else:
                 # no dmp support
-                run_cmd = executable
-                dmptotal = 1
+                run_cmd = [mfix_exe]
+                np = 1
 
         project_filename = os.path.basename(self.get_project_file())
+        # Warning, not all versions of mfix support '-f'
         run_cmd += ['-f', project_filename]
 
         msg = 'Running %s' % ' '.join(run_cmd)
@@ -1269,7 +1260,7 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
             cwd=self.get_project_dir(),
             env=os.environ)
 
-        if self.mfix_exe == 'pymfix':
+        if self.pymfix_enabled:
             # get last pymfix url from config
             # compare last to ui.run.{something} to pick up user change
             # also set this elsewhere ...
@@ -1286,7 +1277,7 @@ class MfixGui(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def stop_mfix(self):
         """stop locally running instance of mfix"""
-        if self.mfix_exe == 'pymfix':
+        if self.pymfix_enabled:
             if requests:
                 requests.put(self.pymfix_url + 'exit')
         # check whether pymfix has stopped mfix then
