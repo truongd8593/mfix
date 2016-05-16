@@ -5,13 +5,14 @@ import sys
 import pickle
 import time
 
-prelude = True
-cas_id = None
-
-data = {}
-section = []
-
 NaN  = float('NaN')
+
+# Define short names for a few common species
+# see model/thermochemical/read_thermochemical_mod.f#L122
+short_names = {
+    'O2 REF ELEMENT' : 'O2',
+    'N2  REF ELEMENT': 'N2',
+    'CH4   ANHARMONIC':  'CH4' }
 
 def parse_section(section):
     name = None
@@ -54,6 +55,11 @@ def parse_section(section):
             if len(coeffs) == 14:
                 coeffs.append(NaN)
             yield (name, phase, tmin, tmax, mol_weight, coeffs, comment)
+
+            # Add short names for a few common species
+            short_name = short_names.get(name)
+            if short_name:
+                yield (short_name, phase, tmin, tmax, mol_weight, coeffs, comment)
 
 def extract_coeffs(text):
     '''extract E15.0 formatted floats from line of text.'''
@@ -116,6 +122,8 @@ def main():
     infile = open(infile_name, 'rb')
     outfile = open(outfile_name, 'wb')
 
+    prelude = True
+    data = {}
     section = []
     for line in infile:
         line = expand_tabs(line).strip()
