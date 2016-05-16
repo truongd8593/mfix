@@ -47,7 +47,8 @@ class MfixThread(QThread):
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
-        self.mfixproc.wait()
+        if self.mfixproc:
+            self.mfixproc.wait()
         self.mfixproc = None
 
         self.update_run_options.emit()
@@ -102,7 +103,8 @@ class MfixThread(QThread):
 
             self.update_run_options.emit()
 
-            self.mfixproc.wait()
+            if self.mfixproc:
+                self.mfixproc.wait()
             self.mfixproc = None
 
             self.line_printed.emit(
