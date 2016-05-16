@@ -354,7 +354,7 @@
         <item row="1" column="0" colspan="3">
          <widget class="QLabel" name="label_specific_heat_equation">
           <property name="text">
-           <string>   Cp(T) = a1 + a2T + a3T² + a4T³ + a5T⁴ + a6T⁵ + a7T⁶</string>
+           <string>   Cp(T) = a₁ + a₂T + a₃T² + a₄T³ + a₅T⁴</string>
           </property>
          </widget>
         </item>
