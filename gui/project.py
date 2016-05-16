@@ -608,10 +608,11 @@ class Project(object):
 
         self.dat_file = dat_file
         self.keyword_doc = keyword_doc
+        self.comments = {}
         self._keyword_dict = {}
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
-        self.thermo_index = None  # Index into dat_file_list where THERMO DATA section starts
+        self.thermo_data =  []
 
         # Regular Expressions
         self.re_keyValue = re.compile(r"""
@@ -826,12 +827,13 @@ class Project(object):
 
     def _parsemfixdat(self, fobject):
         """This does the actual parsing."""
-        reactionSection = False
-        self.comments = {}
-        self._keyword_dict = {}
+        self.comments.clear()
+        self._keyword_dict.clear()
         self.__initDataStructure__()
         self.dat_file_list = []
-
+        self.thermo_data = []
+        reactionSection = False
+        thermoSection = False
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip('\n')
             if '@(RXNS)' in line:
@@ -839,9 +841,11 @@ class Project(object):
             elif '@(END)' in line and reactionSection:
                 reactionSection = False
             elif 'thermo data' in line.lower():
-                self.thermo_index = i
-                self.dat_file_list.append(line)
-            elif not reactionSection:
+                thermoSection = True
+                self.thermo_data.append(line)
+            elif thermoSection:
+                self.thermo_data.append(line)
+            elif not reactionSection and not thermoSection:
                 # remove comments
                 commentedline = ''
                 if line.startswith('#') or line.startswith('!'):
@@ -1039,11 +1043,7 @@ class Project(object):
 
         # add keyword to other data structures
         if keywordobject is not None:
-            if self.thermo_index is not None:
-                self.dat_file_list.insert(self.thermo_index, keywordobject)
-                self.thermo_index += 1
-            else:
-                self.dat_file_list.append(keywordobject)
+            self.dat_file_list.append(keywordobject)
             self._recursiveAddKeyToKeywordDict(keywordobject,
                                                [key]+args)
         else:
@@ -1138,8 +1138,6 @@ class Project(object):
 
         # remove from dat_file_list
         self.dat_file_list.remove(keyword)
-        if self.thermo_index is not None:
-            self.thermo_index -= 1
 
         # remove from dict
         self._recursiveRemoveKeyToKeywordDict([key]+args, warn)

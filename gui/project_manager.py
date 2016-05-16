@@ -170,9 +170,11 @@ class ProjectManager(Project):
             # Note that parsemfixdat does not modify the THERMO DATA section into
             # Species objects
 
+
+
             user_species = {}
-            if self.thermo_index is not None:
-                thermo_data = self.dat_file_list[self.thermo_index:]
+            if self.thermo_data is not None:
+                thermo_data = self.thermo_data[:]
                 thermo_data.append('') # slight hack, add blank line to force parsing last block
                 section = []
                 for line in thermo_data:
@@ -212,7 +214,6 @@ class ProjectManager(Project):
                                     'a_low': coeffs[:7],
                                     'a_high': coeffs[7:14]}
 
-
                 else:
                     # get this from the species popup so we don't have to load
                     # another copy of the database.  currently the database is
@@ -224,7 +225,7 @@ class ProjectManager(Project):
                 if species_data:
                     self.gui.fluid_species[species] = species_data
                 else:
-                    warnings.warn("species %s not defined" % species)
+                    warnings.warn("%s: not defined" % g)
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
