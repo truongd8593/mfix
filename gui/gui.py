@@ -13,6 +13,8 @@ import shutil
 import signal
 import sys
 import time
+
+from copy import deepcopy
 from collections import OrderedDict
 
 # Initialize logger early
@@ -1469,10 +1471,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     # --- fluid species methods ---
     def fluid_species_revert(self):
         self.fluid_species = self.saved_fluid_species
+        self.species_popup.defined_species = deepcopy(self.fluid_species)
         self.update_fluid_species_table()
 
     def fluid_species_save(self):
-        self.fluid_species = self.species_popup.defined_species
+        self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.update_fluid_species_table()
 
     def update_fluid_species_table(self):
@@ -1540,7 +1543,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         table = self.ui.tablewidget_fluid_species
         row = get_selected_row(table)
         sp = self.species_popup
-        self.saved_fluid_species = copy.deepcopy(self.fluid_species)
+        self.saved_fluid_species = copy.deepcopy(self.fluid_species) # So we can revert
+        sp.cancel.connect(self.fluid_species_revert)
+        sp.save.connect(self.fluid_species_save)
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
         if row is None:
