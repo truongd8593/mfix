@@ -632,22 +632,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # Fluid phase models
         # Density
         for name in ('density', 'viscosity', 'molecular_weight',
-                     'specific_heat', 'conductivity', 'diffusion'):
+                     'specific_heat', 'molecular_weight', 'conductivity', 'diffusion'):
             combobox = getattr(ui, 'combobox_fluid_%s_model' % name)
             setter = getattr(self,'set_fluid_%s_model' % name)
             combobox.currentIndexChanged.connect(setter)
-
-        ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
-            self.set_fluid_molecular_weight_model)
-        # Specific Heat
-        ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
-            self.set_fluid_specific_heat_model)
-        # (Thermal) Conductivity
-        ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
-            self.set_fluid_conductivity_model)
-        # Diffusion (Coefficient)
-        ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
-            self.set_fluid_diffusion_model)
 
         # Fluid species
         tb = ui.toolbutton_fluid_species_add
