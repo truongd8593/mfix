@@ -271,31 +271,57 @@ class ProjectManager(Project):
 
     def update_thermo_data(self, species_dict):
         new_thermo_data = []
-        for (species,data) in species_dict.items():
-            if data['source'] == 'BURCAT':
-                continue
-            replace = False
-            for line in self.thermo_data:
-                if replace:
-                    if line:
-                        continue
-                    else:
-                        replace = False
-
-                if line.startswith(species):
-                    replace = True
-                    new_thermo_data.extend(format_burcat(species, data))
+        user_species = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
+        # Keep sections of thermo_data not mentioned in species_dict, for now
+        skip = False
+        for line in self.thermo_data:
+            line = line.rstrip()
+            if skip:
+                if line:
                     continue
-
-                new_thermo_data.append(line)
-
+                else:
+                    skip = False
+            elif line.endswith(' 1'):
+                species = line[:18].strip()
+                if species in user_species:
+                    skip = True
+                    continue
+            # Avoid repeated blanks
+            if not line:
+                if new_thermo_data and not new_thermo_data[-1] :
+                    continue
+            # Keep the line
+            new_thermo_data.append(line)
+        self.thermo_data = new_thermo_data
+        # Now append records for all user species
+        for (k, v) in species_dict.items():
+            if v['source'] != 'BURCAT':
+                self.thermo_data.extend(format_burcat(k,v))
 
     def objectName(self):
         return 'Project Manager'
 
 def format_burcat(species, data):
     """Return a list of lines in BURCAT.THR format"""
-    ## move this somewhere else
-    line1 = '%-18sUser Defined' % species
-    print(line1)
-    return ([])
+    ## TODO: move this somewhere else
+    lines = []
+
+    # First line
+    calc_quality = 'B' # appears in col 68, values A-F
+    row = (species, 'User Defined', data['phase'].upper(),
+           data['tmin'], data['tmax'],
+           calc_quality, data['molecular_weight'])
+    lines.append('%-24s%-18s0.%c%10.3f%10.3f%3s%10.5f 1' % row)
+
+    # remaining 3 lines
+    fmt = '%15.8E' * 5
+    a_low = data['a_low']
+    a_high = data['a_high']
+    row = tuple(a_low[:5])
+    lines.append( (fmt%row) + '    2')
+    row = tuple(a_low[5:7] + a_high[:3])
+    lines.append( (fmt%row) + '    3')
+    row = tuple(a_high[3:] + [data['heat_of_formation']])
+    lines.append( (fmt%row) + '    4')
+    lines.append('') # blank line
+    return lines
