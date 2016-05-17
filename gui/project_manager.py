@@ -218,10 +218,22 @@ class ProjectManager(Project):
                     if species_data:
                         species_data['alias'] = alias
 
-                if species_data:
-                    self.gui.fluid_species[species] = species_data
-                else:
-                    warnings.warn("%s: not defined" % g)
+                if not species_data:
+                    warnings.warn("no defintion found for '%s'" % species)
+                    species_data = {
+                        'alias' : alias,
+                        'source': 'Undefined',
+                        'phase': phase,
+                        'molecular_weight': g.mw_g,
+                        'heat_of_formation': 0.0,
+                        'tmin':  0.0,
+                        'tmax': 0.0,
+                        'a_low': [0.0]*7,
+                        'a_high': [0.0]*7}
+
+                self.gui.fluid_species[species] = species_data
+
+
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
