@@ -89,7 +89,7 @@ class MfixThread(QThread):
                                 name='stdout',
                                 pipe=self.mfixproc.stdout,
                                 signal=self.line_printed,
-                                font='Courier')
+                                font='Courier') # TODO find good cross-platform fixed width font
 
             stderr_thread = MfixOutput(
                                 name='stderr',
