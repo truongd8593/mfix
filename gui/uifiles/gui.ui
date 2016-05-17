@@ -422,7 +422,7 @@ QPushButton:checked {
               <enum>QFrame::Plain</enum>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="modeler">
               <property name="styleSheet">
@@ -3052,6 +3052,9 @@ background-color:transparent;
                   <font>
                    <family>Monospace</family>
                   </font>
+                 </property>
+                 <property name="lineWrapMode">
+                  <enum>QTextEdit::NoWrap</enum>
                  </property>
                 </widget>
                </item>
