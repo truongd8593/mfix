@@ -146,10 +146,14 @@ class MfixOutput(QThread):
         self.wait()
 
     def run(self):
-
         lines_iterator = iter(self.pipe.readline, b"")
         for line in lines_iterator:
-            self.signal.emit(str(line), self.color, self.font)
+            lower = line.lower()
+            if any(x in lower for x in ('error', 'warn', 'fail'):
+                color='red'
+            else:
+                color = self.color
+            self.signal.emit(str(line), color, self.font)
 
 
 
