@@ -452,12 +452,26 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             cb.setCurrentIndex(j)
 
     def set_keyword(self, key, value, args=None):
+        """convenience function to set keyword"""
         self.project.submit_change(None, {key:value}, args)
 
+    def update_keyword(self, key, value, args=None):
+        """like set_keyword but no action if value already set"""
+        if self.project.get_value(key, args=args) == value:
+            return
+        self.set_keyword(key, value, args)
+
     def unset_keyword(self, key, args=None):
-        if self.project.removeKeyword(key, args, warn=False):
-            self.print_internal("unset %s" %
-                                format_key_with_args(key, args))
+        """convenience function to undefine keyword"""
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+        success = self.project.removeKeyword(key, args, warn=False)
+        if success:
+            self.print_internal("%s" % format_key_with_args(key, args),
+                                font='strikeout')
+
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -1078,7 +1092,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if color:
             char_format.setForeground(QtGui.QColor(color))
         if font:
-            char_format.setFontFamily(font)
+            if font.lower()=='strikeout': # hack
+                char_format.setFontFamily("Monospace")
+                char_format.setFontStrikeOut(True)
+            else:
+                char_format.setFontFamily(font)
         cursor.setCharFormat(char_format)
         cursor.insertText(line)
         scrollbar = qtextbrowser.verticalScrollBar()
@@ -1479,6 +1497,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.update_fluid_species_table()
 
     def update_fluid_species_table(self):
+        """Update table in fluids pane.  Also set nmax_g, species_g and species_alias_g keywords,
+        which are not tied to a single widget"""
+
         hv = QtWidgets.QHeaderView
         table = self.ui.tablewidget_fluid_species
         if PYQT5:
@@ -1498,10 +1519,20 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             item = QtWidgets.QTableWidgetItem(str(val))
             set_item_noedit(item)
             return item
-        for (row,(k,v)) in enumerate(self.fluid_species.items()):
+        old_nmax_g = self.project.get_value('nmax_g', 0)
+        nmax_g = len(self.fluid_species)
+        self.update_keyword('nmax_g', nmax_g)
+        for (row,(species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
                                         'heat_of_formation', 'source')):
-                table.setItem(row, col, make_item(v[key]))
+                table.setItem(row, col, make_item(data[key]))
+                self.update_keyword('species_g', species, args=row+1)
+                self.update_keyword('species_alias_g', data['alias'], args=row+1)
+        # Clear any keywords with indices above nmax_g
+        for i in range(nmax_g+1, old_nmax_g+1):
+            self.unset_keyword('species_g', i)
+            self.unset_keyword('species_alias_g', i)
+
         self.project.update_thermo_data(self.fluid_species)
 
     def handle_fluid_species_selection(self):
@@ -1525,6 +1556,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         sp.activateWindow()
 
     def fluid_species_delete(self):
+        # XXX FIXME this is potentially a big problem since
+        # it results in species being renumbered, or a hole in
+        # the sequence - either way is trouble.  Have to warn
+        # user, if species is referenced elsewhere.
         table = self.ui.tablewidget_fluid_species
         row = get_selected_row(table)
         if row is None: # No selection
