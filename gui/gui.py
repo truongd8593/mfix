@@ -194,8 +194,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.project = ProjectManager(self, self.keyword_doc)
 
         # note, the set_fluid_*_model methods have a lot of repeated code
+        # see 'set_fluid_molecular_weight_model' to help understand this
         def make_fluid_model_setter(self, name, key):
             def setter(model):
+                setattr(self, name, model) # self.fluid_<name>_model = model
                 combobox = getattr(self.ui, 'combobox_' + name)
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
@@ -211,7 +213,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 if model == CONSTANT:
                     value = spinbox.value() # Possibly re-enabled gui item
                     if self.project.get_value(key_g0) != value:
-                        self.set_keyword(key_g0, value) # Restore keyword
+                        self.set_keyword(key_g0, value) # Restore keyword value
                 elif model == UDF:
                     self.unset_keyword(key_g0)
                     self.set_keyword(key_usr, True)
@@ -543,38 +545,64 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             spinbox.setEnabled(False)
 
     def enable_fluid_scalar_eq(self, state):
-        self.ui.spinbox_fluid_nscalar_eq.setEnabled(state)
+        spinbox = self.ui.spinbox_fluid_nscalar_eq
+        spinbox.setEnabled(state)
         if state:
-            self.set_fluid_nscalar_eq(self.fluid_nscalar_eq)
+            val = spinbox.value()
+            self.set_fluid_nscalar_eq(val)
+        else:
+            # Don't call set_fluid_nscalar_eq(0) b/c that will clobber spinbox
+            prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+            self.fluid_nscalar_eq = 0
+            self.update_scalar_equations(prev_nscalar)
 
     def set_fluid_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
         prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
-        self.ui.spinbox_fluid_nscalar_eq.setValue(value)
         self.fluid_nscalar_eq = value
-        self.project.submit_change(None,{"nscalar":
-                                         self.fluid_nscalar_eq + self.solid_nscalar_eq})
-        for i in range(1,1+value):
+        spinbox = self.ui.spinbox_fluid_nscalar_eq
+        if value != spinbox.value():
+            spinbox.setValue(value)
+            return
+        self.update_scalar_equations(prev_nscalar)
+
+    def update_scalar_equations(self, prev_nscalar):
+        # This is a little messy.  We may have reduced
+        # nscalar, so we need to unset phase4scalar(i)
+        # for any values of i > nscalar.
+        nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        if nscalar > 0:
+            self.project.submit_change(None,{"nscalar": nscalar})
+        else:
+            self.unset_keyword("nscalar")
+
+        for i in range(1,1+self.fluid_nscalar_eq):
             self.project.submit_change(None,{"phase4scalar":0},args=i)
-        for i in range(1+value, 1+prev_nscalar):
+        for i in range(1+self.fluid_nscalar_eq, 1+prev_nscalar):
             if self.project.get_value("phase4scalar", args=i)  == 0:
-                self.project.removeKeyword("phase4scalar", args=i)
+                self.unset_keyword("phase4scalar", i)
 
 
-    # molecular wt model only has 2 choices, so create its setter specially
-    def set_fluid_molecular_weight_model(self, value):
+    # molecular wt model only has 2 choices, and the key names don't
+    # follow the same pattern, so create its setter specially
+    def set_fluid_molecular_weight_model(self, model):
+        self.fluid_molecular_weight_model = model
         combobox = self.combobox_fluid_molecular_weight_model
-        if combobox.currentIndex() != value:
-            combobox.setCurrentIndex(value)
-        self.fluid_molecular_weight_model = value
+        prev_model = combobox.currentIndex()
+        if model != prev_model:
+            combobox.setCurrentIndex(model)
+            return
         # Enable spinbox for constant molecular_weight model
         spinbox = self.ui.spinbox_keyword_mw_avg
-        spinbox.setEnabled(value==0)
-        if value == CONSTANT:
-            self.set_keyword("mw_avg", spinbox.value())
-        elif value == 1: # Mixture
-            # TODO: require mw for all component species
+        spinbox.setEnabled(model==CONSTANT)
+        if model == CONSTANT:
+            value = spinbox.value() # Possibly re-enabled gui item
+            if self.project.get_value("mw_avg") != value:
+                self.set_keyword("mw_avg", value) # Restore keyword value
+        else: # Mixture
+            # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
+
 
     def set_fluid_phase_name(self, value):
         if value != self.ui.lineedit_fluid_phase_name.text():
@@ -1484,14 +1512,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                    else 1)
 
         # molecular weight model is the odd one (only 2 settings)
-        if self.project.get_value('mw_avg'):
+        if self.project.get_value('mw_avg') is not None:
             self.set_fluid_molecular_weight_model(CONSTANT)
         else:
             self.set_fluid_molecular_weight_model(1)
         # requires molecular weights for all species components, should we valdate
-
-        # TODO: save/restore fluid phase name
-
 
         # Solids
         self.update_solids_table()
@@ -1540,18 +1565,20 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         nmax_g = len(self.fluid_species)
         if nmax_g > 0 and old_nmax_g is not None:
             self.update_keyword('nmax_g', nmax_g)
-        for (row,(species,data)) in enumerate(self.fluid_species.items()):
+        for (row, (species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
                                         'heat_of_formation', 'source')):
                 table.setItem(row, col, make_item(data[key]))
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', data['alias'], args=row+1)
+                self.update_keyword('species_mw_g', data['molecular_weight'], args=row+1)
         # Clear any keywords with indices above nmax_g
         if old_nmax_g is None:
             old_nmax_g = 0
         for i in range(nmax_g+1, old_nmax_g+1):
             self.unset_keyword('species_g', i)
             self.unset_keyword('species_alias_g', i)
+            self.unset_keyword('species_mw_g', i)
 
         self.project.update_thermo_data(self.fluid_species)
 
