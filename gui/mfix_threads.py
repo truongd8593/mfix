@@ -43,7 +43,7 @@ class MfixThread(QThread):
         except OSError as err:
             log.error("Error terminating process: %s", err)
         self.line_printed.emit("Terminating MFIX process (pid %s)" %
-                                mfixpid, 'blue', 'Monospace')
+                                mfixpid, 'blue', '')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
@@ -89,14 +89,14 @@ class MfixThread(QThread):
                                 name='stdout',
                                 pipe=self.mfixproc.stdout,
                                 signal=self.line_printed,
-                                font='Monospace')
+                                font='Courier')
 
             stderr_thread = MfixOutput(
                                 name='stderr',
                                 pipe=self.mfixproc.stderr,
                                 signal=self.line_printed,
                                 color='red',
-                                font='Monospace')
+                                font='Courier')
 
             stdout_thread.start()
             stderr_thread.start()
