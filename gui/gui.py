@@ -193,6 +193,45 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # self.project_manager
         self.project = ProjectManager(self, self.keyword_doc)
 
+        # note, the set_fluid_*_model methods have a lot of repeated code
+        def make_fluid_model_setter(self, name, key):
+            def setter(model):
+                combobox = getattr(self.ui, 'combobox_' + name)
+                prev_model = combobox.currentIndex()
+                if model != prev_model:
+                    combobox.setCurrentIndex(model)
+                    return
+
+                # Enable spinbox for constant model
+                key_g0 = key + "_g0"
+                key_usr = "usr_" + key + "g"
+                spinbox = getattr(self.ui, 'spinbox_keyword_%s' % key_g0)
+                spinbox.setEnabled(model==CONSTANT)
+
+                if model == CONSTANT:
+                    value = spinbox.value() # Possibly re-enabled gui item
+                    if self.project.get_value(key_g0) != value:
+                        self.set_keyword(key_g0, value) # Restore keyword
+                elif model == UDF:
+                    self.unset_keyword(key_g0)
+                    self.set_keyword(key_usr, True)
+                else: # Ideal gas law, Sutherland, etc
+                    self.unset_keyword(key_g0)
+                    self.unset_keyword(key_usr)
+                    # anything else to do in this case? validation?
+            return setter
+
+        # Create setters for the cases which are similar
+        for (name, key) in (
+                ('density', 'ro'),
+                ('viscosity', 'mu'),
+                ('specific_heat', 'cp'),
+                ('conductivity', 'k'),
+                ('diffusion', 'dif')):
+            model_name = 'fluid_%s_model' % name
+            setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
+
+
         # --- data ---
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
                                'workflow':  self.ui.pushButtonWorkflow,
@@ -205,7 +244,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
-        self.solid_nscalar_eq = 0 # Infer these from phase4scalar?
+        self.solid_nscalar_eq = 0 # Infer these from phase4scalar
         # Defaults
         #self.solver = SINGLE - moved to Project
         self.fluid_density_model = CONSTANT
@@ -475,7 +514,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
-        # since this has to change availabilty of a bunch of other GUI items
+        # since this has to change availabilty of several other GUI items
         self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
         for item in (ui.combobox_fluid_specific_heat_model,
@@ -509,52 +548,25 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.set_fluid_nscalar_eq(self.fluid_nscalar_eq)
 
     def set_fluid_nscalar_eq(self, value):
-        # TODO:  load from mfix.dat (do we save this explicitly,
-        # or infer from PHASE4SCALAR settings?
+        # This *sums into* nscalar - not a simple keyword
+        prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        self.ui.spinbox_fluid_nscalar_eq.setValue(value)
         self.fluid_nscalar_eq = value
         self.project.submit_change(None,{"nscalar":
                                          self.fluid_nscalar_eq + self.solid_nscalar_eq})
         for i in range(1,1+value):
             self.project.submit_change(None,{"phase4scalar":0},args=i)
+        for i in range(1+value, 1+prev_nscalar):
+            if self.project.get_value("phase4scalar", args=i)  == 0:
+                self.project.removeKeyword("phase4scalar", args=i)
 
-    # note, the set_fluid_*_model methods have a lot of repeated code
-    # TODO:  guess these models & initialize when loading project
-    def set_fluid_density_model(self, value):
-        self.fluid_density_model = value
 
-        # Enable spinbox for constant density model
-        spinbox = self.ui.spinbox_keyword_ro_g0
-        spinbox.setEnabled(value==0)
-
-        if value == CONSTANT:
-            self.set_keyword("ro_g0", spinbox.value())
-            self.unset_keyword("usr_rog")
-        elif value == 1: # Ideal Gas Law
-            self.unset_keyword("ro_g0")
-            self.unset_keyword("usr_rog")
-        elif value == UDF:
-            self.unset_keyword("ro_g0")
-            self.set_keyword("usr_rog", True)
-
-    def set_fluid_viscosity_model(self, value):
-        self.fluid_viscosity_model = value
-
-        # Enable spinbox for constant viscosity model
-        spinbox = self.ui.spinbox_keyword_mu_g0
-        spinbox.setEnabled(value==0)
-        if value == CONSTANT:
-            self.set_keyword("mu_g0", spinbox.value())
-            self.unset_keyword("usr_mug")
-        elif value == 1: # Sutherland's Law
-            self.unset_keyword("mu_g0")
-            self.unset_keyword("usr_mug")
-        elif value == UDF:
-            self.unset_keyword("mu_g0")
-            self.set_keyword("usr_mug", True)
-
+    # molecular wt model only has 2 choices, so create its setter specially
     def set_fluid_molecular_weight_model(self, value):
+        combobox = self.combobox_fluid_molecular_weight_model
+        if combobox.currentIndex() != value:
+            combobox.setCurrentIndex(value)
         self.fluid_molecular_weight_model = value
-
         # Enable spinbox for constant molecular_weight model
         spinbox = self.ui.spinbox_keyword_mw_avg
         spinbox.setEnabled(value==0)
@@ -564,57 +576,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             # TODO: require mw for all component species
             self.unset_keyword("mw_avg")
 
-    def set_fluid_specific_heat_model(self, value):
-        self.fluid_specific_heat_model = value
-
-        # Enable spinbox for constant specific_heat model
-        spinbox = self.ui.spinbox_keyword_cp_g0
-        spinbox.setEnabled(value==0)
-        if value == CONSTANT:
-            self.set_keyword("cp_g0", spinbox.value())
-            self.unset_keyword("usr_cpg")
-        elif value == 1: # Mixture
-            # TODO: require cp for all component species
-            self.unset_keyword("cp_g0")
-            self.unset_keyword("usr_mug")
-        elif value == UDF:
-            self.unset_keyword("cp_g0")
-            self.set_keyword("usr_cpg", True)
-
-    def set_fluid_conductivity_model(self, value):
-        self.fluid_conductivity_model = value
-
-        # Enable spinbox for constant (thermal) conductivity model
-        spinbox = self.ui.spinbox_keyword_k_g0
-        spinbox.setEnabled(value==0)
-        if value == CONSTANT:
-            self.set_keyword("k_g0", spinbox.value())
-            self.unset_keyword("usr_kg")
-        elif value == 1: # Temperature dep.
-            # TODO: require cp for all component species
-            self.unset_keyword("k_g0")
-            self.unset_keyword("usr_kg")
-        elif value == UDF:
-            self.unset_keyword("k_g0")
-            self.set_keyword("usr_kg", True)
-
-    def set_fluid_diffusion_model(self, value):
-        self.fluid_diffusion_model = value
-
-        # Enable spinbox for constant diffusion model
-        spinbox = self.ui.spinbox_keyword_dif_g0
-        spinbox.setEnabled(value==CONSTANT)
-
-        if value == CONSTANT:
-            self.set_keyword("dif_g0", spinbox.value())
-            self.unset_keyword("usr_difg")
-        elif value == AIR: # Temperature dep.
-            # TODO: require temperature field for full domain
-            self.unset_keyword("dif_g0")
-            self.unset_keyword("usr_difg")
-        elif value == UDF:
-            self.unset_keyword("dif_g0")
-            self.set_keyword("usr_difg", True)
 
     def disable_fluid_solver(self, state):
         enabled = not state # "disable"
@@ -680,11 +641,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # (Thermal) Conductivity
         ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
             self.set_fluid_conductivity_model)
-        self.set_fluid_conductivity_model(self.fluid_conductivity_model)
+        #self.set_fluid_conductivity_model(self.fluid_conductivity_model)
         # Diffusion (Coefficient)
         ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
             self.set_fluid_diffusion_model)
-        self.set_fluid_diffusion_model(self.fluid_diffusion_model)
+        #self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
         tb = ui.toolbutton_fluid_species_add
@@ -1396,6 +1357,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
+        # see also project_manager.load_project_file
+
         # Make sure path is absolute
         if not os.path.isabs(project_path):
             project_path = os.path.abspath(project_path)
@@ -1484,10 +1447,57 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
         self.enable_energy_eq(self.project['energy_eq'])
-        # Species
+
+        # cgw - lots more model setup todo here.  Should we do this here or
+        #  in ProjectManager.load_project_file (where we do guess/set_solver)
+
+        # Fluid phase
+        # fluid species table
         self.update_fluid_species_table()
+
+        # fluid momentum and species eq. handled by _keyword_ widget
+
+        # fluid scalar eq
+        nscalar = self.project.get_value('nscalar', 0)
+        self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
+            if self.project.get_value('phase4scalar', args=i) == 0)
+        self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
+
+        # handle a bunch of items which are essentially the same
+        for (setter, name) in ((self.set_fluid_density_model, 'ro'),
+                               (self.set_fluid_viscosity_model, 'mu'),
+                               (self.set_fluid_specific_heat_model, 'cp'),
+                               (self.set_fluid_conductivity_model, 'k'),
+                               (self.set_fluid_diffusion_model, 'dif')):
+            name_g0 = name+'_g0'
+            name_usr = 'usr_'+name+'g'
+            val_g0 = self.project.get_value(name_g0)
+            val_usr = self.project.get_value(name_usr)
+            print(name_g0, val_g0, name_usr, val_usr)
+
+            if (val_usr is not None and val_g0 is not None):
+                self.print_internal('Warning: %s and %s are both set' % (name_g0, name_usr))
+                # FIXME this is getting printed after error count ... should be included in # of errs
+                # (another reason to move this to load_project_file)
+
+            setter(CONSTANT if val_g0 is not None
+                   else UDF if val_usr is not None
+                   else 1)
+
+        # molecular weight model is the odd one (only 2 settings)
+        if self.project.get_value('mw_avg'):
+            self.set_fluid_molecular_weight_model(CONSTANT)
+        else:
+            self.set_fluid_molecular_weight_model(1)
+        # requires molecular weights for all species components, should we valdate
+
+        # TODO: save/restore fluid phase name
+
+
+        # Solids
         self.update_solids_table()
-        # cgw - lots more model setup todo here
+
+
 
         # Look for geometry.stl and load automatically
         geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
@@ -1527,9 +1537,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             item = QtWidgets.QTableWidgetItem(str(val))
             set_item_noedit(item)
             return item
-        old_nmax_g = self.project.get_value('nmax_g', 0)
+        old_nmax_g = self.project.get_value('nmax_g')
         nmax_g = len(self.fluid_species)
-        self.update_keyword('nmax_g', nmax_g)
+        if nmax_g > 0 and old_nmax_g is not None:
+            self.update_keyword('nmax_g', nmax_g)
         for (row,(species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
                                         'heat_of_formation', 'source')):
@@ -1537,6 +1548,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', data['alias'], args=row+1)
         # Clear any keywords with indices above nmax_g
+        if old_nmax_g is None:
+            old_nmax_g = 0
         for i in range(nmax_g+1, old_nmax_g+1):
             self.unset_keyword('species_g', i)
             self.unset_keyword('species_alias_g', i)

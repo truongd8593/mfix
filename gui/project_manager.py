@@ -141,6 +141,7 @@ class ProjectManager(Project):
 
     def load_project_file(self, project_file):
         """Load an MFiX project file."""
+        # See also gui.open_project
         n_errs = 0
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
@@ -232,7 +233,7 @@ class ProjectManager(Project):
                 except ValueError as e:
                     errlist.append(e)
 
-            # report any errors
+            # report any errors (this should probably be in gui class)
             for w in errlist + ws:
                 self.gui.print_internal("Warning: %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)

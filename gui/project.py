@@ -700,6 +700,7 @@ class Project(object):
             return False
 
     def get_value(self, key, default=None, args=None):
+        # move to gui.py since it's just a convenience func?
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
         if args:
