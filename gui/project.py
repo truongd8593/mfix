@@ -117,6 +117,48 @@ def format_key_with_args(key, args=None):
     else:
         return str(key)
 
+# Regular Expressions
+re_keyValue = re.compile(r"""
+    (\w+)                           # Alphanumeric, key name
+    (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
+    \s*                             # Possible whitespace
+    =                               # Equal sign
+    \s*                             # Possible whitespace
+    (.*?)                           # Value
+    (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_float_exp = re.compile(r"""
+    ^                              # Beginning of expr
+    [+-]?                          # possible sign
+    [\d]+                          # digits
+    (\.\d*)?                       # optional decimal sign and more digits
+    ([ED][+-]?[0-9]+)              # exponent, with 'd' or 'e' (required)
+    $                              # end
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_float = re.compile(r"""
+    ^[+-]?[0-9]+\.[0-9]*$
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_expression = re.compile(r"""
+    @\(([ 0-9.EPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_stringShortHand = re.compile(r"""
+    [\d]+                                      # unsigned integer
+    \*                                         # literal *
+    (?:                                        # non-capturing group
+      '[\w]+'                                  # single-quoted word
+    | "[\w]+"                                  # double-quoted word
+    | \.[\w]+\.                                # .TOKEN.
+    | [-+]?[\d]+\.?[\d]*(?:[DE][-+]?[\d]+)?    # number
+    )                                          # end group
+    """, re.VERBOSE|re.IGNORECASE)
+
+# detect whether int/float keyword needs to be upgraded to Equation
+re_math = re.compile('pi|e|[-+*/]', re.IGNORECASE)
+
 class Keyword(object):
     def __init__(self, key, val, comment='', dtype=None, args=None):
 
@@ -131,10 +173,6 @@ class Keyword(object):
         if args is None:
             args = []
         self.args = args
-
-        # FIXME:  this is not just matching 'pi' but any jumble of p's and i's
-        # see also def in Project.__init__
-        self.re_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -226,8 +264,11 @@ class Keyword(object):
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.re_expression.match(str(value)) and self.dtype == float:
-            self.value = Equation(value)
+        elif (self.dtype == float and not re_float.match(svalue)):
+            if re_float_exp.match(svalue):
+                self.value = FloatExp(value)
+            elif re_math.search(svalue):
+                self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
         else:
@@ -422,7 +463,6 @@ class Solid(Base):
         return lst
 
     def __str__(self):
-
         return '\n'.join(self._prettyPrintList())
 
 
@@ -616,44 +656,6 @@ class Project(object):
         self.thermo_data =  []
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
 
-        # Regular Expressions
-        self.re_keyValue = re.compile(r"""
-            (\w+)                           # Alphanumeric, key name
-            (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
-            \s*                             # Possible whitespace
-            =                               # Equal sign
-            \s*                             # Possible whitespace
-            (.*?)                           # Value
-            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
-        """, re.VERBOSE)
-
-        self.re_float_exp = re.compile(r"""
-            ^                              # Beginning of expr
-            [+-]?                          # possible sign
-            [\d]+                          # digits
-            (\.\d*)?                       # optional decimal sign and more digits
-            ([eEdD][+-]?[0-9]+)            # exponent, with 'd' or 'e' (required)
-            $                              # end
-        """, re.VERBOSE)
-
-        self.re_float = re.compile(r"""
-            ^[+-]?[0-9]+\.[0-9]*$
-        """, re.VERBOSE)
-
-        self.re_expression = re.compile(r"""
-            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
-        """, re.VERBOSE)
-
-        self.re_stringShortHand = re.compile(r"""
-            [\d]+                                      # unsigned integer
-            \*                                         # literal *
-            (?:                                        # non-capturing group
-              '[\w]+'                                  # single-quoted word
-            | "[\w]+"                                  # double-quoted word
-            | \.[\w]+\.                                # .TOKEN.
-            | [-+]?[\d]+\.?[\d]*(?:[dDeE][-+]?[\d]+)?  # number
-            )                                          # end group
-        """, re.VERBOSE)
 
         self.__initDataStructure__()
 
@@ -747,7 +749,10 @@ class Project(object):
             return
 
     def parseKeywordLine(self, line):
-        matches = self.re_keyValue.findall(line)
+        if not line.strip():
+            yield(None, None, None)
+            return
+        matches = re_keyValue.findall(line)
         single_key = False
         if matches:
             for match in matches:
@@ -764,14 +769,13 @@ class Project(object):
                 val_string = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.re_expression.findall(val_string)
+                exps = re_expression.findall(val_string)
                 for exp in exps:
                     val_string = val_string.replace(exp, exp.replace(' ',''))
-
                 # look for shorthand [count]*[value] and expand.
                 # Don't expand shorthand inside $( or 'description' field
                 if not (val_string.startswith('@(') or 'description' in key):
-                    for shorthand in self.re_stringShortHand.findall(val_string):
+                    for shorthand in re_stringShortHand.findall(val_string):
                         val_string = val_string.replace(shorthand,
                                                         self.expandshorthand(shorthand))
                 # split values using shlex, it will keep quoted strings
@@ -1113,17 +1117,17 @@ class Project(object):
             return False
 
         # Look for @() expression
-        match = self.re_expression.match(string)
+        match = re_expression.match(string)
         if match:
             return Equation(match.group(1)) # Group inside '@()'
 
         # Look for exponential-notation
-        match = self.re_float_exp.match(string)
+        match = re_float_exp.match(string)
         if match:
             return FloatExp(s_low.replace('d', 'e'))
 
         # Maybe it's a number (would a regex be better?)
-        if any(val.isdigit() for val in string):
+        if any(char.isdigit() for char in string):
             try:
                 return int(string)
             except ValueError:
