@@ -260,15 +260,15 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
-        svalue = str(value)
+        strvalue = str(value)
         if value is None:
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif (self.dtype == float and not re_float.match(svalue)):
-            if re_float_exp.match(svalue):
+        elif (self.dtype == float and not re_float.match(strvalue)):
+            if re_float_exp.match(strvalue):
                 self.value = FloatExp(value)
-            elif re_math.search(svalue):
+            elif re_math.search(strvalue):
                 self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
@@ -1109,6 +1109,8 @@ class Project(object):
 
         # remove all quotes
         string = string.replace("'", '').replace('"', '')
+        # remove any leading or trailing space, after removing quotes
+        string = string.strip()
         # lower-case version of string
         s_low = string.lower()
 
