@@ -217,7 +217,7 @@ QPushButton:checked {
           </property>
           <property name="maximumSize">
            <size>
-            <width>800</width>
+            <width>750</width>
             <height>16777215</height>
            </size>
           </property>
@@ -1354,7 +1354,7 @@ background-color:white;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>299</width>
+                         <width>277</width>
                          <height>551</height>
                         </rect>
                        </property>
