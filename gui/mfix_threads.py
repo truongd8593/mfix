@@ -206,7 +206,7 @@ class MonitorThread(QThread):
         build_dir = os.path.join(self.mfix_home,'build')
         if os.path.exists(build_dir):
             for subdir in os.listdir(build_dir):
-                dirs.add(os.path.join(build_dir, subdir))
+                dirs.add(os.path.join(build_dir, subdir, 'build-aux'))
 
         # Check run_dir
         project_dir = self.parent.get_project_dir()
