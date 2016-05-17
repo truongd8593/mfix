@@ -81,13 +81,10 @@ class ProjectManager(Project):
         keytuple_star = tuple([key]+['*'])
         widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
 
-        warn = False
         if widgets_to_update == None:
             widgets_to_update = []
         if widgets_star:
             widgets_to_update.extend(widgets_star)
-        if not widgets_to_update:
-            warn = True
 
         # Are we using the 'all' mechanism?
         #widgets_to_update.extend(
@@ -111,7 +108,8 @@ class ProjectManager(Project):
 
         self.gui.print_internal("%s = %s" % (format_key_with_args(key, args),
                                                 updatedValue),
-                                   font="Monospace", color='red' if warn else None)
+                                font="Monospace",
+                                color='green' if widgets_to_update else None)
 
 
     def guess_solver(self):
