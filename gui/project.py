@@ -260,6 +260,7 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
+        svalue = str(value)
         if value is None:
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
