@@ -155,7 +155,7 @@ class ProjectManager(Project):
             self.gui.set_solver(self.solver)
 
             # deal with species, since they can cause other widgets to instantiate
-            nmax_g = self.get_value('nmax_g', 0)
+            nmax_g = self.get_value('nmax_g', default=0)
             if len(self.gasSpecies) != nmax_g:
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))

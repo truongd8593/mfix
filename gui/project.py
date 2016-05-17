@@ -699,11 +699,16 @@ class Project(object):
         except KeyError:
             return False
 
-    def get_value(self, key, default=None):
+    def get_value(self, key, default=None, args=None):
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
+        if args:
+            if isinstance(args, int):
+                args = [args]
+            key += list(args)
         try:
-            return get_from_dict(self._keyword_dict, key).value
+            r =  get_from_dict(self._keyword_dict, key)
+            return r.value
         except KeyError:
             return default
 
@@ -1125,19 +1130,21 @@ class Project(object):
         return ret
 
     def removeKeyword(self, key, args=None, warn=True):
-        """Remove a keyword from the project.  Returns True if item deleted."""
+        """Remove a keyword from the project.
+        return True if item deleted.
+        if warn=True, raise KeyError if item not present, else return False."""
 
         if args is None:
             args = []
         keyword = self.keywordLookup(key, args, warn=False)
-        if not keyword:
+        if keyword is None:
             if warn:
                 raise KeyError(key)
             else:
                 return False
-
         # remove from dat_file_list
-        self.dat_file_list.remove(keyword)
+        if keyword in self.dat_file_list:
+            self.dat_file_list.remove(keyword) # FIXME args
 
         # remove from dict
         self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
@@ -1184,22 +1191,8 @@ class Project(object):
 
 
     def keywordLookup(self, keyword, args=None, warn=True):
-        '''
-        Search the project for a keyword and return the Keyword object, else
-        raise an exception.
-
-        Parameters
-        ----------
-        keyword (str):
-            a keyword to search for
-        args (list):
-            a list of args to search for
-
-        Returns
-        -------
-        keyword (pymfix.Keyword):
-            the Keyword object
-        '''
+        """Search the project for a keyword and return the Keyword object
+        If not found, raise KeyError if warn, else return None"""
 
         if args is None:
             args = []
@@ -1207,7 +1200,10 @@ class Project(object):
         keyword = keyword.lower()
         keywordobject = None
 
-        for key, value in recurse_dict(self._keyword_dict):
+        # FIXME
+        # This is unfortunate - defeats the efficiency of dictionaries
+        # because all lookups iterate through the whole dictionary
+        for (key, value) in recurse_dict(self._keyword_dict):
             if key[0] == keyword:
                 if args and value.args == args:
                     keywordobject = value
@@ -1218,16 +1214,13 @@ class Project(object):
                 else:
                     continue
 
-        if keywordobject is None:
-            if warn:
-                raise KeyError(keyword)
-
+        if warn and keywordobject is None:
+            raise KeyError(keyword)
         return keywordobject
 
 
     def changekeywordvalue(self, key, value, args=None):
-        '''
-        Change a value of a keyword.
+        """Change a value of a keyword.
 
         Parameters
         ----------
@@ -1235,9 +1228,8 @@ class Project(object):
             keyword to change
         value (int, float, bool, str):
             the value to set the keyword to
-        args (list):
-            a list of arguments for that keyword
-        '''
+        args (list or None):
+            a list of arguments for that keyword"""
 
         if args is None:
             args = []
