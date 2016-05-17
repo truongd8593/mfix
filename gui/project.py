@@ -35,6 +35,7 @@ import re
 import math
 import copy
 import warnings
+from collections import OrderedDict
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -613,6 +614,7 @@ class Project(object):
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
         self.thermo_data =  []
+        self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
 
         # Regular Expressions
         self.re_keyValue = re.compile(r"""
@@ -838,10 +840,22 @@ class Project(object):
         self.__initDataStructure__()
         self.dat_file_list = []
         self.thermo_data = []
+        self.mfix_gui_comments.clear()
         reactionSection = False
         thermoSection = False
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip('\n')
+            if line.startswith("#!MFIX-GUI"):
+                if "=" in line:
+                    key, val = line[10:].split('=', 1)
+                    key, val = key.strip(), val.strip()
+                    self.mfix_gui_comments[key] = val
+                    # For now, just ignore any other lines in this block  - it's just
+                    # comments, and an experimental feature.  Don't want to create
+                    # tight dependencies on GUI version - treat them like HTML tags,
+                    # ignore the ones you can't handle
+                continue
+
             if '@(RXNS)' in line:
                 reactionSection = True
             elif '@(END)' in line and reactionSection:
@@ -1245,16 +1259,26 @@ class Project(object):
             else:
                 yield to_fs_from_unicode(line + '\n')
 
+        if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
+            yield '\n'
+            yield '#!MFIX-GUI SECTION\n'
+            for (key, val) in self.mfix_gui_comments.items():
+                yield '#!MFIX-GUI %s = %s\n' % (key, val)
+
         if self.thermo_data:
             yield '\n'
-            yield '#_______________________________________________________________________\n'
         for line in self.thermo_data:
             yield line+'\n'
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
+        last_line = None
         with open(fname, 'wb') as dat_file:
             for line in self.convertToString():
+                if line == last_line == '\n': # Avoid multiple blank lines
+                    continue
+                last_line = line
+
                 dat_file.write(line)
 
 

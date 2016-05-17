@@ -221,7 +221,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                     # anything else to do in this case? validation?
             return setter
 
-        # Create setters for the cases which are similar
+        # Create setters for the cases which are similar (mol. wt. handled separately)
         for (name, key) in (
                 ('density', 'ro'),
                 ('viscosity', 'mu'),
@@ -576,6 +576,12 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             # TODO: require mw for all component species
             self.unset_keyword("mw_avg")
 
+    def set_fluid_phase_name(self, value):
+        if value != self.ui.lineedit_fluid_phase_name.text():
+            self.ui.lineedit_fluid_phase_name.setText(value)
+            return
+        value = None if value=='Fluid' else value # don't save default
+        self.project.mfix_gui_comments['fluid_phase_name'] = value
 
     def disable_fluid_solver(self, state):
         enabled = not state # "disable"
@@ -616,6 +622,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         #self.enable_energy_eq(False)
 
         # Fluid phase
+        ui.lineedit_fluid_phase_name.textChanged.connect(
+            self.set_fluid_phase_name)
         ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
             self.enable_fluid_scalar_eq)
         ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
@@ -623,29 +631,23 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # Fluid phase models
         # Density
-        ui.combobox_fluid_density_model.currentIndexChanged.connect(
-            self.set_fluid_density_model)
-        #self.set_fluid_density_model(self.fluid_density_model)
-        # Viscosity
-        ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
-            self.set_fluid_viscosity_model)
-        #self.set_fluid_viscosity_model(self.fluid_viscosity_model)
-        # Molecular Weight
+        for name in ('density', 'viscosity', 'molecular_weight',
+                     'specific_heat', 'conductivity', 'diffusion'):
+            combobox = getattr(ui, 'combobox_fluid_%s_model' % name)
+            setter = getattr(self,'set_fluid_%s_model' % name)
+            combobox.currentIndexChanged.connect(setter)
+
         ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
             self.set_fluid_molecular_weight_model)
-        #self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
         # Specific Heat
         ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
             self.set_fluid_specific_heat_model)
-        #self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
         # (Thermal) Conductivity
         ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
             self.set_fluid_conductivity_model)
-        #self.set_fluid_conductivity_model(self.fluid_conductivity_model)
         # Diffusion (Coefficient)
         ui.combobox_fluid_diffusion_model.currentIndexChanged.connect(
             self.set_fluid_diffusion_model)
-        #self.set_fluid_diffusion_model(self.fluid_diffusion_model)
 
         # Fluid species
         tb = ui.toolbutton_fluid_species_add
@@ -1128,6 +1130,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 log.info('output files exist and run was cancelled')
                 return
         self.set_keyword('run_type', 'new')
+        # FIXME only write it if updated
         self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
 
@@ -1382,6 +1385,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # (It would be good to instantate a new Project instead of trying
         # to clear all data members)
         self.fluid_species.clear()
+
+        self.lineedit_fluid_phase_name.setText("Fluid") # default
         if self.saved_fluid_species:
             self.saved_fluid_species.clear()
 
@@ -1451,6 +1456,13 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # cgw - lots more model setup todo here.  Should we do this here or
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
 
+        # values that don't map to keywords, saved as #!MFIX-GUI params
+        for (key, val) in self.project.mfix_gui_comments.items():
+            if key == 'fluid_phase_name':
+                self.set_fluid_phase_name(val)
+            # Add more here
+
+
         # Fluid phase
         # fluid species table
         self.update_fluid_species_table()
@@ -1473,7 +1485,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             name_usr = 'usr_'+name+'g'
             val_g0 = self.project.get_value(name_g0)
             val_usr = self.project.get_value(name_usr)
-            print(name_g0, val_g0, name_usr, val_usr)
 
             if (val_usr is not None and val_g0 is not None):
                 self.print_internal('Warning: %s and %s are both set' % (name_g0, name_usr))

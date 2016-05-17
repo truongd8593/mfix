@@ -647,7 +647,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>2</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="fluid">
                   <layout class="QGridLayout" name="gridLayout_3">
@@ -670,7 +670,7 @@ background-color:white;
                          </widget>
                         </item>
                         <item>
-                         <widget class="QLineEdit" name="lineEdit_13">
+                         <widget class="QLineEdit" name="lineedit_fluid_phase_name">
                           <property name="text">
                            <string>Fluid</string>
                           </property>
