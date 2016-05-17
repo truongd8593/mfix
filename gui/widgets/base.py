@@ -153,8 +153,8 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
         QtWidgets.QComboBox.__init__(self, parent)
         CommonBase.__init__(self)
         # activated: only on user setttings, not programmatic change
-        #self.activated.connect(self.emitUpdatedValue)
-        self.currentIndexChanged.connect(self.emitUpdatedValue)
+        self.activated.connect(self.emitUpdatedValue)
+        #self.currentIndexChanged.connect(self.emitUpdatedValue)
         self.dtype = str
         self.is_pop_up = False
 

@@ -1144,7 +1144,7 @@ class Project(object):
                 return False
         # remove from dat_file_list
         if keyword in self.dat_file_list:
-            self.dat_file_list.remove(keyword) # FIXME args
+            self.dat_file_list.remove(keyword)
 
         # remove from dict
         self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
@@ -1244,6 +1244,9 @@ class Project(object):
             else:
                 yield to_fs_from_unicode(line + '\n')
 
+        if self.thermo_data:
+            yield '\n'
+            yield '#_______________________________________________________________________\n'
         for line in self.thermo_data:
             yield line+'\n'
 

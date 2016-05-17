@@ -518,13 +518,14 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.project.submit_change(None,{"phase4scalar":0},args=i)
 
     # note, the set_fluid_*_model methods have a lot of repeated code
-
+    # TODO:  guess these models & initialize when loading project
     def set_fluid_density_model(self, value):
         self.fluid_density_model = value
 
         # Enable spinbox for constant density model
         spinbox = self.ui.spinbox_keyword_ro_g0
         spinbox.setEnabled(value==0)
+
         if value == CONSTANT:
             self.set_keyword("ro_g0", spinbox.value())
             self.unset_keyword("usr_rog")
@@ -651,7 +652,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
 
-        self.enable_energy_eq(False)
+        #self.enable_energy_eq(False)
 
         # Fluid phase
         ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
@@ -663,19 +664,19 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # Density
         ui.combobox_fluid_density_model.currentIndexChanged.connect(
             self.set_fluid_density_model)
-        self.set_fluid_density_model(self.fluid_density_model)
+        #self.set_fluid_density_model(self.fluid_density_model)
         # Viscosity
         ui.combobox_fluid_viscosity_model.currentIndexChanged.connect(
             self.set_fluid_viscosity_model)
-        self.set_fluid_viscosity_model(self.fluid_viscosity_model)
+        #self.set_fluid_viscosity_model(self.fluid_viscosity_model)
         # Molecular Weight
         ui.combobox_fluid_molecular_weight_model.currentIndexChanged.connect(
             self.set_fluid_molecular_weight_model)
-        self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
+        #self.set_fluid_molecular_weight_model(self.fluid_molecular_weight_model)
         # Specific Heat
         ui.combobox_fluid_specific_heat_model.currentIndexChanged.connect(
             self.set_fluid_specific_heat_model)
-        self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
+        #self.set_fluid_specific_heat_model(self.fluid_specific_heat_model)
         # (Thermal) Conductivity
         ui.combobox_fluid_conductivity_model.currentIndexChanged.connect(
             self.set_fluid_conductivity_model)
