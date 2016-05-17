@@ -1414,6 +1414,13 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                          default='ok')
             return
 
+        # FIXME. move these into Project so they can get cleared there.
+        # (It would be good to instantate a new Project instead of trying
+        # to clear all data members)
+        self.fluid_species.clear()
+        if self.saved_fluid_species:
+            self.saved_fluid_species.clear()
+
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
             self.project.load_project_file(project_file)
