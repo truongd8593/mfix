@@ -402,6 +402,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
             self.ui.run.run_mfix_button.setText("Resume")
+        else:
+            self.ui.run.run_mfix_button.setText("Run")
 
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
