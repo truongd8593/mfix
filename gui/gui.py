@@ -1637,14 +1637,17 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 table.setItem(row, col, make_item(data[key]))
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', data['alias'], args=row+1)
-                self.update_keyword('species_mw_g', data['molecular_weight'], args=row+1)
+                # TBD:  do we get mol wt from mw_g or THERMO DATA or both?
+                # maybe don't set this kw. - cgw
+                self.update_keyword('mw_g', data['molecular_weight'], args=row+1)#
+
         # Clear any keywords with indices above nmax_g
         if old_nmax_g is None:
             old_nmax_g = 0
         for i in range(nmax_g+1, old_nmax_g+1):
             self.unset_keyword('species_g', i)
             self.unset_keyword('species_alias_g', i)
-            self.unset_keyword('species_mw_g', i)
+            self.unset_keyword('mw_g', i)
 
         self.project.update_thermo_data(self.fluid_species)
 
