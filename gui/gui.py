@@ -67,7 +67,7 @@ from widgets.species_popup import SpeciesPopup
 
 from tools.general import (make_callback, get_icon,
                            widget_iter, set_script_directory,
-                           format_key_with_args,
+                           format_key_with_args, to_unicode_from_fs,
                            set_item_noedit, get_selected_row)
 
 set_script_directory(SCRIPT_DIRECTORY)
@@ -175,6 +175,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
+        self.number_source_lines = True # No user control for this, yet
 
         # set title and icon
         self.setWindowTitle('MFIX')
@@ -1524,8 +1525,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.setWindowTitle('MFIX - %s' % project_file)
 
         # read the file (again)
-        with open(project_file, 'r') as mfx:
-            src = mfx.read()
+        with open(project_file, 'r') as f:
+            src = to_unicode_from_fs(f.read())
+        if self.number_source_lines:
+            src = '\n'.join('%4d:%s'%(lineno,line)
+                            for (lineno,line) in enumerate(src.split('\n'),1))
         self.ui.mfix_dat_source.setPlainText(src)
         # self.mode_changed('developer')
 
