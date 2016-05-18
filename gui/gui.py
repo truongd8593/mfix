@@ -361,8 +361,15 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.solids = OrderedDict()
         self.update_run_options()
 
+    def is_project_open(self):
+        """returns False if and only if no project is loaded and main window invisible"""
+        return self.ui.stackedwidget_mode.isVisible()
+
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
+
+        if not self.is_project_open():
+            return
 
         running = (self.run_thread.mfixproc is not None)
         not_running = not running
@@ -378,11 +385,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.ui.run.mfix_executables.addItem(executable)
         if current_selection in self.monitor_thread.executables:
             self.ui.run.mfix_executables.setEditText(current_selection)
+        self.handle_select_executable()
 
         mfix_available = bool(output)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
-        self.ui.run.run_mfix_button.setEnabled(not_running)
         self.ui.run.restart_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
         self.ui.run.stop_mfix_button.setEnabled(running)
@@ -1507,6 +1514,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 project_file = renamed_project_file
                 self.project.writeDatFile(project_file)
                 self.print_internal(save_msg, color='blue')
+            else:
+                return
+
+        if not self.is_project_open():
+            self.ui.stackedwidget_mode.setVisible(True)
 
         self.set_project_file(project_file)
         self.setWindowTitle('MFIX - %s' % project_file)
@@ -1836,9 +1848,14 @@ def main(args):
 
     if project_file:
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
-
     else:
+        # disable all widgets except New and Open
         mfix.set_solver(SINGLE)
+        mfix.ui.stackedwidget_mode.setVisible(False)
+        mfix.ui.toolbutton_export.setEnabled(False)
+        mfix.ui.toolbutton_run.setEnabled(False)
+        mfix.ui.toolbutton_save.setEnabled(False)
+        mfix.ui.toolbutton_save_as.setEnabled(False)
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
 
