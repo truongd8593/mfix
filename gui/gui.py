@@ -273,7 +273,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_resume.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -303,8 +303,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
         self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
         self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
-        self.ui.toolbutton_run.clicked.connect(self.run_mfix)
-        self.ui.toolbutton_resume.clicked.connect(self.resume_mfix)
+        self.ui.toolbutton_run.clicked.connect(self.handle_run_stop_action)
+        self.ui.toolbutton_restart.clicked.connect(self.restart_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -386,8 +386,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.restart_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
         self.ui.run.stop_mfix_button.setEnabled(running)
-        self.ui.toolbutton_run.setEnabled(not_running)
-        self.ui.toolbutton_resume.setEnabled(not_running)
+        #self.ui.toolbutton_restart.setEnabled(not_running)
         self.ui.run.openmp_threads.setEnabled(not_running)
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
@@ -399,11 +398,29 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        self.ui.toolbutton_resume.setEnabled(res_file_exists)
+        self.ui.toolbutton_restart.setEnabled(res_file_exists and not_running)
+
+        #self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
             self.ui.run.run_mfix_button.setText("Resume")
+            if not running:
+                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run.setText("Resume")
+            else:
+                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+                self.ui.toolbutton_run.setText("Stop")
         else:
-            self.ui.run.run_mfix_button.setText("Run")
+            if not running:
+                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run.setText("Run")
+            else:
+                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+                self.ui.toolbutton_run.setText("Stop")
+
+        #if running:
+        #    self.ui.toolbutton_run.setText("Stop")
+        #    self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+
 
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
@@ -1148,6 +1165,12 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                                  default=['ok'])
             return True
 
+    def handle_run_stop_action(self):
+        if self.run_thread.mfixproc is None:
+            return self.run_mfix()
+        else:
+            return self.stop_mfix()
+
     def run_mfix(self):
         output_files = self.monitor_thread.get_outputs()
         if output_files:
@@ -1394,7 +1417,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         """handler for toolbar Open button"""
         project_path = self.get_open_filename()
         # qt4/qt5 compat hack
-        if type(project_path) == tuple:
+        #if type(project_path) == tuple:
+        if PYQT5:
             project_path = project_path[0]
         if not project_path:
             return # user pressed Cancel

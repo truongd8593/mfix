@@ -262,12 +262,12 @@ QPushButton:checked {
                <number>0</number>
               </property>
               <item row="0" column="7">
-               <widget class="QToolButton" name="toolbutton_resume">
+               <widget class="QToolButton" name="toolbutton_restart">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
                 <property name="text">
-                 <string>Resume</string>
+                 <string>Restart</string>
                 </property>
                 <property name="iconSize">
                  <size>
