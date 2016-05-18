@@ -399,9 +399,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
         self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
-            # TODO: refactor run_mfix and resume_mfix instead of this
-            self.ui.run.run_mfix_button.clicked.disconnect(self.run_mfix)
-            self.ui.run.run_mfix_button.clicked.connect(self.resume_mfix)
             self.ui.run.run_mfix_button.setText("Resume")
 
     def print_welcome(self):
@@ -1150,9 +1147,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     def run_mfix(self):
         output_files = self.monitor_thread.get_outputs()
         if output_files:
-            if not self.remove_output_files(output_files):
-                log.info('output files exist and run was cancelled')
-                return
+            if self.monitor_thread.get_res():
+                return self.resume_mfix()
+        if not self.remove_output_files(output_files):
+            log.info('output files exist and run was cancelled')
+            return
         self.set_keyword('run_type', 'new')
         # FIXME only write it if updated
         self.project.writeDatFile(self.get_project_file())
@@ -1179,9 +1178,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     def resume_mfix(self):
         """resume previously stopped mfix run"""
-        if not self.monitor_thread.get_res():
-            log.debug("resume_mfix was called, but there are no resume files")
-            return
         if self.ui.run.use_spx_checkbox.isChecked():
             self.set_keyword('run_type', 'restart_1')
         else:
@@ -1189,6 +1185,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             spx_files = self.monitor_thread.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
             if not self.remove_output_files(spx_files):
                 # pass here reproduces QThread::wait error somewhat reliably
+                log.debug('SP* files exist and run was cancelled')
                 #pass
                 return
             self.set_keyword('run_type', 'restart_2')
