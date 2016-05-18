@@ -1301,8 +1301,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.open_project(filename)
 
     def export_project(self):
-        # TODO: should this be limited to a subset of output files?
-        output_files = self.monitor_thread.get_outputs()
+        if self.monitor_thread.get_outputs(["*.SP?"]):
+            # TODO: copy SPx files - prompt user for confirmation
+            pass
+        output_files = self.monitor_thread.get_outputs(["*.RES", "*.STL"])
         new_project_file = self.handle_save_as_action()
         new_project_dir = os.path.dirname(new_project_file)
         for fn in output_files:
