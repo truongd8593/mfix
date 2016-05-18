@@ -270,6 +270,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
         self.ui.toolbutton_save_as.setIcon(get_icon('save.png'))
+        self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
         self.ui.toolbutton_resume.setIcon(get_icon('restart.png'))
@@ -287,6 +288,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
         self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as_action)
+        self.ui.toolbutton_export.clicked.connect(self.export_project)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -1149,9 +1151,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if output_files:
             if self.monitor_thread.get_res():
                 return self.resume_mfix()
-        if not self.remove_output_files(output_files):
-            log.info('output files exist and run was cancelled')
-            return
+            if not self.remove_output_files(output_files):
+                log.info('output files exist and run was cancelled')
+                return
         self.set_keyword('run_type', 'new')
         # FIXME only write it if updated
         self.project.writeDatFile(self.get_project_file())
@@ -1264,6 +1266,26 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
+    def save_project_as(self, filename):
+        """ Save project"""
+        # change project.run_name to user supplied
+        project_file_basename = os.path.basename(project_file)
+        run_name = os.path.splitext(project_file_basename)[0]
+        self.project.run_name.value = run_name
+        self.save_project(project_file)
+        self.open_project(filename)
+
+    def export_project(self):
+        # TODO: should this be limited to a subset of output files?
+        output_files = self.monitor_thread.get_outputs()
+        new_project_file = self.handle_save_as_action()
+        new_project_dir = os.path.dirname(new_project_file)
+        for fn in output_files:
+            #copy into new_project_directory
+            shutil.copyfile(
+                    fn, os.path.join(new_project_dir, os.path.basename(fn)))
+        self.save_project(new_project_file)
+
     def save_project(self, filename=False):
         """save project, optionally as a new project.
 
@@ -1274,34 +1296,31 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if filename:
             project_dir = os.path.dirname(filename)
             project_file = filename
-
             if not self.check_writable(project_dir):
                 self.handle_save_as_action()
                 return
         else:
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
-
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
-
         self.project.writeDatFile(project_file)
-        self.open_project(project_file)
 
-
-    def get_save_filename(self):
+    def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName for unit tests to override
 
         :return: Filename (including path)"""
 
+        if not dialog_message:
+            dialog_message = 'Save Project As'
+
         return QtWidgets.QFileDialog.getSaveFileName(
                             self,
-                            'Save Project As',
+                            dialog_message,
                             os.path.join(
                                 self.get_project_dir(),
                                 self.project.run_name.value + ".mfx"),
                             "*.mfx")
-
 
     def handle_save_as_action(self):
         """Save As user dialog
@@ -1316,12 +1335,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # User pressed "cancel"
         if not project_file:
             return
-
-        # change project.run_name to user supplied
-        project_file_basename = os.path.basename(project_file)
-        run_name = os.path.splitext(project_file_basename)[0]
-        self.project.run_name.value = run_name
-        self.save_project(project_file)
+        return project_file
 
     def unsaved(self):
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
