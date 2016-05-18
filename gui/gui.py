@@ -272,7 +272,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_save_as.setIcon(get_icon('save.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_resume.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -300,9 +300,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
         self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
         self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
-        self.ui.run.resume_mfix_button.clicked.connect(self.resume_mfix)
+        self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
         self.ui.toolbutton_run.clicked.connect(self.run_mfix)
-        self.ui.toolbutton_restart.clicked.connect(self.run_mfix)
+        self.ui.toolbutton_resume.clicked.connect(self.resume_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -365,16 +365,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         running = (self.run_thread.mfixproc is not None)
         not_running = not running
 
-        self.ui.run.mfix_executables.setEnabled(not_running)
-        self.ui.run.run_mfix_button.setEnabled(not_running)
-        self.ui.run.pause_mfix_button.setEnabled(running)
-        self.ui.run.stop_mfix_button.setEnabled(running)
-        self.ui.toolbutton_run.setEnabled(not_running)
-        self.ui.toolbutton_restart.setEnabled(not_running)
-        self.ui.run.openmp_threads.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
+        res_file_exists = bool(self.monitor_thread.get_res())
 
         self.handle_select_executable()
 
@@ -383,22 +374,41 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         output = self.monitor_thread.get_executables()
         for executable in output:
             self.ui.run.mfix_executables.addItem(executable)
-        mfix_available = bool(output)
-        self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
-        self.ui.run.mfix_executables.setVisible(mfix_available)
-        self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
         if current_selection in self.monitor_thread.executables:
             self.ui.run.mfix_executables.setEditText(current_selection)
 
-        res_file_exists = bool(self.monitor_thread.get_res())
-        self.ui.run.resume_mfix_button.setEnabled(res_file_exists and not_running)
+        mfix_available = bool(output)
+
+        self.ui.run.mfix_executables.setEnabled(not_running)
+        self.ui.run.run_mfix_button.setEnabled(not_running)
+        self.ui.run.restart_mfix_button.setEnabled(not_running)
+        self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
+        self.ui.run.stop_mfix_button.setEnabled(running)
+        self.ui.toolbutton_run.setEnabled(not_running)
+        self.ui.toolbutton_resume.setEnabled(not_running)
+        self.ui.run.openmp_threads.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
+        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
+
+        self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
+        self.ui.run.mfix_executables.setVisible(mfix_available)
+        self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
+
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        self.ui.toolbutton_restart.setEnabled(res_file_exists)
+        self.ui.toolbutton_resume.setEnabled(res_file_exists)
+        if res_file_exists:
+            # TODO: refactor run_mfix and resume_mfix instead of this
+            self.ui.run.run_mfix_button.clicked.disconnect(self.run_mfix)
+            self.ui.run.run_mfix_button.clicked.connect(self.resume_mfix)
+            self.ui.run.run_mfix_button.setText("Resume")
 
     def print_welcome(self):
-        self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov", color='blue')
-        self.print_internal("MFIX-GUI version %s" % self.get_version(), color='blue')
+        self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
+                            color='blue')
+        self.print_internal("MFIX-GUI version %s" % self.get_version(),
+                            color='blue')
 
     def get_version(self):
         return "0.2x" # placeholder
@@ -1103,15 +1113,16 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
 
-
-    def remove_output_files(self, output_files):
+    def remove_output_files(self, output_files=None, message_text=None):
         """ remove MFIX output files from current project directory
 
-        :param list output_files:
+        :param output_files: List of patterns to be matched for file removal
+        :type output_files: list
         :return: True for success, False for user cancel"""
 
         if output_files:
-            message_text = 'Deleting output files %s' % '\n'.join(output_files)
+            if not message_text:
+                message_text = 'Deleting output files %s' % '\n'.join(output_files)
             confirm = self.message(title='Warning',
                          icon='warning',
                          text=message_text,
@@ -1136,10 +1147,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                                  default=['ok'])
             return True
 
-
     def run_mfix(self):
         output_files = self.monitor_thread.get_outputs()
-        if len(output_files) > 0:
+        if output_files:
             if not self.remove_output_files(output_files):
                 log.info('output files exist and run was cancelled')
                 return
@@ -1148,6 +1158,17 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
 
+    def restart_mfix(self):
+        """Restart MFIX. This will remove previous output and start a new run."""
+        output_files = self.monitor_thread.get_outputs()
+        if len(output_files) > 0:
+            message = "Delete all output and resume files?"
+            if not self.remove_output_files(output_files, message):
+                log.debug('output or resume files exist and run was cancelled')
+                return
+        self.set_keyword('run_type', 'new')
+        self.project.writeDatFile(self.get_project_file())
+        self._start_mfix()
 
     def pause_mfix(self):
         if not self.pymfix_enabled:
@@ -1156,28 +1177,23 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             requests.put(self.pymfix_url + 'stop')
         self.update_run_options()
 
-
     def resume_mfix(self):
         """resume previously stopped mfix run"""
-
         if not self.monitor_thread.get_res():
             log.debug("resume_mfix was called, but there are no resume files")
             return
-
         if self.ui.run.use_spx_checkbox.isChecked():
             self.set_keyword('run_type', 'restart_1')
-
         else:
-            spx_files = self.monitor_thread.get_outputs(['*.SP?'])
+            # TODO: is it correct to remove all but *.RES ?
+            spx_files = self.monitor_thread.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
             if not self.remove_output_files(spx_files):
                 # pass here reproduces QThread::wait error somewhat reliably
                 #pass
                 return
             self.set_keyword('run_type', 'restart_2')
-
         self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
-
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
@@ -1233,7 +1249,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 requests.put(self.pymfix_url + 'start')
 
         self.update_run_options()
-
 
     def stop_mfix(self):
         """stop locally running instance of mfix"""
