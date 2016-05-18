@@ -6,7 +6,6 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 import copy
 import getopt
-import glob
 import logging
 import os
 import shutil
@@ -55,7 +54,6 @@ def debug_trace(__name__):
 
 
 # local imports
-from project import Project, Keyword
 from project_manager import ProjectManager
 from mfix_threads import MfixThread, MonitorThread
 
@@ -67,9 +65,9 @@ from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
 
 
-from tools.general import (make_callback, get_icon, get_unique_string,
-                           widget_iter, set_script_directory, CellColor,
-                           format_key_with_args, get_mfix_home, plural,
+from tools.general import (make_callback, get_icon,
+                           widget_iter, set_script_directory,
+                           format_key_with_args,
                            set_item_noedit, get_selected_row)
 
 set_script_directory(SCRIPT_DIRECTORY)
@@ -147,7 +145,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
             for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
                         Ui_model_setup, Ui_numerics, Ui_output, Ui_vtk,
-                        Ui_monitors, Ui_run):
+                        Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
                     widget = RegionsWidget()
                     name = 'regions'
