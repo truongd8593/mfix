@@ -1515,8 +1515,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 project_file = renamed_project_file
                 self.project.writeDatFile(project_file)
                 self.print_internal(save_msg, color='blue')
-            else:
-                return
 
         if not self.is_project_open():
             self.ui.stackedwidget_mode.setVisible(True)
