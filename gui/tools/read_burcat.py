@@ -36,8 +36,8 @@ def parse_section(section):
             # a few oddball entries, we're going to skip 'em
             pass
     else:
-        comment = ' '.join(comment_block)
-        for i in range(len(data_block)/4):
+        comment = '\n'.join(comment_block)
+        for i in range(int(len(data_block)/4)):
             l1, l2, l3, l4 = data_block[i*4 : i*4+4]
             name = l1[:18].strip()
             phase = l1[44]

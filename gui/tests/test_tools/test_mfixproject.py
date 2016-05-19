@@ -177,8 +177,264 @@ class TestKeyword(unittest.TestCase):
 
 class TestProject(unittest.TestCase):
     """ test the project """
+
+    def setUp(self):
+        self.project = Project()
+
+    def test_parseKeywordLine_str(self):
+        """ parse: key = 'value' """
+
+        result = list(self.project.parseKeywordLine(
+            "key = 'value'"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual('value', result[2])
+
+    def test_parseKeywordLine_int(self):
+        """ parse: key = 1 """
+
+        result = list(self.project.parseKeywordLine(
+            "key = 1"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(1, result[2])
+
+    def test_parseKeywordLine_float(self):
+        """ parse: key = 10.0 """
+
+        result = list(self.project.parseKeywordLine(
+            "key = 10.0"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(10.0, result[2])
+
+    def test_parseKeywordLine_float_d(self):
+        """ parse: key = 10.0 10d 10.d 10D 10.D 10.0D"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 10.0 10d 10.d 10D 10.D 10.0D"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(10.0, result[2])
+
+    def test_parseKeywordLine_float_e(self):
+        """ parse: key = 10.0 10e 0.e 10E 10.E 10.0E"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 10.0 10e 10.e 10E 10.E 10.0E"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(10.0, result[2])
+
+    def test_parseKeywordLine_exp(self):
+        """ parse: key = 1.0e10 1.d10 1.0e+10 1.d+10"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 1.0e10 1.d10 1.0e+10 1.d+10"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(1.0E10, result[2])
+
+    def test_parseKeywordLine_exp_neg(self):
+        """ parse: key = 1.0e-10 1.d-10"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 1.0e-10 1.d-10"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(1.0E-10, result[2])
+
+    def test_parseKeywordLine_bool(self):
+        """ parse: key = .T. """
+
+        result = list(self.project.parseKeywordLine(
+            "key = .T."
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(True, result[2])
+
+    def test_parseKeywordLine_arg(self):
+        """ parse: key(3) = .T. """
+
+        result = list(self.project.parseKeywordLine(
+            "key(3) = .T."
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([3], result[1])
+        self.assertEqual(True, result[2])
+
+    def test_parseKeywordLine_multi_arg(self):
+        """ parse: key(3,2) = .T. """
+
+        result = list(self.project.parseKeywordLine(
+            "key(3,2) = .T."
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([3, 2], result[1])
+        self.assertEqual(True, result[2])
+
+    def test_parseKeywordLine_eq_multi(self):
+        """ parse: key = @(2*3) """
+
+        result = list(self.project.parseKeywordLine(
+            "key = @(2*3)"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(2 * 3.0, float(result[2]))
+
+    def test_parseKeywordLine_eq_multi_wspace(self):
+        """ parse: key = @( 2* 3) """
+
+        result = list(self.project.parseKeywordLine(
+            "key = @( 2*3)"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(2 * 3.0, float(result[2]))
+
+    def test_parseKeywordLine_eq_divide(self):
+        """ parse: key = @( 2/ 3) """
+
+        result = list(self.project.parseKeywordLine(
+            "key = @( 2/ 3)"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(2 / 3.0, float(result[2]))
+
+    def test_parseKeywordLine_eq_pi(self):
+        """ parse: key = @( 2*pi) """
+
+        result = list(self.project.parseKeywordLine(
+            "key = @( 2*pi)"
+            ))
+
+        result = result[0]
+        self.assertEqual('key', result[0])
+        self.assertEqual([], result[1])
+        self.assertEqual(2 * math.pi, float(result[2]))
+
+    def test_parseKeywordLine_shorthand_str(self):
+        """ parse: key = 4*'ISIS' """
+
+        results = list(self.project.parseKeywordLine(
+            "key = 4*'ISIS'"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual('ISIS', result[2])
+
+    def test_parseKeywordLine_shorthand_float(self):
+        """ parse: key = 4*6.7 """
+
+        results = list(self.project.parseKeywordLine(
+            "key = 4*6.7"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(6.7, result[2])
+
+    def test_parseKeywordLine_shorthand_float_other_val(self):
+        """ parse: key = 4*6.7 6.7 6.7"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 4*6.7 6.7 6.7"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(6.7, result[2])
+
+    def test_parseKeywordLine_shorthand_equ(self):
+        """ parse: key = 4*6.7 @(1*6.7)"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 4*6.7 @(1*6.7)"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(6.7, float(result[2]))
+
+    def test_parseKeywordLine_shorthand_equ_2(self):
+        """ parse: key = 10 2*10 @(2*5)"""
+
+        results = list(self.project.parseKeywordLine(
+            "key =  10 2*10 @(2*5)"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(10, float(result[2]))
+
+    def test_parseKeywordLine_shorthand_equ_exp(self):
+        """ parse: key = 4*6.7 @(1*6.7) 0.67E+10 67E-10"""
+
+        results = list(self.project.parseKeywordLine(
+            "key = 4*6.7 @(1*6.7)"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key', result[0])
+            self.assertEqual([i + 1], result[1])
+            self.assertEqual(6.7, float(result[2]))
+
+    def test_parseKeywordLine_twokeys(self):
+        """ parse: key0 = 10 key1 = 10"""
+
+        results = list(self.project.parseKeywordLine(
+            "key0 = 10 key1 = 10"
+            ))
+
+        for i, result in enumerate(results):
+            self.assertEqual('key' + str(i), result[0])
+            self.assertEqual([], result[1])
+            self.assertEqual(10, result[2])
+
     def test_parsemfixdat_keyvalue(self):
-        """ parse a string """
+        """ parse a mfix.dat with key = 'value' """
 
         testString = """
                      key = 'value'
@@ -190,7 +446,7 @@ class TestProject(unittest.TestCase):
             project._keyword_dict['key'].value)
 
     def test_parsemfixdat_booleans(self):
-        """ parse booleans """
+        """ parse a mfix.dat with booleans """
 
         testString = """
                      truea = .True.
@@ -205,10 +461,10 @@ class TestProject(unittest.TestCase):
 
         project = Project(testString)
 
-        expected = {'truea':  True,
-                    'trueb':  True,
-                    'truec':  True,
-                    'trued':  True,
+        expected = {'truea': True,
+                    'trueb': True,
+                    'truec': True,
+                    'trued': True,
                     'falsea': False,
                     'falseb': False,
                     'falsec': False,
@@ -218,7 +474,7 @@ class TestProject(unittest.TestCase):
         self.assertDictEqual(expected, project._keyword_dict)
 
     def test_parsemfixdat_floats(self):
-        """ parse floats """
+        """ parse a mfix.dat with floats """
 
         testString = """
                      keya = 3.0
@@ -240,7 +496,7 @@ class TestProject(unittest.TestCase):
                              float(project._keyword_dict[key]))
 
     def test_parsemfixdat_exponentialnotation(self):
-        """ parse exponentials """
+        """ parse a mfix.dat with exponentials """
 
         testString = """
                      keya = 3.0E-10
@@ -255,10 +511,8 @@ class TestProject(unittest.TestCase):
 
         self.assertDictEqual(expected, project._keyword_dict)
 
-    #TODO: Fix
-    @unittest.skip("Fix")
     def test_parsemfixdat_equations(self):
-        """ parse equations """
+        """ parse a mfix.dat with equations """
 
         testString = """
                      ncy = 5 2*10 @(2*3)
@@ -269,7 +523,7 @@ class TestProject(unittest.TestCase):
         self.assertEqual('@(2*3)', str(project.variablegrid[4]['ncy']))
 
     def test_parsemfixdat_comments(self):
-        """ ignore comments """
+        """  parse a mfix.dat with comments """
 
         testString = """
                      # comment before
@@ -286,7 +540,7 @@ class TestProject(unittest.TestCase):
         self.assertDictEqual(expected, project._keyword_dict)
 
     def test_parsemfixdat_commentedKeywords(self):
-        """ ignore commented keywords """
+        """ parse a mfix.dat with commented keywords """
         testString = """
                      ! key = 3.0
                      # key = 'test'
@@ -296,10 +550,8 @@ class TestProject(unittest.TestCase):
 
         self.assertDictEqual({}, project._keyword_dict)
 
-    #TODO: Fix
-    @unittest.skip("Fix")
     def test_parsemfixdat_expandshorthand(self):
-        """ expand shorthand """
+        """ parse a mfix.dat with shorthand """
         testString = """
                      ic_ep_g = .4      1.0
                      leq_sweep = 3*'ISIS' 'JSJS'
@@ -310,25 +562,25 @@ class TestProject(unittest.TestCase):
         newProject = Project(testString)
 
         # Check IC
-        assert newProject.ics[1]['ic_ep_g'] == 0.4
-        assert newProject.ics[2]['ic_ep_g'] == 1.0
+        self.assertEqual(0.4, newProject.ics[1]['ic_ep_g'])
+        self.assertEqual(1.0, newProject.ics[2]['ic_ep_g'])
 
         # Check linear EQ
         for i in range(1, 4):
-            assert newProject.linearEq[i]['leq_sweep'] == 'ISIS'
-        assert newProject.linearEq[4]['leq_sweep'] == 'JSJS'
+            self.assertEqual('ISIS', newProject.linearEq[i]['leq_sweep'])
+        self.assertEqual('JSJS', newProject.linearEq[4]['leq_sweep'])
 
         # Check Grid
         for i in range(1, 5):
-            assert newProject.variablegrid[i]['ncx'] == 10
+            self.assertEqual(10, newProject.variablegrid[i]['ncx'])
 
-        assert newProject.variablegrid[1]['ncy'] == 5
-        assert newProject.variablegrid[2]['ncy'] == 10
-        assert newProject.variablegrid[3]['ncy'] == 10
-        assert str(newProject.variablegrid[4]['ncy']) == '@(2*3)'
+        self.assertEqual(5, newProject.variablegrid[1]['ncy'])
+        self.assertEqual(10, newProject.variablegrid[2]['ncy'])
+        self.assertEqual(10, newProject.variablegrid[3]['ncy'])
+        self.assertEqual('@(2*3)', str(newProject.variablegrid[4]['ncy']))
 
     def test_parsemfixdat_argswithmultiplevalues(self):
-        """ parse args with multiple values"""
+        """ parse a mfix.dat with args with multiple values"""
         testString = """
                      ic_ep_g(2) = .4      1.0
                      ic_rop_s(2,1) = 10 30
@@ -337,13 +589,13 @@ class TestProject(unittest.TestCase):
         newProject = Project(testString)
 
         # Check IC
-        assert newProject.ics[2]['ic_ep_g'] == 0.4
-        assert newProject.ics[3]['ic_ep_g'] == 1.0
-        assert newProject.ics[2].solids[1]['ic_rop_s'] == 10
-        assert newProject.ics[3].solids[1]['ic_rop_s'] == 30
+        self.assertEqual(0.4, newProject.ics[2]['ic_ep_g'])
+        self.assertEqual(1.0, newProject.ics[3]['ic_ep_g'])
+        self.assertEqual(10, newProject.ics[2].solids[1]['ic_rop_s'])
+        self.assertEqual(30, newProject.ics[3].solids[1]['ic_rop_s'])
 
     def test_parsemfixdat_ic(self):
-        """ parse ics """
+        """ parse  a mfix.dat with ics """
         testString = """
                      ic_x_w(1) = 2.0
                      ic_x_g(1,2) = 0.3
@@ -352,12 +604,12 @@ class TestProject(unittest.TestCase):
 
         newProject = Project(testString)
 
-        assert newProject.ics[1].gasSpecies[2]['ic_x_g'] == 0.3
-        assert newProject.ics[1]['ic_x_w'] == 2.0
-        assert newProject.ics[1].solids[1]['ic_t_s'] == 300.0
+        self.assertEqual(0.3, newProject.ics[1].gasSpecies[2]['ic_x_g'])
+        self.assertEqual(2.0, newProject.ics[1]['ic_x_w'])
+        self.assertEqual(300.0, newProject.ics[1].solids[1]['ic_t_s'])
 
     def test_parsemfixdat_bc(self):
-        """ parse bcs """
+        """ parse a mfix.dat with bcs """
         testString = """
                      bc_x_w(1) = 2.0
                      bc_x_g(1,2) = 0.3
@@ -366,12 +618,12 @@ class TestProject(unittest.TestCase):
 
         newProject = Project(testString)
 
-        assert newProject.bcs[1].gasSpecies[2]['bc_x_g'] == 0.3
-        assert newProject.bcs[1]['bc_x_w'] == 2.0
-        assert newProject.bcs[1].solids[1]['bc_t_s'] == 300.0
+        self.assertEqual(0.3, newProject.bcs[1].gasSpecies[2]['bc_x_g'])
+        self.assertEqual(2.0, newProject.bcs[1]['bc_x_w'])
+        self.assertEqual(300.0, newProject.bcs[1].solids[1]['bc_t_s'])
 
     def test_parsemfixdat_ps(self):
-        """ parse point sources """
+        """ parse a mfix.dat with point sources """
         testString = """
                      ps_x_w(1) = 2.0
                      ps_x_g(1,2) = 0.3
@@ -380,6 +632,6 @@ class TestProject(unittest.TestCase):
 
         newProject = Project(testString)
 
-        assert newProject.pss[1].gasSpecies[2]['ps_x_g'] == 0.3
-        assert newProject.pss[1]['ps_x_w'] == 2.0
-        assert newProject.pss[1].solids[1]['ps_t_s'] == 300.0
+        self.assertEqual(0.3, newProject.pss[1].gasSpecies[2]['ps_x_g'])
+        self.assertEqual(2.0, newProject.pss[1]['ps_x_w'])
+        self.assertEqual(300.0, newProject.pss[1].solids[1]['ps_t_s'])

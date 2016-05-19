@@ -35,6 +35,7 @@ import re
 import math
 import copy
 import warnings
+from collections import OrderedDict
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -116,6 +117,48 @@ def format_key_with_args(key, args=None):
     else:
         return str(key)
 
+# Regular Expressions
+re_keyValue = re.compile(r"""
+    (\w+)                           # Alphanumeric, key name
+    (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
+    \s*                             # Possible whitespace
+    =                               # Equal sign
+    \s*                             # Possible whitespace
+    (.*?)                           # Value
+    (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_float_exp = re.compile(r"""
+    ^                              # Beginning of expr
+    [+-]?                          # possible sign
+    [\d]+                          # digits
+    (\.\d*)?                       # optional decimal sign and more digits
+    ([ED][+-]?[0-9]+)              # exponent, with 'd' or 'e' (required)
+    $                              # end
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_float = re.compile(r"""
+    ^[+-]?[0-9]+\.[0-9]*$
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_expression = re.compile(r"""
+    @\(([ 0-9.EPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
+    """, re.VERBOSE|re.IGNORECASE)
+
+re_stringShortHand = re.compile(r"""
+    [\d]+                                      # unsigned integer
+    \*                                         # literal *
+    (?:                                        # non-capturing group
+      '[\w]+'                                  # single-quoted word
+    | "[\w]+"                                  # double-quoted word
+    | \.[\w]+\.                                # .TOKEN.
+    | [-+]?[\d]+\.?[\d]*(?:[DE][-+]?[\d]+)?    # number
+    )                                          # end group
+    """, re.VERBOSE|re.IGNORECASE)
+
+# detect whether int/float keyword needs to be upgraded to Equation
+re_math = re.compile('pi|e|[-+*/]', re.IGNORECASE)
+
 class Keyword(object):
     def __init__(self, key, val, comment='', dtype=None, args=None):
 
@@ -130,10 +173,6 @@ class Keyword(object):
         if args is None:
             args = []
         self.args = args
-
-        # FIXME:  this is not just matching 'pi' but any jumble of p's and i's
-        # see also def in Project.__init__
-        self.re_expression = re.compile('([eEpiPI\+\-/\*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -221,13 +260,16 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
-
+        strvalue = str(value)
         if value is None:
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
             self.value.eq = value
-        elif self.re_expression.match(str(value)) and self.dtype == float:
-            self.value = Equation(value)
+        elif (self.dtype == float and not re_float.match(strvalue)):
+            if re_float_exp.match(strvalue):
+                self.value = FloatExp(value)
+            elif re_math.search(strvalue):
+                self.value = Equation(value)
         elif self.dtype == FloatExp and isinstance(value, float):
             self.value = FloatExp(value)
         else:
@@ -273,6 +315,12 @@ class Base(object):
 
     def __len__(self):
         return len(self._keyword_dict)
+
+    def get(self, key, default=None):
+        # Note, this only works with dynamic attributes, not static ones defined
+        # in subclasses of Base (eg Solid.name)
+        d =  self._keyword_dict.get(key)
+        return default if d is None else d.value
 
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
@@ -422,7 +470,6 @@ class Solid(Base):
         return lst
 
     def __str__(self):
-
         return '\n'.join(self._prettyPrintList())
 
 
@@ -614,45 +661,8 @@ class Project(object):
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
         self.thermo_data =  []
+        self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
 
-        # Regular Expressions
-        self.re_keyValue = re.compile(r"""
-            (\w+)                           # Alphanumeric, key name
-            (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
-            \s*                             # Possible whitespace
-            =                               # Equal sign
-            \s*                             # Possible whitespace
-            (.*?)                           # Value
-            (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
-        """, re.VERBOSE)
-
-        self.re_float_exp = re.compile(r"""
-            ^                              # Beginning of expr
-            [+-]?                          # possible sign
-            [\d]+                          # digits
-            (\.\d*)?                       # optional decimal sign and more digits
-            ([eEdD][+-]?[0-9]+)            # exponent, with 'd' or 'e' (required)
-            $                              # end
-        """, re.VERBOSE)
-
-        self.re_float = re.compile(r"""
-            ^[+-]?[0-9]+\.[0-9]*$
-        """, re.VERBOSE)
-
-        self.re_expression = re.compile(r"""
-            @\(([ 0-9.eEpiPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
-        """, re.VERBOSE)
-
-        self.re_stringShortHand = re.compile(r"""
-            [\d]+                                      # unsigned integer
-            \*                                         # literal *
-            (?:                                        # non-capturing group
-              '[\w]+'                                  # single-quoted word
-            | "[\w]+"                                  # double-quoted word
-            | \.[\w]+\.                                # .TOKEN.
-            | [-+]?[\d]+\.?[\d]*(?:[dDeE][-+]?[\d]+)?  # number
-            )                                          # end group
-        """, re.VERBOSE)
 
         self.__initDataStructure__()
 
@@ -701,6 +711,7 @@ class Project(object):
             return False
 
     def get_value(self, key, default=None, args=None):
+        # move to gui.py since it's just a convenience func?
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
         if args:
@@ -745,7 +756,10 @@ class Project(object):
             return
 
     def parseKeywordLine(self, line):
-        matches = self.re_keyValue.findall(line)
+        if not line.strip():
+            yield(None, None, None)
+            return
+        matches = re_keyValue.findall(line)
         single_key = False
         if matches:
             for match in matches:
@@ -762,14 +776,13 @@ class Project(object):
                 val_string = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = self.re_expression.findall(val_string)
+                exps = re_expression.findall(val_string)
                 for exp in exps:
                     val_string = val_string.replace(exp, exp.replace(' ',''))
-
                 # look for shorthand [count]*[value] and expand.
                 # Don't expand shorthand inside $( or 'description' field
                 if not (val_string.startswith('@(') or 'description' in key):
-                    for shorthand in self.re_stringShortHand.findall(val_string):
+                    for shorthand in re_stringShortHand.findall(val_string):
                         val_string = val_string.replace(shorthand,
                                                         self.expandshorthand(shorthand))
                 # split values using shlex, it will keep quoted strings
@@ -838,10 +851,22 @@ class Project(object):
         self.__initDataStructure__()
         self.dat_file_list = []
         self.thermo_data = []
+        self.mfix_gui_comments.clear()
         reactionSection = False
         thermoSection = False
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip('\n')
+            if line.startswith("#!MFIX-GUI"):
+                if "=" in line:
+                    key, val = line[10:].split('=', 1)
+                    key, val = key.strip(), val.strip()
+                    self.mfix_gui_comments[key] = val
+                    # For now, just ignore any other lines in this block  - it's just
+                    # comments, and an experimental feature.  Don't want to create
+                    # tight dependencies on GUI version - treat them like HTML tags,
+                    # ignore the ones you can't handle
+                continue
+
             if '@(RXNS)' in line:
                 reactionSection = True
             elif '@(END)' in line and reactionSection:
@@ -1090,6 +1115,8 @@ class Project(object):
 
         # remove all quotes
         string = string.replace("'", '').replace('"', '')
+        # remove any leading or trailing space, after removing quotes
+        string = string.strip()
         # lower-case version of string
         s_low = string.lower()
 
@@ -1099,17 +1126,17 @@ class Project(object):
             return False
 
         # Look for @() expression
-        match = self.re_expression.match(string)
+        match = re_expression.match(string)
         if match:
             return Equation(match.group(1)) # Group inside '@()'
 
         # Look for exponential-notation
-        match = self.re_float_exp.match(string)
+        match = re_float_exp.match(string)
         if match:
             return FloatExp(s_low.replace('d', 'e'))
 
         # Maybe it's a number (would a regex be better?)
-        if any(val.isdigit() for val in string):
+        if any(char.isdigit() for char in string):
             try:
                 return int(string)
             except ValueError:
@@ -1241,20 +1268,30 @@ class Project(object):
     def convertToString(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
-                yield line.line()+'\n'
+                yield to_fs_from_unicode(line.line() + '\n')
             else:
                 yield to_fs_from_unicode(line + '\n')
 
+        if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
+            yield '\n'
+            yield '#!MFIX-GUI SECTION\n'
+            for (key, val) in self.mfix_gui_comments.items():
+                yield '#!MFIX-GUI %s = %s\n' % (key, val)
+
         if self.thermo_data:
             yield '\n'
-            yield '#_______________________________________________________________________\n'
         for line in self.thermo_data:
             yield line+'\n'
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
+        last_line = None
         with open(fname, 'wb') as dat_file:
             for line in self.convertToString():
+                if line == last_line == '\n': # Avoid multiple blank lines
+                    continue
+                last_line = line
+
                 dat_file.write(line)
 
 

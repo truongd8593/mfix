@@ -89,7 +89,7 @@ class MfixThread(QThread):
                                 name='stdout',
                                 pipe=self.mfixproc.stdout,
                                 signal=self.line_printed,
-                                font='Courier')
+                                font='Courier') # TODO find good cross-platform fixed width font
 
             stderr_thread = MfixOutput(
                                 name='stderr',
@@ -141,15 +141,19 @@ class MfixOutput(QThread):
         self.font = font
 
     def __del__(self):
+        self.terminate()
         #    # I suspect this is the source of QThread::wait errors
-        # why needed?  - cgw
-        self.wait()
+        #self.wait()
 
     def run(self):
-
         lines_iterator = iter(self.pipe.readline, b"")
         for line in lines_iterator:
-            self.signal.emit(str(line), self.color, self.font)
+            lower = line.lower()
+            if any(x in lower for x in ('error', 'warn', 'fail')):
+                color='red'
+            else:
+                color = self.color
+            self.signal.emit(str(line), color, self.font)
 
 
 
@@ -207,7 +211,7 @@ class MonitorThread(QThread):
         build_dir = os.path.join(self.mfix_home,'build')
         if os.path.exists(build_dir):
             for subdir in os.listdir(build_dir):
-                dirs.add(os.path.join(build_dir, subdir))
+                dirs.add(os.path.join(build_dir, subdir, 'build-aux'))
 
         # Check run_dir
         project_dir = self.parent.get_project_dir()

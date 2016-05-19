@@ -7,7 +7,6 @@ import sys
 import signal
 import time
 from collections import OrderedDict
-import textwrap
 import pickle
 
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
@@ -56,10 +55,6 @@ class SpeciesPopup(QtWidgets.QDialog):
             by_phase[phase][key] = v
         self.db = by_phase
 
-        def format_comment(comment):
-            lines = textwrap.wrap(comment, 80)
-            return '\n'.join(lines)
-
         # build search list, lowercased
         self.haystack = []
         self.comments = {}
@@ -68,7 +63,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             htmp.sort()
             self.haystack.extend(htmp)
             # comment fields
-            self.comments[phase] = dict((k, format_comment(v[2]))
+            self.comments[phase] = dict((k, v[2])
                                         for (k,v) in self.db[phase].items())
 
     def do_search(self, string):
