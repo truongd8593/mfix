@@ -367,6 +367,28 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.solids = OrderedDict()
         self.update_run_options()
 
+    def set_keyword(self, key, value, args=None):
+        """convenience function to set keyword"""
+        self.project.submit_change(None, {key:value}, args)
+
+    def update_keyword(self, key, value, args=None):
+        """like set_keyword but no action if value already set"""
+        if self.project.get_value(key, args=args) == value:
+            return
+        self.set_keyword(key, value, args)
+
+    def unset_keyword(self, key, args=None):
+        """convenience function to undefine keyword"""
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+        success = self.project.removeKeyword(key, args, warn=False)
+        if success:
+            self.print_internal("%s" % format_key_with_args(key, args),
+                                font='strikeout')
+
+
     def is_project_open(self):
         """returns False if and only if no project is loaded and main window invisible"""
         return self.ui.stackedwidget_mode.isVisible()
@@ -500,16 +522,14 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # Solids Model selection tied to Solver
         # XXX What to do about solids that are already defined?
-        #ui.combobox_keyword_solids_model.value_map = ['TFM', 'DEM', 'PIC']
-        #self.setup_combobox_solids_model(solver)
+        self.setup_combobox_solids_model()
 
-
-    def setup_combobox_solids_model(self, solver):
+    def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
+        solver = self.project.solver
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
-        # FIXME: this needs to be per-phase !
         cb = self.ui.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
@@ -530,28 +550,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             # Current selection no longer valid, so pick first valid choice
             j = enabled.index(True)
             cb.setCurrentIndex(j)
-
-    def set_keyword(self, key, value, args=None):
-        """convenience function to set keyword"""
-        self.project.submit_change(None, {key:value}, args)
-
-    def update_keyword(self, key, value, args=None):
-        """like set_keyword but no action if value already set"""
-        if self.project.get_value(key, args=args) == value:
-            return
-        self.set_keyword(key, value, args)
-
-    def unset_keyword(self, key, args=None):
-        """convenience function to undefine keyword"""
-        if isinstance(args, int):
-            args = [args]
-        elif args is None:
-            args = []
-        success = self.project.removeKeyword(key, args, warn=False)
-        if success:
-            self.print_internal("%s" % format_key_with_args(key, args),
-                                font='strikeout')
-
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -724,6 +722,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         tb.setEnabled(False)
         tw = ui.tablewidget_solids
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        cb = ui.combobox_solids_model
+        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
         ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
@@ -1593,8 +1594,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # Solids
         self.update_solids_table()
 
-
-
         # Look for geometry.stl and load automatically
         geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry):
@@ -1653,7 +1652,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         for i in range(nmax_g+1, old_nmax_g+1):
             self.unset_keyword('species_g', i)
             self.unset_keyword('species_alias_g', i)
-            self.unset_keyword('mw_g', i)
+            self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)
 
@@ -1760,8 +1759,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             data = self.solids[name]
             sa.setEnabled(True)
             ui.lineedit_solids_name.setText(name)
-            cb = ui.combobox_solids_model
-            cb.clear()
+            self.setup_combobox_solids_model()
+
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView
