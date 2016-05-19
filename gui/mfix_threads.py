@@ -140,9 +140,9 @@ class MfixOutput(QThread):
         self.color = color
         self.font = font
 
-    #def __del__(self):
+    def __del__(self):
+        self.terminate()
         #    # I suspect this is the source of QThread::wait errors
-        # why needed?  - cgw
         #self.wait()
 
     def run(self):
