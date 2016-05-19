@@ -11,6 +11,7 @@ import glob
 import os
 import time
 import unittest
+from xvfbwrapper import Xvfb
 
 from qtpy.QtTest import QTest
 from qtpy import QtCore
@@ -40,6 +41,10 @@ class MfixGuiTests(unittest.TestCase):
 
     def setUp(self):
         ''' open FluidBed_DES for testing '''
+
+        self.xvfb = Xvfb(width=1280, height=720)
+        self.addCleanup(self.xvfb.stop)
+        self.xvfb.start()
 
         self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)

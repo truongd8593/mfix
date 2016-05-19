@@ -14,6 +14,4 @@ test:
 	python -m unittest discover
 
 nose:
-	(Xvfb :99 &); \
-	DISPLAY=:99 MFIX_NO_VTK=1 nosetests; \
-	killall Xvfb
+	nosetests
