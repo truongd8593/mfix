@@ -106,11 +106,11 @@ class SpeciesPopup(QtWidgets.QDialog):
                 (coeffs, mol_weight, comment) = data
                 a_low = coeffs[:7]
                 a_high = coeffs[7:14]
-                heat_of_formation = coeffs[14]
+                h_f = coeffs[14]
                 return {'source': 'BURCAT',
                         'phase': phase,
                         'mol_weight': mol_weight,
-                        'heat_of_formation': heat_of_formation,
+                        'h_f': h_f,
                         'tmin':  tmin,
                         'tmax': tmax,
                         'a_low': a_low,
@@ -176,8 +176,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.lineedit_alias.setText(data['alias'])
         ui.lineedit_mol_weight.setText(str(data['mol_weight']))
         ui.lineedit_mol_weight.textEdited.connect(make_handler('mol_weight'))
-        ui.lineedit_heat_of_formation.setText(str(data['heat_of_formation']))
-        ui.lineedit_heat_of_formation.textEdited.connect(make_handler('heat_of_formation'))
+        ui.lineedit_h_f.setText(str(data['h_f']))
+        ui.lineedit_h_f.textEdited.connect(make_handler('h_f'))
         # Density - disabled
 
         table = ui.tablewidget_params
@@ -229,13 +229,13 @@ class SpeciesPopup(QtWidgets.QDialog):
         alias = self.make_alias(species)
         a_low = coeffs[:7]
         a_high = coeffs[7:14]
-        heat_of_formation = coeffs[14]
+        h_f = coeffs[14]
 
         species_data = {'source': 'BURCAT',
                         'phase': phase,
                         'alias': alias,
                         'mol_weight': mol_weight,
-                        'heat_of_formation': heat_of_formation,
+                        'h_f': h_f,
                         'tmin':  tmin,
                         'tmax': tmax,
                         'a_low': a_low,
@@ -293,7 +293,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         species = self.make_user_species_name()
         alias = species.replace(' ', '') #?
         mol_weight = 0
-        heat_of_formation = 0
+        h_f = 0
         tmin = 200.0 # ?
         tmax = 600.0 # ?
         a_low = [0.0]*7
@@ -303,7 +303,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'phase': phase,
                         'alias': alias,
                         'mol_weight': mol_weight,
-                        'heat_of_formation': heat_of_formation,
+                        'h_f': h_f,
                         'tmin':  tmin,
                         'tmax': tmax,
                         'a_low': a_low,
@@ -399,7 +399,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit.textEdited.connect(self.handle_alias)
 
         for l in (ui.lineedit_mol_weight,
-                  ui.lineedit_heat_of_formation,
+                  ui.lineedit_h_f,
                   ui.lineedit_density):
             l.setValidator(QDoubleValidator())
 
@@ -408,7 +408,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             ui.label_species,
             ui.lineedit_alias,
             ui.lineedit_mol_weight,
-            ui.lineedit_heat_of_formation,
+            ui.lineedit_h_f,
             ui.combobox_specific_heat_model,
             ui.tablewidget_params]
 

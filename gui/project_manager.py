@@ -209,24 +209,24 @@ class ProjectManager(Project):
                 alias = g.get('species_alias_g', species)
 
                 # TODO:  make sure alias is set & unique
-                tmp = user_species.get((species, phase))
+                user_def = user_species.get((species, phase))
                 # Hack, look for mismatched phase
-                if not tmp:
+                if not user_def:
                     for ((s,p),v) in user_species.items():
                         if s == species:
                             # This is all-too-common.  existing mfix files all have 'S' for
                             # phase in thermo data.
                             #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
                             #              % (species, p, phase))
-                            tmp = v
+                            user_def = v
                             break
-                if tmp:
-                    (tmin, tmax, mol_weight, coeffs, comment) = tmp
+                if user_def:
+                    (tmin, tmax, mol_weight, coeffs, comment) = user_def
                     species_data = {'source': source,
                                     'phase': phase,
                                     'alias': alias,
                                     'mol_weight': mol_weight,
-                                    'heat_of_formation': coeffs[14],
+                                    'h_f': coeffs[14],
                                     'tmin': tmin,
                                     'tmax': tmax,
                                     'a_low': coeffs[:7],
@@ -247,7 +247,7 @@ class ProjectManager(Project):
                         'source': 'Auto',
                         'phase': phase,
                         'mol_weight': g.get('mw_g',0),
-                        'heat_of_formation': 0.0,
+                        'h_f': 0.0,
                         'tmin':  0.0,
                         'tmax': 0.0,
                         'a_low': [0.0]*7,
@@ -373,7 +373,7 @@ def format_burcat(species, data):
     lines.append( (fmt%row) + '    2')
     row = tuple(a_low[5:7] + a_high[:3])
     lines.append( (fmt%row) + '    3')
-    row = tuple(a_high[3:] + [data['heat_of_formation']])
+    row = tuple(a_high[3:] + [data['h_f']])
     lines.append( (fmt%row) + '    4')
     lines.append('') # blank line
     return lines

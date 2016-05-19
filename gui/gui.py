@@ -1668,7 +1668,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.update_keyword('nmax_g', nmax_g)
         for (row, (species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
-                                        'heat_of_formation', 'source')):
+                                        'h_f', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 table.setItem(row, col, make_item(data.get(key)))
