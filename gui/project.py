@@ -320,7 +320,7 @@ class Base(object):
         # Note, this only works with dynamic attributes, not static ones defined
         # in subclasses of Base (eg Solid.name)
         d =  self._keyword_dict.get(key)
-        return default if d is None else d.val
+        return default if d is None else d.value
 
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
