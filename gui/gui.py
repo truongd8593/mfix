@@ -608,7 +608,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     # follow the same pattern, so create its setter specially
     def set_fluid_molecular_weight_model(self, model):
         self.fluid_molecular_weight_model = model
-        combobox = self.combobox_fluid_molecular_weight_model
+        combobox = self.ui.combobox_fluid_molecular_weight_model
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
@@ -1485,7 +1485,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # to clear all data members)
         self.fluid_species.clear()
 
-        self.lineedit_fluid_phase_name.setText("Fluid") # default
+        self.ui.lineedit_fluid_phase_name.setText("Fluid") # default
         if self.saved_fluid_species:
             self.saved_fluid_species.clear()
 
