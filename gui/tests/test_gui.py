@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 '''
   run with:
 
@@ -11,12 +11,13 @@ import glob
 import os
 import time
 import unittest
-from xvfbwrapper import Xvfb
+#from xvfbwrapper import Xvfb
 
 from qtpy.QtTest import QTest
 from qtpy import QtCore
 from qtpy import QtWidgets
 
+from .helper_functions import TestQApplication
 import gui
 
 def dismiss():
@@ -26,7 +27,7 @@ def dismiss():
             QTest.keyClick(widget, QtCore.Qt.Key_Enter)
 
 
-class MfixGuiTests(unittest.TestCase):
+class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
     def find_exes(self):
@@ -42,9 +43,9 @@ class MfixGuiTests(unittest.TestCase):
     def setUp(self):
         ''' open FluidBed_DES for testing '''
 
-        self.xvfb = Xvfb(width=1280, height=720)
-        self.addCleanup(self.xvfb.stop)
-        self.xvfb.start()
+        #self.xvfb = Xvfb(width=1280, height=720)
+        #self.addCleanup(self.xvfb.stop)
+        #self.xvfb.start()
 
         self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)
@@ -61,8 +62,8 @@ class MfixGuiTests(unittest.TestCase):
                 except OSError:
                     pass
 
-        qapp = QtWidgets.QApplication([])
-        self.mfix = gui.MfixGui(qapp)
+        TestQApplication.setUp(self)
+        self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
@@ -84,6 +85,8 @@ class MfixGuiTests(unittest.TestCase):
                     os.remove(path)
                 except OSError:
                     pass
+
+        TestQApplication.tearDown(self)
 
     def test_save_as(self):
         ''' Test the Save As button on the toolbar '''
