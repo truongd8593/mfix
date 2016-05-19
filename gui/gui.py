@@ -278,7 +278,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
+        #self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -306,10 +306,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # build/run/connect MFIX
         self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
         self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
-        self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
-        self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
+        #self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
+        #self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
         self.ui.toolbutton_run.clicked.connect(self.handle_run_stop_action)
-        self.ui.toolbutton_restart.clicked.connect(self.restart_mfix)
+        #self.ui.toolbutton_restart.clicked.connect(self.restart_mfix)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -419,9 +419,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         mfix_available = bool(output)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
-        self.ui.run.restart_mfix_button.setEnabled(not_running)
+        #self.ui.run.restart_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
-        self.ui.run.stop_mfix_button.setEnabled(running)
+        #self.ui.run.stop_mfix_button.setEnabled(running)
         #self.ui.toolbutton_restart.setEnabled(not_running)
         self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
@@ -434,7 +434,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        self.ui.toolbutton_restart.setEnabled(res_file_exists and not_running)
+        #self.ui.toolbutton_restart.setEnabled(res_file_exists and not_running)
 
         #self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
