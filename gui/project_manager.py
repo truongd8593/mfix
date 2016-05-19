@@ -164,8 +164,8 @@ class ProjectManager(Project):
             # TODO:  make sure aliases are unique
 
             # Make sure they are sorted by index before inserting into gui
-            self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind)) # override 'sort' in class Project?
-            self.solids.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
+            self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
+            self.solids.sort(key=lambda a:a.ind)
 
             # TODO: integrate project.gasSpecies with gui.fluid_species
             db = self.gui.species_popup.db
@@ -241,7 +241,7 @@ class ProjectManager(Project):
             for s in self.solids:
                 name = s.name
                 species = list(s.species)
-                species.sort(cmp=lambda a,b: cmp(a,b))
+                species.sort(key=lambda a:a.ind)
                 # FIXME just use the solid object instead of doing this translation
                 self.gui.solids[name] = {'model': s.get("solids_model"),
                                          'diameter': s.get('d_p0'),
