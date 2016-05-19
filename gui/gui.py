@@ -292,8 +292,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # open/save/new project
         self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
-        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as_action)
-        self.ui.toolbutton_export.clicked.connect(self.export_project)
+        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as)
+        self.ui.toolbutton_export.clicked.connect(self.handle_export)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -1324,27 +1324,25 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
-    def save_project_as(self, filename):
-        """ Save project"""
-        # change project.run_name to user supplied
-        project_file_basename = os.path.basename(project_file)
-        run_name = os.path.splitext(project_file_basename)[0]
-        self.project.run_name.value = run_name
-        self.save_project(project_file)
-        self.open_project(filename)
 
     def export_project(self):
+        # TODO: combine export_project and save_as
         if self.monitor_thread.get_outputs(["*.SP?"]):
             # TODO: copy SPx files - prompt user for confirmation
             pass
         output_files = self.monitor_thread.get_outputs(["*.RES", "*.STL"])
-        new_project_file = self.handle_save_as_action()
-        new_project_dir = os.path.dirname(new_project_file)
+        project_file = self.get_save_filename()
+        if not project_file:
+            return
+        project_dir = os.path.dirname(project_file)
+        if not self.check_writable(project_dir):
+            self.save_as()
+            return
         for fn in output_files:
             #copy into new_project_directory
             shutil.copyfile(
-                    fn, os.path.join(new_project_dir, os.path.basename(fn)))
-        self.save_project(new_project_file)
+                    fn, os.path.join(project_dir, os.path.basename(fn)))
+        self.save_project(project_file)
 
     def save_project(self, filename=False):
         """save project, optionally as a new project.
@@ -1356,47 +1354,64 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if filename:
             project_dir = os.path.dirname(filename)
             project_file = filename
-            if not self.check_writable(project_dir):
-                self.handle_save_as_action()
-                return
         else:
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.writeDatFile(project_file) # XXX
-        self.setWindowTitle('MFIX - %s' % project_file)
+        #self.setWindowTitle('MFIX - %s' % project_file)
+
+    def save_as(self):
+        """Save As user dialog
+        updates project.run_name with user-supplied data
+        opens the new project"""
+        # TODO: combine export_project and save_as
+        project_file = self.get_save_filename()
+        if not project_file:
+            return
+        project_dir = os.path.dirname(project_file)
+        new_project_basename = os.path.basename(project_file)
+        run_name = os.path.splitext(new_project_basename)[0]
+        self.project.run_name.value = run_name
+
+        if not self.check_writable(project_dir):
+            self.save_as()
+            return
+        self.save_project(project_file)
+        self.open_project(project_file)
 
     def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName for unit tests to override
-
-        :return: Filename (including path)"""
-
+        :return: filename
+        :rtype: str"""
         if not dialog_message:
             dialog_message = 'Save Project As'
-
-        return QtWidgets.QFileDialog.getSaveFileName(
+        filename = QtWidgets.QFileDialog.getSaveFileName(
                             self,
                             dialog_message,
                             os.path.join(
                                 self.get_project_dir(),
                                 self.project.run_name.value + ".mfx"),
                             "*.mfx")
-
-    def handle_save_as_action(self):
-        """Save As user dialog
-        updates project.run_name with user-supplied data
-        opens the new project"""
-
-        project_file = self.get_save_filename()
-
-        # qt4/qt5 compat hack
-        if type(project_file) == tuple:
-            project_file = project_file[0]
         # User pressed "cancel"
-        if not project_file:
+        if not filename:
             return
-        return project_file
+        # qt4/qt5 compat hack
+        #if type(filename) == tuple:
+        if PYQT5:
+            return filename[0]
+        else:
+            return filename
+
+    def handle_save(self):
+        return self.save_project()
+
+    def handle_export(self):
+        return self.export_project()
+
+    def handle_save_as(self):
+        return self.save_as()
 
     def unsaved(self):
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
