@@ -31,9 +31,9 @@ def set_script_directory(script):
 
 # Helper functions
 def get_mfix_home():
-    " return the top level directory (since __file__ is mfix_home/gui/gui.py) "
+    "return the top level directory"
     return os.path.dirname(
-        os.path.dirname(os.path.realpath(__file__)))
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 def format_key_with_args(key, args=None):
     if args:

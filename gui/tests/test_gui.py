@@ -41,22 +41,25 @@ class MfixGuiTests(TestQApplication):
 
     def setUp(self):
         ''' open FluidBed_DES for testing '''
-        TestQApplication.setUp(self)
-        self.mfix = gui.MfixGui(self.qapp)
-        self.mfix.show()
-        QTest.qWaitForWindowShown(self.mfix)
-
-        self.rundir = os.path.dirname(os.path.dirname(__file__))
+        self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)
         self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', '*.mfx',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
-                os.remove(path)
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+
+        TestQApplication.setUp(self)
+        self.mfix = gui.MfixGui(self.qapp)
+        self.mfix.show()
+        QTest.qWaitForWindowShown(self.mfix)
 
         self.mfix.get_open_filename = lambda : mfix_dat
         QtCore.QTimer.singleShot(100, dismiss)
@@ -68,11 +71,14 @@ class MfixGuiTests(TestQApplication):
 
     def tearDown(self):
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', '*.mfx',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
-                os.remove(path)
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
 
         TestQApplication.tearDown(self)
 
@@ -87,6 +93,8 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
 
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
+        mfxfile = os.path.join(self.rundir, '%s.mfx' % newname)
+        self.assertTrue(os.path.exists(mfxfile))
 
     def test_run(self):
         ''' Test the Run button on the toolbar '''
@@ -100,10 +108,8 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(self.mfix.ui.run.run_mfix_button.isEnabled())
         self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())
 
-        QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_run, QtCore.Qt.LeftButton)
         time.sleep(1)
-        QtCore.QTimer.singleShot(100, dismiss)
 
         # during running
         self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())

@@ -4,6 +4,8 @@ import logging
 log = logging.getLogger(__name__)
 import warnings
 
+from collections import OrderedDict
+
 from project import Project, Keyword
 from constants import *
 
@@ -81,13 +83,10 @@ class ProjectManager(Project):
         keytuple_star = tuple([key]+['*'])
         widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
 
-        warn = False
         if widgets_to_update == None:
             widgets_to_update = []
         if widgets_star:
             widgets_to_update.extend(widgets_star)
-        if not widgets_to_update:
-            warn = True
 
         # Are we using the 'all' mechanism?
         #widgets_to_update.extend(
@@ -111,7 +110,8 @@ class ProjectManager(Project):
 
         self.gui.print_internal("%s = %s" % (format_key_with_args(key, args),
                                                 updatedValue),
-                                   font="Monospace", color='red' if warn else None)
+                                font="Monospace",
+                                color='green' if widgets_to_update else None)
 
 
     def guess_solver(self):
@@ -141,6 +141,7 @@ class ProjectManager(Project):
 
     def load_project_file(self, project_file):
         """Load an MFiX project file."""
+        # See also gui.open_project
         n_errs = 0
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
@@ -156,6 +157,8 @@ class ProjectManager(Project):
 
             # deal with species, since they can cause other widgets to instantiate
             nmax_g = self.get_value('nmax_g', default=0)
+            # TODO: handle cases which use rrates.f, like tutorials/reactor1b
+            # which has 'nmax(0)' instead of 'nmax_g'
             if len(self.gasSpecies) != nmax_g:
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
@@ -163,7 +166,9 @@ class ProjectManager(Project):
             # TODO:  make sure aliases are unique
 
             # Make sure they are sorted by index before inserting into gui
-            self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
+            self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
+            self.solids.sort(key=lambda a:a.ind)
+
             # TODO: integrate project.gasSpecies with gui.fluid_species
             db = self.gui.species_popup.db
 
@@ -194,11 +199,25 @@ class ProjectManager(Project):
 
             for g in self.gasSpecies:
                 # First look for definition in THERMO DATA section
-                phase = g.phase.upper()
-                species = g.species_g
-                alias = g.species_alias_g
+                phase = g.phase.upper() # phase and species are guaranteed to be set
+                species = g.get('species_g')
+                if species is None:
+                    species = 'Gas %s' % g.ind
+                    #warnings.warn("no species_g for gas %d" % g.ind)
+                alias = g.get('species_alias_g', species)
+
                 # TODO:  make sure alias is set & unique
                 tmp = user_species.get((species, phase))
+                # Hack, look for mismatched phase
+                if not tmp:
+                    for ((s,p),v) in user_species.items():
+                        if s == species:
+                            # This is all-too-common.  existing mfix files all have 'S' for
+                            # phase in thermo data.
+                            #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                            #              % (species, p, phase))
+                            tmp = v
+                            break
                 if tmp:
                     (tmin, tmax, mol_weight, coeffs, comment) = tmp
                     species_data = {'source': 'User Defined',
@@ -219,10 +238,32 @@ class ProjectManager(Project):
                     if species_data:
                         species_data['alias'] = alias
 
-                if species_data:
-                    self.gui.fluid_species[species] = species_data
-                else:
-                    warnings.warn("%s: not defined" % g)
+                if not species_data:
+                    warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
+                    species_data = {
+                        'alias' : alias,
+                        'source': 'Undefined',
+                        'phase': phase,
+                        'molecular_weight': g.get('mw_g',0),
+                        'heat_of_formation': 0.0,
+                        'tmin':  0.0,
+                        'tmax': 0.0,
+                        'a_low': [0.0]*7,
+                        'a_high': [0.0]*7}
+
+                self.gui.fluid_species[species] = species_data
+
+
+            for s in self.solids:
+                name = s.name
+                species = list(s.species)
+                species.sort(key=lambda a:a.ind)
+                # FIXME just use the solid object instead of doing this translation
+                solids_data =  {'model': s.get("solids_model"),
+                               'diameter': s.get('d_p0'),
+                               'density': s.get('ro_s0'),
+                               'species': species}
+                self.gui.solids[name] = solids_data
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
@@ -232,7 +273,7 @@ class ProjectManager(Project):
                 except ValueError as e:
                     errlist.append(e)
 
-            # report any errors
+            # report any errors (this should probably be in gui class)
             for w in errlist + ws:
                 self.gui.print_internal("Warning: %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)
@@ -244,10 +285,11 @@ class ProjectManager(Project):
                 self.gui.print_internal("Loaded %s" % project_file, color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
-        '''
-        Register a widget with the project manager. The widget must have a
-        value_updated signal to connect to.
-        '''
+        """ Register a widget with the project manager. The widget must have a
+        value_updated signal to connect to.  If args is not None, widget will
+        be updated only when the keyword with matching args is updated.  If
+        args=['*'], widget recieves updates regardless of args. """
+
         if args is None:
             args = []
         else:
@@ -269,7 +311,11 @@ class ProjectManager(Project):
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
+
     def update_thermo_data(self, species_dict):
+        """Update definitions in self.thermo_data based on data in species_dict.
+        Unmatching entries are not modified"""
+
         new_thermo_data = []
         user_species = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
         # Keep sections of thermo_data not mentioned in species_dict, for now
@@ -306,8 +352,12 @@ def format_burcat(species, data):
     ## TODO: move this somewhere else
     lines = []
 
+
+    calc_quality = 'B' # This appears in column 68, valid values are A-F.
+                       # We'll just assign 'B' to fill the space, it's the
+                       # most common value.
+
     # First line
-    calc_quality = 'B' # appears in col 68, values A-F
     row = (species, 'User Defined', data['phase'].upper(),
            data['tmin'], data['tmax'],
            calc_quality, data['molecular_weight'])
