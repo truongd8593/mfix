@@ -141,11 +141,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             def make_widget(cls):
                 # Create an instance of a new class which is a subclass
                 # of QWidget and the specified class
-                class C(QtWidgets.QWidget, cls):
+                class Widget(QtWidgets.QWidget, cls):
                     def __init__(self):
                         QtWidgets.QWidget.__init__(self, parent)
                         self.setupUi(self)
-                return C()
+                return Widget()
 
             for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
                         Ui_model_setup, Ui_numerics, Ui_output, Ui_vtk,
@@ -1121,17 +1121,22 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if not line.endswith('\n'):
             line += '\n'
         lower = line.lower()
+        msg = line.strip()
+        # hack. TODO: real msg types, map to font/color
+        strikeout = font and font.lower() == 'strikeout'
+        if strikeout:
+            msg = "unset " + msg
         if 'warning:' in lower or 'error:' in lower:
-            log.warn(line.strip())
+            log.warn(msg)
         else:
-            log.info(line.strip())
+            log.info(msg)
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
         if color:
             char_format.setForeground(QtGui.QColor(color))
         if font:
-            if font.lower()=='strikeout': # hack
+            if strikeout: # hack
                 char_format.setFontFamily("Monospace")
                 char_format.setFontStrikeOut(True)
             else:

@@ -207,6 +207,8 @@ class ProjectManager(Project):
                     source = "Auto"
                     #warnings.warn("no species_g for gas %d" % g.ind)
                 alias = g.get('species_alias_g', species)
+                mw_g = g.get('mw_g', None)
+                # Note, we're going to unset mw_g and migrate it into THERMO DATA
 
                 # TODO:  make sure alias is set & unique
                 user_def = user_species.get((species, phase))
@@ -222,6 +224,8 @@ class ProjectManager(Project):
                             break
                 if user_def:
                     (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                    if mw_g is not None:
+                        mol_weight = mw_g # mw_g overrides values in THERMO DATA
                     species_data = {'source': source,
                                     'phase': phase,
                                     'alias': alias,
@@ -239,14 +243,16 @@ class ProjectManager(Project):
                     species_data = self.gui.species_popup.get_species_data(species, phase)
                     if species_data:
                         species_data['alias'] = alias
-
+                        if mw_g is not None:
+                            species_data['mol_weight'] = mw_g
+                            source = 'Burcat*' # Modifed mol. weight
                 if not species_data:
                     warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
                     species_data = {
                         'alias' : alias,
                         'source': 'Auto',
                         'phase': phase,
-                        'mol_weight': g.get('mw_g',0),
+                        'mol_weight': mw_g or 0,
                         'h_f': 0.0,
                         'tmin':  0.0,
                         'tmax': 0.0,
@@ -255,6 +261,7 @@ class ProjectManager(Project):
 
                 self.gui.fluid_species[species] = species_data
 
+            self.update_thermo_data(self.gui.fluid_species)
 
             for s in self.solids:
                 name = s.name
@@ -267,11 +274,20 @@ class ProjectManager(Project):
                                'species': species}
                 self.gui.solids[name] = solids_data
 
-            # Now submit all remaining keyword updates
-            for keyword in kwlist:
+            # Now submit all remaining keyword updates, except the ones we're skipping
+            skipped_keys = set(['mw_g'])
+            for kw in kwlist:
+                if kw.key in skipped_keys:
+                    # is this a warn or info?
+                    log.warn("%s=%s moved to THERMO DATA section",
+                             format_key_with_args(kw.key, kw.args),
+                             kw.value)
+
+                    self.gui.unset_keyword(kw.key, args=kw.args)
+                    continue
                 try:
-                    self.submit_change(None, {keyword.key: keyword.value},
-                                       args=keyword.args, forceUpdate=True)
+                    self.submit_change(None, {kw.key: kw.value},
+                                       args=kw.args, forceUpdate=True)
                 except ValueError as e:
                     errlist.append(e)
 
@@ -319,20 +335,25 @@ class ProjectManager(Project):
         Unmatching entries are not modified"""
 
         new_thermo_data = []
-        user_species = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
+        #species_to_save = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
+        # We're going to save all of them, even the ones from BURCAT. so that mfix does
+        #  not need mfix.dat at runtime.  Note, that means "source" will be "User Decoolfined"
+        #  next time this project is loaded
+        species_to_save = set(species_dict.keys())
         # Keep sections of thermo_data not mentioned in species_dict, for now
-        skip = False
+        replace_entry = False
         for line in self.thermo_data:
             line = line.rstrip()
-            if skip:
+            if replace_entry:
                 if line:
                     continue
                 else:
                     skip = False
             elif line.endswith(' 1'):
                 species = line[:18].strip()
-                if species in user_species:
-                    skip = True
+                if species in species_to_save:
+                    species_to_save.remove(species) # We've handled this one
+                    replace_entry = True
                     continue
             # Avoid repeated blanks
             if not line:
@@ -341,10 +362,12 @@ class ProjectManager(Project):
             # Keep the line
             new_thermo_data.append(line)
         self.thermo_data = new_thermo_data
-        # Now append records for all user species
-        for (k, v) in species_dict.items():
-            if v['source'] != 'BURCAT':
-                self.thermo_data.extend(format_burcat(k,v))
+        # Now append records for species not handled yet
+        for species in species_to_save:
+            data = species_dict[species]
+            #if data['source'] != 'BURCAT':
+            #    self.thermo_data.extend(format_burcat(species,data))
+            self.thermo_data.extend(format_burcat(species,data))
 
     def objectName(self):
         return 'Project Manager'
