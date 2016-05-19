@@ -1394,35 +1394,29 @@ class VtkWidget(QtWidgets.QWidget):
                 append_filter.AddInputData(
                     self.get_input_data(str(item.text(0))).GetOutput())
 
-        # FIXME: need to implement loading visible geometry from case file in open_project()
-        # FIXME: in the meantime don't abort when saving
-        # # check to make sure there is geometry
-        # if append_filter.GetTotalNumberOfInputConnections() <= 0:
-        #     self.parent.message(title='Warning',
-        #                         icon='warning',
-        #                         text='There is no visible geometry',
-        #                         buttons=['ok'],
-        #                         default='ok',
-        #                         infoText=None,
-        #                         detailedtext=None,
-        #                         )
-        #     raise ValueError('There is no visible geometry. Aborting')
+        geo = None
+        if append_filter.GetTotalNumberOfInputConnections() > 0:
+            append_filter.Update()
 
-        append_filter.Update()
+            # clean
+            clean_filter = vtk.vtkCleanPolyData()
+            clean_filter.SetInputConnection(append_filter.GetOutputPort())
+            clean_filter.Update()
 
-        # clean
-        clean_filter = vtk.vtkCleanPolyData()
-        clean_filter.SetInputConnection(append_filter.GetOutputPort())
-        clean_filter.Update()
+            geo = clean_filter
 
-        return clean_filter
+        return geo
 
     def get_geometry_extents(self):
         """ determine the extents of the visible geometry """
 
         geometry = self.collect_toplevel_geometry()
 
-        return geometry.GetOutput().GetBounds()
+        bounds = None
+        if geometry:
+            bounds = geometry.GetOutput().GetBounds()
+
+        return bounds
 
     def set_geometry_actor_props(self, actor, name):
         """ set the geometry proprerties to the others in the scene """
@@ -1614,11 +1608,12 @@ class VtkWidget(QtWidgets.QWidget):
 
         geometry = self.collect_toplevel_geometry()
 
-        # write file
-        stl_writer = vtk.vtkSTLWriter()
-        stl_writer.SetFileName(file_name)
-        stl_writer.SetInputConnection(geometry.GetOutputPort())
-        stl_writer.Write()
+        if geometry:
+            # write file
+            stl_writer = vtk.vtkSTLWriter()
+            stl_writer.SetFileName(file_name)
+            stl_writer.SetInputConnection(geometry.GetOutputPort())
+            stl_writer.Write()
 
     def export_unstructured(self, fname, grid):
         """ export an unstructured grid """
@@ -1703,13 +1698,14 @@ class VtkWidget(QtWidgets.QWidget):
         """ collect and set the extents of the visible geometry """
         extents = self.get_geometry_extents()
 
-        for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
-                                'zmin', 'zlength'],
-                               extents):
-            if not 'min' in key: # mfix doesn't support mins yet
-                self.emitUpdatedValue(key, extent)
+        if extents:
+            for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
+                                    'zmin', 'zlength'],
+                                   extents):
+                if not 'min' in key: # mfix doesn't support mins yet
+                    self.emitUpdatedValue(key, extent)
 
-        self.update_mesh()
+            self.update_mesh()
 
     def update_mesh(self):
 
@@ -1814,21 +1810,24 @@ class VtkWidget(QtWidgets.QWidget):
 
     def vtk_calc_distance_from_geometry(self):
 
-        signed_distances = vtk.vtkFloatArray()
-        signed_distances.SetNumberOfComponents(1)
-        signed_distances.SetName("SignedDistances")
-
-        implicit_poly_data_distance = vtk.vtkImplicitPolyDataDistance()
         source = self.collect_toplevel_geometry()
-        implicit_poly_data_distance.SetInput(source.GetOutput())
 
-        # Evaluate the signed distance function at all of the grid points
-        for point_id in range(self.rectilinear_grid.GetNumberOfPoints()):
-            p = self.rectilinear_grid.GetPoint(point_id)
-            signed_distance = implicit_poly_data_distance.EvaluateFunction(p)
-            signed_distances.InsertNextValue(signed_distance)
+        if source:
+            signed_distances = vtk.vtkFloatArray()
+            signed_distances.SetNumberOfComponents(1)
+            signed_distances.SetName("SignedDistances")
 
-        self.rectilinear_grid.GetPointData().SetScalars(signed_distances)
+            implicit_poly_data_distance = vtk.vtkImplicitPolyDataDistance()
+
+            implicit_poly_data_distance.SetInput(source.GetOutput())
+
+            # Evaluate the signed distance function at all of the grid points
+            for point_id in range(self.rectilinear_grid.GetNumberOfPoints()):
+                p = self.rectilinear_grid.GetPoint(point_id)
+                signed_distance = implicit_poly_data_distance.EvaluateFunction(p)
+                signed_distances.InsertNextValue(signed_distance)
+
+            self.rectilinear_grid.GetPointData().SetScalars(signed_distances)
 
     def vtk_mesher_table_based(self):
 

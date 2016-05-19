@@ -36,7 +36,7 @@ from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
 
-PRECOMPILE_UI = True
+PRECOMPILE_UI = False
 
 if not PRECOMPILE_UI:
     try:
@@ -467,6 +467,18 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
     def get_version(self):
         return "0.2x" # placeholder
 
+    def closeEvent(self, event):
+
+        log.debug('Closing GUI')
+
+        # cleanup threads
+        self.run_thread.quit()
+        self.monitor_thread.quit()
+        if hasattr(self, 'update_residuals_thread'):
+            self.update_residuals_thread.quit()
+
+        event.accept()
+
     def set_navigation_item_state(self, item_name, state):
         on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         off = Qt.ItemFlags(0)
@@ -832,49 +844,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # Build default node library
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
-
-    def __setup_regions(self):
-        " setup the region connections etc."
-
-        regions = self.ui.regions
-        regions.combobox_regions_shape.addItems(['box', 'sphere',
-                                                         'point'])
-
-        regions.toolbutton_region_add.pressed.connect(
-            self.new_region)
-        regions.toolbutton_region_delete.pressed.connect(
-            self.delete_region)
-        regions.toolbutton_region_copy.pressed.connect(
-            self.copy_region)
-
-        tablewidget = regions.tablewidget_regions
-        tablewidget.dtype = OrderedDict
-        tablewidget._setModel()
-        tablewidget.set_columns(['shape', 'from', 'to'])
-        tablewidget.show_vertical_header(True)
-        tablewidget.set_value(OrderedDict())
-        tablewidget.auto_update_rows(True)
-        tablewidget.set_selection_model('cell', multi=False)
-        tablewidget.new_selection.connect(self.update_region_parameters)
-
-        for widget in widget_iter(self.ui.regions.groupbox_region_parameters):
-            if hasattr(widget, 'value_updated'):
-                widget.value_updated.connect(self.region_value_changed)
-
-                # lineedit_regions_to_x
-                name = str(widget.objectName())
-                if '_to_' in name:
-                    widget.key = '_'.join(name.split('_')[-2:])
-                    widget.dtype = float
-                elif '_from_' in str(widget.objectName()):
-                    widget.key = '_'.join(name.split('_')[-2:])
-                    widget.dtype = float
-                elif 'name' in name:
-                    widget.key = 'name'
-                    widget.dtype = str
-                elif 'shape' in name:
-                    widget.key = 'shape'
-                    widget.dtype = str
 
     def get_project_file(self):
         """get the project filename, including full path"""
