@@ -162,7 +162,7 @@ class ProjectManager(Project):
             # TODO:  make sure aliases are unique
 
             # Make sure they are sorted by index before inserting into gui
-            self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
+            self.gasSpecies.sort(key=lambda a: a.ind)
             # TODO: integrate project.gasSpecies with gui.fluid_species
             db = self.gui.species_popup.db
 
