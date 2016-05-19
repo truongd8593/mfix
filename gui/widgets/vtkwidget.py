@@ -592,7 +592,7 @@ class VtkWidget(QtWidgets.QWidget):
                 self.parent.get_project_dir(),
                 'STL File (*.stl)',)
 
-            if isinstance(filename, tuple) or isinstance(filename, list):
+            if isinstance(filename, (tuple, list)):
                 filename = filename[0]
 
             filename = str(filename)
