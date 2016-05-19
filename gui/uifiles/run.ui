@@ -630,28 +630,11 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="restart_mfix_button">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>Restart</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="stop_mfix_button">
-        <property name="toolTip">
-         <string>Stop MFIX</string>
-        </property>
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
        <widget class="QPushButton" name="pause_mfix_button">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Pause</string>
         </property>
@@ -674,6 +657,19 @@
        <widget class="QCheckBox" name="use_spx_checkbox">
         <property name="text">
          <string>Use SPX Files</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QPushButton" name="reset_mfix_button">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Remove output and restart files</string>
+        </property>
+        <property name="text">
+         <string>Reset Project</string>
         </property>
        </widget>
       </item>

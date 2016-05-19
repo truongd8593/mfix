@@ -278,7 +278,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_reset.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -304,12 +304,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
+        self.ui.run.run_mfix_button.clicked.connect(self.handle_run_stop_action)
         self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
-        self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
-        self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
+        self.ui.run.reset_mfix_button.clicked.connect(self.remove_output_files)
         self.ui.toolbutton_run.clicked.connect(self.handle_run_stop_action)
-        self.ui.toolbutton_restart.clicked.connect(self.restart_mfix)
+        self.ui.toolbutton_reset.clicked.connect(self.remove_output_files)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -419,43 +418,38 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         mfix_available = bool(output)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
-        self.ui.run.restart_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
-        self.ui.run.stop_mfix_button.setEnabled(running)
-        #self.ui.toolbutton_restart.setEnabled(not_running)
         self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running and self.dmp_enabled)
 
-        self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
         self.ui.run.mfix_executables.setVisible(mfix_available)
         self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
 
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        self.ui.toolbutton_restart.setEnabled(res_file_exists and not_running)
+        self.ui.toolbutton_reset.setEnabled(res_file_exists and not_running)
+        self.ui.run.reset_mfix_button.setEnabled(res_file_exists and not_running)
 
-        #self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
-            self.ui.run.run_mfix_button.setText("Resume")
-            if not running:
+            if running:
+                self.ui.run.run_mfix_button.setText("Stop")
+                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+                self.ui.toolbutton_run.setText("Stop")
+            else:
+                self.ui.run.run_mfix_button.setText("Resume")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Resume")
-            else:
+        else:
+            if running:
+                self.ui.run.run_mfix_button.setText("Stop")
                 self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
                 self.ui.toolbutton_run.setText("Stop")
-        else:
-            if not running:
+            else:
+                self.ui.run.run_mfix_button.setText("Run")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Run")
-            else:
-                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
-                self.ui.toolbutton_run.setText("Stop")
-
-        #if running:
-        #    self.ui.toolbutton_run.setText("Stop")
-        #    self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
 
 
     def print_welcome(self):
@@ -1171,32 +1165,34 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         :type output_files: list
         :return: True for success, False for user cancel"""
 
-        if output_files:
-            if not message_text:
-                message_text = 'Deleting output files %s' % '\n'.join(output_files)
-            confirm = self.message(title='Warning',
+        if not output_files:
+            output_files = self.monitor_thread.get_outputs()
+        if not message_text:
+            message_text = 'Deleting output files %s' % '\n'.join(output_files)
+        confirm = self.message(title='Warning',
                          icon='warning',
                          text=message_text,
                          buttons=['ok','cancel'],
                          default='cancel',
                          )
-            if confirm != 'ok':
-                return False
+        if confirm != 'ok':
+            return False
 
-            for path in output_files:
-                log.debug('Deleting path: '+path)
-                try:
-                    os.remove(path)
-                except OSError as e:
-                    msg = 'Cannot delete %s: %s' % (path, e.strerror)
-                    self.print_internal("Warning: %s" % msg, color='red')
-                    log.warn(msg)
-                    self.message(title='Warning',
+        for path in output_files:
+            log.debug('Deleting file %s' % path)
+            try:
+                os.remove(path)
+            except OSError as e:
+                msg = 'Cannot delete %s: %s' % (path, e.strerror)
+                self.print_internal("Warning: %s" % msg, color='red')
+                log.warn(msg)
+                self.message(title='Warning',
                                  icon='warning',
                                  text=msg,
                                  buttons=['ok'],
                                  default=['ok'])
-            return True
+                break
+        return True
 
     def handle_run_stop_action(self):
         if self.run_thread.mfixproc is None:
