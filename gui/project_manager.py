@@ -199,9 +199,9 @@ class ProjectManager(Project):
                 # First look for definition in THERMO DATA section
                 phase = g.phase.upper() # phase and species are guaranteed to be set
                 species = g.get('species_g')
-
                 if species is None:
-                    warnings.warn("no species_g for gas %d" % g.ind)
+                    species = 'Gas %s' % g.ind
+                    #warnings.warn("no species_g for gas %d" % g.ind)
                 alias = g.get('species_alias_g', species)
 
                 # TODO:  make sure alias is set & unique
@@ -210,8 +210,10 @@ class ProjectManager(Project):
                 if not tmp:
                     for ((s,p),v) in user_species.items():
                         if s == species:
-                            warnings.warn("species '%s' defined as phase '%s', expected '%s'"
-                                          % (species, p, phase))
+                            # This is all-too-common.  existing mfix files all have 'S' for
+                            # phase in thermo data.
+                            #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                            #              % (species, p, phase))
                             tmp = v
                             break
                 if tmp:
