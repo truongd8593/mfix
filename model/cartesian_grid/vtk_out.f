@@ -2833,6 +2833,7 @@
       INTEGER , ALLOCATABLE        ::  NEW_POINT_NEW_ID(:)
       LOGICAL , ALLOCATABLE        ::  KEEP_POINT(:)
       LOGICAL , ALLOCATABLE        ::  KEEP_NEW_POINT(:)
+      DOUBLE PRECISION             ::  XCYL,ZCYL
 
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
@@ -2899,13 +2900,25 @@
 
          POINT_ID = 1
 ! This is for the background grid cell corners
-         DO IJK = 1,IJKMAX3
-            IF(KEEP_POINT(IJK)) THEN
-               GLOBAL_COORDS_OF_POINTS(1:3,POINT_ID) = &
-                    (/REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK)))/)
-               POINT_ID = POINT_ID + 1
-            ENDIF
-         END DO
+         IF(COORDINATES=='CYLINDRICAL') THEN
+            DO IJK = 1,IJKMAX3
+               IF(KEEP_POINT(IJK)) THEN
+                  XCYL = XG_E(GLOBAL_I_OF(IJK)) * DCOS(ZG_T(GLOBAL_K_OF(IJK)))
+                  ZCYL = XG_E(GLOBAL_I_OF(IJK)) * DSIN(ZG_T(GLOBAL_K_OF(IJK)))
+                  GLOBAL_COORDS_OF_POINTS(1:3,POINT_ID) = &
+                       (/REAL(XCYL),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZCYL)/)
+                  POINT_ID = POINT_ID + 1
+               ENDIF
+            END DO
+         ELSE ! CARTESIAN COORDINATE SYSTEM
+            DO IJK = 1,IJKMAX3
+               IF(KEEP_POINT(IJK)) THEN
+                  GLOBAL_COORDS_OF_POINTS(1:3,POINT_ID) = &
+                       (/REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK)))/)
+                  POINT_ID = POINT_ID + 1
+               ENDIF
+            END DO
+         ENDIF
 ! This is for the cut cell new corners
          DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
             IF(KEEP_NEW_POINT(IJK)) THEN
