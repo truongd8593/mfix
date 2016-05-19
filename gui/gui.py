@@ -36,7 +36,7 @@ from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
 
-PRECOMPILE_UI = False
+PRECOMPILE_UI = True
 
 if not PRECOMPILE_UI:
     try:
@@ -1214,7 +1214,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 return
         self.set_keyword('run_type', 'new')
         # FIXME only write it if updated
-        self.project.writeDatFile(self.get_project_file())
+        self.project.writeDatFile(self.get_project_file()) #XXX
         self._start_mfix()
 
     def restart_mfix(self):
@@ -1226,7 +1226,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 log.debug('output or resume files exist and run was cancelled')
                 return
         self.set_keyword('run_type', 'new')
-        self.project.writeDatFile(self.get_project_file())
+        self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
     def pause_mfix(self):
@@ -1249,7 +1249,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 #pass
                 return
             self.set_keyword('run_type', 'restart_2')
-        self.project.writeDatFile(self.get_project_file())
+        self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
     def _start_mfix(self):
@@ -1364,7 +1364,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             project_file = self.get_project_file()
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
-        self.project.writeDatFile(project_file)
+        self.project.writeDatFile(project_file) # XXX
         self.setWindowTitle('MFIX - %s' % project_file)
 
     def get_save_filename(self, dialog_message=None):
@@ -1542,7 +1542,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 self.project.writeDatFile(project_file)
                 self.print_internal(save_msg, color='blue')
 
-        if not self.is_project_open():
+        if not self.is_project_open(): # why?
             self.ui.stackedwidget_mode.setVisible(True)
 
         self.set_project_file(project_file)
