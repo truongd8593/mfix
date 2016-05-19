@@ -317,6 +317,8 @@ class Base(object):
         return len(self._keyword_dict)
 
     def get(self, key, default=None):
+        # Note, this only works with dynamic attributes, not static ones defined
+        # in subclasses of Base (eg Solid.name)
         return self._keyword_dict.get(key, default)
 
 #    def updateKeyword(self, key, value, args=[]):
