@@ -57,7 +57,6 @@ def debug_trace(__name__):
 from project_manager import ProjectManager
 from mfix_threads import MfixThread, MonitorThread
 
-from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table)
 from widgets.regions import RegionsWidget
@@ -809,7 +808,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 widget.value_updated.connect(self.unsaved)
 
     def __setup_vtk_widget(self):
-        " setup the vtk widget "
+        """initialize the vtk widget"""
+        from widgets.vtkwidget import VtkWidget
 
         self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
