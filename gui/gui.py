@@ -395,10 +395,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
         self.ui.run.stop_mfix_button.setEnabled(running)
         #self.ui.toolbutton_restart.setEnabled(not_running)
-        self.ui.run.openmp_threads.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running)
+        self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
+        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running and self.dmp_enabled)
+        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running and self.dmp_enabled)
 
         self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
         self.ui.run.mfix_executables.setVisible(mfix_available)
@@ -1340,6 +1340,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.writeDatFile(project_file)
+        self.setWindowTitle('MFIX - %s' % project_file)
 
     def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName for unit tests to override
