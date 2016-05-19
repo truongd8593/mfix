@@ -349,8 +349,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.__setup_other_widgets()  # refactor/rename - cgw
 
         # --- vtk setup ---
-        if self.use_vtk:
-            self.__setup_vtk_widget()
+        self.__setup_vtk_widget()
 
         # --- workflow setup ---
         if NodeWidget is not None:
@@ -809,6 +808,10 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
+        if not self.use_vtk:
+            self.vtkwidget = None
+            return
+
         from widgets.vtkwidget import VtkWidget
 
         self.vtkwidget = VtkWidget(self.project, parent=self)
@@ -1612,7 +1615,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # Look for geometry.stl and load automatically
         geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry):
+        if os.path.exists(geometry) and self.use_vtk:
             self.vtkwidget.add_stl(None, filename=geometry)
 
     # --- fluid species methods ---
