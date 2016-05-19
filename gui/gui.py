@@ -121,6 +121,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.app = app
         self.use_vtk = 'MFIX_NO_VTK' not in os.environ
 
+        self.mfix_config = None
+        self.smp_enabled = False
+        self.dmp_enabled = False
+        self.pymfix_enabled = False
+
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
                               'CheckBox':      CheckBox,

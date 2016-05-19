@@ -1262,7 +1262,7 @@ class Project(object):
     def convertToString(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
-                yield line.line()+'\n'
+                yield to_fs_from_unicode(line.line() + '\n')
             else:
                 yield to_fs_from_unicode(line + '\n')
 
