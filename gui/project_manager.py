@@ -4,6 +4,8 @@ import logging
 log = logging.getLogger(__name__)
 import warnings
 
+from collections import OrderedDict
+
 from project import Project, Keyword
 from constants import *
 
@@ -162,7 +164,9 @@ class ProjectManager(Project):
             # TODO:  make sure aliases are unique
 
             # Make sure they are sorted by index before inserting into gui
-            self.gasSpecies.sort(key=lambda a: a.ind)
+            self.gasSpecies.sort(cmp=lambda a,b: cmp(a.ind, b.ind)) # override 'sort' in class Project?
+            self.solids.sort(cmp=lambda a,b: cmp(a.ind, b.ind))
+
             # TODO: integrate project.gasSpecies with gui.fluid_species
             db = self.gui.species_popup.db
 
@@ -234,6 +238,16 @@ class ProjectManager(Project):
                 self.gui.fluid_species[species] = species_data
 
 
+            for s in self.solids:
+                name = s.name
+                species = list(s.species)
+                species.sort(cmp=lambda a,b: cmp(a,b))
+                # FIXME just use the solid object instead of doing this translation
+                self.gui.solids[name] = {'model': s.get("solids_model"),
+                                         'diameter': s.get('d_p0'),
+                                         'density': s.get('ro_s0'),
+                                         'species': species}
+
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
@@ -255,10 +269,11 @@ class ProjectManager(Project):
                 self.gui.print_internal("Loaded %s" % project_file, color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
-        '''
-        Register a widget with the project manager. The widget must have a
-        value_updated signal to connect to.
-        '''
+        """ Register a widget with the project manager. The widget must have a
+        value_updated signal to connect to.  If args is not None, widget will
+        be updated only when the keyword with matching args is updated.  If
+        args=['*'], widget recieves updates regardless of args. """
+
         if args is None:
             args = []
         else:
@@ -280,7 +295,11 @@ class ProjectManager(Project):
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
+
     def update_thermo_data(self, species_dict):
+        """Update definitions in self.thermo_data based on data in species_dict.
+        Unmatching entries are not modified"""
+
         new_thermo_data = []
         user_species = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
         # Keep sections of thermo_data not mentioned in species_dict, for now
@@ -317,8 +336,12 @@ def format_burcat(species, data):
     ## TODO: move this somewhere else
     lines = []
 
+
+    calc_quality = 'B' # This appears in column 68, valid values are A-F.
+                       # We'll just assign 'B' to fill the space, it's the
+                       # most common value.
+
     # First line
-    calc_quality = 'B' # appears in col 68, values A-F
     row = (species, 'User Defined', data['phase'].upper(),
            data['tmin'], data['tmax'],
            calc_quality, data['molecular_weight'])
