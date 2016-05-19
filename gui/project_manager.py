@@ -157,6 +157,8 @@ class ProjectManager(Project):
 
             # deal with species, since they can cause other widgets to instantiate
             nmax_g = self.get_value('nmax_g', default=0)
+            # TODO: handle cases which use rrates.f, like tutorials/reactor1b
+            # which has 'nmax(0)' instead of 'nmax_g'
             if len(self.gasSpecies) != nmax_g:
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
