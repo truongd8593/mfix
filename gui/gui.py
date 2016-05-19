@@ -1848,7 +1848,7 @@ def main(args):
         if opt in ("-l", "--log"):
             log_level = arg
         elif opt in ("-h", "--help"):
-            print(usage_string)
+            Usage(name)
             sys.exit(0)
         elif opt in ("-q", "--quit"):
             quit_after_loading = True
