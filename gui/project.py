@@ -316,6 +316,9 @@ class Base(object):
     def __len__(self):
         return len(self._keyword_dict)
 
+    def get(self, key, default=None):
+        return self._keyword_dict.get(key, default)
+
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
 
