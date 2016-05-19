@@ -1658,9 +1658,11 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         for (row, (species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
                                         'heat_of_formation', 'source')):
-                table.setItem(row, col, make_item(data[key]))
+                alias = data.get('alias', species) # default to species if no alias
+                data['alias'] = alias # for make_item
+                table.setItem(row, col, make_item(data.get(key)))
                 self.update_keyword('species_g', species, args=row+1)
-                self.update_keyword('species_alias_g', data['alias'], args=row+1)
+                self.update_keyword('species_alias_g', alias, args=row+1)
                 # TBD:  do we get mol wt from mw_g or THERMO DATA or both?
                 # maybe don't set this kw. - cgw
                 self.update_keyword('mw_g', data['molecular_weight'], args=row+1)#

@@ -197,11 +197,23 @@ class ProjectManager(Project):
 
             for g in self.gasSpecies:
                 # First look for definition in THERMO DATA section
-                phase = g.phase.upper()
-                species = g.species_g
-                alias = g.species_alias_g
+                phase = g.phase.upper() # phase and species are guaranteed to be set
+                species = g.get('species_g')
+
+                if species is None:
+                    warnings.warn("no species_g for gas %d" % g.ind)
+                alias = g.get('species_alias_g', species)
+
                 # TODO:  make sure alias is set & unique
                 tmp = user_species.get((species, phase))
+                # Hack, look for mismatched phase
+                if not tmp:
+                    for ((s,p),v) in user_species.items():
+                        if s == species:
+                            warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                          % (species, p, phase))
+                            tmp = v
+                            break
                 if tmp:
                     (tmin, tmax, mol_weight, coeffs, comment) = tmp
                     species_data = {'source': 'User Defined',
@@ -223,12 +235,12 @@ class ProjectManager(Project):
                         species_data['alias'] = alias
 
                 if not species_data:
-                    warnings.warn("no defintion found for '%s'" % species)
+                    warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
                     species_data = {
                         'alias' : alias,
                         'source': 'Undefined',
                         'phase': phase,
-                        'molecular_weight': g.mw_g,
+                        'molecular_weight': g.get('mw_g',0),
                         'heat_of_formation': 0.0,
                         'tmin':  0.0,
                         'tmax': 0.0,
@@ -243,11 +255,11 @@ class ProjectManager(Project):
                 species = list(s.species)
                 species.sort(key=lambda a:a.ind)
                 # FIXME just use the solid object instead of doing this translation
-                self.gui.solids[name] = {'model': s.get("solids_model"),
-                                         'diameter': s.get('d_p0'),
-                                         'density': s.get('ro_s0'),
-                                         'species': species}
-
+                solids_data =  {'model': s.get("solids_model"),
+                               'diameter': s.get('d_p0'),
+                               'density': s.get('ro_s0'),
+                               'species': species}
+                self.gui.solids[name] = solids_data
 
             # Now submit all remaining keyword updates
             for keyword in kwlist:
