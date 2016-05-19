@@ -16,6 +16,7 @@ from qtpy.QtTest import QTest
 from qtpy import QtCore
 from qtpy import QtWidgets
 
+from .helper_functions import TestQApplication
 import gui
 
 def dismiss():
@@ -25,7 +26,7 @@ def dismiss():
             QTest.keyClick(widget, QtCore.Qt.Key_Enter)
 
 
-class MfixGuiTests(unittest.TestCase):
+class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
     def find_exes(self):
@@ -40,8 +41,8 @@ class MfixGuiTests(unittest.TestCase):
 
     def setUp(self):
         ''' open FluidBed_DES for testing '''
-        qapp = QtWidgets.QApplication([])
-        self.mfix = gui.MfixGui(qapp)
+        TestQApplication.setUp(self)
+        self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
@@ -72,6 +73,8 @@ class MfixGuiTests(unittest.TestCase):
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
                 os.remove(path)
+
+        TestQApplication.tearDown(self)
 
     def test_save_as(self):
         ''' Test the Save As button on the toolbar '''

@@ -138,11 +138,34 @@ class TestKeyword(unittest.TestCase):
         kw = Keyword('key', True)
 
         for dtype, value in ((bool, True), (str, 'test'), (float, 10.0),
-                             (int, 1)):
+                             (int, 1), (float, None)):
             kw.dtype = dtype
             kw.updateValue(value)
 
             self.assertEqual(kw.value, value)
+
+    def test_update_equation(self):
+        """ update an equation keyword """
+
+        kw = Keyword('key', Equation('2*4'))
+
+        self.assertIsInstance(kw.value, Equation)
+
+        kw.updateValue('10*2')
+        self.assertIsInstance(kw.value, Equation)
+        self.assertEqual(20.0, float(kw))
+
+    def test_update_equation_str(self):
+        """ update a keyword with dtype of float with a str """
+
+        kw = Keyword('key', 2.4)
+
+        self.assertEqual(float, kw.dtype)
+
+        kw.updateValue('10*20')
+
+        self.assertIsInstance(kw.value, Equation)
+        self.assertEqual(10.0*20, float(kw))
 
     def test_lower(self):
         """ lower a string """

@@ -133,7 +133,7 @@ class Keyword(object):
 
         # FIXME:  this is not just matching 'pi' but any jumble of p's and i's
         # see also def in Project.__init__
-        self.re_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+        self.re_expression = re.compile('([eEpiPI\+\-/\*\^\(\)]+)')
 
         if dtype is None:
             self._checkdtype()
@@ -221,6 +221,7 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
+
         if value is None:
             self.value = None
         elif self.dtype == Equation and isinstance(value, str):
