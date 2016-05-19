@@ -365,6 +365,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
         self.solids = OrderedDict()
+        self.current_solid_index = None
+
+        # Update run options
         self.update_run_options()
 
     def set_keyword(self, key, value, args=None):
@@ -475,6 +478,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         assert len(items) == 1, "Multiple menu items matching %s"%item_name
         items[0].setFlags(on if state else off)
 
+    # Top-level "Model Setup"
     def set_solver(self, solver):
         """handler for "Solver" combobox in Model Setup"""
         self.project.solver = solver
@@ -524,33 +528,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # XXX What to do about solids that are already defined?
         self.setup_combobox_solids_model()
 
-    def setup_combobox_solids_model(self):
-        """solids model combobox is tied to solver setting"""
-        solver = self.project.solver
-        if solver == SINGLE:
-            # Note, if Single-Phase solver is enabled, this pane is disabled
-            return
-        cb = self.ui.combobox_solids_model
-        model = cb.model()
-        #          TFM,  DEM,  PIC
-        enabled = [False, False, False]
-        enabled[0] = (solver==TFM or solver==HYBRID)
-        enabled[1] = (solver==DEM or solver==HYBRID)
-        enabled[2] = (solver==PIC)
-        for (i, e) in enumerate(enabled):
-            item = model.item(i, 0)
-            flags = item.flags()
-            if e:
-                flags |= QtCore.Qt.ItemIsEnabled
-            else:
-                flags &= ~QtCore.Qt.ItemIsEnabled
-            item.setFlags(flags)
-        i = cb.currentIndex()
-        if not enabled[i]:
-            # Current selection no longer valid, so pick first valid choice
-            j = enabled.index(True)
-            cb.setCurrentIndex(j)
-
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of several other GUI items
@@ -569,6 +546,30 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         else:
             spinbox.setEnabled(False)
 
+
+    def set_subgrid_model(self, index):
+        self.subgrid_model = index
+        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
+        groupbox_subgrid_params.setEnabled(index > 0)
+
+    def update_scalar_equations(self, prev_nscalar):
+        # This is a little messy.  We may have reduced
+        # nscalar, so we need to unset phase4scalar(i)
+        # for any values of i > nscalar.
+        nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        if nscalar > 0:
+            self.project.submit_change(None,{"nscalar": nscalar})
+        else:
+            self.unset_keyword("nscalar")
+
+        for i in range(1,1+self.fluid_nscalar_eq):
+            self.project.submit_change(None,{"phase4scalar":0},args=i)
+        for i in range(1+self.fluid_nscalar_eq, 1+prev_nscalar):
+            if self.project.get_value("phase4scalar", args=i)  == 0:
+                self.unset_keyword("phase4scalar", i)
+
+
+    ## Fluid phase
     def enable_fluid_species_eq(self, state):
         ui = self.ui
         for item in (ui.combobox_fluid_diffusion_model,
@@ -603,22 +604,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             return
         self.update_scalar_equations(prev_nscalar)
 
-    def update_scalar_equations(self, prev_nscalar):
-        # This is a little messy.  We may have reduced
-        # nscalar, so we need to unset phase4scalar(i)
-        # for any values of i > nscalar.
-        nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
-        if nscalar > 0:
-            self.project.submit_change(None,{"nscalar": nscalar})
-        else:
-            self.unset_keyword("nscalar")
-
-        for i in range(1,1+self.fluid_nscalar_eq):
-            self.project.submit_change(None,{"phase4scalar":0},args=i)
-        for i in range(1+self.fluid_nscalar_eq, 1+prev_nscalar):
-            if self.project.get_value("phase4scalar", args=i)  == 0:
-                self.unset_keyword("phase4scalar", i)
-
 
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
@@ -640,7 +625,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
 
-
     def set_fluid_phase_name(self, value):
         if value != self.ui.lineedit_fluid_phase_name.text():
             self.ui.lineedit_fluid_phase_name.setText(value)
@@ -657,11 +641,43 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         ms.combobox_turbulence_model.setEnabled(enabled and
                                                 checkbox.isChecked())
 
-    def set_subgrid_model(self, index):
-        self.subgrid_model = index
-        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
-        groupbox_subgrid_params.setEnabled(index > 0)
+    # Solids phase
+    def setup_combobox_solids_model(self):
+        """solids model combobox is tied to solver setting"""
+        solver = self.project.solver
+        if solver == SINGLE:
+            # Note, if Single-Phase solver is enabled, this pane is disabled
+            return
+        cb = self.ui.combobox_solids_model
+        model = cb.model()
+        #          TFM,  DEM,  PIC
+        enabled = [False, False, False]
+        enabled[0] = (solver==TFM or solver==HYBRID)
+        enabled[1] = (solver==DEM or solver==HYBRID)
+        enabled[2] = (solver==PIC)
+        for (i, e) in enumerate(enabled):
+            item = model.item(i, 0)
+            flags = item.flags()
+            if e:
+                flags |= QtCore.Qt.ItemIsEnabled
+            else:
+                flags &= ~QtCore.Qt.ItemIsEnabled
+            item.setFlags(flags)
+        i = cb.currentIndex()
+        if not enabled[i]:
+            # Current selection no longer valid, so pick first valid choice
+            # Don't leave a non-enabled item selected!
+            j = enabled.index(True)
+            cb.setCurrentIndex(j)
 
+    def handle_combobox_solids_model(self, index):
+        if self.current_solid_index is None:
+            return # shouldn't get here
+        models = ('TFM', 'DEM', 'PIC')
+        self.update_keyword('solids_model', models[index], args=self.current_solid_index)
+
+
+    # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
         """setup widgets which are not tied to a simple keyword"""
         ui = self.ui
@@ -1747,6 +1763,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.ui.toolbutton_solids_delete.setEnabled(enabled)
         self.ui.toolbutton_solids_copy.setEnabled(enabled)
         name = None if row is None else tw.item(row,0).text()
+        self.current_solid_index = (row+1) if row is not None else None
         self.update_solids_detail_pane(name)
 
     def update_solids_detail_pane(self, name):
@@ -1760,7 +1777,6 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             sa.setEnabled(True)
             ui.lineedit_solids_name.setText(name)
             self.setup_combobox_solids_model()
-
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView
