@@ -103,13 +103,13 @@ class SpeciesPopup(QtWidgets.QDialog):
         for (keytuple, data) in db.items():
             (species, tmin, tmax) = keytuple
             if species == key:
-                (coeffs, molecular_weight, comment) = data
+                (coeffs, mol_weight, comment) = data
                 a_low = coeffs[:7]
                 a_high = coeffs[7:14]
                 heat_of_formation = coeffs[14]
                 return {'source': 'BURCAT',
                         'phase': phase,
-                        'molecular_weight': molecular_weight,
+                        'mol_weight': mol_weight,
                         'heat_of_formation': heat_of_formation,
                         'tmin':  tmin,
                         'tmax': tmax,
@@ -174,8 +174,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.label_species_source.setText(data['source'])
         ui.label_species.setText(species)
         ui.lineedit_alias.setText(data['alias'])
-        ui.lineedit_molecular_weight.setText(str(data['molecular_weight']))
-        ui.lineedit_molecular_weight.textEdited.connect(make_handler('molecular_weight'))
+        ui.lineedit_mol_weight.setText(str(data['mol_weight']))
+        ui.lineedit_mol_weight.textEdited.connect(make_handler('mol_weight'))
         ui.lineedit_heat_of_formation.setText(str(data['heat_of_formation']))
         ui.lineedit_heat_of_formation.textEdited.connect(make_handler('heat_of_formation'))
         # Density - disabled
@@ -221,7 +221,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         key, phase = rowdata
         data = self.db[phase][key]
         (species, tmin, tmax) = key
-        (coeffs, molecular_weight, comment) = data
+        (coeffs, mol_weight, comment) = data
         # Do we want to allow same species in different phases, etc?
         if species in self.defined_species:
             return # Don't allow duplicates
@@ -234,7 +234,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         species_data = {'source': 'BURCAT',
                         'phase': phase,
                         'alias': alias,
-                        'molecular_weight': molecular_weight,
+                        'mol_weight': mol_weight,
                         'heat_of_formation': heat_of_formation,
                         'tmin':  tmin,
                         'tmax': tmax,
@@ -292,7 +292,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         phase = self.default_phase # Note - no way for user to specify phase - FIXME
         species = self.make_user_species_name()
         alias = species.replace(' ', '') #?
-        molecular_weight = 0
+        mol_weight = 0
         heat_of_formation = 0
         tmin = 200.0 # ?
         tmax = 600.0 # ?
@@ -302,7 +302,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         species_data = {'source': 'User Defined',
                         'phase': phase,
                         'alias': alias,
-                        'molecular_weight': molecular_weight,
+                        'mol_weight': mol_weight,
                         'heat_of_formation': heat_of_formation,
                         'tmin':  tmin,
                         'tmax': tmax,
@@ -398,7 +398,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit.setValidator(AliasValidator(parent=self))
         lineedit.textEdited.connect(self.handle_alias)
 
-        for l in (ui.lineedit_molecular_weight,
+        for l in (ui.lineedit_mol_weight,
                   ui.lineedit_heat_of_formation,
                   ui.lineedit_density):
             l.setValidator(QDoubleValidator())
@@ -407,7 +407,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             ui.label_species_source,
             ui.label_species,
             ui.lineedit_alias,
-            ui.lineedit_molecular_weight,
+            ui.lineedit_mol_weight,
             ui.lineedit_heat_of_formation,
             ui.combobox_specific_heat_model,
             ui.tablewidget_params]

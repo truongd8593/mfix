@@ -197,7 +197,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         self.project = ProjectManager(self, self.keyword_doc)
 
         # note, the set_fluid_*_model methods have a lot of repeated code
-        # see 'set_fluid_molecular_weight_model' to help understand this
+        # see 'set_fluid_mol_weight_model' to help understand this
         def make_fluid_model_setter(self, name, key):
             def setter(model):
                 setattr(self, name, model) # self.fluid_<name>_model = model
@@ -254,7 +254,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         #self.solver = SINGLE - moved to Project
         self.fluid_density_model = CONSTANT
         self.fluid_viscosity_model = CONSTANT
-        self.fluid_molecular_weight_model = CONSTANT
+        self.fluid_mol_weight_model = CONSTANT
         self.fluid_specific_heat_model = CONSTANT
         self.fluid_conductivity_model = AIR
         self.fluid_diffusion_model = AIR
@@ -599,14 +599,14 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
-    def set_fluid_molecular_weight_model(self, model):
-        self.fluid_molecular_weight_model = model
-        combobox = self.ui.combobox_fluid_molecular_weight_model
+    def set_fluid_mol_weight_model(self, model):
+        self.fluid_mol_weight_model = model
+        combobox = self.ui.combobox_fluid_mol_weight_model
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
             return
-        # Enable spinbox for constant molecular_weight model
+        # Enable spinbox for constant mol_weight model
         spinbox = self.ui.spinbox_keyword_mw_avg
         spinbox.setEnabled(model==CONSTANT)
         if model == CONSTANT:
@@ -704,8 +704,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # Fluid phase models
         # Density
-        for name in ('density', 'viscosity', 'molecular_weight',
-                     'specific_heat', 'molecular_weight', 'conductivity', 'diffusion'):
+        for name in ('density', 'viscosity', 'mol_weight',
+                     'specific_heat', 'mol_weight', 'conductivity', 'diffusion'):
             combobox = getattr(ui, 'combobox_fluid_%s_model' % name)
             setter = getattr(self,'set_fluid_%s_model' % name)
             combobox.currentIndexChanged.connect(setter)
@@ -1616,9 +1616,9 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         # molecular weight model is the odd one (only 2 settings)
         if self.project.get_value('mw_avg') is not None:
-            self.set_fluid_molecular_weight_model(CONSTANT)
+            self.set_fluid_mol_weight_model(CONSTANT)
         else:
-            self.set_fluid_molecular_weight_model(1)
+            self.set_fluid_mol_weight_model(1)
         # requires molecular weights for all species components, should we valdate
 
         # Solids
@@ -1667,16 +1667,15 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if nmax_g > 0 and old_nmax_g is not None:
             self.update_keyword('nmax_g', nmax_g)
         for (row, (species,data)) in enumerate(self.fluid_species.items()):
-            for (col, key) in enumerate(('alias', 'phase', 'molecular_weight',
+            for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
                                         'heat_of_formation', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 table.setItem(row, col, make_item(data.get(key)))
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', alias, args=row+1)
-                # TBD:  do we get mol wt from mw_g or THERMO DATA or both?
-                # maybe don't set this kw. - cgw
-                self.update_keyword('mw_g', data['molecular_weight'], args=row+1)#
+                # We're avoiding mw_g in favor of the settings in THERMO DATA
+                #self.update_keyword('mw_g', data['mol_weight'], args=row+1)#
 
         # Clear any keywords with indices above nmax_g
         if old_nmax_g is None:
@@ -1684,7 +1683,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         for i in range(nmax_g+1, old_nmax_g+1):
             self.unset_keyword('species_g', i)
             self.unset_keyword('species_alias_g', i)
-            self.unset_keyword('mw_g', i) # TBD
+            #self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)
 

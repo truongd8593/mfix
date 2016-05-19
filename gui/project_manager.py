@@ -201,8 +201,10 @@ class ProjectManager(Project):
                 # First look for definition in THERMO DATA section
                 phase = g.phase.upper() # phase and species are guaranteed to be set
                 species = g.get('species_g')
+                source = "User Defined"
                 if species is None:
                     species = 'Gas %s' % g.ind
+                    source = "Auto"
                     #warnings.warn("no species_g for gas %d" % g.ind)
                 alias = g.get('species_alias_g', species)
 
@@ -220,10 +222,10 @@ class ProjectManager(Project):
                             break
                 if tmp:
                     (tmin, tmax, mol_weight, coeffs, comment) = tmp
-                    species_data = {'source': 'User Defined',
+                    species_data = {'source': source,
                                     'phase': phase,
                                     'alias': alias,
-                                    'molecular_weight': mol_weight,
+                                    'mol_weight': mol_weight,
                                     'heat_of_formation': coeffs[14],
                                     'tmin': tmin,
                                     'tmax': tmax,
@@ -242,9 +244,9 @@ class ProjectManager(Project):
                     warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
                     species_data = {
                         'alias' : alias,
-                        'source': 'Undefined',
+                        'source': 'Auto',
                         'phase': phase,
-                        'molecular_weight': g.get('mw_g',0),
+                        'mol_weight': g.get('mw_g',0),
                         'heat_of_formation': 0.0,
                         'tmin':  0.0,
                         'tmax': 0.0,
@@ -360,7 +362,7 @@ def format_burcat(species, data):
     # First line
     row = (species, 'User Defined', data['phase'].upper(),
            data['tmin'], data['tmax'],
-           calc_quality, data['molecular_weight'])
+           calc_quality, data['mol_weight'])
     lines.append('%-24s%-18s0.%c%10.3f%10.3f%3s%10.5f 1' % row)
 
     # remaining 3 lines
