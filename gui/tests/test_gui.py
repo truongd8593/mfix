@@ -41,11 +41,6 @@ class MfixGuiTests(TestQApplication):
 
     def setUp(self):
         ''' open FluidBed_DES for testing '''
-        TestQApplication.setUp(self)
-        self.mfix = gui.MfixGui(self.qapp)
-        self.mfix.show()
-        QTest.qWaitForWindowShown(self.mfix)
-
         self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)
         self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
@@ -61,8 +56,8 @@ class MfixGuiTests(TestQApplication):
                 except OSError:
                     pass
 
-        qapp = QtWidgets.QApplication([])
-        self.mfix = gui.MfixGui(qapp)
+        TestQApplication.setUp(self)
+        self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 

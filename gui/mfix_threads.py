@@ -168,11 +168,6 @@ class MonitorThread(QThread):
         self.cache = {}
         self.executables = self.get_executables()
         self.outputs = self.get_outputs()
-        self.stop_thread = False
-
-    def quit(self):
-        self.stop_thread = True
-        QThread.quit(self)
 
     def get_executables(self):
         """returns a dict mapping full [mfix|pymfix] paths
@@ -252,7 +247,7 @@ class MonitorThread(QThread):
 
     def run(self):
         self.sig.emit()
-        while not self.stop_thread:  # FIXME - should be two different signals so we can
+        while True:  # FIXME - should be two different signals so we can
                      # determine what changed
             tmp = self.get_outputs()
             if tmp != self.outputs:
