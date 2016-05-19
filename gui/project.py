@@ -319,7 +319,8 @@ class Base(object):
     def get(self, key, default=None):
         # Note, this only works with dynamic attributes, not static ones defined
         # in subclasses of Base (eg Solid.name)
-        return self._keyword_dict.get(key, default)
+        d =  self._keyword_dict.get(key)
+        return default if d is None else d.val
 
 #    def updateKeyword(self, key, value, args=[]):
 #        self._keyword_dict[key] = Keyword(key, value, args=args)
