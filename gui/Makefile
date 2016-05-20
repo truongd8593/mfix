@@ -18,5 +18,5 @@ test:   all
 
 nose:   all
 	(Xvfb :99 &); \
-	DISPLAY=:99 MFIX_NO_VTK=1 nosetests; \
+	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v; \
 	killall Xvfb
