@@ -26,6 +26,7 @@ CC0 1.0 Universal public domain.
 Please see the LICENSE.md for more information.
 """
 
+
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
@@ -58,10 +59,129 @@ NaN = float('NaN')
 
 class FloatExp(float):
     fmt = '4'
-
     def __repr__(self):
         return '{:.{}e}'.format(self, self.fmt)
 
+def make_FloatExp(val): # Handle Fortran formats
+    # (we can't do this in FloatExp.__init__)
+    try:
+        return FloatExp(val)
+    except ValueError:
+        val = val.lower().replace('d', 'e')
+        if val.endswith('e'):
+            val += "+0"
+        return FloatExp(val)
+
+
+def clean_string(string):
+    """Attempt to clean strings of '," and convert .t., .f., .true., .false.
+    to booleans, and catch math expressions i.e. @(3*3) and remove the @()"""
+
+    if not string:
+        return ''
+
+    # remove all quotes
+    string = string.replace("'", '').replace('"', '')
+    # remove any leading or trailing space, after removing quotes
+    string = string.strip()
+    # lower-case version of string
+    s_low = string.lower()
+
+    if s_low in ('.t.',  '.true.'):
+        return True
+    elif s_low in ('.f.', '.false.'):
+        return False
+
+    # Look for @() expression
+    if string.startswith('@(') and string.endswith(')'):
+        return Equation(string)
+
+    # Look for exponential-notation
+    match = re_float_exp.match(string)
+    if match:
+        return make_FloatExp(string)
+
+    # Maybe it's a number (would a regex be better?)
+    if any(char.isdigit() for char in string):
+        try:
+            return int(string)
+        except ValueError:
+            try:
+                return float(string)
+            except ValueError:
+                pass
+
+    # default - return string unchanged
+    return string
+
+def expand_shorthand(string):
+    """Expand mfix.dat shorthand:
+    expand_shorthand("bill 5*'IKE' fred") = "bill 'IKE' 'IKE' 'IKE' 'IKE' 'IKE' fred"
+    But don't do it inside parenthesized expressions.
+    """
+    # TODO:  we could do better about handling quoted strings
+    # and escapes
+    def _expand(s): # Inner function to do expansion, once we've handled quoting and parens
+        for shorthand in re_shorthand.findall(s):
+            count, word = shorthand.split('*', 1)
+            count = int(count)
+            expansion =' '.join(count * [word])
+            s = s.replace(shorthand, expansion)
+        return s
+    paren_level = 0
+    ret = []
+    part = ''
+    for c in string:
+        if c == '(':
+            paren_level += 1
+            if paren_level == 1: # Just entered paren. context
+                ret.append(_expand(part))
+                part = ''
+        if c == ')':
+            paren_level -= 1
+            if paren_level == 0:
+                ret.append(part+c)
+                part = ''
+        else:
+            part += c
+    if part: # leftover at end
+        ret.append(_expand(part))
+    ret = ''.join(part for part in ret if part)
+    return ret
+
+
+def remove_spaces_from_equations(string):
+    # Can't do this with regex, here's a simple lexical scanner.
+    quote = None
+    escape = False
+    paren_level = 0
+    in_eq = False
+    ret = ''
+    for c in string:
+        if c == '\\':
+            escape = not escape
+        else:
+            if quote and c==quote and not escape:
+                quote = False
+            elif c == '"' or c == "'": # Start of quoted text
+                                # We're not doing triple-strings!
+                quote = c
+            elif not (quote or escape):
+                if c == '@':
+                    in_eq = True
+                if c == '(':
+                    paren_level += 1
+                if c == ')':
+                    paren_level -= 1
+                    if paren_level == 0:
+                        in_eq = False
+
+        if in_eq and c == ' ' or c == '\t':
+            continue
+
+        ret += c
+
+    return ret
 
 class Equation(object):
     def __init__(self, eq):
@@ -69,7 +189,10 @@ class Equation(object):
         if isinstance(eq, Equation):
             self.eq = eq.eq
         else:
-            self.eq = str(eq)
+            eq = str(eq)
+            if eq.startswith("@(") and eq.endswith(")"):
+                eq = eq[2:-1]
+            self.eq = eq
 
     def _eval(self):
         if len(self.eq) == 0:
@@ -118,6 +241,9 @@ def format_key_with_args(key, args=None):
         return str(key)
 
 # Regular Expressions
+# Note: parsing with regular expressions is a problem, since they
+#  can't handle things like matching parens and quotes.
+
 re_keyValue = re.compile(r"""
     (\w+)                           # Alphanumeric, key name
     (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
@@ -133,7 +259,8 @@ re_float_exp = re.compile(r"""
     [+-]?                          # possible sign
     [\d]+                          # digits
     (\.\d*)?                       # optional decimal sign and more digits
-    ([ED][+-]?[0-9]+)              # exponent, with 'd' or 'e' (required)
+    [ED]                           # E or D
+    ([+-]?[0-9]+)?                 # exponent, with 'd' or 'e' (not required)
     $                              # end
     """, re.VERBOSE|re.IGNORECASE)
 
@@ -141,11 +268,7 @@ re_float = re.compile(r"""
     ^[+-]?[0-9]+\.[0-9]*$
     """, re.VERBOSE|re.IGNORECASE)
 
-re_expression = re.compile(r"""
-    @\(([ 0-9.EPI+-/*\(\))]+)\)     # FIXME, see also def in Keyword.__init__
-    """, re.VERBOSE|re.IGNORECASE)
-
-re_stringShortHand = re.compile(r"""
+re_shorthand = re.compile(r"""
     [\d]+                                      # unsigned integer
     \*                                         # literal *
     (?:                                        # non-capturing group
@@ -226,7 +349,7 @@ class Keyword(object):
         elif self.dtype == int:
             return str(self.value)
         elif self.dtype == str and self.value is not None:
-            if isinstance(self.value, str):
+            if isinstance(self.value, str): # unicode?
                 self.value = self.value.replace('"', '').replace("'", '')
             else:
                 self.value = str(self.value)
@@ -241,6 +364,7 @@ class Keyword(object):
         for dtype in [float, int, bool, FloatExp, Equation]:
             if isinstance(self.value, dtype):
                 self.dtype = dtype
+                break
 
         # If still None, assume string
         if self.dtype is None:
@@ -263,22 +387,23 @@ class Keyword(object):
         strvalue = str(value)
         if value is None:
             self.value = None
-        elif self.dtype == Equation and isinstance(value, str):
+        elif self.dtype == Equation and isinstance(value, str): # unicode?
             self.value.eq = value
         elif (self.dtype == float and not re_float.match(strvalue)):
             if re_float_exp.match(strvalue):
-                self.value = FloatExp(value)
+                self.value = make_FloatExp(value)
             elif re_math.search(strvalue):
                 self.value = Equation(value)
-        elif self.dtype == FloatExp and isinstance(value, float):
-            self.value = FloatExp(value)
+
+        elif self.dtype == FloatExp and isinstance(value, (int, float)):
+            self.value = make_FloatExp(value)
         else:
             self.value = value
 
         self._checkdtype()
 
     def lower(self):
-        if isinstance(self.value, str):
+        if isinstance(self.value, str): # unicode?
             return self.value.lower()
         else:
             raise TypeError('Keyword is not a str')
@@ -733,9 +858,9 @@ class Project(object):
         fname can be a StringIO instance, path, or a plain string.
         Saves the results in self.mfixDatKeyDict dictionary.
         """
+        # TODO. write a real tokenizer and grammar.
         if fname:
             self.dat_file = fname
-
         assert self.dat_file is not None
 
         # check to see if the file is a StringIO object
@@ -766,9 +891,8 @@ class Project(object):
                 # match could be: [keyword, args, value,
                 #                   nextKeywordInLine, something]
 
-                # convert to list
+                # convert to list (why?)
                 match = list(match)
-
                 # keyword
                 key = match[0].lower().strip()
 
@@ -776,18 +900,15 @@ class Project(object):
                 val_string = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                exps = re_expression.findall(val_string)
-                for exp in exps:
-                    val_string = val_string.replace(exp, exp.replace(' ',''))
+                # Doing this with regex won't work because it can't detect
+                # balanced parens
+                val_string = remove_spaces_from_equations(val_string)
+
                 # look for shorthand [count]*[value] and expand.
-                # Don't expand shorthand inside $( or 'description' field
-                if not (val_string.startswith('@(') or 'description' in key):
-                    for shorthand in re_stringShortHand.findall(val_string):
-                        val_string = val_string.replace(shorthand,
-                                                        self.expandshorthand(shorthand))
-                # split values using shlex, it will keep quoted strings
-                # together.
-                if 'description' in key:
+                val_string = expand_shorthand(val_string)
+
+                # split values using shlex, it will keep quoted strings together.
+                if 'description' in key: # Don't do anything with description line, it may contain *, etc.
                     vals = [shlex.split(line.strip())[-1]]
                     single_key = True
                 else:
@@ -799,7 +920,7 @@ class Project(object):
                 # clean the values converting to python types
                 cleanVals = []
                 for val in vals:
-                    val = self.cleanstring(val)
+                    val = clean_string(val)
                     if val is not None:
                         cleanVals.append(val)
 
@@ -1106,56 +1227,6 @@ class Project(object):
         for keys, value in recurse_dict_empty(self._keyword_dict):
             yield value
 
-    def cleanstring(self, string):
-        """Attempt to clean strings of '," and convert .t., .f., .true., .false.
-        to booleans, and catch math expressions i.e. @(3*3) and remove the @()"""
-
-        if not string:
-            return ''
-
-        # remove all quotes
-        string = string.replace("'", '').replace('"', '')
-        # remove any leading or trailing space, after removing quotes
-        string = string.strip()
-        # lower-case version of string
-        s_low = string.lower()
-
-        if s_low in ('.t.',  '.true.'):
-            return True
-        elif s_low in ('.f.', '.false.'):
-            return False
-
-        # Look for @() expression
-        match = re_expression.match(string)
-        if match:
-            return Equation(match.group(1)) # Group inside '@()'
-
-        # Look for exponential-notation
-        match = re_float_exp.match(string)
-        if match:
-            return FloatExp(s_low.replace('d', 'e'))
-
-        # Maybe it's a number (would a regex be better?)
-        if any(char.isdigit() for char in string):
-            try:
-                return int(string)
-            except ValueError:
-                try:
-                    return float(string)
-                except ValueError:
-                    pass
-
-        # default - return string unchanged
-        return string
-
-    def expandshorthand(self, shorthand):
-        """Expand mfix.dat shorthand:
-        expandShortHand("5*'IKE'") = "'IKE' 'IKE' 'IKE' 'IKE' 'IKE'"
-        """
-        count, word = shorthand.split('*', 1)
-        count = int(count)
-        ret =' '.join(count * [word])
-        return ret
 
     def removeKeyword(self, key, args=None, warn=True):
         """Remove a keyword from the project.
