@@ -365,7 +365,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
-        self.solids_dict = OrderedDict()
+        self.solids = OrderedDict()
         self.current_solid_index = None
 
         # Update run options
@@ -483,13 +483,15 @@ class MfixGui(QtWidgets.QMainWindow):
         event.accept()
 
     def set_navigation_item_state(self, item_name, state):
-        on = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        off = Qt.ItemFlags(0)
         tree = self.ui.treewidget_model_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
-        assert len(items) == 1, "Multiple menu items matching %s"%item_name
-        items[0].setFlags(on if state else off)
+
+        assert len(items)==1, "%s menu items matching %s"%("Multiple" if len(items)>1 else "No",
+                                                           item_name)
+        for item in items:
+            item.setDisabled(not state)
+
 
     # Top-level "Model Setup"
     def set_solver(self, solver):
@@ -517,8 +519,8 @@ class MfixGui(QtWidgets.QMainWindow):
                        PIC: (True, False, False, True),
                        HYBRID: (True, True, True, False)}
 
-        for item_name, item_state in zip(item_names, item_states[solver]):
-            self.set_navigation_item_state(item_name, item_state)
+        #for item_name, item_state in zip(item_names, item_states[solver]):
+        #    self.set_navigation_item_state(item_name, item_state)
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
@@ -661,6 +663,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
+        return #tmp
         cb = self.ui.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
@@ -749,10 +752,10 @@ class MfixGui(QtWidgets.QMainWindow):
         tb = ui.solids.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-        tw = ui.solids.tablewidget_solids
-        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        cb = ui.solids.combobox_solids_model
-        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+        #tw = ui.solids.tablewidget_solids
+        #tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        #cb = ui.solids.combobox_solids_model
+        #cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
 
         # connect solid tab btns
         for i, btn in enumerate([self.ui.solids.pushbutton_material,
@@ -1724,12 +1727,13 @@ class MfixGui(QtWidgets.QMainWindow):
         n = 1
         while True:
             name = 'Solid %d' % n
-            if name not in self.solids_dict:
+            if name not in self.solids:
                 break
             n += 1
         return name
 
     def solids_add(self):
+        return
         tw = self.ui.tablewidget_solids
         nrows = tw.rowCount()
         tw.setRowCount(nrows + 1)
@@ -1740,13 +1744,14 @@ class MfixGui(QtWidgets.QMainWindow):
             model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
         diameter = 0.0
         density = 0.0
-        self.solids_dict[name] = {'model': model,
+        self.solids[name] = {'model': model,
                              'diameter': diameter,
                              'density': density} # more?
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
     def handle_solids_table_selection(self):
+        return
         tw = self.ui.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
@@ -1763,12 +1768,13 @@ class MfixGui(QtWidgets.QMainWindow):
             sa.setEnabled(False)
             # Clear out all values?
         else:
-            data = self.solids_dict[name]
+            data = self.solids[name]
             sa.setEnabled(True)
             ui.lineedit_solids_name.setText(name)
             self.setup_combobox_solids_model()
 
     def update_solids_table(self):
+        return
         hv = QtWidgets.QHeaderView
         table = self.ui.tablewidget_solids
         if PYQT5:
@@ -1780,26 +1786,27 @@ class MfixGui(QtWidgets.QMainWindow):
                    else hv.Stretch)
 
         table.clearContents()
-        if self.solids_dict is None:
+        if self.solids is None:
             return
-        nrows = len(self.solids_dict)
+        nrows = len(self.solids)
         table.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem(str(val))
             set_item_noedit(item)
             return item
-        for (row,(k,v)) in enumerate(self.solids_dict.items()):
+        for (row,(k,v)) in enumerate(self.solids.items()):
             table.setItem(row, 0, make_item(k))
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
 
     def solids_delete(self):
+        return
         tw = self.ui.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
             return
         name = tw.item(row, 0).text()
-        del self.solids_dict[name]
+        del self.solids[name]
         tw.removeRow(row)
         tw.clearSelection()
 
