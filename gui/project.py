@@ -306,7 +306,7 @@ class Keyword(object):
         self.args = args
 
         if dtype is None:
-            self._checkdtype()
+            self._update_dtype()
 
     def __deepcopy__(self, memo):
         return Keyword(copy.copy(self.key),
@@ -356,6 +356,8 @@ class Keyword(object):
             return str(self.value)
         elif self.dtype == int:
             return str(self.value)
+        elif self.dtype == bool:
+            return '.True.' if self.value else '.False.'
         elif self.dtype == str and self.value is not None:
             if isinstance(self.value, str): # unicode?
                 self.value = self.value.replace('"', '').replace("'", '')
@@ -367,9 +369,9 @@ class Keyword(object):
         else:
             return str(self.value)
 
-    def _checkdtype(self):
-        # Check data type
-        for dtype in [float, int, bool, FloatExp, Equation]:
+    def _update_dtype(self):
+        # Check data type & modify if needed
+        for dtype in (bool, float, int, FloatExp, Equation):
             if isinstance(self.value, dtype):
                 self.dtype = dtype
                 break
@@ -408,7 +410,7 @@ class Keyword(object):
         else:
             self.value = value
 
-        self._checkdtype()
+        self._update_dtype()
 
     def lower(self):
         if isinstance(self.value, str): # unicode?
@@ -630,7 +632,8 @@ class Collection(list):
             if itm.ind == item:
                 return itm
 
-    def _checkind(self, ind):
+    def _check_ind(self, ind):
+        # Check index for valid range
         currentSet = [itm.ind for itm in self]
         if ind in currentSet:
             raise Exception("An index of {} already exists".format(ind))
@@ -663,7 +666,7 @@ class SpeciesCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None, phase='g'):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(Species(ind, phase))
         return self[ind]
 
@@ -695,7 +698,7 @@ class SpeciesEqCollection(Collection):
         self.indStart = 0
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(SpeciesEq(ind))
         return self[ind]
 
@@ -705,7 +708,7 @@ class SolidsCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(Solid(ind))
         return self[ind]
 
@@ -730,7 +733,7 @@ class LinearEquationSolverCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(LinearEquationSolver(ind))
         return self[ind]
 
@@ -745,7 +748,7 @@ class SPXCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(SPX(ind))
         return self[ind]
 
@@ -760,7 +763,7 @@ class VtkVarCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(VtkVar(ind))
         return self[ind]
 
@@ -776,7 +779,7 @@ class  VariableGridCollection(Collection):
         self.indStart = 0
 
     def new(self, ind=None):
-        ind = self._checkind(ind)
+        ind = self._check_ind(ind)
         self.append(VariableGridVar(ind))
         return self[ind]
 
