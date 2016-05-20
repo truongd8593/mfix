@@ -1,3 +1,6 @@
+# Import from the future for Python 2 and 3 compatability!
+from __future__ import print_function, absolute_import, unicode_literals, division
+
 import sys
 import os
 import unittest
@@ -6,7 +9,7 @@ import math
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(myPath, os.pardir, os.pardir))
 
-from project import Keyword, Equation, Project
+from project import Keyword, Equation, Project, FloatExp
 
 class TestEquation(unittest.TestCase):
 
@@ -14,41 +17,33 @@ class TestEquation(unittest.TestCase):
         eq = Equation('2+5')
         self.assertEqual(float(eq), 7.0)
 
-    def test_add_eq(self):
-        eq = Equation('2+5')
-        self.assertEqual(float(eq)+10, 17.0)
-
     def test_sub(self):
         eq = Equation('2-5')
         self.assertEqual(float(eq), -3.0)
-
-    def test_sub_eq(self):
-        eq = Equation('2-5')
-        self.assertEqual(float(eq) - 10, -13.0)
 
     def test_mul(self):
         eq = Equation('2*5')
         self.assertEqual(float(eq), 10.0)
 
-    def test_mul_eq(self):
-        eq = Equation('2*5')
-        self.assertEqual(float(eq) * 2, 20.0)
-
     def test_div(self):
         eq = Equation('10/2')
         self.assertEqual(float(eq), 5.0)
-
-    def test_div_eq(self):
-        eq = Equation('10/2')
-        self.assertAlmostEqual(float(eq) / 2.0, 5.0 / 2.0)
 
     def test_pow(self):
         eq = Equation('10**2')
         self.assertEqual(float(eq), 100)
 
-    def test_variable(self):
+    def test_pi(self):
         eq = Equation('10*pi / 15')
         self.assertAlmostEqual(float(eq), 10 * math.pi/15)
+
+    def test_e(self):
+        eq = Equation("5*e + pi")
+        self.assertAlmostEqual(float(eq), 5*math.e + math.pi)
+
+    def test_parens(self):
+        eq = Equation("(1) + (2+3) * (5 - (6+7)) / 137.0")
+        self.assertAlmostEqual(float(eq), 1 + (-40/137.0))
 
 
 class TestKeyword(unittest.TestCase):
@@ -122,253 +117,168 @@ class TestKeyword(unittest.TestCase):
         self.assertEqual('camelcase', kw.lower())
 
 
-class TestProject(unittest.TestCase):
-    """ test the project """
+class TestParser(unittest.TestCase):
 
     def setUp(self):
         self.project = Project()
 
+    def _test(self, line, expect):
+        # Helper function, factoring out common stuff in parser test
+        #  Tests for data type as well as value equality
+        results = list(self.project.parseKeywordLine(line))
+        self.assertEqual(len(results), len(expect))
+        for (r,e) in zip(results, expect):
+            self.assertEqual(len(r), len(e))
+            for (r1, e1) in zip(r, e):
+                self.assertEqual(type(r1), type(e1))
+                if isinstance(e1, Equation):
+                    self.assertEqual(float(e1), float(r1))
+                else:
+                    self.assertEqual(r1, e1)
+
+
     def test_parseKeywordLine_str(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 'value'"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual('value', result[2])
+        line = """key = 'value'"""
+        expect = [('key', [], 'value')]
+        self._test(line, expect)
 
     def test_parseKeywordLine_int(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 1"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(1, result[2])
+        line = "key = 1"
+        expect = [('key', [], 1)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_float(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 10.0"
-            ))
-
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(10.0, result[2])
+        line = "key = 10.0"
+        expect = [('key', [], 10.0)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_float_d(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 10.0 10d 10.d 10D 10.D 10.0D" ))
-
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10.0, result[2])
+        line = "key = 10.0 10d 10.d 10D 10.D 10.0D"
+        expect = [('key', [i+1], 10.0 if i==0 else FloatExp(10))
+                  for i in range(6)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_float_e(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 10.0 10e 10.e 10E 10.E 10.0E" ))
-
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10.0, result[2])
+        line = "key = 10.0 10e 10.e 10E 10.E 10.0E"
+        expect = [('key', [i+1], 10.0 if i==0 else FloatExp(10.0))
+                  for i in range(6)]
+        self._test(line, expect)
 
     def test_parseKeywordLineShorthandEq(self):
-        results = list(self.project.parseKeywordLine(
-            "key = @(2*5) 2*10 10 @(4+6) 10" ))
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10.0, float(result[2]))
+        line = "key = @(2*5) 2*10 10 @(4+6) 10"
+        expect = [('key', [i+1], (Equation("2*5") if i==0
+                                  else Equation("4+6") if i==4
+                                  else 10))
+                  for i in range(6)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_exp(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 1.0e10 1.d10 1.0e+10 1.d+10"))
-
-        self.assertEqual(len(results), 4)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(1.0E10, result[2])
+        line = "key = 1.0e10 1.d10 1.0e+10 1.d+10"
+        expect = [('key', [i+1], FloatExp(1e10)) for i in range(4)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_exp_neg(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 1.0e-10 1.d-10"))
-
-        self.assertEqual(len(results), 2)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(1.0E-10, result[2])
+        line = "key = 1.0e-10 1.d-10"
+        expect = [('key', [i+1], FloatExp(1e-10)) for i in range(2)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_bool(self):
-        results = list(self.project.parseKeywordLine(
-            "key = .T."
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(True, result[2])
+        line= "key = .T."
+        expect = [('key', [], True)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_arg(self):
-        results = list(self.project.parseKeywordLine(
-            "key(3) = .T."
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([3], result[1])
-        self.assertEqual(True, result[2])
+        line =  "key(3) = .T."
+        expect = [('key', [3], True)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_mul_arg(self):
-        results = list(self.project.parseKeywordLine(
-            "key(3,2) = .T."
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([3, 2], result[1])
-        self.assertEqual(True, result[2])
+        line = "key(3,2) = .T."
+        expect = [('key', [3,2], True)]
+        self._test(line, expect)
 
-    def test_parseKeywordLine_eq_multi(self):
-        results = list(self.project.parseKeywordLine(
-            "key = @(2*3)"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(2 * 3.0, float(result[2]))
-
+    def test_parseKeywordLine_eq_mul(self):
+        line = "key = @(2*3)"
+        expect = [('key', [], Equation('2*3'))]
+        self._test(line, expect)
 
     def test_parseKeywordLine_eq_mul_wspace(self):
-        results = list(self.project.parseKeywordLine(
-            "key = @( 2*3)"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(2 * 3.0, float(result[2]))
+        line = "key = @( 2*3)"
+        expect = [('key', [], Equation('2*3'))]
+        self._test(line, expect)
 
     def test_parseKeywordLine_eq_divide(self):
-        results = list(self.project.parseKeywordLine(
-            "key = @( 2/ 3)"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(2 / 3.0, float(result[2]))
+        line = "key = @( 2/ 3)"
+        expect = [('key', [], Equation('2/3'))]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_indices_colon(self):
+        # tests/dem/DEM01/mfix.dat
+        # FAILING
+        line = "SPECIES_EQ(0:1) = .F.  .F."
+        expect = [('species_eq', [i+1], False) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_indices_compound(self):
+        # benchmarks/tfm/ParallelBenchmarkCases/C_COM_06/mfix.dat
+        # FAILING
+        line =  "BC_hw_X_s(10:15,1,2) = 6*0.0    BC_C_X_s(10:15,1,2) = 6*0.0"
+        expect = [('bc_hw_x_s', [i,1,2], 0.0) for i in range(10, 16)] + \
+                 [('bc_c_x_s', [i,1,2], 0.0) for i in range(10, 16)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_eq_pi(self):
-        results = list(self.project.parseKeywordLine(
-            "key = @( 2*pi)"
-            ))
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual('key', result[0])
-        self.assertEqual([], result[1])
-        self.assertEqual(2 * math.pi, float(result[2]))
+        line= "key = @( 2*pi)"
+        expect = [('key', [], Equation('2*pi'))]
+        self._test(line, expect)
 
     def test_parseKeywordLine_shorthand_str(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 4*'ISIS'"
-            ))
-        self.assertEqual(len(results), 4)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual('ISIS', result[2])
+        line = "key = 4*'ISIS'"
+        expect = [('key', [i+1], 'ISIS') for i in range(4)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_shorthand_float(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 4*6.7"
-            ))
-        self.assertEqual(len(results), 4)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(6.7, result[2])
+        line = "key = 4*6.7"
+        expect = [('key', [i+1], 6.7) for i in range(4)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_shorthand_float_other_val(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 4*6.7 6.7 6.7"
-            ))
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(6.7, result[2])
+        line = "key = 4*6.7 6.7 6.7"
+        expect = [('key', [i+1], 6.7) for i in range(6)]
+        self._test(line, expect)
 
     def test_parseKeywordLine_shorthand_eq(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 4*6.7 @(1*6.7)"
-            ))
-
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(6.7, float(result[2]))
+        line =  "key = 4*6.7 @(1*6.7)"
+        expect = [('key', [i+1], 6.7) for i in range(4)] + [('key', [5], Equation('1*6.7'))]
+        self._test(line, expect)
 
     def test_parseKeywordLine_shorthand_eq_2(self):
-        results = list(self.project.parseKeywordLine(
-            "key =  @(2*5) 10 2*10 @(2*5) @(2*5)"
-            ))
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10, float(result[2]))
+        line = "key =  @(2*5) 10 2*10 @(2*5) @(2*5)"
+        expect = [('key', [i+1], 10 if 0<i<4 else Equation("2*5"))
+                  for i in range(6)]
+        self._test(line, expect)
+
 
     def test_parseKeywordLine_shorthand_eq_3(self):
-        results = list(self.project.parseKeywordLine(
-            "key =  @(5+ 5) 10 2*10 @(5+5) @ (5 + 5) "
-            ))
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10, float(result[2]))
+        line = "key =  @(5+ 5) 10 2*10 @(5+5) @ (5 + 5) "
+        expect = [('key', [i+1], 10 if 0<i<4 else Equation("5+5"))
+                  for i in range(6)]
+        self._test(line, expect)
 
 
     def test_parseKeywordLine_shorthand_bad(self):
-        self.skipTest("what does 10*10*10 expand to?")
-        results = list(self.project.parseKeywordLine(
-            "key =  10*10*10"
-            ))
-        self.assertEqual(len(results), 6)
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(10, float(result[2]))
+        self.skipTest("should raise an error on bad input") #
+        line = "key =  10*10*10"
 
     def test_parseKeywordLine_shorthand_eq_exp(self):
-        results = list(self.project.parseKeywordLine(
-            "key = 4*6.7 @(1*6.7)"
-            ))
+        line = "key = 4*6.7 @(1*6.7)"
+        expect = [('key', [i+1], 6.7) for i in range(4)] + [('key', [5], Equation("1*6.7"))]
+        self._test(line, expect)
 
-        for i, result in enumerate(results):
-            self.assertEqual('key', result[0])
-            self.assertEqual([i + 1], result[1])
-            self.assertEqual(6.7, float(result[2]))
-
-    def test_parseKeywordLine_twokeys(self):
-        results = list(self.project.parseKeywordLine(
-            "key0 = 10 key1 = 10"
-            ))
-
-        for i, result in enumerate(results):
-            self.assertEqual('key' + str(i), result[0])
-            self.assertEqual([], result[1])
-            self.assertEqual(10, result[2])
+    def test_parseKeywordLine_two_keys(self):
+        line = "key0 = 10 key1 = 11"
+        expect = [('key0', [], 10), ('key1', [], 11)]
+        self._test(line, expect)
 
     def test_parsemfixdat_keyvalue(self):
         testString = """
