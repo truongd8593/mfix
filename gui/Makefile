@@ -1,4 +1,4 @@
-.PHONY:  test nose
+.PHONY:  test test-gui
 
 UIFILES := $(wildcard uifiles/*ui)
 PY_UIFILES := $(patsubst %.ui,%.py,$(UIFILES))
@@ -13,10 +13,10 @@ clean:
 	rm -f ${PY_UIFILES}
 	find . -name \*.pyc -delete
 
-test:   all
-	python -m unittest discover
-
-nose:   all
+test: all
 	(Xvfb :99 &); \
 	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v; \
 	killall Xvfb
+
+test-gui: all
+	nosetests -v
