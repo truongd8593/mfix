@@ -413,10 +413,7 @@ class Keyword(object):
         self._update_dtype()
 
     def lower(self):
-        if isinstance(self.value, str): # unicode?
-            return self.value.lower()
-        else:
-            raise TypeError('Keyword is not a str')
+        return self.value.lower()
 
 
 class Base(object):
