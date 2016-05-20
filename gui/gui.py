@@ -90,6 +90,7 @@ if PRECOMPILE_UI:
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
         from uifiles.model_setup import Ui_model_setup
+        from uifiles.solids import Ui_solids
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
@@ -148,7 +149,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                 return Widget()
 
             for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
-                        Ui_model_setup, Ui_numerics, Ui_output, Ui_vtk,
+                        Ui_model_setup, Ui_solids, Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
                     widget = RegionsWidget()
@@ -165,7 +166,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
 
             for name in ('general', 'geometry', 'mesh', 'regions',
-                         'model_setup', 'numerics', 'output', 'vtk',
+                         'model_setup', 'solids', 'numerics', 'output', 'vtk',
                          'monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget()
@@ -362,7 +363,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
-        self.solids = OrderedDict()
+        self.solids_dict = OrderedDict()
         self.current_solid_index = None
 
         # Update run options
@@ -741,15 +742,23 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
 
         # Solid phase
-        tb = ui.toolbutton_solids_add
+        tb = ui.solids.toolbutton_solids_add
         tb.clicked.connect(self.solids_add)
-        tb = ui.toolbutton_solids_delete
+        tb = ui.solids.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-        tw = ui.tablewidget_solids
+        tw = ui.solids.tablewidget_solids
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        cb = ui.combobox_solids_model
+        cb = ui.solids.combobox_solids_model
         cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+
+        # connect solid tab btns
+        for i, btn in enumerate([self.ui.solids.pushbutton_material,
+                                 self.ui.solids.pushbutton_continuum,
+                                 self.ui.solids.pushbutton_discrete,
+                                 self.ui.solids.pushbutton_parcel]):
+            btn.pressed.connect(
+                make_callback(self.solids_change_tab, i, btn))
 
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
@@ -904,6 +913,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             current_index = 0
             for i in range(self.ui.stackedWidgetTaskPane.count()):
                 widget = self.ui.stackedWidgetTaskPane.widget(i)
+                print(text, str(widget.objectName()))
                 if text == str(widget.objectName()):
                     current_index = i
                     break
@@ -1712,7 +1722,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         n = 1
         while True:
             name = 'Solid %d' % n
-            if name not in self.solids:
+            if name not in self.solids_dict:
                 break
             n += 1
         return name
@@ -1728,7 +1738,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
         diameter = 0.0
         density = 0.0
-        self.solids[name] = {'model': model,
+        self.solids_dict[name] = {'model': model,
                              'diameter': diameter,
                              'density': density} # more?
         self.update_solids_table()
@@ -1751,7 +1761,7 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             sa.setEnabled(False)
             # Clear out all values?
         else:
-            data = self.solids[name]
+            data = self.solids_dict[name]
             sa.setEnabled(True)
             ui.lineedit_solids_name.setText(name)
             self.setup_combobox_solids_model()
@@ -1768,15 +1778,15 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
                    else hv.Stretch)
 
         table.clearContents()
-        if self.solids is None:
+        if self.solids_dict is None:
             return
-        nrows = len(self.solids)
+        nrows = len(self.solids_dict)
         table.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem(str(val))
             set_item_noedit(item)
             return item
-        for (row,(k,v)) in enumerate(self.solids.items()):
+        for (row,(k,v)) in enumerate(self.solids_dict.items()):
             table.setItem(row, 0, make_item(k))
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
@@ -1787,9 +1797,21 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
         if row is None: # No selection
             return
         name = tw.item(row, 0).text()
-        del self.solids[name]
+        del self.solids_dict[name]
         tw.removeRow(row)
         tw.clearSelection()
+
+    def solids_change_tab(self, tabnum, btn):
+        """ switch mesh stacked widget based on selected """
+        self.animate_stacked_widget(
+            self.ui.solids.stackedwidget_solids,
+            self.ui.solids.stackedwidget_solids.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=self.ui.solids.line_solids,
+            to_btn=btn,
+            btn_layout=self.ui.solids.gridlayout_solid_tab_btns,
+            )
 
 
 
