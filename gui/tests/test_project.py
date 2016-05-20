@@ -122,7 +122,7 @@ class TestParser(unittest.TestCase):
     def setUp(self):
         self.project = Project()
 
-    def _test(self, line, expect):
+    def _test(self, line, expect=None):
         # Helper function, factoring out common stuff in parser test
         #  Tests for data type as well as value equality
         results = list(self.project.parseKeywordLine(line))
@@ -192,10 +192,55 @@ class TestParser(unittest.TestCase):
         expect = [('key', [3], True)]
         self._test(line, expect)
 
-    def test_parseKeywordLine_mul_arg(self):
+    def test_parseKeywordLine_comma_args(self):
         line = "key(3,2) = .T."
         expect = [('key', [3,2], True)]
         self._test(line, expect)
+
+    def test_parseKeywordLine_colon_args(self):
+        line = "key(1:2) = .F. .T."
+        expect = [('key', [i+1], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_complex_args(self):
+        line = "key(1:2,55) = .F. .T."
+        expect = [('key', [i+1,55], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_complex_args_wspace(self):
+        line = "key( 1 :2, 55) = .F. .T."
+        expect = [('key', [i+1,55], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_complex_args_wspace2(self):
+        line = "key  ( 1 :2 , 55 ) = .F. .T."
+        expect = [('key', [i+1,55], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_complex_args2(self):
+        line = "key(1,1:2,5) = .F. .T."
+        expect = [('key', [1, i+1, 5], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_complex_args3(self):
+        line = "key(1,5,1:2) = .F. .T."
+        expect = [('key', [1, 5, i+1], bool(i)) for i in range(2)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_two_colons(self):
+        line = "key(1,1:2,1:2) = .F. .T."
+        with self.assertRaises(ValueError):
+            self._test(line)
+
+    def test_parseKeywordLine_colon_args_mismatch(self):
+        line = "key(1:2) = .F. .T. .F."
+        with self.assertRaises(ValueError):
+            self._test(line, None)
+
+    def test_parseKeywordLine_colon_args_mismatch2(self):
+        line = "key(1:6) = .F. .T."
+        with self.assertRaises(ValueError):
+            self._test(line, None)
 
     def test_parseKeywordLine_eq_mul(self):
         line = "key = @(2*3)"
@@ -214,18 +259,23 @@ class TestParser(unittest.TestCase):
 
     def test_parseKeywordLine_indices_colon(self):
         # tests/dem/DEM01/mfix.dat
-        # FAILING
         line = "SPECIES_EQ(0:1) = .F.  .F."
-        expect = [('species_eq', [i+1], False) for i in range(2)]
+        expect = [('species_eq', [i], False) for i in range(2)]
         self._test(line, expect)
 
-    def test_parseKeywordLine_indices_compound(self):
+    def test_parseKeywordLine_indices_compound1(self):
+        # benchmarks/tfm/ParallelBenchmarkCases/C_COM_06/mfix.dat, simplfiied
+        line =  "BC_hw_X_s(10:15,1,2) = 6*0.0"
+        expect = [('bc_hw_x_s', [i,1,2], 0.0) for i in range(10, 16)]
+        self._test(line, expect)
+
+    def test_parseKeywordLine_indices_compound2(self):
         # benchmarks/tfm/ParallelBenchmarkCases/C_COM_06/mfix.dat
-        # FAILING
         line =  "BC_hw_X_s(10:15,1,2) = 6*0.0    BC_C_X_s(10:15,1,2) = 6*0.0"
         expect = [('bc_hw_x_s', [i,1,2], 0.0) for i in range(10, 16)] + \
                  [('bc_c_x_s', [i,1,2], 0.0) for i in range(10, 16)]
         self._test(line, expect)
+
 
     def test_parseKeywordLine_eq_pi(self):
         line= "key = @( 2*pi)"
@@ -258,13 +308,11 @@ class TestParser(unittest.TestCase):
                   for i in range(6)]
         self._test(line, expect)
 
-
     def test_parseKeywordLine_shorthand_eq_3(self):
         line = "key =  @(5+ 5) 10 2*10 @(5+5) @ (5 + 5) "
         expect = [('key', [i+1], 10 if 0<i<4 else Equation("5+5"))
                   for i in range(6)]
         self._test(line, expect)
-
 
     def test_parseKeywordLine_shorthand_bad(self):
         self.skipTest("should raise an error on bad input") #
