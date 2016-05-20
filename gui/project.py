@@ -42,7 +42,6 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import shlex
 import re
 import math
-import copy
 import warnings
 from collections import OrderedDict
 try:
@@ -307,14 +306,6 @@ class Keyword(object):
 
         if dtype is None:
             self._update_dtype()
-
-    def __deepcopy__(self, memo):
-        return Keyword(copy.copy(self.key),
-                       copy.copy(self.value),
-                       comment=copy.copy(self.comment),
-                       dtype=copy.copy(self.dtype),
-                       args=copy.copy(self.args),
-                       )
 
     def __float__(self):
         try:
@@ -866,7 +857,8 @@ class Project(object):
         fname can be a StringIO instance, path, or a plain string.
         Saves the results in self.mfixDatKeyDict dictionary.
         """
-        # TODO. write a real tokenizer and grammar.
+        # TODO. move this to another module
+        #  maybe write a real tokenizer and grammar.
         if fname:
             self.dat_file = fname
         assert self.dat_file is not None
