@@ -918,7 +918,7 @@ class MfixGui(QtWidgets.QMainWindow):
             current_index = 0
             for i in range(self.ui.stackedWidgetTaskPane.count()):
                 widget = self.ui.stackedWidgetTaskPane.widget(i)
-                print(text, str(widget.objectName()))
+                #print(text, str(widget.objectName()))
                 if text == str(widget.objectName()):
                     current_index = i
                     break
@@ -1548,7 +1548,9 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
-        self.enable_energy_eq(self.project['energy_eq'])
+        #    .... is there a way to verify that 'energy_eq' is boolean?
+        #    should that get set from keyword doc?
+        self.enable_energy_eq(bool(self.project.get_value('energy_eq')))
 
         # cgw - lots more model setup todo here.  Should we do this here or
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
