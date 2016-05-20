@@ -162,8 +162,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
 
         else:  # not precompiled
             uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
-            self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'), self)
-
+            self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'))
+            self.setCentralWidget(self.ui)
             for name in ('general', 'geometry', 'mesh', 'regions',
                          'model_setup', 'numerics', 'output', 'vtk',
                          'monitors', 'run'):
