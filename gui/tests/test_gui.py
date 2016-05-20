@@ -105,7 +105,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_run(self):
         self.skipTest("FIXME, where did the run button go?")
-        if not self.find_exes():
+        if not self.find_exes(): # We should be able to mock this for testing
             self.skipTest("Only valid when executables are present")
 
         # before running
