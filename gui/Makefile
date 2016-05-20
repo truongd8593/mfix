@@ -11,6 +11,7 @@ all: ${PY_UIFILES}
 
 clean:
 	rm -f ${PY_UIFILES}
+	find . -name \*.pyc -delete
 
 test:   all
 	python -m unittest discover
