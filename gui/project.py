@@ -1002,7 +1002,7 @@ class Project(object):
                 reactionSection = False
             elif 'thermo data' in line.lower():
                 thermoSection = True
-                self.thermo_data.append(line)
+                # Don't save 'THERMO SECTION' line - we'll regenerate it.
             elif thermoSection:
                 self.thermo_data.append(line)
             elif not reactionSection and not thermoSection:
@@ -1359,6 +1359,7 @@ class Project(object):
 
         if self.thermo_data:
             yield '\n'
+            yield 'THERMO DATA\n'
         for line in self.thermo_data:
             yield line+'\n'
 
