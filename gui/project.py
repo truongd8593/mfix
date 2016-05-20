@@ -13,6 +13,14 @@ multiple arguments.
 
 Keyword objects have a 'key' (the string) and a 'value'.
 
+There are three paths to the Keyword objects in the Project
+dict, list, and then the collections
+
+ list for preserving the order for writing
+ dict for programmatically changing keywords
+ collections for user interaction with the keyowrds
+
+
 History
 -------
 
