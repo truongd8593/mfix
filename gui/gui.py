@@ -104,7 +104,7 @@ if PRECOMPILE_UI:
 # --- Main Gui ---
 
 
-class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
+class MfixGui(QtWidgets.QMainWindow):
 
     """Main window class handling all gui interactions"""
 
@@ -164,6 +164,8 @@ class MfixGui(QtWidgets.QMainWindow): #, Ui_MainWindow):
             uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
             self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'))
             self.setCentralWidget(self.ui)
+            assert self is not self.ui
+
             for name in ('general', 'geometry', 'mesh', 'regions',
                          'model_setup', 'numerics', 'output', 'vtk',
                          'monitors', 'run'):
