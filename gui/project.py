@@ -252,23 +252,24 @@ def format_key_with_args(key, args=None):
 #  can't handle things like matching parens and quotes.
 
 re_keyValue = re.compile(r"""
-    (\w+)                           # Alphanumeric, key name
-    (?:\(([\d, ]+)\))?              # Indices (NUM,) non-capturing group
-    \s*                             # Possible whitespace
-    =                               # Equal sign
-    \s*                             # Possible whitespace
-    (.*?)                           # Value
-    (?=(!|$|\w+(\([\d, ]+\))?\s*=)) # comment ?  further keywords ? lookahead
+    (\w+)                            # Alphanumeric, key name
+    \s*                              # possible whitespace
+    (?:\(([\d,: ]+)\))?              # Indices, possibly with : and , non-capturing group
+    \s*                              # Possible whitespace
+    =                                # Equal sign
+    \s*                              # Possible whitespace
+    (.*?)                            # Value
+    (?=(!|$|\w+(\([\d,: ]+\))?\s*=)) # comment ?  further keywords ? lookahead
     """, re.VERBOSE|re.IGNORECASE)
 
 re_float_exp = re.compile(r"""
-    ^                              # Beginning of expr
-    [+-]?                          # possible sign
-    [\d]+                          # digits
-    (\.\d*)?                       # optional decimal sign and more digits
-    [ED]                           # E or D
-    ([+-]?[0-9]+)?                 # exponent, with 'd' or 'e' (not required)
-    $                              # end
+    ^                                # Beginning of expr
+    [+-]?                            # possible sign
+    [\d]+                            # digits
+    (\.\d*)?                         # optional decimal sign and more digits
+    [ED]                             # E or D
+    ([+-]?[0-9]+)?                   # exponent, with 'd' or 'e' (not required)
+    $                                # end
     """, re.VERBOSE|re.IGNORECASE)
 
 re_float = re.compile(r"""
@@ -891,8 +892,9 @@ class Project(object):
                 # match could be: [keyword, args, value,
                 #                   nextKeywordInLine, something]
 
-                # convert to list (why?)
+                # convert to list so we can reassign
                 match = list(match)
+
                 # keyword
                 key = match[0].lower().strip()
 
@@ -900,8 +902,8 @@ class Project(object):
                 val_string = match[2].strip()
 
                 # remove spaces from equations: @( 2*pi)
-                # Doing this with regex won't work because it can't detect
-                # balanced parens
+                # (doing this with regex won't work because it can't detect
+                # balanced parens)
                 val_string = remove_spaces_from_equations(val_string)
 
                 # look for shorthand [count]*[value] and expand.
@@ -931,23 +933,51 @@ class Project(object):
                                         self.keyword_doc[key]['args'].values())
 
                 # clean up arguments
+                args = []
+                colon_arg = None # if one of the args is of the form lo:hi
+                colon_lo = None
+                colon_hi = None
                 if match[1]:
-                    args = [int(arg) for arg in match[1].split(',')]
-                else:
-                    args = []
+                    for (i,arg) in enumerate(match[1].split(',')):
+                        if ':' in arg:
+                            if colon_arg is not None: # Only one index can have :
+                                raise ValueError(match[1])
+                            colon_arg = i
+                            colon_lo, colon_hi = map(int,
+                                                     arg.split(':'))
+                            args.append(colon_lo)
+                        else:
+                            args.append(int(arg))
+
+                numVals = len(cleanVals)
+
+                if colon_arg is not None:
+                    expect = 1 + colon_hi - colon_lo
+                    if numVals != expect:
+                        raise ValueError('Expected %s values, got %s' % (expect, numVals))
 
                 # If multiple values, split apart into multiple key, args, values
-                if len(cleanVals) > 1:
+
+                if numVals > 1:
                     keywordArgList = []
 
-                    numVals = len(cleanVals)
-
                     if numVals > 1:
-                        if args:
-                            for val in range(0, numVals):
-                                keywordArgList.append([val+args[0]]+args[1:])
+                        if colon_arg is not None:
+                            for n in range(colon_lo, colon_hi+1):
+                                keywordArgList.append(
+                                    args[:colon_arg] + [n] + args[colon_arg+1:])
+
+                        elif args: # This distributes over the first index - is that
+                                    # correct?
+                                    # a(3,4) = 11*5 sets a(3,4) through a(13,4) = 5
+                                    # instead of a(3,4) through a(3,14)
+
+                            for n in range(args[0], args[0]+numVals):
+                                keywordArgList.append([n] + args[1:])
                         else:
-                            # hack for species eq (why?)
+                            # hack for species eq
+                            # FIXME - do this for more keywords which start
+                            # at 0, like momentum_eq
                             start = 0 if key == 'species_eq' else 1
                             for val in range(start, numVals+1):
                                 keywordArgList.append([val]+args[1:])
