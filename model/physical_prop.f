@@ -166,7 +166,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) call read_database0(IER)
+      IF(.NOT.database_read) call read_database0
 
 ! User-defined function
       IF(USR_ROg) THEN
@@ -352,7 +352,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0(IER)
+      IF(.NOT.database_read) CALL read_database0
 
 ! User defined function
       IF(USR_CPg) THEN
@@ -456,7 +456,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_solids_common_all but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0(IER)
+      IF(.NOT.database_read) CALL read_database0
 
 ! User defined function
       IF(USR_CPs(M)) THEN
@@ -953,4 +953,3 @@
  1001 FORMAT( 4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
 
       END SUBROUTINE CPsErr_LOG
-

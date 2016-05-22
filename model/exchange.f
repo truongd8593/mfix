@@ -23,7 +23,6 @@
       use run, only: granular_energy
       use run, only: kt_type_enum, ia_2005
 
-      use discretelement, only: DES_EXPLICITLY_COUPLED
       use discretelement, only: DES_CONTINUUM_COUPLED
       use discretelement, only: DES_CONTINUUM_HYBRID
 
@@ -49,7 +48,7 @@
 ! calculate solilds-solids drag based on relative velocity differences
          DO M = 1, SMAX
             DO L = 1, M - 1
-               IF (DRAGCOEF(L,M)) CALL DRAG_SS (L, M, IER)
+               IF (DRAGCOEF(L,M)) CALL DRAG_SS (L, M)
             ENDDO
          ENDDO
       ENDIF
