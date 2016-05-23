@@ -281,7 +281,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-        #self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_reset.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -295,8 +295,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # open/save/new project
         self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
         self.ui.toolbutton_save.clicked.connect(self.save_project)
-        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as_action)
-        self.ui.toolbutton_export.clicked.connect(self.export_project)
+        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as)
+        self.ui.toolbutton_export.clicked.connect(self.handle_export)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -307,12 +307,11 @@ class MfixGui(QtWidgets.QMainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.run.run_mfix_button.clicked.connect(self.run_mfix)
+        self.ui.run.run_mfix_button.clicked.connect(self.handle_run_stop_action)
         self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
-        #self.ui.run.stop_mfix_button.clicked.connect(self.stop_mfix)
-        #self.ui.run.restart_mfix_button.clicked.connect(self.restart_mfix)
+        self.ui.run.reset_mfix_button.clicked.connect(self.remove_output_files)
         self.ui.toolbutton_run.clicked.connect(self.handle_run_stop_action)
-        #self.ui.toolbutton_restart.clicked.connect(self.restart_mfix)
+        self.ui.toolbutton_reset.clicked.connect(self.remove_output_files)
         self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -422,43 +421,38 @@ class MfixGui(QtWidgets.QMainWindow):
         mfix_available = bool(output)
 
         self.ui.run.mfix_executables.setEnabled(not_running)
-        #self.ui.run.restart_mfix_button.setEnabled(not_running)
         self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
-        #self.ui.run.stop_mfix_button.setEnabled(running)
-        #self.ui.toolbutton_restart.setEnabled(not_running)
         self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running and self.dmp_enabled)
 
-        self.ui.run.run_mfix_button.setEnabled(not_running and mfix_available)
         self.ui.run.mfix_executables.setVisible(mfix_available)
         self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
 
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        #self.ui.toolbutton_restart.setEnabled(res_file_exists and not_running)
+        self.ui.toolbutton_reset.setEnabled(res_file_exists and not_running)
+        self.ui.run.reset_mfix_button.setEnabled(res_file_exists and not_running)
 
-        #self.ui.toolbutton_resume.setEnabled(res_file_exists)
         if res_file_exists:
-            self.ui.run.run_mfix_button.setText("Resume")
-            if not running:
+            if running:
+                self.ui.run.run_mfix_button.setText("Stop")
+                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+                self.ui.toolbutton_run.setText("Stop")
+            else:
+                self.ui.run.run_mfix_button.setText("Resume")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Resume")
-            else:
+        else:
+            if running:
+                self.ui.run.run_mfix_button.setText("Stop")
                 self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
                 self.ui.toolbutton_run.setText("Stop")
-        else:
-            if not running:
+            else:
+                self.ui.run.run_mfix_button.setText("Run")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Run")
-            else:
-                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
-                self.ui.toolbutton_run.setText("Stop")
-
-        #if running:
-        #    self.ui.toolbutton_run.setText("Stop")
-        #    self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
 
 
     def print_welcome(self):
@@ -1160,32 +1154,34 @@ class MfixGui(QtWidgets.QMainWindow):
         :type output_files: list
         :return: True for success, False for user cancel"""
 
-        if output_files:
-            if not message_text:
-                message_text = 'Deleting output files %s' % '\n'.join(output_files)
-            confirm = self.message(title='Warning',
+        if not output_files:
+            output_files = self.monitor_thread.get_outputs()
+        if not message_text:
+            message_text = 'Deleting output files %s' % '\n'.join(output_files)
+        confirm = self.message(title='Warning',
                          icon='warning',
                          text=message_text,
                          buttons=['ok','cancel'],
                          default='cancel',
                          )
-            if confirm != 'ok':
-                return False
+        if confirm != 'ok':
+            return False
 
-            for path in output_files:
-                log.debug('Deleting path: '+path)
-                try:
-                    os.remove(path)
-                except OSError as e:
-                    msg = 'Cannot delete %s: %s' % (path, e.strerror)
-                    self.print_internal("Warning: %s" % msg, color='red')
-                    log.warn(msg)
-                    self.message(title='Warning',
+        for path in output_files:
+            log.debug('Deleting file %s' % path)
+            try:
+                os.remove(path)
+            except OSError as e:
+                msg = 'Cannot delete %s: %s' % (path, e.strerror)
+                self.print_internal("Warning: %s" % msg, color='red')
+                log.warn(msg)
+                self.message(title='Warning',
                                  icon='warning',
                                  text=msg,
                                  buttons=['ok'],
                                  default=['ok'])
-            return True
+                break
+        return True
 
     def handle_run_stop_action(self):
         if self.run_thread.mfixproc is None:
@@ -1313,27 +1309,25 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
-    def save_project_as(self, filename):
-        """ Save project"""
-        # change project.run_name to user supplied
-        project_file_basename = os.path.basename(project_file)
-        run_name = os.path.splitext(project_file_basename)[0]
-        self.project.run_name.value = run_name
-        self.save_project(project_file)
-        self.open_project(filename)
 
     def export_project(self):
+        # TODO: combine export_project and save_as
         if self.monitor_thread.get_outputs(["*.SP?"]):
             # TODO: copy SPx files - prompt user for confirmation
             pass
         output_files = self.monitor_thread.get_outputs(["*.RES", "*.STL"])
-        new_project_file = self.handle_save_as_action()
-        new_project_dir = os.path.dirname(new_project_file)
+        project_file = self.get_save_filename()
+        if not project_file:
+            return
+        project_dir = os.path.dirname(project_file)
+        if not self.check_writable(project_dir):
+            self.save_as()
+            return
         for fn in output_files:
             #copy into new_project_directory
             shutil.copyfile(
-                    fn, os.path.join(new_project_dir, os.path.basename(fn)))
-        self.save_project(new_project_file)
+                    fn, os.path.join(project_dir, os.path.basename(fn)))
+        self.save_project(project_file)
 
     def save_project(self, filename=False):
         """save project, optionally as a new project.
@@ -1345,47 +1339,64 @@ class MfixGui(QtWidgets.QMainWindow):
         if filename:
             project_dir = os.path.dirname(filename)
             project_file = filename
-            if not self.check_writable(project_dir):
-                self.handle_save_as_action()
-                return
         else:
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.writeDatFile(project_file) # XXX
-        self.setWindowTitle('MFIX - %s' % project_file)
+        #self.setWindowTitle('MFIX - %s' % project_file)
+
+    def save_as(self):
+        """Save As user dialog
+        updates project.run_name with user-supplied data
+        opens the new project"""
+        # TODO: combine export_project and save_as
+        project_file = self.get_save_filename()
+        if not project_file:
+            return
+        project_dir = os.path.dirname(project_file)
+        new_project_basename = os.path.basename(project_file)
+        run_name = os.path.splitext(new_project_basename)[0]
+        self.project.run_name.value = run_name
+
+        if not self.check_writable(project_dir):
+            self.save_as()
+            return
+        self.save_project(project_file)
+        self.open_project(project_file)
 
     def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName for unit tests to override
-
-        :return: Filename (including path)"""
-
+        :return: filename
+        :rtype: str"""
         if not dialog_message:
             dialog_message = 'Save Project As'
-
-        return QtWidgets.QFileDialog.getSaveFileName(
+        filename = QtWidgets.QFileDialog.getSaveFileName(
                             self,
                             dialog_message,
                             os.path.join(
                                 self.get_project_dir(),
                                 self.project.run_name.value + ".mfx"),
                             "*.mfx")
-
-    def handle_save_as_action(self):
-        """Save As user dialog
-        updates project.run_name with user-supplied data
-        opens the new project"""
-
-        project_file = self.get_save_filename()
-
-        # qt4/qt5 compat hack
-        if type(project_file) == tuple:
-            project_file = project_file[0]
         # User pressed "cancel"
-        if not project_file:
+        if not filename:
             return
-        return project_file
+        # qt4/qt5 compat hack
+        #if type(filename) == tuple:
+        if PYQT5:
+            return filename[0]
+        else:
+            return filename
+
+    def handle_save(self):
+        return self.save_project()
+
+    def handle_export(self):
+        return self.export_project()
+
+    def handle_save_as(self):
+        return self.save_as()
 
     def unsaved(self):
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
