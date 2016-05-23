@@ -13,9 +13,9 @@ with_exe:
   stage: test
   script:
     - pushd gui
-    - ../configure_mfix --python && make -j mfix ui
+    - ../configure_mfix --python && make -j mfix
     - popd
-    - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
+    - make test
   only:
     - branches
   tags:
@@ -27,11 +27,11 @@ without_exe:
   stage: test
   script:
     - pushd gui
-    - ../configure_mfix --python && make -j ui
+    - ../configure_mfix --python && make -j
     - popd
     - find . -type f -name mfix -exec rm -f {} \;
     - find . -type f -name pymfix -exec rm -f {} \;
-    - MFIX_NO_VTK=yes python -m unittest discover -s gui -v
+    - make test
   only:
     - branches
   tags:
