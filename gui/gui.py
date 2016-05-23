@@ -665,8 +665,8 @@ class MfixGui(QtWidgets.QMainWindow):
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
-        return #tmp
-        cb = self.ui.combobox_solids_model
+
+        cb = self.ui.solids.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
         enabled = [False, False, False]
@@ -1372,7 +1372,7 @@ class MfixGui(QtWidgets.QMainWindow):
         project_dir = os.path.dirname(project_file)
         new_project_basename = os.path.basename(project_file)
         run_name = os.path.splitext(new_project_basename)[0]
-        self.project.run_name.value = run_name
+        self.project.run_name.value = run_name # FIXME don't assign to keyword.value
 
         # FIXME this recursive call is a bit odd
         if not self.check_writable(project_dir):
@@ -1385,9 +1385,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.clear_unsaved_flag()
 
     def get_save_filename(self, dialog_message=None):
-        """wrapper for call to getSaveFileName for unit tests to override
-        :return: filename
-        :rtype: str"""
+        """wrapper for call to getSaveFileName, override in unit tests"""
+
         if not dialog_message:
             dialog_message = 'Save Project As'
         filename = QtWidgets.QFileDialog.getSaveFileName(
@@ -1470,7 +1469,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.open_project(project_file)
 
     def get_open_filename(self):
-        """wrapper for call to getSaveFileName for unit tests to override"""
+        """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
         return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
