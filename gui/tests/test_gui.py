@@ -12,7 +12,6 @@ import fnmatch
 import glob
 import os
 import time
-import unittest
 #from xvfbwrapper import Xvfb
 
 from qtpy.QtTest import QTest
@@ -65,11 +64,20 @@ class MfixGuiTests(TestQApplication):
                     pass
 
         TestQApplication.setUp(self)
+        def get_project_file(cls):
+            return getattr(cls, 'project_file', None)
+
+        def set_project_file(cls, value):
+            cls.project_file = value
+
+        gui.MfixGui.get_project_file = get_project_file
+        gui.MfixGui.set_project_file = set_project_file
+
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
 
-        self.mfix.get_open_filename = lambda : mfix_dat
+        self.mfix.get_open_filename = lambda: mfix_dat
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_open, QtCore.Qt.LeftButton)
 
@@ -95,7 +103,7 @@ class MfixGuiTests(TestQApplication):
         newname = 'DES_FB1_new_name'
         newpath = os.path.join(self.rundir, newname)
 
-        self.mfix.get_save_filename = lambda : newpath
+        self.mfix.get_save_filename = lambda: newpath
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
 

@@ -106,12 +106,12 @@ if PRECOMPILE_UI:
 
 
 class MfixGui(QtWidgets.QMainWindow):
-
     """Main window class handling all gui interactions"""
+
+    settings = QSettings('MFIX', 'MFIX')
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
-        self.settings = QSettings('MFIX', 'MFIX')
         if project_file:
             self.set_project_file(project_file)
 
@@ -853,13 +853,15 @@ class MfixGui(QtWidgets.QMainWindow):
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
         self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
 
-    def get_project_file(self):
+    @classmethod
+    def get_project_file(cls):
         """get the project filename, including full path"""
-        last = self.settings.value('project_file')
+        last = cls.settings.value('project_file')
         return last if last else None
 
-    def set_project_file(self, value):
-        self.settings.setValue('project_file', value)
+    @classmethod
+    def set_project_file(cls, value):
+        cls.settings.setValue('project_file', value)
 
     def get_project_dir(self):
         """get the current project directory"""
