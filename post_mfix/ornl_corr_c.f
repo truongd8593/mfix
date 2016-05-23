@@ -103,7 +103,7 @@
       integer :: minlag , maxlag , lagstep
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
 
-      real    :: time_series(*) , time_series2(*)
+      real(kind=8) :: time_series(*) , time_series2(*)
 
       real(kind=8), allocatable    :: ccf(:,:)
       integer, allocatable   :: lags(:)
