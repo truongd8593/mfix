@@ -16,7 +16,7 @@ clean:
 test: all
 	(Xvfb :99 &); \
 	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v; \
-	killall Xvfb
+	pkill Xvfb
 
 test-gui: all
 	nosetests -v
