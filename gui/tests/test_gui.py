@@ -109,7 +109,7 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are present")
 
         # before running
-        self.assertTrue(self.mfix.ui.run.mfix_executables.isVisibleTo(self.mfix.ui.run))
+        self.assertTrue(self.mfix.ui.run.spinbox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
         self.assertTrue(self.mfix.ui.run.run_mfix_button.isEnabled())
         self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())
@@ -198,7 +198,7 @@ class MfixGuiTests(TestQApplication):
         self.skipTest("FIXME, where did the run button go?")
         if self.find_exes():
             self.skipTest("Only valid when executables are not present")
-        self.assertFalse(self.mfix.ui.run.mfix_executables.isVisibleTo(self.mfix.ui.run))
+        self.assertFalse(self.mfix.ui.run.spinbox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertFalse(self.mfix.ui.run.resume_mfix_button.isEnabled())
         self.assertFalse(self.mfix.ui.run.run_mfix_button.isEnabled())
         self.assertFalse(self.mfix.ui.run.stop_mfix_button.isEnabled())

@@ -307,12 +307,12 @@ class MfixGui(QtWidgets.QMainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.run.run_mfix_button.clicked.connect(self.handle_run_stop_action)
-        self.ui.run.pause_mfix_button.clicked.connect(self.pause_mfix)
-        self.ui.run.reset_mfix_button.clicked.connect(self.remove_output_files)
-        self.ui.toolbutton_run.clicked.connect(self.handle_run_stop_action)
+        self.ui.run.button_run_mfix.clicked.connect(self.handle_run_stop)
+        self.ui.run.button_pause_mfix.clicked.connect(self.pause_mfix)
+        self.ui.run.button_reset_mfix.clicked.connect(self.remove_output_files)
+        self.ui.toolbutton_run.clicked.connect(self.handle_run_stop)
         self.ui.toolbutton_reset.clicked.connect(self.remove_output_files)
-        self.ui.run.mfix_executables.activated.connect(self.handle_select_executable)
+        self.ui.run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -409,48 +409,48 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.handle_select_executable()
 
-        current_selection = self.ui.run.mfix_executables.currentText()
-        self.ui.run.mfix_executables.clear()
+        current_selection = self.ui.run.spinbox_mfix_executables.currentText()
+        self.ui.run.spinbox_mfix_executables.clear()
         output = self.monitor_thread.get_executables()
         for executable in output:
-            self.ui.run.mfix_executables.addItem(executable)
+            self.ui.run.spinbox_mfix_executables.addItem(executable)
         if current_selection in self.monitor_thread.executables:
-            self.ui.run.mfix_executables.setEditText(current_selection)
+            self.ui.run.spinbox_mfix_executables.setEditText(current_selection)
         self.handle_select_executable()
 
         mfix_available = bool(output)
 
-        self.ui.run.mfix_executables.setEnabled(not_running)
-        self.ui.run.pause_mfix_button.setEnabled(running and self.pymfix_enabled)
+        self.ui.run.spinbox_mfix_executables.setEnabled(not_running)
+        self.ui.run.button_pause_mfix.setEnabled(running and self.pymfix_enabled)
         self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
         self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running and self.dmp_enabled)
         self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running and self.dmp_enabled)
 
-        self.ui.run.mfix_executables.setVisible(mfix_available)
-        self.ui.run.mfix_executables_warning.setVisible(not mfix_available)
+        self.ui.run.spinbox_mfix_executables.setVisible(mfix_available)
+        self.ui.run.spinbox_mfix_executables_warning.setVisible(not mfix_available)
 
         self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
         self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
         self.ui.toolbutton_reset.setEnabled(res_file_exists and not_running)
-        self.ui.run.reset_mfix_button.setEnabled(res_file_exists and not_running)
+        self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not_running)
 
         if res_file_exists:
             if running:
-                self.ui.run.run_mfix_button.setText("Stop")
+                self.ui.run.button_run_mfix.setText("Stop")
                 self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
                 self.ui.toolbutton_run.setText("Stop")
             else:
-                self.ui.run.run_mfix_button.setText("Resume")
+                self.ui.run.button_run_mfix.setText("Resume")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Resume")
         else:
             if running:
-                self.ui.run.run_mfix_button.setText("Stop")
+                self.ui.run.button_run_mfix.setText("Stop")
                 self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
                 self.ui.toolbutton_run.setText("Stop")
             else:
-                self.ui.run.run_mfix_button.setText("Run")
+                self.ui.run.button_run_mfix.setText("Run")
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Run")
 
@@ -1126,7 +1126,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
     def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
-        mfix_exe = self.ui.run.mfix_executables.currentText()
+        mfix_exe = self.ui.run.spinbox_mfix_executables.currentText()
         self.mfix_exe = mfix_exe
         if not mfix_exe:
             return
@@ -1183,7 +1183,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 break
         return True
 
-    def handle_run_stop_action(self):
+    def handle_run_stop(self):
         if self.run_thread.mfixproc is None:
             return self.run_mfix()
         else:
