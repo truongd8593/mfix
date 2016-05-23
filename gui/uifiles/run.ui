@@ -663,7 +663,7 @@
       <item row="3" column="0">
        <widget class="QPushButton" name="button_reset_mfix">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="toolTip">
          <string>Remove output and restart files</string>
