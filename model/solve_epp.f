@@ -102,7 +102,7 @@
                            A_M, B_M, lB_MMAX=B_MMAX, lM=M)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !         DO_K, ier)
 

@@ -256,7 +256,7 @@
 !               write(*,*) resid(resid_x+(LN-1), m), &
 !                  max_resid(resid_x+(LN-1), m), &
 !                  ijk_resid(resid_x+(LN-1), m)
-!               call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!               call write_ab_m(a_m, b_m, ijkmax2, m)
 !
 !               call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1,-3,M),&
 !                  1, DO_K, ier)

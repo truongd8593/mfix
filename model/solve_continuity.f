@@ -78,7 +78,7 @@ CONTAINS
             RESID_RO,0), IJK_RESID(RESID_RO,0))
 
 !         call check_ab_m(a_m, b_m, 0, .true., ier)
-!         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         call write_ab_m(a_m, b_m, ijkmax2, 0)
 !         write(*,*) resid(resid_ro, 0), max_resid(resid_ro, 0), &
 !            ijk_resid(resid_ro, 0)
 !         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0),&
@@ -114,7 +114,7 @@ CONTAINS
 !         call check_ab_m(a_m, b_m, m, .true., ier)
 !         write(*,*) 'solve_cont= ', resid(resid_ro, m),&
 !                    max_resid(resid_ro, m), ijk_resid(resid_ro, m), m
-!         call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!         call write_ab_m(a_m, b_m, ijkmax2, m)
 !         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1, &
 !                          DO_K, ier)
 !
