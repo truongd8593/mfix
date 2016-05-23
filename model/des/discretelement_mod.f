@@ -127,6 +127,12 @@
 ! within particle_input.dat)
       DOUBLE PRECISION pvel_mean, PVEL_StDev
 
+
+! Data alignment
+!DIR$ ATTRIBUTES ALIGN: __BIGGEST_ALIGNMENT__ :: IGLOBAL_ID,          &
+!DIR$                                            VOL_IC_REGION,       &
+!DIR$                                            PART_MPHASE_BYIC,    &
+!DIR$                                            REALPART_MPHASE_BYIC
 ! Output/debug controls
 !----------------------------------------------------------------->>>
 ! Logic that controls whether to print data dem simulations (granular or
@@ -236,6 +242,13 @@
       INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
                  DESGRIDSEARCH_KMAX
 
+! Data alignment
+!DIR$ ATTRIBUTES ALIGN: __BIGGEST_ALIGNMENT__ :: NEIGHBOR_INDEX,     &
+!DIR$                                            NEIGHBOR_INDEX_OLD, &
+!DIR$                                            NEIGHBORS,          &
+!DIR$                                            NEIGHBORS_OLD,      &
+!DIR$                                            PFT_NEIGHBOR,       &
+!DIR$                                            PFT_NEIGHBOR_OLD
 ! End neighbor search related quantities
 !-----------------------------------------------------------------<<<
 
@@ -392,6 +405,31 @@
 ! For each particle track its i, j, k & ijk location on the fluid grid
 ! and solids phase no.:
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M
+
+! Data alignment
+!DIR$ ATTRIBUTES ALIGN: __BIGGEST_ALIGNMENT__ :: DES_RADIUS,              &
+!DIR$                                            RO_Sol,                  &
+!DIR$                                            PVOL,                    &
+!DIR$                                            PMASS,                   &
+!DIR$                                            OMOI,                    &
+!DIR$                                            DES_POS_OLD,             &
+!DIR$                                            DES_POS_NEW,             &
+!DIR$                                            DES_VEL_OLD,             &
+!DIR$                                            DES_VEL_NEW,             &
+!DIR$                                            OMEGA_OLD,               &
+!DIR$                                            OMEGA_NEW,               &
+!DIR$                                            PPOS,                    &
+!DIR$                                            DES_ACC_OLD,             &
+!DIR$                                            ROT_ACC_OLD,             &
+!DIR$                                            ORIENTATION,             &
+!DIR$                                            DES_USR_VAR,             &
+!DIR$                                            FC,                      &
+!DIR$                                            TOW,                     &
+!DIR$                                            wall_collision_facet_id, &
+!DIR$                                            wall_collision_PFT,      &
+!DIR$                                            PINC,                    &
+!DIR$                                            PIJK
+
 !-----------------------------------------------------------------<<<
 
 
