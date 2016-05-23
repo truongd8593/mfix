@@ -476,15 +476,12 @@ class MfixGui(QtWidgets.QMainWindow):
 
         event.accept()
 
-    def set_navigation_item_state(self, item_name, state):
+    def find_navigation_tree_item(self, item_name):
         tree = self.ui.treewidget_model_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
-
-        assert len(items)==1, "%s menu items matching %s"%("Multiple" if len(items)>1 else "No",
-                                                           item_name)
-        for item in items:
-            item.setDisabled(not state)
+        assert len(items) == 1
+        return items[0]
 
 
     # Top-level "Model Setup"
@@ -504,8 +501,8 @@ class MfixGui(QtWidgets.QMainWindow):
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %s" % solver_name)
 
-        item_names =  ("Solids", "Continuum Solids Model",
-                       "Discrete Element Model", "Particle in Cell Model")
+        item_names =  ("Solids", "Continuum",
+                       "Discrete", "Parcel")
 
         item_states = {SINGLE: (False, False, False, False),
                        TFM: (True, True, False, False),
@@ -513,8 +510,18 @@ class MfixGui(QtWidgets.QMainWindow):
                        PIC: (True, False, False, True),
                        HYBRID: (True, True, True, False)}
 
-        #for item_name, item_state in zip(item_names, item_states[solver]):
-        #    self.set_navigation_item_state(item_name, item_state)
+        items = (self.find_navigation_tree_item("Solids"),
+                 self.ui.solids.pushbutton_continuum,
+                 self.ui.solids.pushbutton_discrete,
+                 self.ui.solids.pushbutton_parcel)
+
+        for (item, state) in zip(items, item_states[solver]):
+            item.setDisabled(not state)
+
+        # Do we ever disable "Materials"?
+        active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
+        if active_tab > 0 and not items[active_tab-1].isEnabled(): # Don't stay on a disabled tab!
+            self.solids_change_tab(0, self.ui.solids.pushbutton_materials) # This one should be open (?)
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
@@ -641,9 +648,10 @@ class MfixGui(QtWidgets.QMainWindow):
         value = None if value=='Fluid' else value # don't save default
         self.project.mfix_gui_comments['fluid_phase_name'] = value
 
-    def disable_fluid_solver(self, state):
-        enabled = not state # "disable"
-        self.set_navigation_item_state("Fluid", enabled)
+    def disable_fluid_solver(self, disabled):
+        enabled = not disabled
+        item = self.find_navigation_tree_item("Fluid")
+        item.setDisabled(disabled)
         ms = self.ui.model_setup
         checkbox = ms.checkbox_enable_turbulence
         checkbox.setEnabled(enabled)
@@ -752,10 +760,10 @@ class MfixGui(QtWidgets.QMainWindow):
         #cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
 
         # connect solid tab btns
-        for i, btn in enumerate([self.ui.solids.pushbutton_material,
+        for i, btn in enumerate((self.ui.solids.pushbutton_material,
                                  self.ui.solids.pushbutton_continuum,
                                  self.ui.solids.pushbutton_discrete,
-                                 self.ui.solids.pushbutton_parcel]):
+                                 self.ui.solids.pushbutton_parcel)):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
 
@@ -1842,7 +1850,7 @@ class MfixGui(QtWidgets.QMainWindow):
         tw.clearSelection()
 
     def solids_change_tab(self, tabnum, btn):
-        """ switch mesh stacked widget based on selected """
+        """ switch solids stacked widget based on selected """
         self.animate_stacked_widget(
             self.ui.solids.stackedwidget_solids,
             self.ui.solids.stackedwidget_solids.currentIndex(),
@@ -1850,8 +1858,7 @@ class MfixGui(QtWidgets.QMainWindow):
             direction='horizontal',
             line=self.ui.solids.line_solids,
             to_btn=btn,
-            btn_layout=self.ui.solids.gridlayout_solid_tab_btns,
-            )
+            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
 
 
 
