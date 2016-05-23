@@ -14,8 +14,8 @@ clean:
 	find . -name \*.pyc -delete
 
 test: all
-	(Xvfb :99 &); \
-	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v; \
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
 	pkill Xvfb
 
 test-gui: all
