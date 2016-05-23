@@ -1331,7 +1331,7 @@ class MfixGui(QtWidgets.QMainWindow):
                     fn, os.path.join(project_dir, os.path.basename(fn)))
         self.save_project(project_file)
 
-    def save_project(self, filename=False):
+    def save_project(self, filename=None):
         """save project, optionally as a new project.
 
         :param project_file: Filename of project (including path)
@@ -1344,8 +1344,12 @@ class MfixGui(QtWidgets.QMainWindow):
         else:
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
+
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        project_base = os.path.basename(project_file)
+        self.project.run_name.updateValue(os.path.splitext(project_base)[0])
+        self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
         self.project.writeDatFile(project_file) # XXX
         #self.setWindowTitle('MFIX - %s' % project_file)
 

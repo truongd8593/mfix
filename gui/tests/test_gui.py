@@ -99,17 +99,15 @@ class MfixGuiTests(TestQApplication):
         TestQApplication.tearDown(self)
 
     def test_save_as(self):
-        self.skipTest("FIXME")
         newname = 'DES_FB1_new_name'
-        newpath = os.path.join(self.rundir, newname)
+        newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
 
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
-        mfxfile = os.path.join(self.rundir, '%s.mfx' % newname)
-        self.assertTrue(os.path.exists(mfxfile))
+        self.assertTrue(os.path.exists(newpath))
 
     def test_run(self):
         self.skipTest("FIXME, where did the run button go?")
