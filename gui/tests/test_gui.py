@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-'''
-  run with:
-
-  > python -m unittest discover
-
-  or nosetests
-
-'''
+"""
+run with "nosetests -v"
+or
+python -m unittest discover
+"""
 
 import fnmatch
 import glob
@@ -17,6 +14,8 @@ import time
 from qtpy.QtTest import QTest
 from qtpy import QtCore
 from qtpy import QtWidgets
+
+import logging
 
 from .helper_functions import TestQApplication
 import gui
@@ -73,6 +72,8 @@ class MfixGuiTests(TestQApplication):
         gui.MfixGui.get_project_file = get_project_file
         gui.MfixGui.set_project_file = set_project_file
 
+        log = logging.getLogger()
+        log.root.setLevel(logging.INFO)
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
