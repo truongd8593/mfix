@@ -45,12 +45,12 @@ if not PRECOMPILE_UI:
         from PyQt4 import uic
 
 # Debugging hooks
-def debug_trace(__name__):
+def debug_trace():
     """Set a tracepoint in the Python debugger that works with Qt"""
     from qtpy.QtCore import pyqtRemoveInputHook
     from pdb import set_trace
-    pyqtRemoveInputHook(__name__)
-    set_trace(__name__)
+    pyqtRemoveInputHook()
+    set_trace()
 
 
 # local imports
@@ -389,7 +389,7 @@ class MfixGui(QtWidgets.QMainWindow):
         success = self.project.removeKeyword(key, args, warn=False)
         if success:
             self.print_internal("%s" % format_key_with_args(key, args),
-                                font='strikeout')
+                                font='strikeout', color='green')
 
 
     def is_project_open(self):
@@ -823,8 +823,8 @@ class MfixGui(QtWidgets.QMainWindow):
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[keyword], args=args)
 
-                # connect to unsaved method
-                widget.value_updated.connect(self.unsaved)
+                # connect to set_unsaved_flag method
+                widget.value_updated.connect(self.set_unsaved_flag)
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
@@ -1351,7 +1351,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.project.run_name.updateValue(os.path.splitext(project_base)[0])
         self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
         self.project.writeDatFile(project_file) # XXX
-        #self.setWindowTitle('MFIX - %s' % project_file)
+        self.clear_unsaved_flag()
 
     def save_as(self):
         """Save As user dialog
@@ -1366,11 +1366,15 @@ class MfixGui(QtWidgets.QMainWindow):
         run_name = os.path.splitext(new_project_basename)[0]
         self.project.run_name.value = run_name
 
+        # FIXME this recursive call is a bit odd
         if not self.check_writable(project_dir):
             self.save_as()
+            self.clear_unsaved_flag()
             return
+
         self.save_project(project_file)
         self.open_project(project_file)
+        self.clear_unsaved_flag()
 
     def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName for unit tests to override
@@ -1395,6 +1399,8 @@ class MfixGui(QtWidgets.QMainWindow):
         else:
             return filename
 
+    # TODO make sure all gui items have updated, eg Lineedit with
+    # editing_finished events
     def handle_save(self):
         return self.save_project()
 
@@ -1404,8 +1410,14 @@ class MfixGui(QtWidgets.QMainWindow):
     def handle_save_as(self):
         return self.save_as()
 
-    def unsaved(self):
+    def set_unsaved_flag(self):
+        self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
+
+    def clear_unsaved_flag(self):
+        self.unsaved_flag = False
+        self.setWindowTitle('MFIX - %s' % self.get_project_file())
+
 
     def check_writable(self, directory):
         """check whether directory is writable """
@@ -1552,7 +1564,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.stackedwidget_mode.setVisible(True)
 
         self.set_project_file(project_file)
-        self.setWindowTitle('MFIX - %s' % project_file)
+        self.clear_unsaved_flag()
 
         # read the file (again)
         with open(project_file, 'r') as f:

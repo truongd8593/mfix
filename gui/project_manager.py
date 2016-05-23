@@ -9,8 +9,12 @@ from collections import OrderedDict
 from project import Project, Keyword
 from constants import *
 
+from widgets.base import LineEdit # a little special handling needed
+
 from tools.general import (format_key_with_args, plural)
 from tools import read_burcat
+
+
 
 # --- Project Manager ---
 class ProjectManager(Project):
@@ -37,7 +41,7 @@ class ProjectManager(Project):
         if isinstance(args, int):
             args = [args]
 
-        for key, newValue in newValueDict.items():
+        for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):
                 if args:
                     for ind, value in newValue.items():
@@ -70,7 +74,8 @@ class ProjectManager(Project):
             args = []
 
         try:
-            updatedValue = self.updateKeyword(key, newValue, args)
+            updatedKeyword = self.updateKeyword(key, newValue, args)
+            updatedValue = updatedKeyword.value
         except Exception as e:
             self.gui.print_internal("Warning: %s: %s" %
                                        (format_key_with_args(key, args), e),
@@ -97,6 +102,8 @@ class ProjectManager(Project):
             self._widget_update_stack.append(w)
             try:
                 w.updateValue(key, updatedValue, args)
+                if isinstance(w, LineEdit):
+                    w.text_changed_flag = False
             except Exception as e:
                 ka = format_key_with_args(key, args)
                 #log.warn("%s: %s" % (e, ka))
@@ -108,10 +115,13 @@ class ProjectManager(Project):
             finally:
                 self._widget_update_stack.pop()
 
-        self.gui.print_internal("%s = %s" % (format_key_with_args(key, args),
-                                                updatedValue),
-                                font="Monospace",
-                                color='green' if widgets_to_update else None)
+        if updatedValue is None:
+            self.gui.unset_keyword(key, args)
+        else:
+            self.gui.print_internal("%s = %s" % (format_key_with_args(key, args),
+                                                 updatedValue),
+                                    font="Monospace",
+                                    color='green' if widgets_to_update else None)
 
 
     def guess_solver(self):

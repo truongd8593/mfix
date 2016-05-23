@@ -9,6 +9,9 @@ import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui
 
+# debug
+from project import debug_trace
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -26,7 +29,9 @@ except ImportError:
     log.debug("can't import pandas")
 
 # local imports
-from project import Keyword, Equation
+from project import (Keyword, Equation, FloatExp, make_FloatExp,
+                     re_float_exp, re_float, re_int, re_math)
+
 from tools.general import to_text_string
 
 # comment - the mixture of 'update' and 'change' terminology
@@ -37,7 +42,8 @@ class CommonBase(QtCore.QObject):
 
     def __init__(self):
         self.key = None
-        self.defaultValue = None
+        self.default_value = None
+        self.saved_value = None
         self.args = None
 
     def emitUpdatedValue(self):
@@ -46,7 +52,7 @@ class CommonBase(QtCore.QObject):
     def validator(self):
         return False
 
-    def updateValue(self, key, newValue, args=None):
+    def updateValue(self, key, new_value, args=None):
         pass
 
     @property
@@ -71,10 +77,10 @@ class CommonBase(QtCore.QObject):
 
     def default(self, val=None):
         if val is not None:
-            self.defaultValue = val
+            self.default_value = val
 
-        if self.defaultValue is not None:
-            self.updateValue(self.key, self.defaultValue, args=self.args)
+        if self.default_value is not None:
+            self.updateValue(self.key, self.default_value, args=self.args)
 
 
 class LineEdit(QtWidgets.QLineEdit, CommonBase):
@@ -83,45 +89,90 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
         CommonBase.__init__(self)
-
         # Why connect to both?
+        self.textChanged.connect(self.mark_changed)
         self.editingFinished.connect(self.emitUpdatedValue)
-        self.textChanged.connect(self.emitUpdatedValue) # will trigger on each key
-
         self.dtype = str
+        self.text_changed_flag = False
 
-        self.regex_expression = re.compile('@\(([0-9.eEpiPI\+\-/*\(\))]+)\)')
-        self.regex_mathOp = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
+    def mark_changed(self):
+        self.text_changed_flag = True
+
+    def emitUpdatedValue(self):
+        need_to_signal = self.text_changed_flag
+        self.text_changed_flag = False
+        if need_to_signal:
+            value = self.value
+            if value is not None:
+                self.value_updated.emit(self, {self.key: value}, self.args)
 
     @property
     def value(self):
-        if len(str(self.text())) == 0:
+        text = str(self.text()).strip()
+        if len(text) == 0:   # should we return None?
             return ''
-        if self.dtype == str:
-            return str(self.text())
-        elif self.dtype == float:
-            if self.regex_mathOp.findall(str(self.text())):
-                return Equation(self.text())
-            else:
-                return float(str(self.text())) # TODO: validate input - cgw
-        elif self.dtype == int:
-            return int(float(str(self.text())))
+        if self.dtype is str:
+            return text
+        elif self.dtype is float:
+            if re_float.match(text) or re_int.match(text):
+                try:
+                    f = float(text)
+                    self.saved_value = f
+                    return f
+                except ValueError:
+                    return self.saved_value or ''
+            elif re_float_exp.match(text):
+                try:
+                    f = make_FloatExp(text)
+                    self.saved_value = f
+                    return f
+                except ValueError:
+                    return self.saved_value or ''
+            elif re_math.search(text):
+                try:
+                    if text.startswith('@(') and text.endswith(')'):
+                        text = text[2:-1]
 
-    def updateValue(self, key, newValue, args=None):
-        if newValue is not None:
-            if self.regex_expression.findall(str(newValue)):
-                self.setText(self.regex_expression.findall(str(newValue))[0])
+                    eq = Equation(text)
+                    f = float(eq)
+                    self.saved_value = eq
+                    return eq
+                except ValueError:
+                    return self.saved_value or ''
             else:
-                self.setText(str(newValue).replace("'", '').replace('"', ''))
+                return self.saved_value or ''
+
+        elif self.dtype is int:
+            try:
+                i = int(float(text))
+                self.saved_value = i
+                return i
+            except ValueError:
+                return self.saved_value or ''
+
         else:
+            raise TypeError(self.dtype)
+
+    def updateValue(self, key, new_value, args=None):
+        if new_value is None:
             self.setText('')
+            self.saved_value = None
+            return
+
+        if new_value is not None:
+            self.saved_value = new_value
+
+
+        sval = str(new_value).strip()
+        self.setText(sval)
+
 
     def default(self, val=None):
         if val is not None:
-            self.defaultValue = val
+            self.default_value = val
 
-        if self.defaultValue is not None:
-            self.updateValue(self.key, self.defaultValue, args=self.args)
+        if self.default_value is not None:
+            self.updateValue(self.key, self.default_value, args=self.args)
         else:
             self.clear()
 
@@ -140,10 +191,9 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
     def value(self):
         return bool(self.isChecked())
 
-    def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, Keyword):
-            newValue = newValue.value
-        self.setChecked(newValue)
+    def updateValue(self, key, new_value, args=None):
+        assert not isinstance(new_value, Keyword)  # value should not be keyword!
+        self.setChecked(new_value)
 
 
 class ComboBox(QtWidgets.QComboBox, CommonBase):
@@ -170,17 +220,16 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
         else:
             return str(self.currentText())
 
-    def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, Keyword):
-            newValue = newValue.value
-        self.setCurrentText(newValue)
+    def updateValue(self, key, new_value, args=None):
+        assert not isinstance(new_value, Keyword) # value should not be kw
+        self.setCurrentText(new_value)
 
-    def setCurrentText(self, newValue):
+    def setCurrentText(self, new_value):
         for itm in range(self.count()):
-            if self.dtype == str and str(newValue).lower() == str(self.itemText(itm)).lower():
+            if self.dtype == str and str(new_value).lower() == str(self.itemText(itm)).lower():
                 self.setCurrentIndex(itm)
                 break
-            elif self.dtype == int and int(newValue) == int(str(self.itemText(itm)).split('-')[0].strip()):
+            elif self.dtype == int and int(new_value) == int(str(self.itemText(itm)).split('-')[0].strip()):
                 self.setCurrentIndex(itm)
                 break
 
@@ -194,13 +243,12 @@ class SpinBox(QtWidgets.QSpinBox, CommonBase):
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
 
-    def emitUpdatedValue(self): # why not use def. in base class?
+    def emitUpdatedValue(self): # calls self.value() instead of using self.value
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
-    def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, Keyword):
-            newValue = newValue.value
-        self.setValue(int(newValue))
+    def updateValue(self, key, new_value, args=None):
+        assert not isinstance(new_value, Keyword)
+        self.setValue(int(new_value))
 
     def setValInfo(self, _max=None, _min=None, req=False):
         if _max:
@@ -224,13 +272,12 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
         ret = repr(value)
         return ret
 
-    def emitUpdatedValue(self):  # why not use def. in base class?
+    def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
-    def updateValue(self, key, newValue, args=None):
-        if isinstance(newValue, Keyword):
-            newValue = newValue.value
-        self.setValue(float(newValue))
+    def updateValue(self, key, new_value, args=None):
+        assert not isinstance(new_value, Keyword)
+        self.setValue(float(new_value))
 
     def setValInfo(self, _max=None, _min=None, req=False):
         if _max:
@@ -564,7 +611,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         if widget.dtype is None:
             widget.dtype = type(value)
-        widget.updateValue('none', value)
+        widget.updateValue(None, value)
 
     def setModelData(self, widget, model, index):
         model.setData(index, widget.dtype(widget.value), QtCore.Qt.EditRole)

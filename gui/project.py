@@ -57,8 +57,18 @@ log = logging.getLogger(__name__)
 # local imports
 from tools.simpleeval import simple_eval
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
-                           to_unicode_from_fs, to_fs_from_unicode,
-                           is_string, is_unicode)
+                           to_unicode_from_fs, to_fs_from_unicode, is_text_string)
+
+
+# Debugging hooks
+def debug_trace():
+    """Set a tracepoint in the Python debugger that works with Qt"""
+    from qtpy.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
+
+
 
 from constants import *
 
@@ -68,6 +78,8 @@ class FloatExp(float):
     fmt = '4'
     def __repr__(self):
         return '{:.{}e}'.format(self, self.fmt)
+
+    __str__ = __repr__
 
 def make_FloatExp(val): # Handle Fortran formats
     # (we can't do this in FloatExp.__init__)
@@ -191,12 +203,20 @@ def remove_spaces_from_equations(string):
     return ret
 
 class Equation(object):
+    """represents a simple arithmetic expression, which can be evaluated
+    by simple_eval, in a namespace which includes the math constants 'e'
+    and 'pi'.  Calling "float" causes evaluation, which will result in
+    ValueError on any failures.  Evaluating an empty string returns 0.0,
+    while evaluating None returns NaN"""
+
     def __init__(self, eq):
+        if not eq:
+            debug_trace()
         # Check to make sure eq is not already an equation object
         if isinstance(eq, Equation):
             self.eq = eq.eq
         else:
-            eq = str(eq)
+            eq = str(eq).replace(' ', '')
             if eq.startswith("@(") and eq.endswith(")"):
                 eq = eq[2:-1]
             self.eq = eq
@@ -208,10 +228,13 @@ class Equation(object):
             return NaN
         else:
             try:
-                return simple_eval(self.eq.lower(),
-                                   names={"pi": math.pi, "e": math.e, "p": 1})
-            except SyntaxError:
-                return 0
+                return float(simple_eval(self.eq.lower(),
+                                         names={"pi": math.pi,
+                                                "e": math.e,
+                                                "p": 1} # what is p?
+                                         ))
+            except:
+                raise ValueError(self.eq)
 
     def __nonzero__(self):  # Python 2
         return not math.isnan(self._eval())
@@ -276,6 +299,10 @@ re_float = re.compile(r"""
     ^[+-]?[0-9]+\.[0-9]*$
     """, re.VERBOSE|re.IGNORECASE)
 
+re_int = re.compile(r"""
+    ^[+-]?[0-9]+$
+    """, re.VERBOSE|re.IGNORECASE)
+
 re_shorthand = re.compile(r"""
     [\d]+                                      # unsigned integer
     \*                                         # literal *
@@ -288,7 +315,13 @@ re_shorthand = re.compile(r"""
     """, re.VERBOSE|re.IGNORECASE)
 
 # detect whether int/float keyword needs to be upgraded to Equation
-re_math = re.compile('pi|e|[-+*/]', re.IGNORECASE)
+re_math = re.compile("""
+    pi             |                                # universal constant
+    ^e$            |                                # a lone 'e'
+    [^\d\.]e[^\d]  |                                # 'e', but not as part of exp. notation (not next to a digit on either side)
+    [*/()]         |                                # arithmetic ops, parens
+    .[-+]                                           # +/- but not at start of number!
+""", re.VERBOSE|re.IGNORECASE)
 
 class Keyword(object):
     def __init__(self, key, val, comment='', dtype=None, args=None):
@@ -351,8 +384,8 @@ class Keyword(object):
         elif self.dtype == bool:
             return '.True.' if self.value else '.False.'
         elif self.dtype == str and self.value is not None:
-            if isinstance(self.value, str): # unicode?
-                self.value = self.value.replace('"', '').replace("'", '')
+            if is_text_string(self.value):
+                self.value = str(self.value).replace('"', '').replace("'", '')
             else:
                 self.value = str(self.value)
             return ''.join(["'", str(self.value), "'"])
@@ -387,17 +420,23 @@ class Keyword(object):
 
     def updateValue(self, value):
         strvalue = str(value)
-        if value is None:
+        if value is None or strvalue=='': # is this the right place to check this?
             self.value = None
-        elif self.dtype == Equation and isinstance(value, str): # unicode?
+        elif self.dtype == Equation and is_text_string(value):
             self.value.eq = value
-        elif (self.dtype == float and not re_float.match(strvalue)):
+        elif (self.dtype == float and not re_float.match(strvalue) and not re_int.match(strvalue)):
             if re_float_exp.match(strvalue):
                 self.value = make_FloatExp(value)
-            elif re_math.search(strvalue):
-                self.value = Equation(value)
+            else:
+                eq = Equation(value)
+                try:
+                    f = float(eq)
+                    self.value = eq
+                except ValueError:
+                    pass # Don't update invalid equation
 
-        elif self.dtype == FloatExp and isinstance(value, (int, float)):
+        elif self.dtype == FloatExp and (isinstance(value, (int, float)
+                                                    and not isinstance(value, bool))):
             self.value = make_FloatExp(value)
         else:
             self.value = value
@@ -877,7 +916,7 @@ class Project(object):
         except (IOError, OSError):
             pass
         # maybe it is just a string?
-        if is_string(self.dat_file) or is_unicode(self.dat_file):
+        if is_text_string(self.dat_file):
             self._parsemfixdat(StringIO(self.dat_file))
             return
 
@@ -1053,8 +1092,7 @@ class Project(object):
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
-        '''
-        Update or add a keyword to the project.  Raises ValueError if there is a
+        """Update or add a keyword to the project.  Raises ValueError if there is a
         problem with the key or value.
 
         Parameters
@@ -1067,7 +1105,7 @@ class Project(object):
             list of arguments for the keyword, or None
         keywordComment (str):
             a comment to be included with the keyword (default: '')
-        '''
+        """
         # TODO:  refactor
         if args is None:
             args = []
