@@ -3,7 +3,12 @@ In order to run the MFiX GUI you will need to install the following packages:
 qtpy
 vtk
 numpy
-xvfbwrapper # only for running tests
+
 #future - not used currently
 #thermochem - not used currently
 MORE?
+
+
+# To run the included tests, these packages are required:
+xvfbwrapper
+nose
