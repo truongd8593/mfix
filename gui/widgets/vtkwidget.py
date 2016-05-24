@@ -1119,6 +1119,16 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.addTopLevelItem(toplevel)
             self.geometrytree.setCurrentItem(toplevel)
 
+    def clear_all_geometry(self):
+        """ remove all geometry """
+        self.geometrytree.clear()
+
+        for key in list(self.geometrydict.keys()):
+            geo = self.geometrydict.pop(key)
+            self.vtkrenderer.RemoveActor(geo['actor'])
+
+        self.vtkRenderWindow.Render()
+
     def remove_geometry(self):
         """
         Remove the currently selected geometry, filter, or boolean operation
