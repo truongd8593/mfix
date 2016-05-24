@@ -57,14 +57,14 @@ QPushButton:checked {
        <number>0</number>
       </property>
       <item row="0" column="1">
-       <widget class="QPushButton" name="pushbutton_continuum">
+       <widget class="QPushButton" name="pushbutton_solids_tfm">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Continuum</string>
+         <string>TFM</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -72,14 +72,14 @@ QPushButton:checked {
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QPushButton" name="pushbutton_parcel">
+       <widget class="QPushButton" name="pushbutton_solids_pic">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Parcel</string>
+         <string>PIC</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -87,7 +87,7 @@ QPushButton:checked {
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QPushButton" name="pushbutton_materials">
+       <widget class="QPushButton" name="pushbutton_solids_materials">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -102,14 +102,14 @@ QPushButton:checked {
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QPushButton" name="pushbutton_discrete">
+       <widget class="QPushButton" name="pushbutton_solids_dem">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Discrete</string>
+         <string>DEM</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -141,7 +141,7 @@ QPushButton:checked {
    <item row="1" column="0">
     <widget class="QStackedWidget" name="stackedwidget_solids">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -288,8 +288,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>483</width>
-            <height>576</height>
+            <width>499</width>
+            <height>732</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -413,29 +413,21 @@ QPushButton:checked {
              <property name="frameShadow">
               <enum>QFrame::Plain</enum>
              </property>
-             <layout class="QGridLayout" name="gridLayout_18">
-              <property name="leftMargin">
-               <number>5</number>
-              </property>
-              <property name="topMargin">
-               <number>5</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>5</number>
-              </property>
-              <property name="spacing">
-               <number>5</number>
-              </property>
-              <item row="0" column="1">
-               <widget class="LineEdit" name="lineedit_keyword_d_p0_args_S"/>
-              </item>
+             <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="0">
                <widget class="QLabel" name="label_39">
                 <property name="text">
                  <string>Diameter</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1" colspan="2">
+               <widget class="LineEdit" name="lineedit_keyword_d_p0_args_S"/>
+              </item>
+              <item row="0" column="3">
+               <widget class="QLabel" name="label_41">
+                <property name="text">
+                 <string>m</string>
                 </property>
                </widget>
               </item>
@@ -446,16 +438,6 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_41">
-                <property name="text">
-                 <string>m</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="LineEdit" name="lineedit_keyword_ro_s0_args_S"/>
-              </item>
               <item row="1" column="1">
                <widget class="QComboBox" name="combobox_solids_density_model">
                 <item>
@@ -464,6 +446,9 @@ QPushButton:checked {
                  </property>
                 </item>
                </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="LineEdit" name="lineedit_keyword_ro_s0_args_S"/>
               </item>
               <item row="1" column="3">
                <widget class="QLabel" name="label_42">
@@ -479,10 +464,56 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
+              <item row="2" column="1">
+               <widget class="QComboBox" name="comboBox_15"/>
+              </item>
+              <item row="2" column="2">
+               <widget class="QLineEdit" name="lineEdit_31"/>
+              </item>
+              <item row="2" column="3">
+               <widget class="QLabel" name="label_44">
+                <property name="text">
+                 <string>Pa</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_45">
+                <property name="text">
+                 <string>Mol. Weight</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="comboBox_16"/>
+              </item>
+              <item row="3" column="2">
+               <widget class="QLineEdit" name="lineEdit_32"/>
+              </item>
+              <item row="3" column="3">
+               <widget class="QLabel" name="label_46">
+                <property name="text">
+                 <string>kmol/kg</string>
+                </property>
+               </widget>
+              </item>
               <item row="4" column="0">
                <widget class="QLabel" name="label_47">
                 <property name="text">
                  <string>Specific Heat</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QComboBox" name="comboBox_17"/>
+              </item>
+              <item row="4" column="2">
+               <widget class="QLineEdit" name="lineEdit_33"/>
+              </item>
+              <item row="4" column="3">
+               <widget class="QLabel" name="label_49">
+                <property name="text">
+                 <string>kJ/(kg K)</string>
                 </property>
                </widget>
               </item>
@@ -493,10 +524,16 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_45">
+              <item row="5" column="1">
+               <widget class="QComboBox" name="comboBox_18"/>
+              </item>
+              <item row="5" column="2">
+               <widget class="QLineEdit" name="lineEdit_34"/>
+              </item>
+              <item row="5" column="3">
+               <widget class="QLabel" name="label_50">
                 <property name="text">
-                 <string>Molecular Weight</string>
+                 <string>W/(m K)</string>
                 </property>
                </widget>
               </item>
@@ -507,60 +544,8 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="comboBox_15"/>
-              </item>
-              <item row="3" column="1">
-               <widget class="QComboBox" name="comboBox_16"/>
-              </item>
-              <item row="4" column="1">
-               <widget class="QComboBox" name="comboBox_17"/>
-              </item>
-              <item row="5" column="1">
-               <widget class="QComboBox" name="comboBox_18"/>
-              </item>
-              <item row="2" column="2">
-               <widget class="QLineEdit" name="lineEdit_31"/>
-              </item>
-              <item row="3" column="2">
-               <widget class="QLineEdit" name="lineEdit_32"/>
-              </item>
-              <item row="4" column="2">
-               <widget class="QLineEdit" name="lineEdit_33"/>
-              </item>
-              <item row="5" column="2">
-               <widget class="QLineEdit" name="lineEdit_34"/>
-              </item>
               <item row="6" column="2">
                <widget class="QLineEdit" name="lineEdit"/>
-              </item>
-              <item row="2" column="3">
-               <widget class="QLabel" name="label_44">
-                <property name="text">
-                 <string>Pa</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="3">
-               <widget class="QLabel" name="label_46">
-                <property name="text">
-                 <string>kmol/kg</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="3">
-               <widget class="QLabel" name="label_49">
-                <property name="text">
-                 <string>kJ/(kg K)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="3">
-               <widget class="QLabel" name="label_50">
-                <property name="text">
-                 <string>W/(m K)</string>
-                </property>
-               </widget>
               </item>
              </layout>
             </widget>
