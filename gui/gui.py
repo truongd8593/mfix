@@ -742,7 +742,9 @@ class MfixGui(QtWidgets.QMainWindow):
         # Set for current phase
         if self.solids_current_phase is not None:
             model = self.project.get_value("solids_model", args = self.solids_current_phase)
-            cb.setCurrentIndex(0 if model=='TFM' else 1 if model=='DEM' else 2)
+            i = 0 if model=='TFM' else 1 if model=='DEM' else 2 if model=='PIC' else None
+            if i is None:
+                return
         i = cb.currentIndex()
         if not enabled[i]:
             # Current selection no longer valid, so pick first valid choice
@@ -753,6 +755,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def handle_combobox_solids_model(self, index):
         if self.solids_current_phase is None:
             return # shouldn't get here
+
         phase = self.solids_current_phase
         name, data = self.solids.items()[phase-1] # FIXME, use SpeciesCollection not OrderedDict here
         model = ('TFM', 'DEM', 'PIC')[index]
@@ -918,14 +921,19 @@ class MfixGui(QtWidgets.QMainWindow):
                 self.project.register_widget(widget, keys=[key], args=args)
 
             # connect to set_unsaved_flag method (keyword or not!)
-            if hasattr(widget, 'value_updated'):
-                try:
-                    widget.value_updated.connect(self.set_unsaved_flag)
-                except TypeError: # :(
+            widget_name = widget.objectName()
+            if 'save' in widget_name:
+                continue
+            if widget_name=='tablewidget_regions':
+                continue
 #Object::connect:  (sender name:   'tablewidget_regions')
 #Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
-#Object::connect:  (sender name:   'tablewidget_regions')
-                    pass #
+            if 'toolbutton' in widget_name:
+                    widget.clicked.connect(self.set_unsaved_flag)
+            elif hasattr(widget, 'value_updated'):
+                widget.value_updated.connect(self.set_unsaved_flag)
+
+
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
@@ -1465,9 +1473,8 @@ class MfixGui(QtWidgets.QMainWindow):
         project_dir = os.path.dirname(project_file)
         new_project_basename = os.path.basename(project_file)
         run_name = os.path.splitext(new_project_basename)[0]
-        self.project.run_name.value = run_name # FIXME don't assign to keyword.value
+        self.update_keyword('run_name', run_name)
 
-        # FIXME this recursive call is a bit odd
         if not self.check_writable(project_dir):
             self.save_as()
             self.clear_unsaved_flag()
@@ -1515,11 +1522,13 @@ class MfixGui(QtWidgets.QMainWindow):
         return self.save_as()
 
     def set_unsaved_flag(self):
+        ui = self.ui
         self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
-        self.ui.toolbutton_save.setEnabled(True)
-        self.ui.toolbutton_save_as.setEnabled(True)
-        self.ui.toolbutton_export.setEnabled(True)
+        ui.toolbutton_save.setEnabled(True)
+        ui.toolbutton_save_as.setEnabled(True)
+        ui.toolbutton_export.setEnabled(True)
+        print(ui.toolbutton_save.isEnabled())
 
     def clear_unsaved_flag(self):
         self.unsaved_flag = False
@@ -1717,8 +1726,10 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # fluid scalar eq
         nscalar = self.project.get_value('nscalar', 0)
+
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
             if self.project.get_value('phase4scalar', args=i) == 0)
+
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
 
         # handle a bunch of items which are essentially the same
@@ -1873,8 +1884,7 @@ class MfixGui(QtWidgets.QMainWindow):
         sp.activateWindow()
 
     # --- solids phase methods ---
-    def make_solids_name(self):
-        n = 1
+    def make_solids_name(self, n):
         while True:
             name = 'Solid %d' % n
             if name not in self.solids:
@@ -1885,14 +1895,16 @@ class MfixGui(QtWidgets.QMainWindow):
     def solids_add(self):
         tw = self.ui.solids.tablewidget_solids
         nrows = tw.rowCount()
-        tw.setRowCount(nrows + 1)
-        name = self.make_solids_name()
+        n = nrows + 1
+        tw.setRowCount(n)
+        name = self.make_solids_name(n)
         if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
             return
         else:
             model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
         diameter = 0.0
         density = 0.0
+        self.update_keyword('solids_model', model, args=n)
         self.solids[name] = {'model': model,
                              'diameter': diameter,
                              'density': density} # more?
@@ -1913,19 +1925,22 @@ class MfixGui(QtWidgets.QMainWindow):
     def update_solids_detail_pane(self, name):
         s = self.ui.solids
         sa = s.scrollarea_solids_detail
-        if name is None:
+        if name is None: # current solid phase name.
             sa.setEnabled(False)
-            # Clear out all values?
+            # Clear out all values? ... no.
         else:
             data = self.solids[name]
             sa.setEnabled(True)
             s.lineedit_solids_phase_name.setText(name)
             self.setup_combobox_solids_model()
+
             # Inialize all the line edit widgets
             def as_str(x):
                 return '' if x is None else str(x)
             s.lineedit_keyword_d_p0_args_S.setText(as_str(data['diameter']))
             s.lineedit_keyword_ro_s0_args_S.setText(as_str(data['density']))
+
+
 
     def update_solids_table(self):
         hv = QtWidgets.QHeaderView
@@ -1962,12 +1977,15 @@ class MfixGui(QtWidgets.QMainWindow):
                 table.setItem(row, col, make_item(v[key]))
 
     def handle_solids_phase_name(self):
-        # FIXME make this unique
         new_name = self.ui.solids.lineedit_solids_phase_name.text()
         phase = self.solids_current_phase
         if phase is None:
             return
         old_name = self.solids.keys()[phase-1] # Ugh
+        if new_name in self.solids: # Reject the input
+            self.ui.solids.lineedit_solids_phase_name.setText(old_name)
+            return
+
         # Rewriting dict to change key while preserving order
         d = OrderedDict() # Ugh.  Use SpeciesCollection!
         for (k,v) in self.solids.iteritems():
