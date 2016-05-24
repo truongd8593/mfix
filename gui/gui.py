@@ -529,9 +529,9 @@ class MfixGui(QtWidgets.QMainWindow):
                        HYBRID: (True, True, True, False)}
 
         items = (self.find_navigation_tree_item("Solids"),
-                 self.ui.solids.pushbutton_continuum,
-                 self.ui.solids.pushbutton_discrete,
-                 self.ui.solids.pushbutton_parcel)
+                 self.ui.solids.pushbutton_solids_tfm,
+                 self.ui.solids.pushbutton_solids_dem,
+                 self.ui.solids.pushbutton_solids_pic)
 
         for (item, state) in zip(items, item_states[solver]):
             item.setDisabled(not state)
@@ -541,13 +541,13 @@ class MfixGui(QtWidgets.QMainWindow):
         active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
         if active_tab > 0 and not item_states[solver][active_tab]:
             if solver==SINGLE:
-                i, p = 0, self.ui.solids.pushbutton_materials  # This one should be open (?)
+                i, p = 0, self.ui.solids.pushbutton_solids_materials  # This one should be open (?)
             elif solver in (TFM, HYBRID):
-                i, p = 1, self.ui.solids.pushbutton_continuum
+                i, p = 1, self.ui.solids.pushbutton_solids_tfm
             elif solver==DEM:
-                i, p = 2, self.ui.solids.pushbutton_discrete
+                i, p = 2, self.ui.solids.pushbutton_solids_dem
             elif solver==PIC:
-                i, p = 3, self.ui.solids.pushbutton_parcel
+                i, p = 3, self.ui.solids.pushbutton_solids_pic
             self.solids_change_tab(i, p)
 
         # Options which require TFM, DEM, or PIC
@@ -819,13 +819,14 @@ class MfixGui(QtWidgets.QMainWindow):
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
 
         # connect solid tab btns
-        for i, btn in enumerate((s.pushbutton_materials,
-                                 s.pushbutton_continuum,
-                                 s.pushbutton_discrete,
-                                 s.pushbutton_parcel)):
+        for i, btn in enumerate((s.pushbutton_solids_materials,
+                                 s.pushbutton_solids_tfm,
+                                 s.pushbutton_solids_dem,
+                                 s.pushbutton_solids_pic)):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
-        self.solids_change_tab(0, s.pushbutton_materials)
+
+        self.solids_change_tab(0, s.pushbutton_solids_materials) # ?
 
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
