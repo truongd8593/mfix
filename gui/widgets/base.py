@@ -89,7 +89,6 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
         CommonBase.__init__(self)
-        # Why connect to both?
         self.textChanged.connect(self.mark_changed)
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
