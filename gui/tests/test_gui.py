@@ -33,11 +33,16 @@ class MfixGuiTests(TestQApplication):
     def find_exes(self):
         """find all mfix and pymfix executables"""
         matches = []
-        for root, dirnames, filenames in os.walk(os.path.join(self.mfix_home, 'build')):
-            for filename in fnmatch.filter(filenames, 'mfix'):
-                matches.append(os.path.join(root, filename))
-            for filename in fnmatch.filter(filenames, 'pymfix'):
-                matches.append(os.path.join(root, filename))
+        patterns = ('mfix', 'pymfix')
+        for paths in [glob.glob(os.path.join(self.mfix_home, 'build', '*', 'build-aux', pattern)) for pattern in patterns]:
+            for path in paths:
+                matches.append(path)
+        for path in os.environ['PATH'].split(os.pathsep):
+            for pattern in patterns:
+                exe = os.path.join(path, pattern)
+                if os.path.exists(exe):
+                    matches.append(exe)
+
         return matches
 
     def setUp(self):

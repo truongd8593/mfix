@@ -2007,7 +2007,7 @@ def main(args):
         # autoload last project
         project_file = mfix.get_project_file()
 
-    if project_file:
+    if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
         # disable all widgets except New and Open
