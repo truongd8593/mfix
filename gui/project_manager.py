@@ -91,7 +91,6 @@ class ProjectManager(Project):
                                        color='red')
             return
 
-
         keytuple = tuple([key]+args)
         widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
         keytuple_star = tuple([key]+['*'])
@@ -130,8 +129,8 @@ class ProjectManager(Project):
             finally:
                 self._widget_update_stack.pop()
 
-        if updatedValue is None:
-            self.gui.unset_keyword(key, args)
+        if updatedValue is None or updatedValue=='':
+            self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = str(updatedValue) # Just used for log message
             if isinstance(updatedValue, bool):
@@ -310,7 +309,7 @@ class ProjectManager(Project):
                              format_key_with_args(kw.key, kw.args),
                              kw.value)
 
-                    self.gui.unset_keyword(kw.key, args=kw.args)
+                    self.gui.unset_keyword(kw.key, args=kw.args) # print msg in window
                     continue
                 try:
                     self.submit_change(None, {kw.key: kw.value},
