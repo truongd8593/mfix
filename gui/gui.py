@@ -402,57 +402,75 @@ class MfixGui(QtWidgets.QMainWindow):
         if not self.is_project_open():
             return
 
-        running = (self.run_thread.mfixproc is not None)
-        not_running = not running
+        # TODO: set this in __init__ or another early setup method
+        # assemble list of available executables
+        output = self.monitor_thread.get_executables()
+        self.mfix_available = bool(output)
 
+        running = (self.run_thread.mfixproc is not None)
         res_file_exists = bool(self.monitor_thread.get_res())
 
+        if not self.mfix_available:
+            # TODO: re-purpose wanring box for general status messages
+            self.ui.run.spinbox_mfix_executables_warning.setVisible(True)
+            # no point in toggling anything else
+            return
+
+        self.ui.run.spinbox_mfix_executables_warning.setVisible(False)
+        self.ui.run.spinbox_mfix_executables.setVisible(True)
+
+        self.ui.toolbutton_run.setEnabled(True)
+        self.ui.toolbutton_reset.setEnabled(res_file_exists and not running)
+        self.ui.run.button_run_mfix.setEnabled(True)
+        self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
+        self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
+
+        if running:
+            self.ui.run.spinbox_mfix_executables.setEnabled(False)
+            self.ui.run.button_run_mfix.setText("Stop")
+            self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
+            self.ui.toolbutton_run.setText("Stop")
+            self.ui.toolbutton_reset.setEnabled(False)
+            if self.pymfix_enabled:
+                self.ui.run.button_pause_mfix.setText("Pause")
+
+        else:
+            self.ui.run.spinbox_mfix_executables.setEnabled(True)
+            self.ui.run.openmp_threads.setEnabled(self.smp_enabled)
+            self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
+            self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
+            self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
+            if self.pymfix_enabled:
+                self.ui.run.button_pause_mfix.setText("Unpause")
+
+            if res_file_exists:
+                self.ui.toolbutton_reset.setEnabled(True)
+                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run.setText("Resume")
+                self.ui.run.button_run_mfix.setText("Resume")
+                self.ui.run.button_reset_mfix.setEnabled(True)
+                self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
+                self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
+            else:
+                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run.setText("Run")
+                self.ui.run.button_run_mfix.setText("Run")
+                self.ui.run.button_reset_mfix.setEnabled(False)
+                self.ui.run.use_spx_checkbox.setEnabled(False)
+
+        # concerned that we do this for every update ... need to allow user
+        # selection via dialog box and persist that selection between
+        # screen updates
         self.handle_select_executable()
 
         current_selection = self.ui.run.spinbox_mfix_executables.currentText()
         self.ui.run.spinbox_mfix_executables.clear()
-        output = self.monitor_thread.get_executables()
         for executable in output:
             self.ui.run.spinbox_mfix_executables.addItem(executable)
         if current_selection in self.monitor_thread.executables:
             self.ui.run.spinbox_mfix_executables.setEditText(current_selection)
         self.handle_select_executable()
 
-        mfix_available = bool(output)
-
-        self.ui.run.spinbox_mfix_executables.setEnabled(not_running)
-        self.ui.run.button_pause_mfix.setEnabled(running and self.pymfix_enabled)
-        self.ui.run.openmp_threads.setEnabled(not_running and self.smp_enabled)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled(not_running and self.dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled(not_running and self.dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled(not_running and self.dmp_enabled)
-
-        self.ui.run.spinbox_mfix_executables.setVisible(mfix_available)
-        self.ui.run.spinbox_mfix_executables_warning.setVisible(not mfix_available)
-
-        self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
-        self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
-        self.ui.toolbutton_reset.setEnabled(res_file_exists and not_running)
-        self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not_running)
-
-        if res_file_exists:
-            if running:
-                self.ui.run.button_run_mfix.setText("Stop")
-                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
-                self.ui.toolbutton_run.setText("Stop")
-            else:
-                self.ui.run.button_run_mfix.setText("Resume")
-                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-                self.ui.toolbutton_run.setText("Resume")
-        else:
-            if running:
-                self.ui.run.button_run_mfix.setText("Stop")
-                self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
-                self.ui.toolbutton_run.setText("Stop")
-            else:
-                self.ui.run.button_run_mfix.setText("Run")
-                self.ui.toolbutton_run.setIcon(get_icon('play.png'))
-                self.ui.toolbutton_run.setText("Run")
 
 
     def print_welcome(self):

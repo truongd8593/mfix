@@ -26,7 +26,7 @@
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="1" column="0" colspan="2">
+      <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="spinbox_mfix_executables_warning">
         <property name="palette">
          <palette>
@@ -477,6 +477,9 @@
       </item>
       <item row="10" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> sec</string>
         </property>
@@ -490,6 +493,9 @@
       </item>
       <item row="9" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> sec</string>
         </property>
@@ -510,6 +516,9 @@
       </item>
       <item row="7" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_time">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> sec</string>
         </property>
@@ -548,12 +557,18 @@
       </item>
       <item row="3" column="1">
        <widget class="SpinBox" name="spinbox_keyword_nodesi">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
+      <item row="1" column="0" colspan="2">
        <widget class="QComboBox" name="spinbox_mfix_executables"/>
       </item>
       <item row="9" column="0">
@@ -565,6 +580,9 @@
       </item>
       <item row="8" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_tstop">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string> sec</string>
         </property>
@@ -589,6 +607,9 @@
       </item>
       <item row="2" column="1">
        <widget class="QSpinBox" name="openmp_threads">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -596,6 +617,9 @@
       </item>
       <item row="5" column="1">
        <widget class="SpinBox" name="spinbox_keyword_nodesk">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -603,6 +627,9 @@
       </item>
       <item row="4" column="1">
        <widget class="SpinBox" name="spinbox_keyword_nodesj">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -655,6 +682,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QCheckBox" name="use_spx_checkbox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Use SPX Files</string>
         </property>
