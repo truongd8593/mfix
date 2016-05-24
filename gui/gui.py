@@ -899,7 +899,7 @@ class MfixGui(QtWidgets.QMainWindow):
                             widget.addItems(list(doc['valids'].keys()))
 
                 # register the widget with the project manager
-                self.project.register_widget(widget, keys=[keyword], args=args)
+                self.project.register_widget(widget, keys=[key], args=args)
 
                 # connect to set_unsaved_flag method
                 widget.value_updated.connect(self.set_unsaved_flag)
