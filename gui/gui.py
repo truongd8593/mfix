@@ -1479,13 +1479,16 @@ class MfixGui(QtWidgets.QMainWindow):
     # TODO make sure all gui items have updated, eg Lineedit with
     # editing_finished events
     def handle_save(self):
+        # TODO:  catch/report exceptions!
         self.save_project()
         self.open_project(self.get_project_file())
 
     def handle_export(self):
+        # TODO:  catch/report exceptions!
         return self.export_project()
 
     def handle_save_as(self):
+        # TODO:  catch/report exceptions!
         return self.save_as()
 
     def set_unsaved_flag(self):
@@ -1662,13 +1665,23 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # cgw - lots more model setup todo here.  Should we do this here or
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
-
+        # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
+        solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
                 self.set_fluid_phase_name(val)
+            if key.startswith('solids_phase_name('):
+                n = int(key.split('(')[1][:-1])
+                solids_phase_names[n] = val
             # Add more here
 
+        # Ugly hack, copy ordered dict to modify keys w/o losing order
+        if solids_phase_names:
+            s = OrderedDict()
+            for (i, (k,v)) in enumerate(self.solids.items(), 1):
+                s[solids_phase_names.get(i, k)] = v
+            self.solids = s
 
         # Fluid phase
         # fluid species table
@@ -1716,6 +1729,7 @@ class MfixGui(QtWidgets.QMainWindow):
         geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry) and self.use_vtk:
             self.vtkwidget.add_stl(None, filename=geometry)
+
 
     # --- fluid species methods ---
     def fluid_species_revert(self):
@@ -1936,7 +1950,7 @@ class MfixGui(QtWidgets.QMainWindow):
             d[k] = v
         self.solids = d
         self.update_solids_table()
-        self.project.mfix_gui_comments['solid_phase_name(%s)'%phase] = new_name
+        self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
 
     def solids_delete(self):
         tw = self.ui.solids.tablewidget_solids
