@@ -129,7 +129,8 @@ class ProjectManager(Project):
             finally:
                 self._widget_update_stack.pop()
 
-        if updatedValue is None or updatedValue=='':
+        if updatedValue is None or updatedValue=='': # why are we getting ''?  has to do with
+                                                     # validation and "saved_value"
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = str(updatedValue) # Just used for log message
@@ -332,7 +333,12 @@ class ProjectManager(Project):
         """ Register a widget with the project manager. The widget must have a
         value_updated signal to connect to.  If args is not None, widget will
         be updated only when the keyword with matching args is updated.  If
-        args=['*'], widget recieves updates regardless of args. """
+        args=['*'], widget recieves updates regardless of args.
+
+        Special args:  'S' will be substituted with the currently selected
+                        solids phase (the one the user is editing)
+        """
+
 
         if args is None:
             args = []
