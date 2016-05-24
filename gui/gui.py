@@ -369,6 +369,17 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # Update run options
         self.update_run_options()
+        # This is the end of __init__ (hooray!)
+
+
+    def confirm_close(self):
+        if self.unsaved_flag:
+            confirm = self.message(text="File not saved, really quit?",
+                                   buttons=['yes', 'no'],
+                                   default='no')
+            return confirm == 'yes'
+        else:
+            return True
 
     def set_keyword(self, key, value, args=None):
         """convenience function to set keyword"""
@@ -483,14 +494,19 @@ class MfixGui(QtWidgets.QMainWindow):
         return "0.2x" # placeholder
 
     def closeEvent(self, event):
-
         log.debug('Closing GUI')
 
-        # cleanup threads
-        self.run_thread.quit()
-        self.monitor_thread.quit()
-        if hasattr(self, 'update_residuals_thread'):
-            self.update_residuals_thread.quit()
+        if not self.confirm_close():
+            event.ignore()
+            return
+        # cleanup threads.  Is this necessary?  The whole
+        # process is about to exit and will take down threads
+        # with it.
+        if False:
+            self.run_thread.quit()
+            self.monitor_thread.quit()
+            if hasattr(self, 'update_residuals_thread'):
+                self.update_residuals_thread.quit()
 
         event.accept()
 
@@ -738,7 +754,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if self.solids_current_phase is None:
             return # shouldn't get here
         phase = self.solids_current_phase
-        name, data = self.solids.items()[phase] # FIXME, use SpeciesCollection not OrderedDict here
+        name, data = self.solids.items()[phase-1] # FIXME, use SpeciesCollection not OrderedDict here
         model = ('TFM', 'DEM', 'PIC')[index]
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
