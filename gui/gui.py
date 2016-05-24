@@ -1528,7 +1528,6 @@ class MfixGui(QtWidgets.QMainWindow):
         ui.toolbutton_save.setEnabled(True)
         ui.toolbutton_save_as.setEnabled(True)
         ui.toolbutton_export.setEnabled(True)
-        print(ui.toolbutton_save.isEnabled())
 
     def clear_unsaved_flag(self):
         self.unsaved_flag = False
