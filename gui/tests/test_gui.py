@@ -33,7 +33,7 @@ class MfixGuiTests(TestQApplication):
     def find_exes(self):
         """find all mfix and pymfix executables"""
         matches = []
-        for root, dirnames, filenames in os.walk(os.path.join(self.mfix_home, 'gui')):
+        for root, dirnames, filenames in os.walk(os.path.join(self.mfix_home, 'build')):
             for filename in fnmatch.filter(filenames, 'mfix'):
                 matches.append(os.path.join(root, filename))
             for filename in fnmatch.filter(filenames, 'pymfix'):
@@ -129,13 +129,11 @@ class MfixGuiTests(TestQApplication):
 
         # stop run
         QTest.mouseClick(self.mfix.ui.run.button_run_mfix, QtCore.Qt.LeftButton)
-        time.sleep(.25)
         self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
         self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Resume")
 
         # start resume
         QTest.mouseClick(self.mfix.ui.run.button_run_mfix, QtCore.Qt.LeftButton)
-        time.sleep(.25)
         self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
         self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Stop")
 
@@ -160,6 +158,7 @@ class MfixGuiTests(TestQApplication):
         # new_text = u'Παν語'
         new_text = u'some new text'
         QTest.keyClicks(self.mfix.ui.general.combobox_keyword_description, new_text)
+        QTest.keyClick(self.mfix.ui.general.combobox_keyword_description, QtCore.Qt.Key_Enter)
         QTest.mouseClick(self.mfix.ui.toolbutton_save, QtCore.Qt.LeftButton)
 
         new_description = str(description + new_text)
