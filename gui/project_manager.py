@@ -133,8 +133,10 @@ class ProjectManager(Project):
         if updatedValue is None:
             self.gui.unset_keyword(key, args)
         else:
-            self.gui.print_internal("%s = %s" % (format_key_with_args(key, args),
-                                                 updatedValue),
+            val_str = str(updatedValue) # Just used for log message
+            if isinstance(updatedValue, bool):
+                val_str = '.%s.' % val_str # Convert bools to Fortran-style
+            self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace",
                                     color='green' if widgets_to_update else None)
 

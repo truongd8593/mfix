@@ -1324,7 +1324,7 @@ class Project(object):
         return True
 
     def _cleanDeletedItems(self):
-        """Purge objects marked with self.delete==True."""
+        """Purge objects marked with self.delete==True"""
 
         for condType in [self.ics, self.bcs, self.pss, self.iss]:
             for cond in condType:
