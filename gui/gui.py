@@ -855,23 +855,32 @@ class MfixGui(QtWidgets.QMainWindow):
             name_list = str(widget.objectName()).split('_')
 
             if 'keyword' in name_list:
-                keyword_idx = name_list.index('keyword')
+                key_idx = name_list.index('keyword')
                 args = None
                 # Look for _args_ following <keyword>
                 if 'args' in name_list:
                     args_idx = name_list.index('args')
                     args = map(try_int, name_list[args_idx+1:])
-                    keyword = '_'.join(name_list[keyword_idx+1:args_idx])
+                    key = '_'.join(name_list[key_idx+1:args_idx])
                 else:
-                    keyword = '_'.join(name_list[keyword_idx+1:])
+                    key = '_'.join(name_list[key_idx+1:])
+
+                # sometimes multiple widgets point to the same key ...
+                # name them widget_keyword_KW_1, _2, etc
+                if key not in self.keyword_doc:
+                    name_list = key.split('_')
+                    if name_list[-1].isdigit():
+                        base_key = '_'.join(name_list[:-1])
+                        if base_key in self.keyword_doc:
+                            key = base_key
 
                 # set the key attribute to the keyword
-                widget.key = keyword
+                widget.key = key
                 widget.args = args
 
                 # add info from keyword documentation
-                if keyword in self.keyword_doc:
-                    doc = self.keyword_doc[keyword]
+                if key in self.keyword_doc:
+                    doc = self.keyword_doc[key]
                     widget.setdtype(doc['dtype'])
                     if 'required' in doc:
                         widget.setValInfo(
