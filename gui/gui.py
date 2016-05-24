@@ -365,7 +365,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.fluid_species = OrderedDict()
         self.saved_fluid_species = None
         self.solids = OrderedDict()
-        self.current_solid_index = None
+        self.solids_current_phase = None
 
         # Update run options
         self.update_run_options()
@@ -518,10 +518,19 @@ class MfixGui(QtWidgets.QMainWindow):
         for (item, state) in zip(items, item_states[solver]):
             item.setDisabled(not state)
 
+        # Don't stay on a disabled tab!
         # Do we ever disable "Materials"?
         active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
-        if active_tab > 0 and not items[active_tab-1].isEnabled(): # Don't stay on a disabled tab!
-            self.solids_change_tab(0, self.ui.solids.pushbutton_materials) # This one should be open (?)
+        if active_tab > 0 and not item_states[solver][active_tab]:
+            if solver==SINGLE:
+                i, p = 0, self.ui.solids.pushbutton_materials  # This one should be open (?)
+            elif solver in (TFM, HYBRID):
+                i, p = 1, self.ui.solids.pushbutton_continuum
+            elif solver==DEM:
+                i, p = 2, self.ui.solids.pushbutton_discrete
+            elif solver==PIC:
+                i, p = 3, self.ui.solids.pushbutton_parcel
+            self.solids_change_tab(i, p)
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
@@ -541,7 +550,22 @@ class MfixGui(QtWidgets.QMainWindow):
                     and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
 
         # Solids Model selection tied to Solver
-        # XXX What to do about solids that are already defined?
+        # FIXME XXX What to do about solids that are already defined?
+
+        valid_models = (("DEM",) if solver==DEM
+                        else ("TFM",) if solver==TFM
+                        else ("PIC",) if solver==PIC
+                        else ("TFM", "DEM"))
+
+        for (i,(k,v)) in enumerate(self.solids.items(), 1):
+            model = v.get('model')
+            if model is None:
+                continue
+            if model not in valid_models:
+                model = valid_models[0]
+                self.update_keyword('solids_model', model, args=[i])
+                v['model'] = model
+        self.update_solids_table()
         self.setup_combobox_solids_model()
 
     def enable_energy_eq(self, state):
@@ -681,6 +705,10 @@ class MfixGui(QtWidgets.QMainWindow):
             else:
                 flags &= ~QtCore.Qt.ItemIsEnabled
             item.setFlags(flags)
+        # Set for current phase
+        if self.solids_current_phase is not None:
+            model = self.project.get_value("solids_model", args = self.solids_current_phase)
+            cb.setCurrentIndex(0 if model=='TFM' else 1 if model=='DEM' else 2)
         i = cb.currentIndex()
         if not enabled[i]:
             # Current selection no longer valid, so pick first valid choice
@@ -689,11 +717,14 @@ class MfixGui(QtWidgets.QMainWindow):
             cb.setCurrentIndex(j)
 
     def handle_combobox_solids_model(self, index):
-        if self.current_solid_index is None:
+        if self.solids_current_phase is None:
             return # shouldn't get here
-        models = ('TFM', 'DEM', 'PIC')
-        self.update_keyword('solids_model', models[index], args=self.current_solid_index)
-
+        phase = self.solids_current_phase
+        name, data = self.solids.items()[phase] # FIXME, use SpeciesCollection not OrderedDict here
+        model = ('TFM', 'DEM', 'PIC')[index]
+        self.update_keyword('solids_model', model, args=self.solids_current_phase)
+        data['model'] = model
+        self.update_solids_table()
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
@@ -749,23 +780,34 @@ class MfixGui(QtWidgets.QMainWindow):
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
 
         # Solid phase
-        tb = ui.solids.toolbutton_solids_add
+        s = ui.solids
+        tb = s.toolbutton_solids_add
         tb.clicked.connect(self.solids_add)
-        tb = ui.solids.toolbutton_solids_delete
+        tb = s.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-        #tw = ui.solids.tablewidget_solids
-        #tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        #cb = ui.solids.combobox_solids_model
-        #cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+        tw = s.tablewidget_solids
+        # Hack - force summary table to update  on kw updates
+        class TableWidgetProxy:
+            def objectName(self):
+                return "proxy"
+            def updateValue(*args):
+                self.update_solids_table()
+
+        self.project.register_widget(TableWidgetProxy(), ['solids_model', 'd_p0', 'ro_s0'], args='*')
+        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        cb = s.combobox_solids_model
+        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+        s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
 
         # connect solid tab btns
-        for i, btn in enumerate((self.ui.solids.pushbutton_material,
-                                 self.ui.solids.pushbutton_continuum,
-                                 self.ui.solids.pushbutton_discrete,
-                                 self.ui.solids.pushbutton_parcel)):
+        for i, btn in enumerate((s.pushbutton_materials,
+                                 s.pushbutton_continuum,
+                                 s.pushbutton_discrete,
+                                 s.pushbutton_parcel)):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
+        self.solids_change_tab(0, s.pushbutton_materials)
 
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
@@ -780,8 +822,8 @@ class MfixGui(QtWidgets.QMainWindow):
         """Look for and connect simple keyword widgets to the project manager.
         Keyword information from the namelist doc strings is added to each
         keyword widget. The widget must be named: *_keyword_<keyword> where
-        <keyword> is the actual keyword. For example:
-        lineedit_keyword_run_name"""
+        <keyword> is the actual keyword.
+        Args are also supported via widgetname_keyword_KEY_args_ARGS"""
 
         def try_int(str):
             try:
@@ -791,7 +833,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # loop through all widgets looking for *_keyword_<keyword>
         for widget in widget_iter(self):
-            name_list = str(widget.objectName()).lower().split('_')
+            name_list = str(widget.objectName()).split('_')
 
             if 'keyword' in name_list:
                 keyword_idx = name_list.index('keyword')
@@ -975,7 +1017,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
+        animnow = QtCore.QPropertyAnimation(from_widget, "pos")
         animnow.setDuration(self.animation_speed)
         animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnow.setStartValue(
@@ -985,7 +1027,7 @@ class MfixGui(QtWidgets.QMainWindow):
                           0 - offsety))
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
+        animnext = QtCore.QPropertyAnimation(to_widget, "pos")
         animnext.setDuration(self.animation_speed)
         animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnext.setStartValue(
@@ -997,7 +1039,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # line
         animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
+            animline = QtCore.QPropertyAnimation(line, "pos")
             animline.setDuration(self.animation_speed)
             animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
             animline.setStartValue(
@@ -1675,7 +1717,7 @@ class MfixGui(QtWidgets.QMainWindow):
         nrows = len(self.fluid_species)
         table.setRowCount(nrows)
         def make_item(val):
-            item = QtWidgets.QTableWidgetItem(str(val))
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
         old_nmax_g = self.project.get_value('nmax_g')
@@ -1771,8 +1813,7 @@ class MfixGui(QtWidgets.QMainWindow):
         return name
 
     def solids_add(self):
-        return
-        tw = self.ui.tablewidget_solids
+        tw = self.ui.solids.tablewidget_solids
         nrows = tw.rowCount()
         tw.setRowCount(nrows + 1)
         name = self.make_solids_name()
@@ -1789,32 +1830,36 @@ class MfixGui(QtWidgets.QMainWindow):
         tw.setCurrentCell(nrows, 0) # Select new item
 
     def handle_solids_table_selection(self):
-        return
-        tw = self.ui.tablewidget_solids
+        s = self.ui.solids
+        tw = s.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
-        self.ui.toolbutton_solids_delete.setEnabled(enabled)
-        self.ui.toolbutton_solids_copy.setEnabled(enabled)
+        s.toolbutton_solids_delete.setEnabled(enabled)
+        s.toolbutton_solids_copy.setEnabled(enabled)
         name = None if row is None else tw.item(row,0).text()
-        self.current_solid_index = (row+1) if row is not None else None
+        self.solids_current_phase = (row+1) if row is not None else None
         self.update_solids_detail_pane(name)
 
     def update_solids_detail_pane(self, name):
-        ui = self.ui
-        sa = ui.scrollarea_solids_detail
+        s = self.ui.solids
+        sa = s.scrollarea_solids_detail
         if name is None:
             sa.setEnabled(False)
             # Clear out all values?
         else:
             data = self.solids[name]
             sa.setEnabled(True)
-            ui.lineedit_solids_name.setText(name)
+            s.lineedit_solids_phase_name.setText(name)
             self.setup_combobox_solids_model()
+            # Inialize all the line edit widgets
+            def as_str(x):
+                return '' if x is None else str(x)
+            s.lineedit_keyword_d_p0_args_S.setText(as_str(data['diameter']))
+            s.lineedit_keyword_ro_s0_args_S.setText(as_str(data['density']))
 
     def update_solids_table(self):
-        return
         hv = QtWidgets.QHeaderView
-        table = self.ui.tablewidget_solids
+        table = self.ui.solids.tablewidget_solids
         if PYQT5:
             resize = table.horizontalHeader().setSectionResizeMode
         else:
@@ -1823,23 +1868,48 @@ class MfixGui(QtWidgets.QMainWindow):
             resize(n, hv.ResizeToContents if n>0
                    else hv.Stretch)
 
-        table.clearContents()
         if self.solids is None:
+            table.clearContents()
             return
         nrows = len(self.solids)
         table.setRowCount(nrows)
         def make_item(val):
-            item = QtWidgets.QTableWidgetItem(str(val))
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
+
+        #Update the internal table from keywords
+        # TODO: remove this, use SolidsCollection
+        for (i, (k,v)) in enumerate(self.solids.items(), 1):
+            for (myname, realname) in (('model', 'solids_model'),
+                                       ('diameter', 'd_p0'),
+                                       ('density', 'ro_s0')):
+                self.solids[k][myname] = self.project.get_value(realname, args=i)
+
         for (row,(k,v)) in enumerate(self.solids.items()):
             table.setItem(row, 0, make_item(k))
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
 
+    def handle_solids_phase_name(self):
+        # FIXME make this unique
+        new_name = self.ui.solids.lineedit_solids_phase_name.text()
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        old_name = self.solids.keys()[phase-1] # Ugh
+        # Rewriting dict to change key while preserving order
+        d = OrderedDict() # Ugh.  Use SpeciesCollection!
+        for (k,v) in self.solids.iteritems():
+            if k==old_name:
+                k = new_name
+            d[k] = v
+        self.solids = d
+        self.update_solids_table()
+        self.project.mfix_gui_comments['solid_phase_name(%s)'%phase] = new_name
+
     def solids_delete(self):
-        return
-        tw = self.ui.tablewidget_solids
+        tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
             return

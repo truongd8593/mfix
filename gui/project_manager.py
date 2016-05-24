@@ -38,8 +38,17 @@ class ProjectManager(Project):
         # the widget that the user activated), or from the initial mfix
         # loading (in which case widget == None)
 
+        if args is None:
+            args = []
         if isinstance(args, int):
             args = [args]
+
+        # Special argument handling!
+        # Currently only "S" = solids phase is defined
+        args = args[:] # Copy since we're modifying
+        for (i, arg) in enumerate(args):
+            if arg == 'S': #selected solid phase
+                args[i] = self.gui.solids_current_phase
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):
@@ -87,11 +96,17 @@ class ProjectManager(Project):
         widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
         keytuple_star = tuple([key]+['*'])
         widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
+        widgets_S = None
+        if args and self.gui.solids_current_phase == args[0]:
+            keytuple_S = tuple([key]+['S'])
+            widgets_S = self.keyword_and_args_to_widget.get(keytuple_star)
 
         if widgets_to_update == None:
             widgets_to_update = []
         if widgets_star:
             widgets_to_update.extend(widgets_star)
+        if widgets_S:
+            widgets_to_update.extend(widgets_S)
 
         # Are we using the 'all' mechanism?
         #widgets_to_update.extend(
@@ -335,7 +350,8 @@ class ProjectManager(Project):
                 d[keytuple] = []
             d[keytuple].append(widget)
 
-        widget.value_updated.connect(self.submit_change)
+        if hasattr(widget, 'value_updated'):
+            widget.value_updated.connect(self.submit_change)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 

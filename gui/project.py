@@ -1425,6 +1425,9 @@ class Project(object):
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
+        ### TODO:  format species sections
+        # delimit new additions from initial file contents (comment line)
+
         last_line = None
         with open(fname, 'wb') as dat_file:
             for line in self.convertToString():
