@@ -625,11 +625,6 @@ background-color:white;
                  </item>
                  <item>
                   <property name="text">
-                   <string>Interact</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
                    <string>Post Processing</string>
                   </property>
                   <item>
