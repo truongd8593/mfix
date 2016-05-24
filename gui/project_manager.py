@@ -99,7 +99,7 @@ class ProjectManager(Project):
         widgets_S = None
         if args and self.gui.solids_current_phase == args[0]:
             keytuple_S = tuple([key]+['S'])
-            widgets_S = self.keyword_and_args_to_widget.get(keytuple_star)
+            widgets_S = self.keyword_and_args_to_widget.get(keytuple_S)
 
         if widgets_to_update == None:
             widgets_to_update = []
