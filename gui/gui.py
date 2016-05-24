@@ -917,8 +917,15 @@ class MfixGui(QtWidgets.QMainWindow):
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)
 
-                # connect to set_unsaved_flag method
-                widget.value_updated.connect(self.set_unsaved_flag)
+            # connect to set_unsaved_flag method (keyword or not!)
+            if hasattr(widget, 'value_updated'):
+                try:
+                    widget.value_updated.connect(self.set_unsaved_flag)
+                except TypeError: # :(
+#Object::connect:  (sender name:   'tablewidget_regions')
+#Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
+#Object::connect:  (sender name:   'tablewidget_regions')
+                    pass #
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
@@ -1510,11 +1517,14 @@ class MfixGui(QtWidgets.QMainWindow):
     def set_unsaved_flag(self):
         self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
+        self.ui.toolbutton_save.setEnabled(True)
+        self.ui.toolbutton_save_as.setEnabled(True)
+        self.ui.toolbutton_export.setEnabled(True)
 
     def clear_unsaved_flag(self):
         self.unsaved_flag = False
         self.setWindowTitle('MFIX - %s' % self.get_project_file())
-
+        self.ui.toolbutton_save.setEnabled(False)
 
     def check_writable(self, directory):
         """check whether directory is writable """
