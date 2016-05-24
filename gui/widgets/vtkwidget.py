@@ -1433,9 +1433,10 @@ class VtkWidget(QtWidgets.QWidget):
 
         # copy properties from an exsiting actor
         if len(self.geometrydict) > 1:
-            other_actor = list(self.geometrydict.keys())
-            other_actor.remove(name)
-            other_actor = self.geometrydict[other_actor[0]]['actor']
+            name_list = list(self.geometrydict.keys())
+            # Get any key which is not equal to 'name'.  Order of keys is arbitrary
+            other_name = name_list[1] if name_list[0]==name else name_list[0]
+            other_actor = self.geometrydict[other_name]['actor']
             actor.GetProperty().DeepCopy(other_actor.GetProperty())
         else:
             actor.GetProperty().SetRepresentationToWireframe()
