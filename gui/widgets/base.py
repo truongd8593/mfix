@@ -97,6 +97,10 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
     def mark_changed(self):
         self.text_changed_flag = True
 
+    def setText(self, text):
+        QtWidgets.QLineEdit.setText(self, text)
+        self.saved_value = text
+
     def emitUpdatedValue(self):
         need_to_signal = self.text_changed_flag
         self.text_changed_flag = False
