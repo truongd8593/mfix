@@ -135,7 +135,6 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
                         text = text[2:-1]
-
                     eq = Equation(text)
                     f = float(eq)
                     self.saved_value = eq
@@ -165,8 +164,10 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
         if new_value is not None:
             self.saved_value = new_value
 
-
         sval = str(new_value).strip()
+        while sval.startswith("@(") and sval.endswith(")"):
+            sval = sval[2:-1]
+
         self.setText(sval)
 
 

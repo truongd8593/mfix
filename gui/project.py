@@ -210,16 +210,10 @@ class Equation(object):
     while evaluating None returns NaN"""
 
     def __init__(self, eq):
-        if not eq:
-            debug_trace()
-        # Check to make sure eq is not already an equation object
-        if isinstance(eq, Equation):
-            self.eq = eq.eq
-        else:
-            eq = str(eq).replace(' ', '')
-            if eq.startswith("@(") and eq.endswith(")"):
-                eq = eq[2:-1]
-            self.eq = eq
+        eq = str(eq)
+        while eq.startswith("@(") and eq.endswith(")"):
+            eq = eq[2:-1]
+        self.eq = eq
 
     def _eval(self):
         if len(self.eq) == 0:
