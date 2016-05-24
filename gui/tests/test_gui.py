@@ -73,7 +73,7 @@ class MfixGuiTests(TestQApplication):
         gui.MfixGui.set_project_file = set_project_file
 
         log = logging.getLogger()
-        log.root.setLevel(logging.INFO)
+        log.root.setLevel(logging.WARN)
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
         QTest.qWaitForWindowShown(self.mfix)
