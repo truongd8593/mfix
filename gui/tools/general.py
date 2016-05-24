@@ -142,7 +142,6 @@ def get_unique_string(base, listofstrings):
             base = base.replace(nums[-1], '')
         else:
             number = 1
-        # Fixme - loop instead of recursing
         base = get_unique_string(base + str(number), listofstrings)
 
     return base
