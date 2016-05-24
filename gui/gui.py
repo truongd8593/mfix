@@ -293,8 +293,8 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- Connect Signals to Slots---
         # open/save/new project
-        self.ui.toolbutton_open.clicked.connect(self.handle_open_action)
-        self.ui.toolbutton_save.clicked.connect(self.save_project)
+        self.ui.toolbutton_open.clicked.connect(self.handle_open)
+        self.ui.toolbutton_save.clicked.connect(self.handle_save)
         self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as)
         self.ui.toolbutton_export.clicked.connect(self.handle_export)
 
@@ -1469,7 +1469,8 @@ class MfixGui(QtWidgets.QMainWindow):
     # TODO make sure all gui items have updated, eg Lineedit with
     # editing_finished events
     def handle_save(self):
-        return self.save_project()
+        self.save_project()
+        self.open_project(self.get_project_file())
 
     def handle_export(self):
         return self.export_project()
@@ -1534,7 +1535,7 @@ class MfixGui(QtWidgets.QMainWindow):
         return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
-    def handle_open_action(self):
+    def handle_open(self):
         """handler for toolbar Open button"""
         project_path = self.get_open_filename()
         # qt4/qt5 compat hack
