@@ -104,6 +104,15 @@ class MfixGuiTests(TestQApplication):
 
         TestQApplication.tearDown(self)
 
+    def get_tree_item(self, name):
+        flags = QtCore.Qt.MatchFixedString | QtCore.Qt.MatchRecursive
+        clist =  self.mfix.ui.treewidget_model_navigation.findItems(name, flags, 0)
+        assert len(clist) ==1
+        return clist[0]
+
+    def open_tree_item(name):
+        self.mfix.ui.treewidget_model_navigation.setCurrentItem(self.get_tree_item(name))
+
     def test_save_as(self):
         newname = 'DES_FB1_new_name'
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
@@ -149,13 +158,7 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(os.path.exists(logfile))
 
     def test_description_unicode(self):
-        run_treeitem = None
-        for item in self.mfix.ui.treewidget_model_navigation.findItems(
-                    'general', QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive, 0):
-            run_treeitem = item
-
-        self.mfix.ui.treewidget_model_navigation.setCurrentItem(run_treeitem)
-
+        self.open_tree_item('run')
         description = self.mfix.ui.general.combobox_keyword_description.value
         self.mfix.ui.general.combobox_keyword_description.setFocus()
         QTest.keyClick(self.mfix.ui.general.combobox_keyword_description, QtCore.Qt.Key_Right)
@@ -179,13 +182,7 @@ class MfixGuiTests(TestQApplication):
         self.assertEqual(found, 1)
 
     def test_tstop(self):
-        run_treeitem = None
-        for item in self.mfix.ui.treewidget_model_navigation.findItems(
-                    'run', QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive, 0):
-            run_treeitem = item
-
-        self.mfix.ui.treewidget_model_navigation.setCurrentItem(run_treeitem)
-
+        self.open_tree_item('run')
         dt = self.mfix.ui.run.doublespinbox_keyword_dt.value()
         new_tstop = 5*dt
         self.mfix.ui.run.doublespinbox_keyword_tstop.setValue(new_tstop)
