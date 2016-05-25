@@ -278,7 +278,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.toolbutton_save_as.setIcon(get_icon('save.png'))
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
-        self.ui.toolbutton_run_stop.setIcon(get_icon('play.png'))
+        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
         self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
@@ -308,7 +308,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
         self.ui.run.button_pause_mfix.clicked.connect(self.pause_mfix)
         self.ui.run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        self.ui.toolbutton_run_stop.clicked.connect(self.handle_run_stop)
+        self.ui.toolbutton_run_stop_mfix.clicked.connect(self.handle_run_stop)
         self.ui.toolbutton_reset_mfix.clicked.connect(self.remove_output_files)
         self.ui.run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
 
@@ -428,7 +428,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_mfix_executables_warning.setVisible(False)
         self.ui.run.spinbox_mfix_executables.setVisible(True)
 
-        self.ui.toolbutton_run_stop.setEnabled(True)
+        self.ui.toolbutton_run_stop_mfix.setEnabled(True)
         self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_run_stop_mfix.setEnabled(True)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
@@ -437,8 +437,8 @@ class MfixGui(QtWidgets.QMainWindow):
         if running:
             self.ui.run.spinbox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
-            self.ui.toolbutton_run_stop.setIcon(get_icon('stop.png'))
-            self.ui.toolbutton_run_stop.setText("Stop")
+            self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
+            self.ui.toolbutton_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_reset_mfix.setEnabled(False)
             if self.pymfix_enabled:
                 self.ui.run.button_pause_mfix.setText("Pause")
@@ -454,15 +454,15 @@ class MfixGui(QtWidgets.QMainWindow):
 
             if res_file_exists:
                 self.ui.toolbutton_reset_mfix.setEnabled(True)
-                self.ui.toolbutton_run_stop.setIcon(get_icon('play.png'))
-                self.ui.toolbutton_run_stop.setText("Resume")
+                self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run_stop_mfix.setText("Resume")
                 self.ui.run.button_run_stop_mfix.setText("Resume")
                 self.ui.run.button_reset_mfix.setEnabled(True)
                 self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
                 self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
             else:
-                self.ui.toolbutton_run_stop.setIcon(get_icon('play.png'))
-                self.ui.toolbutton_run_stop.setText("Run")
+                self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+                self.ui.toolbutton_run_stop_mfix.setText("Run")
                 self.ui.run.button_run_stop_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
@@ -2160,7 +2160,7 @@ def main(args):
         mfix.set_solver(SINGLE)
         mfix.ui.stackedwidget_mode.setVisible(False)
         mfix.ui.toolbutton_export.setEnabled(False)
-        mfix.ui.toolbutton_run_stop.setEnabled(False)
+        mfix.ui.toolbutton_run_stop_mfix.setEnabled(False)
         mfix.ui.toolbutton_save.setEnabled(False)
         mfix.ui.toolbutton_save_as.setEnabled(False)
         # This gets set by guess_solver if we're loading a project, otherwise

@@ -376,7 +376,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="0" column="6">
-               <widget class="QToolButton" name="toolbutton_run_stop">
+               <widget class="QToolButton" name="toolbutton_run_stop_mfix">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
