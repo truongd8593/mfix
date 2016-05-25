@@ -1817,7 +1817,8 @@ class MfixGui(QtWidgets.QMainWindow):
         # (It would be good to instantate a new Project instead of trying
         # to clear all data members)
         self.fluid_species.clear()
-        self.vtkwidget.clear_all_geometry()
+        if self.vtkwidget is not None:
+            self.vtkwidget.clear_all_geometry()
         self.ui.regions.clear()
 
         self.ui.lineedit_fluid_phase_name.setText("Fluid") # default
