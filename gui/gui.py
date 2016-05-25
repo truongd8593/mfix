@@ -123,6 +123,8 @@ class MfixGui(QtWidgets.QMainWindow):
         self.smp_enabled = False
         self.dmp_enabled = False
         self.pymfix_enabled = False
+        self.unsaved_flag = False
+        self.vtkwidget = None
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -1110,21 +1112,22 @@ class MfixGui(QtWidgets.QMainWindow):
 
             # connect to set_unsaved_flag method (keyword or not!)
             widget_name = widget.objectName()
-            if 'save' in widget_name: # Save/save as buttons
-                continue
-            if widget_name.endswith("_mfix"): # Run controls
-                continue
-            if widget_name=='tablewidget_regions':
-                continue
+            # Don't set unsaved_flags for these widgets
+            skiplist = ('toolbutton_open', 'toolbutton_save', 'tablewidget_regions',
+                        'toolbutton_save_as')
+
 #Object::connect:  (sender name:   'tablewidget_regions')
 #Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
-            if 'button' in widget_name:
-                widget.clicked.connect(self.set_unsaved_flag)
-                print(widget_name)
-            elif hasattr(widget, 'value_updated'):
-                print(widget_name)
-                widget.value_updated.connect(self.set_unsaved_flag)
 
+            if any(x in widget_name for x in skiplist):
+                continue
+            if widget_name.endswith('_mfix'): # Run controls
+                continue
+            if 'button' in widget_name: # No 'value_updated' for buttons
+                widget.clicked.connect(self.set_unsaved_flag)
+            elif hasattr(widget, 'value_updated'): # Covers all custom widgets
+                widget.value_updated.connect(self.set_unsaved_flag)
+            # Does that cover everything?
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
@@ -1719,10 +1722,9 @@ class MfixGui(QtWidgets.QMainWindow):
         return self.save_as()
 
     def set_unsaved_flag(self):
-        print("UNSAVED")
-        ui = self.ui
         self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
+        ui = self.ui
         ui.toolbutton_save.setEnabled(True)
         ui.toolbutton_save_as.setEnabled(True)
         ui.toolbutton_export.setEnabled(True)
@@ -1877,7 +1879,6 @@ class MfixGui(QtWidgets.QMainWindow):
                 project_file = renamed_project_file
                 self.project.writeDatFile(project_file)
                 self.print_internal(save_msg, color='blue')
-
         if not self.is_project_open(): # why?
             self.ui.stackedwidget_mode.setVisible(True)
 
@@ -1977,6 +1978,7 @@ class MfixGui(QtWidgets.QMainWindow):
             if os.path.exists(geometry):
                 self.vtkwidget.add_stl(None, filename=geometry)
 
+        # End of open_project
 
     # --- fluid species methods ---
     def fluid_species_revert(self):
