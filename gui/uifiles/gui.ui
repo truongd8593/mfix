@@ -262,7 +262,7 @@ QPushButton:checked {
                <number>0</number>
               </property>
               <item row="0" column="7">
-               <widget class="QToolButton" name="toolbutton_reset">
+               <widget class="QToolButton" name="toolbutton_reset_mfix">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>

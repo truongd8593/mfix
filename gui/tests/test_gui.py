@@ -206,7 +206,7 @@ class MfixGuiTests(TestQApplication):
         if self.find_exes():
             self.skipTest("Only valid when executables are not present")
         self.assertFalse(self.mfix.ui.toolbutton_run_stop.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_reset.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())

@@ -279,7 +279,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.toolbutton_export.setIcon(get_icon('export.png'))
 
         self.ui.toolbutton_run_stop.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_reset.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
 
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -309,7 +309,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.button_pause_mfix.clicked.connect(self.pause_mfix)
         self.ui.run.button_reset_mfix.clicked.connect(self.remove_output_files)
         self.ui.toolbutton_run_stop.clicked.connect(self.handle_run_stop)
-        self.ui.toolbutton_reset.clicked.connect(self.remove_output_files)
+        self.ui.toolbutton_reset_mfix.clicked.connect(self.remove_output_files)
         self.ui.run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
@@ -429,7 +429,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.run.spinbox_mfix_executables.setVisible(True)
 
         self.ui.toolbutton_run_stop.setEnabled(True)
-        self.ui.toolbutton_reset.setEnabled(res_file_exists and not running)
+        self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_run_stop_mfix.setEnabled(True)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
@@ -439,7 +439,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop.setIcon(get_icon('stop.png'))
             self.ui.toolbutton_run_stop.setText("Stop")
-            self.ui.toolbutton_reset.setEnabled(False)
+            self.ui.toolbutton_reset_mfix.setEnabled(False)
             if self.pymfix_enabled:
                 self.ui.run.button_pause_mfix.setText("Pause")
 
@@ -453,7 +453,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 self.ui.run.button_pause_mfix.setText("Unpause")
 
             if res_file_exists:
-                self.ui.toolbutton_reset.setEnabled(True)
+                self.ui.toolbutton_reset_mfix.setEnabled(True)
                 self.ui.toolbutton_run_stop.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run_stop.setText("Resume")
                 self.ui.run.button_run_stop_mfix.setText("Resume")
@@ -1110,15 +1110,17 @@ class MfixGui(QtWidgets.QMainWindow):
 
             # connect to set_unsaved_flag method (keyword or not!)
             widget_name = widget.objectName()
-            if 'save' in widget_name:
+            if 'save' in widget_name: # Save/save as buttons
+                continue
+            if widget_name.endswith("_mfix"): # Run controls
                 continue
             if widget_name=='tablewidget_regions':
                 continue
 #Object::connect:  (sender name:   'tablewidget_regions')
 #Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
-            if 'toolbutton' in widget_name:
-                print(widget_name)
+            if 'button' in widget_name:
                 widget.clicked.connect(self.set_unsaved_flag)
+                print(widget_name)
             elif hasattr(widget, 'value_updated'):
                 print(widget_name)
                 widget.value_updated.connect(self.set_unsaved_flag)
