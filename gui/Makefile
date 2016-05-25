@@ -1,4 +1,4 @@
-.PHONY:  test test-gui
+.PHONY:  test test-gui tags
 
 UIFILES := $(wildcard uifiles/*ui)
 PY_UIFILES := $(patsubst %.ui,%.py,$(UIFILES))
@@ -20,3 +20,6 @@ test: all
 
 test-gui: all
 	nosetests -v
+
+tags:
+	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
