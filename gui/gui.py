@@ -1132,6 +1132,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
         if 'MFIX_NO_VTK' in os.environ:
+            log.info("MFIX_NO_VTK set, skiping VTK initialization")
             self.vtkwidget = None
             self.ui.regions.vtkwidget = None
             return
