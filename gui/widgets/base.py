@@ -29,8 +29,8 @@ except ImportError:
     log.debug("can't import pandas")
 
 # local imports
-from project import (Keyword, Equation, FloatExp, make_FloatExp,
-                     re_float_exp, re_float, re_int, re_math)
+from project import Keyword, Equation, FloatExp, make_FloatExp
+from regexes import *
 
 from tools.general import to_text_string
 
