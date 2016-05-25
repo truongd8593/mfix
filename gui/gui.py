@@ -119,6 +119,9 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # reference to qapp instance
         self.app = app
+
+        # Initialize data members
+        self.mfix_exe = None
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
@@ -422,18 +425,24 @@ class MfixGui(QtWidgets.QMainWindow):
         res_file_exists = bool(self.monitor_thread.get_res())
 
         if not self.mfix_available:
-            # TODO: re-purpose wanring box for general status messages
             self.ui.run.spinbox_mfix_executables_warning.setVisible(True)
-            # no point in toggling anything else
+            # Disable run button
+            self.ui.toolbutton_run_stop_mfix.setEnabled(False)
+            self.ui.run.button_run_stop_mfix.setEnabled(False)
+            #self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
+            #self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
+            #self.ui.run.button_pause_mfix.setEnabled(False)
             return
 
         self.ui.run.spinbox_mfix_executables_warning.setVisible(False)
         self.ui.run.spinbox_mfix_executables.setVisible(True)
 
         self.ui.toolbutton_run_stop_mfix.setEnabled(True)
-        self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_run_stop_mfix.setEnabled(True)
+
+        self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
+
         self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
 
         if running:
@@ -1465,12 +1474,11 @@ class MfixGui(QtWidgets.QMainWindow):
             output_files = self.monitor_thread.get_outputs()
         if not message_text:
             message_text = 'Deleting output files %s' % '\n'.join(output_files)
-        confirm = self.message(title='Warning',
-                         icon='warning',
-                         text=message_text,
-                         buttons=['ok','cancel'],
-                         default='cancel',
-                         )
+
+        confirm = self.message(text=message_text,
+                               buttons=['ok','cancel'],
+                               default='cancel')
+
         if confirm != 'ok':
             return False
 
@@ -1482,11 +1490,9 @@ class MfixGui(QtWidgets.QMainWindow):
                 msg = 'Cannot delete %s: %s' % (path, e.strerror)
                 self.print_internal("Warning: %s" % msg, color='red')
                 log.warn(msg)
-                self.message(title='Warning',
-                                 icon='warning',
-                                 text=msg,
-                                 buttons=['ok'],
-                                 default=['ok'])
+                self.message(text=msg,
+                             buttons=['ok'],
+                             default=['ok'])
                 break
         return True
 
@@ -1505,8 +1511,15 @@ class MfixGui(QtWidgets.QMainWindow):
                 log.info('output files exist and run was cancelled')
                 return
         self.update_keyword('run_type', 'new')
-        # FIXME only write it if updated
-        self.project.writeDatFile(self.get_project_file()) #XXX
+        if self.unsaved_flag:
+            response = self.message(title="Save?",
+                                    icon="question",
+                                    text="Save current project?",
+                                    buttons=['yes', 'no'])
+            if response=='yes':
+                self.project.writeDatFile(self.get_project_file())
+            else:
+                return
         self._start_mfix()
 
     def restart_mfix(self):
@@ -1734,6 +1747,7 @@ class MfixGui(QtWidgets.QMainWindow):
         self.unsaved_flag = False
         self.setWindowTitle('MFIX - %s' % self.get_project_file())
         self.ui.toolbutton_save.setEnabled(False)
+        self.ui.toolbutton_run_stop_mfix.setEnabled(True)
 
     def check_writable(self, directory):
         """check whether directory is writable """
@@ -1793,6 +1807,7 @@ class MfixGui(QtWidgets.QMainWindow):
         if not project_path:
             return # user pressed Cancel
         self.open_project(project_path)
+        self.update_run_options()
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
@@ -2160,14 +2175,15 @@ def main(args):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
         # disable all widgets except New and Open
-        mfix.set_solver(SINGLE)
         mfix.ui.stackedwidget_mode.setVisible(False)
         mfix.ui.toolbutton_export.setEnabled(False)
         mfix.ui.toolbutton_run_stop_mfix.setEnabled(False)
         mfix.ui.toolbutton_save.setEnabled(False)
         mfix.ui.toolbutton_save_as.setEnabled(False)
+
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
+        mfix.set_solver(SINGLE)
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
