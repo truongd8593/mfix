@@ -119,8 +119,6 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # reference to qapp instance
         self.app = app
-        self.use_vtk = 'MFIX_NO_VTK' not in os.environ
-
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
@@ -307,7 +305,7 @@ class MfixGui(QtWidgets.QMainWindow):
             self.navigation_changed)
 
         # build/run/connect MFIX
-        self.ui.run.button_run_mfix.clicked.connect(self.handle_run_stop)
+        self.ui.run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
         self.ui.run.button_pause_mfix.clicked.connect(self.pause_mfix)
         self.ui.run.button_reset_mfix.clicked.connect(self.remove_output_files)
         self.ui.toolbutton_run.clicked.connect(self.handle_run_stop)
@@ -432,13 +430,13 @@ class MfixGui(QtWidgets.QMainWindow):
 
         self.ui.toolbutton_run.setEnabled(True)
         self.ui.toolbutton_reset.setEnabled(res_file_exists and not running)
-        self.ui.run.button_run_mfix.setEnabled(True)
+        self.ui.run.button_run_stop_mfix.setEnabled(True)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
 
         if running:
             self.ui.run.spinbox_mfix_executables.setEnabled(False)
-            self.ui.run.button_run_mfix.setText("Stop")
+            self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run.setIcon(get_icon('stop.png'))
             self.ui.toolbutton_run.setText("Stop")
             self.ui.toolbutton_reset.setEnabled(False)
@@ -458,14 +456,14 @@ class MfixGui(QtWidgets.QMainWindow):
                 self.ui.toolbutton_reset.setEnabled(True)
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Resume")
-                self.ui.run.button_run_mfix.setText("Resume")
+                self.ui.run.button_run_stop_mfix.setText("Resume")
                 self.ui.run.button_reset_mfix.setEnabled(True)
                 self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
                 self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
             else:
                 self.ui.toolbutton_run.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run.setText("Run")
-                self.ui.run.button_run_mfix.setText("Run")
+                self.ui.run.button_run_stop_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
 
@@ -1126,11 +1124,11 @@ class MfixGui(QtWidgets.QMainWindow):
                 widget.value_updated.connect(self.set_unsaved_flag)
 
 
-
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
-        if not self.use_vtk:
+        if 'MFIX_NO_VTK' in os.environ:
             self.vtkwidget = None
+            self.ui.regions.vtkwidget = None
             return
 
         from widgets.vtkwidget import VtkWidget
@@ -1647,12 +1645,12 @@ class MfixGui(QtWidgets.QMainWindow):
             project_file = self.get_project_file()
 
         # save geometry
-        if self.use_vtk:
+        if self.vtkwidget:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
-        
+
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
-            
+
         project_base = os.path.basename(project_file)
         self.project.run_name.updateValue(os.path.splitext(project_base)[0])
         self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
@@ -1813,17 +1811,19 @@ class MfixGui(QtWidgets.QMainWindow):
                          default='ok')
             return
 
-        # FIXME. move these into Project so they can get cleared there.
-        # (It would be good to instantate a new Project instead of trying
-        # to clear all data members)
-        self.fluid_species.clear()
+        # Important - Reset all non-keyword data before loading new project!
+        # VTK reset
         if self.vtkwidget is not None:
             self.vtkwidget.clear_all_geometry()
         self.ui.regions.clear()
 
+        # Fluids
         self.ui.lineedit_fluid_phase_name.setText("Fluid") # default
+        self.fluid_species.clear()
         if self.saved_fluid_species:
             self.saved_fluid_species.clear()
+
+        # Solids (nothing to do)
 
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
@@ -1969,9 +1969,10 @@ class MfixGui(QtWidgets.QMainWindow):
         self.update_solids_table()
 
         # Look for geometry.stl and load automatically
-        geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry) and self.use_vtk:
-            self.vtkwidget.add_stl(None, filename=geometry)
+        if self.vtkwidget:
+            geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+            if os.path.exists(geometry):
+                self.vtkwidget.add_stl(None, filename=geometry)
 
 
     # --- fluid species methods ---
@@ -2167,7 +2168,7 @@ def main(args):
                         len(mfix.project.registered_keywords))
 
     # have to initialize vtk after the widget is visible!
-    if mfix.use_vtk:
+    if mfix.vtkwidget:
         mfix.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
