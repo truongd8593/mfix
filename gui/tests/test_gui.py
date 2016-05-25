@@ -121,29 +121,29 @@ class MfixGuiTests(TestQApplication):
 
         # before running
         self.assertTrue(self.mfix.ui.run.spinbox_mfix_executables.isVisibleTo(self.mfix.ui.run))
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Run")
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Run")
 
         # start run
         QTest.mouseClick(self.mfix.ui.toolbutton_run, QtCore.Qt.LeftButton)
         time.sleep(1)
 
         # during running
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Stop")
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Stop")
 
         # stop run
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, QtCore.Qt.LeftButton)
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Resume")
+        QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, QtCore.Qt.LeftButton)
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Resume")
 
         # start resume
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, QtCore.Qt.LeftButton)
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.text() == "Stop")
+        QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, QtCore.Qt.LeftButton)
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Stop")
 
         # stop mfix
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, QtCore.Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, QtCore.Qt.LeftButton)
 
         logfile = os.path.join(self.rundir, 'DES_FB1.LOG')
         self.assertTrue(os.path.exists(logfile))
@@ -207,6 +207,6 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are not present")
         self.assertFalse(self.mfix.ui.toolbutton_run.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_run_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
