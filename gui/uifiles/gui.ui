@@ -262,6 +262,19 @@ QPushButton:checked {
                <number>0</number>
               </property>
               <item row="0" column="7">
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>122</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="8">
                <widget class="QToolButton" name="toolbutton_reset_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -282,19 +295,6 @@ QPushButton:checked {
                  <bool>true</bool>
                 </property>
                </widget>
-              </item>
-              <item row="0" column="8">
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>122</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
               <item row="0" column="0">
                <widget class="QToolButton" name="toolbutton_new">
@@ -343,7 +343,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="5" rowspan="2">
+              <item row="0" column="5" rowspan="3">
                <widget class="Line" name="line_3">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
