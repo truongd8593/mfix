@@ -282,39 +282,44 @@ re_keyValue = re.compile(r"""
 re_float_exp = re.compile(r"""
     ^                                # Beginning of expr
     [+-]?                            # possible sign
-    [\d]+                            # digits
-    (\.\d*)?                         # optional decimal sign and more digits
+    \d+                              # digits
+    (\.\d*)?                         # optional decimal point and more digits
     [ED]                             # E or D
-    ([+-]?[0-9]+)?                   # exponent, with 'd' or 'e' (not required)
+    ([+-]?\d+)?                      # exponent, with 'd' or 'e' (not required)
     $                                # end
     """, re.VERBOSE|re.IGNORECASE)
 
 re_float = re.compile(r"""
-    ^[+-]?[0-9]+\.[0-9]*$
+    ^                            # beginning of expr
+    [+-]?                        # possible sign
+    (\.\d+)                      # no leading digits before decimal point
+    |                            # or,
+    (\d+\.\d*)                   # leading digits, decimal point,  possibly trailing digits
+    $                            # end
     """, re.VERBOSE|re.IGNORECASE)
 
 re_int = re.compile(r"""
-    ^[+-]?[0-9]+$
+    ^[+-]?\d+$                                 # optional sign, one or more digits
     """, re.VERBOSE|re.IGNORECASE)
 
 re_shorthand = re.compile(r"""
     [\d]+                                      # unsigned integer
     \*                                         # literal *
     (?:                                        # non-capturing group
-      '[\w]+'                                  # single-quoted word
-    | "[\w]+"                                  # double-quoted word
-    | \.[\w]+\.                                # .TOKEN.
-    | [-+]?[\d]+\.?[\d]*(?:[DE][-+]?[\d]+)?    # number
+      '\w+'                                    # single-quoted word
+    | "\w+"                                    # double-quoted word
+    | \.\w+\.                                  # .TOKEN.
+    | [-+]?\d+\.?\d*(?:[DE][-+]?\d+)?          # number
     )                                          # end group
     """, re.VERBOSE|re.IGNORECASE)
 
 # detect whether int/float keyword needs to be upgraded to Equation
 re_math = re.compile("""
-    pi             |                                # universal constant
-    ^e$            |                                # a lone 'e'
-    [^\d\.]e[^\d]  |                                # 'e', but not as part of exp. notation (not next to a digit on either side)
-    [*/()]         |                                # arithmetic ops, parens
-    .[-+]                                           # +/- but not at start of number!
+    pi             |                           # universal constant, or
+    ^e$            |                           # a lone 'e', or
+    [^\d\.]e[^\d]  |                           # 'e', but not as part of exp. notation, or
+    [*/()]         |                           # arithmetic ops, parens, or
+    .[-+]                                      # +/-, but not at start of number!
 """, re.VERBOSE|re.IGNORECASE)
 
 class Keyword(object):
