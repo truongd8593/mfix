@@ -289,7 +289,7 @@ QPushButton:checked {
               <item row="0" column="0">
                <widget class="QToolButton" name="toolbutton_new">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="toolTip">
                  <string>New Project</string>
