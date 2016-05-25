@@ -297,6 +297,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # --- Connect Signals to Slots---
         # open/save/new project
         self.ui.toolbutton_open.clicked.connect(self.handle_open)
+        self.ui.toolbutton_new.clicked.connect(self.unimplemented)
         self.ui.toolbutton_save.clicked.connect(self.handle_save)
         self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as)
         self.ui.toolbutton_export.clicked.connect(self.handle_export)
@@ -362,7 +363,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # --- default ---
         self.mode_changed('modeler')
-        self.change_pane('geometry')
+        #self.change_pane('geometry') # moved to main
 
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
@@ -405,10 +406,14 @@ class MfixGui(QtWidgets.QMainWindow):
             self.print_internal("%s" % format_key_with_args(key, args),
                                 font='strikeout')
 
+    def unimplemented(self):
+        self.message(title='Unimplemented',
+                     text='Feature not implemented')
+
 
     def is_project_open(self):
-        """returns False if and only if no project is loaded and main window invisible"""
-        return self.ui.stackedwidget_mode.isVisible()
+        # This should be a state of the model, not of the GUI
+        return self.ui.stackedwidget_mode.isEnabled()
 
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -1530,7 +1535,7 @@ class MfixGui(QtWidgets.QMainWindow):
             if not self.remove_output_files(output_files, message):
                 log.debug('output or resume files exist and run was cancelled')
                 return
-        self.set_keyword('run_type', 'new')
+        self.update_keyword('run_type', 'new')
         self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
@@ -1544,7 +1549,7 @@ class MfixGui(QtWidgets.QMainWindow):
     def resume_mfix(self):
         """resume previously stopped mfix run"""
         if self.ui.run.use_spx_checkbox.isChecked():
-            self.set_keyword('run_type', 'restart_1')
+            self.update_keyword('run_type', 'restart_1')
         else:
             # TODO: is it correct to remove all but *.RES ?
             spx_files = self.monitor_thread.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
@@ -1553,7 +1558,7 @@ class MfixGui(QtWidgets.QMainWindow):
                 log.debug('SP* files exist and run was cancelled')
                 #pass
                 return
-            self.set_keyword('run_type', 'restart_2')
+            self.update_keyword('run_type', 'restart_2')
         self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
@@ -1895,8 +1900,8 @@ class MfixGui(QtWidgets.QMainWindow):
                 project_file = renamed_project_file
                 self.project.writeDatFile(project_file)
                 self.print_internal(save_msg, color='blue')
-        if not self.is_project_open(): # why?
-            self.ui.stackedwidget_mode.setVisible(True)
+        if not self.is_project_open(): # Make sure main window is enabled
+            self.ui.stackedwidget_mode.setEnabled(True)
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
@@ -2159,6 +2164,8 @@ def main(args):
         Usage(name)
     if args:
         project_file = args[0]
+    if new_project and project_file:
+        Usage(name)
 
     qapp = QtWidgets.QApplication([])
     mfix = MfixGui(qapp, project_file=project_file)
@@ -2173,13 +2180,16 @@ def main(args):
 
     if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
+        mfix.change_pane("geometry") # ? why start on this pane
     else:
         # disable all widgets except New and Open
-        mfix.ui.stackedwidget_mode.setVisible(False)
-        mfix.ui.toolbutton_export.setEnabled(False)
-        mfix.ui.toolbutton_run_stop_mfix.setEnabled(False)
-        mfix.ui.toolbutton_save.setEnabled(False)
-        mfix.ui.toolbutton_save_as.setEnabled(False)
+        mfix.ui.stackedwidget_mode.setEnabled(False)
+        mfix.change_pane("general")
+        for x in widget_iter(mfix.ui.frame_menu_bar):
+            if x.objectName().startswith("toolbutton_"):
+                x.setEnabled(False)
+        mfix.ui.toolbutton_new.setEnabled(True)
+        mfix.ui.toolbutton_open.setEnabled(True)
 
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
