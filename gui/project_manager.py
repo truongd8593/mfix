@@ -45,7 +45,7 @@ class ProjectManager(Project):
 
         # Special argument handling!
         # Currently only "S" = solids phase is defined
-        args = args[:] # Copy since we're modifying
+        args = list(args) # Copy since we're modifying
         for (i, arg) in enumerate(args):
             if arg == 'S': #selected solid phase
                 args[i] = self.gui.solids_current_phase

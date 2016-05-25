@@ -1268,7 +1268,7 @@ class MfixGui(QtWidgets.QMainWindow):
 
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos")
+        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
         animnow.setDuration(self.animation_speed)
         animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnow.setStartValue(
@@ -1278,7 +1278,7 @@ class MfixGui(QtWidgets.QMainWindow):
                           0 - offsety))
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos")
+        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
         animnext.setDuration(self.animation_speed)
         animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnext.setStartValue(
@@ -1290,7 +1290,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # line
         animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos")
+            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
             animline.setDuration(self.animation_speed)
             animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
             animline.setStartValue(
