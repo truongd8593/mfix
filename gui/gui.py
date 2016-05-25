@@ -1222,13 +1222,9 @@ class MfixGui(QtWidgets.QMainWindow):
         """change to the specified pane"""
         clist = self.ui.treewidget_model_navigation.findItems(
                     name,
-                    Qt.MatchContains | Qt.MatchRecursive,
-                    0)
-
-        for item in clist:
-            if str(item.text(0)).lower() == name.lower():
-                break
-
+                    Qt.MatchFixedString | Qt.MatchRecursive, 0)
+        assert len(clist) == 1
+        item = clist[0]
         self.ui.treewidget_model_navigation.setCurrentItem(item)
         self.navigation_changed()
 
