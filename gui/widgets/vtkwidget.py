@@ -375,7 +375,7 @@ class VtkWidget(QtWidgets.QWidget):
             btn.pressed.connect(
                 make_callback(self.change_mesh_tab, i, btn))
 
-        self.ui.mesh.pushbutton_mesh_autosize.pressed.connect(
+        self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
 
         # connect mesher

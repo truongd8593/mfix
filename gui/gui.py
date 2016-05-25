@@ -277,15 +277,6 @@ class MfixGui(QtWidgets.QMainWindow):
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
 
-        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
-        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
-        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
-        self.ui.toolbutton_save_as.setIcon(get_icon('save.png'))
-        self.ui.toolbutton_export.setIcon(get_icon('export.png'))
-
-        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
-
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
         self.ui.geometry.toolbutton_geometry_union.setIcon(get_icon('union.png'))
@@ -294,13 +285,35 @@ class MfixGui(QtWidgets.QMainWindow):
         self.ui.geometry.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
-        # --- Connect Signals to Slots---
-        # open/save/new project
-        self.ui.toolbutton_open.clicked.connect(self.handle_open)
+        # --- tool button setup ---
+        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
         self.ui.toolbutton_new.clicked.connect(self.unimplemented)
+        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
+        self.ui.toolbutton_open.clicked.connect(self.handle_open)
+        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
         self.ui.toolbutton_save.clicked.connect(self.handle_save)
-        self.ui.toolbutton_save_as.clicked.connect(self.handle_save_as)
-        self.ui.toolbutton_export.clicked.connect(self.handle_export)
+
+        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
+
+        # more menu
+        self.ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
+
+        self.ui.menu_more = QtWidgets.QMenu()
+        self.ui.toolbutton_more.setMenu(self.ui.menu_more)
+
+        self.ui.toolbutton_save_as = self.ui.menu_more.addAction(
+            get_icon('save.png'), 'Save As', self.handle_save_as)
+
+        self.ui.toolbutton_export = self.ui.menu_more.addAction(
+            get_icon('open_in_new.png'), 'Export', self.handle_export)
+
+        self.ui.menu_more.addSeparator()
+
+        self.ui.toolbutton_export = self.ui.menu_more.addAction(
+            get_icon('close.png'), 'Close', self.close)
+
+        # --- Connect Signals to Slots---
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
