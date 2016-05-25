@@ -376,14 +376,14 @@ QPushButton:checked {
             </widget>
            </item>
            <item row="5" column="0">
-            <widget class="CheckBox" name="checkBox_12">
+            <widget class="CheckBox" name="checkbox_enable_scalar_eq">
              <property name="text">
               <string>Enable Scalar Equations</string>
              </property>
             </widget>
            </item>
            <item row="5" column="1">
-            <widget class="QSpinBox" name="spinBox"/>
+            <widget class="QSpinBox" name="spinbox_nscalar_eq"/>
            </item>
            <item row="5" column="2">
             <spacer name="horizontalSpacer">
@@ -1032,7 +1032,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>487</width>
+            <width>419</width>
             <height>1033</height>
            </rect>
           </property>

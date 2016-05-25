@@ -400,7 +400,7 @@ class MfixGui(QtWidgets.QMainWindow):
         success = self.project.removeKeyword(key, args, warn=False)
         if success:
             self.print_internal("%s" % format_key_with_args(key, args),
-                                font='strikeout', color='green')
+                                font='strikeout')
 
 
     def is_project_open(self):
@@ -627,23 +627,31 @@ class MfixGui(QtWidgets.QMainWindow):
         groupbox_subgrid_params.setEnabled(index > 0)
 
     def update_scalar_equations(self, prev_nscalar):
+        """sets nscalar and phase4scalar(#) for all phases"""
+
         # This is a little messy.  We may have reduced
         # nscalar, so we need to unset phase4scalar(i)
         # for any values of i > nscalar.
         nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
         if nscalar > 0:
-            self.project.submit_change(None,{"nscalar": nscalar})
+            self.update_keyword("nscalar", nscalar)
         else:
             self.unset_keyword("nscalar")
 
         for i in range(1,1+self.fluid_nscalar_eq):
-            self.project.submit_change(None,{"phase4scalar":0},args=i)
-        for i in range(1+self.fluid_nscalar_eq, 1+prev_nscalar):
-            if self.project.get_value("phase4scalar", args=i)  == 0:
-                self.unset_keyword("phase4scalar", i)
+            self.update_keyword("phase4scalar", 0, args=i)
+        i = 1+self.fluid_nscalar_eq
+        for (phase, s) in enumerate(self.solids.values(), 1):
+            n = s.get('nscalar_eq', 0)
+            for j in range(n):
+                self.update_keyword("phase4scalar", phase, args=i)
+                i += 1
+        while i <= prev_nscalar:
+            self.unset_keyword("phase4scalar", i)
+            i += 1
 
 
-    ## Fluid phase
+    ## Fluid phase methods
     def enable_fluid_species_eq(self, state):
         ui = self.ui
         for item in (ui.combobox_fluid_diffusion_model,
@@ -677,7 +685,6 @@ class MfixGui(QtWidgets.QMainWindow):
             spinbox.setValue(value)
             return
         self.update_scalar_equations(prev_nscalar)
-
 
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
@@ -716,7 +723,8 @@ class MfixGui(QtWidgets.QMainWindow):
         ms.combobox_turbulence_model.setEnabled(enabled and
                                                 checkbox.isChecked())
 
-    # Solids phase
+
+    # Solids phase methods
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
         solver = self.project.solver
@@ -745,12 +753,11 @@ class MfixGui(QtWidgets.QMainWindow):
             i = 0 if model=='TFM' else 1 if model=='DEM' else 2 if model=='PIC' else None
             if i is None:
                 return
-        i = cb.currentIndex()
-        if not enabled[i]:
-            # Current selection no longer valid, so pick first valid choice
-            # Don't leave a non-enabled item selected!
-            j = enabled.index(True)
-            cb.setCurrentIndex(j)
+            if not enabled[i]:
+                # Current selection no longer valid, so pick first valid choice
+                # Don't leave a non-enabled item selected!
+                i = enabled.index(True)
+            cb.setCurrentIndex(i)
 
     def handle_combobox_solids_model(self, index):
         if self.solids_current_phase is None:
@@ -762,6 +769,187 @@ class MfixGui(QtWidgets.QMainWindow):
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
         self.update_solids_table()
+
+    def make_solids_name(self, n):
+        while True:
+            name = 'Solid %d' % n
+            if name not in self.solids:
+                break
+            n += 1
+        return name
+
+    def solids_add(self):
+        tw = self.ui.solids.tablewidget_solids
+        nrows = tw.rowCount()
+        n = nrows + 1
+        tw.setRowCount(n)
+        name = self.make_solids_name(n)
+        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
+            return
+        else:
+            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+        diameter = 0.0
+        density = 0.0
+        self.update_keyword('solids_model', model, args=n)
+        self.solids[name] = {'model': model,
+                             'diameter': diameter,
+                             'density': density} # more?
+        self.update_solids_table()
+        tw.setCurrentCell(nrows, 0) # Select new item
+
+    def handle_solids_table_selection(self):
+        s = self.ui.solids
+        tw = s.tablewidget_solids
+        row = get_selected_row(tw)
+        enabled = (row is not None)
+        s.toolbutton_solids_delete.setEnabled(enabled)
+        s.toolbutton_solids_copy.setEnabled(enabled)
+        name = None if row is None else tw.item(row,0).text()
+        self.solids_current_phase = (row+1) if row is not None else None
+        self.update_solids_detail_pane(name)
+
+    def update_solids_detail_pane(self, name):
+        """update the solids detail pane for currently selected solids phase"""
+        s = self.ui.solids
+        sa = s.scrollarea_solids_detail
+        phase = self.solids_current_phase
+        if name is None or phase is None: # current solid phase name.
+            sa.setEnabled(False)
+            # Clear out all values? ... no.
+        else:
+            data = self.solids[name]
+            sa.setEnabled(True)
+            s.lineedit_solids_phase_name.setText(name)
+            self.setup_combobox_solids_model()
+
+            nscalar = self.project.get_value('nscalar', 0)
+
+            nscalar_phase = sum(1 for i in range(1, nscalar+1)
+                                if self.project.get_value('phase4scalar', args=i) == phase)
+            self.enable_solid_scalar_eq(nscalar_phase > 0)
+
+            # Inialize all the line edit widgets
+            def as_str(x):
+                return '' if x is None else str(x)
+            s.lineedit_keyword_d_p0_args_S.setText(as_str(data['diameter']))
+            s.lineedit_keyword_ro_s0_args_S.setText(as_str(data['density']))
+
+
+    def update_solids_table(self):
+        hv = QtWidgets.QHeaderView
+        table = self.ui.solids.tablewidget_solids
+        if PYQT5:
+            resize = table.horizontalHeader().setSectionResizeMode
+        else:
+            resize = table.horizontalHeader().setResizeMode
+        for n in range(4):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
+
+        if self.solids is None:
+            table.clearContents()
+            return
+        nrows = len(self.solids)
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+
+        #Update the internal table from keywords
+        # TODO: remove this, use SolidsCollection
+        for (i, (k,v)) in enumerate(self.solids.items(), 1):
+            for (myname, realname) in (('model', 'solids_model'),
+                                       ('diameter', 'd_p0'),
+                                       ('density', 'ro_s0')):
+                self.solids[k][myname] = self.project.get_value(realname, args=i)
+
+        for (row,(k,v)) in enumerate(self.solids.items()):
+            table.setItem(row, 0, make_item(k))
+            for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
+                table.setItem(row, col, make_item(v[key]))
+
+    def handle_solids_phase_name(self):
+        new_name = self.ui.solids.lineedit_solids_phase_name.text()
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        old_name = self.solids.keys()[phase-1] # Ugh
+        if new_name in self.solids: # Reject the input
+            self.ui.solids.lineedit_solids_phase_name.setText(old_name)
+            return
+
+        # Rewriting dict to change key while preserving order
+        d = OrderedDict() # Ugh.  Use SpeciesCollection!
+        for (k,v) in self.solids.iteritems():
+            if k==old_name:
+                k = new_name
+            d[k] = v
+        self.solids = d
+        self.update_solids_table()
+        self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
+
+    def solids_delete(self):
+        tw = self.ui.solids.tablewidget_solids
+        row = get_selected_row(tw)
+        if row is None: # No selection
+            return
+        name = tw.item(row, 0).text()
+        del self.solids[name]
+        tw.removeRow(row)
+        tw.clearSelection()
+
+    def enable_solid_scalar_eq(self, state):
+        spinbox = self.ui.solids.spinbox_nscalar_eq
+        spinbox.setEnabled(state)
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        name = self.solids.keys()[phase-1] # ugh
+        solid = self.solids[name]
+        if state:
+            value = spinbox.value()
+            self.set_solid_nscalar_eq(value)
+        else:
+            # Don't call set_solid_nscalar_eq(0) b/c that will clobber spinbox
+            prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+            solid['nscalar_eq'] = 0
+            self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
+            self.update_scalar_equations(prev_nscalar)
+
+    def set_solid_nscalar_eq(self, value):
+        # This *sums into* nscalar - not a simple keyword
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        name = self.solids.keys()[phase-1] # ugh
+        solid = self.solids[name]
+
+        nscalar = self.project.get_value('nscalar', 0)
+        prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+
+        solid['nscalar_eq'] = value
+        # would it be better to just use nscalar - fluid_nscalar_eq?
+        self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
+
+        spinbox = self.ui.solids.spinbox_nscalar_eq
+        if value != spinbox.value():
+            spinbox.setValue(value)
+            return
+        self.update_scalar_equations(prev_nscalar)
+
+
+    def solids_change_tab(self, tabnum, btn):
+        """ switch solids stacked widget based on selected """
+        self.animate_stacked_widget(
+            self.ui.solids.stackedwidget_solids,
+            self.ui.solids.stackedwidget_solids.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=self.ui.solids.line_solids,
+            to_btn=btn,
+            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
+
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
@@ -836,6 +1024,10 @@ class MfixGui(QtWidgets.QMainWindow):
         cb = s.combobox_solids_model
         cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
+        s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solid_scalar_eq)
+        s.spinbox_nscalar_eq.valueChanged.connect(self.set_solid_nscalar_eq)
+
+
 
         # connect solid tab btns
         for i, btn in enumerate((s.pushbutton_solids_materials,
@@ -1308,7 +1500,7 @@ class MfixGui(QtWidgets.QMainWindow):
             if not self.remove_output_files(output_files):
                 log.info('output files exist and run was cancelled')
                 return
-        self.set_keyword('run_type', 'new')
+        self.update_keyword('run_type', 'new')
         # FIXME only write it if updated
         self.project.writeDatFile(self.get_project_file()) #XXX
         self._start_mfix()
@@ -1727,9 +1919,15 @@ class MfixGui(QtWidgets.QMainWindow):
         nscalar = self.project.get_value('nscalar', 0)
 
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
-            if self.project.get_value('phase4scalar', args=i) == 0)
+                                    if self.project.get_value('phase4scalar', args=i) == 0)
 
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
+
+        # solid scalar eq
+        self.solid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
+                                    if self.project.get_value('phase4scalar', args=i) != 0)
+
+        # solid scalar eq checkbox will be handled in update_solids_detail_pane
 
         # handle a bunch of items which are essentially the same
         for (setter, name) in ((self.set_fluid_density_model, 'ro'),
@@ -1882,139 +2080,6 @@ class MfixGui(QtWidgets.QMainWindow):
         sp.raise_()
         sp.activateWindow()
 
-    # --- solids phase methods ---
-    def make_solids_name(self, n):
-        while True:
-            name = 'Solid %d' % n
-            if name not in self.solids:
-                break
-            n += 1
-        return name
-
-    def solids_add(self):
-        tw = self.ui.solids.tablewidget_solids
-        nrows = tw.rowCount()
-        n = nrows + 1
-        tw.setRowCount(n)
-        name = self.make_solids_name(n)
-        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
-            return
-        else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
-        diameter = 0.0
-        density = 0.0
-        self.update_keyword('solids_model', model, args=n)
-        self.solids[name] = {'model': model,
-                             'diameter': diameter,
-                             'density': density} # more?
-        self.update_solids_table()
-        tw.setCurrentCell(nrows, 0) # Select new item
-
-    def handle_solids_table_selection(self):
-        s = self.ui.solids
-        tw = s.tablewidget_solids
-        row = get_selected_row(tw)
-        enabled = (row is not None)
-        s.toolbutton_solids_delete.setEnabled(enabled)
-        s.toolbutton_solids_copy.setEnabled(enabled)
-        name = None if row is None else tw.item(row,0).text()
-        self.solids_current_phase = (row+1) if row is not None else None
-        self.update_solids_detail_pane(name)
-
-    def update_solids_detail_pane(self, name):
-        s = self.ui.solids
-        sa = s.scrollarea_solids_detail
-        if name is None: # current solid phase name.
-            sa.setEnabled(False)
-            # Clear out all values? ... no.
-        else:
-            data = self.solids[name]
-            sa.setEnabled(True)
-            s.lineedit_solids_phase_name.setText(name)
-            self.setup_combobox_solids_model()
-
-            # Inialize all the line edit widgets
-            def as_str(x):
-                return '' if x is None else str(x)
-            s.lineedit_keyword_d_p0_args_S.setText(as_str(data['diameter']))
-            s.lineedit_keyword_ro_s0_args_S.setText(as_str(data['density']))
-
-
-
-    def update_solids_table(self):
-        hv = QtWidgets.QHeaderView
-        table = self.ui.solids.tablewidget_solids
-        if PYQT5:
-            resize = table.horizontalHeader().setSectionResizeMode
-        else:
-            resize = table.horizontalHeader().setResizeMode
-        for n in range(4):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
-
-        if self.solids is None:
-            table.clearContents()
-            return
-        nrows = len(self.solids)
-        table.setRowCount(nrows)
-        def make_item(val):
-            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
-            set_item_noedit(item)
-            return item
-
-        #Update the internal table from keywords
-        # TODO: remove this, use SolidsCollection
-        for (i, (k,v)) in enumerate(self.solids.items(), 1):
-            for (myname, realname) in (('model', 'solids_model'),
-                                       ('diameter', 'd_p0'),
-                                       ('density', 'ro_s0')):
-                self.solids[k][myname] = self.project.get_value(realname, args=i)
-
-        for (row,(k,v)) in enumerate(self.solids.items()):
-            table.setItem(row, 0, make_item(k))
-            for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
-                table.setItem(row, col, make_item(v[key]))
-
-    def handle_solids_phase_name(self):
-        new_name = self.ui.solids.lineedit_solids_phase_name.text()
-        phase = self.solids_current_phase
-        if phase is None:
-            return
-        old_name = self.solids.keys()[phase-1] # Ugh
-        if new_name in self.solids: # Reject the input
-            self.ui.solids.lineedit_solids_phase_name.setText(old_name)
-            return
-
-        # Rewriting dict to change key while preserving order
-        d = OrderedDict() # Ugh.  Use SpeciesCollection!
-        for (k,v) in self.solids.iteritems():
-            if k==old_name:
-                k = new_name
-            d[k] = v
-        self.solids = d
-        self.update_solids_table()
-        self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
-
-    def solids_delete(self):
-        tw = self.ui.solids.tablewidget_solids
-        row = get_selected_row(tw)
-        if row is None: # No selection
-            return
-        name = tw.item(row, 0).text()
-        del self.solids[name]
-        tw.removeRow(row)
-        tw.clearSelection()
-
-    def solids_change_tab(self, tabnum, btn):
-        """ switch solids stacked widget based on selected """
-        self.animate_stacked_widget(
-            self.ui.solids.stackedwidget_solids,
-            self.ui.solids.stackedwidget_solids.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=self.ui.solids.line_solids,
-            to_btn=btn,
-            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
 
 
 

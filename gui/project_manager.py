@@ -139,8 +139,8 @@ class ProjectManager(Project):
             #    val_str = '.%s.' % val_str
 
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
-                                    font="Monospace",
-                                    color='green' if widgets_to_update else None)
+                                    font="Monospace")
+            #color='green' if widgets_to_update else None)
 
 
     def guess_solver(self):
@@ -338,8 +338,7 @@ class ProjectManager(Project):
         args=['*'], widget recieves updates regardless of args.
 
         Special args:  'S' will be substituted with the currently selected
-                        solids phase (the one the user is editing)
-        """
+                        solids phase (the one the user is editing)  """
 
 
         if args is None:
