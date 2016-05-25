@@ -5,6 +5,7 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
+import json
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtGui, QtCore
@@ -331,3 +332,68 @@ class RegionsWidget(QtWidgets.QWidget):
                     *data[name]['color'].color_int))
 
             self.vtkwidget.change_region_color(name, data[name]['color'])
+
+    def regions_to_str(self):
+        """ convert regions data to a string for saving """
+
+        data = {'order': list(self.tablewidget_regions.value.keys()),
+                'regions': {}
+                }
+        for region in data['order']:
+            data['regions'][region] = {}
+            for key in self.tablewidget_regions.value[region].keys():
+                if key == 'visible':
+                    pass
+                elif key == 'color':
+                    data['regions'][region][key] = \
+                        self.tablewidget_regions.value[region][key].color
+                else:
+                    data['regions'][region][key] = \
+                        self.tablewidget_regions.value[region][key]
+
+        return json.dumps(data)
+
+    def regions_from_str(self, string):
+        """ load regions data from a saved string """
+        loaded_data = json.loads(string)
+
+        if 'order' not in loaded_data:
+            return
+
+        data = OrderedDict()
+        for region in loaded_data['order']:
+            data[region] = {}
+
+            for key in loaded_data['regions'][region].keys():
+                if key == 'visibility':
+
+                    # create the image
+                    if loaded_data['regions'][region]['visibility']:
+                        image = QtGui.QPixmap(get_image_path('visibility.png'))
+                    else:
+                        image = QtGui.QPixmap(get_image_path(
+                            'visibilityofftransparent.png'))
+                    image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
+                                         QtCore.Qt.SmoothTransformation)
+
+                    data[region]['visible'] = image
+                    data[region][key] = loaded_data['regions'][region][key]
+
+                elif key == 'color':
+                    data[region][key] = CellColor(
+                        loaded_data['regions'][region]['color'])
+                else:
+                    data[region][key] = loaded_data['regions'][region][key]
+
+            self.vtkwidget.new_region(region, data[region])
+
+        self.tablewidget_regions.set_value(data)
+        self.tablewidget_regions.fit_to_contents()
+
+    def clear(self):
+        """ delete all regions from the widget and vtk """
+
+        for region in self.tablewidget_regions.value.keys():
+            self.vtkwidget.delete_region(region)
+
+        self.tablewidget_regions.set_value(OrderedDict())

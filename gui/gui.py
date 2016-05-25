@@ -1646,8 +1646,13 @@ class MfixGui(QtWidgets.QMainWindow):
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
 
+        # save geometry
         if self.use_vtk:
             self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        
+        # save regions
+        self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
+            
         project_base = os.path.basename(project_file)
         self.project.run_name.updateValue(os.path.splitext(project_base)[0])
         self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
@@ -1813,6 +1818,7 @@ class MfixGui(QtWidgets.QMainWindow):
         # to clear all data members)
         self.fluid_species.clear()
         self.vtkwidget.clear_all_geometry()
+        self.ui.regions.clear()
 
         self.ui.lineedit_fluid_phase_name.setText("Fluid") # default
         if self.saved_fluid_species:
@@ -1900,12 +1906,14 @@ class MfixGui(QtWidgets.QMainWindow):
             if key.startswith('solids_phase_name('):
                 n = int(key.split('(')[1][:-1])
                 solids_phase_names[n] = val
+            if key.startswith('regions_dict'):
+                self.ui.regions.regions_from_str(val)
             # Add more here
 
         # Ugly hack, copy ordered dict to modify keys w/o losing order
         if solids_phase_names:
             s = OrderedDict()
-            for (i, (k,v)) in enumerate(self.solids.items(), 1):
+            for (i, (k, v)) in enumerate(self.solids.items(), 1):
                 s[solids_phase_names.get(i, k)] = v
             self.solids = s
 

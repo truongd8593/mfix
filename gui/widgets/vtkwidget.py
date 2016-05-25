@@ -1533,10 +1533,12 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkrenderer.AddActor(actor)
 #        self.balloon_widget.AddBalloon(actor, name, None)
 
-        self.vtkRenderWindow.Render()
-
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
+        
+        self.change_region_visibility(name, self.region_dict[name]['visibility'])
+
+        self.vtkRenderWindow.Render()
 
     def delete_region(self, name):
         region = self.region_dict.pop(name)
