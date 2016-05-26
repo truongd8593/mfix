@@ -27,7 +27,7 @@ class ProjectManager(Project):
         self.solver = SINGLE # default
 
 
-    def submit_change(self, widget, newValueDict, args=None)
+    def submit_change(self, widget, newValueDict, args=None):
 
         """Submit a value change, for example
         submitChange(lineEdit, {'run_name':'new run name'}, args)"""
