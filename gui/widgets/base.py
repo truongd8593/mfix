@@ -37,7 +37,7 @@ from tools.general import to_text_string
 # comment - the mixture of 'update' and 'change' terminology
 # makes this code a bit confusing
 
-class CommonBase(QtCore.QObject):
+class BaseWidget(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self):
@@ -82,13 +82,14 @@ class CommonBase(QtCore.QObject):
         if self.default_value is not None:
             self.updateValue(self.key, self.default_value, args=self.args)
 
+        return self.default_value
 
-class LineEdit(QtWidgets.QLineEdit, CommonBase):
+class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
         self.textChanged.connect(self.mark_changed)
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
@@ -172,21 +173,17 @@ class LineEdit(QtWidgets.QLineEdit, CommonBase):
 
 
     def default(self, val=None):
-        if val is not None:
-            self.default_value = val
-
-        if self.default_value is not None:
-            self.updateValue(self.key, self.default_value, args=self.args)
-        else:
+        if BaseWidget.default(self,val) is None:
             self.clear()
+            self.saved_value = None
+            self.text_changed_flag = False
 
-
-class CheckBox(QtWidgets.QCheckBox, CommonBase):
+class CheckBox(QtWidgets.QCheckBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QCheckBox.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
         # stateChanged:  called on both user interaction and programmatic change
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
@@ -199,13 +196,17 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
         assert not isinstance(new_value, Keyword)  # value should not be keyword!
         self.setChecked(new_value)
 
+    def default(self, val=None):
+        if BaseWidget.default(self, val) is None:
+            self.setChecked(False) #?
 
-class ComboBox(QtWidgets.QComboBox, CommonBase):
+
+class ComboBox(QtWidgets.QComboBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QComboBox.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
         # activated: only on user setttings, not programmatic change
         self.activated.connect(self.emitUpdatedValue)
         #self.currentIndexChanged.connect(self.emitUpdatedValue)
@@ -237,13 +238,17 @@ class ComboBox(QtWidgets.QComboBox, CommonBase):
                 self.setCurrentIndex(itm)
                 break
 
+    def default(self, val=None):
+        if BaseWidget.default(self,val) is None:
+            self.setCurrentIndex(0) # ?
 
-class SpinBox(QtWidgets.QSpinBox, CommonBase):
+
+class SpinBox(QtWidgets.QSpinBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
@@ -261,13 +266,16 @@ class SpinBox(QtWidgets.QSpinBox, CommonBase):
         if _min:
             self.setMinimum(int(_min))
 
+    def default(self, val=None):
+        if BaseWidget.default(self,val) is None:
+            self.setValue(0) #?
 
-class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
+class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
 
@@ -341,7 +349,7 @@ class Table(QtWidgets.QTableView, CommonBase):
                  multi_selection=False):
 
         QtWidgets.QTableView.__init__(self, parent)
-        CommonBase.__init__(self)
+        BaseWidget.__init__(self)
 
         self.dtype = dtype
         self.columns = columns
