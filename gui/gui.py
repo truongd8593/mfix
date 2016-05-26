@@ -612,8 +612,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         for (i,(k,v)) in enumerate(self.solids.items(), 1):
             model = v.get('model')
-            if model is None:
-                continue
             if model not in valid_models:
                 model = valid_models[0]
                 self.update_keyword('solids_model', model, args=[i])

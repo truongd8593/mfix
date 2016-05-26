@@ -66,7 +66,7 @@ class ProjectManager(Project):
         self._cleanDeletedItems()
 
 
-    def _change(self, widget, key, newValue, args=None)
+    def _change(self, widget, key, newValue, args=None):
         # prevent circular updates, from this widget or any higher in stack
         if widget in self._widget_update_stack:
             return
@@ -298,18 +298,22 @@ class ProjectManager(Project):
                                    else "PIC" if self.solver==PIC
                                    else "TFM")
 
+
             for s in self.solids:
                 name = s.name
                 species = list(s.species)
                 species.sort(key=lambda a:a.ind)
                 if not s.get('solids_model'):
                     s['solids_model'] = default_solids_model
-                solids_data =  {'model': s.get("solids_model", default_solids_model),
+                    self.updateKeyword('solids_model', default_solids_model, args=[s.ind])
+
+
+                solids_data =  {'model': s.get("solids_model"),
                                'diameter': s.get('d_p0'),
                                'density': s.get('ro_s0'),
                                'species': species}
-                print(solids_data)
                 self.gui.solids[name] = solids_data
+
 
             # Now submit all remaining keyword updates, except the ones we're skipping
             skipped_keys = set(['mw_g'])
