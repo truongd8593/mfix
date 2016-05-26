@@ -63,6 +63,8 @@ from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
 
+from fluid_handler import FluidHandler
+from solid_handler import SolidHandler
 
 from tools.general import (make_callback, get_icon,
                            widget_iter, set_script_directory,
@@ -105,7 +107,7 @@ if PRECOMPILE_UI:
 # --- Main Gui ---
 
 
-class MfixGui(QtWidgets.QMainWindow):
+class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     """Main window class handling all gui interactions"""
 
     settings = QSettings('MFIX', 'MFIX')
@@ -675,78 +677,6 @@ class MfixGui(QtWidgets.QMainWindow):
             self.unset_keyword("phase4scalar", i)
             i += 1
 
-
-    ## Fluid phase methods
-    def enable_fluid_species_eq(self, state):
-        ui = self.ui
-        for item in (ui.combobox_fluid_diffusion_model,
-                     # more ?
-                     ):
-            item.setEnabled(state)
-        spinbox = ui.spinbox_keyword_dif_g0 # dif_g0 == diffusion coeff model
-        if state:
-            spinbox.setEnabled(self.fluid_diffusion_model == CONSTANT)
-        else:
-            spinbox.setEnabled(False)
-
-    def enable_fluid_scalar_eq(self, state):
-        spinbox = self.ui.spinbox_fluid_nscalar_eq
-        spinbox.setEnabled(state)
-        if state:
-            val = spinbox.value()
-            self.set_fluid_nscalar_eq(val)
-        else:
-            # Don't call set_fluid_nscalar_eq(0) b/c that will clobber spinbox
-            prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
-            self.fluid_nscalar_eq = 0
-            self.update_scalar_equations(prev_nscalar)
-
-    def set_fluid_nscalar_eq(self, value):
-        # This *sums into* nscalar - not a simple keyword
-        prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
-        self.fluid_nscalar_eq = value
-        spinbox = self.ui.spinbox_fluid_nscalar_eq
-        if value != spinbox.value():
-            spinbox.setValue(value)
-            return
-        self.update_scalar_equations(prev_nscalar)
-
-    # molecular wt model only has 2 choices, and the key names don't
-    # follow the same pattern, so create its setter specially
-    def set_fluid_mol_weight_model(self, model):
-        self.fluid_mol_weight_model = model
-        combobox = self.ui.combobox_fluid_mol_weight_model
-        prev_model = combobox.currentIndex()
-        if model != prev_model:
-            combobox.setCurrentIndex(model)
-            return
-        # Enable spinbox for constant mol_weight model
-        spinbox = self.ui.spinbox_keyword_mw_avg
-        spinbox.setEnabled(model==CONSTANT)
-        if model == CONSTANT:
-            value = spinbox.value() # Possibly re-enabled gui item
-            if self.project.get_value("mw_avg") != value:
-                self.set_keyword("mw_avg", value) # Restore keyword value
-        else: # Mixture
-            # TODO: validate, require mw for all component species
-            self.unset_keyword("mw_avg")
-
-    def set_fluid_phase_name(self, value):
-        if value != self.ui.lineedit_fluid_phase_name.text():
-            self.ui.lineedit_fluid_phase_name.setText(value)
-            return
-        value = None if value=='Fluid' else value # don't save default
-        self.project.mfix_gui_comments['fluid_phase_name'] = value
-
-    def disable_fluid_solver(self, disabled):
-        enabled = not disabled
-        item = self.find_navigation_tree_item("Fluid")
-        item.setDisabled(disabled)
-        ms = self.ui.model_setup
-        checkbox = ms.checkbox_enable_turbulence
-        checkbox.setEnabled(enabled)
-        ms.combobox_turbulence_model.setEnabled(enabled and
-                                                checkbox.isChecked())
 
 
     # Solids phase methods
