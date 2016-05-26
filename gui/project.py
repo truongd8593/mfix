@@ -1225,19 +1225,25 @@ class Project(object):
             keywordDict = keywordDict.setdefault(key, {})
         keywordDict[keys[-1]] = keyword
 
-    def _recursiveRemoveKeyToKeywordDict(self, keys=(), warn=True):
+    def _recursiveRemoveKeyFromKeywordDict(self, keys=(), warn=True):
         keywordDict = self._keyword_dict
-        for key in keys[:-1]: # ? Why ?
+        for key in keys[:-1]:
             keywordDict = keywordDict[key]
         keywordDict.pop(keys[-1])
 
     def _purgeemptydicts(self):
-        for keys, value in list(recurse_dict_empty(self._keyword_dict)):
-            if isinstance(value, dict) and not value:
-                keywordDict = self._keyword_dict
-                for key in keys[:-1]:
-                    keywordDict = keywordDict[key]
-                keywordDict.pop(keys[-1])
+        # TODO: write a test for this!
+        while True:
+            changed = False
+            for (path,val) in list(recurse_dict_empty(self._keyword_dict)):
+                if val == {}:
+                    keywordDict = self._keyword_dict
+                    for key in path[:-1]:
+                        keywordDict = keywordDict[key]
+                    keywordDict.pop(path[-1])
+                    changed = True
+            if not changed:
+                break
 
     def keywordItems(self):
         for keys, value in recurse_dict_empty(self._keyword_dict):
