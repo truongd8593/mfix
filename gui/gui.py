@@ -203,68 +203,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # self.project_manager
         self.project = ProjectManager(self, self.keyword_doc)
 
-        # note, the set_fluid_*_model methods have a lot of repeated code
-        # see 'set_fluid_mol_weight_model' to help understand this
-        def make_fluid_model_setter(self, name, key):
-            def setter(model):
-                setattr(self, name, model) # self.fluid_<name>_model = model
-                combobox = getattr(self.ui, 'combobox_' + name)
-                prev_model = combobox.currentIndex()
-                if model != prev_model:
-                    combobox.setCurrentIndex(model)
-                    return
-
-                # Enable spinbox for constant model
-                key_g0 = key + "_g0"
-                key_usr = "usr_" + key + "g"
-                spinbox = getattr(self.ui, 'spinbox_keyword_%s' % key_g0)
-                spinbox.setEnabled(model==CONSTANT)
-
-                if model == CONSTANT:
-                    value = spinbox.value() # Possibly re-enabled gui item
-                    if self.project.get_value(key_g0) != value:
-                        self.set_keyword(key_g0, value) # Restore keyword value
-                elif model == UDF:
-                    self.unset_keyword(key_g0)
-                    self.set_keyword(key_usr, True)
-                else: # Ideal gas law, Sutherland, etc
-                    self.unset_keyword(key_g0)
-                    self.unset_keyword(key_usr)
-                    # anything else to do in this case? validation?
-            return setter
-
-        # Create setters for the cases which are similar (mol. wt. handled separately)
-        for (name, key) in (
-                ('density', 'ro'),
-                ('viscosity', 'mu'),
-                ('specific_heat', 'cp'),
-                ('conductivity', 'k'),
-                ('diffusion', 'dif')):
-            model_name = 'fluid_%s_model' % name
-            setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
-
-
-        # --- data ---
+        # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
                                'workflow':  self.ui.pushButtonWorkflow,
-                               'developer': self.ui.pushButtonDeveloper,
-                               }
-
+                               'developer': self.ui.pushButtonDeveloper}
         self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
-
-        # ---- parameters which do not map neatly to keywords
-        self.fluid_nscalar_eq = 0
-        self.solid_nscalar_eq = 0 # Infer these from phase4scalar
-        # Defaults
-        #self.solver = SINGLE - moved to Project
-        self.fluid_density_model = CONSTANT
-        self.fluid_viscosity_model = CONSTANT
-        self.fluid_mol_weight_model = CONSTANT
-        self.fluid_specific_heat_model = CONSTANT
-        self.fluid_conductivity_model = AIR
-        self.fluid_diffusion_model = AIR
 
         # --- icons ---
         # loop through all widgets & set icons for any ToolButton with add/delete/copy
