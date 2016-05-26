@@ -279,41 +279,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
 
-        # --- tool button setup ---
-        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
-        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
-        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
+        # Toolbuttons at top of frame1
+        ui = self.ui
+        for (button, icon_name, function) in (
+                (ui.toolbutton_new, 'newfolder', self.unimplemented),
+                (ui.toolbutton_open, 'openfolder', self.handle_open),
+                (ui.toolbutton_save, 'save', self.handle_save),
+                (ui.toolbutton_run_stop_mfix, 'play', self.handle_run_stop),
+                (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files)):
+            button.setIcon(get_icon(icon_name+'.png'))
+            button.clicked.connect(function)
 
-        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
-
-
-        self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
-        self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
-        self.ui.geometry.toolbutton_geometry_union.setIcon(get_icon('union.png'))
-        self.ui.geometry.toolbutton_geometry_intersect.setIcon(
-            get_icon('intersect.png'))
-        self.ui.geometry.toolbutton_geometry_difference.setIcon(
-            get_icon('difference.png'))
-
-
-
-        # --- Connect Signals to Slots---
-        # open/save/new project
-        self.ui.toolbutton_open.clicked.connect(self.handle_open)
-        self.ui.toolbutton_new.clicked.connect(self.unimplemented)
-        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
-        self.ui.toolbutton_open.clicked.connect(self.handle_open)
-        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
-        self.ui.toolbutton_save.clicked.connect(self.handle_save)
-
-        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
-        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
-
-        # "More" menu
-        self.ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
-        self.ui.menu_more = QtWidgets.QMenu()
-        self.ui.toolbutton_more.setMenu(self.ui.menu_more)
+        # "More" submenu
+        ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
+        ui.menu_more = QtWidgets.QMenu()
+        ui.toolbutton_more.setMenu(ui.menu_more)
         self.ui.toolbutton_save_as = self.ui.menu_more.addAction(
             get_icon('save.png'), 'Save As', self.handle_save_as)
         self.ui.toolbutton_export = self.ui.menu_more.addAction(
@@ -322,23 +302,29 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.toolbutton_close = self.ui.menu_more.addAction(
             get_icon('close.png'), 'Close', self.close)
 
-        # --- Connect Signals to Slots---
+        # Geometry toolbuttons
+        geo = self.ui.geometry
+        geo.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
+        geo.toolbutton_add_filter.setIcon(get_icon('filter.png'))
+        geo.toolbutton_geometry_union.setIcon(get_icon('union.png'))
+        geo.toolbutton_geometry_intersect.setIcon(get_icon('intersect.png'))
+        geo.toolbutton_geometry_difference.setIcon(get_icon('difference.png'))
+
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
             btn.clicked.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
-        self.ui.treewidget_model_navigation.itemSelectionChanged.connect(
+        ui.treewidget_model_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
-        # build/run/connect MFIX
-        self.ui.run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
-        self.ui.run.button_pause_mfix.clicked.connect(self.pause_mfix)
-        self.ui.run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        self.ui.toolbutton_run_stop_mfix.clicked.connect(self.handle_run_stop)
-        self.ui.toolbutton_reset_mfix.clicked.connect(self.remove_output_files)
-        self.ui.run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
+        # buttons in 'run' pane
+        run = ui.run
+        run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
+        run.button_pause_mfix.clicked.connect(self.pause_mfix)
+        run.button_reset_mfix.clicked.connect(self.remove_output_files)
+        run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -1524,6 +1510,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
+        print("GOF")
         return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
