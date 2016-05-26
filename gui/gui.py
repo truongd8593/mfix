@@ -569,8 +569,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         solver_name = model_setup.combobox_solver.currentText()
         self.print_internal("set solver to %s" % solver_name)
 
-        item_names =  ("Solids", "Continuum",
-                       "Discrete", "Parcel")
+        item_names =  ("Material", "TFM", "DEM", "PIC")
 
         item_states = {SINGLE: (False, False, False, False),
                        TFM: (True, True, False, False),
