@@ -451,6 +451,11 @@ background-color: transparent;
       </property>
       <item>
        <widget class="QStackedWidget" name="stackedWidgetGeometryDetails">
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>28</number>
         </property>

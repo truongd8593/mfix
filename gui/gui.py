@@ -1568,6 +1568,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # VTK reset
         if self.vtkwidget is not None:
             self.vtkwidget.clear_all_geometry()
+            
+        # Regions
         self.ui.regions.clear()
 
         # Fluids
@@ -1721,7 +1723,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
             if os.path.exists(geometry):
                 self.vtkwidget.add_stl(None, filename=geometry)
-
+                
+        # Look for regions in IC, BC, PS, etc.
+        self.ui.regions.extract_regions(self.project)
 
 
 def Usage(name):

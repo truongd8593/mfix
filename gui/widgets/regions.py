@@ -28,9 +28,16 @@ class RegionsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
-
-        uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uifiles')
+        uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                               'uifiles')
         uic.loadUi(os.path.join(uifiles, 'regions.ui'), self)
+        
+        self.extent_lineedits = [self.lineedit_regions_from_x,
+                                 self.lineedit_regions_to_x,
+                                 self.lineedit_regions_from_y,
+                                 self.lineedit_regions_to_y,
+                                 self.lineedit_regions_from_z,
+                                 self.lineedit_regions_to_z]
 
         self.combobox_regions_type.addItems(['point', 'XY-plane',
                                              'XZ-plane', 'YZ-plane', 'box',
@@ -94,32 +101,35 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[index.row()]
 
             if data[name]['visibility']:
-                image = QtGui.QPixmap(get_image_path('visibilityofftransparent.png'))
+                image = QtGui.QPixmap(get_image_path(
+                    'visibilityofftransparent.png'))
             else:
                 image = QtGui.QPixmap(get_image_path('visibility.png'))
 
             data[name]['visibility'] = not data[name]['visibility']
-            self.vtkwidget.change_region_visibility(name, data[name]['visibility'])
+            self.vtkwidget.change_region_visibility(name,
+                                                    data[name]['visibility'])
             image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
                                  QtCore.Qt.SmoothTransformation)
             data[name]['visible'] = image
 
             self.tablewidget_regions.set_value(data)
 
-    def new_region(self):
+    def new_region(self, name='new', extents=[[0, 0, 0], [0, 0, 0]],
+                   rtype='box'):
         'create a new region'
 
         data = self.tablewidget_regions.value
 
-        name = get_unique_string('new', list(data.keys()))
+        name = get_unique_string(name, list(data.keys()))
 
         image = QtGui.QPixmap(get_image_path('visibility.png'))
         image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
                              QtCore.Qt.SmoothTransformation)
 
-        data[name] = {'type':            'box',
-                      'from':            [0, 0, 0],
-                      'to':              [0, 0, 0],
+        data[name] = {'type':            rtype,
+                      'from':            extents[0],
+                      'to':              extents[1],
                       'color':           CellColor([1, 0, 0]),
                       'slice':           True,
                       'filter':          [0, 0, 0],
@@ -193,16 +203,12 @@ class RegionsWidget(QtWidgets.QWidget):
                 None,
                 data[name]['type'])
 
-            for widget, value in zip([self.lineedit_regions_from_x,
-                                      self.lineedit_regions_from_y,
-                                      self.lineedit_regions_from_z],
+            for widget, value in zip(self.extent_lineedits[::2],
                                      data[name]['from']
                                      ):
                 widget.updateValue(None, value)
 
-            for widget, value in zip([self.lineedit_regions_to_x,
-                                      self.lineedit_regions_to_y,
-                                      self.lineedit_regions_to_z],
+            for widget, value in zip(self.extent_lineedits[1::2],
                                      data[name]['to']
                                      ):
                 widget.updateValue(None, value)
@@ -280,42 +286,18 @@ class RegionsWidget(QtWidgets.QWidget):
         # enable stl widgets
         self.groupbox_stl.setEnabled(data[name]['type'] == 'STL')
 
+        enable_list = [True]*6
         if data[name]['type'] == 'point':
-            self.lineedit_regions_from_x.setEnabled(True)
-            self.lineedit_regions_to_x.setEnabled(False)
-            self.lineedit_regions_from_y.setEnabled(True)
-            self.lineedit_regions_to_y.setEnabled(False)
-            self.lineedit_regions_from_z.setEnabled(True)
-            self.lineedit_regions_to_z.setEnabled(False)
+            enable_list[1::2] = [False]*3
         elif data[name]['type'] == 'XY-plane':
-            self.lineedit_regions_from_x.setEnabled(True)
-            self.lineedit_regions_to_x.setEnabled(True)
-            self.lineedit_regions_from_y.setEnabled(True)
-            self.lineedit_regions_to_y.setEnabled(True)
-            self.lineedit_regions_from_z.setEnabled(True)
-            self.lineedit_regions_to_z.setEnabled(False)
+            enable_list[5] = False
         elif data[name]['type'] == 'XZ-plane':
-            self.lineedit_regions_from_x.setEnabled(True)
-            self.lineedit_regions_to_x.setEnabled(True)
-            self.lineedit_regions_from_y.setEnabled(True)
-            self.lineedit_regions_to_y.setEnabled(False)
-            self.lineedit_regions_from_z.setEnabled(True)
-            self.lineedit_regions_to_z.setEnabled(True)
+            enable_list[3] = False
         elif data[name]['type'] == 'YZ-plane':
-            self.lineedit_regions_from_x.setEnabled(True)
-            self.lineedit_regions_to_x.setEnabled(False)
-            self.lineedit_regions_from_y.setEnabled(True)
-            self.lineedit_regions_to_y.setEnabled(True)
-            self.lineedit_regions_from_z.setEnabled(True)
-            self.lineedit_regions_to_z.setEnabled(True)
-        else:
-            self.lineedit_regions_to_x.setEnabled(True)
-            self.lineedit_regions_from_x.setEnabled(True)
-            self.lineedit_regions_to_x.setEnabled(True)
-            self.lineedit_regions_from_y.setEnabled(True)
-            self.lineedit_regions_to_y.setEnabled(True)
-            self.lineedit_regions_from_z.setEnabled(True)
-            self.lineedit_regions_to_z.setEnabled(True)
+            enable_list[1] = False
+
+        for widget, enable in zip(self.extent_lineedits, enable_list):
+            widget.setEnabled(enable)
 
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
@@ -397,3 +379,59 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.delete_region(region)
 
         self.tablewidget_regions.set_value(OrderedDict())
+
+    def extract_regions(self, proj):
+        """ extract regions from IC, BC, PS """
+
+        for condtype, conds in [('ic', proj.ics), ('bc', proj.bcs),
+                                ('is', proj.iss), ('ps', proj.pss)]:
+            for cond in conds:
+                extents = []
+                for key in ['{}_x_w', '{}_x_e', '{}_y_s', '{}_y_n', '{}_z_b',
+                            '{}_z_t']:
+                    key = key.format(condtype)
+                    if key in cond:
+                        extents.append(float(cond[key]))
+                    else:
+                        extents.append(0.0)
+
+                # if extents are not already used by a region, add it
+                if not self.check_extents_in_regions(extents):
+
+                    extents = [extents[::2], extents[1::2]]
+
+                    if 'bc_type' in cond and \
+                            str(cond['bc_type']).startswith('cg'):
+                        rtype = 'stl'
+                    else:
+                        rtype = self.get_region_type(extents)
+
+                    name = '{}_{}'.format(condtype.upper(), cond.ind)
+                    self.new_region(name, extents, rtype)
+
+    def check_extents_in_regions(self, extents):
+        """ check to see if the extents are already in a region """
+        region_dict = self.tablewidget_regions.value
+        for key in region_dict.keys():
+            region_extent = [None]*6
+            region_extent[::2] = region_dict[key]['from']
+            region_extent[1::2] = region_dict[key]['to']
+
+            if extents == region_extent:
+                return True
+        return False
+
+    def get_region_type(self, extents):
+        """ given the extents, guess the region type """
+
+        rtype = 'box'
+        if extents[0] == extents[1]:
+            rtype = 'point'
+
+        for r, f, t in zip(['YZ-plane', 'XZ-plane', 'XY-plane'],
+                           extents[0], extents[1]):
+            if f == t:
+                rtype = r
+                break
+
+        return rtype
