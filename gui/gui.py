@@ -1510,7 +1510,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
-        print("GOF")
         return QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
 
