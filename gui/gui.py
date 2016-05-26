@@ -314,16 +314,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
         self.ui.menu_more = QtWidgets.QMenu()
         self.ui.toolbutton_more.setMenu(self.ui.menu_more)
-
         self.ui.toolbutton_save_as = self.ui.menu_more.addAction(
             get_icon('save.png'), 'Save As', self.handle_save_as)
-
         self.ui.toolbutton_export = self.ui.menu_more.addAction(
             get_icon('open_in_new.png'), 'Export', self.handle_export)
-
         self.ui.menu_more.addSeparator()
-
-        self.ui.toolbutton_export = self.ui.menu_more.addAction(
+        self.ui.toolbutton_close = self.ui.menu_more.addAction(
             get_icon('close.png'), 'Close', self.close)
 
         # --- Connect Signals to Slots---
