@@ -1585,7 +1585,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return
         project_dir = os.path.dirname(project_file)
         if not self.check_writable(project_dir):
-            self.save_as()
             return
         for fn in output_files:
             #copy into new_project_directory
