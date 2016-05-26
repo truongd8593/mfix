@@ -545,6 +545,9 @@ class Species(Base):
         Base.__init__(self, ind)
         self.phase = phase
 
+    def get(self, key, default=None):
+        return self._keyword_dict.get(key, default)
+
     def __str__(self):
         if self.phase == 'g':
             p = 'Gas'
@@ -561,6 +564,9 @@ class Solid(Base):
 
         self.species = SpeciesCollection()
         self.name = 'Solid {}'.format(self.ind)
+
+    def get(self, key, default=None):
+        return self._keyword_dict.get(key, default)
 
     def addSpecies(self, ind):
         return self.species.new(ind, phase='s')
