@@ -11,8 +11,6 @@ Please visit: https://mfix.netl.doe.gov/
 This python file contains a function to parse the MFiX init_namelist
 files to extract documentation of the keywords.
 
-Last update: 12/19/2013
-
 @author: Justin Weber
 """
 # Import from the future for Python 2 and 3 compatability!
@@ -81,12 +79,14 @@ def insensitiveGlobPattern(pattern):
     return ''.join(map(either,pattern))
 
 def cleanString(string):
+    string = string.strip()
     if string:
         strings = string.split('!')
         strings = [s.strip() for s in strings]
-        return ' '.join(strings).strip()
-    else:
-        return 'NA'
+        return ' '.join(strings)
+
+    return string
+
 
 def parse(fname = None, string = None):
     '''
@@ -277,11 +277,11 @@ def parse(fname = None, string = None):
                                    'dtype': dtype,
                                    'description': cleanString(description[0]),
                                    'category': 'other',
-                                   'required': 'false',
-                                   'tfm': 'false',
-                                   'dem': 'false',
-                                   'pic': 'false',
-                                   'legacy': 'false',
+                                   'required': False,
+                                   'tfm': False,
+                                   'dem': False,
+                                   'pic': False,
+                                   'legacy': False,
                                    'args': OrderedDict(),
                                    'dependents': OrderedDict(),
                                    'conflicts': OrderedDict(),
@@ -289,8 +289,13 @@ def parse(fname = None, string = None):
                                    'validrange': OrderedDict(),
                                    }
 
+        def tryBool(s):
+            return True if s=='true' else False if s=='false' else s
+
         for keywordAtt in keywordAtts:
-            keywordDocDict[keyword][keywordAtt[0].strip().lower()] = cleanString(keywordAtt[-1]).lower()
+            key = keywordAtt[0].strip().lower()
+            val = keywordAtt[-1].lower()
+            keywordDocDict[keyword][key] = tryBool(cleanString(val))
 
         keywordDocCat.add(keywordDocDict[keyword]['category'])
 
