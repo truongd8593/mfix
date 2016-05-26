@@ -294,12 +294,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
         ui.menu_more = QtWidgets.QMenu()
         ui.toolbutton_more.setMenu(ui.menu_more)
-        self.ui.toolbutton_save_as = self.ui.menu_more.addAction(
+        self.ui.action_save_as = self.ui.menu_more.addAction(
             get_icon('save.png'), 'Save As', self.handle_save_as)
-        self.ui.toolbutton_export = self.ui.menu_more.addAction(
+        self.ui.action_export = self.ui.menu_more.addAction(
             get_icon('open_in_new.png'), 'Export', self.handle_export)
         self.ui.menu_more.addSeparator()
-        self.ui.toolbutton_close = self.ui.menu_more.addAction(
+        self.ui.action_close = self.ui.menu_more.addAction(
             get_icon('close.png'), 'Close', self.close)
 
         # Geometry toolbuttons
@@ -476,16 +476,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if self.pymfix_enabled:
                 self.ui.run.button_pause_mfix.setText("Unpause")
 
+            self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+
             if res_file_exists:
                 self.ui.toolbutton_reset_mfix.setEnabled(True)
-                self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run_stop_mfix.setText("Resume")
                 self.ui.run.button_run_stop_mfix.setText("Resume")
                 self.ui.run.button_reset_mfix.setEnabled(True)
                 self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
                 self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
             else:
-                self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
                 self.ui.toolbutton_run_stop_mfix.setText("Run")
                 self.ui.run.button_run_stop_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
@@ -1443,7 +1443,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def handle_save_as(self):
         # TODO:  catch/report exceptions!
         self.save_as()
-        self.reload_source_view()
+        self.update_source_view()
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
@@ -1451,9 +1451,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
         ui = self.ui
+        ui.toolbutton_more.setEnabled(True)
         ui.toolbutton_save.setEnabled(True)
-        ui.toolbutton_save_as.setEnabled(True)
-        ui.toolbutton_export.setEnabled(True)
 
     def clear_unsaved_flag(self):
         if self.unsaved_flag:
