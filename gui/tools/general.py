@@ -171,48 +171,61 @@ def set_in_dict(data_dict, map_list, value):
     get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
 
 
-def recurse_dict(d, keys=()):
-    '''
-    Recursively loop through a dictionary of dictionaries.
+def recurse_dict(d, path=()):
+    """Depth-first iterator though nested dictionaries,
+    Yields (path, value), eg if d['a']['b']['c]=3,
+    one of the yielded values will be (('a','b','c'), 3).
+    See test_recurse_dict for an example"""
 
-    Parameters
-    ----------
-    d (dict):
-        a dictionary to loop over
+    # Not quite depth-first b/c order of dictionary key is arbitrary
+    for (k,v) in d.items():
+        path = path + (k,)
+        if isinstance(v, dict):
+            for r in recurse_dict(v, path):
+                yield r
+        else:
+            yield (path, v)
 
-    Returns
-    -------
-    (keys (tuple), value):
-        a tuple of keys (tuple) and the value.
-    '''
-    if type(d) == dict:
-        for k in d:
-            for rv in recurse_dict(d[k], keys + (k, )):
-                yield rv
-    else:
-        yield (keys, d)
+def test_recurse_dict():
+    d = {1: {2:3,
+             4: {5:6}},
+         2: {}}
+
+    l = list(recurse_dict(d))
+    l.sort()
+    assert l == [((1,2),3), ((1,4,5), 6)]
 
 
-def recurse_dict_empty(d, keys=()):
-    '''
-    Recursively loop through a dictionary of dictionaries.
+def recurse_dict_empty(d, path=()):
+    """Depth-first iterator though nested dictionaries
+    Yields (keytuple, value), eg if d['a']['b']['c]=3,
+    one of the yielded values will be (('a','b','c'), 3)
+    Differs from recurse_dict in that an empty dictionary
+    encountered as a value will be yielded, eg
+    if d[1][2]={}, then ((1,2), {}) will be one of the
+    yielded values.
+    See test_recurse_dict_empty for an example"""
 
-    Parameters
-    ----------
-    d (dict):
-        a dictionary to loop over
+    # Not quite depth-first b/c order of dictionary key is arbitrary
+    for k,v in d.items():
+        path = path + (k,)
+        if isinstance(v, dict):
+            if v == {}:
+                yield(path, v)
+            else:
+                for r in recurse_dict_empty(v, path):
+                    yield r
+        else:
+            yield (path, v)
 
-    Returns
-    -------
-    (keys (tuple), value):
-        a tuple of keys (tuple) and the value.
-    '''
-    if type(d) == dict and d:
-        for k in d:
-            for rv in recurse_dict_empty(d[k], keys + (k, )):
-                yield rv
-    else:
-        yield (keys, d)
+def test_recurse_dict_empty():
+    d = {1: {2:3,
+             4: {5:6}},
+         2: {}}
+
+    l = list(recurse_dict_empty(d))
+    l.sort()
+    assert l == [((), {}), ((1,), 3), ((1, 4), 6)]
 
 
 # These functions were extracted from spyder's p3compat.py code.
@@ -338,3 +351,7 @@ class CellColor(object):
 
     def __repr__(self):
         return self.text
+
+if __name__ == '__main__':
+    test_recurse_dict()
+    test_recurse_dict_empty()
