@@ -439,7 +439,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QComboBox" name="combobox_solids_density_model">
+               <widget class="ComboBox" name="combobox_solids_density_model">
                 <item>
                  <property name="text">
                   <string>Constant</string>
@@ -465,7 +465,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QComboBox" name="comboBox_15"/>
+               <widget class="ComboBox" name="comboBox_15"/>
               </item>
               <item row="2" column="2">
                <widget class="QLineEdit" name="lineEdit_31"/>
@@ -485,7 +485,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QComboBox" name="comboBox_16"/>
+               <widget class="ComboBox" name="comboBox_16"/>
               </item>
               <item row="3" column="2">
                <widget class="QLineEdit" name="lineEdit_32"/>
@@ -505,7 +505,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="4" column="1">
-               <widget class="QComboBox" name="comboBox_17"/>
+               <widget class="ComboBox" name="comboBox_17"/>
               </item>
               <item row="4" column="2">
                <widget class="QLineEdit" name="lineEdit_33"/>
@@ -525,7 +525,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="5" column="1">
-               <widget class="QComboBox" name="comboBox_18"/>
+               <widget class="ComboBox" name="comboBox_18"/>
               </item>
               <item row="5" column="2">
                <widget class="QLineEdit" name="lineEdit_34"/>
@@ -716,7 +716,7 @@ QPushButton:checked {
            <number>5</number>
           </property>
           <item row="4" column="2" colspan="2">
-           <widget class="QComboBox" name="comboBox_22">
+           <widget class="ComboBox" name="comboBox_22">
             <item>
              <property name="text">
               <string>Constant</string>
@@ -742,7 +742,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="1" column="2" colspan="2">
-           <widget class="QComboBox" name="comboBox_21">
+           <widget class="ComboBox" name="comboBox_21">
             <item>
              <property name="text">
               <string>None</string>
@@ -866,7 +866,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="comboBox_19">
+           <widget class="ComboBox" name="comboBox_19">
             <item>
              <property name="text">
               <string>Schaeffer</string>
@@ -906,7 +906,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="comboBox">
+           <widget class="ComboBox" name="comboBox">
             <item>
              <property name="text">
               <string>Algebraic Formulation</string>
@@ -1097,7 +1097,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="5" column="2" colspan="2">
-            <widget class="QComboBox" name="comboBox_23">
+            <widget class="ComboBox" name="comboBox_23">
              <item>
               <property name="text">
                <string>One-way Coupled</string>
@@ -1125,7 +1125,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="7" column="2" colspan="4">
-            <widget class="QComboBox" name="comboBox_20">
+            <widget class="ComboBox" name="comboBox_20">
              <item>
               <property name="text">
                <string>field-to-particle and particle-to-field</string>
@@ -1156,7 +1156,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="8" column="2" colspan="2">
-            <widget class="QComboBox" name="comboBox_26">
+            <widget class="ComboBox" name="comboBox_26">
              <item>
               <property name="text">
                <string>None</string>
@@ -1353,7 +1353,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="16" column="1" colspan="2">
-            <widget class="QComboBox" name="comboBox_29">
+            <widget class="ComboBox" name="comboBox_29">
              <item>
               <property name="text">
                <string>None</string>
@@ -1484,7 +1484,7 @@ background-color:transparent;
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox_30">
+               <widget class="ComboBox" name="comboBox_30">
                 <item>
                  <property name="text">
                   <string>Grid-based</string>
@@ -1798,7 +1798,7 @@ background-color:transparent;
            </widget>
           </item>
           <item row="1" column="1" colspan="3">
-           <widget class="QComboBox" name="comboBox_25">
+           <widget class="ComboBox" name="comboBox_25">
             <item>
              <property name="text">
               <string>field-to-particle and particle-to-field</string>
@@ -1822,7 +1822,7 @@ background-color:transparent;
            </widget>
           </item>
           <item row="0" column="1" colspan="3">
-           <widget class="QComboBox" name="comboBox_24">
+           <widget class="ComboBox" name="comboBox_24">
             <item>
              <property name="text">
               <string>One-way Coupled</string>

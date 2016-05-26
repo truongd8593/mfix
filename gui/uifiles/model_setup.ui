@@ -18,7 +18,7 @@
     <number>5</number>
    </property>
    <item row="4" column="1">
-    <widget class="QComboBox" name="combobox_turbulence_model">
+    <widget class="ComboBox" name="combobox_turbulence_model">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -113,7 +113,7 @@
        <number>5</number>
       </property>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox_3">
+       <widget class="ComboBox" name="comboBox_3">
         <item>
          <property name="text">
           <string>Wen and Yu</string>
@@ -136,7 +136,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="comboBox_4">
+       <widget class="ComboBox" name="comboBox_4">
         <item>
          <property name="text">
           <string>Gunn, 1979</string>
@@ -176,7 +176,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="combobox_solver">
+       <widget class="ComboBox" name="combobox_solver">
         <item>
          <property name="text">
           <string>Single phase</string>
@@ -249,7 +249,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox_5">
+       <widget class="ComboBox" name="comboBox_5">
         <item>
          <property name="text">
           <string>Model A</string>
@@ -273,7 +273,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="combobox_subgrid_model">
+       <widget class="ComboBox" name="combobox_subgrid_model">
         <item>
          <property name="text">
           <string>None</string>
@@ -331,6 +331,11 @@
   <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
