@@ -109,6 +109,7 @@ def make_callback(func, *args, **kwargs):
     return lambda: func(*args, **kwargs)
 
 
+icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
     default: default image name or icon
@@ -116,6 +117,11 @@ def get_icon(name, default=None, resample=False):
     (16, 24, 32, 48, 96, 128, 256). This is recommended for QMainWindow icons
     created from SVG images on non-Windows platforms due to a Qt bug (see
     http://code.google.com/p/spyderlib/issues/detail?id=1314)."""
+
+    icon = icon_cache.get((name,default,resample))
+    if icon:
+        return icon
+
     if default is None:
         icon = QtGui.QIcon(get_image_path(name))
     elif isinstance(default, QtGui.QIcon):
@@ -127,10 +133,12 @@ def get_icon(name, default=None, resample=False):
         icon0 = QtGui.QIcon()
         for size in (16, 24, 32, 48, 96, 128, 256, 512):
             icon0.addPixmap(icon.pixmap(size, size))
-        return icon0
+        icon_cache[(name, default, resample)] = icon0
+        ret = icon0
     else:
-        return icon
-
+        ret= icon
+    icon_cache[(name, default, resample)] = ret
+    return ret
 
 def get_unique_string(base, listofstrings):
     "uniquify a string"
