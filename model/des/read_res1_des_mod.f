@@ -144,10 +144,12 @@
             READ(RDES_UNIT, REC=1) lVERSION
             READ(RDES_UNIT, REC=2) pIN_COUNT
 !           READ(RDES_UNIT, REC=3) -NOTHING-
+            iGHOST_CNT = 0 ! Needs to be initialized here since it is not read in REC=3
             READ(RDES_UNIT, REC=4) cIN_COUNT
 
          ELSE
             pIN_COUNT = 10
+            iGHOST_CNT = 0 
          ENDIF
 
          IER = 0
@@ -567,6 +569,7 @@
 
       CALL DES_RESTART_GHOST
 
+      if(allocated(iPAR_COL)) deallocate(iPAR_COL)
       allocate(iPAR_COL(2, cIN_COUNT))
       iPAR_COL = 0
 
@@ -807,6 +810,7 @@
       MAX_ID = maxval(IGLOBAL_ID(1:PIP))
       CALL GLOBAL_ALL_MAX(MAX_ID)
 
+      if(allocated(iLOCAL_ID)) deallocate(iLOCAL_ID)
       allocate(iLOCAL_ID(MAX_ID), STAT=lSTAT)
       CALL GLOBAL_ALL_SUM(lSTAT)
 

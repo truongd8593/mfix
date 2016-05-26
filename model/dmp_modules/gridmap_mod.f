@@ -114,6 +114,10 @@
 
                CLOSE(777)
             ENDIF
+            CALL BCAST(NODESI)
+            CALL BCAST(NODESJ)
+            CALL BCAST(NODESK)
+
             CALL BCAST(ISIZE1_ALL)
             CALL BCAST(JSIZE1_ALL)
             CALL BCAST(KSIZE1_ALL)

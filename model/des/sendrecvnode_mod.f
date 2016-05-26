@@ -110,6 +110,13 @@
          (ljproc_end-ljproc_start+1)*(lkproc_end-lkproc_start+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(itoproc)) DEALLOCATE(itoproc)
+      IF(ALLOCATED(iprocsumindx)) DEALLOCATE(iprocsumindx)
+      IF(ALLOCATED(istartsend)) DEALLOCATE(istartsend)
+      IF(ALLOCATED(istartrecv)) DEALLOCATE(istartrecv)
+      IF(ALLOCATED(isendreqnode)) DEALLOCATE(isendreqnode)
+      IF(ALLOCATED(irecvreqnode)) DEALLOCATE(irecvreqnode)
+
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
       allocate (istartsend(itotalneigh+1))
@@ -207,6 +214,9 @@
       itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
+      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
+
       allocate(isendnodes(itotalindx))
       allocate(dsendnodebuf(itotalindx))
 
@@ -330,6 +340,9 @@
          istartrecv(lproc)=sum(iprocsumindx(1:lproc-1))+1
       end do
       itotalindx=istartrecv(itotalneigh+1)-1
+
+      IF(ALLOCATED(irecvnodes)) DEALLOCATE(irecvnodes)
+      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
 
       allocate(irecvnodes(itotalindx))
       allocate(drecvnodebuf(itotalindx))
@@ -563,6 +576,12 @@
          (ljproc_end-ljproc_start+1)*(lkproc_end-lkproc_start+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(itoproc)) DEALLOCATE(itoproc)
+      IF(ALLOCATED(iprocsumindx)) DEALLOCATE(iprocsumindx)
+      IF(ALLOCATED(istartsend)) DEALLOCATE(istartsend)
+      IF(ALLOCATED(irecvreqnode)) DEALLOCATE(irecvreqnode)
+      IF(ALLOCATED(isendreqnode)) DEALLOCATE(isendreqnode)
+
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
       allocate (istartsend(itotalneigh+1))
@@ -623,6 +642,9 @@
       itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
+      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
+      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
       allocate (isendnodes(itotalindx))
       allocate (dsendnodebuf(itotalindx))
       allocate (drecvnodebuf(itotalindx))

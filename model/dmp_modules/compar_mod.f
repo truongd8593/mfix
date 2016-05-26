@@ -163,6 +163,9 @@
 !       Flag to exit gridmap_init after domain size is assigned
         LOGICAL :: SHORT_GRIDMAP_INIT = .FALSE.
 
+!       Flag to restart internally with a new partition 
+!       This provides a mechanism to do a dynamic load balance
+        LOGICAL :: ADJUST_PARTITION = .FALSE.
 
       END MODULE compar
 

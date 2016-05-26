@@ -90,7 +90,8 @@
 
 ! NEW files should not be in the run directory.
       IF(FILE_EXISTS .AND. (OPEN_STAT == 'NEW')) THEN
-         IER = 100; RETURN
+         IER = 100
+         IF(.NOT.ADJUST_PARTITION) RETURN
 ! OLD files must be in the run directory.
       ELSEIF(.NOT. FILE_EXISTS .AND. OPEN_STAT .EQ. 'OLD') THEN
          IER = 101; RETURN

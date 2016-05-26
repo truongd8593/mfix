@@ -111,6 +111,7 @@ CONTAINS
     USE indices
     USE param, ONLY: DIMENSION_3
     USE sendrecv, ONLY: send_recv
+    USE param1, only: zero
     IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -135,6 +136,8 @@ CONTAINS
     integer :: class, interval
     integer :: j_start(2), j_end(2)
 !-----------------------------------------------
+
+    AVAR(:) = ZERO
 
     IF(RE_INDEXING) THEN
 

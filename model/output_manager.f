@@ -384,6 +384,8 @@ MODULE output_man
       use param1, only:  UNDEFINED_I
 
       use funits, only: CREATE_DIR
+      use discretelement, only: PLD_DT
+      use compar, only:MyPE,ADJUST_PARTITION
 
       IMPLICIT NONE
 
@@ -448,7 +450,12 @@ MODULE output_man
       ENDDO
 
 ! Initialize VTK_TIME
-      PLD_TIME = TIME
+      IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
+         PLD_TIME = TIME
+      ELSE
+         PLD_TIME = (INT((TIME + 0.1d0*DT)/PLD_DT)+1)*PLD_DT
+         ADJUST_PARTITION = .FALSE.
+      ENDIF
 
 ! Initialize VTK_TIME
 
@@ -608,7 +615,7 @@ MODULE output_man
       use mpi_utility        
       use run, only: TIME
       use sendrecv 
-      use compar, only:MyPE
+      use compar, only:MyPE,ADJUST_PARTITION
       use usr
 
       implicit none
@@ -622,13 +629,11 @@ MODULE output_man
 
       IF(NumPEs==1) RETURN  ! Nothing to do in serial
 
-      ! print*,'DISPLAY_DEM_LOAD,MyPE,PIP,IGHOST_CNT,NP=',MyPE,PIP,IGHOST_CNT,NP
 
       NP = PIP - IGHOST_CNT                                                                                                                              
       ALLOCATE( NP_ALL(0:NumPEs-1))
       CALL ALLGATHER_1I (NP,NP_ALL,IERR)
       CALL GLOBAL_ALL_SUM(NP)
-      ! if(MyPE==0) print*,'DISPLAY_DEM_LOAD,NP_ALL,NP=',NP_ALL,NP,NumPEs
       MIN_NP   = MINVAL(NP_ALL)
       MIN_NPP  = MINLOC(NP_ALL,1)-1
       MAX_NP   = MAXVAL(NP_ALL)
@@ -636,6 +641,10 @@ MODULE output_man
       IDEAL_NP = INT(NP/NumPEs)
       MIN_LOAD = DFLOAT(MIN_NP)/DFLOAT(IDEAL_NP)
       MAX_LOAD = DFLOAT(MAX_NP)/DFLOAT(IDEAL_NP)
+      IF(.FALSE.) THEN ! Currently turned off
+         if(MyPE==0) print*,'Triggering internal restart'
+         ADJUST_PARTITION = .TRUE.
+      ENDIF
       CURRENT_MAX_LOAD = MAX_LOAD
       WRITE(ERR_MSG, 1000) trim(iVAL(NP)), &
                            trim(iVal(MIN_NP)), trim(iVal(MIN_NPP)), &

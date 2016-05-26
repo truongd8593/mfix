@@ -623,8 +623,10 @@
       USE error_manager, only: finl_err_msg
       USE machine, only: wall_time
       USE parallel_mpi, only: parallel_fin
-      USE run, only: dt, call_usr, dt_min, get_tunit, tunit
+      USE run, only: dt, call_usr, dt_min, get_tunit, tunit,time,tstop
       USE time_cpu
+      USE compar, only:ADJUST_PARTITION
+      USE output_man
       IMPLICIT NONE
 
 ! Call user-defined subroutine after time-loop.
@@ -651,8 +653,16 @@
       ENDIF
       IF(CARTESIAN_GRID)  CALL CLOSE_CUT_CELL_FILES
 
+! JFD: Dynamic load balance
+      IF(TIME+0.1d0*DT>=TSTOP)  ADJUST_PARTITION=.FALSE.
+      IF(ADJUST_PARTITION) THEN
+         CALL OUTPUT_MANAGER(.TRUE., .FALSE.)
+         CALL DEALLOCATE_ARRAYS
+      ELSE
 ! Finalize and terminate MPI
-      call parallel_fin
+         call parallel_fin
+      ENDIF
+
 
       CALL FINL_ERR_MSG
 

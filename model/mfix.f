@@ -73,7 +73,8 @@
       USE READ_INPUT, ONLY: GET_DATA
       USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
-
+      USE COMPAR, only:MyPE,ADJUST_PARTITION
+      USE MPI_UTILITY
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -113,6 +114,9 @@
          ENDIF
       ENDDO
 
+! Dynamic load balance loop
+      DO
+
 ! Initialize the simulation
       CALL INITIALIZE
 ! Read input data
@@ -146,11 +150,18 @@
                IF(.NOT.ADJUSTDT()) EXIT
             ENDDO
             CALL TIME_STEP_END
-            IF (STEADY_STATE) EXIT
+            IF (STEADY_STATE .OR. ADJUST_PARTITION) EXIT
          ENDDO
 
       ENDIF
+
+
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       CALL FINALIZE
+      IF(.NOT.ADJUST_PARTITION) EXIT
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+      ENDDO
+
 
       STOP
       END PROGRAM MFIX

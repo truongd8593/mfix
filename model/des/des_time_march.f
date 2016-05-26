@@ -217,6 +217,8 @@
 
          IF(CALL_USR) CALL USR2_DES
 
+         IF(ADJUST_PARTITION) EXIT
+
       ENDDO ! end do NN = 1, FACTOR
 
 ! END DEM time loop

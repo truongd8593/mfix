@@ -41,6 +41,8 @@ MODULE read_input
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(0,MFIX_DAT)
+! Set RUN_TYPE to RESTART_1 when adjusting partition
+      IF(ADJUST_PARTITION) RUN_TYPE = 'RESTART_1'
 
       RETURN
 
