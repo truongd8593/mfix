@@ -27,8 +27,8 @@ class ProjectManager(Project):
         self.solver = SINGLE # default
 
 
-    def submit_change(self, widget, newValueDict, args=None,
-                      forceUpdate=False): # forceUpdate unused (?)
+    def submit_change(self, widget, newValueDict, args=None)
+
         """Submit a value change, for example
         submitChange(lineEdit, {'run_name':'new run name'}, args)"""
 
@@ -55,20 +55,18 @@ class ProjectManager(Project):
             if isinstance(newValue, dict):
                 if args:
                     for ind, value in newValue.items():
-                        self._change(widget, key, value, args=args+[ind],
-                                     forceUpdate=forceUpdate)
+                        self._change(widget, key, value, args=args+[ind])
+
                 else:
                     for ind, value in newValue.items():
-                        self._change(widget, key, value, args=[ind],
-                                     forceUpdate=forceUpdate)
+                        self._change(widget, key, value, args=[ind])
             else:
-                self._change(widget, key, newValue, args=args,
-                             forceUpdate=forceUpdate)
+                self._change(widget, key, newValue, args=args)
 
         self._cleanDeletedItems()
 
 
-    def _change(self, widget, key, newValue, args=None, forceUpdate=False):
+    def _change(self, widget, key, newValue, args=None)
         # prevent circular updates, from this widget or any higher in stack
         if widget in self._widget_update_stack:
             return
@@ -135,13 +133,11 @@ class ProjectManager(Project):
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = str(updatedValue) # Just used for log message
-            # (don't) Convert bools to Fortran-style
             #if isinstance(updatedValue, bool):
             #    val_str = '.%s.' % val_str
 
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace")
-            #color='green' if widgets_to_update else None)
 
 
     def guess_solver(self):
@@ -293,15 +289,26 @@ class ProjectManager(Project):
 
             self.update_thermo_data(self.gui.fluid_species)
 
+
+            # Build the 'solids' dict that the gui expects.
+            #  Note that this is derived from the project.solids SolidsCollection
+            #  but is slightly different.
+            default_solids_model = ("DEM" if self.solver==DEM
+                                   else "TFM" if self.solver==TFM
+                                   else "PIC" if self.solver==PIC
+                                   else "TFM")
+
             for s in self.solids:
                 name = s.name
                 species = list(s.species)
                 species.sort(key=lambda a:a.ind)
-                # FIXME just use the solid object instead of doing this translation
-                solids_data =  {'model': s.get("solids_model"),
+                if not s.get('solids_model'):
+                    s['solids_model'] = default_solids_model
+                solids_data =  {'model': s.get("solids_model", default_solids_model),
                                'diameter': s.get('d_p0'),
                                'density': s.get('ro_s0'),
                                'species': species}
+                print(solids_data)
                 self.gui.solids[name] = solids_data
 
             # Now submit all remaining keyword updates, except the ones we're skipping
@@ -316,8 +323,7 @@ class ProjectManager(Project):
                     self.gui.unset_keyword(kw.key, args=kw.args) # print msg in window
                     continue
                 try:
-                    self.submit_change(None, {kw.key: kw.value},
-                                       args=kw.args, forceUpdate=True)
+                    self.submit_change(None, {kw.key: kw.value}, args=kw.args)
                 except ValueError as e:
                     errlist.append(e)
 
