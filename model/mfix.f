@@ -156,10 +156,8 @@
       ENDIF
 
 
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       CALL FINALIZE
       IF(.NOT.ADJUST_PARTITION) EXIT
-      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       ENDDO
 
 
