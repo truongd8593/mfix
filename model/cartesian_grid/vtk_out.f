@@ -153,13 +153,13 @@
             CALL WRITE_VECTOR_IN_VTU_BIN('Gas_Velocity',U_G,V_G,W_G,PASS)
 
          IF(VTK_U_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('U_G',P_G,PASS)
+            CALL WRITE_SCALAR_IN_VTU_BIN('U_G',U_G,PASS)
 
          IF(VTK_V_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('V_G',P_G,PASS)
+            CALL WRITE_SCALAR_IN_VTU_BIN('V_G',V_G,PASS)
 
          IF(VTK_W_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('W_G',P_G,PASS)
+            CALL WRITE_SCALAR_IN_VTU_BIN('W_G',W_G,PASS)
 
          DO M = 1,MMAX
             IF(VTK_VEL_s(VTK_REGION,M)) THEN
