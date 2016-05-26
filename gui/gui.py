@@ -1633,12 +1633,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_keyword('run_name', run_name)
 
         if not self.check_writable(project_dir):
-            self.save_as()
-            self.clear_unsaved_flag()
             return
 
         self.save_project(project_file)
-        self.open_project(project_file)
         self.clear_unsaved_flag()
 
     def get_save_filename(self, dialog_message=None):
