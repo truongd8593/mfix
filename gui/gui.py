@@ -1485,7 +1485,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def new_project(self, project_dir=None):
         if not project_dir:
             project_dir = str(
-                QtWidgets.QFileDialog.getOpenFileName(
+                QtWidgets.QFileDialog.getExistingDirectory(
                     self, 'Create Project in Directory',
                     ""))
         if len(project_dir) < 1:
