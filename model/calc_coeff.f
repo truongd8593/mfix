@@ -119,7 +119,7 @@
       CALL PHYSICAL_PROP(IER, pLevel)
 
 ! Calculate transport properties: (conductivity, diffusivity, ect)
-      CALL TRANSPORT_PROP(IER)
+      CALL TRANSPORT_PROP
 
 ! Calculate interphase coeffs: (momentum and energy)
       CALL EXCHANGE(IER)
@@ -172,7 +172,7 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ELSE
-            CALL RRATES0 (IER)
+            CALL RRATES0
          ENDIF
 
 ! DES Chemical reactions

@@ -147,7 +147,7 @@ MODULE REINIT
       CALL PARSE_RESID_STRING ()
       IF(REINIT_ERROR()) RETURN
 
-      CALL RRATES_INIT(IER)
+      CALL RRATES_INIT
       IF(REINIT_ERROR()) RETURN
 
 ! Calculate all the coefficients once before entering the time loop

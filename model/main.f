@@ -437,20 +437,20 @@
       CALL INIT_COEFF(IER)
 
       DO MM=1, MMAX
-         F_gs(1,MM) = ZERO
+         F_gs(:,MM) = ZERO
       ENDDO
 
 ! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G)
       DO MM = 1, MMAX
-         CALL UNDEF_2_0 (ROP_S(1,MM))
+         CALL UNDEF_2_0 (ROP_S(:,MM))
       ENDDO
 
 ! Initialize d's and e's to zero
       DO MM = 0, MMAX
-         D_E(1,MM) = ZERO
-         D_N(1,MM) = ZERO
-         D_T(1,MM) = ZERO
+         D_E(:,MM) = ZERO
+         D_N(:,MM) = ZERO
+         D_T(:,MM) = ZERO
       ENDDO
       E_E(:) = ZERO
       E_N(:) = ZERO

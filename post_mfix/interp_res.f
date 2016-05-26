@@ -223,7 +223,7 @@
       CALL DEALLOCATE_ARRAYS
 
       CALL INIT_NAMELIST
-      CALL READ_NAMELIST(1)
+      CALL READ_NAMELIST(1, 'mfix.dat')
       NODESI = 1
       NODESJ = 1
       NODESK = 1

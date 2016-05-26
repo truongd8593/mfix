@@ -63,7 +63,7 @@
       WRITE (UNIT_OUT,*) ' TIME = ' , TIME
 !
       DO M = 1, MMAX
-        CALL CALC_MU_s(M, IER)
+        CALL CALC_MU_s(M)
       ENDDO
 !
       DO 200 M = 1,MMAX

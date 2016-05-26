@@ -10,7 +10,7 @@
     END PROGRAM POST_MFIX
 
       SUBROUTINE  CHECK_INTER(inter)
-        integer          :: inter
+        logical          :: inter
         RETURN
       END SUBROUTINE CHECK_INTER
 
@@ -38,4 +38,3 @@
       SUBROUTINE       GET_PTX_G
         RETURN
       END SUBROUTINE GET_PTX_G
-
