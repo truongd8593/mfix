@@ -31,7 +31,7 @@ class RegionsWidget(QtWidgets.QWidget):
         uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                'uifiles')
         uic.loadUi(os.path.join(uifiles, 'regions.ui'), self)
-        
+
         self.extent_lineedits = [self.lineedit_regions_from_x,
                                  self.lineedit_regions_to_x,
                                  self.lineedit_regions_from_y,
@@ -107,8 +107,11 @@ class RegionsWidget(QtWidgets.QWidget):
                 image = QtGui.QPixmap(get_image_path('visibility.png'))
 
             data[name]['visibility'] = not data[name]['visibility']
-            self.vtkwidget.change_region_visibility(name,
-                                                    data[name]['visibility'])
+
+            if self.vtkwidget is not None:
+                self.vtkwidget.change_region_visibility(
+                    name, data[name]['visibility'])
+
             image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
                                  QtCore.Qt.SmoothTransformation)
             data[name]['visible'] = image
@@ -139,7 +142,8 @@ class RegionsWidget(QtWidgets.QWidget):
                       'visible':         image,
                       }
 
-        self.vtkwidget.new_region(name, data[name])
+        if self.vtkwidget is not None:
+            self.vtkwidget.new_region(name, data[name])
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
@@ -154,7 +158,8 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[row]
             data.pop(name)
             self.tablewidget_regions.set_value(data)
-            self.vtkwidget.delete_region(name)
+            if self.vtkwidget is not None:
+                self.vtkwidget.delete_region(name)
 
             if data:
                 self.groupbox_region_parameters.setEnabled(True)
@@ -176,7 +181,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
-            self.vtkwidget.new_region(new_name, data[new_name])
+            if self.vtkwidget is not None:
+                self.vtkwidget.new_region(new_name, data[new_name])
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -248,7 +254,8 @@ class RegionsWidget(QtWidgets.QWidget):
             index = ['x', 'y', 'z'].index(item[1])
             data[name][item[0]][index] = value.values()[0]
 
-            self.vtkwidget.update_region(name, data[name])
+            if self.vtkwidget is not None:
+                self.vtkwidget.update_region(name, data[name])
 
         elif 'name' in key and name != value.values()[0]:
 
@@ -256,12 +263,14 @@ class RegionsWidget(QtWidgets.QWidget):
             data = OrderedDict([(new_name, v) if k == name else (k, v) for
                                 k, v in data.items()])
 
-            self.vtkwidget.change_region_name(name, new_name)
+            if self.vtkwidget is not None:
+                self.vtkwidget.change_region_name(name, new_name)
 
         elif 'type' in key:
             data[name]['type'] = value.values()[0]
 
-            self.vtkwidget.change_region_type(name, data[name])
+            if self.vtkwidget is not None:
+                self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
 
         elif 'stl_shape' in key:
@@ -313,7 +322,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 "QToolButton{{ background: rgb({},{},{});}}".format(
                     *data[name]['color'].color_int))
 
-            self.vtkwidget.change_region_color(name, data[name]['color'])
+            if self.vtkwidget is not None:
+                self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
@@ -367,7 +377,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 else:
                     data[region][key] = loaded_data['regions'][region][key]
 
-            self.vtkwidget.new_region(region, data[region])
+            if self.vtkwidget is not None:
+                self.vtkwidget.new_region(region, data[region])
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
@@ -375,8 +386,9 @@ class RegionsWidget(QtWidgets.QWidget):
     def clear(self):
         """ delete all regions from the widget and vtk """
 
-        for region in self.tablewidget_regions.value.keys():
-            self.vtkwidget.delete_region(region)
+        if self.vtkwidget is not None:
+            for region in self.tablewidget_regions.value.keys():
+                self.vtkwidget.delete_region(region)
 
         self.tablewidget_regions.set_value(OrderedDict())
 
