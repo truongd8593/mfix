@@ -188,8 +188,8 @@ class CheckBox(QtWidgets.QCheckBox, CommonBase):
         QtWidgets.QCheckBox.__init__(self, parent)
         CommonBase.__init__(self)
         # stateChanged:  called on both user interaction and programmatic change
-        # Can we just connect for user interaction?
-        self.stateChanged.connect(self.emitUpdatedValue)
+        # clicked:  user interaction only
+        self.clicked.connect(self.emitUpdatedValue)
 
     @property
     def value(self):
@@ -244,6 +244,7 @@ class SpinBox(QtWidgets.QSpinBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
         CommonBase.__init__(self)
+        # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
 
@@ -267,7 +268,7 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, CommonBase):
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
         CommonBase.__init__(self)
-
+        # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
 
         self.dtype = float
