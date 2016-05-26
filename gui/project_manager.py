@@ -1,5 +1,8 @@
 # Project manager class, mediates between mfix gui and mfix project
 
+# Import from the future for Python 2 and 3 compatability!
+from __future__ import print_function, absolute_import, unicode_literals, division
+
 import logging
 log = logging.getLogger(__name__)
 import warnings
@@ -73,11 +76,7 @@ class ProjectManager(Project):
 
         key = key.lower()
         updatedValue = None
-        if isinstance(newValue, Keyword): # why needed?
-            keyword = newValue
-            newValue = keyword.value
-        else:
-            keyword = None
+        assert not isinstance(newValue, Keyword)
         if args is None:
             args = []
 
@@ -304,6 +303,7 @@ class ProjectManager(Project):
                 species = list(s.species)
                 species.sort(key=lambda a:a.ind)
                 if not s.get('solids_model'):
+                    # Make sure all solids have a defined solids model, even if its just the default
                     s['solids_model'] = default_solids_model
                     self.updateKeyword('solids_model', default_solids_model, args=[s.ind])
 

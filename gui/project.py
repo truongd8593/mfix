@@ -1,3 +1,6 @@
+# Import from the future for Python 2 and 3 compatability!
+from __future__ import print_function, absolute_import, unicode_literals, division
+
 """
 
 This module defines Project and Keyword classes.
@@ -545,8 +548,8 @@ class Species(Base):
         Base.__init__(self, ind)
         self.phase = phase
 
-    def get(self, key, default=None):
-        return self._keyword_dict.get(key, default)
+    #def get(self, key, default=None):
+    #    return self._keyword_dict.get(key, default)
 
     def __str__(self):
         if self.phase == 'g':
@@ -565,8 +568,8 @@ class Solid(Base):
         self.species = SpeciesCollection()
         self.name = 'Solid {}'.format(self.ind)
 
-    def get(self, key, default=None):
-        return self._keyword_dict.get(key, default)
+    #def get(self, key, default=None):
+    #    return self._keyword_dict.get(key, default)
 
     def addSpecies(self, ind):
         return self.species.new(ind, phase='s')
@@ -774,7 +777,7 @@ class Project(object):
                             # keywords as parsed
         self.thermo_data =  []
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
-
+        # See also 'reset'
 
         self.__initDataStructure__()
 
@@ -1264,11 +1267,13 @@ class Project(object):
             else:
                 return False
         # remove from dat_file_list
-        if keyword in self.dat_file_list:
+        try:
             self.dat_file_list.remove(keyword)
+        except ValueError:
+            pass
 
         # remove from dict
-        self._recursiveRemoveKeyToKeywordDict([key]+args, warn)
+        self._recursiveRemoveKeyFromKeywordDict([key]+args, warn)
         for i in range(len(args)):
             self._purgeemptydicts()
 
@@ -1391,6 +1396,18 @@ class Project(object):
 
                 dat_file.write(line)
 
+    def reset(self):
+        self.dat_file = None
+        self.dat_file_list = []
+        self._keyword_dict.clear()
+        self.comments.clear()
+        self.thermo_data = []
+        self.mfix_gui_comments.clear()
+
+        for name in dir(self):
+            attr = getattr(self, name)
+            if isinstance(attr, Collection):
+                Collection.__init__(attr)
 
 if  __name__ == '__main__':
     proj = Project()

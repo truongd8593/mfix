@@ -46,7 +46,6 @@ class FluidHandler:
         spinbox = self.ui.spinbox_fluid_nscalar_eq
         if value != spinbox.value():
             spinbox.setValue(value)
-            return
         self.update_scalar_equations(prev_nscalar)
 
     # molecular wt model only has 2 choices, and the key names don't
@@ -57,7 +56,6 @@ class FluidHandler:
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
-            return
         # Enable spinbox for constant mol_weight model
         spinbox = self.ui.spinbox_keyword_mw_avg
         spinbox.setEnabled(model==CONSTANT)
@@ -69,10 +67,52 @@ class FluidHandler:
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
 
+    def init_fluid_handler(self):
+        # note, the set_fluid_*_model methods have a lot of repeated code
+        # see 'set_fluid_mol_weight_model' to help understand this
+        def make_fluid_model_setter(self, name, key):
+            def setter(model):
+                setattr(self, name, model) # self.fluid_<name>_model = model
+                combobox = getattr(self.ui, 'combobox_' + name)
+                combobox.default_value = 2
+                prev_model = combobox.currentIndex()
+                if model != prev_model:
+                    combobox.setCurrentIndex(model)
+
+                # Enable spinbox for constant model
+                key_g0 = key + "_g0"
+                key_usr = "usr_" + key + "g"
+                spinbox = getattr(self.ui, 'spinbox_keyword_%s' % key_g0)
+                spinbox.setEnabled(model==CONSTANT)
+
+                if model == CONSTANT:
+                    value = spinbox.value() # Possibly re-enabled gui item
+                    if self.project.get_value(key_g0) != value:
+                        self.set_keyword(key_g0, value) # Restore keyword value
+                elif model == UDF:
+                    self.unset_keyword(key_g0)
+                    self.set_keyword(key_usr, True)
+                else: # Ideal gas law, Sutherland, etc
+                    self.unset_keyword(key_g0)
+                    self.unset_keyword(key_usr)
+                    # anything else to do in this case? validation?
+            return setter
+
+        # Create setters for the cases which are similar (mol. wt. handled separately)
+        for (name, key) in (
+                ('density', 'ro'),
+                ('viscosity', 'mu'),
+                ('specific_heat', 'cp'),
+                ('conductivity', 'k'),
+                ('diffusion', 'dif')):
+            model_name = 'fluid_%s_model' % name
+            setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
+
+
     def set_fluid_phase_name(self, value):
         if value != self.ui.lineedit_fluid_phase_name.text():
             self.ui.lineedit_fluid_phase_name.setText(value)
-            return
+
         value = None if value=='Fluid' else value # don't save default
         self.project.mfix_gui_comments['fluid_phase_name'] = value
 
@@ -89,6 +129,8 @@ class FluidHandler:
 
     # --- fluid species methods ---
     def fluid_species_revert(self):
+        if self.saved_fluid_species is None:
+            return
         self.fluid_species = self.saved_fluid_species
         self.species_popup.defined_species = deepcopy(self.fluid_species)
         self.update_fluid_species_table()
@@ -203,3 +245,15 @@ class FluidHandler:
         sp.show()
         sp.raise_()
         sp.activateWindow()
+
+    def reset_fluids(self):
+        # Set all fluid-related state back to default
+        self.ui.lineedit_fluid_phase_name.setText("Fluid")
+        self.fluid_species.clear()
+        self.saved_fluid_species = None
+        self.fluid_density_model = CONSTANT
+        self.fluid_viscosity_model = CONSTANT
+        self.fluid_mol_weight_model = CONSTANT
+        self.fluid_specific_heat_model = CONSTANT
+        self.fluid_conductivity_model = AIR
+        self.fluid_diffusion_model = AIR

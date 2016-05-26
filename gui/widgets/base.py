@@ -229,7 +229,7 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
         assert not isinstance(new_value, Keyword) # value should not be kw
         self.setCurrentText(new_value)
 
-    def setCurrentText(self, new_value):
+    def setCurrentText(self, new_value): # Is this used?
         for itm in range(self.count()):
             if self.dtype == str and str(new_value).lower() == str(self.itemText(itm)).lower():
                 self.setCurrentIndex(itm)
@@ -298,11 +298,13 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         if _min:
             self.setMinimum(float(_min))
 
+    def default(self, val=None):
+        if BaseWidget.default(self,val) is None:
+            self.setValue(0.0) #?
 
 # --- Table ---
-class Table(QtWidgets.QTableView, CommonBase):
-    '''
-    A table view with built in dictionary and array table models. Custom
+class Table(QtWidgets.QTableView, BaseWidget):
+    """A table view with built in dictionary and array table models. Custom
     delegates are also provided.
 
     Parameters
@@ -338,8 +340,8 @@ class Table(QtWidgets.QTableView, CommonBase):
     lost_focus:
         emits when the widget has lost focus
     new_selection:
-        emits the from and to indices of a selection change.
-    '''
+        emits the from and to indices of a selection change. """
+
     value_changed = QtCore.Signal(object, object, object)
     lost_focus = QtCore.Signal(object)
     new_selection = QtCore.Signal(object, object)
@@ -559,6 +561,8 @@ class Table(QtWidgets.QTableView, CommonBase):
     def clear(self):
         self.model().update({})
 
+    def default(self):
+        self.clear()
 
 class CustomDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, column_dict={}, row_dict={}, column_color_dict={},

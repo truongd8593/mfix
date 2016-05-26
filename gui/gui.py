@@ -12,7 +12,7 @@ import shutil
 import signal
 import sys
 import time
-
+import traceback
 from copy import deepcopy
 from collections import OrderedDict
 
@@ -58,7 +58,7 @@ from project_manager import ProjectManager
 from mfix_threads import MfixThread, MonitorThread
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
-                          Table)
+                          Table, BaseWidget)
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
@@ -118,9 +118,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.set_project_file(project_file)
 
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.setWindowIcon(get_icon('mfix.png'))
 
-        # reference to qapp instance
-        self.app = app
+        # reference to qapp instance (why?)
+        #self.app = app
 
         # Initialize data members
         self.mfix_exe = None
@@ -179,22 +180,30 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                     widget = RegionsWidget()
                 else:
                     widget = QtWidgets.QWidget()
-                    uic.loadUi(os.path.join(uifiles, name+'.ui'), widget)
-                    # assign 'self.ui.general', etc
+                    try:
+                        path = os.path.join(uifiles, name+'.ui')
+                        uic.loadUi(path, widget)
+                    except Exception as e:
+                        print("Error loading", path)
+                        raise
+
+                # assign 'self.ui.general', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
+
         # end of ui loading
-
-        self.species_popup = SpeciesPopup(QtWidgets.QDialog())
-        #self.species_popup.setModal(True) # ?
-
-        # set title and icon
-        self.setWindowTitle('MFIX')
-        self.setWindowIcon(get_icon('mfix.png'))
 
         # build keyword documentation from namelist docstrings
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
+
+
+
+        self.species_popup = SpeciesPopup(QtWidgets.QDialog())
+        #self.species_popup.setModal(True) # ?
+
+        self.init_fluid_handler()
+
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -224,10 +233,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
 
-        # Toolbuttons at top of frame1
+        # Toolbuttons at top of frame
         ui = self.ui
         for (button, icon_name, function) in (
-                (ui.toolbutton_new, 'newfolder', self.unimplemented),
+                (ui.toolbutton_new, 'newfolder', self.new_project),
                 (ui.toolbutton_open, 'openfolder', self.handle_open),
                 (ui.toolbutton_save, 'save', self.handle_save),
                 (ui.toolbutton_run_stop_mfix, 'play', self.handle_run_stop),
@@ -320,14 +329,51 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
-        self.saved_fluid_species = None
         self.solids = OrderedDict()
-        self.solids_current_phase = None
 
         # Update run options
         self.update_run_options()
+
+        # Reset everything to default values
+        self.reset()
         # end of __init__ (hooray!)
 
+
+    def reset(self):
+        """Reset all widgets to default values and set GUI to blank-slate"""
+        self.setWindowTitle('MFIX')
+        #self.mfix_exe = None
+        #self.mfix_config = None
+        #self.smp_enabled = False
+        #self.dmp_enabled = False
+        #self.pymfix_enabled = False
+
+        # ---- parameters which do not map neatly to keywords
+        self.fluid_nscalar_eq = 0
+        self.solid_nscalar_eq = 0 # Infer these from phase4scalar
+        # Defaults
+        #self.solver = SINGLE - moved to Project
+
+
+        self.project.reset() # Clears all keywords & collections
+
+        self.unsaved_flag = False
+        #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
+        #self.set_project_file(None)  - do we want to do this?
+
+        self.reset_fluids()
+        self.reset_solids()
+
+        self.vtkwidget.clear_all_geometry()
+
+        self.ui.regions.clear()
+
+        # Set all custom widgets to default
+        for w in widget_iter(self):
+            if isinstance(w, BaseWidget):
+                w.default()
+            else:
+                pass # What to do for rest of widgets?
 
     def confirm_close(self):
         if self.unsaved_flag:
@@ -349,20 +395,31 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.set_keyword(key, value, args)
 
     def unset_keyword(self, key, args=None):
-        """convenience function to undefine keyword"""
+        """Undefine keyword.  Report to user, also catch and report any errors"""
         if isinstance(args, int):
             args = [args]
         elif args is None:
             args = []
-        success = self.project.removeKeyword(key, args, warn=False)
-        if success:
-            self.print_internal("%s" % format_key_with_args(key, args),
-                                font='strikeout')
+        try:
+            success = self.project.removeKeyword(key, args, warn=False)
+            if success:
+                self.print_internal("%s" % format_key_with_args(key, args),
+                                    font='strikeout')
+        except Exception as e:
+            msg = 'Warning: Failed to unset %s: %s: %s' % (format_key_with_args(key, args),
+                                                  e.__class__.__name__, e)
+            self.print_internal(msg, color='red')
+            traceback.print_exception(*sys.exc_info())
 
     def unimplemented(self):
         self.message(title='Unimplemented',
                      text='Feature not implemented')
 
+    def new_project_X(self):
+        # Make run name editable
+        self.ui.general.lineedit_keyword_run_name.setEnabled(True)
+        self.ui.stackedwidget_mode.setEnabled(True)
+        self.reset()
 
     def is_project_open(self):
         # This should be a state of the model, not of the GUI
@@ -640,7 +697,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         #self.enable_energy_eq(False)
 
-        # Fluid phase
+        # Fluid phase - move to fluid_handlers.py
         ui.lineedit_fluid_phase_name.textChanged.connect(
             self.set_fluid_phase_name)
         ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
@@ -757,18 +814,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 if key in self.keyword_doc:
                     doc = self.keyword_doc[key]
                     widget.setdtype(doc['dtype'])
-                    if 'required' in doc:
-                        widget.setValInfo(
-                            req=(doc['required'] == 'true'))
-                    if 'validrange' in doc:
-                        vr = doc['validrange']
+                    req = doc.get('required')
+                    if req is not None:
+                        widget.setValInfo(req)
+                    vr = doc.get('validrange')
+                    if vr is not None:
                         if 'max' in vr:
                             widget.setValInfo(_max=vr['max'])
                         if 'min' in doc['validrange']:
                             widget.setValInfo(_min=vr['min'])
 
-                    if 'initpython' in doc:
-                        widget.default(doc['initpython'])
+                    default = doc.get('initpython') # "Initial Python Value"
+                    if default is not None:
+                        widget.default(default)
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
@@ -793,14 +851,22 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 widget.clicked.connect(self.set_unsaved_flag)
             elif hasattr(widget, 'value_updated'): # Covers all custom widgets
                 widget.value_updated.connect(self.set_unsaved_flag)
+
             # Does that cover everything?
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
+
         if 'MFIX_NO_VTK' in os.environ:
-            log.info("MFIX_NO_VTK set, skiping VTK initialization")
-            self.vtkwidget = None
-            self.ui.regions.vtkwidget = None
+            log.info("MFIX_NO_VTK set, creating fake VTK")
+            # Create a dummy object, so we don't have to test for 'if use_vtk' all over
+            class FakeVtk:
+                def noop(self, *args):
+                    return None
+                def __getattr__(self, key):
+                    return self if key=='vtkiren' else self.noop
+            self.vtkwidget = FakeVtk()
+            self.ui.regions.vtkwidget = self.vtkwidget()
             return
 
         from widgets.vtkwidget import VtkWidget
@@ -1316,8 +1382,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_file = self.get_project_file()
 
         # save geometry
-        if self.vtkwidget:
-            self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
@@ -1509,24 +1574,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          default='ok')
             return
 
-        # Important - Reset all non-keyword data before loading new project!
-        # VTK reset
-        if self.vtkwidget is not None:
-            self.vtkwidget.clear_all_geometry()
-            
-        # Regions
-        self.ui.regions.clear()
-
-        # Fluids
-        self.ui.lineedit_fluid_phase_name.setText("Fluid") # default
-        self.fluid_species.clear()
-        if self.saved_fluid_species:
-            self.saved_fluid_species.clear()
-
-        # Solids
-        self.solids_current_phase = None
-        self.solids.clear()
-
+        self.reset()
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
             self.project.load_project_file(project_file)
@@ -1538,7 +1586,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          text=msg,
                          buttons=['ok'],
                          default='ok')
-            import traceback
             traceback.print_exception(*sys.exc_info())
             # Should we stick this in the output window?  no, for now.
             return
@@ -1612,12 +1659,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 s[solids_phase_names.get(i, k)] = v
             self.solids = s
 
-        # Fluid phase
+        #### Fluid phase
         # fluid species table
         self.update_fluid_species_table()
-
         # fluid momentum and species eq. handled by _keyword_ widget
-
         # fluid scalar eq
         nscalar = self.project.get_value('nscalar', 0)
 
@@ -1626,10 +1671,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.solid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
 
-
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
-
-
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
 
         # handle a bunch of items which are essentially the same
@@ -1659,16 +1701,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.set_fluid_mol_weight_model(1)
         # requires molecular weights for all species components, should we valdate
 
-        # Solids
+        ### Solids
         self.update_solids_table()
         self.update_solids_detail_pane()
 
+        ### Geometry
         # Look for geometry.stl and load automatically
-        if self.vtkwidget:
-            geometry = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-            if os.path.exists(geometry):
-                self.vtkwidget.add_stl(None, filename=geometry)
-                
+        geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+        if os.path.exists(geometry_file):
+            self.vtkwidget.add_stl(None, filename=geometry_file)
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
 
@@ -1752,8 +1793,7 @@ def main(args):
                         len(mfix.project.registered_keywords))
 
     # have to initialize vtk after the widget is visible!
-    if mfix.vtkwidget:
-        mfix.vtkwidget.vtkiren.Initialize()
+    mfix.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)

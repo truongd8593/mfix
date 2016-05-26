@@ -282,3 +282,10 @@ class SolidHandler:
             line=self.ui.solids.line_solids,
             to_btn=btn,
             btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
+
+    def reset_solids(self):
+        # Set all solid-related state back to default
+        self.solids_current_phase = None
+        self.solids.clear()
+        self.update_solids_table()
+        self.update_solids_detail_pane()
