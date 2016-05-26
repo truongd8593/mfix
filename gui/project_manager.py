@@ -4,8 +4,6 @@ import logging
 log = logging.getLogger(__name__)
 import warnings
 
-from collections import OrderedDict
-
 from project import Project, Keyword
 from constants import *
 
@@ -48,7 +46,10 @@ class ProjectManager(Project):
         args = list(args) # Copy since we're modifying
         for (i, arg) in enumerate(args):
             if arg == 'S': #selected solid phase
-                args[i] = self.gui.solids_current_phase
+                phase = self.gui.solids_current_phase
+                if phase is None:
+                    return
+                args[i] = phase
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):

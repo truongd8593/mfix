@@ -187,7 +187,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
-        self.number_source_lines = True # No user control for this, yet
 
         # set title and icon
         self.setWindowTitle('MFIX')
@@ -268,7 +267,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.fluid_diffusion_model = AIR
 
         # --- icons ---
-        # loop through all widgets, because I am lazy
+        # loop through all widgets & set icons for any ToolButton with add/delete/copy
+        #  in the name
         for widget in widget_iter(self):
             if isinstance(widget, QtWidgets.QToolButton):
                 name = str(widget.objectName())
@@ -279,6 +279,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
 
+        # --- tool button setup ---
+        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
+        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
+        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
+
+        self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+        self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
+
+
         self.ui.geometry.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.geometry.toolbutton_add_filter.setIcon(get_icon('filter.png'))
         self.ui.geometry.toolbutton_geometry_union.setIcon(get_icon('union.png'))
@@ -287,8 +296,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.geometry.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
-        # --- tool button setup ---
-        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
+
+
+        # --- Connect Signals to Slots---
+        # open/save/new project
+        self.ui.toolbutton_open.clicked.connect(self.handle_open)
         self.ui.toolbutton_new.clicked.connect(self.unimplemented)
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_open.clicked.connect(self.handle_open)
@@ -298,9 +310,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
         self.ui.toolbutton_reset_mfix.setIcon(get_icon('restart.png'))
 
-        # more menu
+        # "More" menu
         self.ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
-
         self.ui.menu_more = QtWidgets.QMenu()
         self.ui.toolbutton_more.setMenu(self.ui.menu_more)
 
@@ -378,7 +389,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # --- default ---
         self.mode_changed('modeler')
-        #self.change_pane('geometry') # moved to main
+        self.change_pane('general') #? start at the top?
 
         # some data fields, these should probably be in Project
         self.fluid_species = OrderedDict()
@@ -388,7 +399,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # Update run options
         self.update_run_options()
-        # This is the end of __init__ (hooray!)
+        # end of __init__ (hooray!)
 
 
     def confirm_close(self):
@@ -628,6 +639,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 v['model'] = model
         self.update_solids_table()
         self.setup_combobox_solids_model()
+        self.update_solids_detail_pane()
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -707,11 +719,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             model = self.project.get_value("solids_model", args = self.solids_current_phase)
             i = 0 if model=='TFM' else 1 if model=='DEM' else 2 if model=='PIC' else None
             if i is None:
-                return
+                i = 0 if solver in (TFM, HYBRID) else 1 if solver == DEM else 2
+
             if not enabled[i]:
                 # Current selection no longer valid, so pick first valid choice
                 # Don't leave a non-enabled item selected!
                 i = enabled.index(True)
+            cb.setCurrentIndex(i)
+        else: # Set based on overall solver
+            i = 0 if solver in (TFM, HYBRID) else 1 if solver == DEM else 2
             cb.setCurrentIndex(i)
 
     def handle_combobox_solids_model(self, index):
@@ -747,7 +763,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         density = 0.0
         self.update_keyword('solids_model', model, args=n)
         self.solids[name] = {'model': model,
-                             'diameter': diameter,
+                             'diameter': diameter, # TODO: diameter is REQUIRED
                              'density': density} # more?
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
@@ -761,33 +777,60 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         s.toolbutton_solids_copy.setEnabled(enabled)
         name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
-        self.update_solids_detail_pane(name)
+        self.update_solids_detail_pane()
 
-    def update_solids_detail_pane(self, name):
-        """update the solids detail pane for currently selected solids phase"""
+    def update_solids_detail_pane(self):
+        """update the solids detail pane for currently selected solids phase.
+        if no solid phase # selected, pane is cleared and disabled"""
         s = self.ui.solids
         sa = s.scrollarea_solids_detail
         phase = self.solids_current_phase
-        if name is None or phase is None: # current solid phase name.
+        if phase is None: #name is None or phase is None: # current solid phase name.
+            # Disable all inputs
             sa.setEnabled(False)
-            # Clear out all values? ... no.
-        else:
-            data = self.solids[name]
-            sa.setEnabled(True)
-            s.lineedit_solids_phase_name.setText(name)
-            self.setup_combobox_solids_model()
+            for item in widget_iter(sa):
+                if isinstance(item, CheckBox):
+                    item.setChecked(False)
+                # Clear out all values?
+            return
 
-            nscalar = self.project.get_value('nscalar', 0)
+        name = self.solids.keys()[phase-1] # ugh
+        solid = self.solids[name]
+        model = solid['model']
 
-            nscalar_phase = sum(1 for i in range(1, nscalar+1)
-                                if self.project.get_value('phase4scalar', args=i) == phase)
-            self.enable_solid_scalar_eq(nscalar_phase > 0)
+        # Enable the input areas, initialize to values for current solid
+        sa.setEnabled(True)
+        s.lineedit_solids_phase_name.setText(name)
+        self.setup_combobox_solids_model()
 
-            # Inialize all the line edit widgets
-            def as_str(x):
-                return '' if x is None else str(x)
-            s.lineedit_keyword_d_p0_args_S.setText(as_str(data['diameter']))
-            s.lineedit_keyword_ro_s0_args_S.setText(as_str(data['density']))
+        # Inialize all the line edit widgets
+        def as_str(x):
+            return '' if x is None else str(x)
+        s.lineedit_keyword_d_p0_args_S.setText(as_str(solid['diameter']))
+        s.lineedit_keyword_ro_s0_args_S.setText(as_str(solid['density']))
+        # And the checkboxes
+        for key in ('momentum_x_eq', 'momentum_y_eq', 'momentum_z_eq'):
+            cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
+            if model == 'TFM': # momentum eq only avail w/ TFM solid model
+                val = self.project.get_value(key, default=True, args=phase)
+                cb.setEnabled(True)
+                cb.setChecked(val)
+            else:
+                cb.setEnabled(False)
+                cb.setChecked(False)
+        key = 'species_eq'
+        val = self.project.get_value(key, default=False, args=phase)
+        cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
+        cb.setChecked(val)
+
+        nscalar = self.project.get_value('nscalar', 0)
+        nscalar_phase = sum(1 for i in range(1, nscalar+1)
+                            if self.project.get_value('phase4scalar', args=i) == phase)
+        saved_nscalar_eq = solid.get('saved_nscalar_eq', 0)
+        s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
+        enabled = solid.get('enable_scalar_eq', False) # (nscalar_phase > 0)
+        s.checkbox_enable_scalar_eq.setChecked(enabled)
+        self.enable_solid_scalar_eq(enabled)
 
 
     def update_solids_table(self):
@@ -806,6 +849,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return
         nrows = len(self.solids)
         table.setRowCount(nrows)
+
+        # helper fn
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
@@ -860,14 +905,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         phase = self.solids_current_phase
         if phase is None:
             return
+
         name = self.solids.keys()[phase-1] # ugh
         solid = self.solids[name]
+
+        current_state = solid.get('enable_scalar_eq')
+
+        if state == current_state: # avoid clobbering saved values
+            return
+
+        solid['enable_scalar_eq'] = state
         if state:
-            value = spinbox.value()
+            value = solid.get('saved_nscalar_eq', 0)
             self.set_solid_nscalar_eq(value)
         else:
             # Don't call set_solid_nscalar_eq(0) b/c that will clobber spinbox
             prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+            solid['saved_nscalar_eq'] = solid.get('nscalar_eq', 0)
             solid['nscalar_eq'] = 0
             self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
             self.update_scalar_equations(prev_nscalar)
@@ -884,6 +938,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
 
         solid['nscalar_eq'] = value
+        solid['saved_nscalar_eq'] = value
         # would it be better to just use nscalar - fluid_nscalar_eq?
         self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
 
@@ -1069,9 +1124,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
             # connect to set_unsaved_flag method (keyword or not!)
             widget_name = widget.objectName()
-            # Don't set unsaved_flags for these widgets
+            # Don't set unsaved_flag for these widgets
             skiplist = ('toolbutton_open', 'toolbutton_save', 'tablewidget_regions',
-                        'toolbutton_save_as')
+                        'toolbutton_new', 'toolbutton_save_as')
 
 #Object::connect:  (sender name:   'tablewidget_regions')
 #Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
@@ -1665,17 +1720,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def handle_save(self):
         # TODO:  catch/report exceptions!
         self.save_project()
-        self.open_project(self.get_project_file())
+        # Reopen to make sure what's on the screen matches
+        # what's in the file.  This causes loss of selections,
+        # flickering, etc so maybe we shouldn't do this.
+        #
+        #self.open_project(self.get_project_file())
+        self.update_source_view()
 
     def handle_export(self):
         # TODO:  catch/report exceptions!
-        return self.export_project()
+        self.export_project()
 
     def handle_save_as(self):
         # TODO:  catch/report exceptions!
-        return self.save_as()
+        self.save_as()
+        self.reload_source_view()
 
     def set_unsaved_flag(self):
+        if not self.unsaved_flag:
+            log.info("Project is unsaved")
         self.unsaved_flag = True
         self.setWindowTitle('MFIX - %s *' % self.get_project_file())
         ui = self.ui
@@ -1684,6 +1747,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.toolbutton_export.setEnabled(True)
 
     def clear_unsaved_flag(self):
+        if self.unsaved_flag:
+            log.info("Project is saved")
         self.unsaved_flag = False
         self.setWindowTitle('MFIX - %s' % self.get_project_file())
         self.ui.toolbutton_save.setEnabled(False)
@@ -1739,6 +1804,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def handle_open(self):
         """handler for toolbar Open button"""
+        if self.unsaved_flag:
+            confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
+                                   buttons=['yes', 'no'],
+                                   default='no')
+            if confirm != 'yes':
+                return
+            self.clear_unsaved_flag()
+
         project_path = self.get_open_filename()
         # qt4/qt5 compat hack
         #if type(project_path) == tuple:
@@ -1795,7 +1868,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if self.saved_fluid_species:
             self.saved_fluid_species.clear()
 
-        # Solids (nothing to do)
+        # Solids
+        self.solids_current_phase = None
+        self.solids.clear()
 
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
@@ -1875,7 +1950,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.regions.regions_from_str(val)
             # Add more here
 
-        # Ugly hack, copy ordered dict to modify keys w/o losing order
+        # hack, copy ordered dict to modify keys w/o losing order
         if solids_phase_names:
             s = OrderedDict()
             for (i, (k, v)) in enumerate(self.solids.items(), 1):
@@ -1893,12 +1968,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) == 0)
+        self.solid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
+                                    if self.project.get_value('phase4scalar', args=i) != 0)
+
 
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
 
-        # solid scalar eq
-        self.solid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
-                                    if self.project.get_value('phase4scalar', args=i) != 0)
 
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
 
@@ -1931,6 +2006,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # Solids
         self.update_solids_table()
+        self.update_solids_detail_pane()
 
         # Look for geometry.stl and load automatically
         if self.vtkwidget:
@@ -2001,11 +2077,9 @@ def main(args):
 
     if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
-        mfix.change_pane("geometry") # ? why start on this pane
     else:
         # disable all widgets except New and Open
         mfix.ui.stackedwidget_mode.setEnabled(False)
-        mfix.change_pane("general")
         for x in widget_iter(mfix.ui.frame_menu_bar):
             if x.objectName().startswith("toolbutton_"):
                 x.setEnabled(False)
