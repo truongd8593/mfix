@@ -1845,14 +1845,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
 
-        # read the file (again)
-        with open(project_file, 'r') as f:
-            src = to_unicode_from_fs(f.read())
-        if self.number_source_lines:
-            src = '\n'.join('%4d:%s'%(lineno,line)
-                            for (lineno,line) in enumerate(src.split('\n'),1))
-        self.ui.mfix_dat_source.setPlainText(src)
-        # self.mode_changed('developer')
+        self.update_source_view()
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
