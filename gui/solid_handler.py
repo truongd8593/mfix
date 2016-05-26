@@ -11,7 +11,7 @@ from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
 
 #local imports
 from constants import *
-from tools.general import set_item_noedit, get_selected_row
+from tools.general import set_item_noedit, get_selected_row, widget_iter
 
 class SolidHandler:
     def setup_combobox_solids_model(self):
@@ -62,6 +62,7 @@ class SolidHandler:
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
         self.update_solids_table()
+        self.update_solids_detail_pane()
 
     def make_solids_name(self, n):
         while True:
@@ -111,7 +112,7 @@ class SolidHandler:
             # Disable all inputs
             sa.setEnabled(False)
             for item in widget_iter(sa):
-                if isinstance(item, CheckBox):
+                if isinstance(item, QtWidgets.QCheckBox):
                     item.setChecked(False)
                 # Clear out all values?
             return
