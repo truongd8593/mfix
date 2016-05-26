@@ -110,16 +110,17 @@ class MfixGuiTests(TestQApplication):
         assert len(clist) ==1
         return clist[0]
 
-    def open_tree_item(name):
+    def open_tree_item(self, name):
         self.mfix.ui.treewidget_model_navigation.setCurrentItem(self.get_tree_item(name))
 
     def test_save_as(self):
+        #http://stackoverflow.com/questions/16536286/qt-ui-testing-how-to-simulate-a-click-on-a-qmenubar-item-using-qtest
         newname = 'DES_FB1_new_name'
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
         QtCore.QTimer.singleShot(100, dismiss)
-        QTest.mouseClick(self.mfix.ui.toolbutton_save_as, QtCore.Qt.LeftButton)
+        self.mfix.ui.action_save_as.trigger()
 
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
         self.assertTrue(os.path.exists(newpath))
