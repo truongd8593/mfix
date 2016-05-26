@@ -1750,8 +1750,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_path = project_path[0]
         if not project_path:
             return # user pressed Cancel
+        # TODO: handle failure gracefully, revert to a sane state (blank-slate?)
         self.open_project(project_path)
         self.update_run_options()
+
+
+    def update_source_view(self, number_lines=True):
+        project_file = self.get_project_file()
+        with open(project_file, 'r') as f:
+            src = to_unicode_from_fs(f.read())
+        if number_lines:
+            src = '\n'.join('%4d:%s'%(lineno,line)
+                            for (lineno,line) in enumerate(src.split('\n'),1))
+        self.ui.mfix_dat_source.setPlainText(src)
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
