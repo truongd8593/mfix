@@ -1385,7 +1385,7 @@ class Project(object):
         # delimit new additions from initial file contents (comment line)
 
         last_line = None
-        with open(fname, 'wb') as dat_file:
+        with open(fname, 'w') as dat_file:
             for line in self.convertToString():
                 if line == last_line == '\n': # Avoid multiple blank lines
                     continue
