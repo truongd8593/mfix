@@ -142,7 +142,7 @@ class ProjectManager(Project):
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
         keys = self.keywordItems()
-        mmax = self.get_value('mmax', default=1)
+        mmax = self.get_value('mmax', default=0)
 
         if mmax == 0:
             return SINGLE
