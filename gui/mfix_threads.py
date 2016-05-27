@@ -228,8 +228,8 @@ class MonitorThread(QThread):
     def get_res(self):
         if not self.parent.get_project_dir():
             return
-        globb = os.path.join(self.parent.get_project_dir(),'*.RES')
-        return glob.glob(globb)
+        pattern = os.path.join(self.parent.get_project_dir(),'*.RES')
+        return glob.glob(pattern)
 
     def get_outputs(self, patterns=[]):
         project_dir = self.parent.get_project_dir()
