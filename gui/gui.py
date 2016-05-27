@@ -55,7 +55,7 @@ def debug_trace():
 
 # local imports
 from project_manager import ProjectManager
-from mfix_threads import MfixThread, MonitorThread
+from mfix_threads import MfixJobManager, MonitorThread
 message_normal = 0 # these are in MonitorThread, put in a common module
 message_hi_vis = 1
 message_error = 2
@@ -116,6 +116,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     """Main window class handling all gui interactions"""
 
     settings = QSettings('MFIX', 'MFIX')
+
+    line_printed_signal = pyqtSignal(str, str, str)
+    update_run_options_signal = pyqtSignal()
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -290,12 +293,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.print_welcome()
 
         # --- Threads ---
-        self.run_thread = MfixThread(self, name="run_thread")
+        self.job_manager = MfixJobManager(self)
         self.monitor_thread = MonitorThread(self, name="monitor thread")
 
-        ## Run thread
-        self.run_thread.line_printed.connect(self.handle_line_printed)
-        self.run_thread.mfix_running.connect(self.handle_mfix_running)
+        ## Run signals
+        self.line_printed_signal.connect(self.print_internal)
+        self.update_run_options_signal.connect(self.update_run_options)
 
         ## Monitor thread
         self.monitor_thread.executables_changed.connect(self.handle_executables_changed)
@@ -429,7 +432,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         output = self.monitor_thread.get_executables()
         self.mfix_available = bool(output)
 
-        running = (self.run_thread.mfixproc is not None)
+        running = self.job_manager.is_running()
         res_file_exists = bool(self.monitor_thread.get_res())
 
         if not self.mfix_available:
@@ -516,7 +519,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return
         # cleanup threads to avoid exceptions during shutdown
         # FIXME:  should we leave mfix running when leaving the gui?
-        for thread in (self.run_thread, self.monitor_thread): # residuals_thread
+        for thread in (self.monitor_thread,): # residuals_thread
             log.debug('terminating thread %s' % thread.name)
             #FIXME:  should call 'quit' not terminate, but quit won't
             # work with the current implementation of mfix threads (no event loop)
@@ -1256,10 +1259,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         return True
 
     def handle_run_stop(self):
-        if self.run_thread.mfixproc is None:
-            return self.run_mfix()
-        else:
+        if self.job_manager.is_running():
             return self.stop_mfix()
+        else:
+            return self.run_mfix()
 
     def run_mfix(self):
         output_files = self.monitor_thread.get_outputs()
@@ -1354,7 +1357,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #log.info(msg) # print_internal logs
         self.print_internal(msg, color='blue')
 
-        self.run_thread.start_command(
+        self.job_manager.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
@@ -1380,7 +1383,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 requests.put(self.pymfix_url + 'exit')
         # check whether pymfix has stopped mfix then
         # do something here
-        self.run_thread.stop_mfix()
+        self.job_manager.stop_mfix()
 
         self.update_run_options()
 

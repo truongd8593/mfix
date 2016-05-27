@@ -1,8 +1,9 @@
 """Threads supporting MFIX-GUI"""
 
+import glob
+import logging
 import os
 import subprocess
-import glob
 import time
 
 # import qt
@@ -16,10 +17,6 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
 
-
-import logging
-log = logging.getLogger(__name__)
-
 from tools.general import get_mfix_home
 
 # Message types, emitted with 'line_printed'
@@ -30,18 +27,19 @@ message_error = 2
 message_stdout = 3
 message_stderr = 4
 
-# --- Threads ---
-class MfixThread(QThread):
+class MfixJobManager(QThread):
 
-    line_printed = pyqtSignal(str, int) # message, message type
-    mfix_running = pyqtSignal(bool)  # running/not running
-
-    def __init__(self, parent, name="MfixThread"):
-        super(MfixThread, self).__init__(parent)
-        self.stopped = False  # TODO use this to break out of loop (quit)
-        self.cmd = self.cwd = None
+    def __init__(self, parent):
+        super(MfixJobManager, self).__init__(parent)
+        self.parent = parent
+        self.cmd = None
+        self.cwd = None
         self.mfixproc = None
         self.name = name
+
+    def is_running(self):
+        """indicate whether an MFIX job is running"""
+        return self.mfixproc is not None
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
@@ -55,16 +53,17 @@ class MfixThread(QThread):
         try:
             self.mfixproc.terminate()
         except OSError as err:
-            msg = "Error terminating process: %s" % err
-            self.line_printed.emit(msg, message_error)
-            return
+            log = logging.getLogger(__name__)
+            log.error("Error terminating process: %s", err)
+            self.line_printed.emit("Terminating MFIX process (pid %s)" %
+                                mfixpid, 'blue', '')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
         if self.mfixproc:
             self.mfixproc.wait() # FIXME timeout
         self.mfixproc = None
-        self.mfix_running.emit(False)
+        self.parent.update_run_options_signal.emit()
 
     def start_command(self, cmd, cwd, env):
         """Start a command in subprocess, and start the thread to monitor it"""
@@ -83,56 +82,69 @@ class MfixThread(QThread):
 
 
     def run(self):
-        """Collect stdout/stderr from running command, using two helper threads.
-        Waits for process to end"""
+        """Run a subprocess, with executable and arguments obtained
+        from class-local self.cmd set in start_command()
 
-        mfixproc_pid = self.mfixproc.pid
-        self.line_printed.emit("MFIX (pid %d) is running" % mfixproc_pid, message_hi_vis)
-        self.mfix_running.emit(True)
-        log.debug("MFIX command: %s" % ' '.join(self.cmd))
-        log.debug("starting mfix output monitor threads")
+        :return: None"""
 
-        stdout_thread = OutputHelper(name='stdout',
-                                     pipe=self.mfixproc.stdout,
-                                     signal=self.line_printed,
-                                     message_type=message_stdout)
+        if self.cmd:
+            mfixproc_pid = self.mfixproc.pid
+            self.line_printed.emit(
+                                "MFIX (pid %d) is running" % mfixproc_pid,
+                                'blue', '')
+            log = logging.getLogger(__name__)
+            log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
+            log.debug("starting mfix output monitor threads")
 
-        stderr_thread = OutputHelper(name='stderr',
-                                     pipe=self.mfixproc.stderr,
-                                     signal=self.line_printed,
-                                     message_type=message_stderr)
+            stdout_thread = MfixOutput(
+                                name='stdout',
+                                pipe=self.mfixproc.stdout,
+                                signal=self.line_printed,
+                                font='Courier') # TODO find good cross-platform fixed width font
 
-        stdout_thread.start()
-        stderr_thread.start()
+            stderr_thread = MfixOutput(
+                                name='stderr',
+                                pipe=self.mfixproc.stderr,
+                                signal=self.line_printed,
+                                color='red',
+                                font='Courier')
 
-        #self.update_run_options.emit()
+            stdout_thread.start()
+            stderr_thread.start()
 
-        if self.mfixproc:
-            self.mfixproc.wait() # TODO: detect/handle hung MFIX
-        self.mfixproc = None
+            self.parent.update_run_options_signal.emit()
 
-        self.line_printed.emit("MFIX (pid %s) has stopped" % mfixproc_pid, message_hi_vis)
-        self.mfix_running.emit(False)
+            if self.mfixproc:
+                self.mfixproc.wait()
+            self.mfixproc = None
 
-        # Allow remaining output to be collected - OutputHelper threads exit on reaching EOF
-        stderr_thread.wait()
-        stdout_thread.wait()
-        #stderr_thread.terminate()
-        #stdout_thread.terminate()
+            self.line_printed.emit(
+                                "MFIX (pid %s) has stopped" % mfixproc_pid,
+                                'blue', '')
+            self.parent.update_run_options_signal.emit()
+
+            stderr_thread.quit()
+            stdout_thread.quit()
 
 
 
-class OutputHelper(QThread):
-    """Handle streaming from a pipe and emiting read lines into a signal handler.
-    emit line_printed for each line, with a default message type
-    params:
-        name: Name of thread (str)
-        pipe: pipe to child process
-        message_type: message type to emit in line_printed (int) """
+class MfixOutput(QThread):
+    """Generic class to handle streaming from a pipe and emiting read
+        lines into a signal handler.
 
-    def __init__(self, name, pipe, signal, message_type=message_normal):
-        super(OutputHelper, self).__init__()
-        self.message_type = message_type
+        :param name: Name of thread
+        :type name: str
+        :param pipe: Iterable object with readline method, assumed to be subprocess.PIPE
+        :type pipe: subprocess.PIPE
+        :param signal: Signal to be used to pass lines read from pipe
+        :type signal: QtCore.pyqtSignal object
+    #TODO: let's define message types which map to color/font settings
+        :param color: Color to set when emitting signals
+        :type color: str """
+
+    def __init__(self, name, pipe, signal, color=None, font=None):
+        super(MfixOutput, self).__init__()
+        log = logging.getLogger(__name__)
         log.debug("Started thread %s" % name)
         self.stopped = False # See comment above
         self.name = name
@@ -214,6 +226,7 @@ class MonitorThread(QThread):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
+                    log = logging.getLogger(__name__)
                     log.debug("found %s executable in %s" % (name, dir_))
                     config_options[exe] = str(mfix_print_flags(exe))
 
@@ -263,7 +276,8 @@ class UpdateResidualsThread(QThread):
             try:
                 self.residuals = urlopen('http://localhost:5000/residuals').read()
             except Exception:
-                log.debug("cannot retrieve residuals; is pymfix running")
+                log = logging.getLogger(__name__)
+                log.debug("cannot retrieve residuals; pymfix process must have terminated.")
                 self.job_done = True
                 return
             self.sleep(1)
