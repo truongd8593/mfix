@@ -56,6 +56,11 @@ def debug_trace():
 # local imports
 from project_manager import ProjectManager
 from mfix_threads import MfixThread, MonitorThread
+message_normal = 0 # these are in MonitorThread, put in a common module
+message_hi_vis = 1
+message_error = 2
+message_stdout = 3
+message_stderr = 4
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table, BaseWidget)
@@ -285,31 +290,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.print_welcome()
 
         # --- Threads ---
-        self.run_thread = MfixThread(self)
-        self.monitor_thread = MonitorThread(self)
+        self.run_thread = MfixThread(self, name="run_thread")
+        self.monitor_thread = MonitorThread(self, name="monitor thread")
 
-        def make_handler(qtextbrowser):
-            " make a closure to read output from external process "
+        ## Run thread
+        self.run_thread.line_printed.connect(self.handle_line_printed)
+        self.run_thread.mfix_running.connect(self.handle_mfix_running)
 
-            def handle_line(line, color=None): # Combine with print_internal
-                " closure to read output from external process "
-                log.debug(str(line).strip())
-                cursor = qtextbrowser.textCursor()
-                cursor.movePosition(cursor.End)
-                char_format = QtGui.QTextCharFormat()
-                if color:
-                    char_format.setForeground(QtGui.QColor(color))
-                cursor.setCharFormat(char_format)
-                cursor.insertText(line)
-                scrollbar = qtextbrowser.verticalScrollBar()
-                scrollbar.setValue(scrollbar.maximum())
-
-            return handle_line
-
-        self.run_thread.line_printed.connect(self.print_internal)
-        self.run_thread.update_run_options.connect(self.update_run_options)
-
-        self.monitor_thread.sig.connect(self.update_run_options)
+        ## Monitor thread
+        self.monitor_thread.executables_changed.connect(self.handle_executables_changed)
+        self.monitor_thread.outputs_changed.connect(self.handle_outputs_changed)
         self.monitor_thread.start()
 
         # --- setup widgets ---
@@ -426,6 +416,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # This should be a state of the model, not of the GUI
         return self.ui.stackedwidget_mode.isEnabled()
 
+    #TODO:  split update_run_options into parts for different signals
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
 
@@ -524,8 +515,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return
         # cleanup threads to avoid exceptions
         # during shutdown
-        self.run_thread.quit()
-        self.monitor_thread.quit()
+        for thread in (self.run_thread, self.monitor_thread):
+            log.debug('terminating thread', thread.name)
+            thread.terminate()
+            print("Calling wait")
+            thread.wait()
+            print("OK")
+
         # FIXME: Even with monitor_thread.quit, we get errors at shutdown
         # like gui/mfix_threads.py", line 244, in get_outputs
         #   outputs.extend(glob.glob(os.path.join(project_dir, pat)))
@@ -1176,6 +1172,30 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         cursor.insertText(line)
         scrollbar = qtextbrowser.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
+
+    def handle_line_printed(self, line, message_type):
+        print("HANDLE", line)
+        # FIXME  - ad-hoc
+        color = font = None
+        if message_type in (message_error, message_stderr):
+            color = 'red'
+        elif message_type == message_hi_vis:
+            color = 'blue'
+        if message_type in (message_stdout, message_stderr):
+            font = 'Courier' # TODO: find good cross-platform monospace font
+            # 'Monospace' on Linux does not work
+        self.print_internal(line, color=color, font=font)
+
+    #TODO:  split update_run_options into parts for different signals
+    def handle_mfix_running(self, is_running):
+        self.update_run_options()
+
+    #TODO:  split update_run_options into parts for different signals
+    def handle_executables_changed(self):
+        self.update_run_options()
+
+    def handle_outputs_changed(self):
+        self.update_run_options()
 
     def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
