@@ -1146,7 +1146,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         strikeout = font and font.lower() == 'strikeout'
         if strikeout:
             msg = "unset " + msg
-        if 'warning:' in lower or 'error:' in lower:
+        if 'error:' in lower:
+            log.error(msg)
+        if 'warning:' in lower:
             log.warn(msg)
         else:
             log.info(msg)
@@ -1442,10 +1444,22 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return filename
 
     # TODO make sure all gui items have updated, eg Lineedit with
-    # editing_finished events
+    # editing_finished events - or is that user's responsibility?
+    # (or does save button take focus?)
     def handle_save(self):
-        # TODO:  catch/report exceptions!
-        self.save_project()
+        project_file = self.get_project_file()
+        try:
+            self.save_project()
+        except Exception as e:
+            msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+            self.print_internal("Error: %s" % msg, color='red')
+            self.message(title='Error',
+                         icon='error',
+                         text=msg,
+                         buttons=['ok'],
+                         default='ok')
+            traceback.print_exception(*sys.exc_info())
+            return
         # Reopen to make sure what's on the screen matches
         # what's in the file.  This causes loss of selections,
         # flickering, etc so maybe we shouldn't do this.
@@ -1597,9 +1611,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.project.load_project_file(project_file)
         except Exception as e:
             msg = 'Failed to load %s: %s: %s' % (project_file, e.__class__.__name__, e)
-            self.print_internal("Warning: %s" % msg, color='red')
-            self.message(title='Warning',
-                         icon='warning',
+            self.print_internal("Error: %s" % msg, color='red')
+            self.message(title='Error',
+                         icon='error',
                          text=msg,
                          buttons=['ok'],
                          default='ok')
