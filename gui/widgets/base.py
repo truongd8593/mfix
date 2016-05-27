@@ -49,16 +49,6 @@ class BaseWidget(QtCore.QObject):
     def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
 
-    def validator(self):
-        return False
-
-    def updateValue(self, key, new_value, args=None):
-        pass
-
-    @property
-    def value(self):
-        return None
-
     def setdtype(self, dtype=None):
         dtype = to_text_string(dtype).lower().strip()
         if dtype == to_text_string('i'):
@@ -227,9 +217,12 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
 
     def updateValue(self, key, new_value, args=None):
         assert not isinstance(new_value, Keyword) # value should not be kw
-        self.setCurrentText(new_value)
+        if isinstance(new_value, int):
+            self.setCurrentIndex(new_value)
+        else:
+            self.setCurrentText(new_value)
 
-    def setCurrentText(self, new_value): # Is this used?
+    def setCurrentText(self, new_value):
         for itm in range(self.count()):
             if self.dtype == str and str(new_value).lower() == str(self.itemText(itm)).lower():
                 self.setCurrentIndex(itm)
@@ -237,6 +230,8 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
             elif self.dtype == int and int(new_value) == int(str(self.itemText(itm)).split('-')[0].strip()):
                 self.setCurrentIndex(itm)
                 break
+        else:
+            raise ValueError(new_value)
 
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
@@ -647,22 +642,21 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
             # TODO: there is a bug here that doesn't return focus to the
             # tableview
             if event.type() == QtCore.QEvent.FocusOut:
-                if widget.is_pop_up:
-                    return True
-                else:
-                    widget.is_pop_up = True
-                    return False
+                pop = widget.is_pop_up
+                widget.is_pop_up = True  # When does this get cleared?
+                return pop
+
             else:
                 return QtWidgets.QStyledItemDelegate.eventFilter(self,
                                                                  widget,
                                                                  event)
 
-        else:
+        else: # ???
             return QtWidgets.QStyledItemDelegate.eventFilter(self,
                                                              widget,
                                                              event)
 
-        return False
+        return False # UNREACHED
 
 
 class DictTableModel(QtCore.QAbstractTableModel):
