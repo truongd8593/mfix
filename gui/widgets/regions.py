@@ -56,7 +56,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.set_columns(['visible', 'color', 'type', 'from', 'to'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
-        tablewidget.set_selection_model('cell', multi=False)
+#        tablewidget.set_selection_model('cell', multi=False)
         tablewidget.new_selection.connect(self.update_region_parameters)
         tablewidget.clicked.connect(self.cell_clicked)
         tablewidget.default_value = OrderedDict()
