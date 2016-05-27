@@ -130,7 +130,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.dmp_enabled = False
         self.pymfix_enabled = False
         self.unsaved_flag = False
-        self.vtkwidget = None
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -342,7 +341,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
-        self.setWindowTitle('MFIX')
         #self.mfix_exe = None
         #self.mfix_config = None
         #self.smp_enabled = False
@@ -354,7 +352,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.solid_nscalar_eq = 0 # Infer these from phase4scalar
         # Defaults
         #self.solver = SINGLE - moved to Project
-
+        self.solver_name = None
 
         self.project.reset() # Clears all keywords & collections
 
@@ -377,6 +375,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 pass # What to do for rest of widgets?
 
     def confirm_close(self):
+        # TODO : option to save
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
                                    buttons=['yes', 'no'],
@@ -555,8 +554,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if cb.currentIndex != solver:
             cb.setCurrentIndex(solver)
 
-        solver_name = model_setup.combobox_solver.currentText()
-        self.print_internal("set solver to %s" % solver_name)
+        solver_name = {SINGLE:"MFIX Single-Phase",
+                       TFM:"MFIX-TFM",
+                       DEM:"MFIX-DEM",
+                       PIC:"MFIX-PIC",
+                       HYBRID:"MFIX-Hybrid"}.get(solver, "MFIX")
+
+        self.print_internal("Solver: %s" % solver_name)
+        self.solver_name = solver_name
 
         item_names =  ("Material", "TFM", "DEM", "PIC")
 
@@ -622,6 +627,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_solids_table()
         self.setup_combobox_solids_model()
         self.update_solids_detail_pane()
+        self.update_window_title()
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -1456,11 +1462,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.save_as()
         self.update_source_view()
 
+    def update_window_title(self):
+        title = self.solver_name or 'MFIX'
+        project_file = self.get_project_file()
+        if project_file:
+            title += " - " + os.path.basename(project_file)
+        if self.unsaved_flag:
+            title += '*'
+        self.setWindowTitle(title)
+
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
             log.info("Project is unsaved")
         self.unsaved_flag = True
-        self.setWindowTitle('MFIX - %s *' % self.get_project_file())
+        self.update_window_title()
         ui = self.ui
         ui.toolbutton_more.setEnabled(True)
         ui.toolbutton_save.setEnabled(True)
@@ -1469,7 +1484,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if self.unsaved_flag:
             log.info("Project is saved")
         self.unsaved_flag = False
-        self.setWindowTitle('MFIX - %s' % self.get_project_file())
+        self.update_window_title()
         self.ui.toolbutton_save.setEnabled(False)
         self.ui.toolbutton_run_stop_mfix.setEnabled(True)
 
@@ -1544,8 +1559,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         with open(project_file, 'r') as f:
             src = to_unicode_from_fs(f.read())
         if number_lines:
+            # Avoid extra blank line at end
+            lines = src.split('\n')
+            if lines[-1] == '':
+                lines.pop(-1)
             src = '\n'.join('%4d:%s'%(lineno,line)
-                            for (lineno,line) in enumerate(src.split('\n'),1))
+                            for (lineno,line) in enumerate(lines,1))
+
         self.ui.mfix_dat_source.setPlainText(src)
 
     def open_project(self, project_path, auto_rename=True):
@@ -1687,6 +1707,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 # FIXME this is getting printed after error count ... should be included in # of errs
                 # (another reason to move this to load_project_file)
 
+            # XXX FIXME conflicts with default fluid models
             setter(CONSTANT if val_g0 is not None
                    else UDF if val_usr is not None
                    else 1)
@@ -1696,7 +1717,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.set_fluid_mol_weight_model(CONSTANT)
         else:
             self.set_fluid_mol_weight_model(1)
-        # requires molecular weights for all species components, should we valdate
+        # requires molecular weights for all species components, when should we validate?
 
         ### Solids
         self.update_solids_table()
