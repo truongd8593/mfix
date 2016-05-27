@@ -29,7 +29,7 @@ test:	all
 	pkill Xvfb
 
 test-gui:
-	python nosetests -v
+	nosetests -v
 
 tags:
 	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
