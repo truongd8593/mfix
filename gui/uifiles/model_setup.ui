@@ -179,7 +179,7 @@
        <widget class="ComboBox" name="combobox_solver">
         <item>
          <property name="text">
-          <string>Single phase</string>
+          <string>Single Phase</string>
          </property>
         </item>
         <item>
