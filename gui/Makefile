@@ -13,13 +13,31 @@ clean:
 	rm -f ${PY_UIFILES}
 	find . -name \*.pyc -delete
 
-test: all
+test2: all
 	(Xvfb :99 &)
-	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
+	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
 	pkill Xvfb
 
-test-gui: all
-	nosetests -v
+test3: all
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
+	pkill Xvfb
+
+test:	all
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
+	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
+	pkill Xvfb
+
+test2-gui: all
+	python2 -m nose -v
+
+test3-gui: all
+	python3 -m nose -v
+
+test-gui:
+	python2 -m nose -v
+	python3 -m nose -v
 
 tags:
 	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
