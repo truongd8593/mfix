@@ -873,7 +873,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 def __getattr__(self, key):
                     return self if key=='vtkiren' else self.noop
             self.vtkwidget = FakeVtk()
-            self.ui.regions.vtkwidget = self.vtkwidget()
+            self.ui.regions.vtkwidget = self.vtkwidget
             return
 
         from widgets.vtkwidget import VtkWidget
