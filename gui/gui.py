@@ -327,9 +327,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.mode_changed('modeler')
         self.change_pane('general') #? start at the top?
 
-        # some data fields, these should probably be in Project
+        # some data fields that are not in Project
         self.fluid_species = OrderedDict()
         self.solids = OrderedDict()
+        self.solids_current_phase = None
 
         # Update run options
         self.update_run_options()
@@ -838,7 +839,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             widget_name = widget.objectName()
             # Don't set unsaved_flag for these widgets
             skiplist = ('toolbutton_open', 'toolbutton_save', 'tablewidget_regions',
-                        'toolbutton_new', 'toolbutton_save_as')
+                        'toolbutton_more') #new', 'toolbutton_save_as')
 
 #Object::connect:  (sender name:   'tablewidget_regions')
 #Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
@@ -861,7 +862,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             log.info("MFIX_NO_VTK set, creating fake VTK")
             # Create a dummy object, so we don't have to test for 'if use_vtk' all over
             class FakeVtk:
-                def noop(self, *args):
+                def noop(self, *args, **kwargs):
                     return None
                 def __getattr__(self, key):
                     return self if key=='vtkiren' else self.noop
@@ -1498,20 +1499,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 QtWidgets.QFileDialog.getExistingDirectory(
                     self, 'Create Project in Directory',
                     ""))
-        if len(project_dir) < 1:
+        if not project_dir:
             return
 
-        if os.path.isdir(project_path):
-            project_dir = project_path
-            project_file = os.path.join(project_dir, 'mfix.dat')
-        else:
-            project_dir = os.path.dirname(project_path)
-            project_file = proj
+        # TODO: allow user to set run name
+        project_file = os.path.join(project_dir, 'mfix.dat')
         if not self.check_writable(project_dir):
             return
-
-        shutil.copyfile('mfix.dat.template', project_path)
-
+        # Start with a nice template - note, there's too much set in this file.
+        # FIXME, this can clobber files
+        shutil.copyfile('mfix.dat.template', project_file)
         self.open_project(project_file)
 
     def get_open_filename(self):
@@ -1537,7 +1534,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_path = project_path[0]
         if not project_path:
             return # user pressed Cancel
-        # TODO: handle failure gracefully, revert to a sane state (blank-slate?)
+
         self.open_project(project_path)
         self.update_run_options()
 
@@ -1648,7 +1645,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if key.startswith('solids_phase_name('):
                 n = int(key.split('(')[1][:-1])
                 solids_phase_names[n] = val
-            if key.startswith('regions_dict'):
+            if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
             # Add more here
 
@@ -1710,6 +1707,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry_file):
             self.vtkwidget.add_stl(None, filename=geometry_file)
+
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
 

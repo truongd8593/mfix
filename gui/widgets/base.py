@@ -357,17 +357,16 @@ class Table(QtWidgets.QTableView, BaseWidget):
         self.columns = columns
         self.rows = rows
         self.block_selection_change_event = False
-
+        self.selection = []
         self._setModel()
-
+        self.set_delegate(col=column_delegate, row=row_delegate)
+        self.set_selection_model(selection_behavior, multi_selection)
         if columns is None:
             self.horizontalHeader().hide()
         if rows is None:
             self.verticalHeader().hide()
 
-        self.set_delegate(col=column_delegate, row=row_delegate)
 
-        self.set_selection_model(selection_behavior, multi_selection)
 
     def _setModel(self):
 
@@ -377,11 +376,11 @@ class Table(QtWidgets.QTableView, BaseWidget):
             oldModel.deleteLater()
 
         # Setup model
-        if self.dtype in [dict, OrderedDict]:
+        if self.dtype in (dict, OrderedDict):
             model = DictTableModel(columns=self.columns, rows=self.rows)
-        elif self.dtype in [list, tuple,
+        elif self.dtype in (list, tuple,
                             np.ndarray if np else None,
-                            pd.DataFrame if pd else None]:
+                            pd.DataFrame if pd else None):
             model = ArrayTableModel(columns=self.columns, rows=self.rows)
         else:
             model = None
@@ -440,6 +439,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
 
     def set_value(self, value):
         if self.dtype != type(value):
+            # FIXME, this is a problem if you try to mix dict and OrderedDict
             raise TypeError('Selected table model does not support type'
                             '{}'.format(type(value)))
 
@@ -662,8 +662,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class DictTableModel(QtCore.QAbstractTableModel):
-    '''
-    Table model that handles dict(dict()).
+    """Table model that handles dict(dict()).
 
     Parameters
     ----------
@@ -675,8 +674,8 @@ class DictTableModel(QtCore.QAbstractTableModel):
         a list of row names (used as dict index), suggested but not required.
         if not provided, defualts to keys of the dictionary (default [])
     parent (QObject):
-        parent of the model (default None)
-    '''
+        parent of the model (default None) """
+
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, columns=[], rows=[], parent=None, ):
@@ -801,8 +800,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
 
 
 class ArrayTableModel(QtCore.QAbstractTableModel):
-    '''
-    Table model that handles the following data types:
+    """Table model that handles the following data types:
         - list()
         - tuple()
         - list(list())
@@ -810,8 +808,8 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         - list(tuple())
         - tuple(list())
         - 2D numpy.ndarray
-        - pandas.DataFrame
-    '''
+        - pandas.DataFrame """
+
     value_updated = QtCore.Signal(object)
 
     def __init__(self, columns=[], rows=[], parent=None, ):
