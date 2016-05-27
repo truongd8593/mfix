@@ -559,10 +559,14 @@ class Table(QtWidgets.QTableView, BaseWidget):
             return -1
 
     def clear(self):
-        self.model().update({})
+        self.model().update({}) # TODO: change based on dtype?
 
     def default(self):
-        self.clear()
+        '''if there is a default value, set it, else clear'''
+        if self.default_value is not None:
+            self.model().update(self.default_value)
+        else:
+            self.clear()
 
 class CustomDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, column_dict={}, row_dict={}, column_color_dict={},

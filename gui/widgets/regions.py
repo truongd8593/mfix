@@ -50,15 +50,16 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_color.pressed.connect(self.change_color)
 
         tablewidget = self.tablewidget_regions
-        tablewidget.dtype = dict
+        tablewidget.dtype = OrderedDict
         tablewidget._setModel() # Should be in __init__
-        tablewidget.set_value({})
+        tablewidget.set_value(OrderedDict())
         tablewidget.set_columns(['visible', 'color', 'type', 'from', 'to'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
         tablewidget.set_selection_model('cell', multi=False)
         tablewidget.new_selection.connect(self.update_region_parameters)
         tablewidget.clicked.connect(self.cell_clicked)
+        tablewidget.default_value = OrderedDict()
 #        tablewidget.value_changed.connect(self.region_value_changed)
 
         for widget in widget_iter(self.groupbox_region_parameters):
@@ -371,7 +372,7 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in self.tablewidget_regions.value.keys():
             self.vtkwidget.delete_region(region)
 
-        self.tablewidget_regions.set_value({})
+        self.tablewidget_regions.set_value(OrderedDict())
 
     def extract_regions(self, proj):
         """ extract regions from IC, BC, PS """
