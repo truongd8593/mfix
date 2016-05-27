@@ -40,7 +40,6 @@ class ProjectManager(Project):
         self.gui = gui
         self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
-        self._widget_update_stack = [] # prevent circular updates
         self.solver = SINGLE # default
 
 
@@ -84,10 +83,6 @@ class ProjectManager(Project):
 
 
     def _change(self, widget, key, newValue, args=None):
-        # prevent circular updates, from this widget or any higher in stack
-        if widget in self._widget_update_stack:
-            return
-
         key = key.lower()
         updatedValue = None
         assert not isinstance(newValue, Keyword)
@@ -119,27 +114,18 @@ class ProjectManager(Project):
         if widgets_S:
             widgets_to_update.extend(widgets_S)
 
-        # Are we using the 'all' mechanism?
-        #widgets_to_update.extend(
-        #    self.keyword_and_args_to_widget.get("all", []))
-
         for w in widgets_to_update:
-            # Prevent circular updates
-            self._widget_update_stack.append(w)
             try:
                 w.updateValue(key, updatedValue, args)
                 if isinstance(w, LineEdit):
-                    w.text_changed_flag = False
+                    w.text_changed_flag = False # Needed?
             except Exception as e:
                 ka = format_key_with_args(key, args)
                 #log.warn("%s: %s" % (e, ka))
                 msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
-                if widget: # We're in a callback, not loading
-                    self.gui.print_internal(msg, color='red')
+                self.gui.print_internal(msg, color='red')
                 raise ValueError(msg)
 
-            finally:
-                self._widget_update_stack.pop()
 
         if updatedValue is None or updatedValue=='': # why are we getting ''?  has to do with
                                                      # validation and "saved_value"
