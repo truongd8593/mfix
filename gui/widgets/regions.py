@@ -319,14 +319,14 @@ class RegionsWidget(QtWidgets.QWidget):
                 'regions': {}
                 }
         for region in data['order']:
-            region = data['regions'][region] = {}
+            data['regions'][region] = {}
             for key in self.tablewidget_regions.value[region].keys():
                 if key == 'visible':
                     pass
                 elif key == 'color':
-                    region[key] = self.tablewidget_regions.value[region][key].color
+                    data['regions'][region] = self.tablewidget_regions.value[region][key].color
                 else:
-                    region[key] = self.tablewidget_regions.value[region][key]
+                    data['regions'][region] = self.tablewidget_regions.value[region][key]
         return json.dumps(data)
 
     def regions_from_str(self, string):

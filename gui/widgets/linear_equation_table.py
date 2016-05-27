@@ -4,8 +4,11 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-# local imports
+# impots
 from qtpy import QtWidgets, QtCore
+import copy
+
+# local imports
 from .base import Table
 from project import Keyword
 
@@ -133,6 +136,9 @@ class LinearEquationTable(QtWidgets.QWidget):
             )
 
         self.table.value_changed.connect(self.model_edited)
+        
+        # set the default value
+        self.table.default_value = copy.deepcopy(self.solverdict)
 
         self.grid_layout = QtWidgets.QGridLayout(self)
         self.grid_layout.addWidget(self.table, 0, 0)
