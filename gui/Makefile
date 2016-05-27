@@ -25,19 +25,11 @@ test3: all
 
 test:	all
 	(Xvfb :99 &)
-	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
-	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
+	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
 	pkill Xvfb
 
-test2-gui: all
-	python2 -m nose -v
-
-test3-gui: all
-	python3 -m nose -v
-
 test-gui:
-	python2 -m nose -v
-	python3 -m nose -v
+	python nosetests -v
 
 tags:
 	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
