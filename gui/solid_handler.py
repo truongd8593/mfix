@@ -14,6 +14,10 @@ from constants import *
 from tools.general import set_item_noedit, get_selected_row, widget_iter
 
 class SolidHandler:
+
+    def init_solid_handler(self):
+        pass
+
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
         solver = self.project.solver

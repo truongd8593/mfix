@@ -183,6 +183,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                         path = os.path.join(uifiles, name+'.ui')
                         uic.loadUi(path, widget)
                     except Exception as e:
+                        # report which ui file it was, otherwise stack trace
+                        # is too generic to be helpful.
                         print("Error loading", path)
                         raise
 
@@ -197,12 +199,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                                                         os.pardir, 'model'))
 
 
-
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
 
         self.init_fluid_handler()
-
+        self.init_solid_handler()
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -1247,7 +1248,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                                     icon="question",
                                     text="Save current project?",
                                     buttons=['yes', 'no'])
-            if response=='yes':
+            if response=='yes': #FIXME need to catch/report errors, writeDatFile is too low-level
                 self.project.writeDatFile(self.get_project_file())
             else:
                 return
@@ -1262,6 +1263,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 log.debug('output or resume files exist and run was cancelled')
                 return
         self.update_keyword('run_type', 'new')
+        #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
@@ -1285,6 +1287,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 #pass
                 return
             self.update_keyword('run_type', 'restart_2')
+        #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
 
@@ -1655,8 +1658,22 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
             if ok_to_write:
                 project_file = renamed_project_file
-                self.project.writeDatFile(project_file)
-                self.print_internal(save_msg, color='blue')
+                try:
+                    self.project.writeDatFile(project_file)
+                    self.print_internal(save_msg, color='blue')
+                except Exception as e:
+                    msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                    self.print_internal("Error: %s" % msg, color='red')
+                    self.message(title='Error',
+                                 icon='error',
+                                text=msg,
+                                 buttons=['ok'],
+                                 default='ok')
+                    traceback.print_exception(*sys.exc_info())
+                    return
+
+
+
         if not self.is_project_open(): # Make sure main window is enabled
             self.ui.stackedwidget_mode.setEnabled(True)
 
