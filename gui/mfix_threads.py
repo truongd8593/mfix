@@ -239,10 +239,9 @@ class MonitorThread(QThread):
             patterns = [
                 '*.LOG', '*.OUT', '*.RES', '*.SP?',
                 '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
-        output_paths = [glob.glob(os.path.join(project_dir, n)) for n in patterns]
         outputs = []
-        for path in output_paths:
-            outputs += path
+        for pat in patterns:
+            outputs.extend(glob.glob(os.path.join(project_dir, pat)))
         return outputs
 
     def run(self):
