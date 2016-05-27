@@ -1168,16 +1168,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         scrollbar.setValue(scrollbar.maximum())
 
     def handle_line_printed(self, line, message_type):
-        print("HANDLE", line)
         # FIXME  - ad-hoc
         color = font = None
         if message_type in (message_error, message_stderr):
             color = 'red'
-        elif message_type == message_hi_vis:
+        if message_type == message_hi_vis:
             color = 'blue'
         if message_type in (message_stdout, message_stderr):
             font = 'Courier' # TODO: find good cross-platform monospace font
             # 'Monospace' on Linux does not work
+
         self.print_internal(line, color=color, font=font)
 
     #TODO:  split update_run_options into parts for different signals
