@@ -526,6 +526,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # during shutdown
         self.run_thread.quit()
         self.monitor_thread.quit()
+        # FIXME: Even with monitor_thread.quit, we get errors at shutdown
+        # like gui/mfix_threads.py", line 244, in get_outputs
+        #   outputs.extend(glob.glob(os.path.join(project_dir, pat)))
+        #   AttributeError: 'NoneType' object has no attribute 'glob'
+        # which shows that the thread was still running while Python
+        # was shutting down (removing objects from namespace)
+        #
+        # there is no update_residuals_thread, yet...
         #self.update_residuals_thread.quit()
 
         event.accept()
