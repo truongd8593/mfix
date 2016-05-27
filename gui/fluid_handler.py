@@ -104,7 +104,7 @@ class FluidHandler:
             # Set the combobox default value
             combobox = getattr(self.ui, 'combobox_'+model_name)
             combobox.default_value = getattr(self, model_name)
-            print(model_name, combobox.default_value)
+            #print(model_name, combobox.default_value)
 
         combobox = self.ui.combobox_fluid_mol_weight_model
         combobox.default_value = self.fluid_mol_weight_model
