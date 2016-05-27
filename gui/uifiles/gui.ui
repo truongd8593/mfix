@@ -675,7 +675,7 @@ background-color:white;
                          </widget>
                         </item>
                         <item>
-                         <widget class="QLineEdit" name="lineedit_fluid_phase_name">
+                         <widget class="LineEdit" name="lineedit_fluid_phase_name">
                           <property name="text">
                            <string>Fluid</string>
                           </property>
@@ -1484,6 +1484,11 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>DoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
