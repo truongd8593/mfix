@@ -1,4 +1,18 @@
-# Project manager class, mediates between mfix gui and mfix project
+"""ProjectManager handles interaction between gui and Project objects,
+updating gui widgets when keywords are changed, and vice-versa.
+
+It is a subclass of Project, and the .project member in the main MfixGui
+object is actually a ProjectManager, not a Project.
+
+Widgets get associated with keywords via the 'register' method.  Multiple
+widgets may map to the same keyword.  (Can a widget register multiple keywords?)
+Widgets must support updateValue method and emit value_updated signal (see
+widgets in widgets/base.py)
+
+It is important that widgets emit the 'value_updated" signal only on user
+interaction, not a programmatic setValue/setText/setChecked/etc, otherwise
+a notification loop is possible """
+
 
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
