@@ -522,14 +522,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not self.confirm_close():
             event.ignore()
             return
-        # cleanup threads.  Is this necessary?  The whole
-        # process is about to exit and will take down threads
-        # with it.
-        if False:
-            self.run_thread.quit()
-            self.monitor_thread.quit()
-            if hasattr(self, 'update_residuals_thread'):
-                self.update_residuals_thread.quit()
+        # cleanup threads to avoid exceptions
+        # during shutdown
+        self.run_thread.quit()
+        self.monitor_thread.quit()
+        #self.update_residuals_thread.quit()
 
         event.accept()
 
@@ -1357,10 +1354,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.update_run_options()
 
-    def update_residuals(self):
-        self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
-        if self.update_residuals_thread.job_done:
-            self.ui.mfix_browser.setHTML('')
+    #def update_residuals(self):
+    #    self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
+    #    if self.update_residuals_thread.job_done:
+    #        self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
 
