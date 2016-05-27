@@ -39,8 +39,7 @@ class MfixThread(QThread):
     def __init__(self, parent, name="MfixThread"):
         super(MfixThread, self).__init__(parent)
         self.stopped = False  # TODO use this to break out of loop (quit)
-        self.cmd = None
-        self.cwd = None
+        self.cmd = self.cwd = None
         self.mfixproc = None
         self.name = name
 
@@ -70,9 +69,10 @@ class MfixThread(QThread):
     def start_command(self, cmd, cwd, env):
         """Start a command in subprocess, and start the thread to monitor it"""
 
-        self.cmd = cmd
-        self.cwd = cwd
-        self.env = env
+        # TODO:  maybe instead of pipes, we should just write to files.  Then we could
+        # leave mfix running after exiting the gui, without getting SIGPIPE
+
+        self.cmd, self.cwd, self.env = cmd, cwd, env
         self.mfixproc = subprocess.Popen(self.cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,

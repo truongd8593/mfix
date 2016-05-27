@@ -513,24 +513,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not self.confirm_close():
             event.ignore()
             return
-        # cleanup threads to avoid exceptions
-        # during shutdown
-        for thread in (self.run_thread, self.monitor_thread):
-            log.debug('terminating thread', thread.name)
+        # cleanup threads to avoid exceptions during shutdown
+        # FIXME:  should we leave mfix running when leaving the gui?
+        for thread in (self.run_thread, self.monitor_thread): # residuals_thread
+            log.debug('terminating thread %s' % thread.name)
+            #FIXME:  should call 'quit' not terminate, but quit won't
+            # work with the current implementation of mfix threads (no event loop)
+            # http://doc.qt.io/qt-4.8/qthread.html#quit
+            # "This function does nothing if the thread does not have an event loop."
             thread.terminate()
-            print("Calling wait")
+            log.debug('thread %s terminated, calling wait' % thread.name)
             thread.wait()
-            print("OK")
-
-        # FIXME: Even with monitor_thread.quit, we get errors at shutdown
-        # like gui/mfix_threads.py", line 244, in get_outputs
-        #   outputs.extend(glob.glob(os.path.join(project_dir, pat)))
-        #   AttributeError: 'NoneType' object has no attribute 'glob'
-        # which shows that the thread was still running while Python
-        # was shutting down (removing objects from namespace)
-        #
-        # there is no update_residuals_thread, yet...
-        #self.update_residuals_thread.quit()
+            log.debug('thread %s, wait returns' % thread.name)
 
         event.accept()
 
