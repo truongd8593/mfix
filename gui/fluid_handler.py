@@ -14,7 +14,16 @@ from constants import *
 from tools.general import set_item_noedit, get_selected_row
 
 class FluidHandler:
-        ## Fluid phase methods
+    # Defaults
+    def init_fluid_default_models(self):
+        self.fluid_density_model = CONSTANT
+        self.fluid_viscosity_model = CONSTANT
+        self.fluid_mol_weight_model = CONSTANT
+        self.fluid_specific_heat_model = CONSTANT
+        self.fluid_conductivity_model = AIR
+        self.fluid_diffusion_model = AIR
+
+    ## Fluid phase methods
     def enable_fluid_species_eq(self, state):
         ui = self.ui
         for item in (ui.combobox_fluid_diffusion_model,
@@ -48,33 +57,16 @@ class FluidHandler:
             spinbox.setValue(value)
         self.update_scalar_equations(prev_nscalar)
 
-    # molecular wt model only has 2 choices, and the key names don't
-    # follow the same pattern, so create its setter specially
-    def set_fluid_mol_weight_model(self, model):
-        self.fluid_mol_weight_model = model
-        combobox = self.ui.combobox_fluid_mol_weight_model
-        prev_model = combobox.currentIndex()
-        if model != prev_model:
-            combobox.setCurrentIndex(model)
-        # Enable spinbox for constant mol_weight model
-        spinbox = self.ui.spinbox_keyword_mw_avg
-        spinbox.setEnabled(model==CONSTANT)
-        if model == CONSTANT:
-            value = spinbox.value() # Possibly re-enabled gui item
-            if self.project.get_value("mw_avg") != value:
-                self.set_keyword("mw_avg", value) # Restore keyword value
-        else: # Mixture
-            # TODO: validate, require mw for all component species
-            self.unset_keyword("mw_avg")
-
     def init_fluid_handler(self):
+        self.ui.lineedit_fluid_phase_name.default_value = "Fluid"
+        self.saved_fluid_species = None
+        self.init_fluid_default_models()
         # note, the set_fluid_*_model methods have a lot of repeated code
-        # see 'set_fluid_mol_weight_model' to help understand this
+        # see 'set_fluid_mol_weight_model' below to help understand this
         def make_fluid_model_setter(self, name, key):
             def setter(model):
                 setattr(self, name, model) # self.fluid_<name>_model = model
                 combobox = getattr(self.ui, 'combobox_' + name)
-                combobox.default_value = 2
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
@@ -98,6 +90,7 @@ class FluidHandler:
                     # anything else to do in this case? validation?
             return setter
 
+
         # Create setters for the cases which are similar (mol. wt. handled separately)
         for (name, key) in (
                 ('density', 'ro'),
@@ -107,6 +100,33 @@ class FluidHandler:
                 ('diffusion', 'dif')):
             model_name = 'fluid_%s_model' % name
             setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
+
+            # Set the combobox default value
+            combobox = getattr(self.ui, 'combobox_'+model_name)
+            combobox.default_value = getattr(self, model_name)
+            print(model_name, combobox.default_value)
+
+        combobox = self.ui.combobox_fluid_mol_weight_model
+        combobox.default_value = self.fluid_mol_weight_model
+
+    # molecular wt model only has 2 choices, and the key names don't
+    # follow the same pattern, so create its setter specially
+    def set_fluid_mol_weight_model(self, model):
+        self.fluid_mol_weight_model = model
+        combobox = self.ui.combobox_fluid_mol_weight_model
+        prev_model = combobox.currentIndex()
+        if model != prev_model:
+            combobox.setCurrentIndex(model)
+        # Enable spinbox for constant mol_weight model
+        spinbox = self.ui.spinbox_keyword_mw_avg
+        spinbox.setEnabled(model==CONSTANT)
+        if model == CONSTANT:
+            value = spinbox.value() # Possibly re-enabled gui item
+            if self.project.get_value("mw_avg") != value:
+                self.set_keyword("mw_avg", value) # Restore keyword value
+        else: # Mixture
+            # TODO: validate, require mw for all component species
+            self.unset_keyword("mw_avg")
 
 
     def set_fluid_phase_name(self, value):
@@ -248,12 +268,6 @@ class FluidHandler:
 
     def reset_fluids(self):
         # Set all fluid-related state back to default
-        self.ui.lineedit_fluid_phase_name.setText("Fluid")
-        self.fluid_species.clear()
         self.saved_fluid_species = None
-        self.fluid_density_model = CONSTANT
-        self.fluid_viscosity_model = CONSTANT
-        self.fluid_mol_weight_model = CONSTANT
-        self.fluid_specific_heat_model = CONSTANT
-        self.fluid_conductivity_model = AIR
-        self.fluid_diffusion_model = AIR
+        self.fluid_species.clear()
+        self.init_fluid_default_models()
