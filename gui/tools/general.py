@@ -12,6 +12,8 @@ import os
 import sys
 import locale
 import logging
+import shlex
+
 log = logging.getLogger(__name__)
 
 
@@ -108,7 +110,6 @@ def make_callback(func, *args, **kwargs):
 
     return lambda: func(*args, **kwargs)
 
-
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
@@ -153,7 +154,6 @@ def get_unique_string(base, listofstrings):
         base = get_unique_string(base + str(number), listofstrings)
 
     return base
-
 
 def widget_iter(widget):
     for child in widget.children():
@@ -226,6 +226,23 @@ def test_recurse_dict_empty():
     l = list(recurse_dict_empty(d))
     l.sort()
     assert l == [((), {}), ((1,), 3), ((1, 4), 6)]
+
+#http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
+#see also notes at https://pypi.python.org/pypi/ushlex/
+def safe_shlex_split(string):
+    """shlex.split is not unicode-safe"""
+    if PY2:
+        return [s.decode('utf-8') for s in shlex.split(string.encode('utf-8'))]
+    else:
+        return shlex.split(string)
+
+# Debugging hooks
+def debug_trace():
+    """Set a tracepoint in the Python debugger that works with Qt"""
+    from qtpy.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
 
 
 # These functions were extracted from spyder's p3compat.py code.

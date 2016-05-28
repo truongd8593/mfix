@@ -30,8 +30,7 @@ except ImportError:
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
-                         Qt)
+from qtpy.QtCore import Qt, QSettings, QUrl, pyqtSignal
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
@@ -43,14 +42,6 @@ if not PRECOMPILE_UI:
         from PyQt5 import uic
     except ImportError:
         from PyQt4 import uic
-
-# Debugging hooks
-def debug_trace():
-    """Set a tracepoint in the Python debugger that works with Qt"""
-    from qtpy.QtCore import pyqtRemoveInputHook
-    from pdb import set_trace
-    pyqtRemoveInputHook()
-    set_trace()
 
 
 # local imports
@@ -1619,7 +1610,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def update_source_view(self, number_lines=True):
         project_file = self.get_project_file()
-        with open(project_file, 'r') as f:
+        with open(project_file, 'rb') as f:
             src = to_unicode_from_fs(f.read())
         if number_lines:
             # Avoid extra blank line at end
@@ -1722,7 +1713,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
-
         self.update_source_view()
 
         # Additional GUI setup based on loaded projects (not handled
