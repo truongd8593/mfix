@@ -253,6 +253,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
+        # Make sure lineedits lose focus so keywords update before save/run !!
+        for button in (ui.toolbutton_run_stop_mfix, ui.toolbutton_save, ui.toolbutton_more):
+            button.setFocusPolicy(Qt.ClickFocus)
+
         # "More" submenu
         ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
         ui.menu_more = QtWidgets.QMenu()
@@ -1490,9 +1494,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         else:
             return filename
 
-    # TODO make sure all gui items have updated, eg Lineedit with
-    # editing_finished events - or is that user's responsibility?
-    # (or does save button take focus?)
+
     def handle_save(self):
         project_file = self.get_project_file()
         try:
