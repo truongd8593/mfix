@@ -298,8 +298,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_run_options_signal.connect(self.update_run_options)
 
         ## Monitor thread
-        self.monitor_thread.executables_changed.connect(self.handle_executables_changed)
-        self.monitor_thread.outputs_changed.connect(self.handle_outputs_changed)
+        self.monitor_thread.executables_changed.connect(self.update_run_options)
+        self.monitor_thread.outputs_changed.connect(self.update_run_options)
         self.monitor_thread.start()
 
         # --- setup widgets ---
@@ -417,6 +417,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # This should be a state of the model, not of the GUI
         return self.ui.stackedwidget_mode.isEnabled()
 
+    def status_message(self, message=''):
+        self.ui.label_status.setText(message)
+
     #TODO:  split update_run_options into parts for different signals
     def update_run_options(self):
         """Updates list of of mfix executables and sets run dialog options"""
@@ -454,6 +457,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
 
         if running:
+            self.status_message("running")
             self.ui.run.spinbox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
@@ -463,6 +467,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.run.button_pause_mfix.setText("Pause")
 
         else:
+            self.status_message("ready")
             self.ui.run.spinbox_mfix_executables.setEnabled(True)
             self.ui.run.openmp_threads.setEnabled(self.smp_enabled)
             self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
@@ -1183,24 +1188,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         scrollbar = qtextbrowser.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
-    def handle_line_printed(self, line, message_type):
-        # FIXME  - ad-hoc
-        color = font = None
-        if message_type in (message_error, message_stderr):
-            color = 'red'
-        if message_type == message_hi_vis:
-            color = 'blue'
-        if message_type in (message_stdout, message_stderr):
-            font = 'Courier' # TODO: find good cross-platform monospace font
-            # 'Monospace' on Linux does not work
-
-        self.print_internal(line, color=color, font=font)
-
-    #TODO:  split update_run_options into parts for different signals
-    def handle_mfix_running(self, is_running):
-        self.update_run_options()
-
-    #TODO:  split update_run_options into parts for different signals
     def handle_executables_changed(self):
         self.update_run_options()
 

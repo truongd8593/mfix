@@ -6,6 +6,9 @@ import os
 import subprocess
 import time
 
+import logging
+log=logging.getLogger(__name__)
+
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtCore import QThread, pyqtSignal, QProcess, QTimer
 
@@ -18,13 +21,6 @@ except ImportError:
 
 from tools.general import get_mfix_home
 
-# Message types, emitted with 'line_printed'
-
-message_normal = 0
-message_hi_vis = 1
-message_error = 2
-message_stdout = 3
-message_stderr = 4
 
 class MfixJobManager():
 
@@ -84,8 +80,8 @@ class MfixJobManager():
             pass
 
         def slot_start():
+            self.parent.update_run_options_signal.emit()
             self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
-            log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
         self.mfixproc.started.connect(slot_start)
