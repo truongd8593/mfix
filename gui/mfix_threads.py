@@ -140,11 +140,6 @@ class OutputHelper(QThread):
         self.name = name
         self.signal = signal # Share signal with parent class
 
-    #def __del__(self):
-    #    self.terminate()
-    #    #    # I suspect this is the source of QThread::wait errors
-    #    #self.wait()
-
     def run(self):
         while not self.stopped: # TODO: allow .quit() to set stopped=T
             line = str(self.pipe.readline()).lower()
