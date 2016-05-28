@@ -114,8 +114,11 @@ class MfixThread(QThread):
         self.line_printed.emit("MFIX (pid %s) has stopped" % mfixproc_pid, message_hi_vis)
         self.mfix_running.emit(False)
 
-        stderr_thread.terminate()
-        stdout_thread.terminate()
+        # Allow remaining output to be collected
+        stderr_thread.wait()
+        stdout_thread.wait()
+        #stderr_thread.terminate()
+        #stdout_thread.terminate()
 
 
 
