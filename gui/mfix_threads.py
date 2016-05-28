@@ -114,7 +114,7 @@ class MfixThread(QThread):
         self.line_printed.emit("MFIX (pid %s) has stopped" % mfixproc_pid, message_hi_vis)
         self.mfix_running.emit(False)
 
-        # Allow remaining output to be collected
+        # Allow remaining output to be collected - OutputHelper threads exit on reaching EOF
         stderr_thread.wait()
         stdout_thread.wait()
         #stderr_thread.terminate()
