@@ -117,7 +117,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     settings = QSettings('MFIX', 'MFIX')
 
-    line_printed_signal = pyqtSignal(str, str, str)
+    stdout_signal = pyqtSignal(str)
+    stderr_signal = pyqtSignal(str)
     update_run_options_signal = pyqtSignal()
 
     def __init__(self, app, parent=None, project_file=None):
@@ -297,7 +298,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.monitor_thread = MonitorThread(self, name="monitor thread")
 
         ## Run signals
-        self.line_printed_signal.connect(self.print_internal)
+        self.stdout_signal.connect(self.print_out)
+        self.stderr_signal.connect(self.print_err)
         self.update_run_options_signal.connect(self.update_run_options)
 
         ## Monitor thread
@@ -1139,7 +1141,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         return result
 
-    def print_internal(self, line, color=None, font=None): # basically same as handle_line
+    def print_out(self, line):
+        self.print_internal(line, None, 'Courier')
+
+    def print_err(self, line):
+        self.print_internal(line, 'red', 'Courier')
+
+    def print_internal(self, line, color=None, font=None):
         qtextbrowser = self.ui.command_output
         if not line.strip():
             if self.last_line_blank:
@@ -1167,6 +1175,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         char_format = QtGui.QTextCharFormat()
         if color:
             char_format.setForeground(QtGui.QColor(color))
+        if any(x in lower for x in ('error', 'warn', 'fail')):
+            color='red'
         if font:
             if strikeout: # hack
                 char_format.setFontFamily("Monospace")
@@ -1272,7 +1282,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if not self.remove_output_files(output_files):
                 log.info('output files exist and run was cancelled')
                 return
-        self.update_keyword('run_type', 'new')
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
@@ -1282,6 +1291,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.project.writeDatFile(self.get_project_file())
             else:
                 return
+        self.update_keyword('run_type', 'new')
+        self.project.writeDatFile(self.get_project_file())
         self._start_mfix()
 
     def restart_mfix(self):

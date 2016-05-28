@@ -55,7 +55,7 @@ class MfixJobManager(QThread):
         except OSError as err:
             log = logging.getLogger(__name__)
             log.error("Error terminating process: %s", err)
-            self.line_printed.emit("Terminating MFIX process (pid %s)" %
+        self.parent.stdout.emit("Terminating MFIX process (pid %s)" %
                                 mfixpid, 'blue', '')
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
@@ -89,9 +89,7 @@ class MfixJobManager(QThread):
 
         if self.cmd:
             mfixproc_pid = self.mfixproc.pid
-            self.line_printed.emit(
-                                "MFIX (pid %d) is running" % mfixproc_pid,
-                                'blue', '')
+            self.parent.stdout_signal.emit("MFIX (pid %d) is running" % mfixproc_pid)
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
@@ -99,13 +97,13 @@ class MfixJobManager(QThread):
             stdout_thread = MfixOutput(
                                 name='stdout',
                                 pipe=self.mfixproc.stdout,
-                                signal=self.line_printed,
+                                signal=self.parent.stdout_signal,
                                 font='Courier') # TODO find good cross-platform fixed width font
 
             stderr_thread = MfixOutput(
                                 name='stderr',
                                 pipe=self.mfixproc.stderr,
-                                signal=self.line_printed,
+                                signal=self.parent.stderr_signal,
                                 color='red',
                                 font='Courier')
 
@@ -118,9 +116,7 @@ class MfixJobManager(QThread):
                 self.mfixproc.wait()
             self.mfixproc = None
 
-            self.line_printed.emit(
-                                "MFIX (pid %s) has stopped" % mfixproc_pid,
-                                'blue', '')
+            self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % mfixproc_pid)
             self.parent.update_run_options_signal.emit()
 
             stderr_thread.quit()
@@ -153,12 +149,10 @@ class MfixOutput(QThread):
         self.signal = signal # Share signal with parent class
 
     def run(self):
-        while not self.stopped: # TODO: allow .quit() to set stopped=T
-            line = str(self.pipe.readline()).lower()
-            if not line:
-                break # Process has exited - emit signal?
-            self.signal.emit(line, self.message_type)
-
+        lines_iterator = iter(self.pipe.readline, b"")
+        for line in lines_iterator:
+            lower = line.lower()
+            self.signal.emit(str(line))
 
 class MonitorThread(QThread):
 
