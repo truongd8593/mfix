@@ -7,7 +7,7 @@ import subprocess
 import time
 
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import QThread, pyqtSignal, QProcess
+from qtpy.QtCore import QThread, pyqtSignal, QProcess, QTimer
 
 try:
     # For Python 3.0 and later
@@ -40,19 +40,35 @@ class MfixJobManager():
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-        try:
-            self.mfixproc.terminate()
-        except OSError as err:
-            log = logging.getLogger(__name__)
-            log.error("Error terminating process: %s", err)
-        self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixproc.pid())
 
-        # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
-        # os.waitpid has a nohang option, but it's not available on Windows
-        if self.mfixproc:
-            self.mfixproc.waitForFinished() # FIXME timeout
-        self.mfixproc = None
-        self.parent.update_run_options_signal.emit()
+        mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        try:
+            open(mfix_stop, "ab").close()
+        except OSError:
+            pass
+
+        def force_kill():
+
+            confirm = self.parent.message(text="MFIX is not responding. Force kill?",
+                                   buttons=['ok','cancel'],
+                                   default='cancel')
+
+            if confirm != 'ok':
+                return
+
+            try:
+                self.mfixproc.terminate()
+            except OSError as err:
+                log = logging.getLogger(__name__)
+                log.error("Error terminating process: %s", err)
+            self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixproc.pid())
+
+            # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
+            # os.waitpid has a nohang option, but it's not available on Windows
+            if self.mfixproc:
+                self.mfixproc.waitForFinished() # FIXME timeout
+            self.mfixproc = None
+        QTimer.singleShot(100, force_kill)
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
@@ -61,6 +77,11 @@ class MfixJobManager():
 
         self.mfixproc = QProcess()
         self.mfixproc.setWorkingDirectory(self.cwd)
+        mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        try:
+            os.remove(mfix_stop)
+        except OSError:
+            pass
 
         def slot_start():
             self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
@@ -170,7 +191,7 @@ class MonitorThread(QThread):
             return
         if len(patterns) == 0:
             patterns = [
-                '*.LOG', '*.OUT', '*.RES', '*.SP?',
+                '*.LOG', '*.OUT', '*.RES', '*.SP?', 'MFIX.STOP',
                 '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         outputs = []
         for pat in patterns:
