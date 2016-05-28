@@ -137,7 +137,7 @@ class MfixGuiTests(TestQApplication):
         # before running
         self.assertTrue(self.mfix.ui.run.spinbox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Run")
+        self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Run")
 
         # start run
         QTest.mouseClick(self.mfix.ui.toolbutton_run_stop_mfix, Qt.LeftButton)
@@ -145,17 +145,17 @@ class MfixGuiTests(TestQApplication):
 
         # during running
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Stop")
+        self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Stop")
 
         # stop run
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Resume")
+        self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Resume")
 
         # start resume
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.text() == "Stop")
+        self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(),"Stop")
 
         # stop mfix
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
