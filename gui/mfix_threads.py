@@ -6,9 +6,8 @@ import os
 import subprocess
 import time
 
-# import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import QThread, pyqtSignal
+from qtpy.QtCore import QThread, pyqtSignal, QProcess
 
 try:
     # For Python 3.0 and later
@@ -27,10 +26,9 @@ message_error = 2
 message_stdout = 3
 message_stderr = 4
 
-class MfixJobManager(QThread):
+class MfixJobManager():
 
     def __init__(self, parent):
-        super(MfixJobManager, self).__init__(parent)
         self.parent = parent
         self.cmd = None
         self.cwd = None
@@ -43,116 +41,51 @@ class MfixJobManager(QThread):
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-        if not self.mfixproc:
-            log.debug("stop_mfix: mfixproc==None")
-            return
-
-        mfixpid = self.mfixproc.pid
-        self.line_printed.emit("Terminating MFIX process (pid %s)" % mfixpid, message_hi_vis)
-
         try:
             self.mfixproc.terminate()
         except OSError as err:
             log = logging.getLogger(__name__)
             log.error("Error terminating process: %s", err)
-        self.parent.stdout.emit("Terminating MFIX process (pid %s)" %
-                                mfixpid, 'blue', '')
+        self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixpid.pid())
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
         if self.mfixproc:
-            self.mfixproc.wait() # FIXME timeout
+            self.mfixproc.waitForFinished() # FIXME timeout
         self.mfixproc = None
         self.parent.update_run_options_signal.emit()
 
     def start_command(self, cmd, cwd, env):
-        """Start a command in subprocess, and start the thread to monitor it"""
-
-        # TODO:  maybe instead of pipes, we should just write to files.  Then we could
-        # leave mfix running after exiting the gui, without getting SIGPIPE
+        """Start MFIX in QProcess"""
 
         self.cmd, self.cwd, self.env = cmd, cwd, env
-        self.mfixproc = subprocess.Popen(self.cmd,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        universal_newlines = True,
-                                        shell=False, cwd=self.cwd,
-                                        env=self.env)
-        self.start() # calls 'run'
 
+        self.mfixproc = QProcess()
+        self.mfixproc.setWorkingDirectory(self.cwd)
 
-    def run(self):
-        """Run a subprocess, with executable and arguments obtained
-        from class-local self.cmd set in start_command()
-
-        :return: None"""
-
-        if self.cmd:
-            mfixproc_pid = self.mfixproc.pid
-            self.parent.stdout_signal.emit("MFIX (pid %d) is running" % mfixproc_pid)
+        def slot_start():
+            self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
+        self.mfixproc.started.connect(slot_start)
 
-            stdout_thread = MfixOutput(
-                                name='stdout',
-                                pipe=self.mfixproc.stdout,
-                                signal=self.parent.stdout_signal,
-                                font='Courier') # TODO find good cross-platform fixed width font
+        def slot_read_out():
+            self.parent.stdout_signal.emit(str(self.mfixproc.readAllStandardOutput()))
+        self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
 
-            stderr_thread = MfixOutput(
-                                name='stderr',
-                                pipe=self.mfixproc.stderr,
-                                signal=self.parent.stderr_signal,
-                                color='red',
-                                font='Courier')
+        def slot_read_err():
+            self.parent.stderr_signal.emit(str(self.mfixproc.readAllStandardOutput()))
+        self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
-            stdout_thread.start()
-            stderr_thread.start()
-
-            self.parent.update_run_options_signal.emit()
-
-            if self.mfixproc:
-                self.mfixproc.wait()
+        def slot_finish(status):
+            self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
-
-            self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % mfixproc_pid)
             self.parent.update_run_options_signal.emit()
+        self.mfixproc.finished.connect(slot_finish)
 
-            stderr_thread.quit()
-            stdout_thread.quit()
+        self.mfixproc.start(self.cmd[0], self.cmd[1:])
 
-
-
-class MfixOutput(QThread):
-    """Generic class to handle streaming from a pipe and emiting read
-        lines into a signal handler.
-
-        :param name: Name of thread
-        :type name: str
-        :param pipe: Iterable object with readline method, assumed to be subprocess.PIPE
-        :type pipe: subprocess.PIPE
-        :param signal: Signal to be used to pass lines read from pipe
-        :type signal: QtCore.pyqtSignal object
-    #TODO: let's define message types which map to color/font settings
-        :param color: Color to set when emitting signals
-        :type color: str """
-
-    def __init__(self, name, pipe, signal, color=None, font=None):
-        super(MfixOutput, self).__init__()
-        log = logging.getLogger(__name__)
-        log.debug("Started thread %s" % name)
-        self.stopped = False # See comment above
-        self.name = name
-        self.pipe = pipe
-        self.name = name
-        self.signal = signal # Share signal with parent class
-
-    def run(self):
-        lines_iterator = iter(self.pipe.readline, b"")
-        for line in lines_iterator:
-            lower = line.lower()
-            self.signal.emit(str(line))
 
 class MonitorThread(QThread):
 
