@@ -95,7 +95,7 @@ class MfixJobManager():
         self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
 
         def slot_read_err():
-            self.parent.stderr_signal.emit(str(self.mfixproc.readAllStandardOutput()))
+            self.parent.stderr_signal.emit(str(self.mfixproc.readAllStandardError()))
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
