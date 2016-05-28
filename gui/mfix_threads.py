@@ -33,7 +33,6 @@ class MfixJobManager():
         self.cmd = None
         self.cwd = None
         self.mfixproc = None
-        self.name = name
 
     def is_running(self):
         """indicate whether an MFIX job is running"""
@@ -46,7 +45,7 @@ class MfixJobManager():
         except OSError as err:
             log = logging.getLogger(__name__)
             log.error("Error terminating process: %s", err)
-        self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixpid.pid())
+        self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixproc.pid())
 
         # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
         # os.waitpid has a nohang option, but it's not available on Windows
