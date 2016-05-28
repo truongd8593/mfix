@@ -13,12 +13,12 @@ multiple arguments.
 
 Keyword objects have a 'key' (the string) and a 'value'.
 
-There are three paths to the Keyword objects in the Project
-dict, list, and then the collections
+There are three paths to the Keyword objects in the Project:
+ dict, list, and Collections
 
  list for preserving the order for writing
  dict for programmatically changing keywords
- collections for user interaction with the keyowrds
+ collections for user interaction with the keywords
 
 
 History
@@ -39,9 +39,10 @@ Please see the LICENSE.md for more information.
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 # Python core imports
-import shlex
+import sys
 import math
 import warnings
+import traceback
 from collections import OrderedDict
 try:
     # Python 2.X
@@ -58,19 +59,10 @@ from tools.simpleeval import simple_eval
 from tools.comparable import Comparable
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, to_fs_from_unicode,
-                           is_text_string, to_text_string)
+                           is_text_string, to_text_string,
+                           safe_shlex_split)
 
 from regexes import *
-
-# Debugging hooks
-def debug_trace():
-    """Set a tracepoint in the Python debugger that works with Qt"""
-    from qtpy.QtCore import pyqtRemoveInputHook
-    from pdb import set_trace
-    pyqtRemoveInputHook()
-    set_trace()
-
-
 
 from constants import *
 
@@ -898,11 +890,11 @@ class Project(object):
 
                 # split values using shlex, it will keep quoted strings together.
                 if 'description' in key: # Don't do anything with description line, it may contain *, etc.
-                    vals = [shlex.split(line.strip())[-1]]
+                    vals = [safe_shlex_split(line.strip())[-1]]
                     single_key = True
                 else:
                     try:
-                        vals = shlex.split(val_string.strip())
+                        vals = safe_shlex_split(val_string.strip())
                     except ValueError:
                         vals = []
 
@@ -993,7 +985,7 @@ class Project(object):
         reactionSection = False
         thermoSection = False
         for i, line in enumerate(fobject):
-            line = to_unicode_from_fs(line).strip('\n')
+            line = to_unicode_from_fs(line).strip()
             if line.startswith("#!MFIX-GUI"):
                 if "=" in line:
                     key, val = line[10:].split('=', 1)
@@ -1037,6 +1029,7 @@ class Project(object):
                                 # error at line i
                                 warnings.warn("Cannot set %s=%s" % (format_key_with_args(key, args), value))
                 except Exception as e:
+                    traceback.print_exception(*sys.exc_info())
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
