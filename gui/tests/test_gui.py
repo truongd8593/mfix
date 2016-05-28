@@ -20,6 +20,8 @@ from qtpy import QtWidgets
 
 import logging
 
+from tools.general import to_unicode_from_fs
+
 from .helper_functions import TestQApplication
 import gui
 
@@ -191,11 +193,11 @@ class MfixGuiTests(TestQApplication):
         cb.setFocus()
         QTest.keyClick(cb, Qt.Key_Right)
 
-        new_text = u'maÑana'
-        ### KeyClicks won't take a unicode string.  We need to input
-        # the Ñ separately
+        new_text = u'mañana'
+        ### KeyClicks won't take a unicode string - need to input ñ separately
         QTest.keyClicks(cb, "ma")
-        QTest.keyClick(cb, Qt.Key_Ntilde) # how to input lower-case ñ ?
+        QTest.keyClick(cb, Qt.Key_Ntilde)
+        # how to input lower-case ñ ?
         QTest.keyClicks(cb, "ana")
         QTest.keyClick(cb, Qt.Key_Enter)
         QTest.mouseClick(self.mfix.ui.toolbutton_save, Qt.LeftButton)
@@ -205,10 +207,11 @@ class MfixGuiTests(TestQApplication):
         found = 0
         with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
             for line in ff.readlines():
-                line = line.decode(encoding='utf-8', errors='ignore')
+                line = to_unicode_from_fs(line)
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip()=='description':
-                    self.assertEqual(kv[1].strip()[1:-1], new_description)
+                    self.assertEqual(kv[1].strip()[1:-1].lower(), new_description.lower())
+                    # seeing 'Ñ' on py2,  'ñ' on py3.
                     found += 1
 
         self.assertEqual(found, 1)
