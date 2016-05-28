@@ -121,7 +121,7 @@ class SolidHandler:
                 # Clear out all values?
             return
 
-        name = self.solids.keys()[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1] # ugh
         solid = self.solids[name]
         model = solid['model']
 
@@ -233,7 +233,7 @@ class SolidHandler:
         if phase is None:
             return
 
-        name = self.solids.keys()[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1] # ugh
         solid = self.solids[name]
 
         current_state = solid.get('enable_scalar_eq')
@@ -258,7 +258,7 @@ class SolidHandler:
         phase = self.solids_current_phase
         if phase is None:
             return
-        name = self.solids.keys()[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1] # ugh
         solid = self.solids[name]
 
         nscalar = self.project.get_value('nscalar', 0)

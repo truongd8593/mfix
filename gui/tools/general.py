@@ -20,8 +20,8 @@ log = logging.getLogger(__name__)
 from qtpy import QtGui, QtWidgets, QtCore
 
 SCRIPT_DIRECTORY = './'
-PY2 = sys.version[0] == '2'
-PY3 = sys.version[0] == '3'
+PY2 = sys.version_info.major == 2
+PY3 = sys.version_info.major == 3
 
 
 def set_script_directory(script):

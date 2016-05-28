@@ -208,7 +208,6 @@ class MfixGuiTests(TestQApplication):
                 line = line.decode(encoding='utf-8', errors='ignore')
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip()=='description':
-                    print(line)
                     self.assertEqual(kv[1].strip()[1:-1], new_description)
                     found += 1
 

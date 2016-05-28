@@ -17,6 +17,8 @@ a notification loop is possible """
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+import sys
+import traceback
 import logging
 log = logging.getLogger(__name__)
 import warnings
@@ -26,12 +28,10 @@ from constants import *
 
 from widgets.base import LineEdit # a little special handling needed
 
-from tools.general import (format_key_with_args, plural)
+from tools.general import (format_key_with_args, plural, to_text_string)
 from tools import read_burcat
 
 
-
-# --- Project Manager ---
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
 
@@ -96,6 +96,7 @@ class ProjectManager(Project):
             self.gui.print_internal("Warning: %s: %s" %
                                        (format_key_with_args(key, args), e),
                                        color='red')
+            traceback.print_exception(*sys.exc_info())
             return
 
         keytuple = tuple([key]+args)
@@ -124,6 +125,7 @@ class ProjectManager(Project):
                 #log.warn("%s: %s" % (e, ka))
                 msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
                 self.gui.print_internal(msg, color='red')
+                traceback.print_exception(*sys.exc_info())
                 raise ValueError(msg)
 
 
@@ -131,7 +133,7 @@ class ProjectManager(Project):
                                                      # validation and "saved_value"
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
-            val_str = str(updatedValue) # Just used for log message
+            val_str = to_text_string(updatedValue) # Just used for log message
             #if isinstance(updatedValue, bool):
             #    val_str = '.%s.' % val_str
 

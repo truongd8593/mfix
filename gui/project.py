@@ -56,7 +56,8 @@ log = logging.getLogger(__name__)
 # local imports
 from tools.simpleeval import simple_eval
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
-                           to_unicode_from_fs, to_fs_from_unicode, is_text_string)
+                           to_unicode_from_fs, to_fs_from_unicode,
+                           is_text_string, to_text_string)
 
 from regexes import *
 
@@ -315,26 +316,27 @@ class Keyword(object):
     __bool__ = __nonzero__ # python 3
 
     def __str__(self):
+        sval = to_text_string(self.value)
         if self.dtype == FloatExp:
-            return str(self.value)
+            return sval
         elif self.dtype == Equation:
-            return str(self.value)
+            return sval
         elif self.dtype == float:
-            return str(self.value)
+            return sval
         elif self.dtype == int:
-            return str(self.value)
+            return sval
         elif self.dtype == bool:
-            return '.True.' if self.value else '.False.'
+            return '.%s.' % sval
         elif self.dtype == str and self.value is not None:
-            if is_text_string(self.value):
-                self.value = str(self.value).replace('"', '').replace("'", '')
-            else:
-                self.value = str(self.value)
-            return ''.join(["'", str(self.value), "'"])
-        elif self.dtype == bool:
-            return ''.join([".", str(self.value), "."])
+            # this is weird, we should not be modifying self.value in a __str__ method
+            #if is_text_string(self.value):
+            #    self.value = self.value.replace('"', '').replace("'", '')
+            #else:
+            #    self.value = to_text_string(self.value)
+            sval = sval.replace('"','').replace("'",'')
+            return "'%s'" % sval
         else:
-            return str(self.value)
+            return sval
 
     def _update_dtype(self):
         # Check data type & modify if needed
@@ -349,11 +351,11 @@ class Keyword(object):
 
     def line(self):
         if len(self.args) == 0:
-            line = '  {} = {}'.format(self.key, str(self))
+            line = '  {} = {}'.format(self.key, to_text_string(self))
         else:
             line = '  {}({}) = {}'.format(self.key,
-                                          ','.join([str(x) for x in self.args]),
-                                          str(self))
+                                          ','.join([to_text_string(x) for x in self.args]),
+                                          to_text_string(self))
 
         if len(self.comment) > 0:
             line = '    !'.join([line, self.comment])
@@ -361,13 +363,13 @@ class Keyword(object):
         return line
 
     def updateValue(self, value):
-        strvalue = str(value)
-        if value is None or strvalue=='': # is this the right place to check this?
+        sval = to_text_string(value)
+        if value is None or sval=='': # is this the right place to check this?
             self.value = None
         elif self.dtype == Equation and is_text_string(value):
             self.value.eq = value
-        elif (self.dtype == float and not re_float.match(strvalue) and not re_int.match(strvalue)):
-            if re_float_exp.match(strvalue):
+        elif (self.dtype == float and not re_float.match(sval) and not re_int.match(sval)):
+            if re_float_exp.match(sval):
                 self.value = make_FloatExp(value)
             else:
                 eq = Equation(value)
@@ -382,7 +384,7 @@ class Keyword(object):
             self.value = make_FloatExp(value)
         else:
             self.value = value
-
+        # TODO> make sure we don't change to invalid type
         self._update_dtype()
 
     def lower(self):
@@ -465,11 +467,13 @@ class BC(CondBase):
         else:
             solids = []
 
-        return '\n'.join(["Boundary Condition {}: {}".format(self.ind, bctype)]
-                         + [''.join(['  ', str(key), ': ', str(value)]) for key, value in
-                            self._keyword_dict.items()] +
-                         gasSpec + solids
-                         )
+        return '\n'.join(
+            ["Boundary Condition %s: %s"%(self.ind, bctype)]
+            + [''.join(['  ', to_text_string(key), ': ', to_text_string(value)])
+               for key, value in self._keyword_dict.items()]
+            + gasSpec
+            + solids)
+
 
 
 class IC(CondBase):
@@ -1363,9 +1367,9 @@ class Project(object):
     def convertToString(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
-                yield to_fs_from_unicode(line.line() + '\n')
+                yield to_text_string(line.line() + '\n')
             else:
-                yield to_fs_from_unicode(line + '\n')
+                yield to_text_string(line + '\n')
 
         if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
             yield '\n'
@@ -1385,13 +1389,12 @@ class Project(object):
         # delimit new additions from initial file contents (comment line)
 
         last_line = None
-        with open(fname, 'w') as dat_file:
+        with open(fname, 'wb') as dat_file:
             for line in self.convertToString():
                 if line == last_line == '\n': # Avoid multiple blank lines
                     continue
                 last_line = line
-
-                dat_file.write(line)
+                dat_file.write(to_fs_from_unicode(line))
 
     def reset(self):
         self.dat_file = None

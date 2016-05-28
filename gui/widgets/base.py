@@ -102,7 +102,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
     @property
     def value(self):
-        text = str(self.text()).strip()
+        text = self.text().strip()
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:
@@ -155,7 +155,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         if new_value is not None:
             self.saved_value = new_value
 
-        sval = str(new_value).strip()
+        sval = to_text_string(new_value).strip()
         while sval.startswith("@(") and sval.endswith(")"):
             sval = sval[2:-1]
 
@@ -205,15 +205,13 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
 
     @property
     def value(self):
+        sval = to_text_string(self.currentText())
         if self.dtype == int: # Labeled string entries, just return the number
-            return int(str(self.currentText()).split('-')[0].strip())
+            return int(sval.split('-')[0].strip())
         elif self.dtype == bool:
-            if str(self.currentText()).lower() == 'true':
-                return True
-            else:
-                return False
+            return sval.lower() == 'true'
         else:
-            return str(self.currentText())
+            return sval
 
     def updateValue(self, key, new_value, args=None):
         assert not isinstance(new_value, Keyword) # value should not be kw
@@ -224,10 +222,10 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
 
     def setCurrentText(self, new_value):
         for itm in range(self.count()):
-            if self.dtype == str and str(new_value).lower() == str(self.itemText(itm)).lower():
+            if self.dtype == str and to_text_string(new_value).lower() == to_text_string(self.itemText(itm)).lower():
                 self.setCurrentIndex(itm)
                 break
-            elif self.dtype == int and int(new_value) == int(str(self.itemText(itm)).split('-')[0].strip()):
+            elif self.dtype == int and int(new_value) == int(to_text_string(self.itemText(itm)).split('-')[0].strip()):
                 self.setCurrentIndex(itm)
                 break
         else:
@@ -764,7 +762,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             elif isinstance(value, QtGui.QPixmap):
                 value = None
             else:
-                value = str(value)
+                value = to_text_string(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
@@ -883,7 +881,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             if value is None:
                 value = None
             else:
-                value = str(value)
+                value = to_text_string(value)
             return value
         elif role == QtCore.Qt.EditRole:
             return value
