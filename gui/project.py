@@ -55,6 +55,7 @@ log = logging.getLogger(__name__)
 
 # local imports
 from tools.simpleeval import simple_eval
+from tools.comparable import Comparable
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string)
@@ -266,7 +267,7 @@ def format_key_with_args(key, args=None):
         return str(key)
 
 
-class Keyword(object):
+class Keyword(Comparable):
     def __init__(self, key, val, comment='', dtype=None, args=None):
 
         self.key = key
@@ -293,13 +294,8 @@ class Keyword(object):
     def __int__(self):
         return int(self.value)
 
-    def __cmp__(self, other):
-        if self.value == other:
-            return 0
-        elif self.value > other:
-            return 1
-        elif self.value < other:
-            return -1
+    def _cmpkey(self):
+        return self.value
 
     def __nonzero__(self): # python 2
         if self.dtype == bool:
@@ -308,7 +304,7 @@ class Keyword(object):
             return False
         elif self.value == '':
             return False
-        elif math.isnan(float(self)):
+        elif math.isnan(float(self)): # Failed expression evaluation.
             return False
         else:
             return True
