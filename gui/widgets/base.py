@@ -9,8 +9,6 @@ import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui
 
-# debug
-from project import debug_trace
 
 import logging
 log = logging.getLogger(__name__)
