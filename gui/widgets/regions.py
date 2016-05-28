@@ -324,9 +324,9 @@ class RegionsWidget(QtWidgets.QWidget):
                 if key == 'visible':
                     pass
                 elif key == 'color':
-                    data['regions'][region] = self.tablewidget_regions.value[region][key].color
+                    data['regions'][region][key] = self.tablewidget_regions.value[region][key].color
                 else:
-                    data['regions'][region] = self.tablewidget_regions.value[region][key]
+                    data['regions'][region][key] = self.tablewidget_regions.value[region][key]
         return json.dumps(data)
 
     def regions_from_str(self, string):
