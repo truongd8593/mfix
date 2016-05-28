@@ -326,7 +326,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_run_options()
 
         # Reset everything to default values
-        self.reset()
+        self.reset() # Clear command_output too?
+        self.last_line_blank = False
         # end of __init__ (hooray!)
 
 
@@ -1137,6 +1138,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def print_internal(self, line, color=None, font=None): # basically same as handle_line
         qtextbrowser = self.ui.command_output
+        if not line.strip():
+            if self.last_line_blank:
+                return
+            self.last_line_blank=True
+        else:
+            self.last_line_blank=False
+
         if not line.endswith('\n'):
             line += '\n'
         lower = line.lower()
