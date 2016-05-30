@@ -63,10 +63,11 @@ class MfixGuiTests(TestQApplication):
         self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)
         self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
+        self.runname = 'DES_FB1'
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx', 'MFIX.STOP',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', '%s*' % self.runname, '*.mfx', 'MFIX.STOP',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
@@ -95,13 +96,13 @@ class MfixGuiTests(TestQApplication):
         QtCore.QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_open, Qt.LeftButton)
 
-        self.assertEqual("DES_FB1", self.mfix.ui.general.lineedit_keyword_run_name.text())
-        mfxfile = os.path.join(self.rundir, 'DES_FB1.mfx')
+        self.assertEqual(self.runname, self.mfix.ui.general.lineedit_keyword_run_name.text())
+        mfxfile = os.path.join(self.rundir, '%s.mfx' % self.runname)
         self.assertTrue(os.path.exists(mfxfile))
 
     def tearDown(self):
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx', 'MFIX.STOP',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', '%s*' % self.runname, '*.mfx', 'MFIX.STOP',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
@@ -123,7 +124,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_save_as(self):
         #http://stackoverflow.com/questions/16536286/qt-ui-testing-how-to-simulate-a-click-on-a-qmenubar-item-using-qtest
-        newname = 'DES_FB1_new_name'
+        newname = '%s_new_name' % self.runname
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
@@ -166,7 +167,7 @@ class MfixGuiTests(TestQApplication):
         # stop mfix
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
 
-        logfile = os.path.join(self.rundir, 'DES_FB1.LOG')
+        logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
 
     def test_description_ascii(self):
@@ -183,7 +184,7 @@ class MfixGuiTests(TestQApplication):
         new_description = description + new_text
 
         found = 0
-        with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
+        with open(os.path.join(self.rundir,'%s.mfx' % self.runname)) as ff:
             for line in ff.readlines():
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip()=='description':
@@ -211,7 +212,7 @@ class MfixGuiTests(TestQApplication):
         new_description = description + new_text
 
         found = 0
-        with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
+        with open(os.path.join(self.rundir,'%s.mfx' % self.runname)) as ff:
             for line in ff.readlines():
                 line = to_unicode_from_fs(line)
                 kv = line.split('=')
@@ -231,7 +232,7 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.toolbutton_save, Qt.LeftButton)
 
         found = 0
-        with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
+        with open(os.path.join(self.rundir,'%s.mfx' % self.runname)) as ff:
             for line in ff.readlines():
                 kv = line.split('=')
                 if len(kv) > 1 and kv[0].strip() == 'tstop':
