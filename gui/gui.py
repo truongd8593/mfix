@@ -4,7 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import copy
 import getopt
 import logging
 import os
@@ -13,7 +12,6 @@ import signal
 import sys
 import time
 import traceback
-from copy import deepcopy
 from collections import OrderedDict
 
 # Initialize logger early
@@ -30,7 +28,7 @@ except ImportError:
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import Qt, QSettings, QUrl, pyqtSignal
+from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, QUrl, QUrl, pyqtSignal
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
@@ -46,8 +44,8 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
-from mfix_threads import MfixJobManager, MonitorThread
-message_normal = 0 # these are in MonitorThread, put in a common module
+from mfix_threads import MfixJobManager, Monitor
+message_normal = 0 # these are in Monitor, put in a common module
 message_hi_vis = 1
 message_error = 2
 message_stdout = 3
@@ -62,7 +60,7 @@ from widgets.species_popup import SpeciesPopup
 from fluid_handler import FluidHandler
 from solid_handler import SolidHandler
 
-from tools.general import (make_callback, get_icon,
+from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
                            format_key_with_args, to_unicode_from_fs,
                            set_item_noedit, get_selected_row)
@@ -182,7 +180,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                     try:
                         path = os.path.join(uifiles, name+'.ui')
                         uic.loadUi(path, widget)
-                    except Exception as e:
+                    except Exception:
                         # report which ui file it was, otherwise stack trace
                         # is too generic to be helpful.
                         print("Error loading", path)
@@ -288,19 +286,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # other messages that may occur during this __init__
         self.print_welcome()
 
-        # --- Threads ---
         self.job_manager = MfixJobManager(self)
-        self.monitor_thread = MonitorThread(self, name="monitor thread")
+        self.monitor = Monitor(self)
+        self.rundir_watcher = QFileSystemWatcher()
+        self.exe_watcher = QFileSystemWatcher()
 
         ## Run signals
         self.stdout_signal.connect(self.print_out)
         self.stderr_signal.connect(self.print_err)
         self.update_run_options_signal.connect(self.update_run_options)
-
-        ## Monitor thread
-        self.monitor_thread.executables_changed.connect(self.update_run_options)
-        self.monitor_thread.outputs_changed.connect(self.update_run_options)
-        self.monitor_thread.start()
 
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
@@ -429,11 +423,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # TODO: set this in __init__ or another early setup method
         # assemble list of available executables
-        output = self.monitor_thread.get_executables()
-        self.mfix_available = bool(output)
+        self.mfix_available = bool(self.monitor.get_executables())
 
         running = self.job_manager.is_running()
-        res_file_exists = bool(self.monitor_thread.get_res())
+        res_file_exists = self.monitor.res_exists
 
         if not self.mfix_available:
             self.ui.run.spinbox_mfix_executables_warning.setVisible(True)
@@ -498,9 +491,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         current_selection = self.ui.run.spinbox_mfix_executables.currentText()
         self.ui.run.spinbox_mfix_executables.clear()
-        for executable in output:
+        for executable in self.monitor.get_executables():
             self.ui.run.spinbox_mfix_executables.addItem(executable)
-        if current_selection in self.monitor_thread.executables:
+        if current_selection in self.monitor.executables:
             self.ui.run.spinbox_mfix_executables.setEditText(current_selection)
         self.handle_select_executable()
 
@@ -519,19 +512,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not self.confirm_close():
             event.ignore()
             return
-        # cleanup threads to avoid exceptions during shutdown
-        # FIXME:  should we leave mfix running when leaving the gui?
-        for thread in (self.monitor_thread,): # residuals_thread
-            log.debug('terminating thread %s' % thread.name)
-            #FIXME:  should call 'quit' not terminate, but quit won't
-            # work with the current implementation of mfix threads (no event loop)
-            # http://doc.qt.io/qt-4.8/qthread.html#quit
-            # "This function does nothing if the thread does not have an event loop."
-            thread.terminate()
-            log.debug('thread %s terminated, calling wait' % thread.name)
-            thread.wait()
-            log.debug('thread %s, wait returns' % thread.name)
-
         event.accept()
 
     def find_navigation_tree_item(self, item_name):
@@ -1191,16 +1171,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def handle_executables_changed(self):
         self.update_run_options()
 
-    def handle_outputs_changed(self):
-        self.update_run_options()
-
     def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
         mfix_exe = self.ui.run.spinbox_mfix_executables.currentText()
         self.mfix_exe = mfix_exe
         if not mfix_exe:
             return
-        config = self.monitor_thread.executables[mfix_exe]
+        config = self.monitor.executables[mfix_exe]
         self.mfix_config = config
         self.smp_enabled = 'smp' in config
         self.dmp_enabled = 'dmp' in config
@@ -1225,7 +1202,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         :return: True for success, False for user cancel"""
 
         if not output_files:
-            output_files = self.monitor_thread.get_outputs()
+            output_files = self.monitor.get_outputs()
         if not message_text:
             message_text = 'Deleting output files %s' % '\n'.join(output_files)
 
@@ -1240,8 +1217,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             log.debug('Deleting file %s' % path)
             try:
                 os.remove(path)
-            except OSError as e:
-                msg = 'Cannot delete %s: %s' % (path, e.strerror)
+            except OSError as err:
+                msg = 'Cannot delete %s: %s' % (path, err.strerror)
                 self.print_internal("Warning: %s" % msg, color='red')
                 log.warn(msg)
                 self.message(text=msg,
@@ -1257,9 +1234,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return self.run_mfix()
 
     def run_mfix(self):
-        output_files = self.monitor_thread.get_outputs()
+        output_files = self.monitor.get_outputs()
         if output_files:
-            if self.monitor_thread.get_res():
+            if self.monitor.res_exists:
                 return self.resume_mfix()
             if not self.remove_output_files(output_files):
                 log.info('output files exist and run was cancelled')
@@ -1279,7 +1256,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def restart_mfix(self):
         """Restart MFIX. This will remove previous output and start a new run."""
-        output_files = self.monitor_thread.get_outputs()
+        output_files = self.monitor.get_outputs()
         if len(output_files) > 0:
             message = "Delete all output and resume files?"
             if not self.remove_output_files(output_files, message):
@@ -1303,11 +1280,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.update_keyword('run_type', 'restart_1')
         else:
             # TODO: is it correct to remove all but *.RES ?
-            spx_files = self.monitor_thread.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
+            spx_files = self.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
             if not self.remove_output_files(spx_files):
-                # pass here reproduces QThread::wait error somewhat reliably
                 log.debug('SP* files exist and run was cancelled')
-                #pass
                 return
             self.update_keyword('run_type', 'restart_2')
         #FIXME need to catch/report errors, writeDatFile is too low-level
@@ -1333,7 +1308,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
                 # adjust environment for to-be called process
                 # assume user knows what they are doing and don't override vars
-                if not "OMP_NUM_THREADS" in environ:
+                if not "OMP_NUM_THREADS" in os.environ:
                     os.environ["OMP_NUM_THREADS"] = str(np)
                 log.info('Will start mpirun with OMP_NUM_THREADS=%d' % np)
 
@@ -1389,14 +1364,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def export_project(self):
         # TODO: combine export_project and save_as
-        if self.monitor_thread.get_outputs(["*.SP?"]):
+        if self.monitor.get_outputs(["*.SP?"]):
             # TODO: copy SPx files - prompt user for confirmation
             pass
-        output_files = self.monitor_thread.get_outputs(["*.RES", "*.STL"])
+        output_files = self.monitor.get_outputs(["*.RES", "*.STL"])
         project_file = self.get_save_filename()
         if not project_file:
             return
-        project_dir = os.path.dirname(project_file)
+        project_dir = self.get_project_dir()
         if not self.check_writable(project_dir):
             return
         for fn in output_files:
@@ -1682,8 +1657,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 try:
                     self.project.writeDatFile(project_file)
                     self.print_internal(save_msg, color='blue')
-                except Exception as e:
-                    msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                except Exception as ex:
+                    msg = 'Failed to save %s: %s: %s' % (project_file, ex.__class__.__name__, ex)
                     self.print_internal("Error: %s" % msg, color='red')
                     self.message(title='Error',
                                  icon='error',
@@ -1701,6 +1676,29 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
         self.update_source_view()
+
+        def check_rundir():
+            self.monitor.res_exists = bool(self.monitor.get_res())
+            self.monitor.outputs = self.monitor.get_outputs()
+            self.update_run_options()
+        for path in self.rundir_watcher.directories():
+            self.rundir_watcher.removePath(path)
+        self.rundir_watcher.addPath(self.get_project_dir())
+        self.rundir_watcher.directoryChanged.connect(check_rundir)
+
+        def update_exe():
+            self.monitor._update_executables()
+            self.update_run_options()
+        PATH = os.environ.get("PATH")
+        if PATH:
+            dirs = set(PATH.split(os.pathsep))
+        else:
+            dirs = set()
+        for directory in dirs:
+            self.exe_watcher.addPath(directory)
+        self.exe_watcher.addPath(os.path.join(get_mfix_home(), 'build'))
+        self.exe_watcher.addPath(self.get_project_dir())
+        self.exe_watcher.directoryChanged.connect(update_exe)
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1816,7 +1814,6 @@ def main(args):
             log_level = arg
         elif opt in ("-h", "--help"):
             Usage(name)
-            sys.exit(0)
         elif opt in ("-q", "--quit"):
             quit_after_loading = True
         elif opt in ("-n", "--new"):
@@ -1851,9 +1848,9 @@ def main(args):
     else:
         # disable all widgets except New and Open
         mfix.ui.stackedwidget_mode.setEnabled(False)
-        for x in widget_iter(mfix.ui.frame_menu_bar):
-            if x.objectName().startswith("toolbutton_"):
-                x.setEnabled(False)
+        for widget in widget_iter(mfix.ui.frame_menu_bar):
+            if widget.objectName().startswith("toolbutton_"):
+                widget.setEnabled(False)
         mfix.ui.toolbutton_new.setEnabled(True)
         mfix.ui.toolbutton_open.setEnabled(True)
 

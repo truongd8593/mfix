@@ -1,16 +1,12 @@
-"""Threads supporting MFIX-GUI"""
+"""classes to manage external MFIX process and monitor files"""
 
 import glob
 import logging
 import os
 import subprocess
-import time
-
-import logging
-log=logging.getLogger(__name__)
 
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import QThread, pyqtSignal, QProcess, QTimer
+from qtpy.QtCore import pyqtSignal, QProcess, QTimer
 
 try:
     # For Python 3.0 and later
@@ -22,12 +18,14 @@ except ImportError:
 from tools.general import get_mfix_home
 
 
-class MfixJobManager():
+class MfixJobManager(object):
+    """class for monitoring MFIX jobs"""
 
     def __init__(self, parent):
         self.parent = parent
         self.cmd = None
         self.cwd = None
+        self.env = None
         self.mfixproc = None
 
     def is_running(self):
@@ -82,6 +80,7 @@ class MfixJobManager():
         def slot_start():
             self.parent.update_run_options_signal.emit()
             self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
+            log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
         self.mfixproc.started.connect(slot_start)
@@ -103,24 +102,25 @@ class MfixJobManager():
         self.mfixproc.start(self.cmd[0], self.cmd[1:])
 
 
-class MonitorThread(QThread):
+class Monitor(object):
+    """class for monitoring available MFIX executables and output files"""
 
-    executables_changed = pyqtSignal()
-    outputs_changed = pyqtSignal()
-
-    def __init__(self, parent, name="MonitorThread"):
-        QThread.__init__(self)
+    def __init__(self, parent):
         self.parent = parent
-        self.stopped = False # see comments above
-        self.mfix_home = get_mfix_home()
         self.cache = {}
-        self.executables = self.get_executables()
-        self.outputs = self.get_outputs()
-        self.name = name
+        self.executables = None
+        self.outputs = None
+        self.res_exists = False
+        self._update_executables()
 
     def get_executables(self):
         """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
+
+        return self.executables
+
+    def _update_executables(self):
+        """update self.executables"""
 
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
@@ -152,7 +152,7 @@ class MonitorThread(QThread):
             dirs = set()
 
         # Look in subdirs of build dir
-        build_dir = os.path.join(self.mfix_home,'build')
+        build_dir = os.path.join(get_mfix_home(), 'build')
         if os.path.exists(build_dir):
             for subdir in os.listdir(build_dir):
                 dirs.add(os.path.join(build_dir, subdir, 'build-aux'))
@@ -162,7 +162,7 @@ class MonitorThread(QThread):
         if project_dir:
             dirs.add(project_dir)
         # Check mfix home
-        dirs.add(self.mfix_home)
+        dirs.add(get_mfix_home())
 
         # Now look for mfix/pymfix in these dirs
         for dir_ in dirs:
@@ -173,12 +173,12 @@ class MonitorThread(QThread):
                     log.debug("found %s executable in %s" % (name, dir_))
                     config_options[exe] = str(mfix_print_flags(exe))
 
-        return config_options
+        self.executables = config_options
 
     def get_res(self):
         if not self.parent.get_project_dir():
             return
-        pattern = os.path.join(self.parent.get_project_dir(),'*.RES')
+        pattern = os.path.join(self.parent.get_project_dir(), '*.RES')
         return glob.glob(pattern)
 
     def get_outputs(self, patterns=[]):
@@ -194,34 +194,19 @@ class MonitorThread(QThread):
             outputs.extend(glob.glob(os.path.join(project_dir, pat)))
         return outputs
 
-    def run(self):
-        self.outputs_changed.emit()
-        self.executables_changed.emit()
-        while True:
-            tmp = self.get_outputs()
-            if tmp != self.outputs:
-                self.outputs = tmp
-                self.outputs_changed.emit()
-            tmp = self.get_executables()
-            if tmp != self.executables:
-                self.executables = tmp
-                self.executables_changed.emit()
-            self.sleep(1) # don't use time.sleep in qthread
+# class UpdateResidualsThread:
 
+#     residuals_changed = pyqtSignal(object)
 
-class UpdateResidualsThread(QThread):
-
-    residuals_changed = pyqtSignal(object)
-
-    def run(self):
-        while True:
-            self.job_done = False
-            try:
-                self.residuals = urlopen('http://localhost:5000/residuals').read()
-            except Exception:
-                log = logging.getLogger(__name__)
-                log.debug("cannot retrieve residuals; pymfix process must have terminated.")
-                self.job_done = True
-                return
-            self.sleep(1)
-            self.residuals_changed.emit('update')
+#     def run(self):
+#         while True:
+#             self.job_done = False
+#             try:
+#                 self.residuals = urlopen('http://localhost:5000/residuals').read()
+#             except Exception:
+#                 log = logging.getLogger(__name__)
+#                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")
+#                 self.job_done = True
+#                 return
+#             self.sleep(1)
+#             self.residuals_changed.emit('update')

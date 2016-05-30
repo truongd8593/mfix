@@ -5,15 +5,13 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from copy import deepcopy
 
 #import Qt
-from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import (QObject, QThread, pyqtSignal, QUrl, QSettings,
-                         Qt)
+from qtpy import QtWidgets, PYQT5
 
 #local imports
 from constants import *
 from tools.general import set_item_noedit, get_selected_row
 
-class FluidHandler:
+class FluidHandler(object):
     # Defaults
     def init_fluid_default_models(self):
         self.fluid_density_model = CONSTANT
