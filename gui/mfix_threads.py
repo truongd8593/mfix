@@ -1,21 +1,21 @@
 """classes to manage external MFIX process and monitor files"""
 
 import glob
+import json
 import logging
 import os
 import subprocess
 
-from qtpy.QtCore import QProcess, QTimer
-
-# try:
-#     # For Python 3.0 and later
-#     from urllib.request import urlopen
-# except ImportError:
-#     # Fall back to Python 2's urllib2
-#     from urllib2 import urlopen
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 from tools.general import get_mfix_home
 
+from qtpy.QtCore import QProcess, QTimer
 
 class MfixJobManager(object):
     """class for monitoring MFIX jobs"""
@@ -25,11 +25,20 @@ class MfixJobManager(object):
         self.cmd = None
         self.cwd = None
         self.env = None
+        self.is_pymfix = False
         self.mfixproc = None
+        self.status = None
+        self.timer = None
 
     def is_running(self):
         """indicate whether an MFIX job is running"""
         return self.mfixproc is not None
+
+    def is_paused(self):
+        """indicate whether pymfix is paused"""
+        if not self.is_pymfix:
+            return False
+        return getattr(self.status, 'paused', False)
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
@@ -65,10 +74,10 @@ class MfixJobManager(object):
             self.mfixproc = None
         QTimer.singleShot(100, force_kill)
 
-    def start_command(self, cmd, cwd, env):
+    def start_command(self, is_pymfix, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
-        self.cmd, self.cwd, self.env = cmd, cwd, env
+        self.is_pymfix, self.cmd, self.cwd, self.env = is_pymfix, cmd, cwd, env
 
         self.mfixproc = QProcess()
         self.mfixproc.setWorkingDirectory(self.cwd)
@@ -84,6 +93,13 @@ class MfixJobManager(object):
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
+            if is_pymfix:
+                self.timer = QTimer()
+                self.timer.setInterval(1000)
+                self.timer.timeout.connect(self.update_status)
+                self.timer.start()
+                self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
+
         self.mfixproc.started.connect(slot_start)
 
         def slot_read_out():
@@ -99,11 +115,25 @@ class MfixJobManager(object):
         def slot_finish(status):
             self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
+            if is_pymfix:
+                self.timer.stop()
+                self.timer = None
             self.parent.update_run_options_signal.emit()
         self.mfixproc.finished.connect(slot_finish)
 
         self.mfixproc.start(self.cmd[0], self.cmd[1:])
 
+    def update_status(self):
+        """update the status of  the pymfix monitor"""
+        status_str = urlopen('http://localhost:5000/status').read()
+        log = logging.getLogger(__name__)
+        log.debug("status_str is %s", status_str)
+        self.status = json.loads(status_str)
+        log.debug("status is %s", self.status)
+        # FIXME: print JSON for now, plot it later
+        import pprint
+        status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
+        self.parent.ui.residuals.setText(status_str)
 
 class Monitor(object):
     """class for monitoring available MFIX executables and output files"""
@@ -196,20 +226,3 @@ class Monitor(object):
         for pat in patterns:
             outputs.extend(glob.glob(os.path.join(project_dir, pat)))
         return outputs
-
-# class UpdateResidualsThread:
-
-#     residuals_changed = pyqtSignal(object)
-
-#     def run(self):
-#         while True:
-#             self.job_done = False
-#             try:
-#                 self.residuals = urlopen('http://localhost:5000/residuals').read()
-#             except Exception:
-#                 log = logging.getLogger(__name__)
-#                 log.debug("cannot retrieve residuals; pymfix process must have terminated.")
-#                 self.job_done = True
-#                 return
-#             self.sleep(1)
-#             self.residuals_changed.emit('update')

@@ -447,7 +447,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
 
-        self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
+        self.ui.run.button_pause_mfix.setEnabled(self.job_manager.is_paused())
 
         self.ui.general.setEnabled(not res_file_exists)
         self.ui.geometry.setEnabled(not res_file_exists)
@@ -1320,7 +1320,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 # assume user knows what they are doing and don't override vars
                 if not "OMP_NUM_THREADS" in os.environ:
                     os.environ["OMP_NUM_THREADS"] = str(np)
-                log.info('Will start mpirun with OMP_NUM_THREADS=%d' % np)
+                log.info('Will start mpirun with OMP_NUM_THREADS=%d', np)
 
             else:
                 # no dmp support
@@ -1336,6 +1336,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.print_internal(msg, color='blue')
 
         self.job_manager.start_command(
+            is_pymfix='pymfix' in mfix_exe,
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)

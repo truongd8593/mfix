@@ -32,7 +32,7 @@ FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
 FLASK_APP.config['SECRET_KEY'] = 'secret!'
 
-residuals = None
+status = None
 
 # import logging
 # log = logging.getLogger('werkzeug')
@@ -137,7 +137,10 @@ class Mfix:
         """print residuals to socketio client"""
 
         output = {}
-        output['nit'] = str(ITERATE.nit)
+        output['paused'] = bool(Mfix.mfix_stopped)
+        output['time'] = float(RUN.time)
+        output['tstop'] = float(RUN.tstop)
+        output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
             for res_id in range(len(RESIDUAL.resid_grp_string)):
@@ -148,8 +151,8 @@ class Mfix:
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
-        global residuals
-        residuals = json.dumps(output)
+        global status
+        status = json.dumps(output)
 
 
     @classmethod
@@ -480,12 +483,12 @@ def stop():
     status_code, data = Mfix.do_command("HALT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@FLASK_APP.route('/residuals', methods=['GET'])
-def get_residuals():
-    "returns current residuals"
+@FLASK_APP.route('/status', methods=['GET'])
+def get_status():
+    "returns current status: paused state, current time, and residuals"
     status_code = 200
-    global residuals
-    return 'residuals are {}'.format(residuals), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+    global status
+    return str(status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def parse_command_line_arguments():
     "handle command line arguments"
