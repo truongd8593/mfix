@@ -449,6 +449,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.ui.run.button_pause_mfix.setEnabled(self.pymfix_enabled)
 
+        self.ui.general.setEnabled(not res_file_exists)
+        self.ui.geometry.setEnabled(not res_file_exists)
+        self.ui.mesh.setEnabled(not res_file_exists)
+        self.ui.model_setup.setEnabled(not res_file_exists)
+        self.ui.solids.setEnabled(not res_file_exists)
+        self.ui.monitors.setEnabled(not res_file_exists)
+        self.ui.numerics.setEnabled(not res_file_exists)
+        self.ui.output.setEnabled(not res_file_exists)
+        self.ui.vtk.setEnabled(not res_file_exists)
+
         if running:
             self.status_message("running")
             self.ui.run.spinbox_mfix_executables.setEnabled(False)
