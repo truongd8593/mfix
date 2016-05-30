@@ -7,10 +7,8 @@ python -m unittest discover
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import fnmatch
 import glob
 import os
-import time
 #from xvfbwrapper import Xvfb
 
 from qtpy.QtTest import QTest
@@ -29,7 +27,10 @@ def dismiss():
     ''' dismiss modal QMessageBox '''
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox):
-            QTest.keyClick(widget, Qt.Key_Enter)
+            button = widget.button(QtWidgets.QMessageBox.Ok)
+            if not button:
+                button = widget.escapeButton()
+            QTest.mouseClick(button, Qt.LeftButton)
 
 
 class MfixGuiTests(TestQApplication):
@@ -39,9 +40,11 @@ class MfixGuiTests(TestQApplication):
         """find all mfix and pymfix executables"""
         matches = []
         patterns = ('mfix', 'pymfix')
-        for paths in [glob.glob(os.path.join(self.mfix_home, 'build', '*', 'build-aux', pattern)) for pattern in patterns]:
-            for path in paths:
-                matches.append(path)
+        for pattern in patterns:
+            wildcard = os.path.join(self.mfix_home, 'build', '*', 'build-aux', pattern)
+            for paths in glob.glob(wildcard):
+                for path in paths:
+                    matches.append(path)
         for path in os.environ['PATH'].split(os.pathsep):
             for pattern in patterns:
                 exe = os.path.join(path, pattern)
@@ -63,7 +66,7 @@ class MfixGuiTests(TestQApplication):
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx', 'MFIX.STOP',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
@@ -98,7 +101,7 @@ class MfixGuiTests(TestQApplication):
 
     def tearDown(self):
         patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx',
+            '*.LOG', '*.OUT', '*.RES', '*.SP?', 'DES_FB1*', '*.mfx', 'MFIX.STOP',
             '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
         for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
             for path in paths:
@@ -111,8 +114,8 @@ class MfixGuiTests(TestQApplication):
 
     def get_tree_item(self, name):
         flags = Qt.MatchFixedString | Qt.MatchRecursive
-        clist =  self.mfix.ui.treewidget_model_navigation.findItems(name, flags, 0)
-        assert len(clist) ==1
+        clist = self.mfix.ui.treewidget_model_navigation.findItems(name, flags, 0)
+        assert len(clist) == 1
         return clist[0]
 
     def open_tree_item(self, name):
@@ -141,14 +144,17 @@ class MfixGuiTests(TestQApplication):
 
         # start run
         QTest.mouseClick(self.mfix.ui.toolbutton_run_stop_mfix, Qt.LeftButton)
-        time.sleep(1)
+        QTest.qWait(1000)
 
         # during running
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Stop")
 
         # stop run
+        QtCore.QTimer.singleShot(100, dismiss)
+        QtCore.QTimer.singleShot(1000, dismiss)
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
+        QTest.qWait(1000)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Resume")
 
@@ -228,7 +234,7 @@ class MfixGuiTests(TestQApplication):
         with open(os.path.join(self.rundir,'DES_FB1.mfx')) as ff:
             for line in ff.readlines():
                 kv = line.split('=')
-                if len(kv) > 1 and kv[0].strip()=='tstop':
+                if len(kv) > 1 and kv[0].strip() == 'tstop':
                     self.assertAlmostEqual(float(kv[1]), new_tstop)
                     found += 1
 

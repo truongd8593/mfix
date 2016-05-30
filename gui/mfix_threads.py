@@ -5,15 +5,14 @@ import logging
 import os
 import subprocess
 
-from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import pyqtSignal, QProcess, QTimer
+from qtpy.QtCore import QProcess, QTimer
 
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
+# try:
+#     # For Python 3.0 and later
+#     from urllib.request import urlopen
+# except ImportError:
+#     # Fall back to Python 2's urllib2
+#     from urllib2 import urlopen
 
 from tools.general import get_mfix_home
 
@@ -50,17 +49,19 @@ class MfixJobManager(object):
             if confirm != 'ok':
                 return
 
+            mfixproc = self.mfixproc
+            if not mfixproc:
+                return
             try:
-                self.mfixproc.terminate()
+                mfixproc.terminate()
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            self.parent.stdout_signal.emit("Terminating MFIX process (pid %s)" % self.mfixproc.pid())
+            self.parent.stdout_signal.emit("Terminating MFIX (pid %s)" % mfixproc.pid())
 
             # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
             # os.waitpid has a nohang option, but it's not available on Windows
-            if self.mfixproc:
-                self.mfixproc.waitForFinished() # FIXME timeout
+            mfixproc.waitForFinished() # FIXME timeout
             self.mfixproc = None
         QTimer.singleShot(100, force_kill)
 
@@ -81,7 +82,7 @@ class MfixJobManager(object):
             self.parent.update_run_options_signal.emit()
             self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
             log = logging.getLogger(__name__)
-            log.debug("Full MFIX startup parameters: %s" % ' '.join(self.cmd))
+            log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
         self.mfixproc.started.connect(slot_start)
 
@@ -170,7 +171,7 @@ class Monitor(object):
                 exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
                     log = logging.getLogger(__name__)
-                    log.debug("found %s executable in %s" % (name, dir_))
+                    log.debug("found %s executable in %s", name, dir_)
                     config_options[exe] = str(mfix_print_flags(exe))
 
         self.executables = config_options
