@@ -503,7 +503,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         for executable in self.monitor.get_executables():
             cb.addItem(executable)
         if current_selection in self.monitor.executables:
-            cb.setEditText(current_selection)
+            cb.setEditText(current_selection) #?? XX FIXME
 
 
 
