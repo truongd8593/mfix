@@ -632,12 +632,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                      ):
             item.setEnabled(state)
 
-        # TODO: these should probably be lineEdits not spinboxes
-        spinbox = ui.spinbox_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
+        lineedit = ui.lineedit_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
         if state:
-            spinbox.setEnabled(self.fluid_specific_heat_model == CONSTANT)
+            lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
         else:
-            spinbox.setEnabled(False)
+            lineedit.setEnabled(False)
 
 
     def set_subgrid_model(self, index):

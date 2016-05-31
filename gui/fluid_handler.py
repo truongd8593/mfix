@@ -28,11 +28,11 @@ class FluidHandler(object):
                      # more ?
                      ):
             item.setEnabled(state)
-        spinbox = ui.spinbox_keyword_dif_g0 # dif_g0 == diffusion coeff model
+        lineedit = ui.lineedit_keyword_dif_g0 # dif_g0 == diffusion coeff model
         if state:
-            spinbox.setEnabled(self.fluid_diffusion_model == CONSTANT)
+            lineedit.setEnabled(self.fluid_diffusion_model == CONSTANT)
         else:
-            spinbox.setEnabled(False)
+            lineedit.setEnabled(False)
 
     def enable_fluid_scalar_eq(self, state):
         spinbox = self.ui.spinbox_fluid_nscalar_eq
@@ -69,14 +69,14 @@ class FluidHandler(object):
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
 
-                # Enable spinbox for constant model
+                # Enable lineedit for constant model
                 key_g0 = key + "_g0"
                 key_usr = "usr_" + key + "g"
-                spinbox = getattr(self.ui, 'spinbox_keyword_%s' % key_g0)
-                spinbox.setEnabled(model==CONSTANT)
+                lineedit = getattr(self.ui, 'lineedit_keyword_%s' % key_g0)
+                lineedit.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
-                    value = spinbox.value() # Possibly re-enabled gui item
+                    value = lineedit.value # Possibly re-enabled gui item
                     if self.project.get_value(key_g0) != value:
                         self.set_keyword(key_g0, value) # Restore keyword value
                 elif model == UDF:
@@ -115,11 +115,11 @@ class FluidHandler(object):
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
-        # Enable spinbox for constant mol_weight model
-        spinbox = self.ui.spinbox_keyword_mw_avg
-        spinbox.setEnabled(model==CONSTANT)
+        # Enable lineedit for constant mol_weight model
+        lineedit = self.ui.lineedit_keyword_mw_avg
+        lineedit.setEnabled(model==CONSTANT)
         if model == CONSTANT:
-            value = spinbox.value() # Possibly re-enabled gui item
+            value = lineedit.value # Possibly re-enabled gui item
             if self.project.get_value("mw_avg") != value:
                 self.set_keyword("mw_avg", value) # Restore keyword value
         else: # Mixture

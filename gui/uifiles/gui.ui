@@ -802,13 +802,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="0" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_ro_g0">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_ro_g0">
                        </widget>
                       </item>
                       <item row="0" column="3">
@@ -852,13 +846,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_mu_g0">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_mu_g0">
                        </widget>
                       </item>
                       <item row="1" column="3">
@@ -895,13 +883,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="2" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_mw_avg">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_mw_avg">
                        </widget>
                       </item>
                       <item row="2" column="3">
@@ -943,13 +925,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="3" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_cp_g0">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_cp_g0">
                        </widget>
                       </item>
                       <item row="3" column="3">
@@ -994,13 +970,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="4" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_k_g0">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_k_g0">
                        </widget>
                       </item>
                       <item row="4" column="3">
@@ -1045,13 +1015,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="5" column="2">
-                       <widget class="DoubleSpinBox" name="spinbox_keyword_dif_g0">
-                        <property name="decimals">
-                         <number>4</number>
-                        </property>
-                        <property name="singleStep">
-                         <double>0.001000000000000</double>
-                        </property>
+                       <widget class="LineEdit" name="lineedit_keyword_dif_g0">
                        </widget>
                       </item>
                       <item row="5" column="3">
