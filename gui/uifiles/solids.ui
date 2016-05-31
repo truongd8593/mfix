@@ -1199,7 +1199,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="9" column="5">
-            <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_diffuse_width"/>
+            <widget class="LineEdit" name="lineedit_keyword_des_diffuse_width"/>
            </item>
            <item row="9" column="6">
             <widget class="QLabel" name="label_182">
@@ -1232,7 +1232,7 @@ background-color:transparent;
               </widget>
              </item>
              <item row="4" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_etat_w_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac_3"/>
              </item>
              <item row="6" column="0">
               <widget class="QLabel" name="label_175">
@@ -1242,20 +1242,17 @@ background-color:transparent;
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_etat_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_fac_3"/>
              </item>
              <item row="2" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_kn_3">
-               <property name="maximum">
-                <double>1000000000.000000000000000</double>
-               </property>
+              <widget class="LineEdit" name="lineedit_keyword_kn_3">
               </widget>
              </item>
              <item row="3" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_kt_w_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kt_w_fac_3"/>
              </item>
              <item row="1" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_mew_w_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_mew_w_3"/>
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_176">
@@ -1265,16 +1262,13 @@ background-color:transparent;
               </widget>
              </item>
              <item row="5" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_ew_young_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_ew_young_3"/>
              </item>
              <item row="6" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_vw_poisson_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_vw_poisson_3"/>
              </item>
              <item row="2" column="2">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_kn_w_3">
-               <property name="maximum">
-                <double>1000000000.000000000000000</double>
-               </property>
+              <widget class="LineEdit" name="lineedit_keyword_kn_w_3">
               </widget>
              </item>
              <item row="2" column="0">
@@ -1285,10 +1279,10 @@ background-color:transparent;
               </widget>
              </item>
              <item row="6" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_v_poisson_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_v_poisson_3"/>
              </item>
              <item row="3" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_kt_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kt_fac_3"/>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="label_178">
@@ -1298,10 +1292,10 @@ background-color:transparent;
               </widget>
              </item>
              <item row="5" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_e_young_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_e_young_3"/>
              </item>
              <item row="1" column="1">
-              <widget class="DoubleSpinBox" name="doublespinbox_keyword_mew_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_mew_3"/>
              </item>
              <item row="0" column="1">
               <widget class="QLabel" name="label_179">
