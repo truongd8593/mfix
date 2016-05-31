@@ -220,7 +220,7 @@
 
 ! Read the new data file
       WRITE(*,*)' Reading new mfix.dat ...'
-      CALL DEALLOCATE_ARRAYS
+      CALL DEALLOCATE_ARRAYS_POST
 
       CALL INIT_NAMELIST
       CALL READ_NAMELIST(1, 'mfix.dat')
