@@ -342,6 +342,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.project.reset() # Clears all keywords & collections
 
+        #reset filesystem watchers
+        for w in (self.exe_watcher, self.rundir_watcher):
+            for d in w.directories():
+                w.removePath(d)
+
         self.unsaved_flag = False
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
         #self.set_project_file(None)  - do we want to do this?
@@ -1609,7 +1614,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          default='ok')
             return
 
-        self.reset()
+        self.reset() # resets gui, keywords, file system watchers, etc
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
             self.project.load_project_file(project_file)
@@ -1683,8 +1688,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.monitor.res_exists = bool(self.monitor.get_res())
             self.monitor.outputs = self.monitor.get_outputs()
             self.update_run_options()
-        for path in self.rundir_watcher.directories():
-            self.rundir_watcher.removePath(path)
         self.rundir_watcher.addPath(self.get_project_dir())
         self.rundir_watcher.directoryChanged.connect(check_rundir)
 
