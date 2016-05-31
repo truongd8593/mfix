@@ -184,32 +184,10 @@ class Monitor(object):
 
         config_options = {}
 
-        # Check system PATH dirs first
-        PATH = os.environ.get("PATH")
-        if PATH:
-            dirs = set(PATH.split(os.pathsep))
-        else:
-            dirs = set()
-
-        # Look in subdirs of build dir
-        build_dir = os.path.join(get_mfix_home(), 'build')
-        if os.path.exists(build_dir):
-            for subdir in os.listdir(build_dir):
-                dirs.add(os.path.join(build_dir, subdir, 'build-aux'))
-
-        # Check run_dir
-        project_dir = self.parent.get_project_dir()
-        if project_dir:
-            dirs.add(project_dir)
-        # Check mfix home
-        dirs.add(get_mfix_home())
-
-        # Now look for mfix/pymfix in these dirs
-        for dir_ in dirs:
+        for dir_ in self.parent.exe_watcher.directories():
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(dir_, name))
                 if os.path.isfile(exe):
-                    log = logging.getLogger(__name__)
                     log.debug("found %s executable in %s", name, dir_)
                     config_options[exe] = str(mfix_print_flags(exe))
 
