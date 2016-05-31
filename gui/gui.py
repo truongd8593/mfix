@@ -45,11 +45,6 @@ if not PRECOMPILE_UI:
 # local imports
 from project_manager import ProjectManager
 from mfix_threads import MfixJobManager, Monitor
-message_normal = 0 # these are in Monitor, put in a common module
-message_hi_vis = 1
-message_error = 2
-message_stdout = 3
-message_stderr = 4
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table, BaseWidget)
