@@ -112,7 +112,7 @@ class MfixJobManager(object):
 
         def slot_read_err():
             err_str = bytes(self.mfixproc.readAllStandardError()).decode('utf-8')
-            self.parent.stdout_signal.emit(err_str)
+            self.parent.stderr_signal.emit(err_str)
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
