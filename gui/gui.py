@@ -1696,8 +1696,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             dirs = set(PATH.split(os.pathsep))
         else:
             dirs = set()
-        for directory in dirs:
-            self.exe_watcher.addPath(directory)
+        for d in dirs:
+            if os.path.isdir(d):
+                self.exe_watcher.addPath(d)
         self.exe_watcher.addPath(os.path.join(get_mfix_home(), 'build'))
         self.exe_watcher.addPath(self.get_project_dir())
         self.exe_watcher.directoryChanged.connect(update_exe)
