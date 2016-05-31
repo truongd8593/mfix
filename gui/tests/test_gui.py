@@ -136,8 +136,8 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(os.path.exists(newpath))
 
     def test_run(self):
-        if not self.find_exes(): # We should be able to mock this for testing
-            self.skipTest("Only valid when executables are present")
+        if not self.find_exes():
+            self.skipTest("Only valid when executables are present (install mfix!)")
 
         # before running
         self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
@@ -163,6 +163,7 @@ class MfixGuiTests(TestQApplication):
         # start resume
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        QTest.qWait(1000)
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(),"Stop")
 
         # stop mfix
