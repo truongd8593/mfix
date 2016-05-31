@@ -495,7 +495,7 @@ def parse_command_line_arguments():
     port = 5000 # Flask default
     usage_string = "Usage: pymfix [-f, --file <mfix.dat>] [-h, --help] [-p,--print-flags] [-P, --port <port>] [-s, --start] [<keyword>=<keywordvalue> ...]"
     try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hspP:", ["port=", "file=", "help", "start", "print-flags", "port"])
+        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hspP:", ["port=", "file=", "help", "start", "print-flags", "port="])
     except getopt.GetoptError:
         print(usage_string)
         sys.exit(1)
