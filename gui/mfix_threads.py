@@ -43,14 +43,13 @@ class MfixJobManager(object):
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
 
-        mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         try:
-            open(mfix_stop, "ab").close()
+            open(mfix_stop_file, "ab").close()
         except OSError:
             pass
 
         def force_kill():
-
             confirm = self.parent.message(text="MFIX is not responding. Force kill?",
                                    buttons=['ok','cancel'],
                                    default='cancel')
@@ -88,8 +87,9 @@ class MfixJobManager(object):
             pass
 
         def slot_start():
-            self.parent.update_run_options_signal.emit()
-            self.parent.stdout_signal.emit("MFIX (pid %d) is running" % self.mfixproc.pid())
+            self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
+            msg = "MFIX (pid %d) is running" % self.mfix_pid
+            self.parent.update_run_options_signal.emit(msg)
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
             log.debug("starting mfix output monitor threads")
@@ -113,12 +113,14 @@ class MfixJobManager(object):
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
-            self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
+            msg = "MFIX (pid %s) has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
+            self.mfix_pid = 0
+            #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
             if is_pymfix:
                 self.timer.stop()
                 self.timer = None
-            self.parent.update_run_options_signal.emit()
+            self.parent.update_run_options_signal.emit(msg)
         self.mfixproc.finished.connect(slot_finish)
 
         self.mfixproc.start(self.cmd[0], self.cmd[1:])

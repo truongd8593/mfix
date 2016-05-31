@@ -108,7 +108,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     stdout_signal = pyqtSignal(str)
     stderr_signal = pyqtSignal(str)
-    update_run_options_signal = pyqtSignal()
+    update_run_options_signal = pyqtSignal(str)
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -419,10 +419,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
 
-    #TODO:  split update_run_options into parts for different signals
-    def update_run_options(self):
+    def update_run_options(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
-
+        if message is not None:
+            # highlight for visibility, this is an important state chage
+            self.print_internal(message, color='blue')
         if not self.is_project_open():
             return
 
@@ -1327,7 +1328,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
 
-        msg = 'Running %s' % ' '.join(run_cmd)
+        msg = 'Starting %s' % ' '.join(run_cmd)
         #log.info(msg) # print_internal logs
         self.print_internal(msg, color='blue')
 
@@ -1349,7 +1350,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if requests:
                 requests.put(self.pymfix_url + 'start')
 
-        self.update_run_options()
+        #self.update_run_options() let job manager do this
 
     def stop_mfix(self):
         """stop locally running instance of mfix"""
@@ -1360,7 +1361,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # do something here
         self.job_manager.stop_mfix()
 
-        self.update_run_options()
+        # job manager calls upate_run_options when mfix is actually stopped
+        #self.update_run_options()
 
     #def update_residuals(self):
     #    self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
