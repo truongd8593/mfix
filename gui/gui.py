@@ -363,6 +363,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def confirm_close(self):
         # TODO : option to save
+        if self.job_manager.is_running():
+            confirm = self.message(text="Stop running job?",
+                                   buttons=['yes', 'no'],
+                                   default='no')
+            if confirm == 'no':
+                return
+            log.info("Stopping mfix at application exit")
+            self.stop_mfix()
+
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
                                    buttons=['yes', 'no'],
@@ -415,6 +424,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
 
+    # TODO:  separate this into different functions - this is called by
+    # several different signals for different reasons
     def update_run_options(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
         if message is not None:
@@ -1355,7 +1366,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # do something here
         self.job_manager.stop_mfix()
 
-        # job manager calls upate_run_options when mfix is actually stopped
+        # job manager calls update_run_options when mfix is actually stopped
         #self.update_run_options()
 
     #def update_residuals(self):
@@ -1489,7 +1500,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if self.unsaved_flag:
             title += '*'
         if self.job_manager.is_running():
-            title += ' running, process=%s' % self.job_manager.mfix_pid
+            title += ', running'
+            if self.job_manager.mfix_pid is not None:
+                title += ', process %s'% self.job_manager.mfix_pid
         self.setWindowTitle(title)
 
     def set_unsaved_flag(self):
@@ -1846,10 +1859,14 @@ def main(args):
     if project_file is None and not new_project:
         # autoload last project
         project_file = mfix.get_project_file()
-    index = mfix.ui.run.combobox_mfix_executables.findText(mfix.settings.value('mfix_exe'))
-    if index != -1:
-        mfix.ui.run.combobox_mfix_executables.setCurrentIndex(index)
-        mfix.handle_select_executable()
+    saved_exe = mfix.settings.value('mfix_exe') #
+    cb =  mfix.ui.run.combobox_mfix_executables
+    if saved_exe is not None:
+        index = cb.findText(saved_exe)
+        if index != -1:
+            cb.setCurrentIndex(index)
+
+    mfix.handle_select_executable()
 
     if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
