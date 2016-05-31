@@ -283,9 +283,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.print_welcome()
 
         self.job_manager = MfixJobManager(self)
-        self.monitor = Monitor(self)
         self.rundir_watcher = QFileSystemWatcher()
         self.exe_watcher = QFileSystemWatcher()
+        self.monitor = Monitor(self)
 
         ## Run signals
         self.stdout_signal.connect(self.print_out)
@@ -343,10 +343,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         for w in (self.exe_watcher, self.rundir_watcher):
             for d in w.directories():
                 w.removePath(d)
+        # just the system dirs, no project dirs (TODO: reevaluate $PATH)
+        PATH = os.environ.get("PATH")
+        if PATH:
+            dirs = set(PATH.split(os.pathsep))
+        else:
+            dirs = set()
+        for d in dirs:
+            if d and d != os.path.curdir and os.path.isdir(d):
+                self.exe_watcher.addPath(d)
+        self.monitor._update_executables()
+        self.update_run_options()
 
-        self.unsaved_flag = False
-        #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
-        #self.set_project_file(None)  - do we want to do this?
+        #if self.mfix_exe:
+        #    self.combobox_mfix_executables.setCurrentText(mfix_exe)
 
         self.reset_fluids()
         self.reset_solids()
@@ -361,6 +371,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 w.default()
             else:
                 pass # What to do for rest of widgets?
+
+        self.unsaved_flag = False
+        #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
+        #self.set_project_file(None)  - do we want to do this?
+
 
     def confirm_close(self):
         # TODO : option to save
@@ -427,23 +442,40 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
+    # This function is called a lot, and it does too much work each time
     def update_run_options(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
         if message is not None:
             # highlight for visibility, this is an important state chage
             self.print_internal(message, color='blue')
-        if not self.is_project_open():
-            return
-        self.update_window_title() # put run state in window titlebar
+
         # TODO: set this in __init__ or another early setup method
         # assemble list of available executables
         self.mfix_available = bool(self.monitor.get_executables())
+
+        cb = self.ui.run.combobox_mfix_executables
+        saved_selection = cb.currentText()
+        cb.clear()
+
+        for executable in self.monitor.get_executables():
+            cb.addItem(executable)
+        if saved_selection in self.monitor.executables:
+            cb.setCurrentText(saved_selection)
+            self.mfix_exe = saved_selection #??
+
+
+
+        if not self.is_project_open():
+            return
+        self.update_window_title() # put run state in window titlebar
 
         running = self.job_manager.is_running()
         res_file_exists = self.monitor.res_exists
 
         if not self.mfix_available:
+            log.debug("No mfix executables available")
             self.ui.run.label_mfix_executables_warning.setVisible(True)
+            self.ui.run.combobox_mfix_executables.setVisible(False)
             # Disable run button
             self.ui.toolbutton_run_stop_mfix.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setEnabled(False)
@@ -507,16 +539,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.run.button_run_stop_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
-
-        cb = self.ui.run.combobox_mfix_executables
-        saved_selection = cb.currentText()
-        cb.clear()
-
-        for executable in self.monitor.get_executables():
-            cb.addItem(executable)
-        if saved_selection in self.monitor.executables:
-            cb.setCurrentText(saved_selection)
-
 
 
     def print_welcome(self):
@@ -1063,16 +1085,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, line=None):
         """cleanup after animation"""
-        if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
-            widget.setCurrentIndex(to)
-            from_widget = widget.widget(from_)
-            from_widget.hide()
-            from_widget.move(0, 0)
+        try:
+            if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
+                widget.setCurrentIndex(to)
+                from_widget = widget.widget(from_)
+                from_widget.hide()
+                from_widget.move(0, 0)
 
-            if btn_layout is not None and line is not None:
-                btn_layout.addItem(btn_layout.takeAt(
-                    btn_layout.indexOf(line)), 1, to)
-
+                if btn_layout is not None and line is not None:
+                    btn_layout.addItem(btn_layout.takeAt(
+                        btn_layout.indexOf(line)), 1, to)
+        except AttributeError: # Happends during shutdown. TODO: remove this hack
+            pass
+        finally:
             self.animating = False
 
     # --- helper methods ---
@@ -1200,10 +1225,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         mfix_exe = self.ui.run.combobox_mfix_executables.currentText()
         self.mfix_exe = mfix_exe
         if not mfix_exe:
+            self.update_run_options()
             return
 
         self.settings.setValue('mfix_exe', mfix_exe)
-        config = self.monitor.executables[mfix_exe]
+        config = self.monitor.executables.get(mfix_exe)
         self.mfix_config = config
         self.smp_enabled = 'smp' in config
         self.dmp_enabled = 'dmp' in config
@@ -1318,6 +1344,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
 
+        if not self.mfix_exe:
+            log.error("MFIX not available")
+            return
+
         mfix_exe = self.mfix_exe
 
         if self.dmp_enabled:
@@ -1344,7 +1374,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.print_internal(msg, color='blue')
 
         self.job_manager.start_command(
-            is_pymfix='pymfix' in mfix_exe,
+            is_pymfix=self.pymfix_enabled,
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
@@ -1526,7 +1556,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.unsaved_flag = False
         self.update_window_title()
         self.ui.toolbutton_save.setEnabled(False)
-        self.ui.toolbutton_run_stop_mfix.setEnabled(True)
+        if self.mfix_available:
+            self.ui.toolbutton_run_stop_mfix.setEnabled(True)
 
     def check_writable(self, directory):
         """check whether directory is writable """
@@ -1711,14 +1742,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         def update_exe():
             self.monitor._update_executables()
             self.update_run_options()
-        PATH = os.environ.get("PATH")
-        if PATH:
-            dirs = set(PATH.split(os.pathsep))
-        else:
-            dirs = set()
-        for d in dirs:
-            if os.path.isdir(d):
-                self.exe_watcher.addPath(d)
+
         self.exe_watcher.addPath(os.path.join(get_mfix_home(), 'build'))
         self.exe_watcher.addPath(self.get_project_dir())
         self.exe_watcher.directoryChanged.connect(update_exe)
@@ -1871,7 +1895,8 @@ def main(args):
         index = cb.findText(saved_exe)
         if index != -1:
             cb.setCurrentIndex(index)
-    mfix.handle_select_executable()
+    mfix.mfix_exe = saved_exe
+    #mfix.handle_select_executable()
 
     if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))

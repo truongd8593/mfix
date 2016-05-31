@@ -17,6 +17,8 @@ from tools.general import get_mfix_home
 
 from qtpy.QtCore import QProcess, QTimer
 
+log = logging.getLogger(__name__)
+
 class MfixJobManager(object):
     """class for monitoring MFIX jobs"""
 
@@ -184,11 +186,11 @@ class Monitor(object):
 
         config_options = {}
 
-        for dir_ in self.parent.exe_watcher.directories():
+        for d in self.parent.exe_watcher.directories():
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
-                exe = os.path.abspath(os.path.join(dir_, name))
+                exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
-                    log.debug("found %s executable in %s", name, dir_)
+                    log.debug("found %s executable in %s", name, d)
                     config_options[exe] = str(mfix_print_flags(exe))
 
         self.executables = config_options
