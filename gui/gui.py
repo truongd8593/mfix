@@ -122,6 +122,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #self.app = app
 
         # Initialize data members
+        self.solver_name = None
         self.mfix_exe = None
         self.mfix_config = None
         self.smp_enabled = False
@@ -426,7 +427,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.print_internal(message, color='blue')
         if not self.is_project_open():
             return
-
+        self.update_window_title() # put run state in window titlebar
         # TODO: set this in __init__ or another early setup method
         # assemble list of available executables
         self.mfix_available = bool(self.monitor.get_executables())
@@ -466,7 +467,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.vtk.setEnabled(not res_file_exists)
 
         if running:
-            self.status_message("running")
+            self.status_message("running MFIX (pid %s)" % self.job_manager.mfix_pid)
             self.ui.run.spinbox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
@@ -1494,6 +1495,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             title += " - " + os.path.basename(project_file)
         if self.unsaved_flag:
             title += '*'
+        if self.job_manager.is_running():
+            title += ' running, process=%s' % self.job_manager.mfix_pid
         self.setWindowTitle(title)
 
     def set_unsaved_flag(self):
