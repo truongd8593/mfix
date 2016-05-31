@@ -496,18 +496,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
 
-        # concerned that we do this for every update ... need to allow user
-        # selection via dialog box and persist that selection between
-        # screen updates
-        self.handle_select_executable()
-
         current_selection = self.ui.run.spinbox_mfix_executables.currentText()
         self.ui.run.spinbox_mfix_executables.clear()
         for executable in self.monitor.get_executables():
             self.ui.run.spinbox_mfix_executables.addItem(executable)
         if current_selection in self.monitor.executables:
             self.ui.run.spinbox_mfix_executables.setEditText(current_selection)
-        self.handle_select_executable()
 
 
 
@@ -1188,6 +1182,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.mfix_exe = mfix_exe
         if not mfix_exe:
             return
+
+        self.settings.setValue('mfix_exe', mfix_exe)
         config = self.monitor.executables[mfix_exe]
         self.mfix_config = config
         self.smp_enabled = 'smp' in config
@@ -1848,6 +1844,10 @@ def main(args):
     if project_file is None and not new_project:
         # autoload last project
         project_file = mfix.get_project_file()
+    index = mfix.ui.run.spinbox_mfix_executables.findText(mfix.settings.value('mfix_exe'))
+    if index != -1:
+        mfix.ui.run.spinbox_mfix_executables.setCurrentIndex(index)
+        mfix.handle_select_executable()
 
     if project_file and os.path.exists(project_file):
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
