@@ -474,7 +474,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.vtk.setEnabled(not res_file_exists)
 
         if running:
-            self.status_message("running MFIX (pid %s)" % self.job_manager.mfix_pid)
+            self.status_message("running MFIX process %s" % self.job_manager.mfix_pid)
             self.ui.run.combobox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
@@ -1175,7 +1175,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
         # HACK is this going too far?  we should define message types, not infer from messages
-        if any(x in lower for x in ('error', 'warn', 'fail')):
+        if any(x in lower for x in ('error', 'warn', 'fail')) and not 'error%' in lower:
             color='red'
         if color:
             char_format.setForeground(QtGui.QColor(color))

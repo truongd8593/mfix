@@ -68,7 +68,7 @@ class MfixJobManager(object):
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            self.parent.stdout_signal.emit("Terminating MFIX (process %s)" % mfixpid)
+            self.parent.stdout_signal.emit("Terminating MFIX process %s" % mfixpid)
 
             # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
             # os.waitpid has a nohang option, but it's not available on Windows
@@ -91,7 +91,7 @@ class MfixJobManager(object):
 
         def slot_start():
             self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
-            msg = "MFIX (process %d) is running" % self.mfix_pid
+            msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
@@ -116,7 +116,7 @@ class MfixJobManager(object):
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
-            msg = "MFIX (process %s) has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
+            msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
             self.mfix_pid = 0
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
