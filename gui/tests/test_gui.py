@@ -245,10 +245,17 @@ class MfixGuiTests(TestQApplication):
 
 
     def test_run_disabled_no_exe(self):
-        if self.find_exes():
-            self.skipTest("Only valid when executables are not present")
+        saved_path = os.environ['PATH']
+        os.environ['PATH'] = ''
+        self.mfix.reset()
+
+        self.assertFalse(bool(self.find_exes()))
         self.assertFalse(self.mfix.ui.toolbutton_run_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
+        os.environ["PATH"] = saved_path
+
+    # TODO:  write more tests: tests for kill job, select different mfix exe,
+    # close window with job running, failure to start job, etc
