@@ -4,6 +4,8 @@ This file lists bug fixes committed to the 2016-1 Release, starting April, 2016.
 ==================================================================================================
 Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)    
 ==================================================================================================
-                  |                       |          |                
+  05/31/2016      | DEM mass inflow not   |          | model/des/set_bc_dem_mi.f               
+                  | correctly settting    | Moderate |
+                  | particle_state.       |          |
 ==================================================================================================
 
