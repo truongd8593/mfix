@@ -276,7 +276,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
         run.button_pause_mfix.clicked.connect(self.pause_mfix)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        run.spinbox_mfix_executables.activated.connect(self.handle_select_executable)
+        run.combobox_mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -431,7 +431,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         res_file_exists = self.monitor.res_exists
 
         if not self.mfix_available:
-            self.ui.run.spinbox_mfix_executables_warning.setVisible(True)
+            self.ui.run.label_mfix_executables_warning.setVisible(True)
             # Disable run button
             self.ui.toolbutton_run_stop_mfix.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setEnabled(False)
@@ -440,8 +440,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             #self.ui.run.button_pause_mfix.setEnabled(False)
             return
 
-        self.ui.run.spinbox_mfix_executables_warning.setVisible(False)
-        self.ui.run.spinbox_mfix_executables.setVisible(True)
+        self.ui.run.label_mfix_executables_warning.setVisible(False)
+        self.ui.run.combobox_mfix_executables.setVisible(True)
 
         self.ui.toolbutton_run_stop_mfix.setEnabled(True)
         self.ui.run.button_run_stop_mfix.setEnabled(True)
@@ -463,7 +463,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         if running:
             self.status_message("running MFIX (pid %s)" % self.job_manager.mfix_pid)
-            self.ui.run.spinbox_mfix_executables.setEnabled(False)
+            self.ui.run.combobox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
             self.ui.toolbutton_run_stop_mfix.setText("Stop")
@@ -473,8 +473,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         else:
             self.status_message("ready")
-            self.ui.run.spinbox_mfix_executables.setEnabled(True)
-            self.ui.run.openmp_threads.setEnabled(self.smp_enabled)
+            self.ui.run.combobox_mfix_executables.setEnabled(True)
+            self.ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled)
             self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
             self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
             self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
@@ -496,12 +496,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
 
-        current_selection = self.ui.run.spinbox_mfix_executables.currentText()
-        self.ui.run.spinbox_mfix_executables.clear()
+        cb = self.ui.run.combobox_mfix_executables
+        current_selection = cb.currentText()
+        cb.clear()
+
         for executable in self.monitor.get_executables():
-            self.ui.run.spinbox_mfix_executables.addItem(executable)
+            cb.addItem(executable)
         if current_selection in self.monitor.executables:
-            self.ui.run.spinbox_mfix_executables.setEditText(current_selection)
+            cb.setEditText(current_selection)
 
 
 
@@ -1178,7 +1180,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def handle_select_executable(self):
         """Enable/disable run options based on selected executable"""
-        mfix_exe = self.ui.run.spinbox_mfix_executables.currentText()
+        mfix_exe = self.ui.run.combobox_mfix_executables.currentText()
         self.mfix_exe = mfix_exe
         if not mfix_exe:
             return
@@ -1192,7 +1194,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
                                   for x in ('pymfix', 'pymfix.exe'))
 
-        self.ui.run.openmp_threads.setEnabled(self.smp_enabled)
+        self.ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled)
         if not self.dmp_enabled:
             self.ui.run.spinbox_keyword_nodesi.setValue(1)
             self.ui.run.spinbox_keyword_nodesj.setValue(1)
@@ -1313,8 +1315,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         if self.smp_enabled:
             if not "OMP_NUM_THREADS" in os.environ:
-                os.environ["OMP_NUM_THREADS"] = self.openmp_threads.value()
-            log.info('SMP enabled with OMP_NUM_THREADS=%d', self.openmp_threads.value())
+                os.environ["OMP_NUM_THREADS"] = self.spinbox_openmp_threads.value()
+            log.info('SMP enabled with OMP_NUM_THREADS=%d', self.spinbox_openmp_threads.value())
 
         project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !

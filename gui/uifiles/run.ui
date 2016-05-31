@@ -27,7 +27,7 @@
        <number>5</number>
       </property>
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="spinbox_mfix_executables_warning">
+       <widget class="QLabel" name="label_mfix_executables_warning">
         <property name="palette">
          <palette>
           <active>
@@ -546,7 +546,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QComboBox" name="spinbox_mfix_executables"/>
+       <widget class="QComboBox" name="combobox_mfix_executables"/>
       </item>
       <item row="8" column="0">
        <widget class="QLabel" name="label_130">
@@ -583,7 +583,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QSpinBox" name="openmp_threads">
+       <widget class="QSpinBox" name="spinbox_openmp_threads">
         <property name="enabled">
          <bool>false</bool>
         </property>

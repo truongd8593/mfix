@@ -36,7 +36,7 @@ def dismiss():
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
-    def find_exes(self):
+    def find_exes(self): # All of mine live in Texas
         """find all mfix and pymfix executables"""
         matches = []
         patterns = ('mfix', 'pymfix')
@@ -139,7 +139,7 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are present")
 
         # before running
-        self.assertTrue(self.mfix.ui.run.spinbox_mfix_executables.isVisibleTo(self.mfix.ui.run))
+        self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Run")
 
