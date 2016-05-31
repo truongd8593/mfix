@@ -39,17 +39,18 @@ class MfixGuiTests(TestQApplication):
     def find_exes(self): # All of mine live in Texas
         """find all mfix and pymfix executables"""
         matches = []
-        patterns = ('mfix', 'pymfix')
-        for pattern in patterns:
-            wildcard = os.path.join(self.mfix_home, 'build', '*', 'build-aux', pattern)
-            for paths in glob.glob(wildcard):
-                for path in paths:
-                    matches.append(path)
+        names = 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe'
         for path in os.environ['PATH'].split(os.pathsep):
-            for pattern in patterns:
-                exe = os.path.join(path, pattern)
+            if path=='' or path==os.path.curdir:
+                continue
+            for name in names:
+                exe = os.path.join(path, name)
                 if os.path.exists(exe):
                     matches.append(exe)
+        for name in ('mfix', 'mfix.exe', 'pymfix', 'pymfix.exe'):
+            wildcard = os.path.join(self.mfix_home, 'build',  name) # See open_project in gui.py
+            for paths in glob.glob(wildcard):
+                matches.extend(paths)
 
         return matches
 
