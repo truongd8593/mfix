@@ -314,6 +314,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # Update run options
         self.update_run_options()
+        self.handle_select_executable() # hack to make sure self.mfix_exe gets set, even if no project loaded
 
         # Reset everything to default values
         self.reset() # Clear command_output too?
@@ -1139,11 +1140,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         return result
 
-    def print_out(self, line):
-        self.print_internal(line, None, 'Courier')
+    def print_out(self, text):
+        for line in text.split('\n'):
+            self.print_internal(line, color=None, font='Courier')
 
-    def print_err(self, line):
-        self.print_internal(line, 'red', 'Courier')
+    def print_err(self, text):
+        for line in text.split('\n'):
+            self.print_internal(line, color='red', font='Courier')
 
     def print_internal(self, line, color=None, font=None):
         qtextbrowser = self.ui.command_output
@@ -1171,10 +1174,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
-        if color:
-            char_format.setForeground(QtGui.QColor(color))
+        # HACK is this going too far?  we should define message types, not infer from messages
         if any(x in lower for x in ('error', 'warn', 'fail')):
             color='red'
+        if color:
+            char_format.setForeground(QtGui.QColor(color))
         if font:
             if strikeout: # hack
                 char_format.setFontFamily("Monospace")
@@ -1186,6 +1190,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         scrollbar = qtextbrowser.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
+
+    # TODO split signals into several types
     def handle_executables_changed(self):
         self.update_run_options()
 
@@ -1865,7 +1871,6 @@ def main(args):
         index = cb.findText(saved_exe)
         if index != -1:
             cb.setCurrentIndex(index)
-
     mfix.handle_select_executable()
 
     if project_file and os.path.exists(project_file):
