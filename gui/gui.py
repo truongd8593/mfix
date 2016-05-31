@@ -474,7 +474,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.vtk.setEnabled(not res_file_exists)
 
         if running:
-            self.status_message("running MFIX process %s" % self.job_manager.mfix_pid)
+            self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             self.ui.run.combobox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
@@ -1146,7 +1146,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def print_err(self, text):
         for line in text.split('\n'):
-            self.print_internal(line, color='red', font='Courier')
+            self.print_internal(line, color='red', font='Courier') # Bold fond?
 
     def print_internal(self, line, color=None, font=None):
         qtextbrowser = self.ui.command_output
