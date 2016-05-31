@@ -497,13 +497,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.run.use_spx_checkbox.setEnabled(False)
 
         cb = self.ui.run.combobox_mfix_executables
-        current_selection = cb.currentText()
+        saved_selection = cb.currentText()
         cb.clear()
 
         for executable in self.monitor.get_executables():
             cb.addItem(executable)
-        if current_selection in self.monitor.executables:
-            cb.setEditText(current_selection) #?? XX FIXME
+        if saved_selection in self.monitor.executables:
+            cb.setCurrentText(saved_selection)
 
 
 
