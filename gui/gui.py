@@ -1846,9 +1846,9 @@ def main(args):
     if project_file is None and not new_project:
         # autoload last project
         project_file = mfix.get_project_file()
-    index = mfix.ui.run.spinbox_mfix_executables.findText(mfix.settings.value('mfix_exe'))
+    index = mfix.ui.run.combobox_mfix_executables.findText(mfix.settings.value('mfix_exe'))
     if index != -1:
-        mfix.ui.run.spinbox_mfix_executables.setCurrentIndex(index)
+        mfix.ui.run.combobox_mfix_executables.setCurrentIndex(index)
         mfix.handle_select_executable()
 
     if project_file and os.path.exists(project_file):
