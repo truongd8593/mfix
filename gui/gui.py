@@ -1304,28 +1304,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         mfix_exe = self.mfix_exe
 
-        if self.pymfix_enabled:
-            # run pymfix.  python or python3, depending on sys.executable
-            run_cmd = [sys.executable, mfix_exe]
+        if self.dmp_enabled:
+            mpiranks = (self.project.nodesi.value *
+                        self.project.nodesj.value *
+                        self.project.nodesk.value)
 
+            run_cmd = ['mpirun', '-np', str(mpiranks), mfix_exe]
         else:
-            if self.dmp_enabled:
-                np = (self.project.nodesi.value *
-                      self.project.nodesj.value *
-                      self.project.nodesk.value)
+            # no dmp support
+            run_cmd = [mfix_exe]
 
-                run_cmd = ['mpirun', '-np', str(np), mfix_exe]
-
-                # adjust environment for to-be called process
-                # assume user knows what they are doing and don't override vars
-                if not "OMP_NUM_THREADS" in os.environ:
-                    os.environ["OMP_NUM_THREADS"] = str(np)
-                log.info('Will start mpirun with OMP_NUM_THREADS=%d', np)
-
-            else:
-                # no dmp support
-                run_cmd = [mfix_exe]
-                np = 1
+        if self.smp_enabled:
+            if not "OMP_NUM_THREADS" in os.environ:
+                os.environ["OMP_NUM_THREADS"] = self.openmp_threads.value()
+            log.info('SMP enabled with OMP_NUM_THREADS=%d', self.openmp_threads.value())
 
         project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !

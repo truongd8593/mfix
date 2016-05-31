@@ -159,7 +159,8 @@ class Monitor(object):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
-            except OSError:
+            except OSError as err:
+                log.exception("could not run %s --print-flags", mfix_exe)
                 return ''
 
             cached_stat, cached_flags = cache.get(mfix_exe, (None, None))
@@ -167,6 +168,7 @@ class Monitor(object):
                 return cached_flags
 
             popen = subprocess.Popen(mfix_exe + " --print-flags",
+                                     cwd = self.parent.get_project_dir(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE,
                                      shell=True)
