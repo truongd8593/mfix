@@ -267,7 +267,7 @@ QPushButton:checked {
                  <bool>false</bool>
                 </property>
                 <property name="toolTip">
-                 <string>Reset</string>
+                 <string>Reset (delete all output files)</string>
                 </property>
                 <property name="text">
                  <string>Reset</string>
@@ -346,7 +346,7 @@ QPushButton:checked {
                  <bool>false</bool>
                 </property>
                 <property name="toolTip">
-                 <string>Run</string>
+                 <string>Run MFIX</string>
                 </property>
                 <property name="text">
                  <string>Run</string>
@@ -429,6 +429,19 @@ QPushButton:checked {
                <widget class="Line" name="line">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="5">
+               <widget class="QToolButton" name="toolbutton_stop_mfix">
+                <property name="toolTip">
+                 <string>Stop MFIX</string>
+                </property>
+                <property name="text">
+                 <string>Stop</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -802,8 +815,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="0" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_ro_g0">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_ro_g0"/>
                       </item>
                       <item row="0" column="3">
                        <widget class="QLabel" name="label_2">
@@ -846,8 +858,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="1" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_mu_g0">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_mu_g0"/>
                       </item>
                       <item row="1" column="3">
                        <widget class="QLabel" name="label_3">
@@ -883,8 +894,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="2" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_mw_avg">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_mw_avg"/>
                       </item>
                       <item row="2" column="3">
                        <widget class="QLabel" name="label_4">
@@ -925,8 +935,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="3" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_cp_g0">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_cp_g0"/>
                       </item>
                       <item row="3" column="3">
                        <widget class="QLabel" name="label_5">
@@ -970,8 +979,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="4" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_k_g0">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_k_g0"/>
                       </item>
                       <item row="4" column="3">
                        <widget class="QLabel" name="label_6">
@@ -1015,8 +1023,7 @@ background-color:white;
                        </widget>
                       </item>
                       <item row="5" column="2">
-                       <widget class="LineEdit" name="lineedit_keyword_dif_g0">
-                       </widget>
+                       <widget class="LineEdit" name="lineedit_keyword_dif_g0"/>
                       </item>
                       <item row="5" column="3">
                        <widget class="QLabel" name="label_7">
