@@ -149,34 +149,47 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are present (install mfix!)")
         self.open_tree_item("run")
 
-        # before running, button says 'Run'
-        self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
-        self.assertTrue(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
-        self.assertEqual(self.mfix.ui.run.button_run_pause_mfix.text(), "Run")
-        self.assertEqual(self.mfix.ui.toolbutton_run_pause_mfix.toolTip(), "Run")
+        runbuttons = (self.mfix.ui.run.button_run_pause_mfix,
+                      self.mfix.ui.toolbutton_run_pause_mfix)
+        stopbuttons = (self.mfix.ui.run.button_stop_mfix,
+                       self.mfix.ui.toolbutton_stop_mfix)
 
-        # start run, button should say 'Stop
-        QTest.mouseClick(self.mfix.ui.toolbutton_run_pause_mfix, Qt.LeftButton)
+        # For thoroughness, we could loop over stobutton[0] and stopbutton[1].
+        #  But we trust that they are connected to the same slot
+
+        # Before running, button says 'Run'
+        self.assertTrue(self.mfix.ui.run.combobox_mfix_exes.isVisibleTo(self.mfix.ui.run))
+        self.assertTrue(all (b.isEnabled() for b in runbuttons))
+        self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
+        self.assertEqual(runbuttons[0].text(), "Run")
+        self.assertEqual(runbuttons[1].toolTip(), "Run MFIX")
+
+        # Start run, run button disables, stop button enabled
+        QTest.mouseClick(runbuttons[0], Qt.LeftButton)
         QTest.qWait(100)
-        self.assertTrue(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
-        self.assertEqual(self.mfix.ui.toolbutton_run_pause_mfix.toolTip(), "Stop")
-        self.assertEqual(self.mfix.ui.run.button_run_pause_mfix.text(), "Stop")
+        self.assertTrue(all (not b.isEnabled() for b in runbuttons))
+        self.assertTrue(all (b.isEnabled() for b in stopbuttons))
 
-        # stop run, button should say 'Resume'
-        QTest.mouseClick(self.mfix.ui.run.button_run_pause_mfix, Qt.LeftButton)
+        # No test for pause, which requires pymfix FIXME
+        #self.assertEqual(runbuttons[0].text(), "Pause")
+        #self.assertEqual(runbuttons[1].toolTip(), "Stop MFIX")
+
+        # Stop run, button should say 'Resume'
+        QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
         QTest.qWait(100)
-        self.assertTrue(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
-        self.assertEqual(self.mfix.ui.run.button_run_pause_mfix.text(), "Resume")
-        self.assertEqual(self.mfix.ui.toolbutton_run_pause_mfix.toolTip(), "Resume")
+        self.assertTrue(all (b.isEnabled() for b in runbuttons))
+        self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
+        self.assertEqual(runbuttons[0].text(), "Resume")
+        self.assertEqual(runbuttons[1].toolTip(), "Resume previous MFIX run")
 
-        # resume run, button should say 'Stop'
-        QTest.mouseClick(self.mfix.ui.run.button_run_pause_mfix, Qt.LeftButton)
+        # Resume
+        QTest.mouseClick(runbuttons[0], Qt.LeftButton)
         QTest.qWait(100)
-        self.assertTrue(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
-        self.assertEqual(self.mfix.ui.run.button_run_pause_mfix.text(),"Stop")
+        self.assertTrue(all (not b.isEnabled() for b in runbuttons))
+        self.assertTrue(all (b.isEnabled() for b in stopbuttons))
 
-        # stop mfix, check for log.
-        QTest.mouseClick(self.mfix.ui.run.button_run_pause_mfix, Qt.LeftButton)
+        # Stop mfix, check for log.
+        QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
         QTest.qWait(100)
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
@@ -261,10 +274,11 @@ class MfixGuiTests(TestQApplication):
         self.mfix.reset()
         self.assertFalse(bool(self.find_exes()))
         self.assertFalse(self.mfix.ui.toolbutton_run_pause_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_reset_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
         os.environ["PATH"] = saved_path
 
 
