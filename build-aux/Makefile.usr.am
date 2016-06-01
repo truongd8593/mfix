@@ -169,7 +169,7 @@ pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 pymfix: mfix.so
 	rm -f $@
-	$(LN_S) $(top_srcdir)/../pymfix/$@ $@
+	$(LN_S) $(top_srcdir)/../gui/$@ $@
 
 mfix.so: $(LIBMFIX).md5
 mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)

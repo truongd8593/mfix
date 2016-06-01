@@ -16,6 +16,9 @@ from flask import Flask, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
 
+# append the path of the symlink __file__ (not its realpath)
+sys.path.append(os.path.dirname(__file__))
+
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
 from mfix import compar as COMPAR

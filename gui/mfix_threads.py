@@ -48,7 +48,7 @@ class MfixJobManager(object):
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-        if self.is_pymfix():
+        if self.is_pymfix:
             self.terminate_pymfix()
         else:
             #  GUI is nonresponsive while this runs.  Maybe it needs to be in another thread after all

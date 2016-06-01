@@ -352,6 +352,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         for d in dirs:
             if d and d != os.path.curdir and os.path.isdir(d):
                 self.exe_watcher.addPath(d)
+        self.exe_watcher.addPath(get_mfix_home())
         self.monitor._update_executables()
         self.update_run_options()
 
@@ -1662,6 +1663,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          default='ok')
             return
 
+        self.exe_watcher.addPath(project_dir)
         self.reset() # resets gui, keywords, file system watchers, etc
         self.print_internal("Loading %s" % project_file, color='blue')
         try:
