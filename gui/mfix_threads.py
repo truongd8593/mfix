@@ -70,13 +70,15 @@ class MfixJobManager(object):
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            self.parent.stdout_signal.emit("Terminating MFIX process %s" % mfixpid)
+            #self.parent.stdout_signal.emit("Terminating MFIX process %s" % mfixpid)
 
-            # python >= 3.3 has subprocess.wait(timeout), which would be good to loop wait
-            # os.waitpid has a nohang option, but it's not available on Windows
-            mfixproc.waitForFinished() # FIXME timeout
-            self.mfixproc = None
-        QTimer.singleShot(100, force_kill)
+        while self.is_running():
+            t0 = time.time()
+            self.mfixproc.waitForFinished(1000)
+            t1 = time.time()
+            if self.is_running():
+                log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
+                force_kill()
 
     def start_command(self, is_pymfix, cmd, cwd, env):
         """Start MFIX in QProcess"""
@@ -127,6 +129,25 @@ class MfixJobManager(object):
                 self.timer = None
             self.parent.update_run_options_signal.emit(msg)
         self.mfixproc.finished.connect(slot_finish)
+
+        def slot_error(error):
+            if error == QProcess.FailedToStart:
+                msg = "Process failed to start"
+            elif error == QProcess.Crashed:
+                msg = "Process exit"
+            elif error == QProcess.Timedout:
+                msg = "Process timeout"
+            elif error in (QProcess.WriteError, QProcess.ReadError):
+                msg = "Process communication error"
+            else:
+                msg = "Unknown error"
+            log.warn(msg)
+            self.mfixproc = None
+            self.parent.stderr_signal.emit(msg) # make the message print in red
+            self.parent.update_run_options_signal.emit('')
+
+
+        self.mfixproc.error.connect(slot_error)
 
         self.mfixproc.start(self.cmd[0], self.cmd[1:])
 
