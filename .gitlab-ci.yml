@@ -7,13 +7,19 @@
 #     - build/
 
 stages:
+  - build
   - test
 
-with_exe:
-  stage: test
+build_job:
+  stage: build
   script:
-    - ./configure_mfix --python && make -j mfix
-    - make -C gui test
+    - ./configure_mfix --dmp --python
+    - make -j mfix pymfix
+  artifacts:
+    paths:
+    - mfix
+    - mfix.so
+    - pymfix
   only:
     - branches
   tags:
@@ -21,11 +27,9 @@ with_exe:
     - anaconda
     - python2
 
-without_exe:
+test_job:
   stage: test
   script:
-    - find . -type f -name mfix -exec rm -f {} \;
-    - find . -type f -name pymfix -exec rm -f {} \;
     - make -C gui test
   only:
     - branches
