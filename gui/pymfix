@@ -5,6 +5,7 @@ interactive control of the run."""
 
 import getopt
 import json
+import logging
 import os
 import sys
 import tempfile
@@ -49,6 +50,9 @@ def main():
     mfix_inst = Mfix(keyword_args)
     mfix_inst.start()
 
+    log = logging.getLogger('werkzeug')
+    log.disabled = True
+
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
         try:
@@ -64,7 +68,7 @@ def main():
             time.sleep(10)
 
 
-class Mfix:
+class Mfix(object):
     " Class to represent the running instance of MFIX "
 
     mfix_stopped = True
@@ -95,7 +99,9 @@ class Mfix:
         READ_INPUT.get_data()
         MAIN.initialize_2()
 
-        if (DEM.discrete_element and not DEM.des_continuum_coupled):
+        cls.update_status()
+
+        if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
                 DEM.des_time_march()
             if RUN.pic_solids:
@@ -126,7 +132,7 @@ class Mfix:
                 ITERATE.nit = ITERATE.nit + 1
                 ITERATE.do_iteration()
                 cls.check_requests()
-                cls.emit_residuals()
+                cls.update_status()
 
             ITERATE.post_iterate()
 
@@ -136,8 +142,8 @@ class Mfix:
 
 
     @classmethod
-    def emit_residuals(cls):
-        """print residuals to socketio client"""
+    def update_status(cls):
+        """save status as JSON """
 
         output = {}
         output['paused'] = bool(Mfix.mfix_stopped)
@@ -253,7 +259,7 @@ class Mfix:
         log = logging.getLogger(__name__)
         if var:
             if ids and len(ids.split(' ')) > 3:
-                log.info("GOING TO GET IDS %s" % var)
+                log.info("GOING TO GET IDS %s", var)
                 # FIXME
                 # ii, jj, kk, i2, j2, k2 = command.split(' ')[3:9]
                 # for i in range(int(ii), int(i2)+1):
@@ -263,11 +269,11 @@ class Mfix:
                 #                 eval_string = ('%s[%d]' % (var, cls.funijk(i, j, k)))
                 #                 log.info("GOING TO EXECUTE: %s" % eval_string)
                 #                 # eval(eval_string) # FIXME
-                #                 log.info(COMPAR.mype, " set value for", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, "set for", i, j, k, cls.funijk(i, j, k))
                 #             else:
-                #                 log.info(COMPAR.mype, "does not own", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, "not on", i, j, k, cls.funijk(i, j, k))
             else:
-                log.info("GOING TO EVALUATE %s" % var)
+                log.info("GOING TO EVALUATE %s", var)
                 try:
                     import mfix
                     val = getattr(getattr(mfix, mod), var)
@@ -316,7 +322,7 @@ class Mfix:
                 #             else:
                 #                 log.info(COMPAR.mype, "does not own", i, j, k, cls.funijk(i, j, k))
             else:
-                log.info("GOING TO SET %s.%s = %s" % (mod, var, val))
+                log.info("GOING TO SET %s.%s = %s", mod, var, val)
                 try:
                     import mfix
                     mfix_mod = getattr(mfix, mod)
@@ -332,7 +338,7 @@ class Mfix:
                     # TODO: better error code REST response
                     return 500, 'ERROR could not set: %s to %s\n' % (var, val)
 
-                log.info('ok, I set %s to %s\n' % (var, val))
+                log.info('ok, I set %s to %s\n', var, val)
         else:
             return 500, 'could not set %s to %s\n' % (var, val)
 
@@ -496,9 +502,16 @@ def get_status():
 def parse_command_line_arguments():
     "handle command line arguments"
     port = 5000 # Flask default
-    usage_string = "Usage: pymfix [-f, --file <mfix.dat>] [-h, --help] [-p,--print-flags] [-P, --port <port>] [-s, --start] [<keyword>=<keywordvalue> ...]"
+    usage_string = "\n".join(["Usage: pymfix [-f, --file <mfix.dat>]",
+                              "              [-h, --help]",
+                              "              [-p,--print-flags]",
+                              "              [-P, --port <port>]",
+                              "              [-s, --start]",
+                              "              [<keyword>=<keywordvalue> ...]"])
     try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:], "f:hspP:", ["port=", "file=", "help", "start", "print-flags", "port="])
+        opts, keyword_args = getopt.getopt(sys.argv[1:],
+                                           "f:hspP:",
+                                           ["port=", "file=", "help", "start", "print-flags"])
     except getopt.GetoptError:
         print(usage_string)
         sys.exit(1)
@@ -522,7 +535,7 @@ def parse_command_line_arguments():
                 if port < 0 or port > 65536:
                     raise ValueError
             except ValueError:
-                print("Invalid port: %d" % port)
+                print("Invalid port: %d", port)
                 sys.exit(1)
 
     if len(keyword_args) > len(MAIN.cmd_line_args):
