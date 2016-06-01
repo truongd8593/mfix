@@ -34,6 +34,7 @@ def dismiss():
 
 def dismiss_wait():
     """wait for modal dialog to pop down"""
+    # There's no QTest.WaitForWindowNotShown
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox):
             while widget.isVisible():
