@@ -14,7 +14,7 @@ build_job:
   stage: build
   script:
     - ./configure_mfix --dmp --python
-    - make -j mfix pymfix
+    - make mfix pymfix
   artifacts:
     paths:
     - mfix
