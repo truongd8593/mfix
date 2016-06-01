@@ -625,7 +625,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QPushButton" name="button_run_stop_mfix">
+       <widget class="QPushButton" name="button_run_pause_mfix">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -635,12 +635,12 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QPushButton" name="button_pause_mfix">
+       <widget class="QPushButton" name="button_stop_mfix">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Pause</string>
+         <string>Stop</string>
         </property>
        </widget>
       </item>

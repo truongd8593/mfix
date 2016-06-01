@@ -4,7 +4,6 @@ import os
 import glob
 import json
 import logging
-import time
 import subprocess
 
 log = logging.getLogger(__name__)
@@ -17,8 +16,6 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib import urlencode
     from urllib2 import urlopen, Request
-
-from tools.general import get_mfix_home
 
 from qtpy.QtCore import QProcess, QTimer
 
@@ -33,8 +30,9 @@ class MfixJobManager(object):
         self.is_pymfix = False
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
-        self.status = None
+        self.status = {}
         self.timer = None
+        self.pymfix_url = 'http://localhost:5000'
 
     def is_running(self):
         """indicate whether an MFIX job is running"""
@@ -46,14 +44,40 @@ class MfixJobManager(object):
         """indicate whether pymfix is paused"""
         if not self.is_pymfix:
             return False
-        return getattr(self.status, 'paused', False)
+        return self.status.get('paused', False)
+
+    def pause(self):
+        "pause MFIX"
+        if not self.is_pymfix:
+            return
+        # log = logging.getLogger(__name__)
+        req = Request(url='%s/pause' % self.pymfix_url, data='')
+        req.get_method = lambda: 'PUT'
+        resp = urlopen(req)
+        # log.info("response status: %s", resp.status)
+        # log.info("response reason: %s", resp.reason)
+        resp.close()
+        self.parent.update_run_options()
+
+    def unpause(self):
+        "pause MFIX"
+        if not self.is_pymfix:
+            return
+        # log = logging.getLogger(__name__)
+        req = Request(url='%s/unpause' % self.pymfix_url, data='')
+        req.get_method = lambda: 'PUT'
+        resp = urlopen(req)
+        # log.info("response status: %s", resp.status)
+        # log.info("response reason: %s", resp.reason)
+        resp.close()
+        self.parent.update_run_options()
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
         if self.is_pymfix:
             self.terminate_pymfix()
         else:
-            #  GUI is nonresponsive while this runs.  Maybe it needs to be in another thread after all
+            #  GUI is nonresponsive while this runs; maybe needs to be in another thread after all
             mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
             try:
                 open(mfix_stop_file, "ab").close()
@@ -108,7 +132,6 @@ class MfixJobManager(object):
             self.parent.update_run_options_signal.emit(msg)
             log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
-            log.debug("starting mfix output monitor threads")
             if is_pymfix:
                 self.timer = QTimer()
                 self.timer.setInterval(1000)
@@ -163,7 +186,7 @@ class MfixJobManager(object):
 
     def terminate_pymfix(self):
         """update the status of  the pymfix monitor"""
-        url = 'http://localhost:5000/exit'
+        url = '%s/exit' % self.pymfix_url
         values = {'timeout' : '1',}
 
         data = urlencode(values)
@@ -177,15 +200,19 @@ class MfixJobManager(object):
 
     def update_status(self):
         """update the status of  the pymfix monitor"""
-        status_str = urlopen('http://localhost:5000/status').read()
+        status_str = urlopen('%s/status' % self.pymfix_url).read()
         log = logging.getLogger(__name__)
-        log.debug("status_str is %s", status_str)
-        self.status = json.loads(status_str)
-        log.debug("status is %s", self.status)
-        # FIXME: print JSON for now, plot it later
-        import pprint
-        status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
-        self.parent.ui.residuals.setText(status_str)
+        log.warning("status_str is %s", status_str)
+        try:
+            self.status = json.loads(status_str)
+            log.debug("status is %s", self.status)
+            # FIXME: print JSON for now, plot it later
+            import pprint
+            status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
+            self.parent.ui.residuals.setText(status_str)
+        except ValueError:
+            log.error("could not decode JSON: %s", status_str)
+        self.parent.update_run_options()
 
 class Monitor(object):
     """class for monitoring available MFIX executables and output files"""
@@ -220,7 +247,9 @@ class Monitor(object):
             if cached_stat and cached_stat == stat:
                 return cached_flags
 
+            exe_dir = os.path.dirname(mfix_exe)
             popen = subprocess.Popen(mfix_exe + " --print-flags",
+                                     cwd=exe_dir,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE,
                                      shell=True)

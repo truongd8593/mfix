@@ -20,12 +20,6 @@ sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 log = logging.getLogger(__name__)
 log.debug(SCRIPT_DIRECTORY)
 
-try:
-    import requests
-except ImportError:
-    requests = None
-    log.warn("requests module not available")
-
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
 from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, QUrl, QUrl, pyqtSignal
@@ -233,13 +227,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 (ui.toolbutton_new, 'newfolder', self.new_project),
                 (ui.toolbutton_open, 'openfolder', self.handle_open),
                 (ui.toolbutton_save, 'save', self.handle_save),
-                (ui.toolbutton_run_stop_mfix, 'play', self.handle_run_stop),
+                (ui.toolbutton_run_pause_mfix, 'play', self.handle_run_pause),
                 (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files)):
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
-        for button in (ui.toolbutton_run_stop_mfix, ui.toolbutton_save, ui.toolbutton_more):
+        for button in (ui.toolbutton_run_pause_mfix, ui.toolbutton_save, ui.toolbutton_more):
             button.setFocusPolicy(Qt.ClickFocus)
 
         # "More" submenu
@@ -271,21 +265,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.treewidget_model_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
+        self.job_manager = MfixJobManager(self)
+        self.rundir_watcher = QFileSystemWatcher()
+        self.exe_watcher = QFileSystemWatcher()
+        self.monitor = Monitor(self)
+
         # buttons in 'run' pane
         run = ui.run
-        run.button_run_stop_mfix.clicked.connect(self.handle_run_stop)
-        run.button_pause_mfix.clicked.connect(self.pause_mfix)
+        run.button_run_pause_mfix.clicked.connect(self.handle_run_pause)
+        run.button_stop_mfix.clicked.connect(self.job_manager.stop_mfix)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.combobox_mfix_executables.activated.connect(self.handle_select_executable)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
         self.print_welcome()
-
-        self.job_manager = MfixJobManager(self)
-        self.rundir_watcher = QFileSystemWatcher()
-        self.exe_watcher = QFileSystemWatcher()
-        self.monitor = Monitor(self)
 
         ## Run signals
         self.stdout_signal.connect(self.print_out)
@@ -388,7 +382,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if confirm == 'no':
                 return
             log.info("Stopping mfix at application exit")
-            self.stop_mfix()
+            self.job_manager.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
@@ -465,8 +459,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             cb.setCurrentText(saved_selection)
             self.mfix_exe = saved_selection #??
 
-
-
         if not self.is_project_open():
             return
         self.update_window_title() # put run state in window titlebar
@@ -479,23 +471,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.ui.run.label_mfix_executables_warning.setVisible(True)
             self.ui.run.combobox_mfix_executables.setVisible(False)
             # Disable run button
-            self.ui.toolbutton_run_stop_mfix.setEnabled(False)
-            self.ui.run.button_run_stop_mfix.setEnabled(False)
+            self.ui.toolbutton_run_pause_mfix.setEnabled(False)
+            self.ui.run.button_run_pause_mfix.setEnabled(False)
             #self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
             #self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
-            #self.ui.run.button_pause_mfix.setEnabled(False)
+            #self.ui.run.button_run_pause_mfix.setEnabled(False)
             return
 
         self.ui.run.label_mfix_executables_warning.setVisible(False)
         self.ui.run.combobox_mfix_executables.setVisible(True)
 
-        self.ui.toolbutton_run_stop_mfix.setEnabled(True)
-        self.ui.run.button_run_stop_mfix.setEnabled(True)
+        self.ui.toolbutton_run_pause_mfix.setEnabled(True)
+        self.ui.run.button_run_pause_mfix.setEnabled(True)
 
         self.ui.toolbutton_reset_mfix.setEnabled(res_file_exists and not running)
         self.ui.run.button_reset_mfix.setEnabled(res_file_exists and not running)
 
-        self.ui.run.button_pause_mfix.setEnabled(self.job_manager.is_paused())
+        self.ui.run.button_run_pause_mfix.setEnabled(self.job_manager.is_paused())
 
         self.ui.general.setEnabled(not res_file_exists)
         self.ui.geometry.setEnabled(not res_file_exists)
@@ -507,15 +499,22 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.output.setEnabled(not res_file_exists)
         self.ui.vtk.setEnabled(not res_file_exists)
 
+        self.ui.run.button_stop_mfix.setEnabled(running)
+
         if running:
             self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             self.ui.run.combobox_mfix_executables.setEnabled(False)
-            self.ui.run.button_run_stop_mfix.setText("Stop")
-            self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
-            self.ui.toolbutton_run_stop_mfix.setToolTip("Stop")
-            self.ui.toolbutton_reset_mfix.setEnabled(False)
+            # self.ui.toolbutton_run_pause_mfix.setIcon(get_icon('stop.png'))
+            # self.ui.toolbutton_run_pause_mfix.setToolTip("Stop")
+            # self.ui.toolbutton_reset_mfix.setEnabled(False)
+            self.ui.run.button_run_pause_mfix.setEnabled(self.pymfix_enabled)
             if self.pymfix_enabled:
-                self.ui.run.button_pause_mfix.setText("Pause")
+                if self.job_manager.is_paused():
+                    self.ui.run.button_run_pause_mfix.setText("Unpause")
+                else:
+                    self.ui.run.button_run_pause_mfix.setText("Pause")
+            else:
+                self.ui.run.button_run_pause_mfix.setText("Run")
 
         else:
             self.status_message("ready")
@@ -524,21 +523,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
             self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
             self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
-            if self.pymfix_enabled:
-                self.ui.run.button_pause_mfix.setText("Unpause")
+            self.ui.run.button_run_pause_mfix.setText("Run")
+            self.ui.run.button_run_pause_mfix.setEnabled(True)
 
-            self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('play.png'))
+            self.ui.toolbutton_run_pause_mfix.setIcon(get_icon('play.png'))
 
             if res_file_exists:
                 self.ui.toolbutton_reset_mfix.setEnabled(True)
-                self.ui.toolbutton_run_stop_mfix.setToolTip("Resume")
-                self.ui.run.button_run_stop_mfix.setText("Resume")
+                self.ui.toolbutton_run_pause_mfix.setToolTip("Resume")
+                self.ui.run.button_run_pause_mfix.setText("Resume")
                 self.ui.run.button_reset_mfix.setEnabled(True)
                 self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
                 self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
             else:
-                self.ui.toolbutton_run_stop_mfix.setToolTip("Run")
-                self.ui.run.button_run_stop_mfix.setText("Run")
+                self.ui.toolbutton_run_pause_mfix.setToolTip("Run")
+                self.ui.run.button_run_pause_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)
 
@@ -1281,11 +1280,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 break
         return True
 
-    def handle_run_stop(self):
-        if self.job_manager.is_running():
-            return self.stop_mfix()
-        else:
+    def handle_run_pause(self):
+        if not self.job_manager.is_running():
             return self.run_mfix()
+        elif self.job_manager.is_paused():
+            return self.job_manager.unpause()
+        else:
+            return self.job_manager.pause()
 
     def run_mfix(self):
         output_files = self.monitor.get_outputs()
@@ -1320,13 +1321,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file()) # XXX
         self._start_mfix()
-
-    def pause_mfix(self):
-        if not self.pymfix_enabled:
-            return
-        if requests:
-            requests.put(self.pymfix_url + 'stop')
-        self.update_run_options()
 
     def resume_mfix(self):
         """resume previously stopped mfix run"""
@@ -1380,37 +1374,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
-
-        if self.pymfix_enabled:
-            # get last pymfix url from config
-            # compare last to ui.run.{something} to pick up user change
-            # also set this elsewhere ...
-
-            time.sleep(2) # this has to go away .. put pymfix api calls
-            # into another thread, attach signals to update ui
-
-            self.pymfix_url = 'http://127.0.0.1:5000/'
-            if requests:
-                requests.put(self.pymfix_url + 'start')
-
-        #self.update_run_options() let job manager do this
-
-    def stop_mfix(self):
-        """stop locally running instance of mfix"""
-        if self.pymfix_enabled:
-            if requests:
-                requests.put(self.pymfix_url + 'exit')
-        # check whether pymfix has stopped mfix then
-        # do something here
-        self.job_manager.stop_mfix()
-
-        # job manager calls update_run_options when mfix is actually stopped
-        #self.update_run_options()
-
-    #def update_residuals(self):
-    #    self.ui.residuals.setText(str(self.update_residuals_thread.residuals))
-    #    if self.update_residuals_thread.job_done:
-    #        self.ui.mfix_browser.setHTML('')
 
     # --- open/save/new ---
 
@@ -1561,7 +1524,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_window_title()
         self.ui.toolbutton_save.setEnabled(False)
         if self.mfix_available:
-            self.ui.toolbutton_run_stop_mfix.setEnabled(True)
+            self.ui.toolbutton_run_pause_mfix.setEnabled(True)
 
     def check_writable(self, directory):
         """check whether directory is writable """

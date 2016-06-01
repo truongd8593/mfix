@@ -50,8 +50,8 @@ def main():
     mfix_inst = Mfix(keyword_args)
     mfix_inst.start()
 
-    log = logging.getLogger('werkzeug')
-    log.disabled = True
+    # log = logging.getLogger('werkzeug')
+    # log.disabled = True
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
@@ -71,7 +71,7 @@ def main():
 class Mfix(object):
     " Class to represent the running instance of MFIX "
 
-    mfix_stopped = True
+    mfix_paused = True
     pymfix_running = True
     requests = {}
     responses = {}
@@ -110,7 +110,7 @@ class Mfix(object):
 
             while cls.pymfix_running:
                 cls.check_requests()
-                if cls.mfix_stopped or RUN.tstop <= RUN.time:
+                if cls.mfix_paused or RUN.tstop <= RUN.time:
                     time.sleep(0.1)
                 else:
                     cls.do_step()
@@ -146,7 +146,7 @@ class Mfix(object):
         """save status as JSON """
 
         output = {}
-        output['paused'] = bool(Mfix.mfix_stopped)
+        output['paused'] = bool(Mfix.mfix_paused)
         output['time'] = float(RUN.time)
         output['tstop'] = float(RUN.tstop)
         output['nit'] = int(ITERATE.nit)
@@ -192,15 +192,15 @@ class Mfix(object):
                 cls.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
 
     @classmethod
-    def begin(cls, _):
-        " start "
-        cls.mfix_stopped = False
+    def unpause(cls, _):
+        " unpause "
+        cls.mfix_paused = False
         return 200, "STARTING MFIX"
 
     @classmethod
-    def halt(cls, _):
-        " stop "
-        cls.mfix_stopped = True
+    def pause(cls, _):
+        " paused "
+        cls.mfix_paused = True
         return 200, "STOPPING MFIX"
 
     @classmethod
@@ -479,17 +479,17 @@ def step():
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
-@FLASK_APP.route('/start', methods=['PUT'])
-def start():
-    "starts MFIX if it's stopped"
-    status_code, data = Mfix.do_command("BEGIN")
+@FLASK_APP.route('/pause', methods=['PUT'])
+def pause():
+    "pauses MFIX if unpaused"
+    status_code, data = Mfix.do_command("PAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
-@FLASK_APP.route('/stop', methods=['PUT'])
-def stop():
-    "stops MFIX if it's running"
-    status_code, data = Mfix.do_command("HALT")
+@FLASK_APP.route('/unpause', methods=['PUT'])
+def unpause():
+    "unpause MFIX if paused"
+    status_code, data = Mfix.do_command("UNPAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @FLASK_APP.route('/status', methods=['GET'])
@@ -524,7 +524,7 @@ def parse_command_line_arguments():
             print(usage_string)
             sys.exit(0)
         elif opt in ("-s", "--start"):
-            Mfix.mfix_stopped = False
+            Mfix.mfix_paused = False
         elif opt in ("-p", "--print-flags"):
             MAIN.print_flags()
             sys.exit(1)
