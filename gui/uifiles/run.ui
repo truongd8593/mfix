@@ -27,7 +27,7 @@
        <number>5</number>
       </property>
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_mfix_executables_warning">
+       <widget class="QLabel" name="label_mfix_exes_warning">
         <property name="palette">
          <palette>
           <active>
@@ -546,7 +546,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="ComboBox" name="combobox_mfix_executables"/>
+       <widget class="ComboBox" name="combobox_mfix_exes"/>
       </item>
       <item row="8" column="0">
        <widget class="QLabel" name="label_130">
