@@ -13,7 +13,7 @@ import os
 
 from qtpy.QtTest import QTest
 from qtpy import QtCore
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, QTimer
 from qtpy import QtWidgets
 
 import logging
@@ -24,13 +24,21 @@ from .helper_functions import TestQApplication
 import gui
 
 def dismiss():
-    ''' dismiss modal QMessageBox '''
+    """dismiss modal QMessageBox"""
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox):
             button = widget.button(QtWidgets.QMessageBox.Ok)
             if not button:
                 button = widget.escapeButton()
             QTest.mouseClick(button, Qt.LeftButton)
+
+def dismiss_wait():
+    """wait for modal dialog to pop down"""
+    for widget in QtWidgets.QApplication.instance().topLevelWidgets():
+        if isinstance(widget, QtWidgets.QMessageBox):
+            while widget.isVisible():
+                QTest.qWait(10)
+            break
 
 
 class MfixGuiTests(TestQApplication):
@@ -94,7 +102,7 @@ class MfixGuiTests(TestQApplication):
         QTest.qWaitForWindowShown(self.mfix)
 
         self.mfix.get_open_filename = lambda: mfix_dat
-        QtCore.QTimer.singleShot(100, dismiss)
+        QTimer.singleShot(100, dismiss)
         QTest.mouseClick(self.mfix.ui.toolbutton_open, Qt.LeftButton)
 
         self.assertEqual(self.runname, self.mfix.ui.general.lineedit_keyword_run_name.text())
@@ -129,7 +137,7 @@ class MfixGuiTests(TestQApplication):
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
-        QtCore.QTimer.singleShot(100, dismiss)
+        QTimer.singleShot(100, dismiss)
         self.mfix.ui.action_save_as.trigger()
 
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
@@ -140,6 +148,11 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are present (install mfix!)")
         self.open_tree_item("run")
 
+        # Needs to be longer than the timeout in stop_mfix which is 1000ms
+        # Otherwise the dialog box will not be displayed when we try to dismiss it
+        stop_timeout = 1500
+
+        QTimer.singleShot(stop_timeout, dismiss)
         # before running
         self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
@@ -148,7 +161,7 @@ class MfixGuiTests(TestQApplication):
 
         # start run
         QTest.mouseClick(self.mfix.ui.toolbutton_run_stop_mfix, Qt.LeftButton)
-        QTest.qWait(1000)
+        QTest.qWait(100)
 
         # during running
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
@@ -156,22 +169,25 @@ class MfixGuiTests(TestQApplication):
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Stop")
 
         # stop run
-        QtCore.QTimer.singleShot(100, dismiss)
-        QtCore.QTimer.singleShot(1000, dismiss)
+        QTimer.singleShot(stop_timeout, dismiss)
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-        QTest.qWait(1000)
+        dismiss_wait()
+
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Resume")
         self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Resume")
 
         # start resume
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-        QTest.qWait(1000)
+        QTest.qWait(100)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(),"Stop")
 
         # stop mfix
+        QTimer.singleShot(stop_timeout, dismiss)
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
+        dismiss_wait()
+
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
 
@@ -248,6 +264,7 @@ class MfixGuiTests(TestQApplication):
 
 
     def test_run_disabled_no_exe(self):
+        self.open_tree_item("run")
         saved_path = os.environ['PATH']
         os.environ['PATH'] = ''
         self.mfix.reset()

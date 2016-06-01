@@ -1,9 +1,10 @@
 """classes to manage external MFIX process and monitor files"""
 
+import os
 import glob
 import json
 import logging
-import os
+import time
 import subprocess
 
 try:
@@ -47,7 +48,7 @@ class MfixJobManager(object):
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-
+        #  GUI is nonresponsive while this runs.  Maybe it needs to be in another thread after all
         mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         try:
             open(mfix_stop_file, "ab").close()
@@ -55,9 +56,10 @@ class MfixJobManager(object):
             pass
 
         def force_kill():
-
             mfixproc = self.mfixproc
             if not mfixproc:
+                return
+            if mfixproc.state() != QProcess.Running:
                 return
             mfixpid = self.mfixproc.pid()
             confirm = self.parent.message(text="MFIX is not responding. Force kill?",
