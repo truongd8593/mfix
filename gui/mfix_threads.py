@@ -18,8 +18,6 @@ from tools.general import get_mfix_home
 
 from qtpy.QtCore import QProcess, QTimer
 
-log = logging.getLogger(__name__)
-
 class MfixJobManager(object):
     """class for monitoring MFIX jobs"""
 
@@ -59,33 +57,36 @@ class MfixJobManager(object):
                 pass
 
         def force_kill():
+            """attempt to kill job; return True if further force_kill() calls may be necessary"""
+            if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
+                                               buttons=['ok', 'cancel'],
+                                               default='cancel'):
+                return False
+
             mfixproc = self.mfixproc
             if not mfixproc:
-                return
+                return False
             if mfixproc.state() != QProcess.Running:
-                return
-            mfixpid = self.mfixproc.pid()
-            confirm = self.parent.message(text="MFIX is not responding. Force kill?",
-                                   buttons=['ok','cancel'],
-                                   default='cancel')
-
-            if confirm != 'ok':
-                return
+                return False
 
             try:
                 mfixproc.terminate()
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            #self.parent.stdout_signal.emit("Terminating MFIX process %s" % mfixpid)
+            return True
 
+        if not force_kill():
+            return
         while self.is_running():
             t0 = time.time()
             self.mfixproc.waitForFinished(1000)
             t1 = time.time()
             if self.is_running():
+                log = logging.getLogger(__name__)
                 log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
-                force_kill()
+                if not force_kill():
+                    return
 
     def start_command(self, is_pymfix, cmd, cwd, env):
         """Start MFIX in QProcess"""
@@ -148,6 +149,7 @@ class MfixJobManager(object):
                 msg = "Process communication error"
             else:
                 msg = "Unknown error"
+            log = logging.getLogger(__name__)
             log.warn(msg)
             self.mfixproc = None
             self.parent.stderr_signal.emit(msg) # make the message print in red
@@ -203,6 +205,7 @@ class Monitor(object):
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
             except OSError as err:
+                log = logging.getLogger(__name__)
                 log.exception("could not run %s --print-flags", mfix_exe)
                 return ''
 
@@ -226,6 +229,7 @@ class Monitor(object):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
+                    log = logging.getLogger(__name__)
                     log.debug("found %s executable in %s", name, d)
                     config_options[exe] = str(mfix_print_flags(exe))
 
