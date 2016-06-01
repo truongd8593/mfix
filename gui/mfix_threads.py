@@ -78,8 +78,6 @@ class MfixJobManager(object):
                 log.error("Error terminating process: %s", err)
             return True
 
-        if not force_kill():
-            return
         while self.is_running():
             t0 = time.time()
             self.mfixproc.waitForFinished(1000)
