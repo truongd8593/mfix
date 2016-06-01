@@ -1,6 +1,7 @@
 """classes to manage external MFIX process and monitor files"""
 
 import os
+import time
 import glob
 import json
 import logging
@@ -77,7 +78,6 @@ class MfixJobManager(object):
         if self.is_pymfix:
             self.terminate_pymfix()
         else:
-            #  GUI is nonresponsive while this runs; maybe needs to be in another thread after all
             mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
             try:
                 open(mfix_stop_file, "ab").close()
@@ -89,36 +89,37 @@ class MfixJobManager(object):
             if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
                                                buttons=['ok', 'cancel'],
                                                default='cancel'):
-                return False
+                return
 
-            mfixproc = self.mfixproc
-            if not mfixproc:
-                return False
-            if mfixproc.state() != QProcess.Running:
-                return False
-
+            if not self.is_running():
+                return
             try:
-                mfixproc.terminate()
+                self.mfixproc.terminate()
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            return True
 
         while self.is_running():
             t0 = time.time()
             self.mfixproc.waitForFinished(1000)
             t1 = time.time()
             if self.is_running():
-                log = logging.getLogger(__name__)
                 log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
-                if not force_kill():
-                    return
+                force_kill()
+        self.mfixproc = None
+
 
     def start_command(self, is_pymfix, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
         self.is_pymfix, self.cmd, self.cwd, self.env = is_pymfix, cmd, cwd, env
+        if self.mfixproc:
+            log.warn("Cannot start process, already have an mfix process")
+            return
         self.mfixproc = QProcess()
+        if not self.mfixproc:
+            log.warn("QProcess creation failed")
+            return
         self.mfixproc.setWorkingDirectory(self.cwd)
         mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         try:
@@ -216,26 +217,24 @@ class MfixJobManager(object):
 
 class Monitor(object):
     """class for monitoring available MFIX executables and output files"""
-
+    # TODO move exe_watcher stuff from gui.py here
     def __init__(self, parent):
         self.parent = parent
         self.cache = {}
-        self.executables = None
         self.outputs = None
-        self.res_exists = False
-        self._update_executables()
+        self.exes = {}
+        self.update_exes()
 
-    def get_executables(self):
+    def get_exes(self):
         """returns a dict mapping full [mfix|pymfix] paths
         to configuration options."""
+        self.update_exes()
+        return self.exes
 
-        return self.executables
-
-    def _update_executables(self):
-        """update self.executables"""
+    def update_exes(self):
+        """update self.exes"""
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
-
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
             except OSError as err:
@@ -258,18 +257,16 @@ class Monitor(object):
             cache[mfix_exe] = (stat, flags)
             return flags
 
-        config_options = {}
-
+        exes = {} # map exes -> flags
         for d in self.parent.exe_watcher.directories():
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
-                    log.debug("found %s executable in %s", name, d)
-                    config_options[exe] = str(mfix_print_flags(exe))
+                    log.debug("found %s executable in %s" %( name, d))
+                    exes[exe] = str(mfix_print_flags(exe))
+        self.exes = exes
 
-        self.executables = config_options
-
-    def get_res(self):
+    def get_res_files(self): # Why is this in monitor class?
         if not self.parent.get_project_dir():
             return
         pattern = os.path.join(self.parent.get_project_dir(), '*.RES')
