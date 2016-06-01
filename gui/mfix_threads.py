@@ -35,7 +35,9 @@ class MfixJobManager(object):
 
     def is_running(self):
         """indicate whether an MFIX job is running"""
-        return self.mfixproc is not None
+        ret = (self.mfixproc is not None
+               and self.mfixproc.state() == QProcess.Running)
+        return ret
 
     def is_paused(self):
         """indicate whether pymfix is paused"""
