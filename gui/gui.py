@@ -510,7 +510,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.ui.run.combobox_mfix_executables.setEnabled(False)
             self.ui.run.button_run_stop_mfix.setText("Stop")
             self.ui.toolbutton_run_stop_mfix.setIcon(get_icon('stop.png'))
-            self.ui.toolbutton_run_stop_mfix.setText("Stop")
+            self.ui.toolbutton_run_stop_mfix.setToolTip("Stop")
             self.ui.toolbutton_reset_mfix.setEnabled(False)
             if self.pymfix_enabled:
                 self.ui.run.button_pause_mfix.setText("Pause")
@@ -529,13 +529,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
             if res_file_exists:
                 self.ui.toolbutton_reset_mfix.setEnabled(True)
-                self.ui.toolbutton_run_stop_mfix.setText("Resume")
+                self.ui.toolbutton_run_stop_mfix.setToolTip("Resume")
                 self.ui.run.button_run_stop_mfix.setText("Resume")
                 self.ui.run.button_reset_mfix.setEnabled(True)
                 self.ui.run.use_spx_checkbox.setEnabled(res_file_exists)
                 self.ui.run.use_spx_checkbox.setChecked(res_file_exists)
             else:
-                self.ui.toolbutton_run_stop_mfix.setText("Run")
+                self.ui.toolbutton_run_stop_mfix.setToolTip("Run")
                 self.ui.run.button_run_stop_mfix.setText("Run")
                 self.ui.run.button_reset_mfix.setEnabled(False)
                 self.ui.run.use_spx_checkbox.setEnabled(False)

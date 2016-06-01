@@ -138,11 +138,13 @@ class MfixGuiTests(TestQApplication):
     def test_run(self):
         if not self.find_exes():
             self.skipTest("Only valid when executables are present (install mfix!)")
+        self.open_tree_item("run")
 
         # before running
         self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Run")
+        self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Run")
 
         # start run
         QTest.mouseClick(self.mfix.ui.toolbutton_run_stop_mfix, Qt.LeftButton)
@@ -150,6 +152,7 @@ class MfixGuiTests(TestQApplication):
 
         # during running
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
+        self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Stop")
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Stop")
 
         # stop run
@@ -159,16 +162,16 @@ class MfixGuiTests(TestQApplication):
         QTest.qWait(1000)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Resume")
+        self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Resume")
 
         # start resume
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         QTest.qWait(1000)
+        self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(),"Stop")
 
         # stop mfix
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
 
