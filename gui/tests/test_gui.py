@@ -149,46 +149,35 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when executables are present (install mfix!)")
         self.open_tree_item("run")
 
-        # Needs to be longer than the timeout in stop_mfix which is 1000ms
-        # Otherwise the dialog box will not be displayed when we try to dismiss it
-        stop_timeout = 1500
-
-        QTimer.singleShot(stop_timeout, dismiss)
-        # before running
+        # before running, button says 'Run'
         self.assertTrue(self.mfix.ui.run.combobox_mfix_executables.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Run")
         self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Run")
 
-        # start run
+        # start run, button should say 'Stop
         QTest.mouseClick(self.mfix.ui.toolbutton_run_stop_mfix, Qt.LeftButton)
         QTest.qWait(100)
-
-        # during running
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Stop")
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Stop")
 
-        # stop run
-        QTimer.singleShot(stop_timeout, dismiss)
+        # stop run, button should say 'Resume'
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-        dismiss_wait()
-
+        QTest.qWait(100)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(), "Resume")
         self.assertEqual(self.mfix.ui.toolbutton_run_stop_mfix.toolTip(), "Resume")
 
-        # start resume
+        # resume run, button should say 'Stop'
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
         QTest.qWait(100)
         self.assertTrue(self.mfix.ui.run.button_run_stop_mfix.isEnabled())
         self.assertEqual(self.mfix.ui.run.button_run_stop_mfix.text(),"Stop")
 
-        # stop mfix
-        QTimer.singleShot(stop_timeout, dismiss)
+        # stop mfix, check for log.
         QTest.mouseClick(self.mfix.ui.run.button_run_stop_mfix, Qt.LeftButton)
-        dismiss_wait()
-
+        QTest.qWait(100)
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
 
