@@ -60,35 +60,30 @@ class MfixJobManager(object):
 
         def force_kill():
             """attempt to kill job; return True if further force_kill() calls may be necessary"""
+            if not self.is_running():
+                return
             if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
                                                buttons=['ok', 'cancel'],
                                                default='cancel'):
-                return False
+                return
 
             mfixproc = self.mfixproc
             if not mfixproc:
-                return False
+                return
             if mfixproc.state() != QProcess.Running:
-                return False
+                return
 
             try:
                 mfixproc.terminate()
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-            return True
+            # retry force kill if necessary
+            QTimer.singleShot(100, force_kill)
 
-        if not force_kill():
-            return
-        while self.is_running():
-            t0 = time.time()
-            self.mfixproc.waitForFinished(1000)
-            t1 = time.time()
-            if self.is_running():
-                log = logging.getLogger(__name__)
-                log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
-                if not force_kill():
-                    return
+        # initial force kill attempt
+        QTimer.singleShot(500, force_kill)
+
 
     def start_command(self, is_pymfix, cmd, cwd, env):
         """Start MFIX in QProcess"""
