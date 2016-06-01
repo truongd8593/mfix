@@ -268,8 +268,8 @@ class MfixGuiTests(TestQApplication):
         self.open_tree_item("run")
         saved_path = os.environ['PATH']
         os.environ['PATH'] = ''
+        self.mfix.mfix_exe = ''
         self.mfix.reset()
-
         self.assertFalse(bool(self.find_exes()))
         self.assertFalse(self.mfix.ui.toolbutton_run_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
@@ -278,5 +278,8 @@ class MfixGuiTests(TestQApplication):
         self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
         os.environ["PATH"] = saved_path
 
+
+    #def test_force_kill(self):
+    #def test_stop_mfix(self):
     # TODO:  write more tests: tests for kill job, select different mfix exe,
     # close window with job running, failure to start job, etc

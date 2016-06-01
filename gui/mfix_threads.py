@@ -7,6 +7,8 @@ import logging
 import time
 import subprocess
 
+log = logging.getLogger(__name__)
+
 try:
     # For Python 3.0 and later
     from urllib.request import urlopen, Request
@@ -204,9 +206,9 @@ class Monitor(object):
 
     def _update_executables(self):
         """update self.executables"""
-
         def mfix_print_flags(mfix_exe, cache=self.cache):
             """Determine mfix configuration by running mfix --print-flags.  Cache results"""
+
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
             except OSError as err:
@@ -219,12 +221,11 @@ class Monitor(object):
                 return cached_flags
 
             popen = subprocess.Popen(mfix_exe + " --print-flags",
-                                     cwd = self.parent.get_project_dir(),
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE,
                                      shell=True)
             (out, err) = popen.communicate()
-            flags = '' if err else out
+            flags = '' if err else out.strip()
             cache[mfix_exe] = (stat, flags)
             return flags
 
@@ -234,7 +235,6 @@ class Monitor(object):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
-                    log = logging.getLogger(__name__)
                     log.debug("found %s executable in %s", name, d)
                     config_options[exe] = str(mfix_print_flags(exe))
 
