@@ -1446,6 +1446,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
 
+        self.force_default_settings() #user has no choice about these. is that good?
+
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
@@ -1641,6 +1643,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.ui.mfix_dat_source.setPlainText(src)
 
+    def force_default_settings(self):
+        self.update_keyword('chk_batchq_end', True)
+
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
         # see also project_manager.load_project_file
@@ -1713,6 +1718,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             if ok_to_write:
                 project_file = renamed_project_file
                 try:
+                    self.force_default_settings()
                     self.project.writeDatFile(project_file)
                     self.print_internal(save_msg, color='blue')
                 except Exception as ex:
