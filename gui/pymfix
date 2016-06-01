@@ -453,7 +453,7 @@ def backupres():
 def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, data = Mfix.do_command("EXIT")
-    time.sleep(1) # wait for MFIX thread to end
+    time.sleep(int(request.form['timeout'])) # wait for MFIX thread to end
     os._exit(0)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 

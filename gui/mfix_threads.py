@@ -9,10 +9,12 @@ import subprocess
 
 try:
     # For Python 3.0 and later
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
+    from urllib.parse import urlencode
 except ImportError:
     # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
+    from urllib import urlencode
+    from urllib2 import urlopen, Request
 
 from tools.general import get_mfix_home
 
@@ -92,7 +94,6 @@ class MfixJobManager(object):
         """Start MFIX in QProcess"""
 
         self.is_pymfix, self.cmd, self.cwd, self.env = is_pymfix, cmd, cwd, env
-
         self.mfixproc = QProcess()
         self.mfixproc.setWorkingDirectory(self.cwd)
         mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
@@ -162,9 +163,15 @@ class MfixJobManager(object):
 
     def terminate_pymfix(self):
         """update the status of  the pymfix monitor"""
-        status_str = urlopen('http://localhost:5000/exit').read()
+        url = 'http://localhost:5000/exit'
+        values = {'timeout' : '1',}
+
+        data = urlencode(values)
+        req = Request(url, data)
+        response = urlopen(req)
+        response_str = response.read()
         log = logging.getLogger(__name__)
-        log.debug("status_str is %s", status_str)
+        log.debug("response_str is %s", response_str)
         # self.status = json.loads(status_str)
         # log.debug("status is %s", self.status)
 

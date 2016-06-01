@@ -354,6 +354,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.exe_watcher.addPath(d)
         self.exe_watcher.addPath(get_mfix_home())
         self.monitor._update_executables()
+        self.handle_select_executable()
         self.update_run_options()
 
         #if self.mfix_exe:
