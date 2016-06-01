@@ -48,12 +48,15 @@ class MfixJobManager(object):
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-        #  GUI is nonresponsive while this runs.  Maybe it needs to be in another thread after all
-        mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
-        try:
-            open(mfix_stop_file, "ab").close()
-        except OSError:
-            pass
+        if self.is_pymfix():
+            self.terminate_pymfix()
+        else:
+            #  GUI is nonresponsive while this runs.  Maybe it needs to be in another thread after all
+            mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+            try:
+                open(mfix_stop_file, "ab").close()
+            except OSError:
+                pass
 
         def force_kill():
             mfixproc = self.mfixproc
@@ -154,6 +157,14 @@ class MfixJobManager(object):
         self.mfixproc.error.connect(slot_error)
 
         self.mfixproc.start(self.cmd[0], self.cmd[1:])
+
+    def terminate_pymfix(self):
+        """update the status of  the pymfix monitor"""
+        status_str = urlopen('http://localhost:5000/exit').read()
+        log = logging.getLogger(__name__)
+        log.debug("status_str is %s", status_str)
+        # self.status = json.loads(status_str)
+        # log.debug("status is %s", self.status)
 
     def update_status(self):
         """update the status of  the pymfix monitor"""
