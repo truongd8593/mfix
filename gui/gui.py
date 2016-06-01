@@ -38,7 +38,8 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
-from mfix_threads import MfixJobManager, Monitor
+from job import Job
+from monitor import Monitor
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table, BaseWidget)
@@ -267,8 +268,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.treewidget_model_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
-        self.job_manager = MfixJobManager(self)
-        self.rundir_watcher = QFileSystemWatcher()
+        self.job = Job(parent=self)
+        self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.exe_watcher = QFileSystemWatcher()
         self.monitor = Monitor(self)
 
@@ -381,14 +382,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def confirm_close(self):
         # TODO : option to save
-        if self.job_manager.is_running():
+        if self.job.is_running():
             confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'no':
                 return
             log.info("Stopping mfix at application exit")
-            self.job_manager.stop_mfix()
+            self.job.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
@@ -454,7 +455,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # The list of executables (maybe) changed.
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run
-        running = self.job_manager.is_running()
+        running = self.job.is_running()
         res_file_exists = bool(self.monitor.get_res_files())
         exes = self.monitor.get_exes()
         self.mfix_available = bool(exes)
@@ -529,7 +530,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not self.is_project_open():
             return # ?
 
-        running = self.job_manager.is_running()
+        running = self.job.is_running()
         res_file_exists = bool(self.monitor.get_res_files())
 
         ui = self.ui
@@ -545,11 +546,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.solids.setEnabled(not res_file_exists)
 
         if running:
-            self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
+            self.status_message("MFIX running, process %s" % self.job.mfix_pid)
             ui.run.combobox_mfix_exes.setEnabled(False)
             # Pause only available w/ pymfix (move to separate button?)
             if self.pymfix_enabled:
-                self.set_run_button(text="Unpause" if self.job_manager.is_paused() else "Pause",
+                self.set_run_button(text="Unpause" if self.job.is_paused() else "Pause",
                                     enabled=True)
             else:
                 self.set_run_button(text="Run", enabled=False)
@@ -1310,16 +1311,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         return True
 
     def handle_run_pause(self):
-        if not self.job_manager.is_running():
+        if not self.job.is_running():
             self.run_mfix()
-        elif self.job_manager.is_paused():
-            self.job_manager.unpause()
+        elif self.job.is_paused():
+            self.job.unpause()
         else:
-            self.job_manager.pause()
+            self.job.pause()
 
     def handle_stop(self):
-        if self.job_manager.is_running():
-            self.job_manager.stop_mfix()
+        if self.job.is_running():
+            self.job.stop_mfix()
         else:
             log.error("handle_stop:  mfix not running")
 
@@ -1406,7 +1407,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #log.info(msg) # print_internal logs
         self.print_internal(msg, color='blue')
 
-        self.job_manager.start_command(
+        self.job.start_command(
             is_pymfix=self.pymfix_enabled,
             cmd=run_cmd,
             cwd=self.get_project_dir(),
@@ -1539,10 +1540,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             title += " - " + os.path.basename(project_file)
         if self.unsaved_flag:
             title += '*'
-        if self.job_manager.is_running():
+        if self.job.is_running():
             title += ', running'
-            if self.job_manager.mfix_pid is not None:
-                title += ', process %s'% self.job_manager.mfix_pid
+            if self.job.mfix_pid is not None:
+                title += ', process %s'% self.job.mfix_pid
         self.setWindowTitle(title)
 
     def set_unsaved_flag(self):
