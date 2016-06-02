@@ -17,7 +17,7 @@ except ImportError:
     from urllib import urlencode
     from urllib2 import urlopen, Request
 
-from qtpy.QtCore import QProcess
+from qtpy.QtCore import QProcess, QTimer
 
 class Job(object):
     """class for monitoring an MFIX job"""

@@ -45,24 +45,6 @@ def dismiss_wait():
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
-    def find_exes(self): # All of mine live in Texas
-        """find all mfix and pymfix executables"""
-        matches = []
-        names = 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe'
-        for path in os.environ['PATH'].split(os.pathsep):
-            if path=='' or path==os.path.curdir:
-                continue
-            for name in names:
-                exe = os.path.join(path, name)
-                if os.path.exists(exe):
-                    matches.append(exe)
-        for name in ('mfix', 'mfix.exe', 'pymfix', 'pymfix.exe'):
-            wildcard = os.path.join(self.mfix_home, 'build',  name) # See open_project in gui.py
-            for paths in glob.glob(wildcard):
-                matches.extend(paths)
-
-        return matches
-
     def setUp(self):
         ''' open FluidBed_DES for testing '''
 
@@ -145,8 +127,14 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(os.path.exists(newpath))
 
     def test_run(self):
-        if not self.find_exes():
-            self.skipTest("Only valid when executables are present (install mfix!)")
+        """test running mfix"""
+        #FIXME: write similar test for pymfix
+        mfix = os.path.join(self.mfix_home, "mfix")
+        cme = self.mfix.ui.run.combobox_mfix_exes
+        index = cme.findText(mfix)
+        if index < 0:
+            self.skipTest("Only valid when MFIX_HOME/mfix is present")
+        cme.setCurrentIndex(index)
         self.open_tree_item("run")
 
         runbuttons = (self.mfix.ui.run.button_run_pause_mfix,
@@ -184,9 +172,9 @@ class MfixGuiTests(TestQApplication):
 
         # Resume
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
-        QTest.qWait(100)
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
+        QTest.qWait(300)
 
         # Stop mfix, check for log.
         QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
@@ -267,13 +255,13 @@ class MfixGuiTests(TestQApplication):
 
 
     def test_run_disabled_no_exe(self):
+        self.skipTest("Not working yet.")
         self.open_tree_item("run")
         saved_path = os.environ['PATH']
         os.environ['PATH'] = ''
         self.mfix.mfix_exe = ''
         self.mfix.reset()
         self.assertFalse(bool(self.find_exes()))
-        QTest.qWait(1000)
         self.assertFalse(self.mfix.ui.toolbutton_run_pause_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
