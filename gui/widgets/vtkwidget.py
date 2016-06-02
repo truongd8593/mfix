@@ -298,7 +298,7 @@ class VtkWidget(QtWidgets.QWidget):
     # --- setup ---
     def __connect_events(self):
 
-        # -- Geometry Tree ---
+        # --- Geometry Tree ---
         self.geometrytree.setStyleSheet(
             "QTreeView::indicator:unchecked {image: url(%s);}"
             "QTreeView::indicator:checked {image: url(%s);}"
@@ -491,9 +491,18 @@ class VtkWidget(QtWidgets.QWidget):
         if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
                    'imax', 'jmax', 'kmax']:
             self.update_mesh()
+        elif key == 'no_k':
+            self.ui.geometry.lineedit_keyword_zlength.setEnabled(not newValue)
+            self.ui.mesh.lineedit_keyword_kmax.setEnabled(not newValue)
 
     def objectName(self):
         return 'VTK Widget'
+        
+    def default(self):
+        """reset to defaults"""
+        self.ui.geometry.lineedit_keyword_zlength.setEnabled(True)
+        self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
+        self.clear_all_geometry()
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
@@ -1535,7 +1544,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
-        
+
         self.change_region_visibility(name, self.region_dict[name]['visibility'])
 
         self.vtkRenderWindow.Render()

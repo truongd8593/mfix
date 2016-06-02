@@ -365,13 +365,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.reset_fluids()
         self.reset_solids()
 
-        self.vtkwidget.clear_all_geometry()
-
         self.ui.regions.clear()
 
         # Set all custom widgets to default
         for w in widget_iter(self):
             if isinstance(w, BaseWidget):
+                w.default()
+            elif hasattr(w, 'default'):
                 w.default()
             else:
                 pass # What to do for rest of widgets?
@@ -923,7 +923,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.project.register_widget(self.vtkwidget,
                                      ['xmin', 'xlength', 'ymin', 'ylength',
                                       'zmin', 'zlength', 'imax', 'jmax',
-                                      'kmax'])
+                                      'kmax', 'no_k'])
 
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget
