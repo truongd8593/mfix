@@ -143,9 +143,7 @@ class ProjectManager(Project):
 
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
-        keys = self.keywordItems()
-        mmax = self.get_value('mmax', default=0)
-
+        mmax = self.get_value('mmax', default=1) #?tutorials/FluidBed_DES/ is DEM, mmax not set
         if mmax == 0:
             return SINGLE
         solids_models = set(self.get_value(['solids_model', n], default='TFM').upper()
