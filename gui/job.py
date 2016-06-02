@@ -83,6 +83,10 @@ class Job(object):
             except OSError:
                 pass
 
+        # give mfix a second to notice MFIX.STOP
+        if self.mfixproc.waitForFinished(1000):
+            return
+
         while self.is_running():
             if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
                                                buttons=['ok', 'cancel'],

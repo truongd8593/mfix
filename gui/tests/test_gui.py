@@ -174,6 +174,7 @@ class MfixGuiTests(TestQApplication):
 
         # Resume
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
+        QTest.qWait(100)
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
         QTest.qWait(300)
