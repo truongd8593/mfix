@@ -1618,7 +1618,7 @@ MODULE output_man
          CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
       ENDIF
 
-      IF(dg_kmax/=DESGRIDSEARCH_KMAX) THEN
+      IF(DO_K.AND.dg_kmax/=DESGRIDSEARCH_KMAX) THEN
          WRITE(ERR_MSG,1005) 'Z','DESGRIDSEARCH_KMAX',DESGRIDSEARCH_KMAX,dg_kmax
          DESGRIDSEARCH_KMAX = dg_kmax
          CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
@@ -1626,8 +1626,8 @@ MODULE output_man
 
       IF(ALLOCATED(DG_XE)) DEALLOCATE(DG_XE)
       ALLOCATE(DG_XE(dg_imin2:dg_imax2))
-         DG_XE(dg_imin2) = ZERO
-         i = dg_imin2
+      DG_XE(dg_imin2) = ZERO
+      i = dg_imin2
       do liproc=0,nodesi_tmp-1
          do li = 1,DG_ISIZE_TMP(liproc)
             i = i + 1 
@@ -1638,8 +1638,8 @@ MODULE output_man
 
       IF(ALLOCATED(DG_YN)) DEALLOCATE(DG_YN)
       ALLOCATE(DG_YN(dg_jmin2:dg_jmax2))
-         DG_YN(dg_jmin2) = ZERO
-         j = dg_jmin2
+      DG_YN(dg_jmin2) = ZERO
+      j = dg_jmin2
       do ljproc=0,nodesj_tmp-1
          do lj = 1,DG_JSIZE_TMP(ljproc)
             j = j + 1 
@@ -1647,16 +1647,18 @@ MODULE output_man
          enddo
       enddo
 
-      IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
-      ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
+      IF(DO_K) THEN
+         IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
+         ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
          DG_ZT(dg_kmin2) = ZERO
          k = dg_kmin2
-      do lkproc=0,nodesk_tmp-1
-         do lk = 1,DG_KSIZE_TMP(lkproc)
-            k = k + 1 
-            DG_ZT(k) = DG_ZT(k-1) + DG_DZ_ALL(lkproc)
+         do lkproc=0,nodesk_tmp-1
+            do lk = 1,DG_KSIZE_TMP(lkproc)
+               k = k + 1 
+               DG_ZT(k) = DG_ZT(k-1) + DG_DZ_ALL(lkproc)
+            enddo
          enddo
-      enddo
+      ENDIF
 
 
  1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN ',A,' DIRECTION.'/   &
