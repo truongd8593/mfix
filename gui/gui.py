@@ -1395,22 +1395,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     # --- open/save/new ---
 
     def export_project(self):
-        # TODO: combine export_project and save_as
+        """Same as save_as but do not switch to new project"""
+        ## FIXME:  why are we copying outputs in export but not save_as?
         if self.monitor.get_outputs(["*.SP?"]):
             # TODO: copy SPx files - prompt user for confirmation
             pass
         output_files = self.monitor.get_outputs(["*.RES", "*.STL"])
-        project_file = self.get_save_filename()
-        if not project_file:
+        export_file = self.get_save_filename()
+        if not export_file:
             return
-        project_dir = self.get_project_dir()
-        if not self.check_writable(project_dir):
+        export_dir = os.path.dirname(export_file)
+        if not self.check_writable(export_dir):
             return
+
         for fn in output_files:
             #copy into new_project_directory
-            shutil.copyfile(
-                    fn, os.path.join(project_dir, os.path.basename(fn)))
-        self.save_project(project_file)
+            shutil.copyfile(fn, os.path.join(export_dir, os.path.basename(fn)))
+        self.save_project(filename=export_file)
 
     def save_project(self, filename=None):
         """save project, optionally as a new project.
