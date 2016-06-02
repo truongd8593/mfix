@@ -114,14 +114,17 @@ class Mfix(object):
 
             while cls.pymfix_running:
                 cls.check_requests()
-                if cls.mfix_paused or RUN.tstop <= RUN.time:
+                if cls.mfix_paused or RUN.tstop <= RUN.time + 0.1*RUN.dt:
                     time.sleep(0.1)
+                    cls.update_status()
                 else:
                     iteration_start = timer()
                     cls.do_step()
                     cls.walltime += (timer() - iteration_start)
-                    if RUN.time > cls.t0:
-                        cls.walltime_remaining = cls.walltime * (RUN.tstop/(RUN.time-cls.t0) - 1)
+                    if RUN.tstop <= RUN.time + 0.1*RUN.dt:
+                        cls.walltime_remaining = str(0.)
+                    elif RUN.time > cls.t0:
+                        cls.walltime_remaining = str(cls.walltime * (RUN.tstop/(RUN.time-cls.t0) - 1))
 
                     if RUN.steady_state:
                         break
@@ -157,6 +160,7 @@ class Mfix(object):
         output['paused'] = bool(Mfix.mfix_paused)
         output['time'] = float(RUN.time)
         output['tstop'] = float(RUN.tstop)
+        output['dt'] = float(RUN.dt)
         output['elapsed_walltime'] = cls.walltime
         output['remaining_walltime'] = cls.walltime_remaining
         output['nit'] = int(ITERATE.nit)
