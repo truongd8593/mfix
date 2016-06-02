@@ -625,7 +625,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
-       <widget class="QPushButton" name="button_run_pause_mfix">
+       <widget class="QPushButton" name="button_run_mfix">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -673,10 +673,20 @@
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>Remove output and restart files</string>
+         <string>Remove all output and resume files</string>
         </property>
         <property name="text">
-         <string>Reset Project</string>
+         <string>Reset Job</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="button_pause_mfix">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Pause</string>
         </property>
        </widget>
       </item>
