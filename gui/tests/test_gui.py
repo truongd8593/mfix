@@ -23,6 +23,8 @@ from tools.general import to_unicode_from_fs
 from .helper_functions import TestQApplication
 import gui
 
+# TODO : replace all qWaits with a 'waitFor' function
+
 def dismiss():
     """dismiss modal QMessageBox"""
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
