@@ -26,8 +26,6 @@
   MOMENTUM_X_eq(0) = .false.
   momentum_y_eq(0) = .true.
 
-  GRANULAR_ENERGY = .TRUE.
-  
   KT_TYPE = 'IA_NONEP'   ! using IA polydisperse kinetic theory
   
   RDF_TYPE = 'LEBOWITZ'  ! this is default radial distribution function

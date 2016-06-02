@@ -13,7 +13,6 @@
 
   DT_MAX = 2.0E-3
 
-  GRANULAR_ENERGY       = .FALSE.  
   BLENDING_STRESS       = .FALSE.
   MAX_NIT               = 1000
 

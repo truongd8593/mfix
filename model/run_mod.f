@@ -106,7 +106,7 @@
       LOGICAL :: CN_ON
 
 ! If .TRUE. solve granular energy equations
-      LOGICAL :: GRANULAR_ENERGY
+      LOGICAL :: GRANULAR_ENERGY = .FALSE.
 
 ! If .TRUE. solve species balance equations
       LOGICAL :: SPECIES_EQ(0:DIM_M)

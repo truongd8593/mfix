@@ -250,15 +250,6 @@
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
-!<keyword category="Run Control" required="false" tfm="true">
-!  <description>Granular energy formulation selection.</description>
-!  <valid value=".FALSE."
-!    note="Use algebraic granular energy equation formulation."/>
-!  <valid value=".TRUE."
-!    note="Use granular energy transport equation (PDE) formulation."/>
-      GRANULAR_ENERGY = .FALSE.
-!</keyword>
-
 !<keyword category="Run Control" required="false">
 !  <description>
 !    The K-Epsilon turbulence model (for single-phase flow).
@@ -1355,10 +1346,10 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids phase stress model [LUN_1984]. This is only needed when
-!    solving the granular energy PDE (GRANULAR_ENERGY = .TRUE.).
+!    Solids phase stress model [Algebraic].
 !  </description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="ALGEBRAIC"
+!    note="Granular energy algegraic formulation."/>
 !  <valid value="AHMADI"
 !    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
 !  <valid value="GD_99"

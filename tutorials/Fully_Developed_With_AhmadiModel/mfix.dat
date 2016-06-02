@@ -37,17 +37,8 @@
   MOMENTUM_Y_EQ  =  .TRUE.   .TRUE.
   MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
 
-! Solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?  [.FALSE.]
-  GRANULAR_ENERGY = .T.
-
 ! the kinetic theory model used to describe the solids phase(s)
   KT_TYPE = 'AHMADI'
-
-! legacy keyword to invoke ahmadi or simonin models
-! (cannot be invoked simultaneously)
-#  AHMADI = .T.
-#  SIMONIN = .F.
 
 ! the gas-solid drag model.  ['SYAM_OBRIEN']
 ! note drag will not be used for this granular flow case

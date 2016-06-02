@@ -88,6 +88,8 @@
          ENDIF
       ENDDO
 
+      CALL CHECK_KT_TYPE
+
 ! Solids phase with constant solids viscosity is employed
 !---------------------------------------------------------------------//
       IF (def_mus0 > 0) THEN
@@ -119,15 +121,6 @@
       ENDIF
 
 
-! PDE granular energy. Check kinetic theory specifications.
-!---------------------------------------------------------------------//
-      IF (GRANULAR_ENERGY) THEN
-         IF(def_mus0 >0) THEN
-            WRITE(ERR_MSG,1100)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-         CALL CHECK_KT_TYPE
-      ENDIF
 
 ! Algebraic granular energy equation
 !---------------------------------------------------------------------//
@@ -407,9 +400,19 @@
          /'Please correct the mfix.dat file.')
 
 
+! Set the PDE flag. Disable for algebraic.
+      GRANULAR_ENERGY = .TRUE.
 
 ! Check for valid options for kinetic theory models (KT_TYPE)
       SELECT CASE(trim(adjustl(KT_TYPE)))
+
+
+!``````````````````````````````````````````````````````````````````````
+      CASE ('ALGEBRAIC')
+         KT_TYPE_ENUM = ALGEBRAIC
+         GRANULAR_ENERGY = .FALSE.
+         RETURN
+
 
 !``````````````````````````````````````````````````````````````````````
       CASE ('IA_NONEP')

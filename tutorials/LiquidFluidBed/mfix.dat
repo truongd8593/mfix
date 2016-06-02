@@ -15,7 +15,6 @@
   DT_MIN                = 1.0d-8                       !min. time step
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .FALSE.    .FALSE.            !do not solve species eq
-  GRANULAR_ENERGY       = .TRUE.                    ! solve full granular energy eq
   FRICTION              = .TRUE.              ! frictional model based on this paper:
   SAVAGE                = 2                   ! Powder Technol. 129 (2003) 72-85
   SCHAEFFER = .FALSE.
@@ -54,6 +53,7 @@
 ! Solids-phase Section                                                          
   
   DRAG_TYPE             = 'WEN_YU'  
+  KT_TYPE               = 'LUN_1984'
   RO_s0                 = 2.4                           !glass-beads density
   D_p0                  = 0.02                          !200-micron particle diameter     
   e                     = 0.999                         !restitution coefficient

@@ -15,7 +15,6 @@
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE. .FALSE. .FALSE.
 
-  GRANULAR_ENERGY = .t.
   
   KT_TYPE = 'GHD'   ! using GHD polydisperse kinetic theory
   

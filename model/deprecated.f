@@ -74,7 +74,7 @@
       DOUBLE PRECISION :: PARTICLES_FACTOR, DES_RES_DT, DES_SPX_DT
       INTEGER :: MAX_PIS, MAX_FACETS_PER_CELL_DES
       LOGICAL :: USE_STL_DES, DES_CONTINUUM_COUPLED, &
-         DES_CONVERT_BOX_TO_FACETS
+         DES_CONVERT_BOX_TO_FACETS, GRANULAR_ENERGY
 
 
 ! 2014-1 Deprecated list:
@@ -113,21 +113,35 @@
       NAMELIST / DEP_2016_1 / MAX_FACETS_PER_CELL_DES,                 &
           DES_CONVERT_BOX_TO_FACETS
 
-! 2014-1 Release Deprecated keywords.
-      STRING=''; STRING = '&DEP_2014_1 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
-      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2014-1')
+! 2016-1 Deprecated list:
+!-----------------------------------------------------------------------
+      NAMELIST / DEP_2016_2 / GRANULAR_ENERGY
 
+
+! 2016-2 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2016_2 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-2')
+
+! 2016-1 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2016_1 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-1')
+
+! 2015-2 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2015_2 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-2')
 
 ! 2015-1 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2015_1 '//trim(adjustl(INPUT))//'/'
       READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
       IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-1')
 
-! 2015-2 Release Deprecated keywords.
-      STRING=''; STRING = '&DEP_2015_2 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
-      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-2')
+! 2014-1 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2014_1 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2014-1')
 
 ! Everything else...  This should be the last call in this routine.
       CALL UNKNOWN_KEYWORD(LINE_NO, INPUT)
