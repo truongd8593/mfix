@@ -83,8 +83,7 @@ class Job(object):
             except OSError:
                 pass
 
-        def force_kill():
-            """attempt to kill job; return True if further force_kill() calls may be necessary"""
+        while self.is_running():
             if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
                                                buttons=['ok', 'cancel'],
                                                default='cancel'):
@@ -97,14 +96,11 @@ class Job(object):
             except OSError as err:
                 log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
-
-        while self.is_running():
             t0 = time.time()
             self.mfixproc.waitForFinished(1000)
             t1 = time.time()
             if self.is_running():
                 log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
-                force_kill()
         self.mfixproc = None
 
 
