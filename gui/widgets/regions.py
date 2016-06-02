@@ -429,3 +429,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 break
 
         return rtype
+        
+    def default(self):
+        """reset to default"""
+        self.clear()

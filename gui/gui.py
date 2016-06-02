@@ -365,8 +365,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.reset_fluids()
         self.reset_solids()
 
-        self.ui.regions.clear()
-
         # Set all custom widgets to default
         for w in widget_iter(self):
             if isinstance(w, BaseWidget):
