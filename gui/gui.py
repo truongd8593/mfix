@@ -537,6 +537,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui = self.ui
 
         # Enacpsulate this!
+        # FIXME not everything is disabled, eg fluid pane
+        # FIXME let user know why UI is blocked?
         ui.general.setEnabled(not res_file_exists)
         ui.geometry.setEnabled(not res_file_exists)
         ui.mesh.setEnabled(not res_file_exists)

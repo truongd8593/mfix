@@ -83,28 +83,25 @@ class Job(object):
             except OSError:
                 pass
 
-        # give mfix a second to notice MFIX.STOP
-        if self.mfixproc.waitForFinished(1000):
-            return
-
         while self.is_running():
-            if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
-                                               buttons=['ok', 'cancel'],
-                                               default='cancel'):
-                return
-
-            if not self.is_running():
-                return
-            try:
-                self.mfixproc.terminate()
-            except OSError as err:
-                log = logging.getLogger(__name__)
-                log.error("Error terminating process: %s", err)
             t0 = time.time()
             self.mfixproc.waitForFinished(1000)
             t1 = time.time()
             if self.is_running():
-                log.warn("mfix still running after %.2f ms forcing kill" % (1000*(t1-t0)))
+                log.warn("mfix still running after %.2f ms" % (1000*(t1-t0)))
+            else:
+                break
+            if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
+                                               buttons=['ok', 'cancel'],
+                                               default='cancel'):
+                return
+            try:
+                log.warn("killing mfix process %s"%self.mfix_pid)
+                self.mfixproc.terminate()
+            except OSError as err:
+                log = logging.getLogger(__name__)
+                log.error("Error terminating process: %s", err)
+
         self.mfixproc = None
 
 
