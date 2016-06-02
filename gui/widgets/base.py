@@ -555,7 +555,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
     def default(self):
         '''if there is a default value, set it, else clear'''
         if self.default_value is not None:
-            self.model().update(self.default_value)
+            self.model().update(copy.deepcopy(self.default_value))
         else:
             self.clear()
 

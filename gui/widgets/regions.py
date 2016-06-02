@@ -53,7 +53,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.dtype = OrderedDict
         tablewidget._setModel() # Should be in __init__
         tablewidget.set_value(OrderedDict())
-        tablewidget.set_columns(['visible', 'color', 'type', 'from', 'to'])
+        tablewidget.set_columns(['visible', 'color', 'type'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
 #        tablewidget.set_selection_model('cell', multi=False)
