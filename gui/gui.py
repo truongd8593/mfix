@@ -401,6 +401,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def set_keyword(self, key, value, args=None):
         """convenience function to set keyword"""
+        self.set_unsaved_flag()#?
         self.project.submit_change(None, {key:value}, args)
 
     def update_keyword(self, key, value, args=None):
@@ -418,6 +419,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         try:
             success = self.project.removeKeyword(key, args, warn=False)
             if success:
+                self.set_unsaved_flag()
                 self.print_internal("%s" % format_key_with_args(key, args),
                                     font='strikeout')
         except Exception as e:
@@ -760,12 +762,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #self.enable_energy_eq(False)
 
         # Fluid phase - move to fluid_handlers.py
-        ui.lineedit_fluid_phase_name.textChanged.connect(
-            self.set_fluid_phase_name)
-        ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
-            self.enable_fluid_scalar_eq)
-        ui.spinbox_fluid_nscalar_eq.valueChanged.connect(
-            self.set_fluid_nscalar_eq)
+        ui.lineedit_fluid_phase_name.editingFinished.connect(self.handle_fluid_phase_name)
+        ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(self.enable_fluid_scalar_eq)
+        ui.spinbox_fluid_nscalar_eq.valueChanged.connect(self.set_fluid_nscalar_eq)
 
         # Fluid phase models
         # Density
@@ -895,26 +894,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)
-
-            # connect to set_unsaved_flag method (keyword or not!)
-            widget_name = widget.objectName()
-            # Don't set unsaved_flag for these widgets
-            skiplist = ('toolbutton_open', 'toolbutton_save', 'tablewidget_regions',
-                        'toolbutton_more') #new', 'toolbutton_save_as')
-
-#Object::connect:  (sender name:   'tablewidget_regions')
-#Object::connect: No such signal Table::value_updated(PyQt_PyObject,PyQt_PyObject,PyQt_PyObject)
-
-            if any(x in widget_name for x in skiplist):
-                continue
-            if widget_name.endswith('_mfix'): # Run controls
-                continue
-            if 'button' in widget_name: # No 'value_updated' for buttons
-                widget.clicked.connect(self.set_unsaved_flag)
-            elif hasattr(widget, 'value_updated'): # Covers all custom widgets
-                widget.value_updated.connect(self.set_unsaved_flag)
-
-            # Does that cover everything?
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
@@ -1786,7 +1765,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_fluid_species_table()
         # fluid momentum and species eq. handled by _keyword_ widget
         # fluid scalar eq
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
 
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) == 0)

@@ -23,7 +23,7 @@ test3: all
 	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
 	pkill Xvfb
 
-test:	all
+test: all
 	(Xvfb :99 &)
 	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
 	pkill Xvfb

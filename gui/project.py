@@ -1247,7 +1247,6 @@ class Project(object):
         """Remove a keyword from the project.
         return True if item deleted.
         if warn=True, raise KeyError if item not present, else return False."""
-
         if args is None:
             args = []
         keyword = self.keywordLookup(key, args, warn=False)

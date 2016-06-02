@@ -2,6 +2,8 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+from collections import OrderedDict
+
 #import Qt
 from qtpy import QtCore, QtWidgets, PYQT5
 
@@ -211,6 +213,7 @@ class SolidHandler(object):
         self.solids = d
         self.update_solids_table()
         self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
+        self.set_unsaved_flag()
 
     def solids_delete(self):
         tw = self.ui.solids.tablewidget_solids
@@ -221,6 +224,7 @@ class SolidHandler(object):
         del self.solids[name]
         tw.removeRow(row)
         tw.clearSelection()
+        self.set_unsaved_flag()
 
     def enable_solid_scalar_eq(self, state):
         spinbox = self.ui.solids.spinbox_nscalar_eq

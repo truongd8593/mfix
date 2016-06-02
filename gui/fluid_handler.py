@@ -126,13 +126,15 @@ class FluidHandler(object):
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
 
+    def handle_fluid_phase_name(self): # editingFinished signal does not include value
+        value = self.ui.linedit_fluid_phase_name.text()
+        self.set_fluid_phase_name(value)
 
     def set_fluid_phase_name(self, value):
         if value != self.ui.lineedit_fluid_phase_name.text():
             self.ui.lineedit_fluid_phase_name.setText(value)
-
-        value = None if value=='Fluid' else value # don't save default
         self.project.mfix_gui_comments['fluid_phase_name'] = value
+        self.set_unsaved_flag()
 
     def disable_fluid_solver(self, disabled):
         enabled = not disabled

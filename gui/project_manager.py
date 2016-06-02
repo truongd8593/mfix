@@ -373,6 +373,7 @@ class ProjectManager(Project):
 
         if hasattr(widget, 'value_updated'):
             widget.value_updated.connect(self.submit_change)
+            widget.value_updated.connect(self.gui.set_unsaved_flag)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
@@ -380,7 +381,7 @@ class ProjectManager(Project):
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.
         Unmatching entries are not modified"""
-
+        self.gui.set_unsaved_flag() # Move from gui to project
         new_thermo_data = []
         #species_to_save = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
         # We're going to save all of them, even the ones from BURCAT. so that mfix does
