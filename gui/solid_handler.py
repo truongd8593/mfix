@@ -194,6 +194,8 @@ class SolidHandler(object):
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
 
+        if nrows == 1: # If there's only 1 let's select it for the user's convenience
+            table.setCurrentCell(0,0)
     def handle_solids_phase_name(self):
         new_name = self.ui.solids.lineedit_solids_phase_name.text()
         phase = self.solids_current_phase
