@@ -273,6 +273,7 @@ class MfixGuiTests(TestQApplication):
         self.mfix.mfix_exe = ''
         self.mfix.reset()
         self.assertFalse(bool(self.find_exes()))
+        QTest.qWait(1000)
         self.assertFalse(self.mfix.ui.toolbutton_run_pause_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
