@@ -188,12 +188,14 @@ def recurse_dict(d, path=()):
 
 def test_recurse_dict():
     d = {1: {2:3,
-             4: {5:6}},
+             3: {},
+             4: {5:6},
+             5: {6:{}, 7:8}},
          2: {}}
 
     l = list(recurse_dict(d))
     l.sort()
-    assert l == [((1,2),3), ((1,4,5), 6)]
+    assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
 
 
 def recurse_dict_empty(d, path=()):
@@ -207,25 +209,27 @@ def recurse_dict_empty(d, path=()):
     See test_recurse_dict_empty for an example"""
 
     # Not quite depth-first b/c order of dictionary key is arbitrary
-    for k,v in d.items():
+    for (k,v) in d.items():
         subpath = path + (k,)
         if isinstance(v, dict):
             if v == {}:
-                yield(path, v)
+                yield(subpath, v)
             else:
                 for r in recurse_dict_empty(v, subpath):
                     yield r
         else:
-            yield (path, v)
+            yield (subpath, v)
 
 def test_recurse_dict_empty():
     d = {1: {2:3,
-             4: {5:6}},
+             3: {},
+             4: {5:6},
+             5: {6:{}, 7:8}},
          2: {}}
 
     l = list(recurse_dict_empty(d))
     l.sort()
-    assert l == [((), {}), ((1,), 3), ((1, 4), 6)]
+    assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
 
 #http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
 #see also notes at https://pypi.python.org/pypi/ushlex/
