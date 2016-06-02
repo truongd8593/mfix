@@ -630,8 +630,8 @@
       enddo
 
       IF(DO_K) THEN
-      ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
          IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
+         ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
          DG_ZT(dg_kmin2) = ZERO
          k = dg_kmin2
          do lkproc=0,nodesk-1
@@ -642,7 +642,7 @@
          enddo
       ENDIF
 
- 1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN',A,' DIRECTION.'/   &
+ 1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN ',A,' DIRECTION.'/   &
              '      ORIGINAL SIZE (',A,') =',I6/                                &
              '      NEW SIZE                           =',I6) 
 

@@ -36,11 +36,26 @@ MODULE CUT_CELL_PREPROC
       USE sendrecv
       USE toleranc
       USE vtk
+      use physprop, only: RO_G0
+      use discretelement, only: GENER_PART_CONFIG
+      use error_manager
 
       IMPLICIT NONE
 
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
+
+! Initialize the error manager.                                                                  
+      CALL INIT_ERR_MSG("CUT CELL PRE-PROCESSING")
+
+      IF(RO_G0==ZERO) THEN  ! Nothing to do for granular flow and no IC for DEM
+         IF((RUN_TYPE=='NEW'.AND..NOT.GENER_PART_CONFIG).OR.RUN_TYPE(1:3)=='RES') THEN
+            WRITE(ERR_MSG,1000) 
+            CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+            RETURN
+         ENDIF
+
+      ENDIF
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -141,6 +156,8 @@ MODULE CUT_CELL_PREPROC
 
 10    FORMAT(1X,A)
 20    FORMAT(1X,A,F8.2,A)
+1000  FORMAT('Info: THIS IS A DEM GRANULAR FLOW SIMULATION.'/   &                          
+             '      SKIPPING CARTESIAN GRID PRE-PROCESSING.'/)
 
       END SUBROUTINE CUT_CELL_PREPROCESSING
 

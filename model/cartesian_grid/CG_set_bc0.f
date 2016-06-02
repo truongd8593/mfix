@@ -47,6 +47,7 @@
       LOGICAL :: GLOBAL_CORNER
 !--------------------------------------------------------------------//
 
+      IF(RO_G0==ZERO) RETURN  ! Nothing to do for granular flow
 
 ! Define global corners as acceptable default walls
 ! These cells should never be used
