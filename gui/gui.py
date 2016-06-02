@@ -1324,6 +1324,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 return
         self.update_keyword('run_type', 'new')
         self.project.writeDatFile(self.get_project_file())
+        self.clear_unsaved_flag()
+        self.update_source_view()
         self._start_mfix()
 
     def restart_mfix(self):
@@ -1337,6 +1339,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_keyword('run_type', 'new')
         #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file()) # XXX
+        self.clear_unsaved_flag()
+        self.update_source_view()
         self._start_mfix()
 
     def resume_mfix(self):
@@ -1352,6 +1356,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.update_keyword('run_type', 'restart_2')
         #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file()) # XXX
+        self.clear_unsaved_flag()
+        self.update_source_view()
         self._start_mfix()
 
     def _start_mfix(self):
@@ -1427,8 +1433,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
 
-        self.force_default_settings() #user has no choice about these. is that good?
-
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
@@ -1438,27 +1442,26 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         project_base = os.path.basename(project_file)
         self.project.run_name.updateValue(os.path.splitext(project_base)[0])
         self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
-        self.project.writeDatFile(project_file) # XXX
-        self.clear_unsaved_flag()
+        # XXX fixme move unsaved flag to project, integrate with writeDatFile
+        self.project.writeDatFile(project_file)
 
     def save_as(self):
-        """Save As user dialog
-        updates project.run_name with user-supplied data
-        opens the new project"""
+        """Prompt user for new filename, save project to that file and make
+        it the active project"""
         # TODO: combine export_project and save_as
-        project_file = self.get_save_filename()
-        if not project_file:
+        new_file = self.get_save_filename()
+        if not new_file:
             return
-        project_dir = os.path.dirname(project_file)
-        new_project_basename = os.path.basename(project_file)
-        run_name = os.path.splitext(new_project_basename)[0]
+        new_dir = os.path.dirname(new_file)
+        if not self.check_writable(new_dir):
+            return
+        # Output files?
+        # Force run name to file name.  Is this a good idea?
+        basename = os.path.basename(new_file)
+        run_name = os.path.splitext(basename)[0]
+        self.set_project_file(new_file)
         self.update_keyword('run_name', run_name)
-
-        if not self.check_writable(project_dir):
-            return
-
-        self.save_project(project_file)
-        self.clear_unsaved_flag()
+        self.save_project()
 
     def get_save_filename(self, dialog_message=None):
         """wrapper for call to getSaveFileName, override in unit tests"""
@@ -1487,6 +1490,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         project_file = self.get_project_file()
         try:
             self.save_project()
+            self.clear_unsaved_flag()
         except Exception as e:
             msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
             self.print_internal("Error: %s" % msg, color='red')
@@ -1502,7 +1506,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # flickering, etc so maybe we shouldn't do this.
         #
         #self.open_project(self.get_project_file())
-        self.update_source_view()
 
     def handle_export(self):
         # TODO:  catch/report exceptions!
@@ -1511,7 +1514,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def handle_save_as(self):
         # TODO:  catch/report exceptions!
         self.save_as()
-        self.update_source_view()
+        self.clear_unsaved_flag()
 
     def update_window_title(self):
         title = self.solver_name or 'MFIX'
@@ -1701,8 +1704,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 project_file = renamed_project_file
                 try:
                     self.force_default_settings()
-                    self.project.writeDatFile(project_file)
+                    self.project.writeDatFile(project_file) #XX
                     self.print_internal(save_msg, color='blue')
+                    self.clear_unsaved_flag()
                 except Exception as ex:
                     msg = 'Failed to save %s: %s: %s' % (project_file, ex.__class__.__name__, ex)
                     self.print_internal("Error: %s" % msg, color='red')
@@ -1713,7 +1717,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                                  default='ok')
                     traceback.print_exception(*sys.exc_info())
                     return
-
 
         if not self.is_project_open(): # Make sure main window is enabled
             self.ui.stackedwidget_mode.setEnabled(True)
@@ -1817,6 +1820,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
 
+        self.force_default_settings()
+
+        if self.unsaved_flag: # Settings changed after loading
+            self.save_project()
+            self.clear_unsaved_flag()
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]

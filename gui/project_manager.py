@@ -136,7 +136,7 @@ class ProjectManager(Project):
             val_str = to_text_string(updatedValue) # Just used for log message
             #if isinstance(updatedValue, bool):
             #    val_str = '.%s.' % val_str
-
+            self.gui.set_unsaved_flag()
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace")
 
@@ -371,7 +371,7 @@ class ProjectManager(Project):
 
         if hasattr(widget, 'value_updated'):
             widget.value_updated.connect(self.submit_change)
-            widget.value_updated.connect(self.gui.set_unsaved_flag)
+            #widget.value_updated.connect(self.gui.set_unsaved_flag)
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
