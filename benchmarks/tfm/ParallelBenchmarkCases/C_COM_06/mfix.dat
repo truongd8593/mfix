@@ -23,7 +23,7 @@
   ENERGY_EQ =  .T.
   SPECIES_EQ = .T. .T.
 
-  GRANULAR_ENERGY = .T.
+  KT_TYPE = 'LUN_1984'
 
   SCHAEFFER = .F.
 
