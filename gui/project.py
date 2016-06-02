@@ -1242,7 +1242,6 @@ class Project(object):
         for keys, value in recurse_dict_empty(self._keyword_dict):
             yield value
 
-
     def removeKeyword(self, key, args=None, warn=True):
         """Remove a keyword from the project.
         return True if item deleted.
@@ -1256,10 +1255,14 @@ class Project(object):
             else:
                 return False
         # remove from dat_file_list
-        try:
-            self.dat_file_list.remove(keyword)
-        except ValueError:
-            pass
+        # Note. list.remove does not work because of the way keyword comparison is implemented
+        #  (remove will remove the first key with matching value)
+        #  Do we really need comparison of keyword object by value to work?
+        #try:
+        #    self.dat_file_list.remove(keyword) #
+        #except ValueError:
+        #    pass
+        self.dat_file_list = [k for k in self.dat_file_list if k is not keyword]
 
         # remove from dict
         self._recursiveRemoveKeyFromKeywordDict([key]+args, warn)
@@ -1280,9 +1283,6 @@ class Project(object):
                     if gas.delete:
                         cond.gasSpecies.delete(gas)
                         #self.dat_file_list.remove(gas) FIXME this won't work
-                        #  since 'gas' object is not in dat_file_list - just
-                        #  the raw text representation, which spans multiple
-                        #  lines
                 for solid in cond.solids:
                     for species in solid.species:
                         if species.delete:
@@ -1305,32 +1305,32 @@ class Project(object):
                 collection.delete(item)
 
 
-    def keywordLookup(self, keyword, args=None, warn=True):
-        """Search the project for a keyword and return the Keyword object
+    def keywordLookup(self, key, args=None, warn=True):
+        """Search the project for a key and return the Keyword object
         If not found, raise KeyError if warn, else return None"""
 
         if args is None:
             args = []
 
-        keyword = keyword.lower()
+        key = key.lower()
         keywordobject = None
 
         # FIXME
         # This is unfortunate - defeats the efficiency of dictionaries
         # because all lookups iterate through the whole dictionary
-        for (key, value) in recurse_dict(self._keyword_dict):
-            if key[0] == keyword:
-                if args and value.args == args:
-                    keywordobject = value
+        for (k, v) in recurse_dict(self._keyword_dict):
+            if k[0] == key:
+                if args and args == v.args:
+                    keywordobject = v
                     break
-                elif not args:
-                    keywordobject = value
+                elif not args: #? sloppy matching - why needed?
+                    keywordobject = v
                     break
                 else:
                     continue
 
         if warn and keywordobject is None:
-            raise KeyError(keyword)
+            raise KeyError(key)
         return keywordobject
 
 
