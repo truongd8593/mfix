@@ -36,10 +36,6 @@
   MOMENTUM_X_EQ(0) = .FALSE.
   MOMENTUM_Y_EQ(0) = .FALSE.
 
-! solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?   [.FALSE.]
-  GRANULAR_ENERGY = .T.
-  
 ! the kinetic theory model used to describe the solids phase(s)
   KT_TYPE = 'GHD'   
   

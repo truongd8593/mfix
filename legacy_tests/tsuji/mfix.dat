@@ -12,9 +12,8 @@
 #
   ENERGY_EQ = .FALSE.      ! isothermal      
   SPECIES_EQ = 2*.FALSE.   ! no chemical reactions, only hydrodynamics
-  GRANULAR_ENERGY = .TRUE. ! solve for granular energy
   K_EPSILON = .TRUE.       ! not necessary to set if Simonin model is set.
-  SIMONIN   = .TRUE.       ! model described in my AIChE J. paper Oct. 2007.
+  KT_TYPE = 'SIMONIN'      ! The kinetic theory model
 
   DISCRETIZE = 9*2        ! using 2nd order superbee scheme.
   DEF_COR = .TRUE.

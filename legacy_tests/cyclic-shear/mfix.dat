@@ -30,12 +30,8 @@
   MOMENTUM_Y_EQ  =  .TRUE.   .TRUE.
   MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
 
-! solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?   [.FALSE.]
-  GRANULAR_ENERGY = .TRUE.
-
 ! the kinetic theory model used to describe the solids phase(s)
-  KT_TYPE = 'LUN_1984'     
+  KT_TYPE = 'LUN_1984'
 
 ! use the schaeffer model for frictional/plastic solids phase
 ! stress?   [.TRUE.]  

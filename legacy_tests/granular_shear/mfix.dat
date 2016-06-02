@@ -14,13 +14,12 @@
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.     .FALSE.
 
-  GRANULAR_ENERGY = .TRUE.
+  KT_TYPE = 'LUN_1984'
+  MOMENTUM_X_EQ =  .FALSE.  .TRUE.
+  MOMENTUM_Y_EQ =  .FALSE.  .TRUE.
 
-   MOMENTUM_X_EQ =  .FALSE.  .TRUE.
-   MOMENTUM_Y_EQ =  .FALSE.  .TRUE.
+  GRAVITY = 0.0
 
-   GRAVITY = 0.0
-   
 #
 # Geometry Section
 #

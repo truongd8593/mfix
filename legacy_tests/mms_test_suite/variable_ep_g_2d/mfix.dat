@@ -84,7 +84,6 @@
 
   solids_model(1)   = 'tfm'
 
-  Granular_energy   = .F.
   Friction          = .F.   ! no Princeton solid stress model
   Schaeffer         = .F.   ! no Schaeffer frictional stress formulation
 

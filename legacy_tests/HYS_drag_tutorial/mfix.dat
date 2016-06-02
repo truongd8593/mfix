@@ -34,10 +34,6 @@
    MOMENTUM_X_EQ =  3*.T.
    MOMENTUM_Y_EQ =  3*.T.
 
-! solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?   [.FALSE.]
-  GRANULAR_ENERGY = .FALSE.
-  
 ! the kinetic theory model used to describe the solids phase(s)
 #  KT_TYPE = 'IA_NONEP'   ! NOT using IA polydisperse kinetic theory
   

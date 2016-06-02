@@ -1364,7 +1364,7 @@
 !    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
 !  <valid value="SIMONIN"
 !    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = "LUN_1984"
+      KT_TYPE = "ALGEBRAIC"
 !</keyword>
 
 ! Retired keyword for specifying Ahmadi KT Theory.
