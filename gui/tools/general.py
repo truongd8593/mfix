@@ -179,12 +179,12 @@ def recurse_dict(d, path=()):
 
     # Not quite depth-first b/c order of dictionary key is arbitrary
     for (k,v) in d.items():
-        path = path + (k,)
+        subpath = path + (k,)
         if isinstance(v, dict):
-            for r in recurse_dict(v, path):
+            for r in recurse_dict(v, subpath):
                 yield r
         else:
-            yield (path, v)
+            yield (subpath, v)
 
 def test_recurse_dict():
     d = {1: {2:3,
@@ -208,12 +208,12 @@ def recurse_dict_empty(d, path=()):
 
     # Not quite depth-first b/c order of dictionary key is arbitrary
     for k,v in d.items():
-        path = path + (k,)
+        subpath = path + (k,)
         if isinstance(v, dict):
             if v == {}:
                 yield(path, v)
             else:
-                for r in recurse_dict_empty(v, path):
+                for r in recurse_dict_empty(v, subpath):
                     yield r
         else:
             yield (path, v)
