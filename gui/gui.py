@@ -46,6 +46,7 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
+from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 
 from fluid_handler import FluidHandler
 from solid_handler import SolidHandler
@@ -57,17 +58,9 @@ from tools.general import (make_callback, get_icon, get_mfix_home,
 
 set_script_directory(SCRIPT_DIRECTORY)
 
-
 from tools.namelistparser import buildKeywordDoc
 
 from constants import *
-
-
-# look for pyqtnode
-try:
-    from pyqtnode import NodeWidget
-except ImportError:
-    NodeWidget = None
 
 if PRECOMPILE_UI:
     try:
@@ -247,6 +240,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             get_icon('save.png'), 'Save As', self.handle_save_as)
         self.ui.action_export = self.ui.menu_more.addAction(
             get_icon('open_in_new.png'), 'Export', self.handle_export)
+        self.ui.action_compile_tool = self.ui.menu_more.addAction(
+            get_icon('build.png'), 'Compile', self.handle_compile)
+        self.ui.menu_more.addSeparator()
+        self.ui.action_about = self.ui.menu_more.addAction(
+            get_icon('settings.png'), 'Settings', self.handle_settings)
+        self.ui.action_about = self.ui.menu_more.addAction(
+            get_icon('help.png'), 'Help', self.handle_help)
+        self.ui.action_about = self.ui.menu_more.addAction(
+            get_icon('info.png'), 'About', self.handle_about)
         self.ui.menu_more.addSeparator()
         self.ui.action_close = self.ui.menu_more.addAction(
             get_icon('close.png'), 'Close', self.close)
@@ -297,8 +299,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.__setup_vtk_widget()
 
         # --- workflow setup ---
-        if NodeWidget is not None:
-            self.__setup_workflow_widget()
+        self.__setup_workflow_widget()
 
         # --- default ---
         self.mode_changed('modeler')
@@ -928,11 +929,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.regions.vtkwidget = self.vtkwidget
 
     def __setup_workflow_widget(self):
-
-        self.nodeChart = NodeWidget(showtoolbar=False)
-        # Build default node library
-        self.nodeChart.nodeLibrary.buildDefaultLibrary()
-        self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
+        """set up the workflow widgets if pyqtnode is available"""
+        if PYQTNODE_AVAILABLE:
+            self.ui.workflow_widget = WorkflowWidget(self.project, self)
+            self.ui.verticallayout_workflow_mode.addWidget(
+                self.ui.workflow_widget)
+        else:
+            self.ui.pushButtonWorkflow.setEnabled(False)
+            self.ui.pushButtonWorkflow.setToolTip(
+                "Workflow disabled, can't import pyqtnode")
 
     @classmethod
     def get_project_file(cls):
@@ -1515,6 +1520,26 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # TODO:  catch/report exceptions!
         self.save_as()
         self.clear_unsaved_flag()
+
+    def handle_settings(self):
+        """handle user settings"""
+        # TODO: implement
+        self.unimplemented()
+
+    def handle_compile(self):
+        """compiling tool"""
+        # TODO: implement
+        self.unimplemented()
+
+    def handle_help(self):
+        """show help popup"""
+        # TODO: implement
+        self.unimplemented()
+
+    def handle_about(self):
+        """show about popup"""
+        # TODO: implement
+        self.unimplemented()
 
     def update_window_title(self):
         title = self.solver_name or 'MFIX'
