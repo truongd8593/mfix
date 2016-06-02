@@ -248,7 +248,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.action_about = self.ui.menu_more.addAction(
             get_icon('help.png'), 'Help', self.handle_help)
         self.ui.action_about = self.ui.menu_more.addAction(
-            get_icon('info.png'), 'About', self.handle_about)
+            get_icon('infooutline.png'), 'About', self.handle_about)
         self.ui.menu_more.addSeparator()
         self.ui.action_close = self.ui.menu_more.addAction(
             get_icon('close.png'), 'Close', self.close)
