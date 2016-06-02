@@ -28,6 +28,7 @@ MODULE read_input
       USE leqsol
       USE main, only: mfix_dat
       USE mfix_pic
+      use mpi_utility, only: BCAST
       USE parallel
       USE param
       USE param1
@@ -37,12 +38,34 @@ MODULE read_input
 
       IMPLICIT NONE
 
+      LOGICAL :: PRESENT
+
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(0,MFIX_DAT)
 ! Set RUN_TYPE to RESTART_1 when adjusting partition
-      IF(ADJUST_PARTITION) RUN_TYPE = 'RESTART_1'
+! and read partition layout in gridmap.dat if it exists
+      IF(ADJUST_PARTITION) THEN
+         RUN_TYPE = 'RESTART_1'
+
+         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'Reading partition layout from grimap.dat...'
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+                 
+                READ (777, *) NODESI,NODESJ,NODESK
+                
+                CLOSE(777)
+            ENDIF
+
+            CALL BCAST(NODESI)
+            CALL BCAST(NODESJ)
+            CALL BCAST(NODESK)
+         ENDIF
+
+      ENDIF
 
       RETURN
 

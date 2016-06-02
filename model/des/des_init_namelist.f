@@ -887,7 +887,7 @@
 !</keyword>
 
 ! Time interval at which particle load is displayed (sec)
-      PLD_DT = UNDEFINED
+      DLB_DT = UNDEFINED
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !                            UNSUPPORTED KEYWORDS                      !

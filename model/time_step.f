@@ -131,7 +131,7 @@
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev, steady_state
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       use discretelement, only: DES_EXPLICITLY_COUPLED
-      use output, only: PLD
+      use output, only: DLB
       IMPLICIT NONE
 
       IF(DT < DT_MIN) THEN
@@ -193,8 +193,7 @@
 
       FLUSH (6)
 
-      IF(DISCRETE_ELEMENT) PLD = .TRUE.
-!      PLD = .FALSE.
+      IF(DISCRETE_ELEMENT) DLB = .TRUE.
       CALL OUTPUT_MANAGER(EXIT_SIGNAL, .TRUE.)
 
       END SUBROUTINE TIME_STEP_END

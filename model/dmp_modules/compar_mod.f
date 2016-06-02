@@ -36,6 +36,10 @@
 ! nodesi = nproc for a 2D problem.
       integer :: nodesi, nodesj, nodesk
 
+! For dynamic load balance, a list of partition layout can be supplied.
+! If so, each layout will be tested to find the best partition size.
+      INTEGER, DIMENSION(100) :: DLB_NODESI,DLB_NODESJ,DLB_NODESK
+
 ! root represents the 'root' processor. For now it is defaulted to
 ! zero
       integer :: root

@@ -15,7 +15,7 @@ MODULE output_man
 !---------------------------------------------------------------------//
 
       use compar, only: myPE, PE_IO
-      use discretelement, only: DISCRETE_ELEMENT,PLD_DT
+      use discretelement, only: DISCRETE_ELEMENT,DLB_DT
       use machine, only: wall_time
       use output, only: DISK, DISK_TOT
       use output, only: OUT_TIME, OUT_DT
@@ -23,7 +23,7 @@ MODULE output_man
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
       use output, only: USR_TIME, USR_DT
-      use output, only: PLD,PLD_TIME
+      use output, only: DLB,DLB_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use qmom_kinetic_equation, only: QMOMK
@@ -33,6 +33,7 @@ MODULE output_man
       use vtk, only: DIMENSION_VTK
       use vtk, only: WRITE_VTK_FILES
       use vtp, only: write_vtp_file
+      use param1, only: UNDEFINED
 
       IMPLICIT NONE
 
@@ -110,13 +111,13 @@ MODULE output_man
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
 
-      IF(PLD) THEN
-         IF(CHECK_TIME(PLD_TIME)) THEN
-            PLD_TIME = NEXT_TIME(PLD_DT)
+      IF(DLB) THEN
+         IF(CHECK_TIME(DLB_TIME)) THEN
+            DLB_TIME = NEXT_TIME(DLB_DT)
             CALL DISPLAY_PARTICLE_LOAD
          ENDIF
       ENDIF
-      PLD = .FALSE.
+      DLB = .FALSE.
 
       CALL FLUSH_NOTIFY_USER
 
@@ -360,7 +361,7 @@ MODULE output_man
       use output, only: USR_TIME, USR_DT
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
       use output, only: RES_BACKUPS
-      use output, only: PLD_TIME
+      use output, only: DLB_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use param1, only: UNDEFINED
@@ -383,7 +384,7 @@ MODULE output_man
       use param1, only:  UNDEFINED_I
 
       use funits, only: CREATE_DIR
-      use discretelement, only: PLD_DT
+      use discretelement, only: DLB_DT
       use compar, only:MyPE,ADJUST_PARTITION
 
       IMPLICIT NONE
@@ -450,9 +451,9 @@ MODULE output_man
 
 ! Initialize VTK_TIME
       IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
-         PLD_TIME = TIME
+         DLB_TIME = TIME
       ELSE
-         PLD_TIME = (INT((TIME + 0.1d0*DT)/PLD_DT)+1)*PLD_DT
+         DLB_TIME = (INT((TIME + 0.1d0*DT)/DLB_DT)+1)*DLB_DT
          ADJUST_PARTITION = .FALSE.
       ENDIF
 
@@ -662,6 +663,8 @@ MODULE output_man
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
       ENDIF
 
+      CALL REPORT_BEST_DES_IJK_SIZE 
+
 1000 FORMAT(/'Particle count: Total: ', A,1x,', Min: ',A,1x,'(PE=',A,'), &
               Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
 1100 FORMAT('Particle load at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
@@ -670,5 +673,997 @@ MODULE output_man
       RETURN
       END SUBROUTINE DISPLAY_PARTICLE_LOAD
 
+
+
+!----------------------------------------------------------------------!
+! Subroutine: REPORT_BEST_DES_IJK_SIZE                                 !
+! Purpose: Reports best des grid decomposition based on particle 
+! distribution in the domain
+!----------------------------------------------------------------------!
+      SUBROUTINE REPORT_BEST_DES_IJK_SIZE
+
+      use discretelement     
+      use error_manager      
+      use functions          
+      use machine            
+      use mpi_utility        
+      use run, only: TIME
+      use sendrecv 
+      use desgrid
+      use gridmap
+      use mpi_init_des
+      use usr
+      use param1, only: UNDEFINED, ZERO
+      use compar, only:ADJUST_PARTITION
+
+      implicit none
+      INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
+      INTEGER :: NP=0  ! Number of particles 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: NP_ALL
+      INTEGER :: Factor=0  ! Number of particles 
+      INTEGER :: MIN_NP, MIN_NPP, MAX_NP, MAX_NPP, IDEAL_NP
+      DOUBLE PRECISION :: MIN_LOAD, MAX_LOAD
+
+      INTEGER,DIMENSION(DG_IMIN2:DG_IMAX2) :: NP_I
+      INTEGER,DIMENSION(DG_JMIN2:DG_JMAX2) :: NP_J
+      INTEGER,DIMENSION(DG_KMIN2:DG_KMAX2) :: NP_K
+
+      INTEGER :: I,J,K,IJK,IPROC,JPROC,KPROC
+
+      INTEGER :: ilistsize,jlistsize,klistsize             ! size of list of cells
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_I      ! Number of Useful Cells at I for all processors
+                                                           ! (I will repeat if decomposing in J or K direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_I     ! List of I for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_I   ! Number of Useful Cells at Global I
+                    
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_J      ! Number of Useful Cells at J for all processors
+                                                           ! (J will repeat if decomposing in I or K direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_J     ! List of J for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_J   ! Number of Useful Cells at Global J
+                    
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_K      ! Number of Useful Cells at K for all processors
+                                                           ! (K will repeat if decomposing in I or J direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_K     ! List of K for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_K   ! Number of Useful Cells at Global K
+
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET
+
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+
+      INTEGER, DIMENSION(0:NumPEs-1) :: BEST_I_SIZE,BEST_J_SIZE,BEST_K_SIZE
+      INTEGER, DIMENSION(0:NumPEs-1) :: TEST_I_SIZE,TEST_J_SIZE,TEST_K_SIZE
+      INTEGER, DIMENSION(0:NumPEs-1) :: EG_BEST_I_SIZE,EG_BEST_J_SIZE,EG_BEST_K_SIZE
+
+      DOUBLE PRECISION :: LIP_I,LIP_J,LIP_K,LIP_IJK, BEST_LIP_IJK
+      INTEGER :: P,BEST_PARTITION
+
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_isize_tmp
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_jsize_tmp
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_ksize_tmp
+
+      INTEGER :: dg_istart1_tmp,dg_iend1_tmp
+      INTEGER :: dg_jstart1_tmp,dg_jend1_tmp
+      INTEGER :: dg_kstart1_tmp,dg_kend1_tmp
+
+      DOUBLE PRECISION :: XG_E(IMIN2:IMAX2)
+      DOUBLE PRECISION :: YG_N(JMIN2:JMAX2)
+      DOUBLE PRECISION :: ZG_T(KMIN2:KMAX2)
+
+      DOUBLE PRECISION :: BEST_DG_XE(1:1000) ! NEED BETTER UPPER BOUND
+      DOUBLE PRECISION :: BEST_DG_YN(1:1000)
+      DOUBLE PRECISION :: BEST_DG_ZT(1:1000)
+
+      INTEGER :: DG_I,DG_J,DG_K,I_TO_MATCH,J_TO_MATCH,K_TO_MATCH,SAVED_I,SAVED_J,SAVED_K
+      DOUBLE PRECISION :: X_TO_MATCH,Y_TO_MATCH,Z_TO_MATCH,DMAX,DTEST
+      INTEGER :: NUMBER_OF_PARTITIONS_TO_TEST
+      LOGICAL :: SUGGEST_ONLY_PARTITION = .FALSE.
+
+
+! Local Parameters:                                                                                                                                              
+!---------------------------------------------------------------------//
+! The minimum number of computational cell layers required.
+! Must be the same as defined in check_data/check_dmp_prereqs.f
+      INTEGER, PARAMETER :: DMP_MIN = 3
+      LOGICAL :: VALID_DMP 
+
+      INCLUDE 'usrnlst.inc'
+
+      IF(NumPEs==1) RETURN  ! Nothing to do in serial
+
+! Get number of valid partitions to test. 
+! Will quit the first time  NODESI x NODESJ x NODESK is not equal to NUmPEs
+        
+      NUMBER_OF_PARTITIONS_TO_TEST = 0
+      DO P = 1,100  ! NEED BETTER UPPER BOUND 
+         IF(DLB_NODESI(P)*DLB_NODESJ(P)*DLB_NODESK(P)==NumPEs) THEN
+            NUMBER_OF_PARTITIONS_TO_TEST = P
+         ELSE
+            EXIT
+         ENDIF
+      ENDDO
+      
+! Need to test at least the current partition layout
+      IF(NUMBER_OF_PARTITIONS_TO_TEST ==0) THEN
+         NUMBER_OF_PARTITIONS_TO_TEST = 1
+         DLB_NODESI(1) = NODESI
+         DLB_NODESJ(1) = NODESJ
+         DLB_NODESK(1) = NODESK
+      ENDIF
+
+
+      BEST_LIP_IJK = UNDEFINED
+
+      DO P =1,NUMBER_OF_PARTITIONS_TO_TEST
+
+         ALLOCATE(dg_isize_tmp(0:DLB_NODESI(P)-1)) 
+         ALLOCATE(dg_jsize_tmp(0:DLB_NODESJ(P)-1)) 
+         ALLOCATE(dg_ksize_tmp(0:DLB_NODESK(P)-1)) 
+         CALL COMPUTE_TMP_DG_SIZE(DLB_NODESI(P),DLB_NODESJ(P),DLB_NODESK(P), &
+                                  dg_isize_tmp,dg_jsize_tmp,dg_ksize_tmp,                &
+                                  dg_istart1_tmp,dg_iend1_tmp,                           &
+                                  dg_jstart1_tmp,dg_jend1_tmp,                           &
+                                  dg_kstart1_tmp,dg_kend1_tmp)
+
+
+! I-DIRECTION
+         IF(DLB_NODESI(P)>1) THEN
+
+            DO I = DG_ISTART1, DG_IEND1
+               NP_I(I) = 0
+               DO J = DG_JSTART1, DG_JEND1
+                  DO K = DG_KSTART1, DG_KEND1
+                     IJK = DG_FUNIJK(I,J,K)
+                     NP_I(I) = NP_I(I) + DG_PIC(IJK)%ISIZE
+                  ENDDO
+               ENDDO
+
+            ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+            CALL allgather_1i (DG_IEND1-DG_ISTART1+1,rcount,IERR)
+                           
+            IF (myPE == 0) THEN
+               I_OFFSET = 0
+            ELSE       
+               I_OFFSET = 0
+               DO iproc=0,myPE-1
+                  I_OFFSET = I_OFFSET + rcount(iproc)
+               ENDDO   
+            ENDIF      
+                           
+            CALL allgather_1i (I_OFFSET,disp,IERR)
+                     
+            ilistsize=SUM(rcount)
+                     
+            allocate( ALL_LIST_I(ilistsize))
+            allocate( GLOBAL_NP_I(DG_IMIN1:ilistsize))
+            allocate( ALL_NP_I(ilistsize))
+
+! Gather list of I and NP, each processor has its own list
+            call gatherv_1i( (/(I,I=DG_ISTART1,DG_IEND1)/), DG_IEND1-DG_ISTART1+1, ALL_LIST_I(:), rcount, disp, PE_IO, ierr )
+            call gatherv_1i( NP_I(DG_ISTART1:DG_IEND1), DG_IEND1-DG_ISTART1+1, ALL_NP_I(:), rcount, disp, PE_IO, ierr )
+                     
+! Get the glocal NP for each unique value of I
+            IF (myPE == 0) THEN
+                  GLOBAL_NP_I = 0
+                  DO I=1,ilistsize
+                     GLOBAL_NP_I(ALL_LIST_I(I)) = GLOBAL_NP_I(ALL_LIST_I(I)) + ALL_NP_I(I)
+                 ENDDO   
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESI(P),DG_IMIN1,DG_IMAX1,GLOBAL_NP_I,DG_ISIZE_TMP,TEST_I_SIZE,LIP_I)
+            ENDIF      
+
+            Deallocate( ALL_LIST_I)
+            Deallocate( GLOBAL_NP_I)
+            Deallocate( ALL_NP_I)
+
+
+         ELSE
+
+            TEST_I_SIZE(0) = dg_isize_tmp(0)
+            LIP_I = ZERO
+
+         ENDIF
+
+! J-DIRECTION
+         IF(DLB_NODESJ(P)>1) THEN
+
+            DO J = DG_JSTART1, DG_JEND1
+               NP_J(J) = 0
+               DO I = DG_ISTART1, DG_IEND1
+                  DO K = DG_KSTART1, DG_KEND1
+                     IJK = DG_FUNIJK(I,J,K)
+                     NP_J(J) = NP_J(J) + DG_PIC(IJK)%ISIZE
+                  ENDDO
+               ENDDO
+            ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+            CALL allgather_1i (DG_JEND1-DG_JSTART1+1,rcount,IERR)
+                     
+            IF (myPE == 0) THEN
+               J_OFFSET = 0
+            ELSE       
+               J_OFFSET = 0
+               DO iproc=0,myPE-1
+                  J_OFFSET = J_OFFSET + rcount(iproc)
+               ENDDO   
+            ENDIF      
+                           
+            CALL allgather_1i (J_OFFSET,disp,IERR)
+                           
+            jlistsize=SUM(rcount)
+                           
+            allocate( ALL_NP_J(jlistsize))
+            allocate( ALL_LIST_J(jlistsize))
+            allocate( GLOBAL_NP_J(DG_JMIN1:jlistsize))
+
+! Gather list of J and NP, each processor has its own list
+            call gatherv_1i( (/(J,J=DG_JSTART1,DG_JEND1)/), DG_JEND1-DG_JSTART1+1, ALL_LIST_J(:), rcount, disp, PE_IO, ierr )
+            call gatherv_1i( NP_J(DG_JSTART1:DG_JEND1), DG_JEND1-DG_JSTART1+1, ALL_NP_J(:), rcount, disp, PE_IO, ierr )
+                     
+! Get the glocal NP for each unique value of J
+            IF (myPE == 0) THEN
+               GLOBAL_NP_J = 0
+               DO J=1,jlistsize
+                  GLOBAL_NP_J(ALL_LIST_J(J)) = GLOBAL_NP_J(ALL_LIST_J(J)) + ALL_NP_J(J)
+              ENDDO   
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESJ(P),DG_JMIN1,DG_JMAX1,GLOBAL_NP_J,DG_JSIZE_TMP,TEST_J_SIZE,LIP_J)
+            ENDIF
+
+            Deallocate( ALL_LIST_J)
+            Deallocate( GLOBAL_NP_J)
+            Deallocate( ALL_NP_J)
+
+         ELSE
+
+            TEST_J_SIZE(0) = DG_JSIZE_TMP(0)
+            LIP_J = ZERO
+
+         ENDIF
+
+
+! K-DIRECTION
+         IF(DLB_NODESK(P)>1) THEN
+
+
+            DO K = DG_KSTART1, DG_KEND1
+               NP_K(K) = 0
+
+               DO J = DG_JSTART1, DG_JEND1
+                  DO I = DG_ISTART1, DG_IEND1
+                     IJK = DG_FUNIJK(I,J,K)
+                     NP_K(K) = NP_K(K) + DG_PIC(IJK)%ISIZE
+                  ENDDO
+               ENDDO
+            ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+            CALL allgather_1i (DG_KEND1-DG_KSTART1+1,rcount,IERR)
+
+            IF (myPE == 0) THEN
+               K_OFFSET = 0
+            ELSE
+               K_OFFSET = 0
+               DO iproc=0,myPE-1
+                  K_OFFSET = K_OFFSET + rcount(iproc)
+               ENDDO
+            ENDIF
+                     
+            CALL allgather_1i (K_OFFSET,disp,IERR)
+                     
+            klistsize=SUM(rcount)
+                     
+            allocate( ALL_NP_K(klistsize))
+            allocate( ALL_LIST_K(klistsize))
+            allocate( GLOBAL_NP_K(DG_KMIN1:klistsize))
+
+! Gather list of K and NP, each processor has its own list
+            call gatherv_1i( (/(K,K=DG_KSTART1,DG_KEND1)/), DG_KEND1-DG_KSTART1+1, ALL_LIST_K(:), rcount, disp, PE_IO, ierr )
+            call gatherv_1i( NP_K(DG_KSTART1:DG_KEND1), DG_KEND1-DG_KSTART1+1, ALL_NP_K(:), rcount, disp, PE_IO, ierr )
+                     
+! Get the glocal NP for each unique value of I
+            IF (myPE == 0) THEN
+               GLOBAL_NP_K = 0
+               DO K=1,klistsize
+                  GLOBAL_NP_K(ALL_LIST_K(K)) = GLOBAL_NP_K(ALL_LIST_K(K)) + ALL_NP_K(K)
+              ENDDO   
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESK(P),DG_KMIN1,DG_KMAX1,GLOBAL_NP_K,DG_KSIZE_TMP,TEST_K_SIZE,LIP_K)
+            ENDIF      
+
+            Deallocate( ALL_LIST_K)
+            Deallocate( GLOBAL_NP_K)
+            Deallocate( ALL_NP_K)
+
+         ELSE
+
+            TEST_K_SIZE(0) = DG_KSIZE_TMP(0)
+            LIP_K = ZERO
+
+         ENDIF
+
+#ifdef MPI                                                                                                                                                       
+        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif 
+
+! Pick the best partition sizes in each direction         
+         IF(MyPE==PE_IO) THEN
+
+            LIP_IJK = LIP_I + LIP_J + LIP_K
+
+            IF(LIP_IJK < BEST_LIP_IJK) THEN
+
+              BEST_I_SIZE(0:DLB_NODESI(P)-1) = TEST_I_SIZE(0:DLB_NODESI(P)-1)
+              BEST_J_SIZE(0:DLB_NODESJ(P)-1) = TEST_J_SIZE(0:DLB_NODESJ(P)-1) 
+              BEST_K_SIZE(0:DLB_NODESK(P)-1) = TEST_K_SIZE(0:DLB_NODESK(P)-1) 
+
+              BEST_DG_XE(1:SIZE(DG_XE)) = DG_XE(:)
+              BEST_DG_YN(1:SIZE(DG_YN)) = DG_YN(:)
+              BEST_DG_ZT(1:SIZE(DG_ZT)) = DG_ZT(:)
+
+              BEST_PARTITION = P
+              BEST_LIP_IJK = LIP_IJK 
+
+            ENDIF
+
+         ENDIF
+
+#ifdef MPI                                                                                                                                                       
+        call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif 
+         DEALLOCATE(dg_isize_tmp)
+         DEALLOCATE(dg_jsize_tmp)
+         DEALLOCATE(dg_ksize_tmp)
+
+      ENDDO ! PARTITION TO TEST
+
+      IF(MyPE==PE_IO) THEN
+
+! The best partition size is based on the des grid
+! It must be converted to the Eulerian grid
+
+!     x-Location of U-momentum cells for original (uncut grid)
+         XG_E(IMIN2) = ZERO
+         DO I = IMIN1, IMAX2
+            XG_E(I) = XG_E(I-1) + DX(I)
+         END DO
+
+!     y-Location of V-momentum cells for original (uncut grid)
+         YG_N(JMIN2) = ZERO
+         DO J = JMIN1, JMAX2
+            YG_N(J) = YG_N(J-1) + DY(J)
+         END DO
+
+!     z-Location of W-momentum cells for original (uncut grid)
+         IF (DO_K) THEN
+            ZG_T(KMIN2) = ZERO
+            DO K = KMIN1, KMAX2
+               ZG_T(K) = ZG_T(K-1) + DZ(K)
+            END DO
+         ENDIF
+
+! Re-calculate optimal des grid index extents
+! set indices for global block
+         dg_imin  = 1
+         dg_imin2 = 1
+         dg_imin1 = 2
+         dg_imax  = sum(best_i_size(0:DLB_NODESI(BEST_PARTITION)-1))
+         dg_imax1 = dg_imin1+sum(best_i_size(0:DLB_NODESI(BEST_PARTITION)-1))-1
+         dg_imax2 = dg_imax1+1
+         dg_jmin  = 1
+         dg_jmin2 = 1
+         dg_jmin1 = 2
+         dg_jmax  = sum(best_j_size(0:DLB_NODESJ(BEST_PARTITION)-1))
+         dg_jmax1 = dg_jmin1+sum(best_j_size(0:DLB_NODESJ(BEST_PARTITION)-1))-1
+         dg_jmax2 = dg_jmax1+1
+         if (no_k) then
+            dg_kmin2 = 1
+            dg_kmin1 = 1
+            dg_kmax1 = 1
+            dg_kmax2 = 1
+         else
+            dg_kmin  = 1
+            dg_kmin2 = 1
+           dg_kmin1 = 2
+           dg_kmax  = sum(best_k_size(0:DLB_NODESK(BEST_PARTITION)-1))
+           dg_kmax1 = dg_kmin1+sum(best_k_size(0:DLB_NODESK(BEST_PARTITION)-1))-1
+           dg_kmax2 = dg_kmax1+1
+         end if
+
+! Find closest Eulerian cells corresponding to des grid partition boundaries - x direction         
+         IF(ALLOCATED(DG_XE)) DEALLOCATE(DG_XE)
+         ALLOCATE(DG_XE(dg_imin2:dg_imax2))
+
+         DG_I = DG_ISTART2_ALL(0)
+
+         SAVED_I = IMIN1
+         DO IPROC = 0, DLB_NODESI(BEST_PARTITION)-1
+            DG_I = DG_I + BEST_I_SIZE(IPROC)
+            X_TO_MATCH = BEST_DG_XE(DG_I)
+            DMAX = UNDEFINED
+            DO I = IMIN1, IMAX2
+               DTEST = DABS(X_TO_MATCH - XG_E(I))
+               IF(DTEST<DMAX) THEN
+                  I_TO_MATCH = I
+                  DMAX = DTEST
+               ENDIF
+            ENDDO
+            EG_BEST_I_SIZE(IPROC) = I_TO_MATCH - SAVED_I + 1  
+            SAVED_I = I_TO_MATCH + 1 
+         ENDDO
+
+
+! Find closest Eulerian cells corresponding to des grid partition boundaries - x direction         
+         IF(ALLOCATED(DG_YN)) DEALLOCATE(DG_YN)
+         ALLOCATE(DG_YN(dg_jmin2:dg_jmax2))
+
+         DG_J = DG_JSTART2_ALL(0)
+         SAVED_J = JMIN1
+         DO JPROC = 0, DLB_NODESJ(BEST_PARTITION)-1
+            DG_J = DG_J + BEST_J_SIZE(JPROC)
+            Y_TO_MATCH = BEST_DG_YN(DG_J)
+            DMAX = UNDEFINED
+            DO J = JMIN1, JMAX2
+               DTEST = DABS(Y_TO_MATCH - YG_N(J))
+               IF(DTEST<DMAX) THEN
+                  J_TO_MATCH = J
+                  DMAX = DTEST
+               ENDIF
+            ENDDO
+            EG_BEST_J_SIZE(JPROC) = J_TO_MATCH - SAVED_J + 1  
+            SAVED_J = J_TO_MATCH + 1 
+         ENDDO
+
+
+! Find closest Eulerian cells corresponding to des grid partition boundaries - z direction         
+         IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
+         ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
+
+         DG_K = DG_KSTART2_ALL(0)
+         SAVED_K = KMIN1
+         DO KPROC = 0, DLB_NODESK(BEST_PARTITION)-1
+            DG_K = DG_K + BEST_K_SIZE(KPROC)
+            Z_TO_MATCH = BEST_DG_ZT(DG_K)
+            DMAX = UNDEFINED
+            DO K = KMIN1, KMAX2
+               DTEST = DABS(Z_TO_MATCH - ZG_T(K))
+               IF(DTEST<DMAX) THEN
+                  K_TO_MATCH = K
+                  DMAX = DTEST
+               ENDIF
+            ENDDO
+            EG_BEST_K_SIZE(KPROC) = K_TO_MATCH - SAVED_K + 1  
+            SAVED_K = K_TO_MATCH + 1 
+         ENDDO
+
+! The partition will be adjusted only if all sizes are above min allowed
+         ADJUST_PARTITION = .TRUE.
+         IF(DLB_NODESI(BEST_PARTITION)>1) THEN
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                IF(EG_BEST_I_SIZE(IPROC)<DMP_MIN) THEN
+                   ADJUST_PARTITION = .FALSE.
+                   EXIT
+                ENDIF
+            ENDDO
+         ENDIF
+
+         IF(DLB_NODESJ(BEST_PARTITION)>1) THEN
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                IF(EG_BEST_J_SIZE(IPROC)<DMP_MIN) THEN
+                   ADJUST_PARTITION = .FALSE.
+                   EXIT
+                ENDIF
+            ENDDO
+         ENDIF
+
+         IF(DLB_NODESK(BEST_PARTITION)>1) THEN
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                IF(EG_BEST_K_SIZE(IPROC)<DMP_MIN) THEN
+                   ADJUST_PARTITION = .FALSE.
+                   EXIT
+                ENDIF
+            ENDDO
+         ENDIF
+
+! Now save the new partition to gridmap.dat before restarting
+         IF(ADJUST_PARTITION) THEN
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat')
+            WRITE (777, 1005) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,EG_BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,EG_BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,EG_BEST_K_SIZE(IPROC)
+            ENDDO
+            CLOSE(777)
+
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'GRID PARTITION SAVED IN FILE: gridmap.dat'
+            WRITE (*, 1000) 'MFIX WILL DO AN INTERNAL RESTART_1 NOW.'
+            WRITE (*, 1000) '================================================='
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION),'     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_K_SIZE(IPROC)
+            ENDDO
+            WRITE (*, 1000) '================================================='
+         ELSE
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'INVALID GRID PARTITION '
+            WRITE (*, 1000) '================================================='
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION),'     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,EG_BEST_K_SIZE(IPROC)
+            ENDDO
+            WRITE (*, 1000) '================================================='
+         ENDIF
+
+      ENDIF ! MyPE==0
+
+      CALL BCAST(ADJUST_PARTITION)
+
+1000  FORMAT(1x,A)
+1005  FORMAT(1x,I10,I10,I10,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+1030  FORMAT(1X,A,2(F10.1))
+1040  FORMAT(F10.1)
+1050  FORMAT(1X,3(A))
+1060  FORMAT(1x,I10,I10)
+
+      RETURN
+
+      END SUBROUTINE REPORT_BEST_DES_IJK_SIZE
+
+
+
+      SUBROUTINE MINIMIZE_DES_LOAD_IMBALANCE(NODESL,LMIN1,LMAX1,NP_L,L_SIZE,BEST_L_SIZE,BEST_LIP)
+
+      use discretelement     
+      use error_manager      
+      use functions          
+      use machine            
+      use mpi_utility        
+      use run, only: TIME
+      use sendrecv 
+      use desgrid
+
+
+
+      IMPLICIT NONE
+
+      INTEGER :: LMIN1,LMAX1,L
+      INTEGER :: NODE,IPROC
+      INTEGER :: NODESL     ! COULD BE NODESI, NODESJ, OR NODESK
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NP_L
+      INTEGER, DIMENSION(0:NODESL-1) :: NP_L_PER_NODE
+      INTEGER :: NN, NAMAX   ! Number of adjustments, max number of adjustments
+      INTEGER :: NOIMPROVEMENT
+      INTEGER :: NOIMPMAX=10 ! Exit adjustment loop after this number of iterations where no improvement is achieved
+
+      INTEGER, DIMENSION(0:NODESL-1) :: NPPP, BEST_NPPP
+      
+      INTEGER ::IPROC_OF_MAX,IPROC_OF_MIN
+
+      DOUBLE PRECISION :: LIP, BEST_LIP
+
+      INTEGER, DIMENSION(0:NODESL-1) :: L_SIZE, BEST_L_SIZE, NEW_L_SIZE
+
+
+      CALL GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+      BEST_LIP = LIP
+      BEST_L_SIZE = L_SIZE
+      NEW_L_SIZE = BEST_L_SIZE
+      BEST_NPPP   = NPPP
+
+      NOIMPROVEMENT=0
+
+! At each iteration, the processor that has the maximum number
+! of particles is reduced in size (by one cell),
+! and the processor that has the minimum number of particles 
+! is increased in size (by one cell).
+! This is rpeated at most NAMAX times until no improvement is found.      
+
+      NAMAX = 2000
+
+      DO NN = 1,NAMAX
+
+         NEW_L_SIZE(IPROC_OF_MAX) = NEW_L_SIZE(IPROC_OF_MAX) - 1
+         NEW_L_SIZE(IPROC_OF_MIN) = NEW_L_SIZE(IPROC_OF_MIN) + 1
+
+         CALL GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,NEW_L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+
+         IF(LIP<BEST_LIP) THEN
+            BEST_LIP    = LIP
+            BEST_L_SIZE = NEW_L_SIZE
+            BEST_NPPP   = NPPP
+            NOIMPROVEMENT=0
+         ELSE
+            NOIMPROVEMENT = NOIMPROVEMENT + 1
+         ENDIF
+
+         IF(NOIMPROVEMENT==1000) THEN
+!            WRITE (*, 1000) 'OPTIMIZED LOAD BALANCE REACHED.'
+            EXIT
+         ENDIF
+
+      ENDDO
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+
+
+
+      END SUBROUTINE MINIMIZE_DES_LOAD_IMBALANCE
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: GET_LIP_DES                                            C
+!  Purpose: Compute Load Imbalance percentage                          C
+!           Based on particle count in each processor                  C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: ##-###-##  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE gridmap
+      USE param
+      USE param1
+      USE constant
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar
+      USE mpi_utility
+      USE bc
+      USE DISCRETELEMENT
+      USE desgrid
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: NODESL,L,LMIN1,LMAX1,TOTAL_NP,TOTAL_NUC_WITH_GHOST,IPROC_OF_MAX,IPROC_OF_MIN
+
+      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NPPP,MAXVAL_NPPP,IDEAL_NPPP
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NP_L
+
+      INTEGER :: IPROC
+
+      INTEGER, DIMENSION(0:NODESL-1) :: NPPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
+
+
+      DOUBLE PRECISION :: LIP
+
+!-----------------------------------------------
+
+      LCOUNT1 = LMAX1 - LMIN1 + 1
+      LCOUNT2 = SUM(L_SIZE(0:NODESL-1))
+
+      IF(LCOUNT1/=LCOUNT2) THEN
+         WRITE(*,*)' ERROR: SUM OF CELLS DO NOT MATCH:',LCOUNT1,LCOUNT2
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+      L1(0) = LMIN1
+      L2(0) = L1(0) + L_SIZE(0) - 1
+
+      DO IPROC = 1,NODESL-1
+         L1(IPROC) = L2(IPROC-1) + 1
+         L2(IPROC) = L1(IPROC) + L_SIZE(IPROC) - 1
+      ENDDO
+
+      TOTAL_NP = 0
+      DO IPROC = 0,NODESL-1
+         NPPP(IPROC) = SUM(NP_L(L1(IPROC):L2(IPROC)))
+         TOTAL_NP = TOTAL_NP + NPPP(IPROC)
+      ENDDO
+
+      IDEAL_NPPP = TOTAL_NP / NODESL
+
+      MAXVAL_NPPP = MAXVAL(NPPP)
+      MINVAL_NPPP = MINVAL(NPPP)
+
+      LIP = DBLE(MAXVAL_NPPP-IDEAL_NPPP)/DBLE(IDEAL_NPPP)*100.0D0
+
+      IPROC_OF_MAX = MAXLOC(NPPP,1)-1
+      IPROC_OF_MIN = MINLOC(NPPP,1)-1
+
+      RETURN
+      END SUBROUTINE GET_LIP_DES      
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: COMPUTE_TMP_DG_SIZE                                    C
+!  Purpose: Compute temporary DES GRID sized                           C
+!           for the current partion layout being tested                C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: ##-###-##  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE COMPUTE_TMP_DG_SIZE(nodesi_tmp,nodesj_tmp,nodesk_tmp,dg_isize_tmp,dg_jsize_tmp,dg_ksize_tmp,dg_istart1_tmp,dg_iend1_tmp,dg_jstart1_tmp,dg_jend1_tmp,dg_kstart1_tmp,dg_kend1_tmp)
+
+      use compar
+      use discretelement, only: DIMN
+      use discretelement, only: XE, YN, ZT
+      use constant
+      use desmpi_wrapper
+      use desgrid
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Domain partition for DEM background mesh.
+      use discretelement, only: DESGRIDSEARCH_IMAX
+      use discretelement, only: DESGRIDSEARCH_JMAX
+      use discretelement, only: DESGRIDSEARCH_KMAX
+! Domain size specifed by the user.
+      use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
+
+      use param1, only: ZERO
+      use error_manager
+      implicit none
+
+! DUMMY Arguments
+!---------------------------------------------------------------------//
+
+! Local variables
+!---------------------------------------------------------------------//
+      INTEGER :: nodesi_tmp,dg_istart1_tmp,dg_iend1_tmp
+      INTEGER :: nodesj_tmp,dg_jstart1_tmp,dg_jend1_tmp
+      INTEGER :: nodesk_tmp,dg_kstart1_tmp,dg_kend1_tmp
+
+      INTEGER, dimension(0:nodesi_tmp-1) :: isize1_tmp,dg_isize_tmp
+      INTEGER, dimension(0:nodesj_tmp-1) :: jsize1_tmp,dg_jsize_tmp
+      INTEGER, dimension(0:nodesk_tmp-1) :: ksize1_tmp,dg_ksize_tmp
+
+      INTEGER, dimension(0:NumPEs-1) :: istart1_tmp,iend1_tmp
+      INTEGER, dimension(0:NumPEs-1) :: jstart1_tmp,jend1_tmp
+      INTEGER, dimension(0:NumPEs-1) :: kstart1_tmp,kend1_tmp
+
+      INTEGER :: ip, iproc, isize, iremain
+      INTEGER :: jp, jproc, jsize, jremain
+      INTEGER :: kp, kproc, ksize, kremain
+
+      INTEGER :: ijkproc
+      integer :: lijkproc,liproc,ljproc,lkproc
+      integer :: lijk,i,j,k,li,lj,lk
+
+      DOUBLE PRECISION :: tempdx,tempdy,tempdz
+
+
+
+! Determine the size in i direction and add the remainder sequentially
+      isize = (imax1-imin1+1)/nodesi_tmp
+      isize1_tmp(0:nodesi_tmp-1) = isize
+      iremain = (imax1-imin1+1) - nodesi_tmp*isize
+      IF (iremain.ge.1) isize1_tmp( 0:(iremain-1) ) = isize + 1
+
+! Determine the size in j direction and add the remainder sequentially
+      jsize = (jmax1-jmin1+1)/nodesj_tmp
+      jsize1_tmp(0:nodesj_tmp-1) = jsize
+      jremain = (jmax1-jmin1+1) - nodesj_tmp*jsize
+      IF (jremain.ge.1) jsize1_tmp( 0:(jremain-1) ) = jsize + 1
+
+! Determine the size in k direction and add the remainder sequentially
+      ksize = (kmax1-kmin1+1)/nodesk_tmp
+      ksize1_tmp(0:nodesk_tmp-1) = ksize
+      kremain = (kmax1-kmin1+1) - nodesk_tmp*ksize
+      IF (kremain.ge.1) ksize1_tmp( 0:(kremain-1) ) = ksize + 1
+
+
+! The following is general for 1-d or 2-d or 3-d decompostion
+! Determining  istart, jstart and kstart for all the processors
+      ijkproc = 0
+      kp = kmin1
+      do kproc=0,nodesk_tmp-1
+         jp = jmin1
+         do jproc=0,nodesj_tmp-1
+            ip = imin1
+            do iproc=0,nodesi_tmp-1
+
+               istart1_tmp(ijkproc) = ip + sum(isize1_tmp(0:iproc-1))
+               iend1_tmp(ijkproc) = istart1_tmp(ijkproc) + isize1_tmp(iproc)-1
+
+               jstart1_tmp(ijkproc) = jp + sum(jsize1_tmp(0:jproc-1))
+               jend1_tmp(ijkproc) = jstart1_tmp(ijkproc) + jsize1_tmp(jproc)-1
+
+               kstart1_tmp(ijkproc) = kp + sum(ksize1_tmp(0:kproc-1))
+               kend1_tmp(ijkproc) = kstart1_tmp(ijkproc) + ksize1_tmp(kproc)-1
+
+               ijkproc = ijkproc+1
+
+            ENDDO
+         ENDDO
+      ENDDO
+
+! set grid size based on user input desgridsearch_<ijk>max
+      tempdx = xlength/desgridsearch_imax
+      tempdy = ylength/desgridsearch_jmax
+      if(do_k) tempdz = zlength/desgridsearch_kmax
+      dg_ksize_tmp(:) = 1
+
+
+      IF(ALLOCATED(dg_dx_all)) DEALLOCATE(dg_dx_all)
+      ALLOCATE(dg_dx_all(0:nodesi_tmp-1))
+      IF(ALLOCATED(dg_dy_all)) DEALLOCATE(dg_dy_all)
+      ALLOCATE(dg_dy_all(0:nodesj_tmp-1))
+      IF(ALLOCATED(dg_dz_all)) DEALLOCATE(dg_dz_all)
+      ALLOCATE(dg_dz_all(0:nodesk_tmp-1))
+
+      ijkproc = 0
+      do kproc=0,nodesk_tmp-1
+         do jproc=0,nodesj_tmp-1
+            do iproc=0,nodesi_tmp-1
+               dg_isize_tmp(iproc) = NINT((xe(iend1_tmp(ijkproc))-xe(istart1_tmp(ijkproc)-1))/tempdx)
+               dg_dx_all(iproc)    = (xe(iend1_tmp(ijkproc))-xe(istart1_tmp(ijkproc)-1))/dg_isize_tmp(iproc)
+               dg_jsize_tmp(jproc) = NINT((yn(jend1_tmp(ijkproc))-yn(jstart1_tmp(ijkproc)-1))/tempdy)
+               dg_dy_all(jproc)    = (yn(jend1_tmp(ijkproc))-yn(jstart1_tmp(ijkproc)-1))/dg_jsize_tmp(jproc)
+               if(do_k) then
+                  dg_ksize_tmp(kproc) = NINT((zt(kend1_tmp(ijkproc))-zt(kstart1_tmp(ijkproc)-1))/tempdz)
+                  dg_dz_all(kproc)    = (zt(kend1_tmp(ijkproc))-zt(kstart1_tmp(ijkproc)-1))/dg_ksize_tmp(kproc)
+               endif
+               dg_istart1_tmp = sum(dg_isize_tmp(0:iproc-1)) + 2
+               dg_jstart1_tmp = sum(dg_jsize_tmp(0:jproc-1)) + 2
+               dg_kstart1_tmp = sum(dg_ksize_tmp(0:kproc-1)) + 2
+               dg_iend1_tmp = dg_isize_tmp(iproc)+dg_istart1_tmp-1
+               dg_jend1_tmp = dg_jsize_tmp(jproc)+dg_jstart1_tmp-1
+               dg_kend1_tmp = dg_ksize_tmp(kproc)+dg_kstart1_tmp-1
+               ijkproc = ijkproc + 1
+            end do
+         end do
+      end do
+
+! set indices for global block
+      dg_imin  = 1
+      dg_imin2 = 1
+      dg_imin1 = 2
+      dg_imax  = sum(dg_isize_tmp(0:nodesi_tmp-1))
+      dg_imax1 = dg_imin1+sum(dg_isize_tmp(0:nodesi_tmp-1))-1
+      dg_imax2 = dg_imax1+1
+      dg_jmin  = 1
+      dg_jmin2 = 1
+      dg_jmin1 = 2
+      dg_jmax  = sum(dg_jsize_tmp(0:nodesj_tmp-1))
+      dg_jmax1 = dg_jmin1+sum(dg_jsize_tmp(0:nodesj_tmp-1))-1
+      dg_jmax2 = dg_jmax1+1
+      if (no_k) then
+         dg_kmin2 = 1
+         dg_kmin1 = 1
+         dg_kmax1 = 1
+         dg_kmax2 = 1
+      else
+         dg_kmin  = 1
+         dg_kmin2 = 1
+         dg_kmin1 = 2
+         dg_kmax  = sum(dg_ksize_tmp(0:nodesk_tmp-1))
+         dg_kmax1 = dg_kmin1+sum(dg_ksize_tmp(0:nodesk_tmp-1))-1
+         dg_kmax2 = dg_kmax1+1
+      end if
+
+      IF(dg_imax/=DESGRIDSEARCH_IMAX) THEN
+         WRITE(ERR_MSG,1005) 'X','DESGRIDSEARCH_IMAX',DESGRIDSEARCH_IMAX,dg_imax
+         DESGRIDSEARCH_IMAX = dg_imax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+      IF(dg_jmax/=DESGRIDSEARCH_JMAX) THEN
+         WRITE(ERR_MSG,1005) 'Y','DESGRIDSEARCH_JMAX',DESGRIDSEARCH_JMAX,dg_jmax
+         DESGRIDSEARCH_JMAX = dg_jmax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+      IF(dg_kmax/=DESGRIDSEARCH_KMAX) THEN
+         WRITE(ERR_MSG,1005) 'Z','DESGRIDSEARCH_KMAX',DESGRIDSEARCH_KMAX,dg_kmax
+         DESGRIDSEARCH_KMAX = dg_kmax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+      IF(ALLOCATED(DG_XE)) DEALLOCATE(DG_XE)
+      ALLOCATE(DG_XE(dg_imin2:dg_imax2))
+         DG_XE(dg_imin2) = ZERO
+         i = dg_imin2
+      do liproc=0,nodesi_tmp-1
+         do li = 1,DG_ISIZE_TMP(liproc)
+            i = i + 1 
+            DG_XE(i) = DG_XE(i-1) + DG_DX_ALL(liproc)
+         enddo
+      enddo
+
+
+      IF(ALLOCATED(DG_YN)) DEALLOCATE(DG_YN)
+      ALLOCATE(DG_YN(dg_jmin2:dg_jmax2))
+         DG_YN(dg_jmin2) = ZERO
+         j = dg_jmin2
+      do ljproc=0,nodesj_tmp-1
+         do lj = 1,DG_JSIZE_TMP(ljproc)
+            j = j + 1 
+            DG_YN(j) = DG_YN(j-1) + DG_DY_ALL(ljproc)
+         enddo
+      enddo
+
+      IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
+      ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
+         DG_ZT(dg_kmin2) = ZERO
+         k = dg_kmin2
+      do lkproc=0,nodesk_tmp-1
+         do lk = 1,DG_KSIZE_TMP(lkproc)
+            k = k + 1 
+            DG_ZT(k) = DG_ZT(k-1) + DG_DZ_ALL(lkproc)
+         enddo
+      enddo
+
+
+ 1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN ',A,' DIRECTION.'/   &
+             '      ORIGINAL SIZE (',A,') =',I6/                                &
+             '      NEW SIZE                           =',I6) 
+
+      RETURN
+      END SUBROUTINE COMPUTE_TMP_DG_SIZE
 
 END MODULE output_man

@@ -615,6 +615,7 @@
 !......................................................................!
 
       IF(ADJUST_PARTITION) THEN
+         CALL DEALLOCATE_ARRAYS_INCREMENTS
          ALREADY_ALLOCATED = .FALSE.
          INCREMENT_ARRAYS_ALLOCATED = .FALSE.
       ENDIF

@@ -164,6 +164,9 @@
       ENDIF
 !        NUMBER_OF_NODES = 0
 
+
+      NUMBER_OF_NEW_POINTS = 0
+
       DO IJK = IJKSTART3, IJKEND3
 
           IF(POTENTIAL_CUT_CELL_AT(IJK))  THEN

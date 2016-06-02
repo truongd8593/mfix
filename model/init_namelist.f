@@ -3451,6 +3451,11 @@
       NODESK = UNDEFINED_I
 !</keyword>
 
+! Dynamic load balance list of partitions to test
+      DLB_NODESI(:) = 0
+      DLB_NODESJ(:) = 0
+      DLB_NODESK(:) = 0
+
 !<keyword category="Parallelization Control" required="false">
 !  <description>Print out additional statistics for parallel runs</description>
       solver_statistics = .FALSE.

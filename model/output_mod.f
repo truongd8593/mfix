@@ -50,9 +50,9 @@
 ! Time at which standard output is to be written
       DOUBLE PRECISION :: OUT_TIME
 ! Logical to trigger particle load display
-      LOGICAL :: PLD = .FALSE.
+      LOGICAL :: DLB = .FALSE.
 ! Time at which particle load is displayed.
-      DOUBLE PRECISION :: PLD_TIME
+      DOUBLE PRECISION :: DLB_TIME
 
 
 
