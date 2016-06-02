@@ -13,6 +13,7 @@ import threading
 import time
 import traceback
 
+from timeit import default_timer as timer
 from flask import Flask, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
@@ -99,6 +100,9 @@ class Mfix(object):
         READ_INPUT.get_data()
         MAIN.initialize_2()
 
+        cls.t0 = float(RUN.time)
+        cls.walltime = 0.
+        cls.walltime_remaining = 'unknown'
         cls.update_status()
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
@@ -113,7 +117,11 @@ class Mfix(object):
                 if cls.mfix_paused or RUN.tstop <= RUN.time:
                     time.sleep(0.1)
                 else:
+                    iteration_start = timer()
                     cls.do_step()
+                    cls.walltime += (timer() - iteration_start)
+                    if RUN.time > cls.t0:
+                        cls.walltime_remaining = cls.walltime * (RUN.tstop/(RUN.time-cls.t0) - 1)
 
                     if RUN.steady_state:
                         break
@@ -149,6 +157,8 @@ class Mfix(object):
         output['paused'] = bool(Mfix.mfix_paused)
         output['time'] = float(RUN.time)
         output['tstop'] = float(RUN.tstop)
+        output['elapsed_walltime'] = cls.walltime
+        output['remaining_walltime'] = cls.walltime_remaining
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
