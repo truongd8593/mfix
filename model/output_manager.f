@@ -72,25 +72,6 @@ MODULE output_man
          CALL BACKUP_RES
       ENDIF
 
-! Write restart file, if needed
-      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
-
-         RES_TIME = NEXT_TIME(RES_DT)
-         CALL WRITE_RES1
-         CALL NOTIFY_USER('.RES;')
-
-         IF(DISCRETE_ELEMENT) THEN
-            CALL WRITE_RES0_DES
-            CALL NOTIFY_USER('DES.RES;')
-         ENDIF
-
-         IF(QMOMK) THEN
-            CALL QMOMK_WRITE_RESTART
-            CALL NOTIFY_USER('QMOMK.RES;')
-         ENDIF
-
-      ENDIF
-
 ! Write SPx files, if needed
       IDX = 0
       bWRITE_NETCDF_FILES = .FALSE.
@@ -109,7 +90,6 @@ MODULE output_man
          ENDIF
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
-
 
 ! Write standard output, if needed
       IF(CHECK_TIME(OUT_TIME)) THEN
@@ -154,6 +134,25 @@ MODULE output_man
 
 ! Write NetCDF files.
       IF(bWRITE_NETCDF_FILES) CALL WRITE_NETCDF(0,0,TIME)
+
+! Write restart file, if needed
+      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
+
+         RES_TIME = NEXT_TIME(RES_DT)
+         CALL WRITE_RES1
+         CALL NOTIFY_USER('.RES;')
+
+         IF(DISCRETE_ELEMENT) THEN
+            CALL WRITE_RES0_DES
+            CALL NOTIFY_USER('DES.RES;')
+         ENDIF
+
+         IF(QMOMK) THEN
+            CALL QMOMK_WRITE_RESTART
+            CALL NOTIFY_USER('QMOMK.RES;')
+         ENDIF
+
+      ENDIF
 
 ! Add the amount of time needed for all IO operations to total.
       CPU_IO = CPU_IO + (WALL_TIME() - WALL_START)
