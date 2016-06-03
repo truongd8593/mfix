@@ -453,10 +453,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.ui.stackedwidget_mode.setEnabled(True)
         self.reset()
 
-    def is_project_open(self):
-        # This should be a state of the model, not of the GUI
-        return self.ui.stackedwidget_mode.isEnabled()
-
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
 
@@ -571,20 +567,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.update_window_title() # put run state in window titlebar
 
-        if not self.is_project_open():
-            return # ?
-
         ui = self.ui
+        project_open = bool(self.get_project_file())
+        ready = project_open and not (running or paused)
+        self.enable_input(ready and not res_file_exists)
 
-        # FIXME not everything is disabled, eg fluid pane
-        for pane in ui.panes:
-            if pane is not ui.run:
-                pane.setEnabled(not res_file_exists)
-
+        self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
         # Pause only available w/ pymfix
-
         if running:
             self.status_message("MFIX running, process %s" % self.job.mfix_pid)
             ui.run.combobox_mfix_exes.setEnabled(False)
@@ -600,14 +591,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
-            self.set_run_button(text="Unpause", enabled=True)
+            self.set_run_button(text="Unpause", enabled=True and project_open)
             self.set_stop_button(enabled=False)
             self.change_pane('run')
 
         elif res_file_exists:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
             ui.run.combobox_mfix_exes.setEnabled(False)
-            self.set_reset_button(enabled=True)
+            self.set_reset_button(enabled=True and project_open)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
@@ -617,11 +608,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.status_message("Ready")
             ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=False)
-            self.set_run_button(text="Run", enabled=self.mfix_available)
+            self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
-
-        ready = not (running or paused)
 
         ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled and ready)
         ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled and ready)
