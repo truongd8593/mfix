@@ -773,8 +773,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                      # more ?
                      ):
             item.setEnabled(state)
-        # cp_g0 == specific heat for fluid phase
-        lineedit = ui.fluid.lineedit_keyword_cp_g0
+        # c_pg0 == specific heat for fluid phase
+        lineedit = ui.fluid.lineedit_keyword_c_pg0
         if state:
             lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
         else:
@@ -1937,14 +1937,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
 
+        #Move to fluid_handler
         # handle a bunch of items which are essentially the same
         for (setter, name) in ((self.set_fluid_density_model, 'ro'),
                                (self.set_fluid_viscosity_model, 'mu'),
-                               (self.set_fluid_specific_heat_model, 'cp'),
+                               (self.set_fluid_specific_heat_model, 'c_p'), # inconsistent
                                (self.set_fluid_conductivity_model, 'k'),
                                (self.set_fluid_diffusion_model, 'dif')):
-            name_g0 = name+'_g0'
-            name_usr = 'usr_'+name+'g'
+            name_g0 = 'c_pg0' if name=='c_p' else name+'_g0'
+            name_usr = 'usr_cpg' if name=='c_p' else 'usr_'+name+'g'
             val_g0 = self.project.get_value(name_g0)
             val_usr = self.project.get_value(name_usr)
 
@@ -2081,4 +2082,3 @@ def main(args):
 
 if __name__  == '__main__':
     main(sys.argv)
-

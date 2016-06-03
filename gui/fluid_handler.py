@@ -72,8 +72,8 @@ class FluidHandler(object):
                     combobox.setCurrentIndex(model)
 
                 # Enable lineedit for constant model
-                key_g0 = key + "_g0"
-                key_usr = "usr_" + key + "g"
+                key_g0 = 'c_pg0' if key=='c_p' else key + '_g0'
+                key_usr = 'usr_cpg' if key=='c_p' else 'usr_' + key + 'g'
                 lineedit = getattr(self.ui.fluid,
                                    'lineedit_keyword_%s' % key_g0)
                 lineedit.setEnabled(model==CONSTANT)
@@ -96,7 +96,7 @@ class FluidHandler(object):
         for (name, key) in (
                 ('density', 'ro'),
                 ('viscosity', 'mu'),
-                ('specific_heat', 'cp'),
+                ('specific_heat', 'c_p'),
                 ('conductivity', 'k'),
                 ('diffusion', 'dif')):
             model_name = 'fluid_%s_model' % name
