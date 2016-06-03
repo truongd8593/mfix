@@ -33,7 +33,6 @@ MODULE read_input
       USE param
       USE param1
       USE run
-      USE turb, only: L_SCALE0, K_EPSILON, l_scale
       USE visc_g, only: MU_GMAX
 
       IMPLICIT NONE

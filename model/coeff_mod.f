@@ -138,7 +138,7 @@
 ! (mu_g0 /= undefined) to incorporate ishii form of governing equations
 ! wherein the viscosity is multiplied by the phase volume fraction.
 ! Alternatively, we could invoke calc_mu_g only if energy, k_epsilon,
-! l_scale0 /= 0, or ishii (use recalc_visc_g)
+! mixing_length, or ishii (use recalc_visc_g)
       VISC(0) = .TRUE.
 
 ! Specific heat and thermal conductivity.

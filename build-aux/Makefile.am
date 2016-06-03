@@ -640,7 +640,6 @@ libmfix_src = \
 	../model/set_index1.f \
 	../model/set_index1a.f \
 	../model/set_index1a3.f \
-	../model/set_l_scale.f \
 	../model/set_max2.f \
 	../model/set_mw_mix_g.f \
 	../model/set_outflow.f \

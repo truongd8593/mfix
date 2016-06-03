@@ -33,8 +33,7 @@
 
 ! K_Epsilon should be changed to true to use this model
 ! To use wall functions, you should use PSW condition at walls.
-!
- K_Epsilon = .TRUE.
+  TURBULENCE_MODEL = 'K_EPSILON'
   
 #
 # Geometry Section

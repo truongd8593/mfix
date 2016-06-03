@@ -37,7 +37,7 @@
   KT_TYPE="SIMONIN"
   FRICTION_MODEL = 'SCHAEFFER'
 
-K_EPSILON = .T.           ! Now must be set to true with Ahmadi/Simonin models
+  TURBULENCE_MODEL = 'K_EPSILON'
 JENKINS = .T.             ! 
 
 !

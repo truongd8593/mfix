@@ -46,7 +46,7 @@
       USE scales
       USE stiff_chem
       USE toleranc
-      use turb, only: k_epsilon, l_scale0
+      use turb, only: turbulence_model
       USE ur_facs
       USE usr
       USE utilities

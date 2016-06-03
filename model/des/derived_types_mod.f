@@ -103,4 +103,15 @@ MODULE DERIVED_TYPES
      ENUMERATOR :: CARNAHAN_STARLING=4
   END ENUM
 
+
+! filtered/subgrid corrections to the drag coefficient & granular
+! stress terms including granular viscosity and solids pressure
+! current options are 'igci' and 'milioli'
+  INTEGER :: TURBULENCE_MODEL_ENUM
+  ENUM, BIND(C)
+     ENUMERATOR :: NO_TURBULENCE_ENUM=0
+     ENUMERATOR :: MIXING_LENGTH_ENUM=1
+     ENUMERATOR :: K_EPSILON_ENUM=2
+  END ENUM
+
  END MODULE DERIVED_TYPES

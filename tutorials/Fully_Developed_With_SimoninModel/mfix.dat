@@ -114,10 +114,9 @@
 ! setting the pressure and temperature in IC and BC regions
   MW_avg = 29.0     ! average molecular weight of air (g/g-mol)
 
-! use k-e turbulence model for single phase flow with standard wall
-! functions?  [.FALSE.]. 
-! (Must be set to true when using Ahmadi or Simonin models)
-  K_EPSILON = .TRUE. 
+! k-e model for single phase flow with standard wall functions
+! (Required when using Ahmadi or Simonin models)
+  TURBULENCE_MODEL = 'K_EPSILON'
   Mu_gmax = 1.E+03   ! max. value of the turbulent viscosity of the fluid
      
 

@@ -47,7 +47,7 @@
       USE sendrecv         ! for filling the boundary information
       USE stiff_chem
       USE toleranc
-      use turb, only: l_scale0, k_epsilon
+      use turb, only:  k_epsilon
       USE ur_facs
       use visc_g, only: mu_gmax
 
@@ -263,7 +263,7 @@
 ! Version 01.09
 ! ------------------------------------------------------------------------
       WRITE (UNIT_RES, REC=NEXT_RECA) TIME, TSTOP, ENERGY_EQ, RES_DT, OUT_DT, &
-         NLOG, L_SCALE0, NO_I, NO_J, NO_K, CALL_USR
+         NLOG, 0.0d0, NO_I, NO_J, NO_K, CALL_USR
       NEXT_RECA = NEXT_RECA + 1
       write (unit_res,rec=next_reca) n_spx
       NEXT_RECA = NEXT_RECA + 1

@@ -15,10 +15,14 @@
 !---------------------------------------------------------------------//
       use param1, only: undefined, zero
       use physprop, only: mu_g0
-      use turb, only: k_epsilon, l_scale0
 ! invoke user defined quantity
       USE usr_prop, only: usr_mug, calc_usr_prop
       USE usr_prop, only: gas_viscosity
+
+      use derived_types, only: TURBULENCE_MODEL_ENUM
+      use derived_types, only: MIXING_LENGTH_ENUM
+      use derived_types, only: K_EPSILON_ENUM
+
       IMPLICIT NONE
 
 ! Local variables
@@ -36,11 +40,12 @@
       ENDIF
 
 ! adjust viscosity for tubulence
-      IF (K_Epsilon) THEN
+      SELECT CASE( TURBULENCE_MODEL_ENUM)
+      CASE(K_EPSILON_ENUM)
          CALL CALC_K_EPSILON_MU
-      ELSEIF (L_SCALE0 /= ZERO) THEN
+      CASE(MIXING_LENGTH_ENUM)
          CALL CALC_LSCALE_MU
-      ENDIF
+      END SELECT
 
       CALL SET_EPMUG_VALUES
 
@@ -259,7 +264,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Purpose: compute l_scale0 model                                     C
+!  Purpose: compute mixing length model                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_LSCALE_MU

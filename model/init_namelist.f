@@ -49,7 +49,7 @@
       USE scales
       USE stiff_chem
       USE toleranc
-      use turb, only: l_scale0, k_epsilon
+      use turb, only: TURBULENCE_MODEL
       USE ur_facs
       use usr_src, only: call_usr_source
 ! user defined flags
@@ -252,30 +252,21 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    The K-Epsilon turbulence model (for single-phase flow).
+!    Gas phase turbulence mode. ["NONE"]
+!  </description>
+!  <dependent keyword="MU_GMAX" value="DEFINED"/>
+!  <valid value="NONE."  note="No turbulencemodel"/>
+!  <valid value="MIXING_LENGTH"  note="Turbulent length scale must
+!    be specified for the full domain using keyword IC_L_SCALE."/>
+!  <valid value="K_EPSILON"  note="K-epsilon turbulence model (for
+!    single-phase flow) using standard wall functions.
 !    o Numerical parameters (like under-relaxation) are the same as the
 !      ones for SCALAR (index = 9).
 !    o All walls must be defined (NSW, FSW or PSW) in order to use
 !      standard wall functions. If a user does not specify a wall type,
 !      the simulation will not contain the typical turbulent profile in
-!      wall-bounded flows.
-!  </description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="L_SCALE0" value="DEFINED"/>
-!  <valid value=".TRUE."  note="Enable the K-epsilon turbulence model
-!    (for single-phase flow) using standard wall functions."/>
-!  <valid value=".FALSE." note="Do not use K-epsilon turbulence model"/>
-      K_EPSILON = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Value of turbulent length initialized. This may be overwritten
-!    in specific regions with the keyword IC_L_SCALE.
-!</description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="K_EPSILON" value=".TRUE."/>
-      L_SCALE0 = ZERO
+!      wall-bounded flows."/>
+      TURBULENCE_MODEL = "NONE"
 !</keyword>
 
 !<keyword category="Run Control" required="false">

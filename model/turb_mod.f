@@ -1,10 +1,11 @@
 
       MODULE turb
+
+      CHARACTER(len=64) :: TURBULENCE_MODEL
+
 ! If .TRUE. solve K_Epsilon turbulence eq.
       LOGICAL :: K_Epsilon
 
-! Default value for characteristic length for turbulence
-      DOUBLE PRECISION :: L_scale0
 ! Characteristic length for turbulence
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  L_scale
 

@@ -92,8 +92,8 @@
   P_Ref = 1.01E6     ! reference pressure [bayre] 
 
 ! use k-e turbulence model for single-phase flow with standard wall
-! functions?   [.FALSE.]
-  K_EPSILON = .TRUE.  
+  TURBULENCE_MODEL = 'K_EPSILON'
+
   Mu_gmax = 1.E+03     ! max. value of the turbulent viscosity of the fluid
 
 
