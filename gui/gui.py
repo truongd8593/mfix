@@ -1529,22 +1529,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
         self.update_keyword('run_name', run_name)
-        # XXX fixme move unsaved flag to project, integrate with writeDatFile
         self.project.writeDatFile(project_file)
-        #self.clear_unsaved_flag() XXX can't do this b/c export and save_as use
-        # save_project FIXME FIXME FIXME
+        self.clear_unsaved_flag()
 
     def save_as(self):
         """Prompt user for new filename, save project to that file and make
         it the active project"""
-        # TODO: combine export_project and save_as
         new_file = self.get_save_filename()
         if not new_file:
             return
         new_dir = os.path.dirname(new_file)
         if not self.check_writable(new_dir):
             return
-        # Output files?
         # Force run name to file name.  Is this a good idea?
         basename = os.path.basename(new_file)
         run_name = os.path.splitext(basename)[0]
@@ -1579,7 +1575,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         project_file = self.get_project_file()
         try:
             self.save_project()
-            self.clear_unsaved_flag()
         except Exception as e:
             msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
             self.print_internal("Error: %s" % msg, color='red')
@@ -1590,20 +1585,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          default='ok')
             traceback.print_exception(*sys.exc_info())
             return
-        # Reopen to make sure what's on the screen matches
-        # what's in the file.  This causes loss of selections,
-        # flickering, etc so maybe we shouldn't do this.
-        #
-        #self.open_project(self.get_project_file())
 
     def handle_export(self):
-        # TODO:  catch/report exceptions!
         self.export_project()
 
     def handle_save_as(self):
-        # TODO:  catch/report exceptions!
         self.save_as()
-        self.clear_unsaved_flag()
 
     def handle_settings(self):
         """handle user settings"""
@@ -1942,7 +1929,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         if self.unsaved_flag: # Settings changed after loading
             self.save_project()
-            self.clear_unsaved_flag()
+
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
