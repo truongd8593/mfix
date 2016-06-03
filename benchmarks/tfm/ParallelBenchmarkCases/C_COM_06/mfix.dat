@@ -24,11 +24,7 @@
   SPECIES_EQ = .T. .T.
 
   KT_TYPE = 'LUN_1984'
-
-  SCHAEFFER = .F.
-
-  FRICTION = .T.
-  Savage = 2
+  FRICTION_MODEL = 'SIRVASTAVA'
 
   CALL_USR  =  .T.
 

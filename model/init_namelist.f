@@ -1377,35 +1377,11 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids stress model selection.
+!    Solids stress firction model selection.
 !  </description>
-!  <valid value=".FALSE." note="Do not use the Princeton solids stress model."/>
-!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-      FRICTION = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    For a term appearing in the frictional stress model
-!    invoked with FRICTION keyword.
-!  </description>
-!  <valid value="0" note="Use S:S in the frictional stress model."/>
-!  <valid value="1" note="Use an alternate form suggested by Savage."/>
-!  <valid value="2" note="An appropriate combination of above."/>
-!  <dependent keyword="friction" value=".TRUE."/>
-      SAVAGE = 1
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    Schaeffer frictional stress tensor formulation. </description>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model."/>
-!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
-      SCHAEFFER = .TRUE.
+!  <valid value="SCHAEFFER" note="Schaeffer friction model"/>
+!  <valid value="SIRVASTAVA"  note="Sirvastava friction model"/>
+      FRICTION_MODEL = 'SCHAEFFER'
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">

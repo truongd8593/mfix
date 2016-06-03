@@ -39,11 +39,8 @@
 ! use model B form of momentum equations?  [.FALSE.]
   MODEL_B = .FALSE.   ! use model A
  
-! use the schaeffer model for frictional/plastic solids phase
-! stress?   [.TRUE.] 
-  SCHAEFFER = .FALSE.   ! frictional stresses for for solid particles 
-                        ! only. in this case this 'solids' phase is
-                        ! actually air (see below)
+! Model for frictional/plastic solids phase
+  FRICTION_MODEL = 'NONE'
 
 
 !*********************************************************************

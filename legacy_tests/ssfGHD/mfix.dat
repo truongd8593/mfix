@@ -49,18 +49,8 @@
 ! note drag will not be used for this granular flow case
   DRAG_TYPE  = 'WEN_YU' 
 
-! use the schaeffer model for frictional/plastic solids phase
-! stress?   [.TRUE.]  
-  SCHAEFFER = .F.  
-
-! use the princeton model for frictional/plastic solids phase
-! stress? [.FALSE.]
-! (this cannot be invoked simultaneously with schaeffer)
-#  FRICTION = .T.
-
-! use indicated formula to evaluate a term in the frictional model
-! (only invoked when FRICTION = .T)  [1]
-#  SAVAGE = 2
+! Model for frictional/plastic solids phase
+  FRICTION_MODEL = 'NONE'
 
 
 !*********************************************************************

@@ -84,8 +84,7 @@
 
   solids_model(1)   = 'tfm'
 
-  Friction          = .F.   ! no Princeton solid stress model
-  Schaeffer         = .F.   ! no Schaeffer frictional stress formulation
+  FRICTION_MODEL = 'NONE'
 
 !  ro_s0(1)          = 2.0
   ro_s0(1)          = 1.0   ! 1.0 for testing ! FLAGMMS

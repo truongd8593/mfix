@@ -4,7 +4,7 @@
 !                                                                      !
 !  Purpose: List MFIX keywords that CANNOT be edited during a run.     !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-!     NAMELIST / TFM_SOLIDS_LOCKED /&
+!     NAMELIST / TFM_SOLIDS_LOCKED / KT_TYPE,  SIMONIN, AHMADI
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -16,7 +16,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       NAMELIST / TFM_SOLIDS_UNLOCKED /&
 
-      KT_TYPE, SIMONIN, AHMADI, FRICTION, SAVAGE, SCHAEFFER,  &
       BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, YU_STANDISH,   &
       FEDORS_LANDEL, RDF_TYPE, ADDED_MASS, M_AM, E, C_e, R_p, &
       E_w, PHIP, PHIP0, C_f, PHI, PHI_w, EPS_f_min, EP_S_MAX, &

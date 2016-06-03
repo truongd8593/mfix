@@ -69,9 +69,8 @@
   
   DRAG_TYPE             = 'WEN_YU' 
   
-!  FRICTION = .T.
-!  SAVAGE = 2
-   SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
+  FRICTION_MODEL = 'NONE'
+
 
   MMAX = 2
   RO_s0        = 2*2.4d0

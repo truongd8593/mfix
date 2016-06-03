@@ -35,10 +35,10 @@
   SPECIES_EQ 		= .FALSE.    .FALSE. 		!do not solve species eq
   
   KT_TYPE="SIMONIN"
+  FRICTION_MODEL = 'SCHAEFFER'
 
 K_EPSILON = .T.           ! Now must be set to true with Ahmadi/Simonin models
 JENKINS = .T.             ! 
-FRICTION = .F.
 
 !
 ! Physical and Numerical Parameters

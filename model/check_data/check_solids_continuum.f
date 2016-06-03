@@ -146,9 +146,26 @@
          'specified.',/'Please correct the mfix.dat file.')
 
 
+! Check name of radial distribution function
+      SELECT CASE(trim(adjustl(FRICTION_MODEL)))
 
-! If frictional stress modeling check various dependent/conflicting
-! settings
+      CASE ('SCHAEFFER')
+         SCHAEFFER = .TRUE.
+         FRICTION = .FALSE.
+      CASE ('SIRVASTAVA')
+         SCHAEFFER = .FALSE.
+         FRICTION = .TRUE.
+      CASE ('NONE')
+         SCHAEFFER = .FALSE.
+         FRICTION = .FALSE.
+      CASE DEFAULT
+            WRITE(ERR_MSG, 1150)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 1150 FORMAT('Error 1150: Unknown FRICTION_MODEL',/'Please ',  &
+         'correct the mfix.dat file.')
+
 
 ! plastic/frictional stress model
       IF (FRICTION) THEN

@@ -15,9 +15,7 @@
   DT_MIN                = 1.0d-8                       !min. time step
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .FALSE.    .FALSE.            !do not solve species eq
-  FRICTION              = .TRUE.              ! frictional model based on this paper:
-  SAVAGE                = 2                   ! Powder Technol. 129 (2003) 72-85
-  SCHAEFFER = .FALSE.
+  FRICTION_MODEL = 'SIRVASTAVA'
                                                                                
 ! Geometry Section                                                              
                                                                                

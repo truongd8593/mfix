@@ -35,8 +35,7 @@
   MOMENTUM_Y_EQ(0:2) = .T.  .T.  .F.
 
 ! Friction/plastic stress models
-  FRICTION  = .F.
-  SCHAEFFER  = .F.
+  FRICTION_MODEL = 'NONE'
 
 ! Drag model
   DRAG_TYPE = 'GIDASPOW'

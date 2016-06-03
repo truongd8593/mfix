@@ -24,11 +24,7 @@
   SPECIES_EQ = .T. .F.
 
   KT_TYPE = 'LUN_1984'
-
-  SCHAEFFER = .F.
-
-  FRICTION = .T.
-  Savage = 2
+  FRICTION_MODEL = 'SIRVASTAVA'
 
   C(1) = 30. !reaction rate constant
   C_NAME(1) = 'RXN Rate Constant'
