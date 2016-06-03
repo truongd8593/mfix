@@ -183,8 +183,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         #self.status_message("Loading")
         # build keyword documentation from namelist docstrings
+        # TODO: pregenerate this?
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
+
+        if False:
+            keys = self.keyword_doc.keys()
+            keys.sort()
+            with open('/tmp/keys','w') as f:
+                f.write('\n'.join(keys))
 
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
@@ -936,8 +943,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                     name_list = key.split('_')
                     if name_list[-1].isdigit():
                         base_key = '_'.join(name_list[:-1])
-                        if base_key in self.keyword_doc:
-                            key = base_key
+                        if base_key not in self.keyword_doc:
+                            log.error("UNKNOWN KEYWORD %s: not registering %s (also tried %s)" %
+                                      (key, widget.objectName(), base_key))
+                            continue
+                        key = base_key
 
                 # set the key attribute to the keyword
                 widget.key = key
@@ -963,6 +973,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
+                else:
+                    log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
+                    continue
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)
