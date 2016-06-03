@@ -497,7 +497,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     def objectName(self):
         return 'VTK Widget'
-        
+
     def default(self):
         """reset to defaults"""
         self.ui.geometry.lineedit_keyword_zlength.setEnabled(True)
@@ -1444,7 +1444,7 @@ class VtkWidget(QtWidgets.QWidget):
         if len(self.geometrydict) > 1:
             name_list = list(self.geometrydict.keys())
             # Get any key which is not equal to 'name'.  Order of keys is arbitrary
-            other_name = name_list[1] if name_list[0]==name else name_list[0]
+            other_name = name_list[1] if name_list[0] == name else name_list[0]
             other_actor = self.geometrydict[other_name]['actor']
             actor.GetProperty().DeepCopy(other_actor.GetProperty())
         else:
@@ -1545,7 +1545,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
 
-        self.change_region_visibility(name, self.region_dict[name]['visibility'])
+        self.change_region_visibility(name,
+                                      self.region_dict[name]['visibility'])
 
         self.vtkRenderWindow.Render()
 
@@ -1724,7 +1725,7 @@ class VtkWidget(QtWidgets.QWidget):
             for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
                                     'zmin', 'zlength'],
                                    extents):
-                if not 'min' in key: # mfix doesn't support mins yet
+                if 'min' not in key:  # mfix doesn't support mins yet
                     self.emitUpdatedValue(key, extent)
 
             self.update_mesh()
@@ -1876,7 +1877,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.mesh_stats()
 
         # export geometry
-        project_dir = self.parent.settings.value('project_dir')
+        project_dir = self.parent.get_project_dir()
         self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
                                  clipper.GetOutputPort())
 
