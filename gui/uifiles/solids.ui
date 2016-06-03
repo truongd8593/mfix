@@ -1046,7 +1046,7 @@ background-color:transparent;
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
            <item row="0" column="0" colspan="3">
-            <widget class="CheckBox" name="checkbox_keyword_genr_part_config_2">
+            <widget class="CheckBox" name="checkbox_keyword_gener_part_config_2">
              <property name="text">
               <string>Enable automatic particle generation</string>
              </property>
