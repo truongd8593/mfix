@@ -44,31 +44,33 @@ class Job(object):
         """indicate whether pymfix is paused"""
         if not self.is_pymfix:
             return False
+        # FIXME this is returning true when job has crashed
         return self.status.get('paused', False)
 
     def pause(self):
-        "pause MFIX"
+        "pause pymfix job"
         if not self.is_pymfix:
+            log.error("pause() called on non-pymfix job")
             return
-        # log = logging.getLogger(__name__)
         req = Request(url='%s/pause' % self.pymfix_url, data='')
         req.get_method = lambda: 'PUT'
         resp = urlopen(req)
-        # log.info("response status: %s", resp.status)
-        # log.info("response reason: %s", resp.reason)
+        #log.info("response status: %s", resp.status)
+        #log.info("response reason: %s", resp.reason)
         resp.close()
         self.parent.update_run_options()
 
     def unpause(self):
-        "pause MFIX"
+        "unpause pymfix job"
         if not self.is_pymfix:
+            log.error("unpause() called on non-pymfix job")
             return
-        # log = logging.getLogger(__name__)
+            return
         req = Request(url='%s/unpause' % self.pymfix_url, data='')
         req.get_method = lambda: 'PUT'
         resp = urlopen(req)
-        # log.info("response status: %s", resp.status)
-        # log.info("response reason: %s", resp.reason)
+        #log.info("response status: %s", resp.status)
+        #log.info("response reason: %s", resp.reason)
         resp.close()
         self.parent.update_run_options()
 
@@ -99,7 +101,6 @@ class Job(object):
                 log.warn("killing mfix process %s"%self.mfix_pid)
                 self.mfixproc.terminate()
             except OSError as err:
-                log = logging.getLogger(__name__)
                 log.error("Error terminating process: %s", err)
 
         self.mfixproc = None
@@ -127,7 +128,6 @@ class Job(object):
             self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
-            log = logging.getLogger(__name__)
             log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
             if is_pymfix:
                 self.timer = QTimer()
@@ -170,7 +170,6 @@ class Job(object):
                 msg = "Process communication error"
             else:
                 msg = "Unknown error"
-            log = logging.getLogger(__name__)
             log.warn(msg)
             self.mfixproc = None
             self.parent.stderr_signal.emit(msg) # make the message print in red
@@ -190,7 +189,6 @@ class Job(object):
         req = Request(url, data)
         response = urlopen(req)
         response_str = response.read()
-        log = logging.getLogger(__name__)
         log.debug("response_str is %s", response_str)
         # self.status = json.loads(status_str)
         # log.debug("status is %s", self.status)
@@ -198,7 +196,6 @@ class Job(object):
     def update_status(self):
         """update the status of  the pymfix monitor"""
         status_str = urlopen('%s/status' % self.pymfix_url).read()
-        log = logging.getLogger(__name__)
         log.warning("status_str is %s", status_str)
         try:
             self.status = json.loads(status_str)

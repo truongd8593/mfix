@@ -110,7 +110,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
-        self.mfix_available = False #?
+        self.mfix_available = False
         self.pymfix_enabled = False
         self.unsaved_flag = False
 
@@ -126,7 +126,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if PRECOMPILE_UI:
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
-
+            self.ui.panes = [] # Convenience
             def make_widget(cls):
                 # Create an instance of a new class which is a subclass
                 # of QWidget and the specified class
@@ -148,10 +148,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 # assign 'self.ui.general', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
+                self.ui.panes.append(widget)
 
         else:  # not precompiled
             uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
             self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'))
+            self.ui.panes = [] # Convenience
             self.setCentralWidget(self.ui)
             assert self is not self.ui
 
@@ -174,7 +176,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 # assign 'self.ui.general', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
-
+                self.ui.panes.append(widget)
         # end of ui loading
 
         # build keyword documentation from namelist docstrings
@@ -222,14 +224,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 (ui.toolbutton_new, 'newfolder', self.new_project),
                 (ui.toolbutton_open, 'openfolder', self.handle_open),
                 (ui.toolbutton_save, 'save', self.handle_save),
-                (ui.toolbutton_run_pause_mfix, 'play', self.handle_run_pause),
+                (ui.toolbutton_run_mfix, 'play', self.handle_run),
+                (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
                 (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
                 (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files)):
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
-        for button in (ui.toolbutton_run_pause_mfix, ui.toolbutton_save, ui.toolbutton_more):
+        for button in (ui.toolbutton_run_mfix, ui.toolbutton_save, ui.toolbutton_more):
             button.setFocusPolicy(Qt.ClickFocus)
 
         # "More" submenu
@@ -272,12 +275,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.job = Job(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
+        self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
+
         self.exe_watcher = QFileSystemWatcher()
+        self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
+
         self.monitor = Monitor(self)
 
         # buttons in 'run' pane
         run = ui.run
-        run.button_run_pause_mfix.clicked.connect(self.handle_run_pause)
+        run.button_run_mfix.clicked.connect(self.handle_run)
+        run.button_pause_mfix.clicked.connect(self.handle_pause)
+        run.button_pause_mfix.setVisible(self.pymfix_enabled)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.combobox_mfix_exes.activated.connect(self.handle_select_exe)
@@ -312,8 +321,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # Update run options
         self.update_run_options()
-        self.slot_exes_changed() #?
-        self.handle_select_exe()# hack to make sure self.mfix_exe gets set, even if no project loaded
 
         # Reset everything to default values
         self.reset() # Clear command_output too?
@@ -342,25 +349,29 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         for w in (self.exe_watcher, self.rundir_watcher):
             for d in w.directories():
                 w.removePath(d)
+        self.slot_rundir_changed()
         # just the system dirs, no project dirs (TODO: reevaluate $PATH)
         PATH = os.environ.get("PATH")
         if PATH:
             dirs = set(PATH.split(os.pathsep))
         else:
             dirs = set()
-        for d in dirs:
-            if d and d != os.path.curdir and os.path.isdir(d):
-                self.exe_watcher.addPath(d)
-
         mfix_home = get_mfix_home()
-        if mfix_home and mfix_home not in self.exe_watcher.directories():
-            self.exe_watcher.addPath(mfix_home)
+        if mfix_home:
+            dirs.add(mfix_home)
+            dirs.add(os.path.join(get_mfix_home(), 'build'))
+        for d in dirs:
+            # filter out empty strings and current directory from $PATH
+            if d and d != os.path.curdir and os.path.isdir(d):
+                if d not in self.exe_watcher.directories():
+                    self.exe_watcher.addPath(d)
         self.slot_exes_changed()
-        self.handle_select_exe() #?
-        self.update_run_options() #?
 
-        if self.mfix_exe:
-            self.ui.run.combobox_mfix_exes.setCurrentText(self.mfix_exe) #?
+        if self.mfix_exe: # Do we need to do this again here?
+            cb = self.ui.run.combobox_mfix_exes
+            if cb.findText(self.mfix_exe) == -1:
+                cb.addItem(self.mfix_exe)
+            cb.setCurrentText(self.mfix_exe)
 
         self.reset_fluids()
         self.reset_solids()
@@ -445,6 +456,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
 
+    def update_no_mfix_warning(self):
+        ok = bool(self.mfix_exe or self.mfix_available)
+        self.ui.run.label_mfix_exes_warning.setVisible(not ok)
+        self.ui.run.combobox_mfix_exes.setVisible(ok)
+        if not ok:
+            self.print_internal("Warning: no MFIX executables available")
+
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
@@ -458,56 +476,66 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # is triggered frequently during a run
         running = self.job.is_running()
         res_file_exists = bool(self.monitor.get_res_files())
-        exes = self.monitor.get_exes()
-        self.mfix_available = bool(exes)
-        cb = self.ui.run.combobox_mfix_exes
-        ui = self.ui
 
+        exes = list(self.monitor.get_exes())
+        mfix_exe = self.mfix_exe
+
+        # Did the current exe go away?
+        if mfix_exe and not os.path.exists(mfix_exe):
+            self.print_internal("Warning: %s is gone" % mfix_exe)
+            mfix_exe = self.mfix_exe = None
+
+        # Make sure we don't loose the current selection
+        if mfix_exe and mfix_exe not in exes:
+            exes.insert(0, mfix_exe)
+        self.mfix_available = bool(exes)
+        self.update_no_mfix_warning()
+
+        cb = self.ui.run.combobox_mfix_exes
         if not self.mfix_available:
-            cb.clear()
-            log.debug("No mfix executables available")
-            ui.run.label_mfix_exes_warning.setVisible(True)
-            cb.setVisible(False)
             # Disable run/pause/stop buttons
-            self.set_run_button(text="Run", enabled=False)
+            self.set_run_button(enabled=False)
             self.set_stop_button(enabled=False)
-            self.set_reset_button(res_file_exists and not running)
+            self.set_reset_button(enabled=(res_file_exists and not running))
             # How did we get here if running? maybe somebody deleted the exe!
             return
 
-        saved_selection = cb.currentText()
         cb.clear()
         for exe in exes:
             cb.addItem(exe)
-        if saved_selection in exes:
-            cb.setCurrentText(saved_selection)
-            self.mfix_exe = saved_selection #??
-        self.handle_select_exe()
 
-    def set_run_button(self, text, enabled=True):
-        icon_name = 'play.png' if text in ('Unpause', 'Run', 'Resume') else text.lower()+'.png'
-        self.ui.run.button_run_pause_mfix.setText(text)
-        self.ui.toolbutton_run_pause_mfix.setIcon(get_icon(icon_name))
-        self.ui.toolbutton_run_pause_mfix.setToolTip('Resume previous MFIX run' if text=='Resume'
-                                                     else text+' MFIX')
-        for b in (self.ui.run.button_run_pause_mfix, self.ui.toolbutton_run_pause_mfix):
-            b.setEnabled(enabled)
+        if self.mfix_exe:
+            cb.setCurrentText(self.mfix_exe)
 
-    def set_stop_button(self, enabled=True):
-        #self.ui.run.button_stop_mfix.setText(text)
-        #self.ui.toolbutton_stop_mfix.setIcon(get_icon(text+'.png'))
-        #self.ui.toolbutton_stop_mfix.setToolTip(text+" MFIX")
+    def set_run_button(self, text=None, enabled=None):
+        if text is not None:
+            self.ui.run.button_run_mfix.setText(text)
+            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFIX run' if text=='Resume'
+                                                   else text+' MFIX')
+        if enabled is not None:
+            for b in (self.ui.run.button_run_mfix, self.ui.toolbutton_run_mfix):
+                b.setEnabled(enabled)
+
+    def set_pause_button(self, text=None, enabled=None, visible=None):
+        buttons = (self.ui.run.button_pause_mfix, self.ui.toolbutton_pause_mfix)
+
+        if enabled is not None:
+            for b in buttons:
+                b.setEnabled(enabled)
+        if visible is not None:
+            for b in buttons:
+                b.setVisible(visible)
+        if text is not None:
+            self.ui.run.button_pause_mfix.setText(text)
+            self.ui.toolbutton_pause_mfix.setToolTip(text + ' MFIX')
+
+    def set_stop_button(self, enabled):
         for b in (self.ui.run.button_stop_mfix, self.ui.toolbutton_stop_mfix):
             b.setEnabled(enabled)
 
-    def set_reset_button(self, enabled=True):
-        #self.ui.run.button_reset_mfix.setText(text)
-        #self.ui.toolbutton_reset_mfix.setIcon(get_icon(text+'.png'))
-        #self.ui.toolbutton_reset_mfix.setToolTip(text+" MFIX")
+    def set_reset_button(self, enabled):
         for b in (self.ui.run.button_reset_mfix, self.ui.toolbutton_reset_mfix):
             b.setEnabled(enabled)
-
-
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
@@ -526,54 +554,73 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # TODO: set this in __init__ or another early setup method
         # assemble list of available executables
 
+        running = self.job.is_running()
+        paused = self.job.is_paused()
+        res_file_exists = bool(self.monitor.get_res_files())
+
         self.update_window_title() # put run state in window titlebar
 
         if not self.is_project_open():
             return # ?
 
-        running = self.job.is_running()
-        res_file_exists = bool(self.monitor.get_res_files())
-
         ui = self.ui
 
-        # Enacpsulate this!
         # FIXME not everything is disabled, eg fluid pane
-        # FIXME let user know why UI is blocked?
-        ui.general.setEnabled(not res_file_exists)
-        ui.geometry.setEnabled(not res_file_exists)
-        ui.mesh.setEnabled(not res_file_exists)
-        ui.model_setup.setEnabled(not res_file_exists)
-        ui.monitors.setEnabled(not res_file_exists)
-        ui.numerics.setEnabled(not res_file_exists)
-        ui.output.setEnabled(not res_file_exists)
-        ui.solids.setEnabled(not res_file_exists)
+        for pane in ui.panes:
+            if pane is not ui.run:
+                pane.setEnabled(not res_file_exists)
+
+
+        #handle buttons in order:  RESET RUN PAUSE STOP
+        # Pause only available w/ pymfix
 
         if running:
             self.status_message("MFIX running, process %s" % self.job.mfix_pid)
             ui.run.combobox_mfix_exes.setEnabled(False)
-            # Pause only available w/ pymfix (move to separate button?)
-            if self.pymfix_enabled:
-                self.set_run_button(text="Unpause" if self.job.is_paused() else "Pause",
-                                    enabled=True)
-            else:
-                self.set_run_button(text="Run", enabled=False)
-            self.set_stop_button(enabled=True)
+            # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
+            self.set_run_button(enabled=False)
+            self.set_pause_button(enabled=self.pymfix_enabled, visible=self.pymfix_enabled)
+            self.set_stop_button(enabled=True)
+            self.change_pane('run')
 
-        else: # Not running
-            self.status_message("Ready")
-            ui.run.combobox_mfix_exes.setVisible(self.mfix_available)
-            ui.run.label_mfix_exes_warning.setVisible(not self.mfix_available)
-            self.set_run_button(text="Resume" if res_file_exists else "Run",
-                                enabled=self.mfix_available)
+        elif paused:
+            self.status_message("MFIX Paused")
+            ui.run.combobox_mfix_exes.setEnabled(False)
+            self.set_reset_button(enabled=False)
+            self.set_pause_button(visible=True, enabled=False)
+            self.set_run_button(text="Unpause", enabled=True)
             self.set_stop_button(enabled=False)
-            self.set_reset_button(enabled=res_file_exists)
-            ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled)
-            ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
-            ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
-            ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
-            ui.run.use_spx_checkbox.setEnabled(res_file_exists)
-            ui.run.use_spx_checkbox.setChecked(res_file_exists)
+            self.change_pane('run')
+
+        elif res_file_exists:
+            self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
+            ui.run.combobox_mfix_exes.setEnabled(False)
+            self.set_reset_button(enabled=True)
+            self.set_run_button(text='Resume', enabled=True)
+            self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
+            self.set_stop_button(enabled=False)
+            self.change_pane('run')
+
+        else: # Not running, ready for input
+            self.status_message("Ready")
+            ui.run.combobox_mfix_exes.setEnabled(True)
+            self.set_reset_button(enabled=False)
+            self.set_run_button(text="Run", enabled=self.mfix_available)
+            self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
+            self.set_stop_button(enabled=False)
+
+        ready = not (running or paused)
+
+        ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled and ready)
+        ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled and ready)
+        ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled and ready)
+        ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled and ready)
+
+        ui.run.use_spx_checkbox.setEnabled(res_file_exists and ready)
+        ui.run.use_spx_checkbox.setChecked(res_file_exists and ready)
+
+
 
 
     def print_welcome(self):
@@ -1237,6 +1284,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
         if mfix_exe == self.mfix_exe:
             return
+
         self.mfix_exe = mfix_exe
 
         if not mfix_exe:
@@ -1294,19 +1342,32 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 break
         return True
 
-    def handle_run_pause(self):
-        if not self.job.is_running():
-            self.run_mfix()
-        elif self.job.is_paused():
-            self.job.unpause()
-        else:
-            self.job.pause()
+    def handle_run(self):
+        try:
+            if not self.job.is_running():
+                self.run_mfix()
+            else:
+                self.print_internal("Error: MFIX already running")
+        except Exception as e:
+            self.print_internal("Run: error %s" % e)
+
+    def handle_pause(self):
+        try:
+            if self.job.is_paused():
+                self.job.unpause()
+            else:
+                self.job.pause()
+        except Exception as e:
+            self.print_internal("Pause: error %s" % e)
 
     def handle_stop(self):
-        if self.job.is_running():
-            self.job.stop_mfix()
-        else:
-            log.error("handle_stop:  mfix not running")
+        try:
+            if self.job.is_running():
+                self.job.stop_mfix()
+            else:
+                self.print_internal("handle_stop: MFIX not running")
+        except Exception as e:
+            self.print_internal("Stop: error %s" % e)
 
     def run_mfix(self):
         output_files = self.monitor.get_outputs()
@@ -1445,10 +1506,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
 
         project_base = os.path.basename(project_file)
-        self.project.run_name.updateValue(os.path.splitext(project_base)[0])
-        self.ui.general.lineedit_keyword_run_name.setText(self.project.run_name.value)
+        run_name = os.path.splitext(project_base)[0]
+        self.update_keyword('run_name', run_name)
         # XXX fixme move unsaved flag to project, integrate with writeDatFile
         self.project.writeDatFile(project_file)
+        #self.clear_unsaved_flag() XXX can't do this b/c export and save_as use
+        # save_project FIXME FIXME FIXME
 
     def save_as(self):
         """Prompt user for new filename, save project to that file and make
@@ -1548,10 +1611,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             title += " - " + os.path.basename(project_file)
         if self.unsaved_flag:
             title += '*'
+
         if self.job.is_running():
-            title += ', running'
+            title += ', RUNNING'
             if self.job.mfix_pid is not None:
                 title += ', process %s'% self.job.mfix_pid
+        elif self.job.is_paused():
+            title += ', PAUSED'
+        elif self.monitor.get_res_files():
+            title += ', STOPPED, resumable'
+        else:
+            pass
+            #title += ', EDITING'
+
         self.setWindowTitle(title)
 
     def set_unsaved_flag(self):
@@ -1570,7 +1642,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_window_title()
         self.ui.toolbutton_save.setEnabled(False)
         if self.mfix_available:
-            self.ui.toolbutton_run_pause_mfix.setEnabled(True)
+            self.ui.toolbutton_run_mfix.setEnabled(True)
             self.ui.toolbutton_stop_mfix.setEnabled(False)
 
     def check_writable(self, directory):
@@ -1752,14 +1824,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # set up rundir watcher
         self.rundir_watcher.addPath(project_dir)
-        self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
         self.slot_rundir_changed()
 
         # set up exe watcher (it got cleared in 'reset')
-        self.exe_watcher.addPath(project_dir)
-        self.exe_watcher.addPath(os.path.join(get_mfix_home(), 'build'))
-        self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
-        self.slot_exes_changed() # make sure we get called once
+        dirs = (project_dir, ) # any others?
+        for d in dirs:
+            if d not in self.exe_watcher.directories():
+                self.exe_watcher.addPath(d)
+        self.slot_exes_changed()
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1908,17 +1980,21 @@ def main(args):
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
+    saved_exe = mfix.settings.value('mfix_exe') #
+    cb =  mfix.ui.run.combobox_mfix_exes
+    if saved_exe is not None and os.path.exists(saved_exe):
+        if cb.findText(saved_exe) == -1:
+            cb.addItem(saved_exe)
+        cb.setCurrentText(saved_exe)
+    #mfix.mfix_exe = saved_exe
+    mfix.handle_select_exe()
+
+    mfix.update_no_mfix_warning()
+
     if project_file is None and not new_project:
         # autoload last project
         project_file = mfix.get_project_file()
-    saved_exe = mfix.settings.value('mfix_exe') #
-    cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe is not None:
-        index = cb.findText(saved_exe)
-        if index != -1:
-            cb.setCurrentIndex(index)
-    mfix.mfix_exe = saved_exe
-    mfix.handle_select_exe()
+
 
     if project_file:
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
