@@ -179,6 +179,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.panes.append(widget)
         # end of ui loading
 
+        # Until it gets moved to its own uifile:
+        self.ui.panes.append(self.ui.fluid)
+
         # build keyword documentation from namelist docstrings
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
@@ -537,6 +540,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     def set_reset_button(self, enabled):
         for b in (self.ui.run.button_reset_mfix, self.ui.toolbutton_reset_mfix):
             b.setEnabled(enabled)
+
+    def enable_input(self, enabled):
+        # Enable/disable all inputs (while job running, etc)
+        # Stop/reset buttons are left enabled
+        for pane in self.ui.panes:
+            pane.setEnabled(enabled)
+
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
@@ -2016,14 +2026,13 @@ def main(args):
     if project_file:
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
+        mfix.status_message("No project.  Open project or create a new one")
         # disable all widgets except New and Open
-        mfix.ui.stackedwidget_mode.setEnabled(False)
-        for widget in widget_iter(mfix.ui.frame_menu_bar):
-            if widget.objectName().startswith("toolbutton_"):
-                widget.setEnabled(False)
+        #mfix.ui.stackedwidget_mode.setEnabled(False)
+        mfix.enable_input(False)
+        mfix.clear_unsaved_flag()
         mfix.ui.toolbutton_new.setEnabled(True)
         mfix.ui.toolbutton_open.setEnabled(True)
-
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
         mfix.set_solver(SINGLE)
