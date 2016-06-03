@@ -160,7 +160,7 @@ class Job(object):
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
-            self.status.clear()
+            self.cached_status.clear()
             msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
             self.mfix_pid = 0
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
@@ -172,7 +172,7 @@ class Job(object):
         self.mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
-            self.status.clear()
+            self.cached_status.clear()
             if error == QProcess.FailedToStart:
                 msg = "Process failed to start"
             elif error == QProcess.Crashed:
