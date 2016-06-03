@@ -27,17 +27,9 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: LC, M
-      DOUBLE PRECISION :: lsin_phi
 ! counters for number of phases with defined/undefined mu_s0
       INTEGER :: def_mus0, undef_mus0
 !......................................................................!
-
-
-! initialization of various dependent constants
-      SIN_PHI = UNDEFINED   ! friction
-      SIN2_PHI = UNDEFINED   ! schaeffer
-      F_PHI = UNDEFINED    ! commented schaeffer section
-      TAN_PHI_W = UNDEFINED   ! friction or jenkins
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_CONTINUUM")
@@ -88,7 +80,14 @@
          ENDIF
       ENDDO
 
+! Check kinetic theory model
       CALL CHECK_KT_TYPE
+! Check solids frictional model
+      CALL CHECK_FRICTION_MODEL
+! Check solids stress blending function
+      CALL CHECK_BLENDING_FUNCTION
+! Checks required for the subgrid drag models.
+      CALL CHECK_SUBGRID_MODEL
 
 ! Solids phase with constant solids viscosity is employed
 !---------------------------------------------------------------------//
@@ -120,8 +119,6 @@
          ENDIF
       ENDIF
 
-
-
 ! Algebraic granular energy equation
 !---------------------------------------------------------------------//
       IF (.NOT.GRANULAR_ENERGY .AND. undef_mus0 > 0) THEN
@@ -143,86 +140,6 @@
  1101 FORMAT('Error 1101: Coefficient of restitution (C_E) not ',      &
          'specified.',/'Please correct the mfix.dat file.')
  1102 FORMAT('Error 1102: Coefficient of friction (C_F) not ',         &
-         'specified.',/'Please correct the mfix.dat file.')
-
-
-! Check name of radial distribution function
-      SELECT CASE(trim(adjustl(FRICTION_MODEL)))
-
-      CASE ('SCHAEFFER')
-         SCHAEFFER = .TRUE.
-         FRICTION = .FALSE.
-      CASE ('SIRVASTAVA')
-         SCHAEFFER = .FALSE.
-         FRICTION = .TRUE.
-      CASE ('NONE')
-         SCHAEFFER = .FALSE.
-         FRICTION = .FALSE.
-      CASE DEFAULT
-            WRITE(ERR_MSG, 1150)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      END SELECT
-
- 1150 FORMAT('Error 1150: Unknown FRICTION_MODEL',/'Please ',  &
-         'correct the mfix.dat file.')
-
-
-! plastic/frictional stress model
-      IF (FRICTION) THEN
-         IF(SCHAEFFER) THEN
-            WRITE(ERR_MSG, 1200)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-! Check that the granular energy PDE is solved.
-         ELSEIF (.NOT.GRANULAR_ENERGY) THEN
-            WRITE(ERR_MSG,1201)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-! Check the value specified for SAVAGE.
-         ELSEIF(SAVAGE>2 .OR. SAVAGE<0) THEN
-            WRITE(ERR_MSG, 1001)'SAVAGE', iVal(SAVAGE)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-! Verify that stress blending is not turned on.
-         ELSEIF(BLENDING_STRESS) THEN
-            WRITE(ERR_MSG, 1202)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(PHI == UNDEFINED) THEN
-            WRITE(ERR_MSG, 1203)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-! used by friction bc
-         ELSEIF(PHI_W == UNDEFINED) THEN
-            WRITE(ERR_MSG, 1204)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-! PHI & PHI_W are given in degrees but calculated in radian within
-! the fortran codes
-         SIN_PHI = SIN(PHI*PI/180.D0)
-         TAN_PHI_W = TAN(PHI_W*PI/180.D0)
-      ENDIF
- 1201 FORMAT('Error 1201: The FRICTION solids stress model requires ', &
-         /,'GRANULAR_ENERGY=.TRUE. Please correct the mfix.dat file.')
- 1202 FORMAT('Error 1202: Cannot use BLENDING_STRESS with FRICTION ',&
-         /,'Please correct the mfix.dat file.')
- 1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&
-         ' specified.',/'Please correct the mfix.dat file.')
-
-
-! plastic/frictional stress model
-      IF(SCHAEFFER) THEN
-         IF(FRICTION) THEN
-            WRITE(ERR_MSG, 1200)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF (PHI == UNDEFINED) THEN
-            WRITE(ERR_MSG, 1203)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-! PHI is given in degrees but calculated in radian within
-! the fortran codes
-         lsin_phi = sin(phi*PI/180.d0)
-         SIN2_PHI = lSIN_PHI*lSIN_PHI
-         F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0    ! employed in commented
-      ENDIF
- 1200 FORMAT('Error 1200: FRICTION and SCHAEFFER models cannot be ',&
-         'used',/'together. Please correct the mfix.dat file')
- 1203 FORMAT('Error 1203: Angle of internal friction (PHI) not ',      &
          'specified.',/'Please correct the mfix.dat file.')
 
 
@@ -250,15 +167,6 @@
  1302 FORMAT('Error 1302: FEDORS_LANDEL correlation is for binary ',   &
          'mixtures (MMAX=2).',/'Please correct the mfix.dat file.')
 
-
-! Set the flags for blending stresses.
-      IF(BLENDING_STRESS) THEN
-! Turn off the default if SIGM_BLEND is set.
-         IF(SIGM_BLEND)  TANH_BLEND = .FALSE.
-      ELSE
-         TANH_BLEND  = .FALSE.
-         SIGM_BLEND  = .FALSE.
-      ENDIF
 
 
       IF(MODEL_B) THEN
@@ -346,6 +254,364 @@
       END SUBROUTINE CHECK_SOLIDS_CONTINUUM
 
 
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_FRICTION_MODEL                                     !
+! Purpose: Check solids frictional stress model                        !
+!                                                                      !
+! Author: J. Musser                                  Date: 07-FEB-14   !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_FRICTION_MODEL
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User input keyword
+      use run, only: BLENDING_FUNCTION
+! Runtime flags (former keywords)
+      use run, only: BLENDING_STRESS
+      use run, only: TANH_BLEND
+      use run, only: SIGM_BLEND
+
+      USE constant
+      USE run
+      USE physprop
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      USE param1, only: zero, one, undefined, undefined_i
+
+! Global Module procedures:
+!---------------------------------------------------------------------//
+      use error_manager
+
+      implicit none
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION :: lsin_phi
+
+!......................................................................!
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_FRICTION_MODEL")
+
+
+! Check name of radial distribution function
+      SELECT CASE(trim(adjustl(FRICTION_MODEL)))
+
+      CASE ('SCHAEFFER')
+         SCHAEFFER = .TRUE.
+         FRICTION = .FALSE.
+      CASE ('SIRVASTAVA')
+         SCHAEFFER = .FALSE.
+         FRICTION = .TRUE.
+      CASE ('NONE')
+         SCHAEFFER = .FALSE.
+         FRICTION = .FALSE.
+      CASE DEFAULT
+            WRITE(ERR_MSG, 1150)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 1150 FORMAT('Error 1150: Unknown FRICTION_MODEL',/'Please ',  &
+         'correct the mfix.dat file.')
+
+! plastic/frictional stress model
+      IF (FRICTION) THEN
+         IF (.NOT.GRANULAR_ENERGY) THEN
+            WRITE(ERR_MSG,1201)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+! Check the value specified for SAVAGE.
+         ELSEIF(SAVAGE>2 .OR. SAVAGE<0) THEN
+            WRITE(ERR_MSG, 1001)'SAVAGE', iVal(SAVAGE)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(PHI == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1203)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+! used by friction bc
+         ELSEIF(PHI_W == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1204)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+! PHI & PHI_W are given in degrees but calculated in radian within
+! the fortran codes
+         SIN_PHI = SIN(PHI*PI/180.D0)
+         TAN_PHI_W = TAN(PHI_W*PI/180.D0)
+      ENDIF
+
+ 1201 FORMAT('Error 1201: The SIRVASTAVA solids stress model requires',&
+         /,' GRANULAR_ENERGY /= ALGEBRAIC',/&
+        'Please correct the mfix.dat file.')
+ 1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&
+         ' specified.',/'Please correct the mfix.dat file.')
+
+! plastic/frictional stress model
+      IF(SCHAEFFER .AND. PHI == UNDEFINED) THEN
+         WRITE(ERR_MSG, 1203)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSE
+! PHI is given in degrees but calculated in radian within
+! the fortran codes
+         lsin_phi = sin(phi*PI/180.d0)
+         SIN2_PHI = lSIN_PHI*lSIN_PHI
+         F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0    ! employed in commented
+      ENDIF
+
+ 1203 FORMAT('Error 1203: Angle of internal friction (PHI) not ',     &
+         'specified.',/'Please correct the mfix.dat file.')
+
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_FRICTION_MODEL
+
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_BLENDING_FUNCTION                                  !
+! Purpose: Check solids blending stress model                          !
+!                                                                      !
+! Author: J. Musser                                  Date: 07-FEB-14   !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_BLENDING_FUNCTION
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User input keyword
+      use run, only: BLENDING_FUNCTION
+! Runtime flags (former keywords)
+      use run, only: BLENDING_STRESS
+      use run, only: TANH_BLEND
+      use run, only: SIGM_BLEND
+
+! Flag for Scheffer friction model
+      use run, only: SCHAEFFER
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+
+! Global Module procedures:
+!---------------------------------------------------------------------//
+      use error_manager
+
+      implicit none
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+!     NONE
+
+!......................................................................!
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_BLENDING_FUNCTION")
+
+      SELECT CASE(trim(adjustl(BLENDING_FUNCTION)))
+
+      CASE ('NONE');
+         BLENDING_STRESS = .FALSE.
+         TANH_BLEND=.FALSE.
+         SIGM_BLEND=.FALSE.
+      CASE ('TANH_BLEND')
+         BLENDING_STRESS = .TRUE.
+         TANH_BLEND=.TRUE.
+         SIGM_BLEND=.FALSE.
+      CASE ('GIDASPOW_PCF')
+         BLENDING_STRESS = .TRUE.
+         TANH_BLEND=.FALSE.
+         SIGM_BLEND=.TRUE.
+
+      CASE DEFAULT
+         WRITE(ERR_MSG,1001)'BLENDING_FUNCTION', &
+            trim(adjustl(BLENDING_FUNCTION))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+! Verify that stress blending is only turned on with Scheffer.
+      IF(.NOT.SCHAEFFER .AND. BLENDING_STRESS) THEN
+         WRITE(ERR_MSG, 1202)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+1202  FORMAT('Error 1202: Blending solids stress is only avaible ',    &
+         'for Schaeffer',/'friction model.',/'Please correct the ',    &
+         'mfix.dat file.')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+
+      END SUBROUTINE CHECK_BLENDING_FUNCTION
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_SUBGRID_MODEL                                     !
+!  Purpose: Check the subgrid drag model interactions.                 !
+!                                                                      !
+!  Author: J.Musser                                   Date: 31-JAN-14  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_SUBGRID_MODEL
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: Specify friction model (Schaeffer model/Princeton model)
+      USE run, only: FRICTION
+! Flag: Solve granular energy eq
+      USE run, only: GRANULAR_ENERGY
+! Flag: Impose a mean shear on flow field.
+      USE run, only: SHEAR
+! Flag: Invoke Schaeffer and KT-Theory blending
+      USE run, only: BLENDING_STRESS
+! User specifed drag model
+      USE run, only: DRAG_TYPE
+! Ratio of filter size to computational cell size
+      USE run, only: FILTER_SIZE_RATIO
+! User specifed subgrid model: IGCI or MILIOLI
+      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM
+      USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
+! Flag: Include wall effect term
+      USE run, only: SUBGRID_WALL
+! Flag: Solve K-Epsilon Eq.
+      USE turb, only: K_EPSILON
+! Specularity coefficient for particle-wall collisions
+      use constant, only: PHIP
+! Flag: Use cartesian grid model
+      USE cutcell, only : CARTESIAN_GRID
+! Flag: Use discrete element solids model
+      use discretelement, only: DISCRETE_ELEMENT
+! Flag: Use MP-PIC solids model
+      use mfix_pic, only: MPPIC
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      USE param1, only: ZERO, UNDEFINED_C
+
+
+! Global Module procedures:
+!---------------------------------------------------------------------//
+      USE error_manager
+
+      IMPLICIT NONE
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! NONE
+
+! If the models are not being used, return.
+      IF(SUBGRID_TYPE == UNDEFINED_C .AND. .NOT.SUBGRID_WALL) RETURN
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_SUBGRID_MODEL")
+
+
+      IF(SUBGRID_TYPE == UNDEFINED_C .AND. SUBGRID_WALL) THEN
+         WRITE(ERR_MSG,2011)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2011 FORMAT('Error 2011: Invalid input. SUBGRID_WALL cannot be used ',&
+          'without',/'specifying a SUBGRID_TYPE.',/'Please correct ',  &
+          'the mfix.dat file.')
+
+
+      SELECT CASE(trim(adjustl(SUBGRID_TYPE)))
+
+      CASE ('IGCI'); SUBGRID_TYPE_ENUM = IGCI
+      CASE ('MILIOLI'); SUBGRID_TYPE_ENUM = MILIOLI
+      CASE DEFAULT
+         SUBGRID_TYPE_ENUM = UNDEFINED_SUBGRID_TYPE
+      END SELECT
+
+      IF(SUBGRID_TYPE_ENUM/= IGCI .AND. SUBGRID_TYPE_ENUM/=MILIOLI) THEN
+         WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      IF(DRAG_TYPE /= 'WEN_YU')THEN
+         WRITE(ERR_MSG, 2012)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2012 FORMAT('Error 2012: Invalid input. WEN_YU is the only DRAG_TYPE',&
+          ' available',/'when using the SUBGRID model.',/'Please ',    &
+          'correct the mfix.dat file.')
+
+      IF(DISCRETE_ELEMENT .OR. MPPIC) THEN
+         WRITE(ERR_MSG, 2013)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2013 FORMAT('Error 2013: Invalid input. The SUBGRID model is not ',   &
+          'available',/'with discrete solids phases.',/'Please ',      &
+          'correct the mfix.dat file.')
+
+! Impose the subgrid limitations.
+      IF(FILTER_SIZE_RATIO <= ZERO) THEN
+         WRITE(ERR_MSG, 1002)'FILTER_SIZE_RATIO', FILTER_SIZE_RATIO
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(GRANULAR_ENERGY) THEN
+         WRITE(ERR_MSG, 2010) 'GRANULAR_ENERGY', 'FALSE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(K_EPSILON) THEN
+         WRITE(ERR_MSG, 2010) 'K_EPSILON', 'FALSE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(BLENDING_STRESS) THEN
+         WRITE(ERR_MSG, 2010) 'BLENDING_STRESS', 'FALSE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(FRICTION) THEN
+         WRITE(ERR_MSG, 2010) 'FRICTION', 'FALSE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(SHEAR) THEN
+         WRITE(ERR_MSG, 2010) 'SHEAR', 'FALSE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ELSEIF(PHIP /= ZERO) THEN
+         WRITE(ERR_MSG, 2010) 'PHIP', 'ZERO'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ENDIF
+
+      IF(SUBGRID_WALL .AND. .NOT.CARTESIAN_GRID) THEN
+         WRITE(ERR_MSG, 2010) 'CARTESIAN_GRID', 'TRUE'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2010 FORMAT('Error 2010: Invalid input. ',A,' must be ',A,/'when ',    &
+         'using the SUBGRID model.'/,'Please correct the mfix.dat',    &
+         ' file.')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
+         'Please correct the mfix.dat file.')
+
+ 1002 FORMAT('Error 1002: Illegal or unknown input: ',A,' = ',G14.4,/  &
+         'Please correct the mfix.dat file.')
+
+ 1003 FORMAT('Error 1003: Illegal or unknown input: ',A,' = ',I4,/     &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_SUBGRID_MODEL
+
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -388,41 +654,11 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_KT_TYPE")
 
-! These are some checks to satisfy legacy input:
-      IF (AHMADI .AND. SIMONIN) THEN
-         WRITE(ERR_MSG, 9001)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(AHMADI) THEN
-         IF(KT_TYPE(1:6) /= 'AHMADI' .AND.                        &
-            KT_TYPE(1:8) /= 'LUN_1984')THEN
-            WRITE(ERR_MSG,9002)trim(KT_TYPE)
-            CALL FLUSH_ERR_MSG(ABORT = .TRUE.)
-         ELSE
-            KT_TYPE='AHMADI'
-         ENDIF
-      ELSEIF(SIMONIN) THEN
-         IF(KT_TYPE(1:7) /= 'SIMONIN' .AND.                       &
-            KT_TYPE(1:8) /= 'LUN_1984')THEN
-            WRITE(ERR_MSG,9003)trim(KT_TYPE)
-            CALL FLUSH_ERR_MSG(ABORT = .TRUE.)
-         ELSE
-            KT_TYPE='SIMONIN'
-         ENDIF
-      ENDIF
- 9001 FORMAT('Error 9001: Cannot specify AHMADI and SIMONIN together.',&
-         /'Please correct the mfix.dat file.')
- 9002 FORMAT('Error 9002: Cannot specify AHMADI and KT_TYPE = ',A,'.', &
-         /'Please correct the mfix.dat file.')
- 9003 FORMAT('Error 9003: Cannot specify SIMONIN and KT_TYPE = ',A,'.',&
-         /'Please correct the mfix.dat file.')
-
-
 ! Set the PDE flag. Disable for algebraic.
       GRANULAR_ENERGY = .TRUE.
 
 ! Check for valid options for kinetic theory models (KT_TYPE)
       SELECT CASE(trim(adjustl(KT_TYPE)))
-
 
 !``````````````````````````````````````````````````````````````````````
       CASE ('ALGEBRAIC')

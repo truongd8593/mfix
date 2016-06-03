@@ -75,6 +75,8 @@
       INTEGER :: MAX_PIS, MAX_FACETS_PER_CELL_DES, SAVAGE
       LOGICAL :: USE_STL_DES, DES_CONTINUUM_COUPLED, &
          DES_CONVERT_BOX_TO_FACETS, GRANULAR_ENERGY, FRICTION, SCHAEFFER
+      LOGICAL :: BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, AHMADI, &
+         SIMONIN
 
 
 ! 2014-1 Deprecated list:
@@ -116,7 +118,8 @@
 ! 2016-1 Deprecated list:
 !-----------------------------------------------------------------------
       NAMELIST / DEP_2016_2 / GRANULAR_ENERGY, FRICTION, SCHAEFFER,    &
-         SAVAGE
+         SAVAGE, BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, AHMADI,      &
+         SIMONIN
 
 
 ! 2016-2 Release Deprecated keywords.

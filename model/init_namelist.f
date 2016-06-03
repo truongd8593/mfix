@@ -1367,14 +1367,6 @@
       KT_TYPE = "ALGEBRAIC"
 !</keyword>
 
-! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI"
-      AHMADI = .FALSE.
-
-! Retired keyword for specifying Simonin KT Theory.
-! Use: KT_TYPE = "SIMONIN"
-      SIMONIN = .FALSE.
-
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Solids stress firction model selection.
@@ -1387,28 +1379,13 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Blend the Schaeffer stresses with the stresses resulting from
-!    algebraic kinetic theory around the value of EP_STAR.
+!    algebraic kinetic theory around the value of EP_STAR. [NONE]
 !  </description>
-      BLENDING_STRESS = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="ture">
-!  <description>
-!    Hyperbolic tangent function for blending frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
-      TANH_BLEND = .TRUE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    A scaled and truncated sigmoidal function for blending
-!    frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
-      SIGM_BLEND = .FALSE.
+!  <valid value="NONE" note="No blending"/>
+!  <valid value="TANH_BLEND" note="Hyperbolc tangent function"/>
+!  <valid value="SIGM_BLEND" note="Scaled sigmodial function"/>
+!  <dependent keyword="FRICTION_MODEL" value="SCHAEFFER"/>
+      BLENDING_FUNCTION = "NONE"
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">

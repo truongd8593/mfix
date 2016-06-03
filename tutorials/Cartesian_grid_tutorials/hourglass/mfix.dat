@@ -13,7 +13,6 @@
 
   DT_MAX = 2.0E-3
 
-  BLENDING_STRESS       = .FALSE.
   MAX_NIT               = 1000
 
   TOL_RESID             = 1.0E-4

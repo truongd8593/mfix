@@ -155,7 +155,7 @@
 
 
 ! If .TRUE. use blending frictional/kinetic stresses
-! (default set to .FALSE. do not blend)
+      CHARACTER(len=64) :: BLENDING_FUNCTION
       LOGICAL :: BLENDING_STRESS
       LOGICAL :: TANH_BLEND ! default set to true
       LOGICAL :: SIGM_BLEND ! default set to false
