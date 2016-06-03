@@ -123,7 +123,7 @@ class LinearEquationTable(QtWidgets.QWidget):
 
         key = self.name_to_key[column]
         self.value_updated.emit(self,
-                                {key: Keyword(key, value)},
+                                {key: value},
                                 # 1-based indexing
                                 1 + self.rows.index(row))
 
