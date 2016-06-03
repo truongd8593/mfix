@@ -359,7 +359,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         mfix_home = get_mfix_home()
         if mfix_home:
             dirs.add(mfix_home)
-            dirs.add(os.path.join(get_mfix_home(), 'build'))
+            dirs.add(os.path.join(mfix_home, 'bin'))
+            dirs.add(os.path.join(mfix_home, 'build'))
         for d in dirs:
             # filter out empty strings and current directory from $PATH
             if d and d != os.path.curdir and os.path.isdir(d):
