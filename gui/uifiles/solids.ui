@@ -1420,7 +1420,7 @@ background-color:transparent;
               <widget class="LineEdit" name="lineedit_keyword_vdw_inner_cutoff_2"/>
              </item>
              <item row="3" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_inner_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_inner_cutoff_2"/>
              </item>
              <item row="4" column="1">
               <widget class="LineEdit" name="lineedit_keyword_asperities_2"/>
