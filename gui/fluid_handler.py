@@ -24,18 +24,20 @@ class FluidHandler(object):
     ## Fluid phase methods
     def enable_fluid_species_eq(self, state):
         ui = self.ui
-        for item in (ui.combobox_fluid_diffusion_model,
+        fluid = ui.fluid
+        for item in (fluid.combobox_fluid_diffusion_model,
                      # more ?
                      ):
             item.setEnabled(state)
-        lineedit = ui.lineedit_keyword_dif_g0 # dif_g0 == diffusion coeff model
+        # dif_g0 == diffusion coeff model
+        lineedit = fluid.lineedit_keyword_dif_g0
         if state:
             lineedit.setEnabled(self.fluid_diffusion_model == CONSTANT)
         else:
             lineedit.setEnabled(False)
 
     def enable_fluid_scalar_eq(self, state):
-        spinbox = self.ui.spinbox_fluid_nscalar_eq
+        spinbox = self.ui.fluid.spinbox_fluid_nscalar_eq
         spinbox.setEnabled(state)
         if state:
             val = spinbox.value()
@@ -50,13 +52,13 @@ class FluidHandler(object):
         # This *sums into* nscalar - not a simple keyword
         prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
         self.fluid_nscalar_eq = value
-        spinbox = self.ui.spinbox_fluid_nscalar_eq
+        spinbox = self.ui.fluid.spinbox_fluid_nscalar_eq
         if value != spinbox.value():
             spinbox.setValue(value)
         self.update_scalar_equations(prev_nscalar)
 
     def init_fluid_handler(self):
-        self.ui.lineedit_fluid_phase_name.default_value = "Fluid"
+        self.ui.fluid.lineedit_fluid_phase_name.default_value = "Fluid"
         self.saved_fluid_species = None
         self.init_fluid_default_models()
         # note, the set_fluid_*_model methods have a lot of repeated code
@@ -64,7 +66,7 @@ class FluidHandler(object):
         def make_fluid_model_setter(self, name, key):
             def setter(model):
                 setattr(self, name, model) # self.fluid_<name>_model = model
-                combobox = getattr(self.ui, 'combobox_' + name)
+                combobox = getattr(self.ui.fluid, 'combobox_' + name)
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
@@ -72,7 +74,8 @@ class FluidHandler(object):
                 # Enable lineedit for constant model
                 key_g0 = key + "_g0"
                 key_usr = "usr_" + key + "g"
-                lineedit = getattr(self.ui, 'lineedit_keyword_%s' % key_g0)
+                lineedit = getattr(self.ui.fluid,
+                                   'lineedit_keyword_%s' % key_g0)
                 lineedit.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
@@ -100,23 +103,23 @@ class FluidHandler(object):
             setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
 
             # Set the combobox default value
-            combobox = getattr(self.ui, 'combobox_'+model_name)
+            combobox = getattr(self.ui.fluid, 'combobox_'+model_name)
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
-        combobox = self.ui.combobox_fluid_mol_weight_model
+        combobox = self.ui.fluid.combobox_fluid_mol_weight_model
         combobox.default_value = self.fluid_mol_weight_model
 
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
     def set_fluid_mol_weight_model(self, model):
         self.fluid_mol_weight_model = model
-        combobox = self.ui.combobox_fluid_mol_weight_model
+        combobox = self.ui.fluid.combobox_fluid_mol_weight_model
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
         # Enable lineedit for constant mol_weight model
-        lineedit = self.ui.lineedit_keyword_mw_avg
+        lineedit = self.ui.fluid.lineedit_keyword_mw_avg
         lineedit.setEnabled(model==CONSTANT)
         if model == CONSTANT:
             value = lineedit.value # Possibly re-enabled gui item
@@ -127,12 +130,12 @@ class FluidHandler(object):
             self.unset_keyword("mw_avg")
 
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
-        value = self.ui.linedit_fluid_phase_name.text()
+        value = self.ui.fluid.linedit_fluid_phase_name.text()
         self.set_fluid_phase_name(value)
 
     def set_fluid_phase_name(self, value):
-        if value != self.ui.lineedit_fluid_phase_name.text():
-            self.ui.lineedit_fluid_phase_name.setText(value)
+        if value != self.ui.fluid.lineedit_fluid_phase_name.text():
+            self.ui.fluid.lineedit_fluid_phase_name.setText(value)
         self.project.mfix_gui_comments['fluid_phase_name'] = value
         self.set_unsaved_flag()
 
@@ -164,7 +167,7 @@ class FluidHandler(object):
         which are not tied to a single widget"""
 
         hv = QtWidgets.QHeaderView
-        table = self.ui.tablewidget_fluid_species
+        table = self.ui.fluid.tablewidget_fluid_species
         if PYQT5:
             resize = table.horizontalHeader().setSectionResizeMode
         else:
@@ -210,10 +213,10 @@ class FluidHandler(object):
         self.project.update_thermo_data(self.fluid_species)
 
     def handle_fluid_species_selection(self):
-        row = get_selected_row(self.ui.tablewidget_fluid_species)
+        row = get_selected_row(self.ui.fluid.tablewidget_fluid_species)
         enabled = (row is not None)
-        self.ui.toolbutton_fluid_species_delete.setEnabled(enabled)
-        self.ui.toolbutton_fluid_species_copy.setEnabled(enabled)
+        self.ui.fluid.toolbutton_fluid_species_delete.setEnabled(enabled)
+        self.ui.fluid.toolbutton_fluid_species_copy.setEnabled(enabled)
 
     def fluid_species_add(self):
         sp = self.species_popup
@@ -234,7 +237,7 @@ class FluidHandler(object):
         # it results in species being renumbered, or a hole in
         # the sequence - either way is trouble.  Have to warn
         # user, if species is referenced elsewhere.
-        table = self.ui.tablewidget_fluid_species
+        table = self.ui.fluid.tablewidget_fluid_species
         row = get_selected_row(table)
         if row is None: # No selection
             return
@@ -249,7 +252,7 @@ class FluidHandler(object):
         sp.update_defined_species()
 
     def fluid_species_edit(self):
-        table = self.ui.tablewidget_fluid_species
+        table = self.ui.fluid.tablewidget_fluid_species
         row = get_selected_row(table)
         sp = self.species_popup
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
