@@ -366,14 +366,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
 
-    def clear(self):
-        """ delete all regions from the widget and vtk """
-
-        for region in self.tablewidget_regions.value.keys():
-            self.vtkwidget.delete_region(region)
-
-        self.tablewidget_regions.set_value(OrderedDict())
-
     def extract_regions(self, proj):
         """ extract regions from IC, BC, PS """
 
@@ -429,7 +421,3 @@ class RegionsWidget(QtWidgets.QWidget):
                 break
 
         return rtype
-        
-    def default(self):
-        """reset to default"""
-        self.clear()

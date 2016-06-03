@@ -502,7 +502,9 @@ class VtkWidget(QtWidgets.QWidget):
         """reset to defaults"""
         self.ui.geometry.lineedit_keyword_zlength.setEnabled(True)
         self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
+        self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
+        self.vtkRenderWindow.Render()
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
@@ -1131,12 +1133,7 @@ class VtkWidget(QtWidgets.QWidget):
     def clear_all_geometry(self):
         """ remove all geometry """
         self.geometrytree.clear()
-
-        for key in list(self.geometrydict.keys()):
-            geo = self.geometrydict.pop(key)
-            self.vtkrenderer.RemoveActor(geo['actor'])
-
-        self.vtkRenderWindow.Render()
+        self.geometrydict = {}
 
     def remove_geometry(self):
         """
