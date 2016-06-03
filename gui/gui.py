@@ -1171,20 +1171,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 buttons=['ok'],
                 default='ok',
                 infoText=None,
-                detailedtext=None,
+                detailedText=None,
                 ):
-        """Create a message box:
+        """Create and display a modal message box:
         title = 'title'
         icon = 'warning' or 'info'
         text = 'test to show'
         buttons = ['ok',...] where value is 'ok', 'yes', 'no', 'cancel',
             'discard'
         default = 'ok' the default selected button
-        infotext = 'extended information text'
-        detailedtext = 'Some details'"""
+        infoText = 'extended information text'
+        detailedText = 'Some details'
 
-        # TODO: tie this in with logging & print_internal
-        # TODO: suppress popups in 'test mode'
+        Returns the pressed button.  Also prints & logs message"""
+        # TODO: disable this when running in QTest
+        self.print_internal(title + ": " + text)
+        if infoText:
+            self.print_internal(infoText)
+        if detailedText:
+            self.print_internal(detailedText)
 
         msgBox = QtWidgets.QMessageBox(self)
         msgBox.setWindowTitle(title)
@@ -1203,8 +1208,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if infoText:
             msgBox.setInformativeText(infoText)
 
-        if detailedtext:
-            msgBox.setDetailedText(detailedtext)
+        if detailedText:
+            msgBox.setDetailedText(detailedText)
 
         # buttons
         qbuttonDict = {'ok':      QtWidgets.QMessageBox.Ok,
