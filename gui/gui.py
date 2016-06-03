@@ -1468,23 +1468,41 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     # --- open/save/new ---
 
     def export_project(self):
-        """Same as save_as but do not switch to new project"""
-        ## FIXME:  why are we copying outputs in export but not save_as?
-        if self.monitor.get_outputs(["*.SP?"]):
-            # TODO: copy SPx files - prompt user for confirmation
-            pass
-        output_files = self.monitor.get_outputs(["*.RES", "*.STL"])
+        """Copy project files to new directory, but do not switch to new project"""
+        # Note, this does not do a save first (should it?)
+
         export_file = self.get_save_filename()
-        if not export_file:
+        if not export_file: # User bailed out
             return
         export_dir = os.path.dirname(export_file)
         if not self.check_writable(export_dir):
             return
 
-        for fn in output_files:
-            #copy into new_project_directory
-            shutil.copyfile(fn, os.path.join(export_dir, os.path.basename(fn)))
-        self.save_project(filename=export_file)
+        project_file = self.get_project_file()
+        if not self.project_file:
+            self.message(text="Nothing to export",
+                         buttons=['ok'])
+            return
+
+        files_to_copy = [project_file]
+
+        sp_files = self.monitor.get_outputs(["*.SP?"])
+        if (sp_files):
+            yes = self.message(text="Copy .SP files?\n%s" % '\n'.join(output_files)
+                              buttons=['yes', 'no']
+                              default='yes')
+            if yes=='yes':
+                files_to_copy.extend(sp_files)
+
+        files_to_copy.extend(self.monitor.get_outputs(["*.RES", "*.STL"]))
+        #copy project files into new_project_directory
+        for f in files_to_copy:
+            try:
+                shutil.copyfile(f, os.path.join(export_dir, os.path.basename(f)))
+            except Exception as e:
+                self.message(text="Error copying file:\n%s" % e,
+                             buttons=['ok'])
+
 
     def save_project(self, filename=None):
         """save project, optionally as a new project.
