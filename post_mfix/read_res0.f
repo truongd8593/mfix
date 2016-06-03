@@ -42,7 +42,7 @@
       USE scales
       USE stiff_chem
       USE toleranc
-      use turb, only: k_epsilon, l_scale0
+      use turb, only: k_epsilon
       USE ur_facs
       use visc_g, only: mu_gmax
 
@@ -84,6 +84,8 @@
       INTEGER, ALLOCATABLE, DIMENSION(:) :: INTPACK
 ! packing array for doubles
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: DBLPACK
+! Local dummy variable replacing the original global.
+      DOUBLE PRECISION :: L_SCALE0
 !-----------------------------------------------
 
       doingPost = .false.
