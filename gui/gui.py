@@ -1823,9 +1823,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                     traceback.print_exception(*sys.exc_info())
                     return
 
-        if not self.is_project_open(): # Make sure main window is enabled
-            self.ui.stackedwidget_mode.setEnabled(True)
-
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
         self.update_source_view()
