@@ -23,6 +23,7 @@ class LinearEquationTable(QtWidgets.QWidget):
 
         # variables
         self.name_to_key = {
+            'Scheme':           'discretize',
             'Method':           'leq_method',
             'Tolerance':        'leq_tol',
             'Iterations':       'leq_it',
@@ -36,98 +37,68 @@ class LinearEquationTable(QtWidgets.QWidget):
         self.rows = ['Gas Press', 'Vol Frac', 'U', 'V', 'W', 'Energy',
                      'Mass Frac', 'Gran. T', 'K-Ep, Scl.']
 
-        self.solverdict = {
-            'Gas Press': {'Method':          2,
-                          'Tolerance':       1E-4,
-                          'Iterations':      20,
-                          'Sweep':           'RSRS',
-                          'Preconditioner':  'LINE',
-                          'Under Relaxation': 0.8,
-                          },
-            'Vol Frac': {'Method':           2,
-                         'Tolerance':        1E-4,
-                         'Iterations':       20,
-                         'Sweep':            'RSRS',
-                         'Preconditioner':   'LINE',
-                         'Under Relaxation': 0.5,
-                         },
-            'U': {'Method':           2,
-                  'Tolerance':        1E-4,
-                  'Iterations':       5,
-                  'Sweep':            'RSRS',
-                  'Preconditioner':   'LINE',
-                  'Under Relaxation': 0.5,
-                  },
-            'V': {'Method':           2,
-                  'Tolerance':        1E-4,
-                  'Iterations':       5,
-                  'Sweep':            'RSRS',
-                  'Preconditioner':   'LINE',
-                  'Under Relaxation': 0.5,
-                  },
-            'W': {'Method':           2,
-                  'Tolerance':        1E-4,
-                  'Iterations':       5,
-                  'Sweep':            'RSRS',
-                  'Preconditioner':   'LINE',
-                  'Under Relaxation': 0.5,
-                  },
-            'Energy': {'Method':           2,
-                       'Tolerance':        1E-4,
-                       'Iterations':       15,
-                       'Sweep':            'RSRS',
-                       'Preconditioner':   'LINE',
-                       'Under Relaxation': 0.8,
-                       },
-            'Mass Frac': {'Method':           2,
-                          'Tolerance':        1E-4,
-                          'Iterations':       15,
-                          'Sweep':            'RSRS',
-                          'Preconditioner':   'LINE',
-                          'Under Relaxation': 1.0,
-                          },
-            'Gran. T': {'Method':           2,
-                        'Tolerance':        1E-4,
-                        'Iterations':       15,
-                        'Sweep':            'RSRS',
-                        'Preconditioner':   'LINE',
-                        'Under Relaxation': 0.5,
-                        },
-            'K-Ep, Scl.': {'Method':           2,
-                           'Tolerance':        1E-4,
-                           'Iterations':       15,
-                           'Sweep':            'RSRS',
-                           'Preconditioner':   'LINE',
-                           'Under Relaxation': 0.8,
-                           },
-            }
+        # build default dictionary
+        self.solverdict = {}
+        for key in self.rows:
+            self.solverdict[key] = {
+                'Scheme':          0,
+                'Method':          2,
+                'Tolerance':       1E-4,
+                'Sweep':           'RSRS',
+                'Preconditioner':  'LINE',
+                'Iterations':       15,
+                'Under Relaxation': 0.8,
+                }
+
+        self.solverdict['Gas Press']['Iterations'] = 20
+        self.solverdict['Vol Frac']['Iterations'] = 20
+        self.solverdict['Vol Frac']['Under Relaxation'] = 0.5
+        self.solverdict['Mass Frac']['Under Relaxation'] = 1.0
+        self.solverdict['Gran. T']['Under Relaxation'] = 0.5
+
+        for key in ['U', 'V', 'W']:
+            self.solverdict[key]['Iterations'] = 5
+            self.solverdict[key]['Under Relaxation'] = 0.5
 
         # Solver Table
         self.table = Table(
             parent=self,
             dtype=dict,
             selection_behavior='cell',
-            columns=['Method', 'Tolerance', 'Iterations', 'Sweep',
+            columns=['Scheme', 'Method', 'Tolerance', 'Iterations', 'Sweep',
                      'Preconditioner', 'Under Relaxation'],
             rows=self.rows,
             column_delegate={0: {'widget': 'combobox',
+                                 'items':  ['0 - First-order upwinding',
+                                            '1 - First-order upwinding (down-wind factors)',
+                                            '2 - Superbee',
+                                            '3 - Smart',
+                                            '4 - Ultra-Quick',
+                                            '5 - Quickest',
+                                            '6 - MUSCL',
+                                            '7 - van Leer',
+                                            '8 - minmod',
+                                            '9 - Central'],
+                                 'dtype':  'i',
+                                 },
+                             1: {'widget': 'combobox',
                                  'items':  ['0 - SOR', '2 - BiCGSTAB',
                                             '3 - GMRES', '5 - CG'],
                                  'dtype':  'i',
                                  },
-                             1: {'widget': 'lineedit',
+                             2: {'widget': 'lineedit',
                                  'dtype':  'dp'
                                  },
-                             2: {'widget': 'lineedit',
+                             3: {'widget': 'lineedit',
                                  'dtype':  'i'},
-                             3: {'widget': 'combobox',
+                             4: {'widget': 'combobox',
                                  'items':  ['RSRS', 'ISIS', 'JSJS', 'KSKS',
                                             'ASAS']
                                  },
-                             4: {'widget': 'combobox',
+                             5: {'widget': 'combobox',
                                  'items':  ['NONE', 'LINE', 'DIAG']
                                  },
-                             5: {'widget': 'lineedit',
+                             6: {'widget': 'lineedit',
                                  'dtype':  'dp',
                                  'max':    1.0,
                                  'min':    0.0
@@ -136,7 +107,7 @@ class LinearEquationTable(QtWidgets.QWidget):
             )
 
         self.table.value_changed.connect(self.model_edited)
-        
+
         # set the default value
         self.table.default_value = copy.deepcopy(self.solverdict)
 

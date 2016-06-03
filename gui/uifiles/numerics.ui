@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>452</width>
     <height>588</height>
    </rect>
   </property>
@@ -17,7 +17,89 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <item row="6" column="0" colspan="2">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_134">
+     <property name="text">
+      <string>Maximum iterations</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_norm_g"/>
+   </item>
+   <item row="6" column="0">
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_norm_s"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Factor to normalize gas continuity</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_max_nit"/>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="CheckBox" name="checkbox_keyword_detect_stall">
+     <property name="text">
+      <string>Detect Stall</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Factor to normalize solid continuity</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Convergence Criteria (Maximum Residuals)</string>
@@ -104,150 +186,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_9">
-     <property name="text">
-      <string>Discretization scheme</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="ComboBox" name="combobox_keyword_discretize">
-     <item>
-      <property name="text">
-       <string>0 - First-order upwinding</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>1 - First-order upwinding (using down-wind factors)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>2 - Superbee</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>3 - Smart</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>4 - ULTRA-QUICK</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>5 - Quickest</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>6 - MUSCL</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>7 - Van Leer</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>8 - minmod</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>9 - Central</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Factor to normalize solid continuity</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_max_nit"/>
-   </item>
-   <item row="5" column="0">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Factor to normalize gas continuity</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="CheckBox" name="checkbox_keyword_detect_stall">
-     <property name="text">
-      <string>Detect Stall</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_134">
-     <property name="text">
-      <string>Maximum iterations</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_norm_s"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_norm_g"/>
-   </item>
-   <item row="7" column="0">
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="8" column="0" colspan="2">
+   <item row="7" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
       <string>Linear Equation Solvers</string>
@@ -275,23 +214,17 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
-   <class>ComboBox</class>
-   <extends>QComboBox</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets/base</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>combobox_keyword_discretize</tabstop>
   <tabstop>lineedit_keyword_max_nit</tabstop>
   <tabstop>lineedit_keyword_norm_g</tabstop>
   <tabstop>lineedit_keyword_norm_s</tabstop>
