@@ -26,7 +26,7 @@ class Job(object):
         self.is_pymfix = False
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
-        self.cached_status = {}
+        self.status = {}
         self.timer = None
         self.pymfix_url = 'http://localhost:5000'
         self.control_manager = QNetworkAccessManager()
@@ -36,14 +36,14 @@ class Job(object):
             """update self.status when request finishes"""
             response_str = str(reply.readAll())
             try:
-                self.cached_status = json.loads(response_str)
+                self.status = json.loads(response_str)
                 log.debug("status is %s", self.status)
                 # FIXME: print JSON for now, plot it later
                 import pprint
                 status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
                 self.parent.ui.residuals.setText(status_str)
             except ValueError:
-                self.cached_status.clear()
+                self.status.clear()
                 if response_str:
                     log.error("could not decode JSON: %s", response_str)
             self.parent.update_run_options()
@@ -63,7 +63,7 @@ class Job(object):
         """indicate whether pymfix is paused"""
         if not self.is_pymfix:
             return False
-        return self.cached_status.get('paused', False)
+        return self.status.get('paused', False)
 
     def pause(self):
         "pause pymfix job"
@@ -108,7 +108,7 @@ class Job(object):
                 log.warn("not killing mfix process %d at user request" % self.mfix_pid)
                 return
             try:
-                self.cached_status.clear()
+                self.status.clear()
                 log.warn("killing mfix process %d", self.mfix_pid)
                 self.mfixproc.terminate()
             except OSError as err:
@@ -124,22 +124,27 @@ class Job(object):
         if self.mfixproc:
             log.warn("Cannot start process, already have an mfix process")
             return
+
+        mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        if os.path.exists(mfix_stop_file):
+            try:
+                os.remove(mfix_stop_file)
+            except OSError:
+                log.error("Cannot remove", mfix_stop_file)
+                return
+
+        self.cmdline = ' '.join(self.cmd) # cmd is a list
         self.mfixproc = QProcess()
         if not self.mfixproc:
             log.warn("QProcess creation failed")
             return
         self.mfixproc.setWorkingDirectory(self.cwd)
-        mfix_stop = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
-        try:
-            os.remove(mfix_stop)
-        except OSError:
-            pass
 
         def slot_start():
             self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", ' '.join(self.cmd))
+            log.debug("Full MFIX startup parameters: %s", self.cmdline)
             if is_pymfix:
                 self.timer = QTimer()
                 self.timer.setInterval(1000)
@@ -160,7 +165,7 @@ class Job(object):
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
-            self.cached_status.clear()
+            self.status.clear()
             msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
             self.mfix_pid = 0
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
@@ -172,17 +177,17 @@ class Job(object):
         self.mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
-            self.cached_status.clear()
+            self.status.clear()
             if error == QProcess.FailedToStart:
-                msg = "Process failed to start"
+                msg = "Process failed to start "+self.cmdline
             elif error == QProcess.Crashed:
-                msg = "Process exit"
+                msg = "Process exit "+self.cmdline
             elif error == QProcess.Timedout:
-                msg = "Process timeout"
+                msg = "Process timeout "+self.cmdline
             elif error in (QProcess.WriteError, QProcess.ReadError):
-                msg = "Process communication error"
+                msg = "Process communication error "+self.cmdline
             else:
-                msg = "Unknown error"
+                msg = "Unknown error "+self.cmdline
             log.warn(msg)
             self.mfixproc = None
             self.parent.stderr_signal.emit(msg) # make the message print in red
