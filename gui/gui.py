@@ -1465,23 +1465,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             cwd=self.get_project_dir(),
             env=os.environ)
 
-    # --- open/save/new ---
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
-        # Note, this does not do a save first (should it?)
+        # Note, this does not do a save first.  Just copies existing files.
+        project_file = self.get_project_file()
+        if not project_file:
+            self.message(text="Nothing to export",
+                         buttons=['ok'])
+            return
 
         export_file = self.get_save_filename()
         if not export_file: # User bailed out
             return
         export_dir = os.path.dirname(export_file)
         if not self.check_writable(export_dir):
-            return
-
-        project_file = self.get_project_file()
-        if not self.project_file:
-            self.message(text="Nothing to export",
-                         buttons=['ok'])
             return
 
         files_to_copy = [project_file]
