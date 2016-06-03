@@ -26,7 +26,7 @@ import gui
 # TODO : replace all qWaits with a 'waitFor' function
 
 def dismiss():
-    """dismiss modal QMessageBox"""
+    # dismiss modal QMessageBox
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox):
             button = widget.button(QtWidgets.QMessageBox.Ok)
@@ -35,7 +35,7 @@ def dismiss():
             QTest.mouseClick(button, Qt.LeftButton)
 
 def dismiss_wait():
-    """wait for modal dialog to pop down"""
+    ###wait for modal dialog to pop down
     # There's no QTest.WaitForWindowNotShown
     for widget in QtWidgets.QApplication.instance().topLevelWidgets():
         if isinstance(widget, QtWidgets.QMessageBox):
@@ -46,10 +46,8 @@ def dismiss_wait():
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
-
     def setUp(self):
-        ''' open FluidBed_DES for testing '''
-
+        """open FluidBed_DES for testing"""
         #self.xvfb = Xvfb(width=1280, height=720)
         #self.addCleanup(self.xvfb.stop)
         #self.xvfb.start()
@@ -60,15 +58,14 @@ class MfixGuiTests(TestQApplication):
         self.runname = 'DES_FB1'
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
-        patterns = [
-            '*.LOG', '*.OUT', '*.RES', '*.SP?', '%s*' % self.runname, '*.mfx', 'MFIX.STOP',
-            '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
-        for paths in [glob.glob(os.path.join(self.rundir, n)) for n in patterns]:
+        patterns = ['*.LOG', '*.OUT', '*.RES', '*.SP?', self.runname+'*', '*.mfx', 'MFIX.STOP',
+                    '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+        for paths in [glob.glob(os.path.join(self.rundir, pat)) for pat in patterns]:
             for path in paths:
                 try:
                     os.remove(path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    print(e)
 
         TestQApplication.setUp(self)
         def get_project_file(cls):
@@ -128,19 +125,23 @@ class MfixGuiTests(TestQApplication):
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
         self.assertTrue(os.path.exists(newpath))
 
-    def test_run(self):
-        """test running mfix"""
-        #FIXME: write similar test for pymfix
-        mfix = os.path.join(self.mfix_home, "mfix")
+    def test_run_mfix(self):
+        #TODO: write similar test for pymfix
+        mfix_exe = os.path.join(self.mfix_home, "mfix")
         cme = self.mfix.ui.run.combobox_mfix_exes
-        index = cme.findText(mfix)
-        if index < 0:
-            self.skipTest("Only valid when MFIX_HOME/mfix is present")
-        cme.setCurrentIndex(index)
+        if cme.findText(mfix_exe) < 0:
+            self.skipTest("Only valid when % is present"%mfix_exe)
+
+        #  FIXME:  we're getting the exe from the ~/.config/MFIX file,
+        #   need to control the QSettings for running tests, instead
+        #   of doing this!
+        cme.setCurrentText(mfix_exe)
+        self.mfix.handle_select_exe()
+
         self.open_tree_item("run")
 
-        runbuttons = (self.mfix.ui.run.button_run_pause_mfix,
-                      self.mfix.ui.toolbutton_run_pause_mfix)
+        runbuttons = (self.mfix.ui.run.button_run_mfix,
+                      self.mfix.ui.toolbutton_run_mfix)
         stopbuttons = (self.mfix.ui.run.button_stop_mfix,
                        self.mfix.ui.toolbutton_stop_mfix)
 
@@ -148,7 +149,7 @@ class MfixGuiTests(TestQApplication):
         #  But we trust that they are connected to the same slot
 
         # Before running, button says 'Run'
-        self.assertTrue(self.mfix.ui.run.combobox_mfix_exes.isVisibleTo(self.mfix.ui.run))
+        self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(all (b.isEnabled() for b in runbuttons))
         self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
         self.assertEqual(runbuttons[0].text(), "Run")
@@ -156,7 +157,7 @@ class MfixGuiTests(TestQApplication):
 
         # Start run, run button disables, stop button enabled
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
-        QTest.qWait(100)
+        QTest.qWait(500)
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
 
@@ -256,16 +257,17 @@ class MfixGuiTests(TestQApplication):
 
         self.assertEqual(found, 1)
 
-
     def test_run_disabled_no_exe(self):
         self.skipTest("Not working yet.")
+        # overriding $PATH was working.  But now we're also looking in MFIX_HOME,
+        # project dir, and saved location from prefs file - need to override all of
+        # these to get this test working
         self.open_tree_item("run")
         saved_path = os.environ['PATH']
         os.environ['PATH'] = ''
         self.mfix.mfix_exe = ''
         self.mfix.reset()
-        self.assertFalse(bool(self.find_exes()))
-        self.assertFalse(self.mfix.ui.toolbutton_run_pause_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
