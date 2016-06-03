@@ -121,17 +121,17 @@
 
 ! 2016-2 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2016_2 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      READ(STRING,NML=DEP_2016_2,IOSTAT=IOS)
       IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-2')
 
 ! 2016-1 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2016_1 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      READ(STRING,NML=DEP_2016_1,IOSTAT=IOS)
       IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-1')
 
 ! 2015-2 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2015_2 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
+      READ(STRING,NML=DEP_2015_2,IOSTAT=IOS)
       IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-2')
 
 ! 2015-1 Release Deprecated keywords.

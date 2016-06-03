@@ -350,6 +350,11 @@
 
 
 ! Two-fluid solids keywords
+      STRING=''; STRING = '&TFM_SOLIDS_LOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=TFM_SOLIDS_LOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
       STRING=''; STRING = '&TFM_SOLIDS_UNLOCKED '//&
          trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
       READ(STRING, NML=TFM_SOLIDS_UNLOCKED, IOSTAT=IOS)
