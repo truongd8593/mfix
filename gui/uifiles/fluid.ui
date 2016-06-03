@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
+    <width>513</width>
     <height>674</height>
    </rect>
   </property>
@@ -50,16 +50,6 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_0">
-        <property name="text">
-         <string>Solve U-Momentum Equation</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq_args_0">
         <property name="text">
@@ -77,13 +67,6 @@
         </property>
         <property name="checked">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="CheckBox" name="checkbox_keyword_species_eq_args_0">
-        <property name="text">
-         <string>Enable Species Equations</string>
         </property>
        </widget>
       </item>
@@ -120,6 +103,23 @@
          </spacer>
         </item>
        </layout>
+      </item>
+      <item row="3" column="0">
+       <widget class="CheckBox" name="checkbox_keyword_species_eq_args_0">
+        <property name="text">
+         <string>Enable Species Equations</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_0">
+        <property name="text">
+         <string>Solve U-Momentum Equation</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
