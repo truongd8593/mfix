@@ -103,7 +103,7 @@ class Job(object):
             else:
                 break
             if self.parent.message(text="MFIX is not responding. Force kill?",
-                                   buttons=['ok', 'cancel']
+                                   buttons=['ok', 'cancel'],
                                    default='cancel')  != 'ok':
                 log.warn("not killing mfix process %d at user request" % self.mfix_pid)
                 return
