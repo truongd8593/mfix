@@ -1,23 +1,11 @@
 """classes to monitor MFIX output files & executables"""
 
-import os
-import time
 import glob
-import json
 import logging
+import os
 import subprocess
 
 log = logging.getLogger(__name__)
-
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen, Request
-    from urllib.parse import urlencode
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib import urlencode
-    from urllib2 import urlopen, Request
-
 
 class Monitor(object):
     """class for monitoring available MFIX executables and output files"""
@@ -42,7 +30,6 @@ class Monitor(object):
             try: # Possible race, file may have been deleted/renamed since isfile check!
                 stat = os.stat(mfix_exe)
             except OSError as err:
-                log = logging.getLogger(__name__)
                 log.exception("could not run %s --print-flags", mfix_exe)
                 return ''
 
@@ -66,7 +53,7 @@ class Monitor(object):
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
-                    log.debug("found %s executable in %s" %( name, d))
+                    log.debug("found %s executable in %s", name, d)
                     exes[exe] = str(mfix_print_flags(exe))
         self.exes = exes
 

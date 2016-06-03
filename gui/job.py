@@ -2,7 +2,6 @@
 
 import os
 import time
-import glob
 import json
 import logging
 
@@ -13,16 +12,8 @@ socket.setdefaulttimeout(DEFAULT_TIMEOUT)
 
 log = logging.getLogger(__name__)
 
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen, Request
-    from urllib.parse import urlencode
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib import urlencode
-    from urllib2 import urlopen, Request
-
-from qtpy.QtCore import QProcess, QTimer
+from qtpy.QtCore import QProcess, QTimer, QUrl
+from qtpy.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
 class Job(object):
     """class for monitoring an MFIX job"""
@@ -38,6 +29,28 @@ class Job(object):
         self.status = {}
         self.timer = None
         self.pymfix_url = 'http://localhost:5000'
+        self.control_manager = QNetworkAccessManager()
+        self.status_manager = QNetworkAccessManager()
+
+        def slot_update_status(reply):
+            """update self.status when request finishes"""
+            response_str = str(reply.readAll())
+            try:
+                self.status = json.loads(response_str)
+                log.debug("status is %s", self.status)
+                # FIXME: print JSON for now, plot it later
+                import pprint
+                status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
+                self.parent.ui.residuals.setText(status_str)
+            except ValueError:
+                if response_str:
+                    log.error("could not decode JSON: %s", response_str)
+            self.parent.update_run_options()
+
+        def slot_control(reply):
+            self.parent.update_run_options()
+        self.control_manager.finished.connect(slot_control)
+        self.status_manager.finished.connect(slot_update_status)
 
     def is_running(self):
         """indicate whether an MFIX job is running"""
@@ -57,27 +70,18 @@ class Job(object):
         if not self.is_pymfix:
             log.error("pause() called on non-pymfix job")
             return
-        req = Request(url='%s/pause' % self.pymfix_url, data='')
-        req.get_method = lambda: 'PUT'
-        resp = urlopen(req, timeout=DEFAULT_TIMEOUT)
-        #log.info("response status: %s", resp.status)
-        #log.info("response reason: %s", resp.reason)
-        resp.close()
-        self.parent.update_run_options()
+        qurl = QUrl('%s/pause' % self.pymfix_url)
+        req = QNetworkRequest(qurl)
+        self.control_manager.put(req, b"")
 
     def unpause(self):
         "unpause pymfix job"
         if not self.is_pymfix:
             log.error("unpause() called on non-pymfix job")
             return
-            return
-        req = Request(url='%s/unpause' % self.pymfix_url, data='')
-        req.get_method = lambda: 'PUT'
-        resp = urlopen(req, timeout=DEFAULT_TIMEOUT)
-        #log.info("response status: %s", resp.status)
-        #log.info("response reason: %s", resp.reason)
-        resp.close()
-        self.parent.update_run_options()
+        qurl = QUrl('%s/unpause' % self.pymfix_url)
+        req = QNetworkRequest(qurl)
+        self.control_manager.put(req, b"")
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
@@ -95,7 +99,7 @@ class Job(object):
             self.mfixproc.waitForFinished(1000)
             t1 = time.time()
             if self.is_running():
-                log.warn("mfix still running after %.2f ms" % (1000*(t1-t0)))
+                log.warn("mfix still running after %.2f ms", (1000*(t1-t0)))
             else:
                 break
             if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
@@ -103,7 +107,7 @@ class Job(object):
                                                default='cancel'):
                 return
             try:
-                log.warn("killing mfix process %s"%self.mfix_pid)
+                log.warn("killing mfix process %d", self.mfix_pid)
                 self.mfixproc.terminate()
             except OSError as err:
                 log.error("Error terminating process: %s", err)
@@ -187,28 +191,13 @@ class Job(object):
 
     def terminate_pymfix(self):
         """update the status of  the pymfix monitor"""
-        url = '%s/exit' % self.pymfix_url
-        values = {'timeout' : '1',}
 
-        data = urlencode(values)
-        req = Request(url, data)
-        response = urlopen(req, timeout=DEFAULT_TIMEOUT)
-        response_str = response.read()
-        log.debug("response_str is %s", response_str)
-        # self.status = json.loads(status_str)
-        # log.debug("status is %s", self.status)
+        qurl = QUrl('%s/exit' % self.pymfix_url)
+        req = QNetworkRequest(qurl)
+        self.control_manager.post(req, b"timeout=1")
 
     def update_status(self):
         """update the status of  the pymfix monitor"""
-        status_str = urlopen('%s/status' % self.pymfix_url).read()
-        log.warning("status_str is %s", status_str)
-        try:
-            self.status = json.loads(status_str)
-            log.debug("status is %s", self.status)
-            # FIXME: print JSON for now, plot it later
-            import pprint
-            status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
-            self.parent.ui.residuals.setText(status_str)
-        except ValueError:
-            log.error("could not decode JSON: %s", status_str)
-        self.parent.update_run_options()
+        qurl = QUrl('%s/status' % self.pymfix_url)
+        req = QNetworkRequest(qurl)
+        self.status_manager.get(req)
