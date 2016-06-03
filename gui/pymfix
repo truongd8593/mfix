@@ -103,6 +103,9 @@ class Mfix(object):
         cls.t0 = float(RUN.time)
         cls.walltime = 0.
         cls.walltime_remaining = 'unknown'
+        cls.time_step_init_walltime = 'unknown'
+        cls.time_step_end_walltime = 'unknown'
+        cls.do_iteration_walltime = 'unknown'
         cls.update_status()
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
@@ -134,14 +137,18 @@ class Mfix(object):
     @classmethod
     def do_step(cls):
         "Run one timestep"
+        start = timer()
         STEP.time_step_init()
+        cls.time_step_init_walltime = (timer() - start)
 
         step_incomplete = True
         while step_incomplete:
             ITERATE.iterate_init()
             while ITERATE.nit < ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged):
                 ITERATE.nit = ITERATE.nit + 1
+                start = timer()
                 ITERATE.do_iteration()
+                cls.do_iteration_walltime = (timer() - start)
                 cls.check_requests()
                 cls.update_status()
 
@@ -149,7 +156,9 @@ class Mfix(object):
 
             step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
 
+        start = timer()
         STEP.time_step_end()
+        cls.time_step_end_walltime = (timer() - start)
 
 
     @classmethod
@@ -163,6 +172,9 @@ class Mfix(object):
         output['dt'] = float(RUN.dt)
         output['elapsed_walltime'] = cls.walltime
         output['remaining_walltime'] = cls.walltime_remaining
+        output['time_step_init_walltime'] = cls.time_step_init_walltime
+        output['time_step_end_walltime'] = cls.time_step_end_walltime
+        output['do_iteration_walltime'] = cls.do_iteration_walltime
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
