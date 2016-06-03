@@ -26,7 +26,7 @@ class Job(object):
         self.is_pymfix = False
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
-        self.status = {}
+        self.cached_status = {}
         self.timer = None
         self.pymfix_url = 'http://localhost:5000'
         self.control_manager = QNetworkAccessManager()
@@ -36,13 +36,14 @@ class Job(object):
             """update self.status when request finishes"""
             response_str = str(reply.readAll())
             try:
-                self.status = json.loads(response_str)
+                self.cached_status = json.loads(response_str)
                 log.debug("status is %s", self.status)
                 # FIXME: print JSON for now, plot it later
                 import pprint
                 status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
                 self.parent.ui.residuals.setText(status_str)
             except ValueError:
+                self.cached_status.clear()
                 if response_str:
                     log.error("could not decode JSON: %s", response_str)
             self.parent.update_run_options()
@@ -62,8 +63,7 @@ class Job(object):
         """indicate whether pymfix is paused"""
         if not self.is_pymfix:
             return False
-        # FIXME this is returning true when job has crashed
-        return self.status.get('paused', False)
+        return self.cached_status.get('paused', False)
 
     def pause(self):
         "pause pymfix job"
@@ -102,11 +102,13 @@ class Job(object):
                 log.warn("mfix still running after %.2f ms", (1000*(t1-t0)))
             else:
                 break
-            if not 'ok' in self.parent.message(text="MFIX is not responding. Force kill?",
-                                               buttons=['ok', 'cancel'],
-                                               default='cancel'):
+            if self.parent.message(text="MFIX is not responding. Force kill?",
+                                   buttons=['ok', 'cancel']
+                                   default='cancel')  != 'ok':
+                log.warn("not killing mfix process %d at user request" % self.mfix_pid)
                 return
             try:
+                self.cached_status.clear()
                 log.warn("killing mfix process %d", self.mfix_pid)
                 self.mfixproc.terminate()
             except OSError as err:
@@ -158,6 +160,7 @@ class Job(object):
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
+            self.status.clear()
             msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
             self.mfix_pid = 0
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
@@ -169,6 +172,7 @@ class Job(object):
         self.mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
+            self.status.clear()
             if error == QProcess.FailedToStart:
                 msg = "Process failed to start"
             elif error == QProcess.Crashed:
