@@ -1631,27 +1631,34 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         else:
             pass
             #title += ', EDITING'
-
         self.setWindowTitle(title)
+
+
+    def set_save_button(self, enabled):
+        # enable/disable the save button and save_as menu item
+        self.ui.toolbutton_save.setEnabled(enabled)
+        self.ui.action_save_as.setEnabled(enabled)
+
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
             log.info("Project is unsaved")
         self.unsaved_flag = True
         self.update_window_title()
-        ui = self.ui
-        ui.toolbutton_more.setEnabled(True)
-        ui.toolbutton_save.setEnabled(True)
+        self.set_save_button(enabled=True)
+
 
     def clear_unsaved_flag(self):
         if self.unsaved_flag:
             log.info("Project is saved")
         self.unsaved_flag = False
         self.update_window_title()
-        self.ui.toolbutton_save.setEnabled(False)
-        if self.mfix_available:
-            self.ui.toolbutton_run_mfix.setEnabled(True)
-            self.ui.toolbutton_stop_mfix.setEnabled(False)
+        self.set_save_button(enabled=False)
+
+        # This should only happen when we're not already running
+        # or paused
+        runnable = bool(self.get_project_file()) and self.mfix_available
+        self.set_run_button(enabled=runnable)
 
     def check_writable(self, directory):
         """check whether directory is writable """
