@@ -38,6 +38,7 @@ MODULE CUT_CELL_PREPROC
       USE vtk
       use physprop, only: RO_G0
       use discretelement, only: GENER_PART_CONFIG
+      use des_bc, only: DEM_MIO
       use error_manager
 
       IMPLICIT NONE
@@ -48,7 +49,7 @@ MODULE CUT_CELL_PREPROC
 ! Initialize the error manager.                                                                  
       CALL INIT_ERR_MSG("CUT CELL PRE-PROCESSING")
 
-      IF(RO_G0==ZERO) THEN  ! Nothing to do for granular flow and no IC for DEM
+      IF(RO_G0==ZERO.AND..NOT.DEM_MIO) THEN  ! Nothing to do for granular flow and no IC/MIO for DEM
          IF((RUN_TYPE=='NEW'.AND..NOT.GENER_PART_CONFIG).OR.RUN_TYPE(1:3)=='RES') THEN
             WRITE(ERR_MSG,1000) 
             CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
