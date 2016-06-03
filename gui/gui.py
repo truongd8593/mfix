@@ -112,6 +112,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.dmp_enabled = False
         self.mfix_available = False
         self.pymfix_enabled = False
+        self.open_succeeded = False
         self.unsaved_flag = False
 
         # load ui file
@@ -137,7 +138,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 return Widget()
 
             for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
-                        Ui_model_setup, Ui_solids, Ui_numerics, Ui_output, Ui_vtk,
+                        Ui_model_setup, Ui_fluid, Ui_solids,
+                        Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
                     widget = RegionsWidget()
@@ -158,8 +160,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             assert self is not self.ui
 
             for name in ('general', 'geometry', 'mesh', 'regions',
-                         'model_setup', 'solids', 'numerics', 'output', 'vtk',
-                         'monitors', 'run'):
+                         'model_setup', 'fluid', 'solids', 'numerics',
+                         'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget()
                 else:
@@ -179,9 +181,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 self.ui.panes.append(widget)
         # end of ui loading
 
-        # Until it gets moved to its own uifile:
-        self.ui.panes.append(self.ui.fluid)
-
+        #self.status_message("Loading")
         # build keyword documentation from namelist docstrings
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
@@ -331,6 +331,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # end of __init__ (hooray!)
 
 
+    def set_no_project(self):
+        """setup mode when no project is open"""
+        self.open_succeeded = False
+        self.set_solver(None)
+        self.set_project_file(None)
+        self.clear_unsaved_flag()
+        self.update_window_title()
+        self.enable_input(False)
+        self.ui.toolbutton_new.setEnabled(True)
+        self.ui.toolbutton_open.setEnabled(True)
+        # This gets set by guess_solver if we're loading a project, otherwise
+        # we need to set the default.  (Do other defaults need to be set here?)
+        self.status_message("No project - open existing MFIX project or create a new one")
+
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
         #self.mfix_exe = None
@@ -343,7 +357,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.fluid_nscalar_eq = 0
         self.solid_nscalar_eq = 0 # Infer these from phase4scalar
         # Defaults
-        #self.solver = SINGLE - moved to Project
+
         self.solver_name = None
 
         self.project.reset() # Clears all keywords & collections
@@ -568,7 +582,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.update_window_title() # put run state in window titlebar
 
         ui = self.ui
-        project_open = bool(self.get_project_file())
+        project_file = os.path.basename(self.get_project_file() or '')
+        project_open = bool(project_file and self.open_succeeded)
         ready = project_open and not (running or paused)
         self.enable_input(ready and not res_file_exists)
 
@@ -595,7 +610,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.set_stop_button(enabled=False)
             self.change_pane('run')
 
-        elif res_file_exists:
+        elif res_file_exists and project_open:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
             ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=True and project_open)
@@ -605,7 +620,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             self.change_pane('run')
 
         else: # Not running, ready for input
-            self.status_message("Ready")
+            self.status_message("Ready" if project_open else "Loading %s"%project_file)
             ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
@@ -649,7 +664,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         """handler for "Solver" combobox in Model Setup"""
         self.project.solver = solver
         if solver is None: #
-            log.warn("set_solver called with solver=None")
             return
 
         ui = self.ui
@@ -710,9 +724,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
-        ui.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
-        ui.spinbox_fluid_nscalar_eq.setEnabled(enabled
-                    and self.ui.checkbox_enable_fluid_scalar_eq.isChecked())
+        ui.fluid.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
+        ui.fluid.spinbox_fluid_nscalar_eq.setEnabled(enabled
+                    and self.ui.fluid.checkbox_enable_fluid_scalar_eq.isChecked())
 
         # Solids Model selection tied to Solver
         # FIXME XXX What to do about solids that are already defined?
@@ -738,13 +752,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # since this has to change availabilty of several other GUI items
         self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
-        for item in (ui.combobox_fluid_specific_heat_model,
-                     ui.combobox_fluid_conductivity_model,
+        for item in (ui.fluid.combobox_fluid_specific_heat_model,
+                     ui.fluid.combobox_fluid_conductivity_model,
                      # more ?
                      ):
             item.setEnabled(state)
-
-        lineedit = ui.lineedit_keyword_cp_g0 # cp_g0 == specific heat for fluid phase
+        # cp_g0 == specific heat for fluid phase
+        lineedit = ui.fluid.lineedit_keyword_cp_g0
         if state:
             lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
         else:
@@ -797,9 +811,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         checkbox = model_setup.checkbox_keyword_energy_eq
         checkbox.stateChanged.connect(self.enable_energy_eq)
 
-        checkbox = ui.checkbox_keyword_species_eq_args_0
-        checkbox.stateChanged.connect(self.enable_fluid_species_eq)
-
         combobox = model_setup.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
@@ -807,28 +818,35 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #self.enable_energy_eq(False)
 
         # Fluid phase - move to fluid_handlers.py
-        ui.lineedit_fluid_phase_name.editingFinished.connect(self.handle_fluid_phase_name)
-        ui.checkbox_enable_fluid_scalar_eq.stateChanged.connect(self.enable_fluid_scalar_eq)
-        ui.spinbox_fluid_nscalar_eq.valueChanged.connect(self.set_fluid_nscalar_eq)
+        checkbox = ui.fluid.checkbox_keyword_species_eq_args_0
+        checkbox.stateChanged.connect(self.enable_fluid_species_eq)
+
+        ui.fluid.lineedit_fluid_phase_name.editingFinished.connect(
+            self.handle_fluid_phase_name)
+        ui.fluid.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
+            self.enable_fluid_scalar_eq)
+        ui.fluid.spinbox_fluid_nscalar_eq.valueChanged.connect(
+            self.set_fluid_nscalar_eq)
 
         # Fluid phase models
         # Density
-        for name in ('density', 'viscosity', 'mol_weight',
-                     'specific_heat', 'mol_weight', 'conductivity', 'diffusion'):
-            combobox = getattr(ui, 'combobox_fluid_%s_model' % name)
+        for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
+                     'conductivity', 'diffusion'):
+            combobox = getattr(ui.fluid, 'combobox_fluid_%s_model' % name)
             setter = getattr(self,'set_fluid_%s_model' % name)
             combobox.currentIndexChanged.connect(setter)
 
         # Fluid species
-        tb = ui.toolbutton_fluid_species_add
+        f = ui.fluid
+        tb = f.toolbutton_fluid_species_add
         tb.clicked.connect(self.fluid_species_add)
-        tb = ui.toolbutton_fluid_species_copy # misnomer
+        tb = f.toolbutton_fluid_species_copy # misnomer
         tb.clicked.connect(self.fluid_species_edit)
         tb.setEnabled(False)
-        tb = ui.toolbutton_fluid_species_delete
+        tb = f.toolbutton_fluid_species_delete
         tb.setEnabled(False)
         tb.clicked.connect(self.fluid_species_delete)
-        tw = ui.tablewidget_fluid_species
+        tw = f.tablewidget_fluid_species
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
 
         # Solid phase
@@ -1719,19 +1737,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_path = project_path[0]
         if not project_path:
             return # user pressed Cancel
-
         self.open_project(project_path)
-        self.update_run_options()
 
 
     def update_source_view(self, number_lines=True):
         project_file = self.get_project_file()
-        with open(project_file, 'rb') as f:
-            src = to_unicode_from_fs(f.read())
+        if not project_file:
+            src = ''
+        else:
+            try:
+                with open(project_file, 'rb') as f:
+                    src = to_unicode_from_fs(f.read())
+            except Exception as e:
+                log.error("error opening %s: %s" % (project_file, e))
+                src = ''
+
         if number_lines:
-            # Avoid extra blank line at end
             lines = src.split('\n')
-            if lines[-1] == '':
+            # Avoid extra blank lines at end
+            while lines and lines[-1] == '':
                 lines.pop(-1)
             src = '\n'.join('%4d:%s'%(lineno,line)
                             for (lineno,line) in enumerate(lines,1))
@@ -1743,6 +1767,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
+
+        self.open_succeeded = False  # set to true on success
+
         # see also project_manager.load_project_file
 
         # Make sure path is absolute
@@ -1757,11 +1784,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             project_file = project_path
 
         if not os.path.exists(project_file):
-            self.message(title='Warning',
-                         icon='warning',
+            self.message(title='Error',
+                         icon='error',
                          text=('%s does not exist' % project_file),
                          buttons=['ok'],
                          default='ok')
+            self.set_no_project()
             return
 
         self.reset() # resets gui, keywords, file system watchers, etc
@@ -1779,6 +1807,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                          default='ok')
             traceback.print_exception(*sys.exc_info())
             # Should we stick this in the output window?  no, for now.
+
+            self.set_no_project()
             return
 
         if hasattr(self.project, 'run_name'):
@@ -1932,6 +1962,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if self.unsaved_flag: # Settings changed after loading
             self.save_project()
 
+        self.open_succeeded = True
+        self.update_run_options()
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
@@ -2005,20 +2037,10 @@ def main(args):
         # autoload last project
         project_file = mfix.get_project_file()
 
-
     if project_file:
         mfix.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
-        mfix.status_message("No project.  Open project or create a new one")
-        # disable all widgets except New and Open
-        #mfix.ui.stackedwidget_mode.setEnabled(False)
-        mfix.enable_input(False)
-        mfix.clear_unsaved_flag()
-        mfix.ui.toolbutton_new.setEnabled(True)
-        mfix.ui.toolbutton_open.setEnabled(True)
-        # This gets set by guess_solver if we're loading a project, otherwise
-        # we need to set the default.  (Do other defaults need to be set here?)
-        mfix.set_solver(SINGLE)
+        mfix.set_no_project()
 
     # print number of keywords
     mfix.print_internal('Registered %d keywords' %
