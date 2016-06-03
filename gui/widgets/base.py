@@ -349,6 +349,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
         self.rows = rows
         self.block_selection_change_event = False
         self.selection = []
+        self.mouse_pos = None
         self._setModel()
         self.set_delegate(col=column_delegate, row=row_delegate)
         self.set_selection_model(selection_behavior, multi_selection)
@@ -356,8 +357,12 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.horizontalHeader().hide()
         if rows is None:
             self.verticalHeader().hide()
-
-
+            
+        # build context menu
+        self.menu = QtWidgets.QMenu(self)
+        applyAction = QtWidgets.QAction('Apply to Column', self)
+        applyAction.triggered.connect(self.apply_val_to_column)
+        self.menu.addAction(applyAction)
 
     def _setModel(self):
 
@@ -509,7 +514,6 @@ class Table(QtWidgets.QTableView, BaseWidget):
     def save_selection(self):
         self.selection = self.selectionModel().selection().indexes()
 
-
 #    def hideRows(self):
 #        data = self.model().datatable
 #        if data:
@@ -520,20 +524,16 @@ class Table(QtWidgets.QTableView, BaseWidget):
 #                    self.setRowHidden(i-1, False)
 
     def contextMenuEvent(self, event):
-
-        # build context menu
-        self.menu = QtWidgets.QMenu(self)
-        applyAction = QtWidgets.QAction('Apply to Column', self)
-        applyAction.triggered.connect(self.apply_val_to_column)
-        self.menu.addAction(applyAction)
-
+        self.mouse_pos = QtGui.QCursor.pos()
         # popup context menu
-        self.menu.popup(QtGui.QCursor.pos())
+        self.menu.popup(self.mouse_pos)
 
     def apply_val_to_column(self):
-        i = self.selectionModel().selection().indexes()[-1]
-        value = self.model().data(i, QtCore.Qt.EditRole)
-        self.model().apply_to_column(i.column(), value)
+        local_pos = self.viewport().mapFromGlobal(self.mouse_pos)
+        column = self.columnAt(local_pos.x())
+        row = self.rowAt(local_pos.y())
+        value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
+        self.model().apply_to_column(column, value)
 
     def current_row(self):
         i = self.selectionModel().selection().indexes()
@@ -558,6 +558,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.model().update(copy.deepcopy(self.default_value))
         else:
             self.clear()
+
 
 class CustomDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, column_dict={}, row_dict={}, column_color_dict={},
@@ -696,25 +697,22 @@ class DictTableModel(QtCore.QAbstractTableModel):
                 self._rows = list(self.datatable.keys())
 
     def setData(self, index=None, value=None, role=QtCore.Qt.EditRole,
-                col=None, row=None):
+                row=0, col=0):
         if role == QtCore.Qt.EditRole:
             if index is not None:
-                i = index.row()
-                j = index.column()
-            elif col is not None and row is not None:
-                i = row
-                j = col
+                row = index.row()
+                col = index.column()
 
             if self._columns:
-                j = self._columns[j]
+                col = self._columns[col]
             if self._rows:
-                i = self._rows[i]
+                row = self._rows[row]
 
-            if i not in self.datatable:
-                self.datatable[i] = {}
+            if row not in self.datatable:
+                self.datatable[row] = {}
 
-            self.datatable[i][j] = value
-            self.value_updated.emit(i, j, value)
+            self.datatable[row][col] = value
+            self.value_updated.emit(row, col, value)
 
     def apply_to_column(self, col, val):
         for i in range(self.rowCount()):
@@ -740,17 +738,18 @@ class DictTableModel(QtCore.QAbstractTableModel):
 
         return cols
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        i = index.row()
-        j = index.column()
+    def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
+        if index is not None:
+            row = index.row()
+            col = index.column()
 
         if self._columns:
-            j = self._columns[j]
+            col = self._columns[col]
         if self._rows:
-            i = self._rows[i]
+            row = self._rows[row]
 
-        if i in self.datatable and j in self.datatable[i]:
-            value = self.datatable[i][j]
+        if row in self.datatable and col in self.datatable[row]:
+            value = self.datatable[row][col]
         else:
             value = None
 
@@ -823,20 +822,18 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
                 self._columns = list(self.datatable.columns)
                 self._rows = list(self.datatable.index)
 
-    def setData(self, index=None, value=None, role=QtCore.Qt.EditRole,
-                col=None, row=None):
+    def setData(self, index=None, value=None, role=QtCore.Qt.EditRole, col=0,
+                row=0):
         if role == QtCore.Qt.EditRole:
             if index is not None:
-                i = index.row()
-                j = index.column()
-            elif col is not None and row is not None:
-                i = row
-                j = col
+                row = index.row()
+                col = index.column()
+
             if pd and isinstance(self.datatable, pd.DataFrame):
-                j = self.datatable.columns[j]
-                self.datatable[j][i] = value
+                col = self.datatable.columns[col]
+                self.datatable[col][row] = value
             else:
-                self.datatable[i][j] = value
+                self.datatable[row][col] = value
 
             self.value_updated.emit(self.datatable)
 
@@ -865,15 +862,16 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         else:
             return 0
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        i = index.row()
-        j = index.column()
+    def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
+        if index is not None:        
+            row = index.row()
+            col = index.column()
 
         if pd and isinstance(self.datatable, pd.DataFrame):
-            j = self.datatable.columns[j]
-            value = self.datatable[j][i]
+            col = self.datatable.columns[col]
+            value = self.datatable[col][row]
         else:
-            value = self.datatable[i][j]
+            value = self.datatable[row][col]
 
         if role == QtCore.Qt.DisplayRole:
             if value is None:

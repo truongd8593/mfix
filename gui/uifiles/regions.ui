@@ -174,7 +174,7 @@ QHeaderView::section:vertical{
        <enum>QAbstractItemView::ExtendedSelection</enum>
       </property>
       <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectItems</enum>
+       <enum>QAbstractItemView::SelectRows</enum>
       </property>
       <attribute name="horizontalHeaderCascadingSectionResizes">
        <bool>false</bool>
@@ -495,8 +495,8 @@ QHeaderView::section:vertical{
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
@@ -505,13 +505,13 @@ QHeaderView::section:vertical{
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>Table</class>
-   <extends>QTableWidget</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>Table</class>
+   <extends>QTableWidget</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
