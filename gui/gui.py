@@ -895,8 +895,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
         ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
         self.project.register_widget(ui.linear_eq_table,
-                                     ['leq_method', 'leq_tol', 'leq_it',
-                                      'leq_sweep', 'leq_pc', 'ur_fac'],
+                                     ['discretize', 'leq_method', 'leq_tol',
+                                      'leq_it', 'leq_sweep', 'leq_pc',
+                                      'ur_fac'],
                                      args='*')
 
 

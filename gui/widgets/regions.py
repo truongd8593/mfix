@@ -56,11 +56,10 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.set_columns(['visible', 'color', 'type'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
-#        tablewidget.set_selection_model('cell', multi=False)
         tablewidget.new_selection.connect(self.update_region_parameters)
         tablewidget.clicked.connect(self.cell_clicked)
         tablewidget.default_value = OrderedDict()
-#        tablewidget.value_changed.connect(self.region_value_changed)
+        tablewidget.value_changed.connect(self.table_value_changed)
 
         for widget in widget_iter(self.groupbox_region_parameters):
             if hasattr(widget, 'value_updated'):
@@ -277,6 +276,14 @@ class RegionsWidget(QtWidgets.QWidget):
             data[name]['deviation_angle'] = value.values()[0]
 
         self.tablewidget_regions.set_value(data)
+
+    def table_value_changed(self, name, key, value):
+        data = self.tablewidget_regions.value
+
+        if key == 'type':
+            self.vtkwidget.change_region_type(name, data[name])
+        elif key == 'color':
+            self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def enable_disable_widgets(self, name):
 

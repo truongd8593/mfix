@@ -1564,6 +1564,8 @@ class VtkWidget(QtWidgets.QWidget):
         actor.GetProperty().SetColor(
             *self.region_dict[name]['color'].color_float)
 
+        self.vtkRenderWindow.Render()
+
     def change_region_type(self, name, region):
         """ change the type of a region """
 
