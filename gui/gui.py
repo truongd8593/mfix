@@ -572,6 +572,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
     # 4) process stopped
     def update_run_options(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
+        # This is the main state-transition handler
 
         if message is not None:
             # highlight for visibility, this is an important state chage
@@ -580,21 +581,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # TODO: set this in __init__ or another early setup method
         # assemble list of available executables
 
-        running = self.job.is_running()
-        paused = self.job.is_paused()
-        res_file_exists = bool(self.monitor.get_res_files())
+        ui = self.ui
+        project_file = os.path.basename(self.get_project_file() or '')
+
+        project_open = bool(project_file and self.open_succeeded)
+        paused = self.job.is_pymfix and self.job.is_paused()
+        running = self.job.is_running() and not paused
+        resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
+        ready = project_open and not (running or paused or resumable)
 
         log.debug("UPDATE RUN OPTIONS", "running=", running, "paused=", paused,
-                  "res_file_exists=", res_file_exists)
+                  "resumable=", resumable)
 
         self.update_window_title() # put run state in window titlebar
 
-        ui = self.ui
-        project_file = os.path.basename(self.get_project_file() or '')
-        project_open = bool(project_file and self.open_succeeded)
-        ready = project_open and not (running or paused)
-        self.enable_input(ready and not res_file_exists)
-
+        self.enable_input(ready)
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
@@ -605,23 +606,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
-            self.set_pause_button(enabled=self.pymfix_enabled, visible=self.pymfix_enabled)
+            self.set_pause_button(enabled=self.job.is_pausable(), visible=self.pymfix_enabled)
             self.set_stop_button(enabled=True)
             self.change_pane('run')
 
         elif paused:
-            self.status_message("MFIX Paused")
+            self.status_message("MFIX paused, process %s" % self.job.mfix_pid)
             ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
-            self.set_run_button(text="Unpause", enabled=True and project_open)
+            self.set_run_button(text="Unpause", enabled=True)
             self.set_stop_button(enabled=False)
             self.change_pane('run')
 
-        elif res_file_exists and project_open:
+        elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
             ui.run.combobox_mfix_exes.setEnabled(False)
-            self.set_reset_button(enabled=True and project_open)
+            self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
@@ -640,8 +641,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled and ready)
         ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled and ready)
 
-        ui.run.use_spx_checkbox.setEnabled(res_file_exists and ready)
-        ui.run.use_spx_checkbox.setChecked(res_file_exists and ready)
+        ui.run.use_spx_checkbox.setEnabled(resumable)
+        ui.run.use_spx_checkbox.setChecked(resumable)
 
 
     def print_welcome(self):
@@ -1372,30 +1373,28 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 break
         return True
 
+    # Don't make these depend on current state, since (esp for pymfix)
+    # the state variables are cached and potentially outdated
     def handle_run(self):
+        name = 'Run'
         try:
             if not self.job.is_running():
                 self.run_mfix()
             else:
-                self.print_internal("Error: MFIX already running")
+                name='unpause'
+                self.job.unpause()
         except Exception as e:
-            self.print_internal("Run: error %s" % e)
+            self.print_internal("%s: error %s" % (name, e))
 
     def handle_pause(self):
         try:
-            if self.job.is_paused():
-                self.job.unpause()
-            else:
-                self.job.pause()
+            self.job.pause()
         except Exception as e:
             self.print_internal("Pause: error %s" % e)
 
     def handle_stop(self):
         try:
-            if self.job.is_running():
-                self.job.stop_mfix()
-            else:
-                self.print_internal("handle_stop: MFIX not running")
+            self.job.stop_mfix()
         except Exception as e:
             self.print_internal("Stop: error %s" % e)
 
@@ -1645,7 +1644,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if self.unsaved_flag:
             title += '*'
 
-        if self.job.is_running():
+        if self.job.is_running() and not self.job.is_paused():
             title += ', RUNNING'
             if self.job.mfix_pid is not None:
                 title += ', process %s'% self.job.mfix_pid

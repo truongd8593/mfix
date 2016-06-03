@@ -54,7 +54,8 @@ class Job(object):
         self.status_manager.finished.connect(slot_update_status)
 
     def is_running(self):
-        """indicate whether an MFIX job is running"""
+        """indicate whether an MFIX/pymfix job is running
+        Noted, pymfix will be "running" even if paused"""
         ret = (self.mfixproc is not None
                and self.mfixproc.state() == QProcess.Running)
         return ret
@@ -64,6 +65,15 @@ class Job(object):
         if not self.is_pymfix:
             return False
         return self.status.get('paused', False)
+
+    def is_pausable(self):
+        """indicate whether pymfix is pausable.
+        Pymfix starts by reading the model, and
+        will not be pausable at first"""
+        if not self.is_pymfix:
+            return False
+        # Wait until least one update occurred
+        return self.status.get('paused', None) != None
 
     def pause(self):
         "pause pymfix job"
