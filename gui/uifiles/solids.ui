@@ -1363,7 +1363,7 @@ background-color:transparent;
            <item row="17" column="0" colspan="6">
             <layout class="QGridLayout" name="gridLayout_72">
              <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_outer_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff_2"/>
              </item>
              <item row="0" column="2">
               <widget class="QLabel" name="label_206">
