@@ -6,6 +6,11 @@ import glob
 import json
 import logging
 
+#
+DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
+import socket
+socket.setdefaulttimeout(DEFAULT_TIMEOUT)
+
 log = logging.getLogger(__name__)
 
 try:
@@ -54,7 +59,7 @@ class Job(object):
             return
         req = Request(url='%s/pause' % self.pymfix_url, data='')
         req.get_method = lambda: 'PUT'
-        resp = urlopen(req)
+        resp = urlopen(req, timeout=DEFAULT_TIMEOUT)
         #log.info("response status: %s", resp.status)
         #log.info("response reason: %s", resp.reason)
         resp.close()
@@ -68,7 +73,7 @@ class Job(object):
             return
         req = Request(url='%s/unpause' % self.pymfix_url, data='')
         req.get_method = lambda: 'PUT'
-        resp = urlopen(req)
+        resp = urlopen(req, timeout=DEFAULT_TIMEOUT)
         #log.info("response status: %s", resp.status)
         #log.info("response reason: %s", resp.reason)
         resp.close()
@@ -187,7 +192,7 @@ class Job(object):
 
         data = urlencode(values)
         req = Request(url, data)
-        response = urlopen(req)
+        response = urlopen(req, timeout=DEFAULT_TIMEOUT)
         response_str = response.read()
         log.debug("response_str is %s", response_str)
         # self.status = json.loads(status_str)
