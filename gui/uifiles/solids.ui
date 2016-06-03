@@ -950,7 +950,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_ep_f_min"/>
+           <widget class="LineEdit" name="lineedit_keyword_eps_f_min"/>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="label_141">
