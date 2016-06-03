@@ -1323,7 +1323,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not message_text:
             message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
-        confirm = self.message(text=message_text,
+        confirm = self.message(title="Info",
+                               icon="info",
+                               text=message_text,
                                buttons=['ok','cancel'],
                                default='cancel')
 
