@@ -410,8 +410,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
     def confirm_close(self):
         # TODO : option to save
+        msg = None
         if self.job.is_running():
-            confirm = self.message(text="Stop running job?",
+            msg = "Stop running job?"
+        elif self.job.is_paused():
+            msg = "Stop paused job?"
+        if msg:
+            confirm = self.message(text=msg,
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'no':
@@ -578,6 +583,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         running = self.job.is_running()
         paused = self.job.is_paused()
         res_file_exists = bool(self.monitor.get_res_files())
+
+        log.debug("UPDATE RUN OPTIONS", "running=", running, "paused=", paused,
+                  "res_file_exists=", res_file_exists)
 
         self.update_window_title() # put run state in window titlebar
 
