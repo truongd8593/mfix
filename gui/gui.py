@@ -621,8 +621,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         ui.run.use_spx_checkbox.setChecked(res_file_exists and ready)
 
 
-
-
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
                             color='blue')
@@ -783,7 +781,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             i += 1
 
 
-
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
         """setup widgets which are not tied to a simple keyword"""
@@ -849,15 +846,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             def updateValue(*args):
                 self.update_solids_table()
 
-        self.project.register_widget(TableWidgetProxy(), ['solids_model', 'd_p0', 'ro_s0'], args='*')
+        self.project.register_widget(TableWidgetProxy(),
+                                     ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
         cb = s.combobox_solids_model
         cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
         s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solid_scalar_eq)
         s.spinbox_nscalar_eq.valueChanged.connect(self.set_solid_nscalar_eq)
-
-
 
         # connect solid tab btns
         for i, btn in enumerate((s.pushbutton_solids_materials,
@@ -1325,7 +1321,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         if not output_files:
             output_files = self.monitor.get_outputs()
         if not message_text:
-            message_text = 'Deleting output files %s' % '\n'.join(output_files)
+            message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
         confirm = self.message(text=message_text,
                                buttons=['ok','cancel'],
