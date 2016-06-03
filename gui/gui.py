@@ -1488,9 +1488,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         sp_files = self.monitor.get_outputs(["*.SP?"])
         if (sp_files):
-            yes = self.message(text="Copy .SP files?\n%s" % '\n'.join(output_files)
-                              buttons=['yes', 'no']
-                              default='yes')
+            yes = self.message(text="Copy .SP files?\n%s" % '\n'.join(output_files),
+                               buttons=['yes', 'no'],
+                               default='yes')
             if yes=='yes':
                 files_to_copy.extend(sp_files)
 
