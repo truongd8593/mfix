@@ -639,12 +639,9 @@ MODULE output_man
       MAX_NP   = MAXVAL(NP_ALL)
       MAX_NPP  = MAXLOC(NP_ALL,1)-1
       IDEAL_NP = INT(NP/NumPEs)
+      IF(IDEAL_NP<1) RETURN    ! Nothing to do if the number of particles is less than NumPes
       MIN_LOAD = DFLOAT(MIN_NP)/DFLOAT(IDEAL_NP)
       MAX_LOAD = DFLOAT(MAX_NP)/DFLOAT(IDEAL_NP)
-      IF(.FALSE.) THEN ! Currently turned off
-         if(MyPE==0) print*,'Triggering internal restart'
-         ADJUST_PARTITION = .TRUE.
-      ENDIF
       CURRENT_MAX_LOAD = MAX_LOAD
       WRITE(ERR_MSG, 1000) trim(iVAL(NP)), &
                            trim(iVal(MIN_NP)), trim(iVal(MIN_NPP)), &
