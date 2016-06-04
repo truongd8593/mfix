@@ -117,6 +117,7 @@
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
+      USE des_time_march, only: nn, factor, des_time_init, des_time_step, des_time_end
       USE discretelement, only: DISCRETE_ELEMENT
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
@@ -159,7 +160,17 @@
       CALL CHECK_MASS_BALANCE (1)
 
 ! Other solids model implementations
-      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+      IF (DEM_SOLIDS) THEN
+         ! Main DEM time loop
+         !----------------------------------------------------------------->>>
+         CALL DES_TIME_INIT
+         DO NN = 1, FACTOR
+            CALL DES_TIME_STEP
+         ENDDO ! end do NN = 1, FACTOR
+         CALL DES_TIME_END
+         ! END DEM time loop
+         !-----------------------------------------------------------------<<<
+      ENDIF
       IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
       IF (QMOMK) CALL QMOMK_TIME_MARCH
       IF (CALL_DQMOM) CALL USR_DQMOM

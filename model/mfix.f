@@ -65,16 +65,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE COMPAR, only:MyPE,ADJUST_PARTITION
+      USE DES_TIME_MARCH, ONLY: DES_TIME_INIT, DES_TIME_STEP, DES_TIME_END, NN, FACTOR
       USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD, INITIALIZE, INITIALIZE_2, FINALIZE, EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
+      USE MPI_UTILITY
       USE READ_INPUT, ONLY: GET_DATA
       USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
-      USE COMPAR, only:MyPE,ADJUST_PARTITION
-      USE MPI_UTILITY
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -129,7 +130,17 @@
       IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
 
 ! Uncoupled discrete element simulations
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (DEM_SOLIDS) THEN
+            ! Main DEM time loop
+            !----------------------------------------------------------------->>>
+            CALL DES_TIME_INIT
+            DO NN = 1, FACTOR
+               CALL DES_TIME_STEP
+            ENDDO ! end do NN = 1, FACTOR
+            CALL DES_TIME_END
+            ! END DEM time loop
+            !-----------------------------------------------------------------<<<
+         ENDIF
          IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
 
       ELSE
