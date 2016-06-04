@@ -14,7 +14,15 @@ from tools.general import set_item_noedit, get_selected_row, widget_iter
 class SolidHandler(object):
 
     def init_solid_handler(self):
-        pass
+        self.ui.solids.checkbox_keyword_species_eq_args_S.clicked.connect(
+            self.handle_solid_species_eq)
+
+    def handle_solid_species_eq(self):
+        enabled = self.ui.solids.checkbox_keyword_species_eq_args_S.isChecked()
+        if not enabled:
+            self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
+        self.ui.solids.combobox_solids_density_model.setEnabled(enabled)
+
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
@@ -147,6 +155,13 @@ class SolidHandler(object):
         val = self.project.get_value(key, default=False, args=phase)
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
         cb.setChecked(val)
+        # density model only selectable when species eq. are solved
+        if val:
+            s.combobox_solids_density_model.setEnabled(True)
+        else:
+            s.combobox_solids_density_model.setCurrentIndex(CONSTANT)
+            s.combobox_solids_density_model.setEnabled(False)
+
 
         nscalar = self.project.get_value('nscalar', 0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
@@ -155,7 +170,7 @@ class SolidHandler(object):
         s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
         enabled = solid.get('enable_scalar_eq', False) # (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
-        self.enable_solid_scalar_eq(enabled)
+        #self.enable_solid_scalar_eq(enabled)
 
 
     def update_solids_table(self):
