@@ -14,6 +14,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE compar
+      USE constant, only: set_constants
       USE energy, only: gama_rg, t_rg, gama_rs, t_rs
       USE fldvar
       USE functions
