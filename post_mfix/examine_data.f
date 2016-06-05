@@ -718,7 +718,7 @@
       ENDIF
 ! When the solids density is not constant, it is computed from solids
 ! species mass fractions. This is needed for volumetric flow rates
-! VFLOW_sx, VFLOW_sy or VFLOW_sz because EP_S is needed and 
+! VFLOW_sx, VFLOW_sy or VFLOW_sz because EP_S is needed and
 ! EP_S = ROP_S / RO_S.  ROP_S is read from the SP5 file, but RO_S is
 ! not saved anywhere
       IF((VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) .OR. &
@@ -1264,7 +1264,7 @@
       IF(VAR_NO .EQ. 44 .OR. VAR_NO .EQ. 47) THEN
         M_LOCAL=M
         DO M = 1, MMAX
-          CALL CALC_MU_s(M, IER)
+          CALL CALC_MU_s(M)
         ENDDO
         M=M_LOCAL
       ENDIF

@@ -87,7 +87,7 @@
                CALL FLUSH_ERR_MSG
                GO TO 100
             ELSEIF(IER(myPE) /= 0) THEN
-               CER=''; WRITE(CER,*)
+               CER=''; WRITE(CER,*)IER(myPE)
                WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
                CALL FLUSH_ERR_MSG
                GO TO 100
@@ -244,7 +244,7 @@
 ! Globally collect flags.
       CALL GLOBAL_ALL_SUM(IER)
 ! Report errors.
-      IF(sum(IER_l) /= 0) ERROR_OPENING = .TRUE.
+      IF(sum(IER_l) /= 0.AND..NOT.ADJUST_PARTITION) ERROR_OPENING = .TRUE.
 
       RETURN
       END FUNCTION ERROR_OPENING

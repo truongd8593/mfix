@@ -28,8 +28,6 @@
 
   SPECIES_EQ(0:1) = .F.  .F.
 
-  GRANULAR_ENERGY = .F.
-
   QMOMK = .T.
   QMOMK_COLLISIONS = 'BGK'
 

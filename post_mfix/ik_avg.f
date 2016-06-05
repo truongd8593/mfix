@@ -36,7 +36,7 @@
 !     passed arguments
 !
       DOUBLE PRECISION  VAR(*)
-      REAL              VOLUME(*) , AVG
+      DOUBLE PRECISION  VOLUME(*) , AVG
       INTEGER           JUSE
       INTEGER           I, K, IJK
 !

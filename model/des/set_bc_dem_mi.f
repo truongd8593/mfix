@@ -356,6 +356,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
+      use discretelement, only: min_radius, max_radius
       use bc, only: BC_PLANE
       use bc, only: BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t
       use des_bc, only: DEM_BCMI, DEM_BCMI_MAP, DEM_BCMI_IJK
@@ -451,23 +452,23 @@
 ! the fluid cell.
          SELECT CASE (BC_PLANE(BCV))
          CASE('N')
-            J_s = JofPOS(BC_Y_s(BCV))
-            J_n = JofPOS(BC_Y_n(BCV))
+            J_s = JofPOS(BC_Y_s(BCV)+MIN_RADIUS)
+            J_n = JofPOS(BC_Y_n(BCV)+MAX_RADIUS)
          CASE('S')
-            J_s = JofPOS(BC_Y_s(BCV))
-            J_n = JofPOS(BC_Y_n(BCV))
+            J_s = JofPOS(BC_Y_s(BCV)-MAX_RADIUS)
+            J_n = JofPOS(BC_Y_n(BCV)-MIN_RADIUS)
          CASE('E')
-            I_w = IofPOS(BC_X_w(BCV))
-            I_e = IofPOS(BC_X_e(BCV))
+            I_w = IofPOS(BC_X_w(BCV)+MIN_RADIUS)
+            I_e = IofPOS(BC_X_e(BCV)+MAX_RADIUS)
          CASE('W')
-            I_w = IofPOS(BC_X_w(BCV))
-            I_e = IofPOS(BC_X_e(BCV))
+            I_w = IofPOS(BC_X_w(BCV)-MAX_RADIUS)
+            I_e = IofPOS(BC_X_e(BCV)-MIN_RADIUS)
          CASE('T')
-            K_b = KofPOS(BC_Z_b(BCV))
-            K_t = KofPOS(BC_Z_t(BCV))
+            K_b = KofPOS(BC_Z_b(BCV)+MIN_RADIUS)
+            K_t = KofPOS(BC_Z_t(BCV)+MAX_RADIUS)
          CASE('B')
-            K_b = KofPOS(BC_Z_b(BCV))
-            K_t = KofPOS(BC_Z_t(BCV))
+            K_b = KofPOS(BC_Z_b(BCV)-MAX_RADIUS)
+            K_t = KofPOS(BC_Z_t(BCV)-MIN_RADIUS)
          END SELECT
 
          if(dFlag) then

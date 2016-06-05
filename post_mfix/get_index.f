@@ -29,7 +29,7 @@
       REAL A, ARRAY(LMAX), DIFF_LAST
       LOGICAL EXT
       CHARACTER ANS
-      CHARACTER(LEN=3) :: AC
+      CHARACTER(LEN=*) :: AC
 !
       GET_INDEX = 0
       L1        = 0

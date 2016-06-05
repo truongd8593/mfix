@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  Module name: DEallocate_ARRAYS
+!  Module name: DEallocate_ARRAYS_POST
 !  Purpose: deallocate arrays
 !                                                                      C
 !  Author: M. Syamlal                                Date: 17-DEC-98
@@ -8,7 +8,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE Deallocate_ARRAYS
+      SUBROUTINE Deallocate_ARRAYS_POST
 
 !-----------------------------------------------
 ! Modules
@@ -440,5 +440,5 @@
 
 
       RETURN
-      END SUBROUTINE Deallocate_ARRAYS
+      END SUBROUTINE Deallocate_ARRAYS_POST
 

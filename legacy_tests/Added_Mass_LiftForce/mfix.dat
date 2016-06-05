@@ -39,11 +39,8 @@
 ! use model B form of momentum equations?  [.FALSE.]
   MODEL_B = .FALSE.   ! use model A
  
-! use the schaeffer model for frictional/plastic solids phase
-! stress?   [.TRUE.] 
-  SCHAEFFER = .FALSE.   ! frictional stresses for for solid particles 
-                        ! only. in this case this 'solids' phase is
-                        ! actually air (see below)
+! Model for frictional/plastic solids phase
+  FRICTION_MODEL = 'NONE'
 
 
 !*********************************************************************
@@ -99,9 +96,8 @@
 ! pressure to a gauge value.
   P_Ref = 1.01E6     ! reference pressure [bayre] 
 
-! use k-e turbulence model for single-phase flow with standard wall
-! functions?   [.FALSE.]
-  K_EPSILON = .TRUE.  
+! k-e t model for single-phase flow with standard wall functions
+  TURBULENCE_MODEL = 'K_EPSILON'
   Mu_gmax = 1.E+03     ! max. value of the turbulent viscosity of the fluid
 
 

@@ -12,6 +12,9 @@
           implicit none
           integer :: ierr
 
+! No need to initialize MPI when adjusting partition
+          IF(ADJUST_PARTITION) RETURN
+
           numPEs = 1
           myPE = 0
 

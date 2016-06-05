@@ -162,7 +162,7 @@
       CALL UNDER_RELAX_S (K_Turb_G, A_M, B_M, M, UR_FAC(9))
 
 !      call check_ab_m(a_m, b_m, m, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, m)
 !      write(*,*) res1, mres1, ires1
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                       DO_K, ier)
@@ -244,7 +244,7 @@
       CALL UNDER_RELAX_S (E_Turb_G, A_M, B_M, M, UR_FAC(9))
 
 !      call check_ab_m(a_m, b_m, m, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, m)
 !      write(*,*) res1, mres1, ires1
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                       DO_K, ier)

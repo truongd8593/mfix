@@ -21,9 +21,11 @@
 !   TSTOP = 0.1   
 !   DT = 1.0e-3
 
+! the kinetic theory model used to describe the solids phase(s)
+  KT_TYPE = 'LUN_1984'
+
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
-  GRANULAR_ENERGY = .TRUE.
 
 ! We are using the same under-relaxation factor for K and Epsilon equation
 ! as the one for scalar equations.
@@ -31,8 +33,7 @@
 
 ! K_Epsilon should be changed to true to use this model
 ! To use wall functions, you should use PSW condition at walls.
-!
- K_Epsilon = .TRUE.
+  TURBULENCE_MODEL = 'K_EPSILON'
   
 #
 # Geometry Section

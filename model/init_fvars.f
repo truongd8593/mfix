@@ -53,7 +53,7 @@
 ! Reaction Rates
       USE rxns, only: ReactionRates
 ! l_scale turbulence
-      use turb, only: l_scale, l_scale0
+      use turb, only: l_scale
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -104,7 +104,7 @@
       IF(allocated(E_Turb_G)) E_Turb_G = ZERO
 
 ! l_scale0 is user defined and zero by default
-      IF(allocated(L_SCALE)) L_SCALE = L_SCALE0 
+      IF(allocated(L_SCALE)) L_SCALE = ZERO
 
       IF(allocated(Scalar)) Scalar = ZERO
       IF(allocated(ReactionRates)) ReactionRates = ZERO

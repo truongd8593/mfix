@@ -14,6 +14,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE compar
+      USE constant, only: set_constants
       USE energy, only: gama_rg, t_rg, gama_rs, t_rs
       USE fldvar
       USE functions
@@ -220,10 +221,10 @@
 
 ! Read the new data file
       WRITE(*,*)' Reading new mfix.dat ...'
-      CALL DEALLOCATE_ARRAYS
+      CALL DEALLOCATE_ARRAYS_POST
 
       CALL INIT_NAMELIST
-      CALL READ_NAMELIST(1)
+      CALL READ_NAMELIST(1, 'mfix.dat')
       NODESI = 1
       NODESJ = 1
       NODESK = 1

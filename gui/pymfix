@@ -24,12 +24,13 @@ sys.path.append(os.path.dirname(__file__))
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
 from mfix import compar as COMPAR
+from mfix import des_time_march as DES_TIME_MARCH
+from mfix import discretelement as DEM
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
-from mfix import discretelement as DEM
+from mfix import read_input as READ_INPUT
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
-from mfix import read_input as READ_INPUT
 from mfix import step as STEP
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -157,6 +158,17 @@ class Mfix(object):
             step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
 
         start = timer()
+        STEP.check_low_dt()
+        STEP.chem_mass()
+
+        if RUN.dem_solids:
+            DES_TIME_MARCH.des_time_init()
+            for ii in range(DES_TIME_MARCH.factor):
+                DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
+                DES_TIME_MARCH.des_time_step()
+                cls.check_requests()
+            DES_TIME_MARCH.des_time_end()
+
         STEP.time_step_end()
         cls.time_step_end_walltime = (timer() - start)
 

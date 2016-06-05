@@ -999,6 +999,8 @@ MODULE CHECK_DATA_CG
 ! Boundary conditions
 !======================================================================
 
+      IF(RO_G0==ZERO) RETURN  ! Nothing to do for granular flow
+
       CALL INIT_ERR_MSG("CHECK_BC_FLAGS")
 
       DO BCV = 1, DIMENSION_BC

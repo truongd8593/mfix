@@ -13,8 +13,6 @@
 
   DT_MAX = 5.0E-4
 
-  GRANULAR_ENERGY       = .FALSE.  
-  BLENDING_STRESS       = .FALSE.
   MAX_NIT               = 500
 
   TOL_RESID             = 1.0E-4

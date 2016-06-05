@@ -153,7 +153,7 @@
 !     error condition
   500 CONTINUE
       IER = 1
-      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)
+      CALL WRITE_AB_M (A_M, B_M, M)
       call mfix_exit(myPE)
       END SUBROUTINE CHECK_AB_M
 

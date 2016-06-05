@@ -383,8 +383,6 @@
       use run, only: ENERGY_EQ
 ! Flag. Solve Species equations
       use run, only: SPECIES_EQ
-! Flag: Solve K-Epsilon or l_scale0
-      use turb, only: l_scale0, k_epsilon
 ! Specified constant gas density and viscosity.
       use physprop, only: RO_G0, MU_G0
 ! Specified average molecular weight
@@ -395,7 +393,10 @@
       use scalars, only: NSCALAR
 ! Flag: Do not solve in specified direction.
       use geometry, only: NO_I, NO_J, NO_K
-
+! Flags for turbulence models
+      use derived_types, only: TURBULENCE_MODEL_ENUM
+      use derived_types, only: MIXING_LENGTH_ENUM
+      use derived_types, only: K_EPSILON_ENUM
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Parameter constants
@@ -561,37 +562,32 @@
 
 
       IF(BASIC_IC) THEN
-         IF (L_SCALE0 == ZERO) THEN
-            IF (IC_L_SCALE(ICV) /= UNDEFINED) THEN
+         IF (TURBULENCE_MODEL_ENUM == MIXING_LENGTH_ENUM) THEN
+            IF (IC_L_SCALE(ICV) == UNDEFINED) THEN
                WRITE(ERR_MSG, 1113) ICV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
- 1113 FORMAT('Error 1113: IC_L_SCALE(',I3,',:) is defined but L_SCALE0 ',&
-         'is equal',/,'to zero. A non-zero value must be specified to ',&
-         'activate this model.',/,'Please correct the mfix.dat file.')
-            ENDIF
-         ELSEIF (L_SCALE0 < ZERO) THEN
-            WRITE(ERR_MSG, 1001) 'L_SCALE0', iVal(L_scale0)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSE   ! l_scale0 is defined and greater than zero
-            IF (IC_L_SCALE(ICV) < ZERO) THEN
+ 1113 FORMAT('Error 1113: IC_L_SCALE(',I3,',:) is undefined but ',  &
+         'the TURBULENCE_MODEL',/'is set to MIXING_LENGTH. A non-', &
+         'zero value is required in all IC regions','when using ',  &
+         'this model.',/'Please correct the mfix.dat file.')
+            ELSEIF (IC_L_SCALE(ICV) < ZERO) THEN
                WRITE(ERR_MSG, 1001) iVar('IC_L_SCALE',ICV), &
                   iVal(IC_L_SCALE(ICV))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
+
+         ELSEIF (TURBULENCE_MODEL_ENUM == K_EPSILON_ENUM) THEN
+            IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1000) iVar('IC_K_Turb_G',ICV)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF (IC_E_Turb_G(ICV) == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1000) iVar('IC_E_Turb_G',ICV)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDIF
       ENDIF
 
-
-      IF(K_Epsilon .AND. BASIC_IC) THEN
-         IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN
-            WRITE(ERR_MSG, 1000) iVar('IC_K_Turb_G',ICV)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-         IF (IC_E_Turb_G(ICV) == UNDEFINED) THEN
-            WRITE(ERR_MSG, 1000) iVar('IC_E_Turb_G',ICV)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
 
       CALL FINL_ERR_MSG
 

@@ -23,12 +23,8 @@
   ENERGY_EQ =  .F.
   SPECIES_EQ = .T. .F.
 
-  GRANULAR_ENERGY = .T.
-
-  SCHAEFFER = .F.
-
-  FRICTION = .T.
-  Savage = 2
+  KT_TYPE = 'LUN_1984'
+  FRICTION_MODEL = 'SIRVASTAVA'
 
   C(1) = 30. !reaction rate constant
   C_NAME(1) = 'RXN Rate Constant'

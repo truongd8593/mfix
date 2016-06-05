@@ -18,10 +18,10 @@
   
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
-  GRANULAR_ENERGY = .TRUE.
-                   !no gas phase
   MOMENTUM_X_EQ =  .FALSE.             .TRUE.    
   MOMENTUM_Y_EQ =  .FALSE.             .TRUE.
+
+  KT_TYPE = 'LUN_1984'
   
 #
 # Geometry Section

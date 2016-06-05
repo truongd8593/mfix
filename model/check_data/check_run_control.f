@@ -23,8 +23,6 @@
 ! Time step size, one over time step size.
       USE run, only: DT, ODT, STEADY_STATE
       USE run, only: ishii, jackson
-! Flag: Use K-Epsilon or l_scale0 turbulence model.
-      use turb, only: K_EPSILON, L_SCALE0
 ! Viscosity bound.
       use visc_g, only: MU_GMAX
 
@@ -42,7 +40,6 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-
 
 !......................................................................!
 
@@ -106,13 +103,8 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Turbulence model:
-      IF (K_Epsilon .AND. L_SCALE0 /= ZERO) THEN
-         WRITE(ERR_MSG,2001)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
- 2001 FORMAT('Error 2001: Cannot set K_EPSILON = .T. and specify ',    &
-         'L_SCALE0 /= ZERO')
-      ENDIF
+      CALL CHECK_TURBULENCE_MODEL
+
 
 ! Ishii and jackson form of governing equations cannot both be invoked
       IF (ISHII .AND. JACKSON) THEN
@@ -122,12 +114,6 @@
              '.T.',/,'Please correct the mfix.dat file.')
       ENDIF
 
-!  Check whether MU_gmax is specified for turbulence
-      IF ((K_Epsilon .OR. L_SCALE0 /= ZERO) .AND. &
-           MU_GMAX==UNDEFINED) THEN
-         WRITE(ERR_MSG, 1000) 'MU_GMAX'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
 
 ! Clear the error manager
       CALL FINL_ERR_MSG
@@ -149,4 +135,86 @@
       END SUBROUTINE CHECK_RUN_CONTROL
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_RUN_CONTROL                                       !
+!  Purpose: Check the run control namelist section                     !
+!                                                                      !
+!  Author: P.Nicoletti                                Date: 27-NOV-91  !
+!          J.Musser                                   Date: 31-JAN-14  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_TURBULENCE_MODEL
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: for turbulence model.
+      use derived_types, only: TURBULENCE_MODEL_ENUM
+      use derived_types, only: MIXING_LENGTH_ENUM
+      use derived_types, only: K_EPSILON_ENUM
+      use derived_types, only: NO_TURBULENCE_ENUM
+
+      use turb, only: TURBULENCE_MODEL
+      use turb, only: K_EPSILON
+! Viscosity bound.
+      use visc_g, only: MU_GMAX
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      USE param1, only: UNDEFINED, UNDEFINED_C
+      USE param1, only: ONE, ZERO
+
+! Global Module procedures:
+!---------------------------------------------------------------------//
+      USE error_manager
+
+      IMPLICIT NONE
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_TURBULENCE_MODEL")
+
+
+      K_EPSILON = .FALSE.
+
+      SELECT CASE(TRIM(TURBULENCE_MODEL))
+      CASE('NONE')
+         TURBULENCE_MODEL_ENUM = NO_TURBULENCE_ENUM
+      CASE('MIXING_LENGHT')
+         TURBULENCE_MODEL_ENUM = MIXING_LENGTH_ENUM
+!  Check whether MU_gmax is specified for turbulence
+         IF( MU_GMAX==UNDEFINED) THEN
+            WRITE(ERR_MSG, 1000) 'MU_GMAX'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      CASE('K_EPSILON')
+         TURBULENCE_MODEL_ENUM = K_EPSILON_ENUM
+         K_Epsilon = .TRUE.
+!  Check whether MU_gmax is specified for turbulence
+         IF( MU_GMAX==UNDEFINED) THEN
+            WRITE(ERR_MSG, 1000) 'MU_GMAX'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      CASE DEFAULT
+            WRITE(ERR_MSG, 1150)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 1150 FORMAT('Error 1150: Unknown TURBULENCE_MODEL',/'Please ',  &
+         'correct the mfix.dat file.')
+
+! Clear the error manager
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+         'correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_TURBULENCE_MODEL

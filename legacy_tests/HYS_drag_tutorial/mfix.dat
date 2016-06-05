@@ -34,10 +34,6 @@
    MOMENTUM_X_EQ =  3*.T.
    MOMENTUM_Y_EQ =  3*.T.
 
-! solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?   [.FALSE.]
-  GRANULAR_ENERGY = .FALSE.
-  
 ! the kinetic theory model used to describe the solids phase(s)
 #  KT_TYPE = 'IA_NONEP'   ! NOT using IA polydisperse kinetic theory
   
@@ -49,10 +45,8 @@
   DRAG_TYPE = 'HYS'     ! Holloway, Yin, and Sundaresan drag model
   LAM_HYS = 0.0001d0     ! lubrication cut off (1 micron) [1 micron]
   
-! use the schaeffer model for frictional/plastic solids phase
-! stress?   [.TRUE.]  
-  SCHAEFFER = .F.   ! no frictional viscosity will be used
-
+! Model for frictional/plastic solids phase
+  FRICTION_MODEL = 'NONE'
 
 !*********************************************************************
 ! Numerical Parameters

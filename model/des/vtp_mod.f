@@ -465,6 +465,8 @@
 ! The end of the pvd file has been reached without finding an entry
 ! matching the current record. Exit the loop.
                         BACKSPACE(PVD_UNIT)
+                        BACKSPACE(PVD_UNIT)
+                        BACKSPACE(PVD_UNIT)
                         EXIT
                      ENDIF
 ! Find the first instances of file=" and "/> in the read data.

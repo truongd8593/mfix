@@ -65,15 +65,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
+      USE COMPAR, only:MyPE,ADJUST_PARTITION
+      USE DES_TIME_MARCH, ONLY: DES_TIME_INIT, DES_TIME_STEP, DES_TIME_END, FACTOR
+      USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DES_EXPLICITLY_COUPLED, DISCRETE_ELEMENT, DO_NSEARCH, NEIGHBOR_SEARCH_N
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD, INITIALIZE, INITIALIZE_2, FINALIZE, EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
+      USE MPI_UTILITY
       USE READ_INPUT, ONLY: GET_DATA
       USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
-      USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
-
+      USE STEP, ONLY: CHECK_LOW_DT, CHEM_MASS, TIME_STEP_INIT, TIME_STEP_END
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -113,6 +115,9 @@
          ENDIF
       ENDDO
 
+! Dynamic load balance loop
+      DO
+
 ! Initialize the simulation
       CALL INITIALIZE
 ! Read input data
@@ -125,7 +130,14 @@
       IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
 
 ! Uncoupled discrete element simulations
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (DEM_SOLIDS) THEN
+            CALL DES_TIME_INIT
+            DO II = 1, FACTOR
+               DO_NSEARCH = (II == 1 .OR. MOD(II,NEIGHBOR_SEARCH_N) == 0)
+               CALL DES_TIME_STEP
+            ENDDO
+            CALL DES_TIME_END
+         ENDIF
          IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
 
       ELSE
@@ -145,12 +157,34 @@
                IF(STEADY_STATE) EXIT
                IF(.NOT.ADJUSTDT()) EXIT
             ENDDO
+
+! Exit if DT < DT_MIN
+            CALL CHECK_LOW_DT
+
+! Stiff Chemistry Solver.
+            CALL CHEM_MASS
+
+! DEM time loop
+            IF (DEM_SOLIDS) THEN
+               CALL DES_TIME_INIT
+               DO II = 1, FACTOR
+                  DO_NSEARCH = (II == 1 .OR. MOD(II,NEIGHBOR_SEARCH_N) == 0)
+                  CALL DES_TIME_STEP
+               ENDDO
+               CALL DES_TIME_END
+            ENDIF
+
             CALL TIME_STEP_END
-            IF (STEADY_STATE) EXIT
+            IF (STEADY_STATE .OR. ADJUST_PARTITION) EXIT
          ENDDO
 
       ENDIF
+
+
       CALL FINALIZE
+      IF(.NOT.ADJUST_PARTITION) EXIT
+      ENDDO
+
 
       STOP
       END PROGRAM MFIX

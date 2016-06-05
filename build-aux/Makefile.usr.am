@@ -158,6 +158,7 @@ pymfix_src = \
 	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
 	$(top_srcdir)/../model/fldvar_mod.f \
 	$(top_srcdir)/../model/des/discretelement_mod.f \
+	$(top_srcdir)/../model/des/des_time_march.f \
 	$(top_srcdir)/../model/iterate.f \
 	$(top_srcdir)/../model/residual_mod.f \
 	$(top_srcdir)/../model/time_step.f \
@@ -169,7 +170,11 @@ pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 pymfix: mfix.so
 	rm -f $@
+<<<<<<< HEAD
 	$(LN_S) $(top_srcdir)/../gui/$@ $@
+=======
+	$(LN_S) $(top_srcdir)/../pymfix/$@ $@
+>>>>>>> develop
 
 mfix.so: $(LIBMFIX).md5
 mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)

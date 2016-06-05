@@ -257,7 +257,7 @@
       CALL UNDER_RELAX_S (T_G, A_M, B_M, 0, UR_FAC(6))
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
 !      write(*,*) &
 !         resid(resid_t, 0), max_resid(resid_t, 0), &
 !         ijk_resid(resid_t, 0)

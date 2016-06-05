@@ -23,12 +23,9 @@
   ENERGY_EQ =  .F.
   SPECIES_EQ = .F. .F.
 
-  GRANULAR_ENERGY = .T.
+  KT_TYPE = 'LUN_1984'
 
-  SCHAEFFER = .F.
-
-  FRICTION = .T.
-  Savage = 2
+  FRICTION_MODEL = 'SIRVASTAVA'
 
 #_______________________________________________________________________
 # NUMERICAL SECTION

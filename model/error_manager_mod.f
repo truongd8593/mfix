@@ -77,6 +77,9 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
 
+! Dynamic load balance
+      use compar, only:ADJUST_PARTITION
+
       implicit none
 
 ! Local Variables:
@@ -142,9 +145,9 @@
       ENDIF
 
 ! Verify that the .LOG file was successfully opened. Otherwise, flag the
-! error and abort.
+! error and abort. Currently skipped when adjusting partition.
       CALL GLOBAL_ALL_SUM(IER)
-      IF(sum(IER) /= 0) THEN
+      IF(sum(IER) /= 0.AND..NOT.ADJUST_PARTITION) THEN
          IF(myPE == PE_IO) WRITE(*,1001) trim(FILE_NAME)
          CALL MFIX_EXIT(myPE)
       ENDIF

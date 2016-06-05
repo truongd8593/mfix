@@ -30,8 +30,6 @@
 
   SPECIES_EQ(0:2) = .F.  .F.  .F.
 
-  GRANULAR_ENERGY = .F.
-
   QMOMK = .T.
   QMOMK_COLLISIONS = 'Boltzmann'
 

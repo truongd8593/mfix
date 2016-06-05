@@ -33,12 +33,8 @@
   MOMENTUM_X_EQ(0:2) = .T.  .T.  .F.
   MOMENTUM_Y_EQ(0:2) = .T.  .T.  .F.
 
-! Solve granular energy equation (pde)
-  GRANULAR_ENERGY = .F.
-
 ! Friction/plastic stress models
-  FRICTION  = .F.
-  SCHAEFFER  = .F.
+  FRICTION_MODEL = 'NONE'
 
 ! Drag model
   DRAG_TYPE = 'GIDASPOW'

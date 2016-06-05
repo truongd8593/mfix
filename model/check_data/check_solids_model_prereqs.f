@@ -87,6 +87,10 @@
       ENDIF
  1000 FORMAT('Error 1000: MMAX out of range. Min: 0, Max: ',A)
 
+     TFM_COUNT = 0
+     DEM_COUNT = 0
+     PIC_COUNT = 0
+
 ! Loop over the phases to see what was specified.
       DO M=1, MMAX
          SOLIDS_MODEL(M) = trim(adjustl(SOLIDS_MODEL(M)))

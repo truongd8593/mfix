@@ -28,8 +28,6 @@
       USE visc_s, only: ep_star_array
       USE visc_s, only: ep_g_blend_start, ep_g_blend_end
 
-      use turb, only: l_scale0
-
       USE physprop, only: nmax, mmax, smax
       USE physprop, only: ro_s0, ro_g0, d_p0
       USE physprop, only: mu_g0, mu_g, mu_s0
@@ -103,7 +101,7 @@
       F_SS = ZERO
 
 ! Set the flag for recalculating gas viscosity.
-!      RECALC_VISC_G = (MU_g0==UNDEFINED .OR. L_SCALE0/=ZERO .OR.&
+!      RECALC_VISC_G = (MU_g0==UNDEFINED .OR. &
 !                       K_EPSILON .OR. ISHII)
 
 ! Set default value for virtual mass coefficient

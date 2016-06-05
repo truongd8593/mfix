@@ -91,6 +91,7 @@
 
 ! Allocate an array to hold the IJK values. This array should be
 ! more than enough to store all the IJKs.
+      if(allocated(LOC_DEM_BCMO_IJK)) deallocate(LOC_DEM_BCMO_IJK)
       allocate( LOC_DEM_BCMO_IJK(MAX_CELLS) )
 
 ! Loop over the IJKs for each BC and store only the IJKs that you
@@ -194,6 +195,7 @@
          /4x,'IJKSTART:',I6,/4x,'IJKEND:  ',I6)
 
 ! Allocate the global store arrary array. This changes across MPI ranks.
+      if(allocated(DEM_BCMO_IJK)) deallocate(DEM_BCMO_IJK)
       IF(LC > 1) THEN
          allocate( DEM_BCMO_IJK(LC-1) )
          DEM_BCMO_IJK(1:LC-1) = LOC_DEM_BCMO_IJK(1:LC-1)

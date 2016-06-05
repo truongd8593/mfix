@@ -15,9 +15,8 @@
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE. .FALSE. .FALSE.
 
-  GRANULAR_ENERGY = .t.
   
-  KT_TYPE = 'GHD'   ! using GHD polydisperse kinetic theory
+   KT_TYPE = 'GHD'   ! using GHD polydisperse kinetic theory
   
 
    MOMENTUM_X_EQ =  3*.T.
@@ -61,8 +60,7 @@
   DRAG_TYPE             = 'WEN_YU'
 #  LAM_HYS = 0.0001d0 
   
-  FRICTION = .TRUE.
-  SAVAGE = 2
+  FRICTION_MODEL = 'SIRVASTAVA'
 
   MMAX = 2 !the code will internally modify mmax to 3 to solve for mixture.
   RO_s         = 2*2.5d0

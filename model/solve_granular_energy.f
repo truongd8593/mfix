@@ -42,7 +42,7 @@
       use run, only: kt_type_enum, lun_1984, ahmadi_1995, simonin_1996
       use run, only: kt_type, gd_1999, gtsh_2012, ghd_2007, ia_2005
       use rxns, only: sum_r_s
-      use toleranc, only: zero_ep_s 
+      use toleranc, only: zero_ep_s
       use ur_facs, only: ur_fac
       use usr_src, only: call_usr_source, calc_usr_source
       use usr_src, only: gran_energy
@@ -210,7 +210,7 @@
 !            call check_ab_m(a_m, b_m, m, .true., ier)
 !            write(*,*) resid(resid_th, m), max_resid(resid_th, m),&
 !               ijk_resid(resid_th, m)
-!            call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!            call write_ab_m(a_m, b_m, ijkmax2, m)
 
 !            call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), &
 !               1, DO_K, ier)

@@ -54,11 +54,11 @@
 !
 !-----------------------------------------------
 !
-      CALL GET_PHILOSS (T_G, K_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, HLOSSM, IER)
+      CALL GET_PHILOSS (T_G, K_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, HLOSSM)
       HLOSS = HLOSSM
       DO M = 1, MMAX
          CALL GET_PHILOSS (T_S(1,M), K_S(1,M), BC_TW_S(1,M), BC_HW_T_S(1,M), &
-            BC_C_T_S(1,M), HLOSSM, IER)
+            BC_C_T_S(1,M), HLOSSM)
          HLOSS = HLOSS + HLOSSM
       END DO
       RETURN

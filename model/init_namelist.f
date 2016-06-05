@@ -49,7 +49,7 @@
       USE scales
       USE stiff_chem
       USE toleranc
-      use turb, only: l_scale0, k_epsilon
+      use turb, only: TURBULENCE_MODEL
       USE ur_facs
       use usr_src, only: call_usr_source
 ! user defined flags
@@ -250,41 +250,23 @@
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
-!<keyword category="Run Control" required="false" tfm="true">
-!  <description>Granular energy formulation selection.</description>
-!  <valid value=".FALSE."
-!    note="Use algebraic granular energy equation formulation."/>
-!  <valid value=".TRUE."
-!    note="Use granular energy transport equation (PDE) formulation."/>
-      GRANULAR_ENERGY = .FALSE.
-!</keyword>
-
 !<keyword category="Run Control" required="false">
 !  <description>
-!    The K-Epsilon turbulence model (for single-phase flow).
+!    Gas phase turbulence mode. ["NONE"]
+!  </description>
+!  <dependent keyword="MU_GMAX" value="DEFINED"/>
+!  <valid value="NONE."  note="No turbulencemodel"/>
+!  <valid value="MIXING_LENGTH"  note="Turbulent length scale must
+!    be specified for the full domain using keyword IC_L_SCALE."/>
+!  <valid value="K_EPSILON"  note="K-epsilon turbulence model (for
+!    single-phase flow) using standard wall functions.
 !    o Numerical parameters (like under-relaxation) are the same as the
 !      ones for SCALAR (index = 9).
 !    o All walls must be defined (NSW, FSW or PSW) in order to use
 !      standard wall functions. If a user does not specify a wall type,
 !      the simulation will not contain the typical turbulent profile in
-!      wall-bounded flows.
-!  </description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="L_SCALE0" value="DEFINED"/>
-!  <valid value=".TRUE."  note="Enable the K-epsilon turbulence model
-!    (for single-phase flow) using standard wall functions."/>
-!  <valid value=".FALSE." note="Do not use K-epsilon turbulence model"/>
-      K_EPSILON = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Value of turbulent length initialized. This may be overwritten
-!    in specific regions with the keyword IC_L_SCALE.
-!</description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="K_EPSILON" value=".TRUE."/>
-      L_SCALE0 = ZERO
+!      wall-bounded flows."/>
+      TURBULENCE_MODEL = "NONE"
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -1355,10 +1337,10 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids phase stress model [LUN_1984]. This is only needed when
-!    solving the granular energy PDE (GRANULAR_ENERGY = .TRUE.).
+!    Solids phase stress model [Algebraic].
 !  </description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="ALGEBRAIC"
+!    note="Granular energy algegraic formulation."/>
 !  <valid value="AHMADI"
 !    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
 !  <valid value="GD_99"
@@ -1373,75 +1355,28 @@
 !    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
 !  <valid value="SIMONIN"
 !    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = "LUN_1984"
+      KT_TYPE = "ALGEBRAIC"
 !</keyword>
-
-! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI"
-      AHMADI = .FALSE.
-
-! Retired keyword for specifying Simonin KT Theory.
-! Use: KT_TYPE = "SIMONIN"
-      SIMONIN = .FALSE.
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids stress model selection.
+!    Solids stress firction model selection.
 !  </description>
-!  <valid value=".FALSE." note="Do not use the Princeton solids stress model."/>
-!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-      FRICTION = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    For a term appearing in the frictional stress model
-!    invoked with FRICTION keyword.
-!  </description>
-!  <valid value="0" note="Use S:S in the frictional stress model."/>
-!  <valid value="1" note="Use an alternate form suggested by Savage."/>
-!  <valid value="2" note="An appropriate combination of above."/>
-!  <dependent keyword="friction" value=".TRUE."/>
-      SAVAGE = 1
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    Schaeffer frictional stress tensor formulation. </description>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model."/>
-!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
-      SCHAEFFER = .TRUE.
+!  <valid value="SCHAEFFER" note="Schaeffer friction model"/>
+!  <valid value="SIRVASTAVA"  note="Sirvastava friction model"/>
+      FRICTION_MODEL = 'SCHAEFFER'
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Blend the Schaeffer stresses with the stresses resulting from
-!    algebraic kinetic theory around the value of EP_STAR.
+!    algebraic kinetic theory around the value of EP_STAR. [NONE]
 !  </description>
-      BLENDING_STRESS = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="ture">
-!  <description>
-!    Hyperbolic tangent function for blending frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
-      TANH_BLEND = .TRUE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    A scaled and truncated sigmoidal function for blending
-!    frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
-      SIGM_BLEND = .FALSE.
+!  <valid value="NONE" note="No blending"/>
+!  <valid value="TANH_BLEND" note="Hyperbolc tangent function"/>
+!  <valid value="SIGM_BLEND" note="Scaled sigmodial function"/>
+!  <dependent keyword="FRICTION_MODEL" value="SCHAEFFER"/>
+      BLENDING_FUNCTION = "NONE"
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
@@ -3459,6 +3394,11 @@
 !  <description>Number of grid blocks in z-direction.</description>
       NODESK = UNDEFINED_I
 !</keyword>
+
+! Dynamic load balance list of partitions to test
+      DLB_NODESI(:) = 0
+      DLB_NODESJ(:) = 0
+      DLB_NODESK(:) = 0
 
 !<keyword category="Parallelization Control" required="false">
 !  <description>Print out additional statistics for parallel runs</description>

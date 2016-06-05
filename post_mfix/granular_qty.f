@@ -162,7 +162,7 @@
       ENDIF
 !
       DO M = 1, MMAX
-        CALL CALC_MU_s(M, IER)
+        CALL CALC_MU_s(M)
       ENDDO
 !
       TIME = TIME_NOW
