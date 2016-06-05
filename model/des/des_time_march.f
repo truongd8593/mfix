@@ -24,8 +24,6 @@ MODULE DES_TIME_MARCH
 ! Total number of particles
       INTEGER, SAVE :: NP=0
 
-! time step loop counter index
-      INTEGER :: NN
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
 ! Temporary variables when des_continuum_coupled is T to track
@@ -146,9 +144,6 @@ MODULE DES_TIME_MARCH
 
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
-
-! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
-         DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
 
 ! Add/Remove particles to the system via flow BCs.
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM

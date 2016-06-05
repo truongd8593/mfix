@@ -127,6 +127,7 @@ pymfix_src = \
 	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
 	$(top_srcdir)/../model/fldvar_mod.f \
 	$(top_srcdir)/../model/des/discretelement_mod.f \
+	$(top_srcdir)/../model/des/des_time_march.f \
 	$(top_srcdir)/../model/iterate.f \
 	$(top_srcdir)/../model/residual_mod.f \
 	$(top_srcdir)/../model/time_step.f \

@@ -1,7 +1,6 @@
 ! -*- f90 -*-
       MODULE STEP
 
-      USE EXIT, ONLY: MFIX_EXIT
       USE MAIN, ONLY: NIT_TOTAL, DNCHECK, EXIT_SIGNAL, NCHECK
       USE RUN, ONLY: IER
 
@@ -17,21 +16,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE TIME_STEP_INIT
 
-      !f2py threadsafe
-      USE check, only: check_mass_balance
       USE compar, only: mype
-      USE dashboard, only: run_status, write_dashboard
       USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
-      USE output, only: res_dt
       USE output_man, only: output_manager
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
+      USE run, only: auto_restart, automatic_restart, call_usr, chk_batchq_end
       USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
-      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       USE toleranc, only: max_inlet_vel
       USE utilities, only: max_vel_inlet
 
@@ -114,63 +108,18 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE TIME_STEP_END
 
-      USE check, only: check_mass_balance
-      USE compar, only: mype
-      USE dashboard, only: run_status, write_dashboard
-      USE des_time_march, only: nn, factor, des_time_init, des_time_step, des_time_end
       USE discretelement, only: DISCRETE_ELEMENT
-      USE error_manager, only: err_msg
-      USE error_manager, only: flush_err_msg
       USE iterate, only: nit
       USE leqsol, only: solver_statistics, report_solver_stats
-      USE output, only: res_dt
+      USE output, only: DLB
       USE output_man, only: output_manager
-      USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev, steady_state
-      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      use discretelement, only: DES_EXPLICITLY_COUPLED
-      use output, only: DLB
+      USE run, only: chk_batchq_end, call_dqmom, pic_solids
+      USE run, only: cn_on, dt, dt_prev
+      USE run, only: nstep, nsteprst, odt, run_type, time, tstop, use_dt_prev, steady_state
       IMPLICIT NONE
 
-      IF(DT < DT_MIN) THEN
-
-         WRITE(ERR_MSG,1100)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-1100 FORMAT('DT < DT_MIN.  Recovery not possible!')
-
-         IF(WRITE_DASHBOARD) THEN
-            RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
-            CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
-         ENDIF
-         CALL MFIX_EXIT(MyPE)
-      ENDIF
-
-! Stiff Chemistry Solver.
-      IF(STIFF_CHEMISTRY) THEN
-         IF(DES_EXPLICITLY_COUPLED) CALL RXNS_GS_GAS1
-         CALL STIFF_CHEM_SOLVER(DT, IER)
-      ENDIF
-
-
-! Check over mass and elemental balances.  This routine is not active by default.
-! Edit the routine and specify a reporting interval to activate it.
-      CALL CHECK_MASS_BALANCE (1)
-
 ! Other solids model implementations
-      IF (DEM_SOLIDS) THEN
-         ! Main DEM time loop
-         !----------------------------------------------------------------->>>
-         CALL DES_TIME_INIT
-         DO NN = 1, FACTOR
-            CALL DES_TIME_STEP
-         ENDDO ! end do NN = 1, FACTOR
-         CALL DES_TIME_END
-         ! END DEM time loop
-         !-----------------------------------------------------------------<<<
-      ENDIF
       IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
       IF (QMOMK) CALL QMOMK_TIME_MARCH
       IF (CALL_DQMOM) CALL USR_DQMOM
@@ -209,4 +158,60 @@
 
       END SUBROUTINE TIME_STEP_END
 
+      !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      !                                                                      !
+      !  Subroutine: CHECK_LOW_DT                                            !
+      !  Author: Mark Meredith                              Date: 04-JUN-16  !
+      !                                                                      !
+      !  Purpose: Exit if DT < DT_MIN                                        !
+      !                                                                      !
+      !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE CHECK_LOW_DT
+         USE COMPAR, ONLY: MYPE
+         USE DASHBOARD, ONLY: RUN_STATUS, WRITE_DASHBOARD
+         USE ERROR_MANAGER, ONLY: ERR_MSG, FLUSH_ERR_MSG
+         USE EXIT, ONLY: MFIX_EXIT
+         USE ITERATE, ONLY: NIT
+         USE RUN, ONLY: DT, DT_MIN
+         IMPLICIT NONE
+         IF(DT < DT_MIN) THEN
+
+            WRITE(ERR_MSG,1100)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+1100        FORMAT('DT < DT_MIN.  Recovery not possible!')
+
+            IF(WRITE_DASHBOARD) THEN
+               RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
+               CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
+            ENDIF
+            CALL MFIX_EXIT(MyPE)
+         ENDIF
+      END SUBROUTINE CHECK_LOW_DT
+
+      !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      !                                                                      !
+      !  Subroutine: CHEM_MASS                                               !
+      !  Author: Mark Meredith                              Date: 04-JUN-16  !
+      !                                                                      !
+      !  Purpose: Stiff chemistry and check mass balance                     !
+      !                                                                      !
+      !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE CHEM_MASS
+         USE CHECK, ONLY: CHECK_MASS_BALANCE
+         USE DISCRETELEMENT, ONLY: DES_EXPLICITLY_COUPLED
+         USE RUN, ONLY: DT
+         USE STIFF_CHEM, ONLY: STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
+         IMPLICIT NONE
+! Stiff Chemistry Solver.
+         IF(STIFF_CHEMISTRY) THEN
+            IF(DES_EXPLICITLY_COUPLED) CALL RXNS_GS_GAS1
+            CALL STIFF_CHEM_SOLVER(DT, IER)
+         ENDIF
+
+! Check over mass and elemental balances.  This routine is not active by default.
+! Edit the routine and specify a reporting interval to activate it.
+         CALL CHECK_MASS_BALANCE (1)
+      END SUBROUTINE CHEM_MASS
       END MODULE STEP
