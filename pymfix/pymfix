@@ -130,6 +130,7 @@ class Mfix:
 
             step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
 
+        STEP.check_low_dt()
         STEP.chem_mass()
 
         if RUN.dem_solids:
