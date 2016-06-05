@@ -107,6 +107,7 @@ MODULE DES_TIME_MARCH
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_STEP
+         use compar, only: ADJUST_PARTITION
 
 ! Modules
 !---------------------------------------------------------------------//
