@@ -40,7 +40,7 @@ class Job(object):
                 log.debug("status is %s", self.status)
                 # FIXME: print JSON for now, plot it later
                 import pprint
-                status_str = pprint.PrettyPrinter(indent=4, width=40).pformat(self.status)
+                status_str = pprint.PrettyPrinter(indent=4, width=50).pformat(self.status)
                 self.parent.ui.residuals.setText(status_str)
             except ValueError:
                 self.status.clear()

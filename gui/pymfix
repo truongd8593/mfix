@@ -107,6 +107,9 @@ class Mfix(object):
         cls.time_step_init_walltime = 'unknown'
         cls.time_step_end_walltime = 'unknown'
         cls.do_iteration_walltime = 'unknown'
+        cls.des_time_init_walltime = 'unknown'
+        cls.des_time_steps_walltime = 'unknown'
+        cls.des_time_end_walltime = 'unknown'
         cls.update_status()
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
@@ -120,11 +123,10 @@ class Mfix(object):
                 cls.check_requests()
                 if cls.mfix_paused or RUN.tstop <= RUN.time + 0.1*RUN.dt:
                     time.sleep(0.1)
-                    cls.update_status()
                 else:
                     iteration_start = timer()
                     cls.do_step()
-                    cls.walltime += (timer() - iteration_start)
+                    cls.walltime += float(timer() - iteration_start)
                     if RUN.tstop <= RUN.time + 0.1*RUN.dt:
                         cls.walltime_remaining = str(0.)
                     elif RUN.time > cls.t0:
@@ -140,7 +142,7 @@ class Mfix(object):
         "Run one timestep"
         start = timer()
         STEP.time_step_init()
-        cls.time_step_init_walltime = (timer() - start)
+        cls.time_step_init_walltime = float(timer() - start)
 
         step_incomplete = True
         while step_incomplete:
@@ -149,28 +151,33 @@ class Mfix(object):
                 ITERATE.nit = ITERATE.nit + 1
                 start = timer()
                 ITERATE.do_iteration()
-                cls.do_iteration_walltime = (timer() - start)
+                cls.do_iteration_walltime = float(timer() - start)
                 cls.check_requests()
-                cls.update_status()
 
             ITERATE.post_iterate()
 
             step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
 
-        start = timer()
         STEP.check_low_dt()
         STEP.chem_mass()
 
         if RUN.dem_solids:
+            start = timer()
             DES_TIME_MARCH.des_time_init()
+            cls.des_time_init_walltime = float(timer() - start)
+            start = timer()
             for ii in range(DES_TIME_MARCH.factor):
                 DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
                 DES_TIME_MARCH.des_time_step()
                 cls.check_requests()
+            cls.des_time_steps_walltime = float(timer() - start)
+            start = timer()
             DES_TIME_MARCH.des_time_end()
+            cls.des_time_end_walltime = float(timer() - start)
 
+        start = timer()
         STEP.time_step_end()
-        cls.time_step_end_walltime = (timer() - start)
+        cls.time_step_end_walltime = float(timer() - start)
 
 
     @classmethod
@@ -182,11 +189,14 @@ class Mfix(object):
         output['time'] = float(RUN.time)
         output['tstop'] = float(RUN.tstop)
         output['dt'] = float(RUN.dt)
-        output['elapsed_walltime'] = cls.walltime
-        output['remaining_walltime'] = cls.walltime_remaining
-        output['time_step_init_walltime'] = cls.time_step_init_walltime
-        output['time_step_end_walltime'] = cls.time_step_end_walltime
-        output['do_iteration_walltime'] = cls.do_iteration_walltime
+        output['walltime_elapsed'] = cls.walltime
+        output['walltime_remaining'] = cls.walltime_remaining
+        output['profiling'] = (('time_step_init', cls.time_step_init_walltime),
+                               ('do_iteration', int(ITERATE.nit), cls.do_iteration_walltime),
+                               ('time_step_end', cls.time_step_end_walltime),
+                               ('des_time_init', cls.des_time_init_walltime),
+                               ('des_time_steps', int(DES_TIME_MARCH.factor), cls.des_time_steps_walltime),
+                               ('des_time_end', cls.des_time_end_walltime))
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
@@ -228,6 +238,7 @@ class Mfix(object):
                 cls.responses[req_id] = getattr(cls, cmd)(args)
             else:
                 cls.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
+        cls.update_status()
 
     @classmethod
     def unpause(cls, _):
