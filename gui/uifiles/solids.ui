@@ -280,6 +280,12 @@ QPushButton:checked {
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
@@ -288,8 +294,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>499</width>
-            <height>732</height>
+            <width>503</width>
+            <height>736</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -406,7 +412,7 @@ QPushButton:checked {
             </widget>
            </item>
            <item row="7" column="0" colspan="3">
-            <widget class="QFrame" name="frame_23">
+            <widget class="QFrame" name="frame_solids_properties">
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
              </property>
@@ -440,6 +446,12 @@ QPushButton:checked {
               </item>
               <item row="1" column="1">
                <widget class="ComboBox" name="combobox_solids_density_model">
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
+                </property>
+                <property name="minimumContentsLength">
+                 <number>1</number>
+                </property>
                 <item>
                  <property name="text">
                   <string>Constant</string>
@@ -472,6 +484,12 @@ QPushButton:checked {
               <item row="2" column="1">
                <widget class="ComboBox" name="combobox_solids_viscosity_model">
                 <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
+                </property>
+                <property name="minimumContentsLength">
                  <number>1</number>
                 </property>
                 <item>
@@ -492,7 +510,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="2" column="2">
-               <widget class="QLineEdit" name="lineEdit_31">
+               <widget class="LineEdit" name="lineedit_keyword_mu_s0_args_S">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -514,6 +532,12 @@ QPushButton:checked {
               </item>
               <item row="3" column="1">
                <widget class="ComboBox" name="combobox_solids_mol_weight_model">
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
+                </property>
+                <property name="minimumContentsLength">
+                 <number>1</number>
+                </property>
                 <item>
                  <property name="text">
                   <string>Mixture</string>
@@ -522,7 +546,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="3" column="2">
-               <widget class="QLineEdit" name="lineEdit_32">
+               <widget class="QLineEdit" name="lineedit_mol_weight_disabled">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -544,6 +568,12 @@ QPushButton:checked {
               </item>
               <item row="4" column="1">
                <widget class="ComboBox" name="combobox_solids_specific_heat_model">
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
+                </property>
+                <property name="minimumContentsLength">
+                 <number>1</number>
+                </property>
                 <item>
                  <property name="text">
                   <string>Constant</string>
@@ -562,7 +592,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="4" column="2">
-               <widget class="QLineEdit" name="lineEdit_33"/>
+               <widget class="LineEdit" name="lineedit_keyword_c_ps0_args_S"/>
               </item>
               <item row="4" column="3">
                <widget class="QLabel" name="label_49">
@@ -581,6 +611,12 @@ QPushButton:checked {
               <item row="5" column="1">
                <widget class="ComboBox" name="combobox_solids_conductivity_model">
                 <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
+                </property>
+                <property name="minimumContentsLength">
                  <number>1</number>
                 </property>
                 <item>
@@ -601,7 +637,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="5" column="2">
-               <widget class="QLineEdit" name="lineEdit_34">
+               <widget class="LineEdit" name="lineedit_keyword_k_s0_args_S">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -621,7 +657,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="6" column="2">
+              <item row="6" column="1" colspan="2">
                <widget class="LineEdit" name="lineedit_keyword_des_em_args_S"/>
               </item>
              </layout>
@@ -635,19 +671,19 @@ QPushButton:checked {
              <zorder>label_42</zorder>
              <zorder>label_43</zorder>
              <zorder>combobox_solids_viscosity_model</zorder>
-             <zorder>lineEdit_31</zorder>
+             <zorder>lineedit_keyword_mu_s0_args_S</zorder>
              <zorder>label_44</zorder>
              <zorder>label_45</zorder>
              <zorder>combobox_solids_mol_weight_model</zorder>
-             <zorder>lineEdit_32</zorder>
+             <zorder>lineedit_mol_weight_disabled</zorder>
              <zorder>label_46</zorder>
              <zorder>label_47</zorder>
              <zorder>combobox_solids_specific_heat_model</zorder>
-             <zorder>lineEdit_33</zorder>
+             <zorder>lineedit_keyword_c_ps0_args_S</zorder>
              <zorder>label_49</zorder>
              <zorder>label_48</zorder>
              <zorder>combobox_solids_conductivity_model</zorder>
-             <zorder>lineEdit_34</zorder>
+             <zorder>lineedit_keyword_k_s0_args_S</zorder>
              <zorder>label_50</zorder>
              <zorder>label_204</zorder>
             </widget>
@@ -692,7 +728,7 @@ QPushButton:checked {
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QToolButton" name="toolbutton_tfm_solids_species_add">
+                  <widget class="QToolButton" name="toolbutton_solids_species_add">
                    <property name="text">
                     <string>Add</string>
                    </property>
@@ -702,7 +738,7 @@ QPushButton:checked {
                   </widget>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="toolbutton_tfm_solids_species_delete">
+                  <widget class="QToolButton" name="toolbutton_solids_species_delete">
                    <property name="text">
                     <string>Delete</string>
                    </property>
@@ -712,7 +748,7 @@ QPushButton:checked {
                   </widget>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="toolbutton_tfm_solids_species_copy">
+                  <widget class="QToolButton" name="toolbutton_solids_species_copy">
                    <property name="text">
                     <string>Copy</string>
                    </property>
@@ -738,7 +774,7 @@ QPushButton:checked {
                </widget>
               </item>
               <item>
-               <widget class="QTableWidget" name="tableWidget_8">
+               <widget class="QTableWidget" name="tablewidget_solids_species">
                 <property name="frameShadow">
                  <enum>QFrame::Plain</enum>
                 </property>
@@ -1703,7 +1739,7 @@ background-color:transparent;
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="parcel">
+     <widget class="QWidget" name="particle">
       <layout class="QGridLayout" name="gridLayout_4">
        <property name="margin">
         <number>0</number>

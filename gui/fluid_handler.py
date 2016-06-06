@@ -3,6 +3,10 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from copy import deepcopy
+from collections import OrderedDict
+
+import logging
+log = logging.getLogger(__name__)
 
 #import Qt
 from qtpy import QtWidgets, PYQT5
@@ -37,27 +41,29 @@ class FluidHandler(object):
             lineedit.setEnabled(False)
 
     def enable_fluid_scalar_eq(self, state):
-        spinbox = self.ui.fluid.spinbox_fluid_nscalar_eq
+        spinbox = self.ui.fluid.spinbox_nscalar_eq
         spinbox.setEnabled(state)
         if state:
             val = spinbox.value()
             self.set_fluid_nscalar_eq(val)
         else:
             # Don't call set_fluid_nscalar_eq(0) b/c that will clobber spinbox
-            prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+            prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
             self.fluid_nscalar_eq = 0
             self.update_scalar_equations(prev_nscalar)
 
     def set_fluid_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
-        prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
         self.fluid_nscalar_eq = value
-        spinbox = self.ui.fluid.spinbox_fluid_nscalar_eq
+        spinbox = self.ui.fluid.spinbox_nscalar_eq
         if value != spinbox.value():
             spinbox.setValue(value)
         self.update_scalar_equations(prev_nscalar)
 
     def init_fluid_handler(self):
+        self.fluid_species = OrderedDict()
+
         ui = self.ui
         ui.fluid.lineedit_fluid_phase_name.default_value = "Fluid"
         self.saved_fluid_species = None
@@ -71,15 +77,19 @@ class FluidHandler(object):
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
+                # Make tooltip match setting (for longer names which are cutoff)
+                combobox.setToolTop(combobox.currentText())
 
                 # Enable lineedit for constant model
                 key_g0 = 'c_pg0' if key=='c_p' else key + '_g0'
                 key_usr = 'usr_cpg' if key=='c_p' else 'usr_' + key + 'g'
                 lineedit = getattr(self.ui.fluid,
                                    'lineedit_keyword_%s' % key_g0)
+
                 lineedit.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
+                    print("LE=", lineedit, type(lineedit), lineedit.objectName())
                     value = lineedit.value # Possibly re-enabled gui item
                     if self.project.get_value(key_g0) != value:
                         self.set_keyword(key_g0, value) # Restore keyword value
@@ -117,13 +127,12 @@ class FluidHandler(object):
 
         ui.fluid.lineedit_fluid_phase_name.editingFinished.connect(
             self.handle_fluid_phase_name)
-        ui.fluid.checkbox_enable_fluid_scalar_eq.clicked.connect(
+        ui.fluid.checkbox_enable_scalar_eq.clicked.connect(
             self.enable_fluid_scalar_eq)
-        ui.fluid.spinbox_fluid_nscalar_eq.valueChanged.connect(
+        ui.fluid.spinbox_nscalar_eq.valueChanged.connect(
             self.set_fluid_nscalar_eq)
 
         # Fluid phase models
-        # Density
         for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
                      'conductivity', 'diffusion'):
             combobox = getattr(ui.fluid, 'combobox_fluid_%s_model' % name)
@@ -246,6 +255,8 @@ class FluidHandler(object):
     def fluid_species_add(self):
         sp = self.species_popup
         sp.phases='GL' # ? is this correct
+        sp.default_phase = 'G'
+        sp.do_search('') # Init to full db
         # how to avoid this if dialog open already?
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
         sp.cancel.connect(self.fluid_species_revert)
@@ -280,6 +291,8 @@ class FluidHandler(object):
         table = self.ui.fluid.tablewidget_fluid_species
         row = get_selected_row(table)
         sp = self.species_popup
+        sp.phases = 'GL'
+        sp.default_phase = 'G' # FIXME, no control for this
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)

@@ -49,7 +49,7 @@ from widgets.species_popup import SpeciesPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 
 from fluid_handler import FluidHandler
-from solid_handler import SolidHandler
+from solids_handler import SolidsHandler
 
 from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
@@ -84,7 +84,7 @@ if PRECOMPILE_UI:
 # --- Main Gui ---
 
 
-class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
+class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     """Main window class handling all gui interactions"""
 
     settings = QSettings('MFIX', 'MFIX')
@@ -97,6 +97,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # load settings early so get_project_file returns the right thing.
         if project_file:
             self.set_project_file(project_file)
+
+        LineEdit.print_internal = self.print_internal
 
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(get_icon('mfix.png'))
@@ -187,6 +189,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
 
+
+        # Extra knowledge
+        print(self.keyword_doc['des_em'])
+        self.keyword_doc['des_em']['validrange']['min']=0.0
+        self.keyword_doc['des_em']['validrange']['max']=1.0
+
         if False:
             keys = self.keyword_doc.keys()
             keys.sort()
@@ -197,15 +205,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
 
-        self.init_fluid_handler()
-        self.init_solids_handler()
-
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
         # ProjectManager is a subclass of Project.  Please
         # do not "fix" the code by renaming self.project to
         # self.project_manager
         self.project = ProjectManager(self, self.keyword_doc)
+
+        # Extra setup for fluid & solids panes.  Needs to happen
+        # after we create ProjectManager, because widgets get registered
+        self.init_fluid_handler()
+        self.init_solids_handler()
+
 
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -323,11 +334,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # --- default ---
         self.mode_changed('modeler')
         self.change_pane('general') #? start at the top?
-
-        # some data fields that are not in Project
-        self.fluid_species = OrderedDict()
-        self.solids = OrderedDict()
-        self.solids_current_phase = None
 
         # Update run options
         self.update_run_options()
@@ -740,9 +746,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         model_setup.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
-        ui.fluid.checkbox_enable_fluid_scalar_eq.setEnabled(enabled)
-        ui.fluid.spinbox_fluid_nscalar_eq.setEnabled(enabled
-                    and self.ui.fluid.checkbox_enable_fluid_scalar_eq.isChecked())
+        ui.fluid.checkbox_enable_scalar_eq.setEnabled(enabled)
+        ui.fluid.spinbox_nscalar_eq.setEnabled(enabled
+                    and self.ui.fluid.checkbox_enable_scalar_eq.isChecked())
+
+        # Equiv for solids is done in update_solids_detail_pane
+
 
         # Solids Model selection tied to Solver
         # FIXME XXX What to do about solids that are already defined?
@@ -841,24 +850,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
 
-        # connect solid tab btns
-        for i, btn in enumerate((s.pushbutton_solids_materials,
-                                 s.pushbutton_solids_tfm,
-                                 s.pushbutton_solids_dem,
-                                 s.pushbutton_solids_pic)):
-            btn.pressed.connect(
-                make_callback(self.solids_change_tab, i, btn))
-
-        self.solids_change_tab(0, s.pushbutton_solids_materials) # ?
-
         # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
         ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
         self.project.register_widget(ui.linear_eq_table,
-                                     ['discretize', 'leq_method', 'leq_tol',
-                                      'leq_it', 'leq_sweep', 'leq_pc',
-                                      'ur_fac'],
-                                     args='*')
+                             ['discretize', 'leq_method', 'leq_tol',
+                              'leq_it', 'leq_sweep', 'leq_pc',
+                              'ur_fac'],
+                             args='*')
 
 
     def __setup_simple_keyword_widgets(self):
@@ -909,15 +908,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                 if key in self.keyword_doc:
                     doc = self.keyword_doc[key]
                     widget.setdtype(doc['dtype'])
-                    req = doc.get('required')
-                    if req is not None:
-                        widget.setValInfo(req)
-                    vr = doc.get('validrange')
-                    if vr is not None:
-                        if 'max' in vr:
-                            widget.setValInfo(_max=vr['max'])
-                        if 'min' in doc['validrange']:
-                            widget.setValInfo(_min=vr['min'])
+                    vr = doc.get('validrange', {})
+                    widget.setValInfo(min=vr.get("min"), max=vr.get("max"),
+                                      required=doc.get("required"))
 
                     default = doc.get('initpython') # "Initial Python Value"
                     if default is not None:

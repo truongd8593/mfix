@@ -2,16 +2,19 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+from copy import deepcopy
 from collections import OrderedDict
+import logging
+log = logging.getLogger(__name__)
 
 #import Qt
 from qtpy import QtCore, QtWidgets, PYQT5
 
 #local imports
 from constants import *
-from tools.general import set_item_noedit, get_selected_row, widget_iter
+from tools.general import set_item_noedit, get_selected_row, widget_iter, make_callback
 
-class SolidHandler(object):
+class SolidsHandler(object):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -21,6 +24,12 @@ class SolidHandler(object):
         self.solids_conductivity_model = OTHER
 
     def init_solids_handler(self):
+
+        self.solids = OrderedDict()
+        self.solids_current_phase = None
+        self.solids_species = OrderedDict()
+
+
         ui = self.ui
 
         s = ui.solids
@@ -38,14 +47,13 @@ class SolidHandler(object):
                 self.update_solids_table()
 
         self.project.register_widget(TableWidgetProxy(),
-                                     ['solids_model', 'd_p0', 'ro_s0'], args='*')
+                             ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
         cb = s.combobox_solids_model
         cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
         s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
-
 
 
         self.saved_solids_species = None
@@ -63,8 +71,13 @@ class SolidHandler(object):
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
+                # Make tooltip match setting (for longer names which are cutoff)
+                combobox.setToolTop(combobox.currentText())
+
                 phase = self.solids_current_phase
                 if phase is None:
+                    import traceback
+                    traceback.print_stack()
                     log.error("phase==None")
                     return
 
@@ -72,19 +85,19 @@ class SolidHandler(object):
                 key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
                 key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
                 lineedit = getattr(self.ui.solids,
-                                   'lineedit_keyword_%s' % key_s0)
+                                   'lineedit_keyword_%s_args_S' % key_s0)
                 lineedit.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
                     value = lineedit.value # Possibly re-enabled gui item
-                    if self.project.get_value(key_s0, index=phase) != value:
-                        self.set_keyword(key_s0, value, index=phase) # Restore keyword value
+                    if self.project.get_value(key_s0, args=phase) != value:
+                        self.set_keyword(key_s0, value, args=phase) # Restore keyword value
                 elif model == UDF:
-                    self.unset_keyword(key_s0, index=phase)
-                    self.set_keyword(key_usr, True, index=phase)
+                    self.unset_keyword(key_s0, args=phase)
+                    self.set_keyword(key_usr, True, args=phase)
                 else: # Continuum, mixture, etc
-                    self.unset_keyword(key_s0, index=phase)
-                    self.unset_keyword(key_usr, index=phase)
+                    self.unset_keyword(key_s0, args=phase)
+                    self.unset_keyword(key_usr, args=phase)
             return setter
 
 
@@ -108,15 +121,15 @@ class SolidHandler(object):
 
         ui.solids.lineedit_solids_phase_name.editingFinished.connect(
             self.handle_solids_phase_name)
-        ui.solids.checkbox_enable_solids_scalar_eq.clicked.connect(
+        ui.solids.checkbox_enable_scalar_eq.clicked.connect(
             self.enable_solids_scalar_eq)
-        ui.solids.spinbox_solids_nscalar_eq.valueChanged.connect(
+        ui.solids.spinbox_nscalar_eq.valueChanged.connect(
             self.set_solids_nscalar_eq)
 
         # Solids phase models
-        # Density
-        for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
-                     'conductivity', 'diffusion'):
+        for name in ('density', 'viscosity', 'specific_heat', 'conductivity',
+                         #'mol_weight' - locked
+        ):
             combobox = getattr(ui.solids, 'combobox_solids_%s_model' % name)
             setter = getattr(self,'set_solids_%s_model' % name)
             combobox.currentIndexChanged.connect(setter)
@@ -133,6 +146,16 @@ class SolidHandler(object):
         tb.clicked.connect(self.solids_species_delete)
         tw = s.tablewidget_solids_species
         tw.itemSelectionChanged.connect(self.handle_solids_species_selection)
+
+
+        # connect solid tab buttons
+        for i, btn in enumerate((s.pushbutton_solids_materials,
+                                 s.pushbutton_solids_tfm,
+                                 s.pushbutton_solids_dem,
+                                 s.pushbutton_solids_pic)):
+            btn.pressed.connect(
+                make_callback(self.solids_change_tab, i, btn))
+
 
 
     def handle_solids_species_eq(self):
@@ -484,7 +507,9 @@ class SolidHandler(object):
 
     def solids_species_add(self):
         sp = self.species_popup
-        sp.phases='S' # ? is this correct
+        sp.phases='SC' # ? is this correct
+        sp.default_phase = 'S' # FIXME no control
+        sp.do_search('')
         # how to avoid this if dialog open already?
         self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
         sp.cancel.connect(self.solids_species_revert)
@@ -519,6 +544,9 @@ class SolidHandler(object):
         table = self.ui.solids.tablewidget_solids_species
         row = get_selected_row(table)
         sp = self.species_popup
+        sp.phases='SC' # ? is this correct
+        sp.default_phase = 'S' # FIXME no control
+        #sp.search('')
         self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
