@@ -78,7 +78,7 @@ class FluidHandler(object):
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
                 # Make tooltip match setting (for longer names which are cutoff)
-                combobox.setToolTop(combobox.currentText())
+                combobox.setToolTip(combobox.currentText())
 
                 # Enable lineedit for constant model
                 key_g0 = 'c_pg0' if key=='c_p' else key + '_g0'
@@ -89,7 +89,6 @@ class FluidHandler(object):
                 lineedit.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
-                    print("LE=", lineedit, type(lineedit), lineedit.objectName())
                     value = lineedit.value # Possibly re-enabled gui item
                     if self.project.get_value(key_g0) != value:
                         self.set_keyword(key_g0, value) # Restore keyword value

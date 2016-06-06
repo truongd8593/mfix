@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>513</width>
-    <height>1001</height>
+    <width>756</width>
+    <height>1059</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -284,7 +284,10 @@ QPushButton:checked {
           <bool>false</bool>
          </property>
          <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
          </property>
          <property name="widgetResizable">
           <bool>true</bool>
@@ -294,8 +297,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>503</width>
-            <height>736</height>
+            <width>742</width>
+            <height>790</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
@@ -314,24 +317,21 @@ QPushButton:checked {
               <property name="spacing">
                <number>5</number>
               </property>
-              <item row="1" column="2">
-               <widget class="LineEdit" name="lineedit_solids_phase_name"/>
-              </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="label_38">
-                <property name="text">
-                 <string>Name</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
                <widget class="QLabel" name="label_203">
                 <property name="text">
                  <string>Model</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_38">
+                <property name="text">
+                 <string>Name</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
                <widget class="ComboBox" name="combobox_solids_model">
                 <item>
                  <property name="text">
@@ -349,6 +349,9 @@ QPushButton:checked {
                  </property>
                 </item>
                </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="LineEdit" name="lineedit_solids_phase_name"/>
               </item>
              </layout>
             </widget>
@@ -562,7 +565,7 @@ QPushButton:checked {
               <item row="4" column="0">
                <widget class="QLabel" name="label_47">
                 <property name="text">
-                 <string>Specific Heat</string>
+                 <string>Spec. heat</string>
                 </property>
                </widget>
               </item>
@@ -604,7 +607,7 @@ QPushButton:checked {
               <item row="5" column="0">
                <widget class="QLabel" name="label_48">
                 <property name="text">
-                 <string>Conductivity</string>
+                 <string>Therm. cond.</string>
                 </property>
                </widget>
               </item>

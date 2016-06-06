@@ -72,12 +72,12 @@ class SolidsHandler(object):
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
                 # Make tooltip match setting (for longer names which are cutoff)
-                combobox.setToolTop(combobox.currentText())
+                combobox.setToolTip(combobox.currentText())
 
                 phase = self.solids_current_phase
                 if phase is None:
-                    import traceback
-                    traceback.print_stack()
+                    #import traceback
+                    #traceback.print_stack()
                     log.error("phase==None")
                     return
 

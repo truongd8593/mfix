@@ -31,7 +31,7 @@
         <item>
          <widget class="QLabel" name="label_27">
           <property name="text">
-           <string>Phase Name</string>
+           <string>Name</string>
           </property>
          </widget>
         </item>
@@ -433,7 +433,7 @@
    <item row="3" column="0">
     <widget class="QGroupBox" name="groupbox_fluid_phase_species">
      <property name="title">
-      <string>Fluid Species</string>
+      <string>Species</string>
      </property>
      <property name="flat">
       <bool>true</bool>
