@@ -19,7 +19,7 @@ re_keyValue = re.compile(r"""
 
 re_float_exp = re.compile(r"""
     ^                                # Beginning of expr
-    [+-]?                            # possible sign
+    [-+]?                            # possible sign
     \d+                              # digits
     (\.\d*)?                         # optional decimal point and more digits
     [ED]                             # E or D
@@ -29,10 +29,12 @@ re_float_exp = re.compile(r"""
 
 re_float = re.compile(r"""
     ^                            # beginning of expr
-    [+-]?                        # possible sign
+    [-+]?                        # possible sign
+    (?:                          # non-capturing group
     (\.\d+)                      # no leading digits before decimal point
     |                            # or,
     (\d+\.\d*)                   # leading digits, decimal point,  possibly trailing digits
+    )                            # end group
     $                            # end
     """, re.VERBOSE|re.IGNORECASE)
 
