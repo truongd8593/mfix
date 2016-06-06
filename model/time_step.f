@@ -15,6 +15,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE TIME_STEP_INIT
+!f2py threadsafe
 
       USE compar, only: mype
       USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
@@ -107,6 +108,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE TIME_STEP_END
+!f2py threadsafe
 
       USE discretelement, only: DISCRETE_ELEMENT
       USE iterate, only: nit
@@ -168,6 +170,7 @@
       !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CHECK_LOW_DT
+!f2py threadsafe
          USE COMPAR, ONLY: MYPE
          USE DASHBOARD, ONLY: RUN_STATUS, WRITE_DASHBOARD
          USE ERROR_MANAGER, ONLY: ERR_MSG, FLUSH_ERR_MSG
@@ -199,6 +202,7 @@
       !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CHEM_MASS
+!f2py threadsafe
          USE CHECK, ONLY: CHECK_MASS_BALANCE
          USE DISCRETELEMENT, ONLY: DES_EXPLICITLY_COUPLED
          USE RUN, ONLY: DT

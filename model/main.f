@@ -40,6 +40,7 @@
       CONTAINS
 
       SUBROUTINE INITIALIZE
+!f2py threadsafe
 
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier
@@ -144,6 +145,7 @@
 
 
       SUBROUTINE INITIALIZE_2
+!f2py threadsafe
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
@@ -474,6 +476,7 @@
       END SUBROUTINE INITIALIZE_2
 
       SUBROUTINE CHECK_DATA
+!f2py threadsafe
          USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
          USE constant, only: set_constants
          USE cut_cell_preproc, only: cut_cell_preprocessing
@@ -618,6 +621,7 @@
       END SUBROUTINE CHECK_DATA
 
       SUBROUTINE FINALIZE
+!f2py threadsafe
 
       USE cutcell, only: cartesian_grid
       USE dashboard

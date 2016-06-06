@@ -45,6 +45,7 @@ MODULE DES_TIME_MARCH
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_INIT
+!f2py threadsafe
          IMPLICIT NONE
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
@@ -107,6 +108,7 @@ MODULE DES_TIME_MARCH
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_STEP
+!f2py threadsafe
          use compar, only: ADJUST_PARTITION
 
 ! Modules
@@ -200,6 +202,7 @@ MODULE DES_TIME_MARCH
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_END
+!f2py threadsafe
          IMPLICIT NONE
 
       IF(CALL_USR) CALL USR3_DES
