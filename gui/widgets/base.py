@@ -32,9 +32,6 @@ from regexes import *
 
 from tools.general import to_text_string
 
-# comment - the mixture of 'update' and 'change' terminology
-# makes this code a bit confusing
-
 class BaseWidget(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
 
@@ -43,6 +40,9 @@ class BaseWidget(QtCore.QObject):
         self.default_value = None
         self.saved_value = None
         self.args = None
+        self.min = None
+        self.max = None
+        self.required = None
 
     def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
@@ -58,10 +58,13 @@ class BaseWidget(QtCore.QObject):
         else:
             self.dtype = str
 
-    def setValInfo(self, _max=None, _min=None, req=False):
-        self._max = _max
-        self._min = _min
-        self.required = req
+    def setValInfo(self, max=None, min=None, required=None):
+        if max is not None:
+            self.max = max
+        if min is not None:
+            self.min = min
+        if required is not None:
+            self.required = required
 
     def default(self, val=None):
         if val is not None:
@@ -75,6 +78,7 @@ class BaseWidget(QtCore.QObject):
 class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
+
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
         BaseWidget.__init__(self)
@@ -82,6 +86,10 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
         self.text_changed_flag = False
+
+    @classmethod
+    def print_internal(self, text):
+        print(text)
 
     def mark_changed(self):
         self.text_changed_flag = True
@@ -98,6 +106,13 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             if value is not None:
                 self.value_updated.emit(self, {self.key: value}, self.args)
 
+    def check_range(self, val):
+
+        if self.min is not None and val < self.min:
+            raise ValueError("%s < %s" % (val, self.min))
+        if self.max is not None and val > self.max:
+            raise ValueError("%s > %s" % (val, self.max))
+
     @property
     def value(self):
         text = self.text().strip()
@@ -109,16 +124,20 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             if re_float.match(text) or re_int.match(text):
                 try:
                     f = float(text)
+                    self.check_range(f)
                     self.saved_value = f
                     return f
-                except ValueError:
+                except ValueError as e:
+                    self.print_internal("Error: %s" %e)
                     return self.saved_value or ''
             elif re_float_exp.match(text):
                 try:
                     f = make_FloatExp(text)
+                    self.check_range(f)
                     self.saved_value = f
                     return f
-                except ValueError:
+                except ValueError as e:
+                    self.print_internal("Error: %s" %e)
                     return self.saved_value or ''
             elif re_math.search(text):
                 try:
@@ -126,9 +145,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                         text = text[2:-1]
                     eq = Equation(text)
                     f = float(eq)
+                    self.check_range(f)
                     self.saved_value = eq
                     return eq
-                except ValueError:
+                except ValueError as e:
+                    self.print_internal("Error: value %s" %e)
                     return self.saved_value or ''
             else:
                 return self.saved_value or ''
@@ -136,9 +157,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         elif self.dtype is int:
             try:
                 i = int(float(text))
+                self.check_range(i)
                 self.saved_value = i
                 return i
-            except ValueError:
+            except ValueError as e:
+                self.print_internal("Error: value %s" %e)
                 return self.saved_value or ''
 
         else:
@@ -154,11 +177,12 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             self.saved_value = new_value
 
         sval = to_text_string(new_value).strip()
+
+        # Don't show @( ) for equations.  (Is this a good idea?)
         while sval.startswith("@(") and sval.endswith(")"):
             sval = sval[2:-1]
 
         self.setText(sval)
-
 
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
@@ -251,11 +275,12 @@ class SpinBox(QtWidgets.QSpinBox, BaseWidget):
         assert not isinstance(new_value, Keyword)
         self.setValue(int(new_value))
 
-    def setValInfo(self, _max=None, _min=None, req=False):
-        if _max:
-            self.setMaximum(int(_max))
-        if _min:
-            self.setMinimum(int(_min))
+    def setValInfo(self, max=None, min=None, required=None):
+        BaseWidget.setValInfo(self, max, min, required)
+        if max:
+            self.setMaximum(int(max))
+        if min:
+            self.setMinimum(int(min))
 
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
@@ -283,11 +308,12 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         assert not isinstance(new_value, Keyword)
         self.setValue(float(new_value))
 
-    def setValInfo(self, _max=None, _min=None, req=False):
-        if _max:
-            self.setMaximum(float(_max))
-        if _min:
-            self.setMinimum(float(_min))
+    def setValInfo(self, max=None, min=None, required=None):
+        BaseWidget.setValInfo(self, max, min, required)
+        if max:
+            self.setMaximum(float(max))
+        if min:
+            self.setMinimum(float(min))
 
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
@@ -357,7 +383,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.horizontalHeader().hide()
         if rows is None:
             self.verticalHeader().hide()
-            
+
         # build context menu
         self.menu = QtWidgets.QMenu(self)
         applyAction = QtWidgets.QAction('Apply to Column', self)
@@ -603,18 +629,11 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
             if 'dtype' in widgetData:
                 editor.setdtype(widgetData['dtype'])
 
-            if 'max' in widgetData:
-                _max = widgetData['max']
-            else:
-                _max = None
-
-            if 'min' in widgetData:
-                _min = widgetData['min']
-            else:
-                _min = None
+            max = widgetData.get('max')
+            min = widgetData.get('min')
 
             if hasattr(editor, 'setRange'):
-                editor.setRange(_min, _max)
+                editor.setRange(min, max)
 
         return editor
 
@@ -863,7 +882,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return 0
 
     def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
-        if index is not None:        
+        if index is not None:
             row = index.row()
             col = index.column()
 
