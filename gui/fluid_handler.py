@@ -58,10 +58,11 @@ class FluidHandler(object):
         self.update_scalar_equations(prev_nscalar)
 
     def init_fluid_handler(self):
-        self.ui.fluid.lineedit_fluid_phase_name.default_value = "Fluid"
+        ui = self.ui
+        ui.fluid.lineedit_fluid_phase_name.default_value = "Fluid"
         self.saved_fluid_species = None
         self.init_fluid_default_models()
-        # note, the set_fluid_*_model methods have a lot of repeated code
+        # Handle a number of cases which are essentially the same
         # see 'set_fluid_mol_weight_model' below to help understand this
         def make_fluid_model_setter(self, name, key):
             def setter(model):
@@ -110,6 +111,39 @@ class FluidHandler(object):
         combobox = self.ui.fluid.combobox_fluid_mol_weight_model
         combobox.default_value = self.fluid_mol_weight_model
 
+        # more stuff moved from gui.__init__
+        checkbox = ui.fluid.checkbox_keyword_species_eq_args_0
+        checkbox.clicked.connect(self.enable_fluid_species_eq)
+
+        ui.fluid.lineedit_fluid_phase_name.editingFinished.connect(
+            self.handle_fluid_phase_name)
+        ui.fluid.checkbox_enable_fluid_scalar_eq.clicked.connect(
+            self.enable_fluid_scalar_eq)
+        ui.fluid.spinbox_fluid_nscalar_eq.valueChanged.connect(
+            self.set_fluid_nscalar_eq)
+
+        # Fluid phase models
+        # Density
+        for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
+                     'conductivity', 'diffusion'):
+            combobox = getattr(ui.fluid, 'combobox_fluid_%s_model' % name)
+            setter = getattr(self,'set_fluid_%s_model' % name)
+            combobox.currentIndexChanged.connect(setter)
+
+        # Fluid species
+        f = ui.fluid
+        tb = f.toolbutton_fluid_species_add
+        tb.clicked.connect(self.fluid_species_add)
+        tb = f.toolbutton_fluid_species_copy # misnomer
+        tb.clicked.connect(self.fluid_species_edit)
+        tb.setEnabled(False)
+        tb = f.toolbutton_fluid_species_delete
+        tb.setEnabled(False)
+        tb.clicked.connect(self.fluid_species_delete)
+        tw = f.tablewidget_fluid_species
+        tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
+
+
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
     def set_fluid_mol_weight_model(self, model):
@@ -129,6 +163,7 @@ class FluidHandler(object):
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
 
+
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
         value = self.ui.fluid.linedit_fluid_phase_name.text()
         self.set_fluid_phase_name(value)
@@ -138,16 +173,6 @@ class FluidHandler(object):
             self.ui.fluid.lineedit_fluid_phase_name.setText(value)
         self.project.mfix_gui_comments['fluid_phase_name'] = value
         self.set_unsaved_flag()
-
-    def disable_fluid_solver(self, disabled):
-        enabled = not disabled
-        item = self.find_navigation_tree_item("Fluid")
-        item.setDisabled(disabled)
-        ms = self.ui.model_setup
-        checkbox = ms.checkbox_enable_turbulence
-        checkbox.setEnabled(enabled)
-        ms.combobox_turbulence_model.setEnabled(enabled and
-                                                checkbox.isChecked())
 
 
     # --- fluid species methods ---

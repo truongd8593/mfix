@@ -13,16 +13,133 @@ from tools.general import set_item_noedit, get_selected_row, widget_iter
 
 class SolidHandler(object):
 
-    def init_solid_handler(self):
-        self.ui.solids.checkbox_keyword_species_eq_args_S.clicked.connect(
-            self.handle_solid_species_eq)
+    def init_solids_default_models(self):
+        self.solids_density_model = CONSTANT
+        self.solids_viscosity_model = OTHER
+        self.solids_mol_weight_model = MIXTURE
+        self.solids_specific_heat_model = CONSTANT
+        self.solids_conductivity_model = OTHER
 
-    def handle_solid_species_eq(self):
+    def init_solids_handler(self):
+        ui = self.ui
+
+        s = ui.solids
+        tb = s.toolbutton_solids_add
+        tb.clicked.connect(self.solids_add)
+        tb = s.toolbutton_solids_delete
+        tb.clicked.connect(self.solids_delete)
+        tb.setEnabled(False)
+        tw = s.tablewidget_solids
+        # Hack - force summary table to update  on kw updates
+        class TableWidgetProxy:
+            def objectName(self):
+                return "proxy"
+            def updateValue(*args):
+                self.update_solids_table()
+
+        self.project.register_widget(TableWidgetProxy(),
+                                     ['solids_model', 'd_p0', 'ro_s0'], args='*')
+        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        cb = s.combobox_solids_model
+        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+        s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
+        s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
+        s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
+
+
+
+        self.saved_solids_species = None
+        self.init_solids_default_models()
+        self.ui.solids.checkbox_keyword_species_eq_args_S.clicked.connect(
+            self.handle_solids_species_eq)
+
+        # Handle a number of cases which are essentially the same
+        # avoid repetition in set_solids_*_model methods
+        def make_solids_model_setter(self, name, key):
+            def setter(model):
+                setattr(self, name, model) # self.solids_<name>_model = model
+                print("SETTER:", name, model)
+                combobox = getattr(self.ui.solids, 'combobox_' + name)
+                prev_model = combobox.currentIndex()
+                if model != prev_model:
+                    combobox.setCurrentIndex(model)
+                phase = self.solids_current_phase
+                if phase is None:
+                    log.error("phase==None")
+                    return
+
+                # Enable lineedit for constant model
+                key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
+                key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
+                lineedit = getattr(self.ui.solids,
+                                   'lineedit_keyword_%s' % key_s0)
+                lineedit.setEnabled(model==CONSTANT)
+
+                if model == CONSTANT:
+                    value = lineedit.value # Possibly re-enabled gui item
+                    if self.project.get_value(key_s0, index=phase) != value:
+                        self.set_keyword(key_s0, value, index=phase) # Restore keyword value
+                elif model == UDF:
+                    self.unset_keyword(key_s0, index=phase)
+                    self.set_keyword(key_usr, True, index=phase)
+                else: # Continuum, mixture, etc
+                    self.unset_keyword(key_s0, index=phase)
+                    self.unset_keyword(key_usr, index=phase)
+            return setter
+
+
+        for (name, key) in (
+                ('density', 'ro'),
+                ('viscosity', 'mu'),
+                ('specific_heat', 'c_p'),
+                ('conductivity', 'k')):
+
+            model_name = 'solids_%s_model' % name
+            setattr(self, 'set_'+model_name, make_solids_model_setter(self, model_name, key))
+
+            # Set the combobox default value
+            combobox = getattr(self.ui.solids, 'combobox_'+model_name)
+            combobox.default_value = getattr(self, model_name)
+            #print(model_name, combobox.default_value)
+
+        # more stuff moved from gui.__init__
+        checkbox = ui.solids.checkbox_keyword_species_eq_args_S
+        checkbox.clicked.connect(self.handle_solids_species_eq)
+
+        ui.solids.lineedit_solids_phase_name.editingFinished.connect(
+            self.handle_solids_phase_name)
+        ui.solids.checkbox_enable_solids_scalar_eq.clicked.connect(
+            self.enable_solids_scalar_eq)
+        ui.solids.spinbox_solids_nscalar_eq.valueChanged.connect(
+            self.set_solids_nscalar_eq)
+
+        # Solids phase models
+        # Density
+        for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
+                     'conductivity', 'diffusion'):
+            combobox = getattr(ui.solids, 'combobox_solids_%s_model' % name)
+            setter = getattr(self,'set_solids_%s_model' % name)
+            combobox.currentIndexChanged.connect(setter)
+
+        # Solids species
+        s = ui.solids
+        tb = s.toolbutton_solids_species_add
+        tb.clicked.connect(self.solids_species_add)
+        tb = s.toolbutton_solids_species_copy # misnomer
+        tb.clicked.connect(self.solids_species_edit)
+        tb.setEnabled(False)
+        tb = s.toolbutton_solids_species_delete
+        tb.setEnabled(False)
+        tb.clicked.connect(self.solids_species_delete)
+        tw = s.tablewidget_solids_species
+        tw.itemSelectionChanged.connect(self.handle_solids_species_selection)
+
+
+    def handle_solids_species_eq(self):
         enabled = self.ui.solids.checkbox_keyword_species_eq_args_S.isChecked()
         if not enabled:
             self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
         self.ui.solids.combobox_solids_density_model.setEnabled(enabled)
-
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
@@ -127,7 +244,7 @@ class SolidHandler(object):
                 # Clear out all values?
             return
 
-        name = list(self.solids.keys())[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
         model = solid['model']
 
@@ -155,7 +272,7 @@ class SolidHandler(object):
         val = self.project.get_value(key, default=False, args=phase)
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
         cb.setChecked(val)
-        # density model only selectable when species eq. are solved
+        # density model only selectable when species eq. are solved (SRS p13)
         if val:
             s.combobox_solids_density_model.setEnabled(True)
         else:
@@ -170,7 +287,7 @@ class SolidHandler(object):
         s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
         enabled = solid.get('enable_scalar_eq', False) # (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
-        #self.enable_solid_scalar_eq(enabled)
+        #self.enable_solids_scalar_eq(enabled)
 
 
     def update_solids_table(self):
@@ -216,13 +333,13 @@ class SolidHandler(object):
         phase = self.solids_current_phase
         if phase is None:
             return
-        old_name = self.solids.keys()[phase-1] # Ugh
+        old_name = self.solids.keys()[phase-1]
         if new_name in self.solids: # Reject the input
             self.ui.solids.lineedit_solids_phase_name.setText(old_name)
             return
 
-        # Rewriting dict to change key while preserving order
-        d = OrderedDict() # Ugh.  Use SpeciesCollection!
+        # Rewriting dict to change key while preserving order - hack
+        d = OrderedDict()
         for (k,v) in self.solids.iteritems():
             if k==old_name:
                 k = new_name
@@ -243,14 +360,14 @@ class SolidHandler(object):
         tw.clearSelection()
         self.set_unsaved_flag()
 
-    def enable_solid_scalar_eq(self, state):
+    def enable_solids_scalar_eq(self, state):
         spinbox = self.ui.solids.spinbox_nscalar_eq
         spinbox.setEnabled(state)
         phase = self.solids_current_phase
         if phase is None:
             return
 
-        name = list(self.solids.keys())[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
         current_state = solid.get('enable_scalar_eq')
@@ -261,30 +378,33 @@ class SolidHandler(object):
         solid['enable_scalar_eq'] = state
         if state:
             value = solid.get('saved_nscalar_eq', 0)
-            self.set_solid_nscalar_eq(value)
+            self.set_solids_nscalar_eq(value)
         else:
-            # Don't call set_solid_nscalar_eq(0) b/c that will clobber spinbox
-            prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+            # Don't call set_solids_nscalar_eq(0) b/c that will clobber spinbox
+            prev_nscalar = self.solids_nscalar_eq + self.solids_nscalar_eq
             solid['saved_nscalar_eq'] = solid.get('nscalar_eq', 0)
             solid['nscalar_eq'] = 0
-            self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
+            self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
             self.update_scalar_equations(prev_nscalar)
 
-    def set_solid_nscalar_eq(self, value):
+
+
+
+
+    def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
         phase = self.solids_current_phase
         if phase is None:
             return
-        name = list(self.solids.keys())[phase-1] # ugh
+        name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
         nscalar = self.project.get_value('nscalar', 0)
-        prev_nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        prev_nscalar = self.solids_nscalar_eq + self.solids_nscalar_eq
 
         solid['nscalar_eq'] = value
         solid['saved_nscalar_eq'] = value
-        # would it be better to just use nscalar - fluid_nscalar_eq?
-        self.solid_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
+        self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
 
         spinbox = self.ui.solids.spinbox_nscalar_eq
         if value != spinbox.value():
@@ -293,20 +413,132 @@ class SolidHandler(object):
         self.update_scalar_equations(prev_nscalar)
 
 
-    def solids_change_tab(self, tabnum, btn):
-        """ switch solids stacked widget based on selected """
-        self.animate_stacked_widget(
-            self.ui.solids.stackedwidget_solids,
-            self.ui.solids.stackedwidget_solids.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=self.ui.solids.line_solids,
-            to_btn=btn,
-            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
+
+    # --- solids species methods ---
+    def solids_species_revert(self):
+        if self.saved_solids_species is None:
+            return
+        self.solids_species = self.saved_solids_species
+        self.species_popup.defined_species = deepcopy(self.solids_species)
+        self.update_solids_species_table()
+
+    def solids_species_save(self):
+        self.solids_species = deepcopy(self.species_popup.defined_species)
+        self.update_solids_species_table()
+
+    def update_solids_species_table(self):
+        """Update table in solidss pane.  Also set nmax_g, species_g and species_alias_g keywords,
+        which are not tied to a single widget"""
+
+        hv = QtWidgets.QHeaderView
+        table = self.ui.solids.tablewidget_solids_species
+        if PYQT5:
+            resize = table.horizontalHeader().setSectionResizeMode
+        else:
+            resize = table.horizontalHeader().setResizeMode
+        for n in range(5):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
+
+        table.clearContents()
+        if self.solids_species is None:
+            return
+        nrows = len(self.solids_species)
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        old_nmax_g = self.project.get_value('nmax_g')
+        nmax_g = len(self.solids_species)
+        if nmax_g > 0:
+            self.update_keyword('nmax_g', nmax_g)
+        else:
+            self.unset_keyword('nmax_g')
+        for (row, (species,data)) in enumerate(self.solids_species.items()):
+            for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
+                                        'h_f', 'source')):
+                alias = data.get('alias', species) # default to species if no alias
+                data['alias'] = alias # for make_item
+                table.setItem(row, col, make_item(data.get(key)))
+                self.update_keyword('species_g', species, args=row+1)
+                self.update_keyword('species_alias_g', alias, args=row+1)
+                # We're avoiding mw_g in favor of the settings in THERMO DATA
+                #self.update_keyword('mw_g', data['mol_weight'], args=row+1)#
+
+        # Clear any keywords with indices above nmax_g
+        if old_nmax_g is None:
+            old_nmax_g = 0
+        for i in range(nmax_g+1, old_nmax_g+1):
+            self.unset_keyword('species_g', i)
+            self.unset_keyword('species_alias_g', i)
+            #self.unset_keyword('mw_g', i) # TBD
+
+        self.project.update_thermo_data(self.solids_species)
+
+    def handle_solids_species_selection(self):
+        row = get_selected_row(self.ui.solids.tablewidget_solids_species)
+        enabled = (row is not None)
+        self.ui.solids.toolbutton_solids_species_delete.setEnabled(enabled)
+        self.ui.solids.toolbutton_solids_species_copy.setEnabled(enabled)
+
+    def solids_species_add(self):
+        sp = self.species_popup
+        sp.phases='S' # ? is this correct
+        # how to avoid this if dialog open already?
+        self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        sp.cancel.connect(self.solids_species_revert)
+        sp.save.connect(self.solids_species_save)
+        sp.defined_species = self.solids_species
+        sp.update_defined_species()
+        sp.setWindowTitle("Solids Species")
+        sp.show()
+        sp.raise_()
+        sp.activateWindow()
+
+    def solids_species_delete(self):
+        # XXX FIXME this is potentially a big problem since
+        # it results in species being renumbered, or a hole in
+        # the sequence - either way is trouble.  Have to warn
+        # user, if species is referenced elsewhere.
+        table = self.ui.solids.tablewidget_solids_species
+        row = get_selected_row(table)
+        if row is None: # No selection
+            return
+        table.clearSelection()
+        key = self.solids_species.keys()[row]
+        del self.solids_species[key]
+        self.update_solids_species_table()
+        # Sigh, we have to update the row in the popup too.
+        # Should the popup just be modal, to avoid this?
+        sp = self.species_popup
+        sp.defined_species = self.solids_species
+        sp.update_defined_species()
+
+    def solids_species_edit(self):
+        table = self.ui.solids.tablewidget_solids_species
+        row = get_selected_row(table)
+        sp = self.species_popup
+        self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        sp.cancel.connect(self.solids_species_revert)
+        sp.save.connect(self.solids_species_save)
+        sp.defined_species = self.solids_species
+        sp.update_defined_species()
+        if row is None:
+            sp.tablewidget_defined_species.clearSelection()
+        else:
+            sp.tablewidget_defined_species.setCurrentCell(row, 0)
+        sp.setWindowTitle("Solids Species")
+        sp.show()
+        sp.raise_()
+        sp.activateWindow()
+
 
     def reset_solids(self):
         # Set all solid-related state back to default
         self.solids_current_phase = None
+        self.saved_solids_species = None
         self.solids.clear()
+        self.solids_species.clear()
         self.update_solids_table()
         self.update_solids_detail_pane()

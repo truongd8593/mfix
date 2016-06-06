@@ -198,7 +198,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         #self.species_popup.setModal(True) # ?
 
         self.init_fluid_handler()
-        self.init_solid_handler()
+        self.init_solids_handler()
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -362,7 +362,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
-        self.solid_nscalar_eq = 0 # Infer these from phase4scalar
+        self.solids_nscalar_eq = 0 # Infer these from phase4scalar
         # Defaults
 
         self.solver_name = None
@@ -780,6 +780,17 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         else:
             lineedit.setEnabled(False)
 
+    def disable_fluid_solver(self, disabled):
+        enabled = not disabled
+        item = self.find_navigation_tree_item("Fluid")
+        item.setDisabled(disabled)
+        ms = self.ui.model_setup
+        checkbox = ms.checkbox_enable_turbulence
+        checkbox.setEnabled(enabled)
+        ms.combobox_turbulence_model.setEnabled(enabled and
+                                                checkbox.isChecked())
+
+
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
@@ -792,7 +803,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         # This is a little messy.  We may have reduced
         # nscalar, so we need to unset phase4scalar(i)
         # for any values of i > nscalar.
-        nscalar = self.fluid_nscalar_eq + self.solid_nscalar_eq
+        nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
         if nscalar > 0:
             self.update_keyword("nscalar", nscalar)
         else:
@@ -809,7 +820,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         while i <= prev_nscalar:
             self.unset_keyword("phase4scalar", i)
             i += 1
-
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
@@ -830,64 +840,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         combobox = model_setup.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
-
-        #self.enable_energy_eq(False)
-
-        # Fluid phase - move to fluid_handlers.py
-        checkbox = ui.fluid.checkbox_keyword_species_eq_args_0
-        checkbox.stateChanged.connect(self.enable_fluid_species_eq)
-
-        ui.fluid.lineedit_fluid_phase_name.editingFinished.connect(
-            self.handle_fluid_phase_name)
-        ui.fluid.checkbox_enable_fluid_scalar_eq.stateChanged.connect(
-            self.enable_fluid_scalar_eq)
-        ui.fluid.spinbox_fluid_nscalar_eq.valueChanged.connect(
-            self.set_fluid_nscalar_eq)
-
-        # Fluid phase models
-        # Density
-        for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
-                     'conductivity', 'diffusion'):
-            combobox = getattr(ui.fluid, 'combobox_fluid_%s_model' % name)
-            setter = getattr(self,'set_fluid_%s_model' % name)
-            combobox.currentIndexChanged.connect(setter)
-
-        # Fluid species
-        f = ui.fluid
-        tb = f.toolbutton_fluid_species_add
-        tb.clicked.connect(self.fluid_species_add)
-        tb = f.toolbutton_fluid_species_copy # misnomer
-        tb.clicked.connect(self.fluid_species_edit)
-        tb.setEnabled(False)
-        tb = f.toolbutton_fluid_species_delete
-        tb.setEnabled(False)
-        tb.clicked.connect(self.fluid_species_delete)
-        tw = f.tablewidget_fluid_species
-        tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
-
-        # Solid phase
-        s = ui.solids
-        tb = s.toolbutton_solids_add
-        tb.clicked.connect(self.solids_add)
-        tb = s.toolbutton_solids_delete
-        tb.clicked.connect(self.solids_delete)
-        tb.setEnabled(False)
-        tw = s.tablewidget_solids
-        # Hack - force summary table to update  on kw updates
-        class TableWidgetProxy:
-            def objectName(self):
-                return "proxy"
-            def updateValue(*args):
-                self.update_solids_table()
-
-        self.project.register_widget(TableWidgetProxy(),
-                                     ['solids_model', 'd_p0', 'ro_s0'], args='*')
-        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        cb = s.combobox_solids_model
-        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
-        s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
-        s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solid_scalar_eq)
-        s.spinbox_nscalar_eq.valueChanged.connect(self.set_solid_nscalar_eq)
 
         # connect solid tab btns
         for i, btn in enumerate((s.pushbutton_solids_materials,
@@ -1054,6 +1006,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
                                     self.ui.stackedwidget_mode.currentIndex(),
                                     current_index,
                                     'horizontal')
+
+    # Solids sub-pane navigation
+    def solids_change_tab(self, tabnum, btn):
+        """ switch solids stacked widget based on selected """
+        self.animate_stacked_widget(
+            self.ui.solids.stackedwidget_solids,
+            self.ui.solids.stackedwidget_solids.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=self.ui.solids.line_solids,
+            to_btn=btn,
+            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
@@ -1416,7 +1380,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
         res_files = self.monitor.get_res_files()
         if output_files:
             if res_files:
-                return self.resume_mfix() # ugh
+                return self.resume_mfix()
             if not self.remove_output_files(output_files):
                 log.info('output files exist and run was cancelled')
                 return
@@ -1932,7 +1896,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
 
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) == 0)
-        self.solid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
+        self.solids_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
 
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
