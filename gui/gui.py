@@ -1732,7 +1732,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidHandler):
             return
         # Start with a nice template - note, there's too much set in this file.
         # FIXME, this can clobber files
-        shutil.copyfile('mfix.dat.template', project_file)
+        template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
+        shutil.copyfile(template, project_file)
         self.open_project(project_file)
 
     def get_open_filename(self):
