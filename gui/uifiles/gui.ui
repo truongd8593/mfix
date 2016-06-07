@@ -477,9 +477,7 @@ QPushButton:checked {
              </property>
              <widget class="QWidget" name="modeler">
               <property name="styleSheet">
-               <string notr="true">QStackedWidget{
-background-color:white;
-}</string>
+               <string notr="true">QStackedWidget{background-color:white;}</string>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_2">
                <property name="spacing">
