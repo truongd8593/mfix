@@ -68,7 +68,7 @@ if PRECOMPILE_UI:
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
-        from uifiles.model_setup import Ui_model_setup
+        from uifiles.model import Ui_model
         from uifiles.solids import Ui_solids
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
@@ -140,7 +140,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 return Widget()
 
             for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
-                        Ui_model_setup, Ui_fluid, Ui_solids,
+                        Ui_model, Ui_fluid, Ui_solids,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
@@ -162,7 +162,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             assert self is not self.ui
 
             for name in ('general', 'geometry', 'mesh', 'regions',
-                         'model_setup', 'fluid', 'solids', 'numerics',
+                         'model', 'fluid', 'solids', 'numerics',
                          'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget()
@@ -691,9 +691,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         return items[0]
 
 
-    # Top-level "Model Setup"
+    # Top-level "Model"
     def set_solver(self, solver):
-        """handler for "Solver" combobox in Model Setup"""
+        """handler for "Solver" combobox in Model pane"""
         self.project.solver = solver
         if solver is None: #
             return
