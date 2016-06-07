@@ -13,9 +13,9 @@ $(document).ready(function(){
     $('a.toggler').click(function(){
 
         if (mfixrunning) {
-            url = "stop"
+            url = "pause"
         } else {
-            url = "start"
+            url = "unpause"
         }
         $(this).toggleClass('off');
         $.ajax({
@@ -209,11 +209,11 @@ function updateCurlCommands() {
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');
-        $("#curlstartstop").text(req_common+'/stop")');
+        $("#curlstartstop").text(req_common+'/pause")');
         $('button, input, select').prop('disabled',true);
     } else {
         $("#running").text('MFIX IS STOPPED');
-        $("#curlstartstop").text(req_common+'/start")');
+        $("#curlstartstop").text(req_common+'/unpause")');
         $('button, input, select').prop('disabled',false);
     }
 
