@@ -501,7 +501,7 @@ class SolidsHandler(object):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-        old_nmax_s = self.project.get_value('nmax_s', index=phase)
+        old_nmax_s = self.project.get_value('nmax_s', args=phase)
         nmax_s = len(self.solids_species) #FIXME this is per-phase
         if nmax_s > 0:
             self.update_keyword('nmax_s', nmax_s, args=phase)
