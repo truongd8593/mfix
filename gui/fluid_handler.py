@@ -157,6 +157,8 @@ class FluidHandler(object):
     def set_fluid_mol_weight_model(self, model):
         self.fluid_mol_weight_model = model
         combobox = self.ui.fluid.combobox_fluid_mol_weight_model
+        # Make tooltip match setting (for longer names which are truncated)
+        combobox.setToolTip(combobox.currentText())
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
