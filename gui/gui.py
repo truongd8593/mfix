@@ -699,8 +699,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             return
 
         ui = self.ui
-        model_setup = ui.model_setup
-        cb = model_setup.combobox_solver
+        model = ui.model
+        cb = model.combobox_solver
         if cb.currentIndex != solver:
             cb.setCurrentIndex(solver)
 
@@ -745,15 +745,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
-        interphase = model_setup.groupbox_interphase
+        interphase = model.groupbox_interphase
         interphase.setEnabled(enabled)
 
         # TFM only
         # use a groupbox here, instead of accessing combobox + label?
         enabled = (solver == TFM)
-        model_setup.combobox_subgrid_model.setEnabled(enabled)
-        model_setup.label_subgrid_model.setEnabled(enabled)
-        model_setup.groupbox_subgrid_params.setEnabled(enabled and
+        model.combobox_subgrid_model.setEnabled(enabled)
+        model.label_subgrid_model.setEnabled(enabled)
+        model.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
         ui.fluid.checkbox_enable_scalar_eq.setEnabled(enabled)
@@ -785,7 +785,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of several other GUI items
-        self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(state)
+        self.ui.model.checkbox_keyword_energy_eq.setChecked(state)
         ui = self.ui
         for item in (ui.fluid.combobox_fluid_specific_heat_model,
                      ui.fluid.combobox_fluid_conductivity_model,
@@ -803,7 +803,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
         item.setDisabled(disabled)
-        ms = self.ui.model_setup
+        ms = self.ui.model
         checkbox = ms.checkbox_enable_turbulence
         checkbox.setEnabled(enabled)
         ms.combobox_turbulence_model.setEnabled(enabled and
@@ -813,7 +813,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
-        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
+        groupbox_subgrid_params = self.ui.model.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
     def update_scalar_equations(self, prev_nscalar):
@@ -844,19 +844,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def __setup_other_widgets(self): # rename/refactor
         """setup widgets which are not tied to a simple keyword"""
         ui = self.ui
-        model_setup = ui.model_setup
-        combobox = model_setup.combobox_solver
+        model = ui.model
+        combobox = model.combobox_solver
         # activated: Only on user action, avoid recursive calls in set_solver
         combobox.activated.connect(self.set_solver)
 
-        checkbox = model_setup.checkbox_disable_fluid_solver
+        checkbox = model.checkbox_disable_fluid_solver
         checkbox.stateChanged.connect(self.disable_fluid_solver)
         self.disable_fluid_solver(False)
 
-        checkbox = model_setup.checkbox_keyword_energy_eq
+        checkbox = model.checkbox_keyword_energy_eq
         checkbox.stateChanged.connect(self.enable_energy_eq)
 
-        combobox = model_setup.combobox_subgrid_model
+        combobox = model.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
         self.set_subgrid_model(0)
 
