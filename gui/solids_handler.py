@@ -286,25 +286,17 @@ class SolidsHandler(object):
                 cb.setEnabled(False)
                 cb.setChecked(False)
 
+        # Set species eq checkbox to correct value
+        key = 'species_eq'
+        species_eq = self.project.get_value(key, default=False, args=phase)
+        cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
+        cb.setChecked(species_eq)
+
         #Solids density model only settable with TFM
         s.combobox_solids_density_model.setEnabled(model==TFM)
         s.lineedit_keyword_ro_s0_args_S.setEnabled(model==TFM)
 
-        key = 'species_eq'
-        val = self.project.get_value(key, default=False, args=phase)
-        cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
-        cb.setChecked(val)
-        # density model only selectable when species eq. are solved (SRS p13)
-        if val:
-            s.combobox_solids_density_model.setEnabled(True)
-        else:
-            s.combobox_solids_density_model.setCurrentIndex(CONSTANT)
-            s.combobox_solids_density_model.setEnabled(False)
-
-        # Solids visc. only avail for TFM solids
-
-
-
+        # Deal with scalar eq
         nscalar = self.project.get_value('nscalar', 0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
@@ -313,6 +305,20 @@ class SolidsHandler(object):
         enabled = solid.get('enable_scalar_eq', False) # (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
         #self.enable_solids_scalar_eq(enabled)
+
+        # Restrictions
+        # density model only selectable when species eq. are solved (SRS p13)
+        cb_density =  s.combobox_solids_density_model
+        if species_eq:
+            cb_density.setEnabled(True)
+        else:
+            cb_density.setCurrentIndex(CONSTANT)
+            cb_density.setEnabled(False)
+            cb_density.setToolTip("Constant")
+
+        # Solids visc. only avail for TFM solids
+
+
 
 
     def update_solids_table(self):
