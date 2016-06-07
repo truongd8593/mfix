@@ -2977,13 +2977,13 @@ background-color: transparent;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
