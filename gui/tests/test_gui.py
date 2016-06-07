@@ -130,7 +130,7 @@ class MfixGuiTests(TestQApplication):
         mfix_exe = os.path.join(self.mfix_home, "mfix")
         cme = self.mfix.ui.run.combobox_mfix_exes
         if cme.findText(mfix_exe) < 0:
-            self.skipTest("Only valid when % is present"%mfix_exe)
+            self.skipTest("Only valid when %s is present" % mfix_exe)
 
         #  FIXME:  we're getting the exe from the ~/.config/MFIX file,
         #   need to control the QSettings for running tests, instead
