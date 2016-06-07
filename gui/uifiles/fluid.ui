@@ -10,6 +10,18 @@
     <height>674</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>2</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>20</width>
+    <height>0</height>
+   </size>
+  </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <property name="margin">
     <number>5</number>
@@ -134,14 +146,26 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupbox_fluid_phase_models">
+    <widget class="QGroupBox" name="groupbox_fluid_phase_model_parameters">
      <property name="title">
-      <string>Models</string>
+      <string>Parameters</string>
      </property>
      <property name="flat">
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_28">
         <property name="text">
@@ -151,11 +175,17 @@
       </item>
       <item row="0" column="1">
        <widget class="ComboBox" name="combobox_fluid_density_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -175,7 +205,20 @@
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_ro_g0"/>
+       <widget class="LineEdit" name="lineedit_keyword_ro_g0">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="0" column="3">
        <widget class="QLabel" name="label_2">
@@ -200,11 +243,17 @@
       </item>
       <item row="1" column="1">
        <widget class="ComboBox" name="combobox_fluid_viscosity_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -224,7 +273,20 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_mu_g0"/>
+       <widget class="LineEdit" name="lineedit_keyword_mu_g0">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="1" column="3">
        <widget class="QLabel" name="label_3">
@@ -241,17 +303,23 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_30">
         <property name="text">
-         <string>Mol. Weight</string>
+         <string>Mol. weight</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
        <widget class="ComboBox" name="combobox_fluid_mol_weight_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -266,7 +334,20 @@
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_mw_avg"/>
+       <widget class="LineEdit" name="lineedit_keyword_mw_avg">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="2" column="3">
        <widget class="QLabel" name="label_4">
@@ -283,17 +364,23 @@
       <item row="3" column="0">
        <widget class="QLabel" name="label_31">
         <property name="text">
-         <string>Spec. Heat</string>
+         <string>Spec. heat</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
        <widget class="ComboBox" name="combobox_fluid_specific_heat_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -313,7 +400,20 @@
        </widget>
       </item>
       <item row="3" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_c_pg0"/>
+       <widget class="LineEdit" name="lineedit_keyword_c_pg0">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="3" column="3">
        <widget class="QLabel" name="label_5">
@@ -336,14 +436,20 @@
       </item>
       <item row="4" column="1">
        <widget class="ComboBox" name="combobox_fluid_conductivity_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -361,9 +467,6 @@
          </property>
         </item>
        </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_k_g0"/>
       </item>
       <item row="4" column="3">
        <widget class="QLabel" name="label_6">
@@ -386,14 +489,20 @@
       </item>
       <item row="5" column="1">
        <widget class="ComboBox" name="combobox_fluid_diffusion_model">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
         <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
+         <enum>QComboBox::AdjustToMinimumContentsLength</enum>
         </property>
         <property name="minimumContentsLength">
-         <number>1</number>
+         <number>30</number>
         </property>
         <item>
          <property name="text">
@@ -413,7 +522,20 @@
        </widget>
       </item>
       <item row="5" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_dif_g0"/>
+       <widget class="LineEdit" name="lineedit_keyword_dif_g0">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="5" column="3">
        <widget class="QLabel" name="label_7">
@@ -426,6 +548,9 @@
          <string>m²/s </string>
         </property>
        </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="LineEdit" name="lineedit_keyword_k_g0"/>
       </item>
      </layout>
     </widget>
@@ -569,6 +694,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
    <header>widgets/base</header>
@@ -576,11 +706,6 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
-   <class>ComboBox</class>
-   <extends>QComboBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
