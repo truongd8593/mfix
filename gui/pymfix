@@ -38,19 +38,20 @@ FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
 FLASK_APP.config['SECRET_KEY'] = 'secret!'
 
-status = None
-
 # import logging
 # log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
 
+mfix_thread = None
+
 def main():
     """The main function starts MFIX on a separate thread, then start the Flask server. """
 
-    port, keyword_args = parse_command_line_arguments()
+    paused, port, keyword_args = parse_command_line_arguments()
 
-    mfix_inst = Mfix(keyword_args)
-    mfix_inst.start()
+    global mfix_thread
+    mfix_thread = Mfix(paused, keyword_args)
+    mfix_thread.start()
 
     # log = logging.getLogger('werkzeug')
     # log.disabled = True
@@ -66,30 +67,41 @@ def main():
             os._exit(0)
     else:
         # nothing else for rank>0 to do
-        while True:
-            time.sleep(10)
+        mfix_thread.thread.join()
 
 
+# FIXME: it would be make sense to subclass Thread
 class Mfix(object):
     " Class to represent the running instance of MFIX "
 
-    mfix_paused = True
-    pymfix_running = True
     requests = {}
     responses = {}
 
-    def __init__(self, keyword_args):
+    def __init__(self, paused, keyword_args):
         " constructor "
         self.keyword_args = keyword_args
+        self.thread = None
+        self.status = json.dumps({})
+        self.stopped = False
+        self.paused = paused
+        self.t0 = 0.
+        self.walltime = 0.
+        self.walltime_remaining = 'unknown'
+        self.time_step_init_walltime = 'unknown'
+        self.time_step_end_walltime = 'unknown'
+        self.do_iteration_walltime = 'unknown'
+        self.des_time_init_walltime = 'unknown'
+        self.des_time_steps_walltime = 'unknown'
+        self.des_time_end_walltime = 'unknown'
 
     def start(self):
         " start the MFIX thread"
-        threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args}).start()
+        self.thread = threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args})
+        self.thread.start()
         # wait for the MFIX thread to initialize COMPAR.mype
         time.sleep(0.1)
 
-    @classmethod
-    def run_mfix(cls, keyword_args=None):
+    def run_mfix(self, keyword_args=None):
         "Main thread for running MFIX itself"
 
         RUN.interactive = True
@@ -97,20 +109,14 @@ class Mfix(object):
         for arg in keyword_args:
             MAIN.add_command_line_argument(arg)
 
+        self.update_status()
+
         MAIN.initialize()
         READ_INPUT.get_data()
         MAIN.initialize_2()
 
-        cls.t0 = float(RUN.time)
-        cls.walltime = 0.
-        cls.walltime_remaining = 'unknown'
-        cls.time_step_init_walltime = 'unknown'
-        cls.time_step_end_walltime = 'unknown'
-        cls.do_iteration_walltime = 'unknown'
-        cls.des_time_init_walltime = 'unknown'
-        cls.des_time_steps_walltime = 'unknown'
-        cls.des_time_end_walltime = 'unknown'
-        cls.update_status()
+        self.t0 = float(RUN.time)
+
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
@@ -119,30 +125,27 @@ class Mfix(object):
                 DEM.pic_time_march()
         else:
 
-            while cls.pymfix_running:
-                cls.check_requests()
-                if cls.mfix_paused or RUN.tstop <= RUN.time + 0.1*RUN.dt:
-                    time.sleep(0.1)
-                else:
-                    iteration_start = timer()
-                    cls.do_step()
-                    cls.walltime += float(timer() - iteration_start)
-                    if RUN.tstop <= RUN.time + 0.1*RUN.dt:
-                        cls.walltime_remaining = str(0.)
-                    elif RUN.time > cls.t0:
-                        cls.walltime_remaining = str(cls.walltime * (RUN.tstop/(RUN.time-cls.t0) - 1))
+            while not self.stopped:
+                self.check_requests()
+                iteration_start = timer()
+                self.do_step()
+                self.walltime += float(timer() - iteration_start)
+                if RUN.tstop <= RUN.time + 0.1*RUN.dt:
+                    self.walltime_remaining = str(0.)
+                    self.paused = True
+                elif RUN.time > self.t0:
+                    self.walltime_remaining = str(self.walltime * (RUN.tstop/(RUN.time-self.t0) - 1))
 
-                    if RUN.steady_state:
-                        break
+                if RUN.steady_state:
+                    break
 
         MAIN.finalize()
 
-    @classmethod
-    def do_step(cls):
+    def do_step(self):
         "Run one timestep"
         start = timer()
         STEP.time_step_init()
-        cls.time_step_init_walltime = float(timer() - start)
+        self.time_step_init_walltime = float(timer() - start)
 
         step_incomplete = True
         while step_incomplete:
@@ -151,8 +154,8 @@ class Mfix(object):
                 ITERATE.nit = ITERATE.nit + 1
                 start = timer()
                 ITERATE.do_iteration()
-                cls.do_iteration_walltime = float(timer() - start)
-                cls.check_requests()
+                self.do_iteration_walltime = float(timer() - start)
+                self.check_requests()
 
             ITERATE.post_iterate()
 
@@ -164,39 +167,38 @@ class Mfix(object):
         if RUN.dem_solids:
             start = timer()
             DES_TIME_MARCH.des_time_init()
-            cls.des_time_init_walltime = float(timer() - start)
+            self.des_time_init_walltime = float(timer() - start)
             start = timer()
             for ii in range(DES_TIME_MARCH.factor):
                 DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
                 DES_TIME_MARCH.des_time_step()
-                cls.check_requests()
-            cls.des_time_steps_walltime = float(timer() - start)
+                self.check_requests()
+            self.des_time_steps_walltime = float(timer() - start)
             start = timer()
             DES_TIME_MARCH.des_time_end()
-            cls.des_time_end_walltime = float(timer() - start)
+            self.des_time_end_walltime = float(timer() - start)
 
         start = timer()
         STEP.time_step_end()
-        cls.time_step_end_walltime = float(timer() - start)
+        self.time_step_end_walltime = float(timer() - start)
 
 
-    @classmethod
-    def update_status(cls):
+    def update_status(self):
         """save status as JSON """
 
         output = {}
-        output['paused'] = bool(Mfix.mfix_paused)
+        output['paused'] = self.paused
         output['time'] = float(RUN.time)
         output['tstop'] = float(RUN.tstop)
         output['dt'] = float(RUN.dt)
-        output['walltime_elapsed'] = cls.walltime
-        output['walltime_remaining'] = cls.walltime_remaining
-        output['profiling'] = (('time_step_init', cls.time_step_init_walltime),
-                               ('do_iteration', int(ITERATE.nit), cls.do_iteration_walltime),
-                               ('time_step_end', cls.time_step_end_walltime),
-                               ('des_time_init', cls.des_time_init_walltime),
-                               ('des_time_steps', int(DES_TIME_MARCH.factor), cls.des_time_steps_walltime),
-                               ('des_time_end', cls.des_time_end_walltime))
+        output['walltime_elapsed'] = self.walltime
+        output['walltime_remaining'] = self.walltime_remaining
+        output['profiling'] = (('time_step_init', self.time_step_init_walltime),
+                               ('do_iteration', int(ITERATE.nit), self.do_iteration_walltime),
+                               ('time_step_end', self.time_step_end_walltime),
+                               ('des_time_init', self.des_time_init_walltime),
+                               ('des_time_steps', int(DES_TIME_MARCH.factor), self.des_time_steps_walltime),
+                               ('des_time_end', self.des_time_end_walltime))
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
@@ -208,93 +210,88 @@ class Mfix(object):
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
-        global status
-        status = json.dumps(output)
+        self.status = json.dumps(output)
 
 
-    @classmethod
-    def check_requests(cls):
+    def check_requests(self):
         "check for requests sent by the Flask thread"
 
-        if cls.requests:
-            # requests would only arrive at rank 0
-            req_id, cmd_args = cls.requests.popitem()
-        else:
-            # command is empty for rank>0, or when rank 0 hasn't received anything
-            req_id = None
-            cmd_args = (None, None)
-
-        json_cmd_args = json.dumps(cmd_args)
-        # broadcast command from rank 0 to all ranks
-        json_cmd_args = MAIN.do_mpi_bcast(json_cmd_args)
-        json_cmd_args = json_cmd_args.tostring().rstrip()
-        json_cmd_args = json_cmd_args.decode('utf-8')
-        command, args = json.loads(json_cmd_args)
-
-        if command:
-            cmd = command.split(' ')[0].lower().strip()
-
-            if hasattr(cls, cmd):
-                cls.responses[req_id] = getattr(cls, cmd)(args)
+        while True:
+            if self.requests:
+                # requests would only arrive at rank 0
+                req_id, cmd_args = self.requests.popitem()
             else:
-                cls.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
-        cls.update_status()
+                # command is empty for rank>0, or when rank 0 hasn't received anything
+                req_id = None
+                cmd_args = (None, None)
 
-    @classmethod
-    def unpause(cls, _):
+            json_cmd_args = json.dumps(cmd_args)
+            # broadcast command from rank 0 to all ranks
+            json_cmd_args = MAIN.do_mpi_bcast(json_cmd_args)
+            json_cmd_args = json_cmd_args.tostring().rstrip()
+            json_cmd_args = json_cmd_args.decode('utf-8')
+            command, args = json.loads(json_cmd_args)
+
+            if command:
+                cmd = command.split(' ')[0].lower().strip()
+
+                if hasattr(self, cmd):
+                    self.responses[req_id] = getattr(self, cmd)(args)
+                else:
+                    self.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
+            self.update_status()
+            if not self.paused:
+                return
+
+            # loop until unpaused
+            time.sleep(0.1)
+
+    def unpause(self, _):
         " unpause "
-        cls.mfix_paused = False
-        return 200, "STARTING MFIX"
+        self.paused = False
+        return 200, "UNPAUSING MFIX"
 
-    @classmethod
-    def pause(cls, _):
+    def pause(self, _):
         " paused "
-        cls.mfix_paused = True
-        return 200, "STOPPING MFIX"
+        self.paused = True
+        return 200, "PAUSING MFIX"
 
-    @classmethod
-    def write_dbg_vt(cls, _):
+    def write_dbg_vt(self, _):
         " call write_dbg_vtu_and_vtp_files "
         MAIN.do_write_dbg_vtu_and_vtp_files()
         return 200, 'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
 
-    @classmethod
-    def backupres(cls, _):
+    def backupres(self, _):
         " backup resource files"
         MAIN.do_backupres()
         return 200, 'BACKING UP RESOURCE FILES\n'
 
-    @classmethod
-    def reinit(cls, _):
+    def reinit(self, _):
         " reinitialize "
         MAIN.do_reinit(_.get('filename', None))
         return 200, 'REINITIALIZING MFIX\n'
 
-    @classmethod
-    def exit(cls, _):
+    def exit(self, _):
         " run_mfix thread should exit cleanly "
-        cls.pymfix_running = False
+        self.stopped = True
         return 200, 'EXITING MFIX\n'
 
-    @classmethod
-    def abort(cls, _):
+    def abort(self, _):
         " exit abruptly"
         MAIN.do_abort()
         # should never get here
         return 200, 'ABORTING MFIX\n'
 
-    @classmethod
-    def step(cls, args):
+    def step(self, args):
         " take one or more timesteps "
         stepcount = int(args.get('stepcount', None)[0])
         if RUN.tstop <= RUN.time:
             RUN.tstop = RUN.tstop + stepcount*RUN.dt
         for _ in range(stepcount):
-            cls.do_step()
+            self.do_step()
         return 200, 'DOING %s TIMESTEP(S)\n' % stepcount
 
-    @classmethod
-    def get(cls, args):
+    def get(self, args):
         " return the value of a variable in MFIX"
 
         mod = args.get('modname')
@@ -314,13 +311,13 @@ class Mfix(object):
                 # for i in range(int(ii), int(i2)+1):
                 #     for j in range(int(jj), int(j2)+1):
                 #         for k in range(int(kk), int(k2)+1):
-                #             if cls.is_on_mype_owns(i, j, k):
-                #                 eval_string = ('%s[%d]' % (var, cls.funijk(i, j, k)))
+                #             if self.is_on_mype_owns(i, j, k):
+                #                 eval_string = ('%s[%d]' % (var, self.funijk(i, j, k)))
                 #                 log.info("GOING TO EXECUTE: %s" % eval_string)
                 #                 # eval(eval_string) # FIXME
-                #                 log.info(COMPAR.mype, "set for", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, "set for", i, j, k, self.funijk(i, j, k))
                 #             else:
-                #                 log.info(COMPAR.mype, "not on", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, "not on", i, j, k, self.funijk(i, j, k))
             else:
                 log.info("GOING TO EVALUATE %s", var)
                 try:
@@ -341,8 +338,7 @@ class Mfix(object):
                     val = "ERROR: could not evaluate "+var
                     return 400, val
 
-    @classmethod
-    def set(cls, args):
+    def set(self, args):
         " set a variable in MFIX "
 
         mod = args.get('modname')
@@ -363,13 +359,13 @@ class Mfix(object):
                 # for i in range(int(ii), int(i2)+1):
                 #     for j in range(int(jj), int(j2)+1):
                 #         for k in range(int(kk), int(k2)+1):
-                #             if cls.is_on_mype_owns(i, j, k):
-                #                 exec_string = ('%s[%d] = %s' % (var, cls.funijk(i, j, k), val))
+                #             if self.is_on_mype_owns(i, j, k):
+                #                 exec_string = ('%s[%d] = %s' % (var, self.funijk(i, j, k), val))
                 #                 log.info("GOING TO EXECUTE: %s" % exec_string)
                 #                 # exec(exec_string) # FIXME
-                #                 log.info(COMPAR.mype, " set value for", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, " set value for", i, j, k, self.funijk(i, j, k))
                 #             else:
-                #                 log.info(COMPAR.mype, "does not own", i, j, k, cls.funijk(i, j, k))
+                #                 log.info(COMPAR.mype, "does not own", i, j, k, self.funijk(i, j, k))
             else:
                 log.info("GOING TO SET %s.%s = %s", mod, var, val)
                 try:
@@ -391,27 +387,24 @@ class Mfix(object):
         else:
             return 500, 'could not set %s to %s\n' % (var, val)
 
-    # @classmethod
-    # def funijk(cls, i, j, k):
+    # def funijk(self, i, j, k):
     #     "reimplement FUNIJK in Python"
     #     return COMPAR.ijk_array_of[i, j, k]
 
-    # @classmethod
-    # def is_on_mype_owns(cls, li, lj, lk):
+    # def is_on_mype_owns(self, li, lj, lk):
     #     "reimplement IS_ON_MYPE_OWNS in Python"
     #     is_owner = li >= COMPAR.istart and li <= COMPAR.iend and lj >= COMPAR.jstart \
     #                and lj <= COMPAR.jend and lk >= COMPAR.kstart and lk <= COMPAR.kend
     #     return is_owner
 
-    @classmethod
-    def do_command(cls, cmd, args=None):
+    def do_command(self, cmd, args=None):
         "Puts a command that was received over the web interface on the queue"
         req_id = threading.current_thread().ident
-        cls.requests[req_id] = (cmd, args)
-        while req_id not in cls.responses:
+        self.requests[req_id] = (cmd, args)
+        while req_id not in self.responses:
             time.sleep(0.1)
-        resp = cls.responses[req_id]
-        del cls.responses[req_id]
+        resp = self.responses[req_id]
+        del self.responses[req_id]
 
         return resp
 
@@ -436,7 +429,7 @@ def upload():
 
     tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
     request.files['file'].save(tmp)
-    status_code, data = Mfix.do_command("REINIT", args={'filename':tmp.name})
+    status_code, data = mfix_thread.do_command("REINIT", args={'filename':tmp.name})
     os.unlink(tmp.name)
 
     if status_code != 200:
@@ -457,7 +450,7 @@ def set_variable(modname, varname):
     args = dict(request.form)
     args['modname'] = modname
     args['varname'] = varname
-    status_code, data = Mfix.do_command("SET", args=args)
+    status_code, data = mfix_thread.do_command("SET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @FLASK_APP.route('/set/<modname>/<varname>/<elem>', methods=['POST'])
@@ -467,7 +460,7 @@ def set_variable_array(modname, varname, elem):
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
-    status_code, data = Mfix.do_command("SET", args=args)
+    status_code, data = mfix_thread.do_command("SET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @FLASK_APP.route('/get/<modname>/<varname>', methods=['GET'])
@@ -476,7 +469,7 @@ def get_variable(modname, varname):
     args = dict(request.args)
     args['modname'] = modname
     args['varname'] = varname
-    status_code, data = Mfix.do_command("GET", args=args)
+    status_code, data = mfix_thread.do_command("GET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @FLASK_APP.route('/get/<modname>/<varname>/<elem>', methods=['GET'])
@@ -486,28 +479,28 @@ def get_variable_array(modname, varname, elem):
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
-    status_code, data = Mfix.do_command("GET", args=args)
+    status_code, data = mfix_thread.do_command("GET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @FLASK_APP.route('/write_dbg_vt', methods=['POST'])
 def write_dbg_vt():
     "calls WRITE_DBG_VTU_AND_VTP_FILES"
-    status_code, data = Mfix.do_command("WRITE_DBG_VT")
+    status_code, data = mfix_thread.do_command("WRITE_DBG_VT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @FLASK_APP.route('/backupres', methods=['POST'])
 def backupres():
     "calls BACKUP_RES"
-    status_code, data = Mfix.do_command("BACKUPRES")
+    status_code, data = mfix_thread.do_command("BACKUPRES")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @FLASK_APP.route('/exit', methods=['POST'])
 def exit_mfix():
     "exits the main loop in run_mfix"
-    status_code, data = Mfix.do_command("EXIT")
+    status_code, data = mfix_thread.do_command("EXIT")
     time.sleep(int(request.form['timeout'])) # wait for MFIX thread to end
     os._exit(0)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
@@ -516,7 +509,7 @@ def exit_mfix():
 @FLASK_APP.route('/abort', methods=['POST'])
 def abort():
     "calls MFIX_EXIT"
-    status_code, data = Mfix.do_command("ABORT")
+    status_code, data = mfix_thread.do_command("ABORT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
@@ -524,29 +517,28 @@ def abort():
 def step():
     "runs mfix for one timestep, regardless of TIME and TSTOP"
     args = dict(request.form)
-    status_code, data = Mfix.do_command("STEP", args=args)
+    status_code, data = mfix_thread.do_command("STEP", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @FLASK_APP.route('/pause', methods=['PUT'])
 def pause():
     "pauses MFIX if unpaused"
-    status_code, data = Mfix.do_command("PAUSE")
+    status_code, data = mfix_thread.do_command("PAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 def unpause():
     "unpause MFIX if paused"
-    status_code, data = Mfix.do_command("UNPAUSE")
+    status_code, data = mfix_thread.do_command("UNPAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @FLASK_APP.route('/status', methods=['GET'])
 def get_status():
     "returns current status: paused state, current time, and residuals"
     status_code = 200
-    global status
-    return str(status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+    return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def parse_command_line_arguments():
     "handle command line arguments"
@@ -565,6 +557,7 @@ def parse_command_line_arguments():
         print(usage_string)
         sys.exit(1)
 
+    mfix_paused = True
     for opt, arg in opts:
         if opt in ("-f", "--file"):
             # Fortran strings need to be padded with blanks (ljust)
@@ -573,7 +566,7 @@ def parse_command_line_arguments():
             print(usage_string)
             sys.exit(0)
         elif opt in ("-s", "--start"):
-            Mfix.mfix_paused = False
+            mfix_paused = False
         elif opt in ("-p", "--print-flags"):
             MAIN.print_flags()
             sys.exit(1)
@@ -592,7 +585,7 @@ def parse_command_line_arguments():
         print("Only %d or fewer command line arguments are supported." % len(MAIN.cmd_line_args))
         sys.exit(1)
 
-    return port, keyword_args
+    return mfix_paused, port, keyword_args
 
 if __name__ == '__main__':
     main()
