@@ -263,17 +263,21 @@ class RegionsWidget(QtWidgets.QWidget):
 
         elif 'stl_shape' in key:
             data[name]['stl_shape'] = value.values()[0]
+            self.vtkwidget.update_region(name, data[name])
 
         elif 'slice' in key:
             data[name]['slice'] = value.values()[0]
+            self.vtkwidget.update_region(name, data[name])
 
         elif 'filter' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
             data[name][item[0]][index] = value.values()[0]
+            self.vtkwidget.update_region(name, data[name])
 
         elif 'deviation_angle' in key:
             data[name]['deviation_angle'] = value.values()[0]
+            self.vtkwidget.update_region(name, data[name])
 
         self.tablewidget_regions.set_value(data)
 

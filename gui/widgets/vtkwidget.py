@@ -1510,7 +1510,6 @@ class VtkWidget(QtWidgets.QWidget):
         # common props
         if source is not None:
             source.SetCenter(*center)
-
             source.Update()
 
         return source
@@ -1554,15 +1553,21 @@ class VtkWidget(QtWidgets.QWidget):
     def update_region(self, name, region):
         self.region_dict[name].update(copy.deepcopy(region))
         self.update_region_source(name)
+        self.select_facets(name)
         self.vtkRenderWindow.Render()
 
     def change_region_color(self, name, color):
-        " change the color of a region "
+        """ change the color of a region """
         self.region_dict[name]['color'] = copy.deepcopy(color)
 
         actor = self.region_dict[name]['actor']
         actor.GetProperty().SetColor(
             *self.region_dict[name]['color'].color_float)
+
+        if 'clip_actor' in self.region_dict[name]:
+            actor = self.region_dict[name]['clip_actor']
+            actor.GetProperty().SetColor(
+                *self.region_dict[name]['color'].color_float)
 
         self.vtkRenderWindow.Render()
 
@@ -1573,6 +1578,9 @@ class VtkWidget(QtWidgets.QWidget):
 
         if region['type'] == 'point':
             shape = 'sphere'
+        elif region['type'].lower() == 'stl':
+            self.select_facets(name)
+            shape = 'box'
         else:
             shape = 'box'
 
@@ -1596,8 +1604,12 @@ class VtkWidget(QtWidgets.QWidget):
 
         if visible and self.regions_visible:
             self.region_dict[name]['actor'].VisibilityOn()
+            if 'clip_actor' in self.region_dict[name]:
+                self.region_dict[name]['clip_actor'].VisibilityOn()
         else:
             self.region_dict[name]['actor'].VisibilityOff()
+            if 'clip_actor' in self.region_dict[name]:
+                self.region_dict[name]['clip_actor'].VisibilityOff()
         self.region_dict[name]['visible'] = visible
 
         self.vtkRenderWindow.Render()
@@ -1623,6 +1635,74 @@ class VtkWidget(QtWidgets.QWidget):
         # check visibility
         if not self.regions_visible:
             actor.VisibilityOff()
+
+    def select_facets(self, name):
+        """ select facets with an implicit function """
+
+        region = self.region_dict[name]
+        # remove old objects
+        if 'clipper' in region:
+            self.vtkrenderer.RemoveActor(region['clip_actor'])
+            for key in ['clip_actor',  'clip_mapper', 'clipper', 'implicit']:
+                region.pop(key)
+
+        if region['type'].lower() != 'stl':
+            return
+
+        # bounds
+        bounds = [0.0]*6
+        bounds[::2] = region['from']
+        bounds[1::2] = region['to']
+        lengths = [abs(float(to) - float(f)) for
+                   f, to in zip(region['from'], region['to'])]
+        center = [min(f) + l / 2.0 for f, l in
+                  zip(zip(region['from'], region['to']),
+                      lengths)]
+
+        implicit = None
+        if region['stl_shape'] == 'box':
+            implicit = vtk.vtkBox()
+            implicit.SetBounds(bounds)
+        elif region['stl_shape'] == 'ellipsoid':
+            trans = vtk.vtkTransform()
+            trans.Scale(lengths)
+            implicit = vtk.vtkSphere()
+            implicit.SetRadius(0.5)
+            implicit.SetCenter(center)
+            implicit.SetTransform(trans)
+
+        region['implicit'] = implicit
+
+        geo = self.collect_toplevel_geometry()
+        if implicit is not None and geo is not None:
+            if region['slice']:
+                clipper = vtk.vtkClipPolyData()
+                clipper.SetClipFunction(implicit)
+                clipper.SetInputConnection(geo.GetOutputPort())
+                clipper.GenerateClippedOutputOn()
+                clipper_output = clipper.GetClippedOutputPort()
+            else:
+                clipper = vtk.vtkExtractPolyDataGeometry()
+                clipper.SetImplicitFunction(implicit)
+                clipper.SetInputConnection(geo.GetOutputPort())
+                clipper.ExtractInsideOn()
+                clipper_output = clipper.GetOutputPort()
+
+            clip_mapper = vtk.vtkPolyDataMapper()
+            clip_mapper.SetInputConnection(clipper_output)
+            clip_mapper.ScalarVisibilityOff()
+            clip_actor = vtk.vtkActor()
+            clip_actor.SetMapper(clip_mapper)
+
+            region['clipper'] = clipper
+            region['clip_mapper'] = clip_mapper
+            region['clip_actor'] = clip_actor
+            region['actor'].GetProperty().SetRepresentationToWireframe()
+
+            self.set_region_actor_props(clip_actor, name,
+                                        color=region['color'].color_float)
+
+            self.vtkrenderer.AddActor(clip_actor)
 
     # --- output files ---
     def export_stl(self, file_name):
@@ -1996,6 +2076,9 @@ class VtkWidget(QtWidgets.QWidget):
             actors = [geo['actor'] for geo in self.region_dict.values()
                       if geo['visible']]
 
+            actors += [geo['clip_actor'] for geo in self.region_dict.values()
+                       if 'clip_actor' in geo and geo['visible']]
+
             if toolbutton.isChecked():
                 self.regions_visible = False
             else:
@@ -2027,7 +2110,10 @@ class VtkWidget(QtWidgets.QWidget):
         elif name == 'geometry':
             actors = [geo['actor'] for geo in self.geometrydict.values()]
         elif name == 'regions':
-            actors = [geo['actor'] for geo in self.region_dict.values()]
+            actors = [geo['actor'] for geo in self.region_dict.values()
+                      if geo['type'].lower() != 'stl']
+            actors += [geo['clip_actor'] for geo in self.region_dict.values()
+                       if 'clip_actor' in geo]
 
         if actors is not None:
             for actor in actors:
@@ -2066,6 +2152,8 @@ class VtkWidget(QtWidgets.QWidget):
                 actors = self.grid_viewer_dict['actors']
             elif name == 'geometry':
                 actors = [geo['actor'] for geo in self.geometrydict.values()]
+                actors += [geo['clip_actor'] for geo in self.region_dict.values()
+                           if 'clip_actor' in geo]
 
             if actors is not None:
                 for actor in actors:
@@ -2088,6 +2176,8 @@ class VtkWidget(QtWidgets.QWidget):
             actors = [geo['actor'] for geo in self.geometrydict.values()]
         elif name == 'regions':
             actors = [geo['actor'] for geo in self.region_dict.values()]
+            actors += [geo['clip_actor'] for geo in self.region_dict.values()
+                       if 'clip_actor' in geo]
 
         if actors is not None:
             for actor in actors:
