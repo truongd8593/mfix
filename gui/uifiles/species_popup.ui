@@ -75,7 +75,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label_search">
        <property name="text">
-        <string>Search:</string>
+        <string>Search</string>
        </property>
        <property name="buddy">
         <cstring>lineedit_search</cstring>
@@ -85,7 +85,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Source:</string>
+        <string>Source</string>
        </property>
       </widget>
      </item>
@@ -201,7 +201,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Source:</string>
+         <string>Source</string>
         </property>
        </widget>
       </item>
@@ -215,7 +215,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Species:</string>
+         <string>Species</string>
         </property>
        </widget>
       </item>
@@ -229,7 +229,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Alias:</string>
+         <string>Alias</string>
         </property>
         <property name="buddy">
          <cstring>lineedit_alias</cstring>
@@ -242,7 +242,7 @@
       <item row="3" column="0" colspan="2">
        <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>Molecular weight:</string>
+         <string>Mol. weight</string>
         </property>
         <property name="buddy">
          <cstring>lineedit_mol_weight</cstring>
@@ -262,7 +262,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Heat of formation:</string>
+         <string>Heat of formation</string>
         </property>
         <property name="buddy">
          <cstring>lineedit_h_f</cstring>
@@ -292,7 +292,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Density:</string>
+         <string>Density</string>
         </property>
        </widget>
       </item>
@@ -318,7 +318,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_specific_heat">
           <property name="text">
-           <string>Specific Heat:</string>
+           <string>Specific Heat</string>
           </property>
          </widget>
         </item>
@@ -392,42 +392,42 @@
         </attribute>
         <row>
          <property name="text">
-          <string>Temperature:</string>
+          <string>Temperature</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a1:</string>
+          <string>a1</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a2:</string>
+          <string>a2</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a3:</string>
+          <string>a3</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a4:</string>
+          <string>a4</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a5:</string>
+          <string>a5</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a6:</string>
+          <string>a6</string>
          </property>
         </row>
         <row>
          <property name="text">
-          <string>a7:</string>
+          <string>a7</string>
          </property>
         </row>
         <column>
