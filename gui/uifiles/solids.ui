@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>644</width>
-    <height>948</height>
+    <width>521</width>
+    <height>634</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -228,7 +228,7 @@ QPushButton:checked {
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>60</height>
+            <height>0</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -240,11 +240,17 @@ QPushButton:checked {
           <property name="frameShadow">
            <enum>QFrame::Plain</enum>
           </property>
+          <property name="alternatingRowColors">
+           <bool>false</bool>
+          </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::SingleSelection</enum>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="rowCount">
+           <number>0</number>
           </property>
           <attribute name="horizontalHeaderHighlightSections">
            <bool>false</bool>
@@ -281,10 +287,16 @@ QPushButton:checked {
            <bool>true</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>600</height>
+           </size>
           </property>
           <property name="autoFillBackground">
            <bool>false</bool>
@@ -305,10 +317,16 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>606</width>
-             <height>786</height>
+             <y>-453</y>
+             <width>467</width>
+             <height>804</height>
             </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
            <property name="styleSheet">
             <string notr="true"/>
@@ -419,13 +437,13 @@ QPushButton:checked {
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
-                   <verstretch>1</verstretch>
+                   <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>100</height>
+                   <height>60</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -436,6 +454,9 @@ QPushButton:checked {
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="rowCount">
+                  <number>0</number>
                  </property>
                 </widget>
                </item>

@@ -361,6 +361,16 @@ class SolidsHandler(object):
             table.setCurrentCell(0,0)
             self.handle_solids_table_selection()
 
+        # trim excess horizontal space - can't figure out how to do this in designer
+        header_height = table.horizontalHeader().height()
+        if nrows==0:
+            # 34 px is empirical, fixme, should calc. row height
+            table.setMaximumHeight(header_height + 34)
+        else:
+            table.setMaximumHeight(header_height+nrows*table.rowHeight(0) + 4)
+            # a little extra to avoid horiz scrollbar when not needed
+
+
 
     def handle_solids_phase_name(self):
         new_name = self.ui.solids.lineedit_solids_phase_name.text()
