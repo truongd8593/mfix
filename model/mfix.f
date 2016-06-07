@@ -135,6 +135,7 @@
             DO II = 1, FACTOR
                DO_NSEARCH = (II == 1 .OR. MOD(II,NEIGHBOR_SEARCH_N) == 0)
                CALL DES_TIME_STEP
+               IF(ADJUST_PARTITION) EXIT
             ENDDO
             CALL DES_TIME_END
          ENDIF
