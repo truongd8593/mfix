@@ -318,7 +318,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_specific_heat">
           <property name="text">
-           <string>Specific Heat</string>
+           <string>Specific heat</string>
           </property>
          </widget>
         </item>
