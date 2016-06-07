@@ -86,7 +86,7 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_ymin">
+       <widget class="LineEdit" name="lineedit_ymin">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -101,7 +101,7 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="LineEdit" name="lineedit_keyword_zmin">
+       <widget class="LineEdit" name="lineedit_zmin">
         <property name="enabled">
          <bool>false</bool>
         </property>
