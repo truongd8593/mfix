@@ -77,7 +77,7 @@ class FluidHandler(object):
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
-                # Make tooltip match setting (for longer names which are cutoff)
+                # Make tooltip match setting (for longer names which are truncated)
                 combobox.setToolTip(combobox.currentText())
 
                 # Enable lineedit for constant model
@@ -239,8 +239,8 @@ class FluidHandler(object):
         if old_nmax_g is None:
             old_nmax_g = 0
         for i in range(nmax_g+1, old_nmax_g+1):
-            self.unset_keyword('species_g', i)
-            self.unset_keyword('species_alias_g', i)
+            self.unset_keyword('species_g', args=i)
+            self.unset_keyword('species_alias_g', args=i)
             #self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)

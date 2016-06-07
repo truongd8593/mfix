@@ -189,11 +189,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
 
-
-        # Extra knowledge
-        print(self.keyword_doc['des_em'])
-        self.keyword_doc['des_em']['validrange']['min']=0.0
-        self.keyword_doc['des_em']['validrange']['max']=1.0
+        # A few more ranges etc not mentioned in namelist doc
+        self.add_extra_keyword_doc()
 
         if False:
             keys = self.keyword_doc.keys()
@@ -342,6 +339,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.reset() # Clear command_output too?
         self.last_line_blank = False
         # end of __init__ (hooray!)
+
+    def add_extra_keyword_doc(self):
+        # Add a little extra knowledge ...
+        self.keyword_doc['des_em']['validrange']['min']=0.0
+        self.keyword_doc['des_em']['validrange']['max']=1.0
 
 
     def set_no_project(self):
@@ -575,6 +577,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         for pane in self.ui.panes:
             pane.setEnabled(enabled)
 
+        # Selected rows look bad with input disabled
+        if not enabled:
+            self.ui.fluid.tablewidget_fluid_species.clearSelection()
+            self.ui.solids.tablewidget_solids.clearSelection()
+            self.ui.solids.tablewidget_solids_species.clearSelection()
+        else:
+            self.update_solids_table()
+            self.update_solids_detail_pane()
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons

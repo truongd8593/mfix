@@ -58,7 +58,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         # build search list, lowercased
         self.haystack = []
         self.comments = {}
-        for phase in 'GLCS':
+        for phase in 'GLSC':
             htmp = [((k[0].lower(), v[2].lower()), k, phase) for (k,v) in self.db[phase].items()]
             htmp.sort()
             self.haystack.extend(htmp)

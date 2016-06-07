@@ -29,9 +29,7 @@ class SolidsHandler(object):
         self.solids_current_phase = None
         self.solids_species = OrderedDict()
 
-
         ui = self.ui
-
         s = ui.solids
         tb = s.toolbutton_solids_add
         tb.clicked.connect(self.solids_add)
@@ -66,20 +64,14 @@ class SolidsHandler(object):
         def make_solids_model_setter(self, name, key):
             def setter(model):
                 setattr(self, name, model) # self.solids_<name>_model = model
-                print("SETTER:", name, model)
                 combobox = getattr(self.ui.solids, 'combobox_' + name)
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
-                # Make tooltip match setting (for longer names which are cutoff)
+                # Make tooltip match setting (for longer names which are truncated)
                 combobox.setToolTip(combobox.currentText())
 
                 phase = self.solids_current_phase
-                if phase is None:
-                    #import traceback
-                    #traceback.print_stack()
-                    log.error("phase==None")
-                    return
 
                 # Enable lineedit for constant model
                 key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
@@ -88,7 +80,11 @@ class SolidsHandler(object):
                                    'lineedit_keyword_%s_args_S' % key_s0)
                 lineedit.setEnabled(model==CONSTANT)
 
+                if phase is None:
+                    return
+
                 if model == CONSTANT:
+                    # FIXME This is not right we could have a saved value from a different phase
                     value = lineedit.value # Possibly re-enabled gui item
                     if self.project.get_value(key_s0, args=phase) != value:
                         self.set_keyword(key_s0, value, args=phase) # Restore keyword value
@@ -147,7 +143,6 @@ class SolidsHandler(object):
         tw = s.tablewidget_solids_species
         tw.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
-
         # connect solid tab buttons
         for i, btn in enumerate((s.pushbutton_solids_materials,
                                  s.pushbutton_solids_tfm,
@@ -155,7 +150,6 @@ class SolidsHandler(object):
                                  s.pushbutton_solids_pic)):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
-
 
 
     def handle_solids_species_eq(self):
@@ -291,6 +285,11 @@ class SolidsHandler(object):
             else:
                 cb.setEnabled(False)
                 cb.setChecked(False)
+
+        #Solids density model only settable with TFM
+        s.combobox_solids_density_model.setEnabled(model==TFM)
+        s.lineedit_keyword_ro_s0_args_S.setEnabled(model==TFM)
+
         key = 'species_eq'
         val = self.project.get_value(key, default=False, args=phase)
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
@@ -301,6 +300,9 @@ class SolidsHandler(object):
         else:
             s.combobox_solids_density_model.setCurrentIndex(CONSTANT)
             s.combobox_solids_density_model.setEnabled(False)
+
+        # Solids visc. only avail for TFM solids
+
 
 
         nscalar = self.project.get_value('nscalar', 0)
@@ -351,6 +353,9 @@ class SolidsHandler(object):
 
         if nrows == 1: # If there's only 1 let's select it for the user's convenience
             table.setCurrentCell(0,0)
+            self.handle_solids_table_selection()
+
+
     def handle_solids_phase_name(self):
         new_name = self.ui.solids.lineedit_solids_phase_name.text()
         phase = self.solids_current_phase
@@ -373,14 +378,32 @@ class SolidsHandler(object):
         self.set_unsaved_flag()
 
     def solids_delete(self):
+        ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
+        # hole
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
             return
         name = tw.item(row, 0).text()
+        phase = row+1
+        for key in ('ro', 'mu', 'c_p', 'k'):
+            key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
+            key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
+            self.unset_keyword(key_s0, args=phase)
+            self.unset_keyword(key_usr, args=phase)
+
+        for key in ('d_p0', 'solids_model', 'species_eq', 'nmax_s'):
+            self.unset_keyword(key, args=phase)
+        # FIX SCALAR EQ
         del self.solids[name]
+        self.update_keyword('mmax', len(self.solids))
+        key = 'solids_phase_name(%s)' % phase
+        if key in self.project.mfix_gui_comments:
+            del self.project.mfix_gui_comments[key]
+
         tw.removeRow(row)
         tw.clearSelection()
+        self.update_solids_table()
         self.set_unsaved_flag()
 
     def enable_solids_scalar_eq(self, state):
@@ -409,9 +432,6 @@ class SolidsHandler(object):
             solid['nscalar_eq'] = 0
             self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
             self.update_scalar_equations(prev_nscalar)
-
-
-
 
 
     def set_solids_nscalar_eq(self, value):
@@ -450,7 +470,7 @@ class SolidsHandler(object):
         self.update_solids_species_table()
 
     def update_solids_species_table(self):
-        """Update table in solidss pane.  Also set nmax_g, species_g and species_alias_g keywords,
+        """Update table in solids pane.  Also set nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
 
         hv = QtWidgets.QHeaderView
@@ -466,36 +486,40 @@ class SolidsHandler(object):
         table.clearContents()
         if self.solids_species is None:
             return
+        phase = self.solids_current_phase
+        if phase is None:
+            return
         nrows = len(self.solids_species)
         table.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-        old_nmax_g = self.project.get_value('nmax_g')
-        nmax_g = len(self.solids_species)
-        if nmax_g > 0:
-            self.update_keyword('nmax_g', nmax_g)
+        old_nmax_s = self.project.get_value('nmax_s', index=phase)
+        nmax_s = len(self.solids_species) #FIXME this is per-phase
+        if nmax_s > 0:
+            self.update_keyword('nmax_s', nmax_s, args=phase)
         else:
-            self.unset_keyword('nmax_g')
+            self.unset_keyword('nmax_s', args=phase)
         for (row, (species,data)) in enumerate(self.solids_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
                                         'h_f', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 table.setItem(row, col, make_item(data.get(key)))
-                self.update_keyword('species_g', species, args=row+1)
-                self.update_keyword('species_alias_g', alias, args=row+1)
-                # We're avoiding mw_g in favor of the settings in THERMO DATA
-                #self.update_keyword('mw_g', data['mol_weight'], args=row+1)#
+                self.update_keyword('species_s', species, args=[phase,row+1])
+                self.update_keyword('species_alias_s', alias, args=[phase,row+1])
 
-        # Clear any keywords with indices above nmax_g
-        if old_nmax_g is None:
-            old_nmax_g = 0
-        for i in range(nmax_g+1, old_nmax_g+1):
-            self.unset_keyword('species_g', i)
-            self.unset_keyword('species_alias_g', i)
-            #self.unset_keyword('mw_g', i) # TBD
+                # We're avoiding mw_s in favor of the settings in THERMO DATA
+                #self.update_keyword('mw_s', data['mol_weight'], args=row+1)#
+
+        # Clear any keywords with indices above nmax_s
+        if old_nmax_s is None:
+            old_nmax_s = 0
+        for i in range(nmax_s+1, old_nmax_s+1):
+            self.unset_keyword('species_g', args=[phase,i])
+            self.unset_keyword('species_alias_g', args=[phase,i])
+            #self.unset_keyword('mw_s', i) # TBD
 
         self.project.update_thermo_data(self.solids_species)
 
