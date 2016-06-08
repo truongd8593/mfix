@@ -148,6 +148,10 @@ class MfixGuiTests(TestQApplication):
         # For thoroughness, we could loop over stobutton[0] and stopbutton[1].
         #  But we trust that they are connected to the same slot
 
+        # Forcing 'chk_batchq_end=True' set the 'unsaved' flag
+        # so we get a popup - save file to avoid this
+        self.mfix.save_project() # hack
+
         # Before running, button says 'Run'
         self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(all (b.isEnabled() for b in runbuttons))
@@ -158,6 +162,9 @@ class MfixGuiTests(TestQApplication):
         # Start run, run button disables, stop button enabled
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
         QTest.qWait(500)
+
+
+
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
 
@@ -256,24 +263,6 @@ class MfixGuiTests(TestQApplication):
                     found += 1
 
         self.assertEqual(found, 1)
-
-    def test_run_disabled_no_exe(self):
-        self.skipTest("Not working yet.")
-        # overriding $PATH was working.  But now we're also looking in MFIX_HOME,
-        # project dir, and saved location from prefs file - need to override all of
-        # these to get this test working
-        self.open_tree_item("run")
-        saved_path = os.environ['PATH']
-        os.environ['PATH'] = ''
-        self.mfix.mfix_exe = ''
-        self.mfix.reset()
-        self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_reset_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_run_pause_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_reset_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        os.environ["PATH"] = saved_path
 
 
     #def test_force_kill(self):
