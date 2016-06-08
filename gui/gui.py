@@ -214,7 +214,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.init_fluid_handler()
         self.init_solids_handler()
 
-
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
                                'workflow':  self.ui.pushButtonWorkflow,
@@ -583,8 +582,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.ui.solids.tablewidget_solids.clearSelection()
             self.ui.solids.tablewidget_solids_species.clearSelection()
         else:
-            self.update_solids_table()
-            self.update_solids_detail_pane()
+            self.update_fluid_species_table() # reenable sel?
+            self.update_solids_table() # ?
+            #self.update_solids_detail_pane()
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
@@ -777,9 +777,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 model = valid_models[0]
                 self.update_keyword('solids_model', model, args=[i])
                 v['model'] = model
-        self.update_solids_table()
+        self.update_solids_table() # some of these settings are dependent on solver
         self.setup_combobox_solids_model()
-        self.update_solids_detail_pane()
+        #self.update_solids_detail_pane()
         self.update_window_title()
 
     def enable_energy_eq(self, state):
@@ -1893,6 +1893,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #### Fluid phase
         # fluid species table
         self.update_fluid_species_table()
+
         # fluid momentum and species eq. handled by _keyword_ widget
         # fluid scalar eq
         nscalar = self.project.get_value('nscalar', default=0)
@@ -1936,7 +1937,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ### Solids
         self.update_solids_table()
-        self.update_solids_detail_pane()
+        #self.update_solids_detail_pane()
 
         ### Geometry
         # Look for geometry.stl and load automatically

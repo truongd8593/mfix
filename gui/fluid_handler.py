@@ -63,9 +63,10 @@ class FluidHandler(object):
 
     def init_fluid_handler(self):
         self.fluid_species = OrderedDict()
-
         ui = self.ui
-        ui.fluid.lineedit_fluid_phase_name.default_value = "Fluid"
+        f = ui.fluid
+
+        f.lineedit_fluid_phase_name.default_value = "Fluid"
         self.saved_fluid_species = None
         self.init_fluid_default_models()
         # Handle a number of cases which are essentially the same
@@ -113,22 +114,22 @@ class FluidHandler(object):
             setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
 
             # Set the combobox default value
-            combobox = getattr(self.ui.fluid, 'combobox_'+model_name)
+            combobox = getattr(ui.fluid, 'combobox_'+model_name)
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
-        combobox = self.ui.fluid.combobox_fluid_mol_weight_model
+        combobox = f.combobox_fluid_mol_weight_model
         combobox.default_value = self.fluid_mol_weight_model
 
         # more stuff moved from gui.__init__
-        checkbox = ui.fluid.checkbox_keyword_species_eq_args_0
+        checkbox = f.checkbox_keyword_species_eq_args_0
         checkbox.clicked.connect(self.enable_fluid_species_eq)
 
-        ui.fluid.lineedit_fluid_phase_name.editingFinished.connect(
+        f.lineedit_fluid_phase_name.editingFinished.connect(
             self.handle_fluid_phase_name)
-        ui.fluid.checkbox_enable_scalar_eq.clicked.connect(
+        f.checkbox_enable_scalar_eq.clicked.connect(
             self.enable_fluid_scalar_eq)
-        ui.fluid.spinbox_nscalar_eq.valueChanged.connect(
+        f.spinbox_nscalar_eq.valueChanged.connect(
             self.set_fluid_nscalar_eq)
 
         # Fluid phase models
@@ -139,7 +140,6 @@ class FluidHandler(object):
             combobox.currentIndexChanged.connect(setter)
 
         # Fluid species
-        f = ui.fluid
         tb = f.toolbutton_fluid_species_add
         tb.clicked.connect(self.fluid_species_add)
         tb = f.toolbutton_fluid_species_copy # misnomer
@@ -150,6 +150,22 @@ class FluidHandler(object):
         tb.clicked.connect(self.fluid_species_delete)
         tw = f.tablewidget_fluid_species
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
+        self.fixup_column_widths()
+
+
+    def fixup_column_widths(self):
+        hv = QtWidgets.QHeaderView
+        f=self.ui.fluid
+        table = f.tablewidget_fluid_species
+        if PYQT5:
+            resize = table.horizontalHeader().setSectionResizeMode
+        else:
+            resize = table.horizontalHeader().setResizeMode
+        for n in range(table.columnCount()):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
+
+
 
 
     # molecular wt model only has 2 choices, and the key names don't
@@ -200,19 +216,10 @@ class FluidHandler(object):
     def update_fluid_species_table(self):
         """Update table in fluids pane.  Also set nmax_g, species_g and species_alias_g keywords,
         which are not tied to a single widget"""
-
-        hv = QtWidgets.QHeaderView
         table = self.ui.fluid.tablewidget_fluid_species
-        if PYQT5:
-            resize = table.horizontalHeader().setSectionResizeMode
-        else:
-            resize = table.horizontalHeader().setResizeMode
-        for n in range(5):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
-
         table.clearContents()
         if self.fluid_species is None:
+            self.fixup_column_widths()
             return
         nrows = len(self.fluid_species)
         table.setRowCount(nrows)
@@ -246,6 +253,7 @@ class FluidHandler(object):
             #self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)
+        self.fixup_column_widths()
 
     def handle_fluid_species_selection(self):
         row = get_selected_row(self.ui.fluid.tablewidget_fluid_species)
@@ -260,6 +268,7 @@ class FluidHandler(object):
         sp.do_search('') # Init to full db
         # how to avoid this if dialog open already?
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
+        sp.reset_signals()
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
         sp.defined_species = self.fluid_species
@@ -295,6 +304,7 @@ class FluidHandler(object):
         sp.phases = 'GL'
         sp.default_phase = 'G' # FIXME, no control for this
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
+        sp.reset_signals()
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
         sp.defined_species = self.fluid_species

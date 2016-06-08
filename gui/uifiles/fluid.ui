@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>513</width>
-    <height>988</height>
+    <width>553</width>
+    <height>957</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -215,7 +215,7 @@
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
-          <verstretch>10</verstretch>
+          <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize">
@@ -239,8 +239,11 @@
         <property name="selectionBehavior">
          <enum>QAbstractItemView::SelectRows</enum>
         </property>
-        <attribute name="horizontalHeaderCascadingSectionResizes">
+        <attribute name="horizontalHeaderVisible">
          <bool>true</bool>
+        </attribute>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
         </attribute>
         <attribute name="horizontalHeaderDefaultSectionSize">
          <number>100</number>
@@ -249,12 +252,15 @@
          <bool>false</bool>
         </attribute>
         <attribute name="horizontalHeaderMinimumSectionSize">
-         <number>12</number>
+         <number>20</number>
         </attribute>
         <attribute name="horizontalHeaderStretchLastSection">
          <bool>false</bool>
         </attribute>
         <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderHighlightSections">
          <bool>false</bool>
         </attribute>
         <column>
@@ -264,6 +270,9 @@
         </column>
         <column>
          <property name="text">
+          <string>P</string>
+         </property>
+         <property name="toolTip">
           <string>Phase</string>
          </property>
         </column>
@@ -271,15 +280,24 @@
          <property name="text">
           <string>Mw</string>
          </property>
+         <property name="toolTip">
+          <string>Molecular weight</string>
+         </property>
         </column>
         <column>
          <property name="text">
-          <string>Hf</string>
+          <string>Cp</string>
+         </property>
+         <property name="toolTip">
+          <string>Heat of formation</string>
          </property>
         </column>
         <column>
          <property name="text">
           <string>Source</string>
+         </property>
+         <property name="toolTip">
+          <string>Dat a source</string>
          </property>
         </column>
        </widget>

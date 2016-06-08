@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>521</width>
-    <height>634</height>
+    <width>629</width>
+    <height>866</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,6 +149,9 @@ QPushButton:checked {
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item row="0" column="0">
         <widget class="QFrame" name="frame_add_delete_copy">
          <property name="frameShape">
@@ -255,6 +258,12 @@ QPushButton:checked {
           <attribute name="horizontalHeaderHighlightSections">
            <bool>false</bool>
           </attribute>
+          <attribute name="horizontalHeaderMinimumSectionSize">
+           <number>20</number>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>false</bool>
+          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
@@ -287,7 +296,7 @@ QPushButton:checked {
            <bool>true</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -295,7 +304,7 @@ QPushButton:checked {
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>600</height>
+            <height>16677215</height>
            </size>
           </property>
           <property name="autoFillBackground">
@@ -317,9 +326,9 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-453</y>
-             <width>467</width>
-             <height>804</height>
+             <y>-256</y>
+             <width>593</width>
+             <height>780</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -386,6 +395,9 @@ QPushButton:checked {
                   <enum>QFrame::Plain</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_9">
+                  <property name="margin">
+                   <number>0</number>
+                  </property>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="toolbutton_solids_species_add">
                     <property name="text">
@@ -455,9 +467,73 @@ QPushButton:checked {
                  <property name="frameShadow">
                   <enum>QFrame::Plain</enum>
                  </property>
-                 <property name="rowCount">
-                  <number>0</number>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
                  </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
+                 <attribute name="horizontalHeaderVisible">
+                  <bool>true</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderCascadingSectionResizes">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>100</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderHighlightSections">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>20</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderStretchLastSection">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderHighlightSections">
+                  <bool>false</bool>
+                 </attribute>
+                 <column>
+                  <property name="text">
+                   <string>Name</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>P</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Phase</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Mw</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Molecular weight</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Cp</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Heat of formation</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Source</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>Data source</string>
+                  </property>
+                 </column>
                 </widget>
                </item>
               </layout>
@@ -511,7 +587,7 @@ QPushButton:checked {
                <item row="1" column="1">
                 <widget class="ComboBox" name="combobox_solids_density_model">
                  <property name="sizeAdjustPolicy">
-                  <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                  <enum>QComboBox::AdjustToContents</enum>
                  </property>
                  <property name="minimumContentsLength">
                   <number>1</number>
@@ -600,7 +676,7 @@ QPushButton:checked {
                   <string>Mixture</string>
                  </property>
                  <property name="sizeAdjustPolicy">
-                  <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                  <enum>QComboBox::AdjustToContents</enum>
                  </property>
                  <property name="minimumContentsLength">
                   <number>1</number>
@@ -681,7 +757,7 @@ QPushButton:checked {
                   <number>0</number>
                  </property>
                  <property name="sizeAdjustPolicy">
-                  <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                  <enum>QComboBox::AdjustToContents</enum>
                  </property>
                  <property name="minimumContentsLength">
                   <number>1</number>
@@ -895,7 +971,7 @@ QPushButton:checked {
              </spacer>
             </item>
             <item row="10" column="0" colspan="3">
-             <widget class="QGroupBox" name="groupBox_adcanced">
+             <widget class="QGroupBox" name="groupBox_advanced">
               <property name="title">
                <string>Advanced</string>
               </property>
@@ -1371,7 +1447,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>410</width>
+            <width>595</width>
             <height>1033</height>
            </rect>
           </property>

@@ -331,6 +331,16 @@ class SpeciesPopup(QtWidgets.QDialog):
     def set_save_button(self, state):
         self.ui.buttonbox.buttons()[0].setEnabled(state)
 
+
+    def reset_signals(self):
+        # todo:  fix this so it's not the caller's responsibility
+        #  (make a util function that calls this & pops up dialog)
+        for sig in (self.cancel, self.save):
+            try:
+                sig.disconnect()
+            except:
+                pass # isSignalConnected only exists in qt5.
+
     def __init__(self, app, parent=None, phases='GLCS'):
         super(SpeciesPopup, self).__init__(parent)
         self.app = app

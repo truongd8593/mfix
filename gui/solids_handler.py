@@ -24,7 +24,6 @@ class SolidsHandler(object):
         self.solids_conductivity_model = OTHER
 
     def init_solids_handler(self):
-
         self.solids = OrderedDict()
         self.solids_current_phase = None
         self.solids_species = OrderedDict()
@@ -36,7 +35,7 @@ class SolidsHandler(object):
         tb = s.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-        tw = s.tablewidget_solids
+        tw_solids, tw_solids_species = s.tablewidget_solids, s.tablewidget_solids_species
         # Hack - force summary table to update  on kw updates
         class TableWidgetProxy:
             def objectName(self):
@@ -46,7 +45,7 @@ class SolidsHandler(object):
 
         self.project.register_widget(TableWidgetProxy(),
                              ['solids_model', 'd_p0', 'ro_s0'], args='*')
-        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        tw_solids.itemSelectionChanged.connect(self.handle_solids_table_selection)
         cb = s.combobox_solids_model
         cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
@@ -140,8 +139,8 @@ class SolidsHandler(object):
         tb = s.toolbutton_solids_species_delete
         tb.setEnabled(False)
         tb.clicked.connect(self.solids_species_delete)
-        tw = s.tablewidget_solids_species
-        tw.itemSelectionChanged.connect(self.handle_solids_species_selection)
+
+        tw_solids_species.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
         # connect solid tab buttons
         for i, btn in enumerate((s.pushbutton_solids_materials,
@@ -150,6 +149,22 @@ class SolidsHandler(object):
                                  s.pushbutton_solids_pic)):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
+
+        self.fixup_column_widths_S(1)
+        self.fixup_column_widths_S(2)
+
+    def fixup_column_widths_S(self, n): # clean this up
+        # fixme, this is getting called excessively
+        s = self.ui.solids
+        hv = QtWidgets.QHeaderView
+        tw = s.tablewidget_solids if n==1 else s.tablewidget_solids_species
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        for n in range(tw.columnCount()):
+            resize(n, hv.ResizeToContents if n>0
+                   else hv.Stretch)
 
 
     def handle_solids_species_eq(self):
@@ -206,7 +221,7 @@ class SolidsHandler(object):
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
         self.update_solids_table()
-        self.update_solids_detail_pane()
+        #self.update_solids_detail_pane()
 
     def make_solids_name(self, n):
         while True:
@@ -254,6 +269,8 @@ class SolidsHandler(object):
         phase = self.solids_current_phase
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
+            self.update_solids_species_table()
+            self.fixup_column_widths_S(1)
             sa.setEnabled(False)
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
@@ -318,20 +335,13 @@ class SolidsHandler(object):
 
         # Solids visc. only avail for TFM solids
 
+        self.update_solids_species_table()
 
+        self.fixup_column_widths_S(1)
 
 
     def update_solids_table(self):
-        hv = QtWidgets.QHeaderView
         table = self.ui.solids.tablewidget_solids
-        if PYQT5:
-            resize = table.horizontalHeader().setSectionResizeMode
-        else:
-            resize = table.horizontalHeader().setResizeMode
-        for n in range(4):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
-
         if self.solids is None:
             table.clearContents()
             return
@@ -370,6 +380,7 @@ class SolidsHandler(object):
             table.setMaximumHeight(header_height+nrows*table.rowHeight(0) + 4)
             # a little extra to avoid horiz scrollbar when not needed
 
+        self.update_solids_detail_pane() # Do we want to do this every time?
 
 
     def handle_solids_phase_name(self):
@@ -484,21 +495,13 @@ class SolidsHandler(object):
     def solids_species_save(self):
         self.solids_species = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
+        self.fixup_column_widths_S(2)
 
     def update_solids_species_table(self):
-        """Update table in solids pane.  Also set nmax_s, species_s and species_alias_s keywords,
+        """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
 
-        hv = QtWidgets.QHeaderView
         table = self.ui.solids.tablewidget_solids_species
-        if PYQT5:
-            resize = table.horizontalHeader().setSectionResizeMode
-        else:
-            resize = table.horizontalHeader().setResizeMode
-        for n in range(5):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
-
         table.clearContents()
         if self.solids_species is None:
             return
@@ -533,11 +536,12 @@ class SolidsHandler(object):
         if old_nmax_s is None:
             old_nmax_s = 0
         for i in range(nmax_s+1, old_nmax_s+1):
-            self.unset_keyword('species_g', args=[phase,i])
-            self.unset_keyword('species_alias_g', args=[phase,i])
+            self.unset_keyword('species_s', args=[phase,i])
+            self.unset_keyword('species_alias_s', args=[phase,i])
             #self.unset_keyword('mw_s', i) # TBD
 
         self.project.update_thermo_data(self.solids_species)
+        self.fixup_column_widths_S(2)
 
     def handle_solids_species_selection(self):
         row = get_selected_row(self.ui.solids.tablewidget_solids_species)
@@ -552,6 +556,7 @@ class SolidsHandler(object):
         sp.do_search('')
         # how to avoid this if dialog open already?
         self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
         sp.defined_species = self.solids_species
@@ -574,6 +579,7 @@ class SolidsHandler(object):
         key = self.solids_species.keys()[row]
         del self.solids_species[key]
         self.update_solids_species_table()
+        self.fixup_column_widths_S(2)
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
@@ -588,6 +594,7 @@ class SolidsHandler(object):
         sp.default_phase = 'S' # FIXME no control
         #sp.search('')
         self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
         sp.defined_species = self.solids_species
