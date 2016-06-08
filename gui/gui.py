@@ -1270,10 +1270,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         strikeout = font and font.lower() == 'strikeout'
         if strikeout:
             msg = "unset " + msg
-        if 'error:' in lower:
-            log.error(msg)
-        if 'warning:' in lower:
-            log.warn(msg)
+        if lower.startswith("error:"):
+            log.error(msg[6:])
+        elif lower.startswith("warning:"):
+            log.warn(msg[8:])
+        elif lower.startswith("info:"):
+            log.info(msg[5:])
+            color='blue'
         else:
             log.info(msg)
         cursor = qtextbrowser.textCursor()
