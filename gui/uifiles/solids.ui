@@ -338,7 +338,7 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-216</y>
+             <y>0</y>
              <width>606</width>
              <height>780</height>
             </rect>
@@ -1477,7 +1477,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>410</width>
+            <width>608</width>
             <height>1033</height>
            </rect>
           </property>
@@ -1515,7 +1515,18 @@ background-color:transparent;
             </widget>
            </item>
            <item row="2" column="2">
-            <widget class="ComboBox" name="combobox_keyword_des_intg_method_2"/>
+            <widget class="ComboBox" name="combobox_keyword_des_intg_method_2">
+             <item>
+              <property name="text">
+               <string>EULER</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>ADAMS_BASHFORTH</string>
+              </property>
+             </item>
+            </widget>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_151">
