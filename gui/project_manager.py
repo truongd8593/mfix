@@ -379,7 +379,9 @@ class ProjectManager(Project):
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.
         Unmatching entries are not modified"""
-        self.gui.set_unsaved_flag() # Move from gui to project
+
+        changed = False
+
         new_thermo_data = []
         #species_to_save = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
         # We're going to save all of them, even the ones from BURCAT. so that mfix does
@@ -392,6 +394,7 @@ class ProjectManager(Project):
             line = line.rstrip()
             if replace_entry:
                 if line:
+                    changed = True
                     continue
                 else:
                     skip = False
@@ -404,6 +407,7 @@ class ProjectManager(Project):
             # Avoid repeated blanks
             if not line:
                 if new_thermo_data and not new_thermo_data[-1] :
+                    changed = True
                     continue
             # Keep the line
             new_thermo_data.append(line)
@@ -414,6 +418,10 @@ class ProjectManager(Project):
             #if data['source'] != 'BURCAT':
             #    self.thermo_data.extend(format_burcat(species,data))
             self.thermo_data.extend(format_burcat(species,data))
+            changed = True
+
+        if changed:
+            self.gui.set_unsaved_flag()
 
     def objectName(self):
         return 'Project Manager'
