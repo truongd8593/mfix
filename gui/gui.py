@@ -1544,6 +1544,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
         self.update_keyword('run_name', run_name)
+        self.print_internal("Info: Saving %s" % project_file)
         self.project.writeDatFile(project_file)
         self.clear_unsaved_flag()
 
