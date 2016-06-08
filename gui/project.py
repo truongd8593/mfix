@@ -189,10 +189,8 @@ def remove_spaces_from_equations(string):
                     if paren_level == 0:
                         in_eq = False
 
-        if in_eq and c == ' ' or c == '\t':
-            continue
-
-        ret += c
+        if not(in_eq and c.isspace()):
+            ret += c
 
     return ret
 
