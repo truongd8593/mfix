@@ -782,6 +782,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #self.update_solids_detail_pane()
         self.update_window_title()
 
+    def disable_fluid_solver(self, disabled):
+        enabled = not disabled
+        item = self.find_navigation_tree_item("Fluid")
+        item.setDisabled(disabled)
+        ms = self.ui.model
+        checkbox = ms.checkbox_enable_turbulence
+        checkbox.setEnabled(enabled)
+        ms.combobox_turbulence_model.setEnabled(enabled and
+                                                checkbox.isChecked())
+
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of several other GUI items
@@ -799,22 +809,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         else:
             lineedit.setEnabled(False)
 
-    def disable_fluid_solver(self, disabled):
-        enabled = not disabled
-        item = self.find_navigation_tree_item("Fluid")
-        item.setDisabled(disabled)
-        ms = self.ui.model
-        checkbox = ms.checkbox_enable_turbulence
-        checkbox.setEnabled(enabled)
-        ms.combobox_turbulence_model.setEnabled(enabled and
-                                                checkbox.isChecked())
-
-
-
     def set_subgrid_model(self, index):
         self.subgrid_model = index
         groupbox_subgrid_params = self.ui.model.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
+
+    def enable_turbulence(self):
+        model = self.ui.model
+        enabled = model.checkbox_enable_turbulence.isChecked()
+        model.combobox_turbulence_model.setEnabled(enabled)
 
     def update_scalar_equations(self, prev_nscalar):
         """sets nscalar and phase4scalar(#) for all phases"""
@@ -850,11 +853,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         combobox.activated.connect(self.set_solver)
 
         checkbox = model.checkbox_disable_fluid_solver
-        checkbox.stateChanged.connect(self.disable_fluid_solver)
+        checkbox.clicked.connect(self.disable_fluid_solver)
         self.disable_fluid_solver(False)
 
         checkbox = model.checkbox_keyword_energy_eq
-        checkbox.stateChanged.connect(self.enable_energy_eq)
+        checkbox.clicked.connect(self.enable_energy_eq)
+
+        checkbox = model.checkbox_enable_turbulence
+        checkbox.clicked.connect(self.enable_turbulence)
 
         combobox = model.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
