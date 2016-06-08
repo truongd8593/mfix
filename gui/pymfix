@@ -107,7 +107,7 @@ class Mfix(object):
         RUN.interactive = True
 
         for arg in keyword_args:
-            MAIN.add_command_line_argument(arg)
+            MAIN.add_command_line_keyword(arg)
 
         self.update_status()
 
