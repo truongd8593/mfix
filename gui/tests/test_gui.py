@@ -102,6 +102,10 @@ class MfixGuiTests(TestQApplication):
                 except OSError:
                     pass
 
+        # Forcing 'chk_batchq_end=True' set the 'unsaved' flag
+        # so we get a popup - save file to avoid this
+        self.mfix.save_project()
+
         TestQApplication.tearDown(self)
 
     def get_tree_item(self, name):
@@ -147,10 +151,6 @@ class MfixGuiTests(TestQApplication):
 
         # For thoroughness, we could loop over stobutton[0] and stopbutton[1].
         #  But we trust that they are connected to the same slot
-
-        # Forcing 'chk_batchq_end=True' set the 'unsaved' flag
-        # so we get a popup - save file to avoid this
-        self.mfix.save_project() # hack
 
         # Before running, button says 'Run'
         self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
