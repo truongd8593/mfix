@@ -27,47 +27,51 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Solver</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="ComboBox" name="combobox_solver">
+   <item row="1" column="0" colspan="3">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <property name="text">
-       <string>Single Phase</string>
-      </property>
+      <widget class="QLabel" name="label_6">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Solver</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <property name="text">
-       <string>Two-Fluid Model (MFIX-TFM)</string>
-      </property>
+      <widget class="ComboBox" name="combobox_solver">
+       <item>
+        <property name="text">
+         <string>Single Phase</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Two-Fluid Model (MFIX-TFM)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Discrete Element Model (MFIX-DEM)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Particle-in-Cell (MFIX-PIC)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MFIX-Hybrid</string>
+        </property>
+       </item>
+      </widget>
      </item>
-     <item>
-      <property name="text">
-       <string>Discrete Element Model (MFIX-DEM)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Particle-in-Cell (MFIX-PIC)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>MFIX-Hybrid</string>
-      </property>
-     </item>
-    </widget>
+    </layout>
    </item>
    <item row="2" column="2">
     <spacer name="verticalSpacer">
@@ -378,6 +382,9 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
@@ -393,7 +400,6 @@
   <zorder>label_6</zorder>
   <zorder>combobox_solver</zorder>
   <zorder>groupBox_options</zorder>
-  <zorder>checkbox_disable_fluid_solver</zorder>
   <zorder>verticalSpacer</zorder>
  </widget>
  <customwidgets>
