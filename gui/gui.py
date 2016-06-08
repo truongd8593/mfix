@@ -98,13 +98,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if project_file:
             self.set_project_file(project_file)
 
+        # Allow LineEdit widgets to report out-of-bounds values.
         LineEdit.print_internal = self.print_internal
 
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(get_icon('mfix.png'))
 
-        # reference to qapp instance (why?)
-        #self.app = app
+        self.message_box = None # for tests to access
+
 
         # Initialize data members
         self.solver_name = None
@@ -1203,8 +1204,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if detailedText:
             self.print_internal(detailedText)
 
-        msgBox = QtWidgets.QMessageBox(self)
-        msgBox.setWindowTitle(title)
+        message_box = QtWidgets.QMessageBox(self)
+        self.message_box = message_box
+        message_box.setWindowTitle(title)
 
         # Icon
         if icon == 'warning':
@@ -1212,16 +1214,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         else:
             icon = QtWidgets.QMessageBox.Information
 
-        msgBox.setIcon(icon)
+        message_box.setIcon(icon)
 
         # Text
-        msgBox.setText(text)
+        message_box.setText(text)
 
         if infoText:
-            msgBox.setInformativeText(infoText)
+            message_box.setInformativeText(infoText)
 
         if detailedText:
-            msgBox.setDetailedText(detailedText)
+            message_box.setDetailedText(detailedText)
 
         # buttons
         qbuttonDict = {'ok':      QtWidgets.QMessageBox.Ok,
@@ -1231,12 +1233,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                        'discard': QtWidgets.QMessageBox.Discard,
                        }
         for button in buttons:
-            msgBox.addButton(qbuttonDict[button])
+            message_box.addButton(qbuttonDict[button])
 
             if button == default:
-                msgBox.setDefaultButton(qbuttonDict[button])
-
-        ret = msgBox.exec_()
+                message_box.setDefaultButton(qbuttonDict[button])
+        ret = message_box.exec_()
 
         for key, value in qbuttonDict.items():
             if value == ret:
@@ -1839,13 +1840,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                     default='no')
                     if response == 'no':
                         ok_to_write = False
+                        log.info("Rename cancelled at user request")
 
             if ok_to_write:
                 project_file = renamed_project_file
                 try:
                     self.force_default_settings()
+                    self.print_internal("Info: saving %s" % project_file)
                     self.project.writeDatFile(project_file) #XX
-                    self.print_internal(save_msg, color='blue')
+                    #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
                 except Exception as ex:
                     msg = 'Failed to save %s: %s: %s' % (project_file, ex.__class__.__name__, ex)

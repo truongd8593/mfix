@@ -17,6 +17,7 @@ from qtpy.QtCore import Qt, QTimer
 from qtpy import QtWidgets
 
 import logging
+import errno
 
 from tools.general import to_unicode_from_fs
 
@@ -24,33 +25,38 @@ from .helper_functions import TestQApplication
 import gui
 
 # TODO : replace all qWaits with a 'waitFor' function
-
-def dismiss():
-    # dismiss modal QMessageBox
-    for widget in QtWidgets.QApplication.instance().topLevelWidgets():
-        if isinstance(widget, QtWidgets.QMessageBox):
-            button = widget.button(QtWidgets.QMessageBox.Ok)
-            if not button:
-                button = widget.escapeButton()
-            QTest.mouseClick(button, Qt.LeftButton)
-
-def dismiss_wait():
-    ###wait for modal dialog to pop down
-    # There's no QTest.WaitForWindowNotShown
-    for widget in QtWidgets.QApplication.instance().topLevelWidgets():
-        if isinstance(widget, QtWidgets.QMessageBox):
-            while widget.isVisible():
-                QTest.qWait(10)
-            break
-
+# Note, qWaitForWindowShown is deprecated in qt5, which provides a better version,
+#  including a timeout.
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
+
+
+    def click_ok(self):
+        retry = 0
+        while not (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
+            QTest.qWait(10)
+            retry += 1
+        self.assertTrue(self.mfix.message_box and self.mfix.message_box.isVisible(), "message box not shown in 1s")
+        button = self.mfix.message_box.button(QtWidgets.QMessageBox.Ok)
+        if not button:
+            button = self.mfix.message_box.escapeButton()
+        QTest.mouseClick(button, Qt.LeftButton)
+
+        retry = 0
+        while (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
+            QTest.qWait(10)
+            retry += 1
+        self.assertFalse(self.mfix.message_box.isVisible(), 'dialog box not closed within 1s')
+
+
     def setUp(self):
         """open FluidBed_DES for testing"""
         #self.xvfb = Xvfb(width=1280, height=720)
         #self.addCleanup(self.xvfb.stop)
         #self.xvfb.start()
+        log = logging.getLogger()
+        log.root.setLevel(logging.INFO)
 
         self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.mfix_home = os.path.dirname(self.rundir)
@@ -65,7 +71,8 @@ class MfixGuiTests(TestQApplication):
                 try:
                     os.remove(path)
                 except OSError as e:
-                    print(e)
+                    if e.errno != errno.ENOENT:
+                        print(e)
 
         TestQApplication.setUp(self)
         def get_project_file(cls):
@@ -77,15 +84,16 @@ class MfixGuiTests(TestQApplication):
         gui.MfixGui.get_project_file = get_project_file
         gui.MfixGui.set_project_file = set_project_file
 
-        log = logging.getLogger()
-        log.root.setLevel(logging.WARN)
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
-        QTest.qWaitForWindowShown(self.mfix)
+        self.assertTrue(QTest.qWaitForWindowShown(self.mfix), "main mfix app not open")
 
         self.mfix.get_open_filename = lambda: mfix_dat
-        QTimer.singleShot(100, dismiss)
+        QTimer.singleShot(500, self.click_ok)
         QTest.mouseClick(self.mfix.ui.toolbutton_open, Qt.LeftButton)
+
+        # We will get a confirmer for auto-rename
+
 
         self.assertEqual(self.runname, self.mfix.ui.general.lineedit_keyword_run_name.text())
         mfxfile = os.path.join(self.rundir, '%s.mfx' % self.runname)
@@ -99,8 +107,9 @@ class MfixGuiTests(TestQApplication):
             for path in paths:
                 try:
                     os.remove(path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        print(e)
 
         # Forcing 'chk_batchq_end=True' set the 'unsaved' flag
         # so we get a popup - save file to avoid this
@@ -123,11 +132,12 @@ class MfixGuiTests(TestQApplication):
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
-        QTimer.singleShot(100, dismiss)
         self.mfix.ui.action_save_as.trigger()
 
+        QTest.qWait(500)
         self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
         self.assertTrue(os.path.exists(newpath))
+
 
     def test_run_mfix(self):
         #TODO: write similar test for pymfix
