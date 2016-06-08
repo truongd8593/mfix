@@ -1540,6 +1540,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.region_dict[name]['actor'] = actor
         self.region_dict[name]['mapper'] = mapper
+        self.select_facets(name)
 
         self.change_region_visibility(name,
                                       self.region_dict[name]['visibility'])
@@ -1549,6 +1550,8 @@ class VtkWidget(QtWidgets.QWidget):
     def delete_region(self, name):
         region = self.region_dict.pop(name)
         self.vtkrenderer.RemoveActor(region['actor'])
+        if 'clip_actor' in region:
+            self.vtkrenderer.RemoveActor(region['clip_actor'])
 
     def update_region(self, name, region):
         self.region_dict[name].update(copy.deepcopy(region))
@@ -1578,15 +1581,13 @@ class VtkWidget(QtWidgets.QWidget):
 
         if region['type'] == 'point':
             shape = 'sphere'
-        elif region['type'].lower() == 'stl':
-            self.select_facets(name)
-            shape = 'box'
         else:
             shape = 'box'
 
         source = self.primitivedict[shape]()
         self.region_dict[name]['source'] = source
         self.update_region_source(name)
+        self.select_facets(name)
 
         self.region_dict[name]['mapper'].SetInputConnection(
             source.GetOutputPort())
@@ -1641,7 +1642,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         region = self.region_dict[name]
         # remove old objects
-        if 'clipper' in region:
+        if 'clip_actor' in region:
             self.vtkrenderer.RemoveActor(region['clip_actor'])
             for key in ['clip_actor',  'clip_mapper', 'clipper', 'implicit']:
                 region.pop(key)
@@ -1665,10 +1666,10 @@ class VtkWidget(QtWidgets.QWidget):
             implicit.SetBounds(bounds)
         elif region['stl_shape'] == 'ellipsoid':
             trans = vtk.vtkTransform()
-            trans.Scale(lengths)
+            # for some reason, everything is inverted?
+            trans.Scale([1/l for l in lengths])
+            trans.Translate([-c for c in center])
             implicit = vtk.vtkSphere()
-            implicit.SetRadius(0.5)
-            implicit.SetCenter(center)
             implicit.SetTransform(trans)
 
         region['implicit'] = implicit

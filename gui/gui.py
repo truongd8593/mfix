@@ -1868,6 +1868,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if d not in self.exe_watcher.directories():
                 self.exe_watcher.addPath(d)
         self.slot_exes_changed()
+        
+        ### Geometry
+        # Look for geometry.stl and load automatically
+        geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+        if os.path.exists(geometry_file):
+            self.vtkwidget.add_stl(None, filename=geometry_file)
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1946,12 +1952,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_solids_table()
         #self.update_solids_detail_pane()
 
-        ### Geometry
-        # Look for geometry.stl and load automatically
-        geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry_file):
-            self.vtkwidget.add_stl(None, filename=geometry_file)
-
+        ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
 

@@ -393,31 +393,83 @@ QHeaderView::section:vertical{
              <property name="spacing">
               <number>5</number>
              </property>
-             <item row="1" column="0" colspan="4">
+             <item row="2" column="0" colspan="3">
+              <widget class="QGroupBox" name="groupbox_filter_facets">
+               <property name="title">
+                <string>Filter facets based on normals</string>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_2">
+                <property name="leftMargin">
+                 <number>5</number>
+                </property>
+                <property name="topMargin">
+                 <number>5</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>5</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_2">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>vector</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="LineEdit" name="lineedit_filter_z"/>
+                </item>
+                <item row="0" column="1">
+                 <widget class="LineEdit" name="lineedit_filter_x"/>
+                </item>
+                <item row="0" column="2">
+                 <widget class="LineEdit" name="lineedit_filter_y"/>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>angle</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1" colspan="3">
+                 <widget class="LineEdit" name="lineedit_deviation_angle"/>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="3">
               <widget class="CheckBox" name="checkbox_slice_facets">
                <property name="text">
                 <string>Slice facets</string>
                </property>
               </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="LineEdit" name="lineedit_filter_x"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Filter vector</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3">
-              <widget class="LineEdit" name="lineedit_filter_z"/>
              </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label">
@@ -432,7 +484,7 @@ QHeaderView::section:vertical{
                </property>
               </widget>
              </item>
-             <item row="0" column="1" colspan="3">
+             <item row="0" column="1" colspan="2">
               <widget class="ComboBox" name="combobox_stl_shape">
                <item>
                 <property name="text">
@@ -445,25 +497,6 @@ QHeaderView::section:vertical{
                 </property>
                </item>
               </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_filter_y"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Deviation angle</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1" colspan="3">
-              <widget class="LineEdit" name="lineedit_deviation_angle"/>
              </item>
             </layout>
            </widget>
@@ -495,6 +528,11 @@ QHeaderView::section:vertical{
  </widget>
  <customwidgets>
   <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
    <header>widgets/base</header>
@@ -502,11 +540,6 @@ QHeaderView::section:vertical{
   <customwidget>
    <class>ComboBox</class>
    <extends>QComboBox</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
@@ -530,10 +563,6 @@ QHeaderView::section:vertical{
   <tabstop>lineedit_regions_to_z</tabstop>
   <tabstop>combobox_stl_shape</tabstop>
   <tabstop>checkbox_slice_facets</tabstop>
-  <tabstop>lineedit_filter_x</tabstop>
-  <tabstop>lineedit_filter_y</tabstop>
-  <tabstop>lineedit_filter_z</tabstop>
-  <tabstop>lineedit_deviation_angle</tabstop>
  </tabstops>
  <resources/>
  <connections/>

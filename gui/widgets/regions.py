@@ -92,23 +92,26 @@ class RegionsWidget(QtWidgets.QWidget):
                     widget.key = 'deviation_angle'
                     widget.dtype = float
 
+    def get_visibility_image(self, visible=True):
+        """create the image based on visibility"""
+        if visible:
+            image = QtGui.QPixmap(get_image_path('visibility.png'))
+        else:
+            image = QtGui.QPixmap(get_image_path('visibilityofftransparent.png'))
+
+        image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
+                             QtCore.Qt.SmoothTransformation)
+        return image
+
     def cell_clicked(self, index):
         if index.column() == 0:
             data = self.tablewidget_regions.value
             name = list(data.keys())[index.row()]
 
-            if data[name]['visibility']:
-                image = QtGui.QPixmap(get_image_path(
-                    'visibilityofftransparent.png'))
-            else:
-                image = QtGui.QPixmap(get_image_path('visibility.png'))
-
             vis = data[name]['visibility'] = not data[name]['visibility']
             self.vtkwidget.change_region_visibility(name, vis)
 
-            image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
-                                 QtCore.Qt.SmoothTransformation)
-            data[name]['visible'] = image
+            data[name]['visible'] = self.get_visibility_image(vis)
 
             self.tablewidget_regions.set_value(data)
 
@@ -120,9 +123,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         name = get_unique_string(name, list(data.keys()))
 
-        image = QtGui.QPixmap(get_image_path('visibility.png'))
-        image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
-                             QtCore.Qt.SmoothTransformation)
+        image = self.get_visibility_image()
 
         data[name] = {'type':            rtype,
                       'from':            extents[0],
@@ -170,8 +171,11 @@ class RegionsWidget(QtWidgets.QWidget):
 
             new_name = get_unique_string(name, list(data.keys()))
             data[new_name] = new_region
+            data[new_name]['visible'] = self.get_visibility_image(
+                data[new_name]['visibility'])
 
             self.tablewidget_regions.set_value(data)
+            self.tablewidget_regions.fit_to_contents()
 
             self.vtkwidget.new_region(new_name, data[new_name])
 
