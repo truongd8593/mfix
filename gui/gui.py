@@ -614,8 +614,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
-        log.debug("UPDATE RUN OPTIONS", "running=", running, "paused=", paused,
-                  "resumable=", resumable)
+        log.debug("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s" %
+                  (running, paused, resumable))
 
         self.update_window_title() # put run state in window titlebar
 
