@@ -342,7 +342,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
         # These are all fractions, must be btwn 0 and 1, not documented as such
-        for key in ('des_em', 'eps_f_min'): #, 'eps_f_max'):
+        for key in ('des_em', 'eps_f_min'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
 
 
