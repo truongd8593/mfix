@@ -1964,10 +1964,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
 
-        self.force_default_settings()
-
-        if self.unsaved_flag: # Settings changed after loading
-            self.save_project()
+        # FIXME: is this a good idea?  it means we can't open a file read-only
+        #self.force_default_settings()
+        #if self.unsaved_flag: # Settings changed after loading
+        #    self.save_project()
 
         self.open_succeeded = True
         self.update_run_options()
