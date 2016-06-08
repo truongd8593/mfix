@@ -17,7 +17,7 @@ from collections import OrderedDict
 # Initialize logger early
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-log = logging.getLogger(__name__)
+log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 log.debug(SCRIPT_DIRECTORY)
 
 # import qt
@@ -1876,7 +1876,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if d not in self.exe_watcher.directories():
                 self.exe_watcher.addPath(d)
         self.slot_exes_changed()
-        
+
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
