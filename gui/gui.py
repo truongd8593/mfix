@@ -351,7 +351,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.open_succeeded = False
         self.set_solver(None)
         self.set_project_file(None)
-        self.clear_unsaved_flag()
+        self.clear_unsaved_flag() # sets save button
+        self.set_save_as_action(enabled=False)
         self.update_window_title()
         self.enable_input(False)
         self.ui.toolbutton_new.setEnabled(True)
@@ -1644,12 +1645,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             #title += ', EDITING'
         self.setWindowTitle(title)
 
-
     def set_save_button(self, enabled):
-        # enable/disable the save button and save_as menu item
         self.ui.toolbutton_save.setEnabled(enabled)
-        self.ui.action_save_as.setEnabled(enabled)
 
+    def set_save_as_action(self, enabled):
+        self.ui.action_save_as.setEnabled(enabled)
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
@@ -1856,6 +1856,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
+        self.set_save_as_action(enabled=True)
         self.update_source_view()
 
         # set up rundir watcher
