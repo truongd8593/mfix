@@ -263,10 +263,17 @@ def parse(fname = None, string = None):
             valids.append(keyvalueMatch.findall(match))
 
         # find ranges and range attritbutes: min="" max=""
+        def try_float(kv):
+            k,v = kv
+            try:
+                return k, float(v)
+            except ValueError:
+                return k, v
+
         validrange = None
         for match in rangeMatch.findall(keywordBlock):
-            validrange = keyvalueMatch.findall(match)
-
+            validrange = map(try_float, keyvalueMatch.findall(match))
+            break
 
         # keyword list (to preserve order)
         keywordDocList.append(keyword.lower())
