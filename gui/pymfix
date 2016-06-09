@@ -171,6 +171,7 @@ class Mfix(object):
             start = timer()
             for ii in range(DES_TIME_MARCH.factor):
                 DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
+                print("DEM timestep %d / %d %s" % (ii, DES_TIME_MARCH.factor, "NEIGHBOR_SEARCH " if DEM.DO_NSEARCH else ""))
                 DES_TIME_MARCH.des_time_step()
                 self.check_requests()
             self.des_time_steps_walltime = float(timer() - start)
