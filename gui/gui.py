@@ -1314,9 +1314,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             else:
                 char_format.setFontFamily(font)
         cursor.setCharFormat(char_format)
-        cursor.insertText(line)
         scrollbar = qtextbrowser.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        scrolled_to_end = (scrollbar.value() == scrollbar.maximum())
+        cursor.insertText(line)
+        if scrolled_to_end:
+            scrollbar.setValue(scrollbar.maximum())
 
 
     def handle_select_exe(self):
