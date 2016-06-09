@@ -10,6 +10,8 @@ log = logging.getLogger(__name__)
 #import Qt
 from qtpy import QtCore, QtWidgets, PYQT5
 
+QT_MAX = 16777215
+
 #local imports
 from constants import *
 from tools.general import set_item_noedit, get_selected_row, widget_iter, make_callback
@@ -52,6 +54,8 @@ class SolidsHandler(object):
         s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
+        s.combobox_solids_density_model.currentIndexChanged.connect(
+            self.update_baseline_groupbox)
 
         self.saved_solids_species = None
         self.init_solids_default_models()
@@ -125,8 +129,9 @@ class SolidsHandler(object):
         for name in ('density', 'viscosity', 'specific_heat', 'conductivity',
                          #'mol_weight' - locked
         ):
-            combobox = getattr(ui.solids, 'combobox_solids_%s_model' % name)
-            setter = getattr(self,'set_solids_%s_model' % name)
+            model_name = 'solids_%s_model' % name
+            combobox = getattr(ui.solids, 'combobox_%s' % model_name)
+            setter = getattr(self,'set_%s' % model_name)
             combobox.currentIndexChanged.connect(setter)
 
         # Solids species
@@ -152,12 +157,15 @@ class SolidsHandler(object):
 
         self.fixup_column_widths_S(1)
         self.fixup_column_widths_S(2)
+        self.fixup_column_widths_S(3)
 
     def fixup_column_widths_S(self, n): # clean this up
         # fixme, this is getting called excessively
         s = self.ui.solids
         hv = QtWidgets.QHeaderView
-        tw = s.tablewidget_solids if n==1 else s.tablewidget_solids_species
+        tw = (s.tablewidget_solids if n==1
+              else s.tablewidget_solids_species if n==2
+              else s.tablewidget_solids_baseline)
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
         else:
@@ -166,12 +174,22 @@ class SolidsHandler(object):
             resize(n, hv.ResizeToContents if n>0
                    else hv.Stretch)
 
+                # trim excess horizontal space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+        nrows = tw.rowCount()
+        if nrows==0:
+            # 34 px is empirical, fixme, should calc. row height
+            tw.setMaximumHeight(header_height + 34)
+        else:
+            tw.setMaximumHeight(header_height+nrows*tw.rowHeight(0) + 4)
+            # a little extra to avoid horiz scrollbar when not needed
+        tw.updateGeometry() #? needed?
 
-    def handle_solids_species_eq(self):
-        enabled = self.ui.solids.checkbox_keyword_species_eq_args_S.isChecked()
+    def handle_solids_species_eq(self, enabled):
         if not enabled:
             self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
         self.ui.solids.combobox_solids_density_model.setEnabled(enabled)
+        self.update_solids_species_groupbox()
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
@@ -212,6 +230,9 @@ class SolidsHandler(object):
             cb.setCurrentIndex(i)
 
     def handle_combobox_solids_model(self, index):
+        ## NB:  Solids model is not the same as solver!
+        # Solver values are enumerated in constants.py.  Solids models are strings, 'TFM', 'DEM', 'PIC'
+
         if self.solids_current_phase is None:
             return # shouldn't get here
 
@@ -279,6 +300,7 @@ class SolidsHandler(object):
             return
 
         name = list(self.solids.keys())[phase-1]
+        self.phase_name = name
         solid = self.solids[name]
         model = solid['model']
 
@@ -309,9 +331,6 @@ class SolidsHandler(object):
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
         cb.setChecked(species_eq)
 
-        #Solids density model only settable with TFM
-        s.combobox_solids_density_model.setEnabled(model==TFM)
-        s.lineedit_keyword_ro_s0_args_S.setEnabled(model==TFM)
 
         # Deal with scalar eq
         nscalar = self.project.get_value('nscalar', 0)
@@ -323,8 +342,8 @@ class SolidsHandler(object):
         s.checkbox_enable_scalar_eq.setChecked(enabled)
         #self.enable_solids_scalar_eq(enabled)
 
-        # Restrictions
-        # density model only selectable when species eq. are solved (SRS p13)
+        ### Restrictions (see SRS p13)
+        # Density model requires species equations
         cb_density =  s.combobox_solids_density_model
         if species_eq:
             cb_density.setEnabled(True)
@@ -333,10 +352,33 @@ class SolidsHandler(object):
             cb_density.setEnabled(False)
             cb_density.setToolTip("Constant")
 
-        # Solids visc. only avail for TFM solids
+        # Viscosity only available for TFM solids
+        s.combobox_solids_viscosity_model.setEnabled(model=='TFM')
+        s.lineedit_keyword_mu_s0_args_S.setEnabled(model=='TFM')
+
+        # Mol. wt is locked to MIXTURE
+
+        # Specific heat only available when solving energy eq
+        energy_eq = self.project.get_value('energy_eq', default=False)
+        s.combobox_solids_specific_heat_model.setEnabled(energy_eq)
+        s.lineedit_keyword_c_ps0_args_S.setEnabled(energy_eq)
+
+        # Thermal Conductivity Model:
+        # Selection only available for MFIX-TFM solids model
+        # Selection only available when solving thermal energy equations
+        enabled = (model=='TFM' and energy_eq)
+        s.combobox_solids_conductivity_model.setEnabled(enabled)
+
+        # Specify solids phase emissivity
+        # Selection only available for MFIX-DEM solids model
+        s.lineedit_keyword_des_em_args_S.setEnabled(model=='DEM')
+
+        # Species input is in its own function
+        self.update_solids_species_groupbox()
+        # as is the baseline table
+        self.update_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
-
         self.fixup_column_widths_S(1)
 
 
@@ -460,6 +502,42 @@ class SolidsHandler(object):
             self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
             self.update_scalar_equations(prev_nscalar)
 
+    def update_solids_species_groupbox(self):
+        """enable/disable species tables based on state"""
+        # Species data required under any of the following condvitions:
+        #  Solving species equations
+        #  Energy equations are solved with mixture specific heat model
+        phase = self.solids_current_phase
+        ui = self.ui
+        s = ui.solids
+
+        if phase is None:
+            enabled = False
+        else:
+            species_eq = self.project.get_value('species_eq', args=phase, default=False)
+            energy_eq = self.project.get_value('energy_eq', default=False)
+            enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
+
+        # Is it a good idea to have hidden items?
+        #s.groupbox_species.setVisible(enabled)
+
+        s.groupbox_species.setEnabled(enabled)
+        s.frame_add_delete_copy_species.setVisible(enabled)# Buttons seem to take up a lot of space when table is shrunk
+
+        tw = s.tablewidget_solids_species
+        #if not enabled: # Hide species?  shrink input area?
+        #    tw.clearContents()
+        #    tw.setMaximumHeight(32) #?
+        #else:
+        #    tw.setMaximumHeight(QT_MAX)
+        #    self.update_solids_species_table()
+
+    def update_baseline_groupbox(self, density_model):
+        #Baseline (unreacted) composition selection:
+        # Available only for variable solids density model
+        s = self.ui.solids
+        s.groupbox_baseline.setEnabled(density_model == VARIABLE)
+
 
     def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
@@ -496,6 +574,7 @@ class SolidsHandler(object):
         self.solids_species = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
         self.fixup_column_widths_S(2)
+        self.fixup_column_widths_S(3)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
@@ -540,8 +619,10 @@ class SolidsHandler(object):
             self.unset_keyword('species_alias_s', args=[phase,i])
             #self.unset_keyword('mw_s', i) # TBD
 
-        self.project.update_thermo_data(self.solids_species)
+        # FIXME, what's the right place for this?
+        #self.project.update_thermo_data(self.solids_species)
         self.fixup_column_widths_S(2)
+        self.fixup_column_widths_S(3)
 
     def handle_solids_species_selection(self):
         row = get_selected_row(self.ui.solids.tablewidget_solids_species)
@@ -561,7 +642,7 @@ class SolidsHandler(object):
         sp.save.connect(self.solids_species_save)
         sp.defined_species = self.solids_species
         sp.update_defined_species()
-        sp.setWindowTitle("Solids Species")
+        sp.setWindowTitle("Species for %s" %self.phase_name)
         sp.show()
         sp.raise_()
         sp.activateWindow()
@@ -580,6 +661,8 @@ class SolidsHandler(object):
         del self.solids_species[key]
         self.update_solids_species_table()
         self.fixup_column_widths_S(2)
+        self.fixup_column_widths_S(3)
+
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
@@ -603,7 +686,7 @@ class SolidsHandler(object):
             sp.tablewidget_defined_species.clearSelection()
         else:
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
-        sp.setWindowTitle("Solids Species")
+        sp.setWindowTitle("Species for %s" % self.phase_name)
         sp.show()
         sp.raise_()
         sp.activateWindow()
@@ -616,4 +699,4 @@ class SolidsHandler(object):
         self.solids.clear()
         self.solids_species.clear()
         self.update_solids_table()
-        self.update_solids_detail_pane()
+        #self.update_solids_detail_pane()

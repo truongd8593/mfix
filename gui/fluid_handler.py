@@ -29,7 +29,7 @@ class FluidHandler(object):
     def enable_fluid_species_eq(self, state):
         ui = self.ui
         fluid = ui.fluid
-        for item in (fluid.combobox_fluid_diffusion_model,
+        for item in (fluid.combobox_diffusion_model,
                      # more ?
                      ):
             item.setEnabled(state)
@@ -135,8 +135,9 @@ class FluidHandler(object):
         # Fluid phase models
         for name in ('density', 'viscosity', 'specific_heat', 'mol_weight',
                      'conductivity', 'diffusion'):
-            combobox = getattr(ui.fluid, 'combobox_fluid_%s_model' % name)
-            setter = getattr(self,'set_fluid_%s_model' % name)
+            model_name = 'fluid_%s_model' % name
+            combobox = getattr(ui.fluid, 'combobox_%s' % model_name)
+            setter = getattr(self,'set_%s' % model_name)
             combobox.currentIndexChanged.connect(setter)
 
         # Fluid species
