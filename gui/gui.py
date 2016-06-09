@@ -1266,45 +1266,141 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         for key, value in qbuttonDict.items():
             if value == ret:
-                result = key
+                return key
+
+
+    def scan_errors(self, lines):
+        ### "Error 1000: A keyword pair on line 129"
+        lineno = bad_line = None
+        re_err = re.compile("Error 1000: A keyword pair on line (\d+)")
+        for (i, line) in enumerate(lines):
+            match = re_err.search(line)
+            if match:
+                lineno = int(match.group(1))
+                bad_line = self.datfile_lines[lineno-1]
                 break
+        # TODO:  colorize errors in source view (red)
+        if bad_line:
+            key = bad_line.split("=", 1)[0].strip()
+            self.deprecated_keyword(key, bad_line)
 
-        return result
+    def deprecated_keyword(self, key, line):
+        """Give the user a chance to omit or edit deprecated keys"""
+        #  This is a first implementation.  There's a lot more
+        #  we could do here - suggest fixes, link to documentation,
+        #  attempt to retain order in dat_file_list, etc.
+        key = key.lower()
+        line = line.strip()
 
-    def print_out(self, text):
-        for line in text.split('\n'):
-            self.print_internal(line, color=None, font='Courier')
+        message_box = QtWidgets.QMessageBox(self)
+        self.message_box = message_box
+        message_box.setWindowTitle("Deprecated keyword")
+        message_box.setIcon(QtWidgets.QMessageBox.Warning)
+        text="'%s' is a deprecated keyword" % key
+        message_box.setText(text)
+        buttons = ['Drop Key', 'Edit', 'Ignore']
+        for b in buttons:
+            role = QtWidgets.QMessageBox.AcceptRole # Seems to be OK to use for all buttons
+            message_box.addButton(QtWidgets.QPushButton(b),  role)
 
-    def print_err(self, text):
-        for line in text.split('\n'):
-            self.print_internal(line, color='red', font='Courier') # Bold fond?
+        def drop(key):
+            if '(' in key: # This is a little crude, use parser instead?
+                k, a = key.split('(', 1)
+                a = a.split(')')[0]
+                a = map(int, a.split(','))
+            else:
+                a = None
+            self.unset_keyword(k,a)
+
+        resp = buttons[message_box.exec_()].lower()
+        if not resp or resp=='ignore': # User bailed out
+            return
+
+        elif resp == 'drop key':
+            drop(key)
+
+        elif resp == 'edit':
+            q = QtWidgets.QInputDialog(self)#,
+            text, ok = q.getText(self, 'Edit keyword', "Deprecated keyword: %s\n\nEnter replacement text"%line, text=line)
+            if not ok:
+                return
+            text = text.strip()
+            if not text:
+                drop(key) #User replaced it with blank
+            for (new_key, new_args, new_value) in self.project.parseKeywordLine(text):
+                if new_key:
+                    drop(key) # Only drop the old one once we have a valid replacemnent
+                    self.update_keyword(new_key, new_value, args=new_args) # validate key?
+                else:
+                    self.print_internal("Error:  cannot parse %s" % text)
+
+
+
+    def can_skip(self, line,
+                 boilerplate=set(['Program Terminated.',
+                                  'Fatal error reported on one or more processes. The .LOG file',
+                                  'may contain additional information about the failure.',
+                                  'ERROR STOP 1',
+                                  'Please see the user documentation and update the mfix.dat file.',
+                                  ])):
+
+        # These are routine messages that we are not going to trouble the user with
+        # Note, the set is only constructed once (at load time)
+        return line.strip() in boilerplate
+
+
+    def handle_stdout(self, text):
+        """collect stderr from mfix/pymfix process, format and display
+        to user.  Note that some errors are printed to stdout"""
+        color = 'red' if "Error" in text else None
+        lines = text.split('\n')
+        # Scanning for errors may trigger popups, etc, so get the output to
+        # the user first.
+        for line in lines:
+            if self.can_skip(line):
+                continue
+
+            self.print_internal(line, color=color, font='Courier')
+        self.scan_errors(lines)
+
+    def handle_stderr(self, text):
+        """collect stderr from mfix/pymfix process, format and display
+        to user."""
+        # Scanning for errors may trigger popups, etc, so get the output to
+        # the user first.
+
+        lines = text.split('\n')
+        for line in lines:
+            if self.can_skip(line):
+                continue
+            self.print_internal(line, color='red', font='Courier') # Bold font?
+        self.scan_errors(lines)
 
     def print_internal(self, line, color=None, font=None):
         qtextbrowser = self.ui.command_output
-        if not line.strip():
-            if self.last_line_blank:
-                return
-            self.last_line_blank=True
-        else:
-            self.last_line_blank=False
-
+        stripped = line.strip()
+        if not stripped:
+            # Let's just skip blank lines completely
+            return
+        if set(stripped)==set('*'): # Also skip lines of stars
+            return
         if not line.endswith('\n'):
             line += '\n'
         lower = line.lower()
-        msg = line.strip()
+        logmsg = stripped
         # hack. TODO: real msg types, map to font/color
         strikeout = font and font.lower() == 'strikeout'
         if strikeout:
-            msg = "unset " + msg
+            logmsg = "unset " + logmsg
         if lower.startswith("error:"):
-            log.error(msg[6:])
+            log.error(logmsg[6:])
         elif lower.startswith("warning:"):
-            log.warn(msg[8:])
+            log.warn(logmsg[8:])
         elif lower.startswith("info:"):
-            log.info(msg[5:])
+            log.info(logmsg[5:])
             color='blue'
         else:
-            log.info(msg)
+            log.info(logmsg)
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
