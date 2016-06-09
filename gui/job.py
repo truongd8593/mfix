@@ -165,28 +165,13 @@ class Job(object):
         self.mfixproc.started.connect(slot_start)
 
         def slot_read_out():
-            # Will mfix really emit utf-8?
-            blocks = []
-            while True:
-                data = bytes(self.mfixproc.readAllStandardOutput())
-                if not data:
-                    break
-                blocks.append(data)
-            out_str = ''.join(blocks).decode('utf-8')
+            out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
             self.parent.stdout_signal.emit(out_str)
-
         self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
 
         def slot_read_err():
-            blocks = []
-            while True:
-                data = bytes(self.mfixproc.readAllStandardError())
-                if not data:
-                    break
-                blocks.append(data)
-            err_str = ''.join(blocks).decode('utf-8')
+            err_str = bytes(self.mfixproc.readAllStandardError()).decode('utf-8')
             self.parent.stderr_signal.emit(err_str)
-
         self.mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
