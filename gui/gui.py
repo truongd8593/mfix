@@ -1208,7 +1208,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 ):
         """Create and display a modal message box:
         title = 'title'
-        icon = 'warning' or 'info'
+        icon = 'question' 'warning' or 'info'
         text = 'test to show'
         buttons = ['ok',...] where value is 'ok', 'yes', 'no', 'cancel',
             'discard'
@@ -1217,7 +1217,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         detailedText = 'Some details'
 
         Returns the pressed button.  Also prints & logs message"""
-        # TODO: disable this when running in QTest
+
         self.print_internal(title + ": " + text)
         if infoText:
             self.print_internal(infoText)
@@ -1225,12 +1225,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.print_internal(detailedText)
 
         message_box = QtWidgets.QMessageBox(self)
-        self.message_box = message_box
+        self.message_box = message_box # Make it accessible to tests
         message_box.setWindowTitle(title)
 
         # Icon
         if icon == 'warning':
             icon = QtWidgets.QMessageBox.Warning
+        elif icon == 'question':
+            icon = QtWidgets.QMessageBox.Question
         else:
             icon = QtWidgets.QMessageBox.Information
 
@@ -1245,6 +1247,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if detailedText:
             message_box.setDetailedText(detailedText)
 
+        # TODO: support more standard buttons from #
+        #   http://doc.qt.io/qt-4.8/qmessagebox.html#StandardButton-enum
+        # or drop this translation dict
         # buttons
         qbuttonDict = {'ok':      QtWidgets.QMessageBox.Ok,
                        'yes':     QtWidgets.QMessageBox.Yes,
