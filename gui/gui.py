@@ -642,7 +642,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
-            self.set_stop_button(enabled=False)
+            self.set_stop_button(enabled=True)
             self.change_pane('run')
 
         elif resumable:
