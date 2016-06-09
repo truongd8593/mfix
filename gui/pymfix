@@ -109,7 +109,6 @@ class Mfix(object):
         for arg in keyword_args:
             MAIN.add_command_line_keyword(arg)
 
-        self.update_status()
 
         MAIN.initialize()
         READ_INPUT.get_data()
@@ -117,6 +116,7 @@ class Mfix(object):
 
         self.t0 = float(RUN.time)
 
+        self.update_status()
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
