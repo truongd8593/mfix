@@ -22,7 +22,7 @@ log.debug(SCRIPT_DIRECTORY)
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
-from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, QUrl, QUrl, pyqtSignal
+from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
@@ -53,8 +53,8 @@ from solids_handler import SolidsHandler
 
 from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
-                           format_key_with_args, to_unicode_from_fs,
-                           set_item_noedit, get_selected_row)
+                           format_key_with_args, to_unicode_from_fs)
+
 
 set_script_directory(SCRIPT_DIRECTORY)
 
@@ -70,6 +70,7 @@ if PRECOMPILE_UI:
         from uifiles.mesh import Ui_mesh
         from uifiles.model import Ui_model
         from uifiles.solids import Ui_solids
+        from uifiles.fluid import Ui_fluid
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
@@ -1527,10 +1528,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         sp_files = self.monitor.get_outputs(["*.SP?"])
         if (sp_files):
-            yes = self.message(text="Copy .SP files?\n%s" % '\n'.join(output_files),
+            resp = self.message(text="Copy .SP files?\n%s" % '\n'.join(sp_files),
+                               icon='question',
                                buttons=['yes', 'no'],
                                default='yes')
-            if yes=='yes':
+            if resp=='yes':
                 files_to_copy.extend(sp_files)
 
         files_to_copy.extend(self.monitor.get_outputs(["*.RES", "*.STL"]))
