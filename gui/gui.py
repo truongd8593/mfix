@@ -458,7 +458,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         """like set_keyword but no action if value already set"""
         if self.project.get_value(key, args=args) == value:
             return
-        self.set_keyword(key, value, args)
+        self.set_keyword(key, value, args=args)
 
     def unset_keyword(self, key, args=None):
         """Undefine keyword.  Report to user, also catch and report any errors"""
