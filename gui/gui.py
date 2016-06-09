@@ -7,10 +7,10 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import getopt
 import logging
 import os
+import re
 import shutil
 import signal
 import sys
-import time
 import traceback
 from collections import OrderedDict
 
@@ -315,8 +315,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.print_welcome()
 
         ## Run signals
-        self.stdout_signal.connect(self.print_out)
-        self.stderr_signal.connect(self.print_err)
+        self.stdout_signal.connect(self.handle_stdout)
+        self.stderr_signal.connect(self.handle_stderr)
         self.update_run_options_signal.connect(self.update_run_options)
 
         # --- setup widgets ---
@@ -338,7 +338,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # Reset everything to default values
         self.reset() # Clear command_output too?
-        self.last_line_blank = False
         # end of __init__ (hooray!)
 
     def add_extra_keyword_doc(self):
@@ -1878,6 +1877,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             except Exception as e:
                 log.error("error opening %s: %s" % (project_file, e))
                 src = ''
+
+        self.datfile_lines = src.split('\n')
 
         if number_lines:
             lines = src.split('\n')
