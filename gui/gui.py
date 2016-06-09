@@ -647,7 +647,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            ui.run.combobox_mfix_exes.setEnabled(False)
+            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
