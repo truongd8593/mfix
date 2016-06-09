@@ -654,7 +654,7 @@ QPushButton:checked {
                  </item>
                  <item>
                   <property name="text">
-                   <string>Post Processing</string>
+                   <string>Post</string>
                   </property>
                   <item>
                    <property name="text">
