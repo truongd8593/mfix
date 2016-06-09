@@ -1384,9 +1384,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             try:
                 os.remove(path)
             except OSError as err:
-                msg = 'Cannot delete %s: %s' % (path, err.strerror)
-                self.print_internal("Error: %s" % msg, color='red')
-                self.message(text=msg,
+                msg = 'Error: cannot delete %s: %s' % (path, err.strerror)
+                self.message(title='File error',
+                             icon='error',
+                             text=msg,
                              buttons=['ok'],
                              default=['ok'])
                 break
@@ -1546,7 +1547,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             try:
                 shutil.copyfile(f, os.path.join(export_dir, os.path.basename(f)))
             except Exception as e:
-                self.message(text="Error copying file:\n%s" % e,
+                self.message(title='File error',
+                             text="Error copying file:\n%s" % e,
                              buttons=['ok'])
 
 
@@ -1862,7 +1864,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 if os.path.exists(renamed_project_file):
                     clobber_msg = '%s exists, replace?' % renamed_project_file
                     response = self.message(title='Warning',
-                                    icon='warning',
+                                    icon='question',
                                     text=clobber_msg,
                                     buttons=['yes', 'no'],
                                     default='no')
@@ -1883,7 +1885,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     self.print_internal("Error: %s" % msg, color='red')
                     self.message(title='Error',
                                  icon='error',
-                                text=msg,
+                                 text=msg,
                                  buttons=['ok'],
                                  default='ok')
                     traceback.print_exception(*sys.exc_info())
