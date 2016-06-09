@@ -341,9 +341,9 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-303</y>
+             <y>-301</y>
              <width>606</width>
-             <height>1137</height>
+             <height>1147</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -539,8 +539,17 @@ QPushButton:checked {
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_11">
-               <property name="margin">
+               <property name="leftMargin">
                 <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
                </property>
                <item row="0" column="0">
                 <widget class="QTableWidget" name="tablewidget_solids_baseline">
@@ -935,8 +944,17 @@ QPushButton:checked {
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_12">
-               <property name="margin">
+               <property name="leftMargin">
                 <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
                </property>
                <item row="0" column="0">
                 <widget class="QFrame" name="frame_add_delete_copy_species">
