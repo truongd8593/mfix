@@ -668,6 +668,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
+        ui.run.checkbox_show_pymfix_output.setVisible(self.pymfix_enabled)
 
 
     def print_welcome(self):
