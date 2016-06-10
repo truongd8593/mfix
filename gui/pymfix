@@ -38,9 +38,13 @@ FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
 FLASK_APP.config['SECRET_KEY'] = 'secret!'
 
-# import logging
-# log = logging.getLogger('werkzeug')
-# log.setLevel(logging.ERROR)
+log = logging.getLogger('werkzeug')
+logformat = logging.Formatter('pymfix: %(levelname)s %(message)s')
+loghandler = logging.StreamHandler()
+loghandler.setFormatter(logformat)
+log.setLevel(logging.INFO)
+log.addHandler(loghandler)
+log.disabled = True
 
 mfix_thread = None
 
@@ -543,6 +547,18 @@ def unpause():
 @FLASK_APP.route('/status', methods=['GET'])
 def get_status():
     "returns current status: paused state, current time, and residuals"
+    status_code = 200
+    return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@FLASK_APP.route('/logging/<state>', methods=['POST', 'GET'])
+@FLASK_APP.route('/logging/<state>/<level>', methods=['POST', 'GET'])
+def logging(state=None, level=None):
+    """toggle Flask logging"""
+    if state == 'enable':
+        log.disabled = False
+    if state == 'disable':
+        log.disabled = True
+    # maybe handle loglevel someday
     status_code = 200
     return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
