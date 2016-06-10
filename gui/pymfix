@@ -120,7 +120,7 @@ class Mfix(object):
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
-                DEM.des_time_march()
+                self.dem_time_march()
             if RUN.pic_solids:
                 DEM.pic_time_march()
         else:
@@ -168,13 +168,9 @@ class Mfix(object):
             start = timer()
             DES_TIME_MARCH.des_time_init()
             self.des_time_init_walltime = float(timer() - start)
-            start = timer()
-            for ii in range(DES_TIME_MARCH.factor):
-                DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
-                print("DEM timestep %d / %d %s" % (ii, DES_TIME_MARCH.factor, "NEIGHBOR_SEARCH " if DEM.DO_NSEARCH else ""))
-                DES_TIME_MARCH.des_time_step()
-                self.check_requests()
-            self.des_time_steps_walltime = float(timer() - start)
+
+            self.dem_time_march()
+
             start = timer()
             DES_TIME_MARCH.des_time_end()
             self.des_time_end_walltime = float(timer() - start)
@@ -183,6 +179,15 @@ class Mfix(object):
         STEP.time_step_end()
         self.time_step_end_walltime = float(timer() - start)
 
+    def dem_time_march(self):
+        "Run DEM timesteps "
+        start = timer()
+        for ii in range(DES_TIME_MARCH.factor):
+            DEM.DO_NSEARCH = ii % DEM.neighbor_search_n == 0
+            print("DEM timestep %d / %d %s" % (ii, DES_TIME_MARCH.factor, "NEIGHBOR_SEARCH " if DEM.DO_NSEARCH else ""))
+            DES_TIME_MARCH.des_time_step()
+            self.check_requests()
+        self.des_time_steps_walltime = float(timer() - start)
 
     def update_status(self):
         """save status as JSON """
