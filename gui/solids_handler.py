@@ -25,6 +25,12 @@ class SolidsHandler(object):
         self.solids_specific_heat_model = CONSTANT
         self.solids_conductivity_model = OTHER
 
+
+    def handle_solids_density_model(self, model):
+        self.solids_density_model = model
+        self.update_baseline_groupbox(model) # availability
+        self.update_solids_table() # 'density' column changes
+
     def init_solids_handler(self):
         self.solids = OrderedDict()
         self.solids_current_phase = None
@@ -55,7 +61,7 @@ class SolidsHandler(object):
         s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
         s.combobox_solids_density_model.currentIndexChanged.connect(
-            self.update_baseline_groupbox)
+            self.handle_solids_density_model)
 
         self.saved_solids_species = None
         self.init_solids_default_models()
@@ -403,6 +409,9 @@ class SolidsHandler(object):
                                        ('diameter', 'd_p0'),
                                        ('density', 'ro_s0')):
                 self.solids[k][myname] = self.project.get_value(realname, args=i)
+                #if self.solids[k]['density'] is None and self.solids_density_model==VARIABLE:
+                #    self.solids[k]['density'] = "Variable"
+
 
         for (row,(k,v)) in enumerate(self.solids.items()):
             table.setItem(row, 0, make_item(k))
@@ -536,8 +545,18 @@ class SolidsHandler(object):
         #Baseline (unreacted) composition selection:
         # Available only for variable solids density model
         s = self.ui.solids
-        s.groupbox_baseline.setEnabled(density_model == VARIABLE)
+        enabled = density_model==VARIABLE
+        s.groupbox_baseline.setEnabled(enabled)
+        if not enabled:
+            s.tablewidget_solids_baseline.clearContents()
+        else:
+            self.update_solids_baseline_table()
 
+
+    def update_solids_baseline_table(self):
+        phase = self.solids_current_phase
+
+        self.fixup_column_widths_S(3)
 
     def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
