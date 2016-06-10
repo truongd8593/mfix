@@ -550,17 +550,16 @@ def get_status():
     status_code = 200
     return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@FLASK_APP.route('/logging/<state>', methods=['POST', 'GET'])
-@FLASK_APP.route('/logging/<state>/<level>', methods=['POST', 'GET'])
-def logging(state=None, level=None):
+@FLASK_APP.route('/logging/<state>', methods=['POST'])
+@FLASK_APP.route('/logging/<state>/<level>', methods=['POST'])
+def set_logging(state=None, level=None):
     """toggle Flask logging"""
     if state == 'enable':
         log.disabled = False
     if state == 'disable':
         log.disabled = True
     # maybe handle loglevel someday
-    status_code = 200
-    return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+    return 'OK', 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def parse_command_line_arguments():
     "handle command line arguments"
