@@ -11,23 +11,284 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QFrame" name="frame_27">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+   <item row="7" column="0">
+    <widget class="QGroupBox" name="groupbox_run_options">
+     <property name="title">
+      <string>Options</string>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
+     <property name="flat">
+      <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_17">
+     <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="0,0">
       <property name="margin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="0" column="0" colspan="2">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Maximum iterations</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="LineEdit" name="lineedit_keyword_max_nit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Factor to normalize gas continuity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="LineEdit" name="lineedit_keyword_norm_g">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Factor to normalize solid continuity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="LineEdit" name="lineedit_keyword_norm_s">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_128">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Tstop</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_130">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>DT</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_131">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>DT_MAX</string>
+        </property>
+       </widget>
+      </item>
+      <item row="15" column="0">
+       <widget class="QFrame" name="frame_27">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_17">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>5</number>
+         </property>
+         <item row="14" column="0">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Detect Stall</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>DT_MIN</string>
+        </property>
+       </widget>
+      </item>
+      <item row="14" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>DT_FAC</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
+        <property name="suffix">
+         <string> sec</string>
+        </property>
+        <property name="decimals">
+         <number>10</number>
+        </property>
+        <property name="singleStep">
+         <double>0.000010000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
+        <property name="suffix">
+         <string> sec</string>
+        </property>
+        <property name="decimals">
+         <number>10</number>
+        </property>
+        <property name="singleStep">
+         <double>0.000010000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_min">
+        <property name="suffix">
+         <string> sec</string>
+        </property>
+        <property name="decimals">
+         <number>10</number>
+        </property>
+        <property name="singleStep">
+         <double>0.000010000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="14" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_fac">
+        <property name="suffix">
+         <string> sec</string>
+        </property>
+        <property name="decimals">
+         <number>10</number>
+        </property>
+        <property name="singleStep">
+         <double>0.000010000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="DoubleSpinBox" name="doublespinbox_keyword_tstop">
+        <property name="suffix">
+         <string> sec</string>
+        </property>
+        <property name="decimals">
+         <number>10</number>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" rowspan="2">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>MFIX Executable</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="margin">
+       <number>5</number>
+      </property>
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item row="1" column="0">
        <widget class="QLabel" name="label_mfix_exes_warning">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="palette">
          <palette>
           <active>
@@ -471,239 +732,172 @@
          </palette>
         </property>
         <property name="text">
-         <string>Warning:  MFIX not available.  Install MFIX.</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> sec</string>
-        </property>
-        <property name="decimals">
-         <number>10</number>
-        </property>
-        <property name="singleStep">
-         <double>0.00001</double>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> sec</string>
-        </property>
-        <property name="decimals">
-         <number>10</number>
-        </property>
-        <property name="singleStep">
-         <double>0.000001</double>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_131">
-        <property name="text">
-         <string>DT_MAX</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_128">
-        <property name="text">
-         <string>Tstop</string>
+         <string>No MFIX executable selected</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Number OpenMP threads</string>
+       <widget class="QFrame" name="frame_29">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
         </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="2" column="0">
+          <widget class="QPushButton" name="button_run_mfix">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Run</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QPushButton" name="button_stop_mfix">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="button_reset_mfix">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Remove output and restart files</string>
+           </property>
+           <property name="text">
+            <string>Reset Job</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="use_spx_checkbox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Use SPX Files</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QPushButton" name="button_pause_mfix">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>Pause</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_123">
-        <property name="text">
-         <string>NODESJ</string>
+      <item row="0" column="0">
+       <widget class="QFrame" name="frame">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
         </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="SpinBox" name="spinbox_keyword_nodesi">
-        <property name="enabled">
-         <bool>false</bool>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
         </property>
-        <property name="minimum">
-         <number>1</number>
+        <property name="lineWidth">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="ComboBox" name="combobox_mfix_exes"/>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_130">
-        <property name="text">
-         <string>DT</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="DoubleSpinBox" name="doublespinbox_keyword_tstop">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string> sec</string>
-        </property>
-        <property name="decimals">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_122">
-        <property name="text">
-         <string>NODESI</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_124">
-        <property name="text">
-         <string>NODESK</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="spinbox_openmp_threads">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="SpinBox" name="spinbox_keyword_nodesk">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="SpinBox" name="spinbox_keyword_nodesj">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="ComboBox" name="combobox_mfix_exes">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <property name="frame">
+            <bool>false</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QToolButton" name="button_select_exe">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Browse for MFIX executable</string>
+           </property>
+           <property name="text">
+            <string>Browse</string>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QFrame" name="frame_29">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+   <item row="9" column="0">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="button_run_mfix">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Run</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="button_stop_mfix">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>119</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="use_spx_checkbox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Use SPX Files</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="button_reset_mfix">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="toolTip">
-         <string>Remove all output and resume files</string>
-        </property>
-        <property name="text">
-         <string>Reset Job</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="button_pause_mfix">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Pause</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DoubleSpinBox</class>
-   <extends>QDoubleSpinBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>SpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>

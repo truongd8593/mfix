@@ -666,11 +666,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
 
-        ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled and ready)
-        ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled and ready)
-        ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled and ready)
-        ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled and ready)
-
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
 
@@ -1447,14 +1442,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
                                   for x in ('pymfix', 'pymfix.exe'))
 
-        self.ui.run.spinbox_openmp_threads.setEnabled(self.smp_enabled)
-        if not self.dmp_enabled:
-            self.ui.run.spinbox_keyword_nodesi.setValue(1)
-            self.ui.run.spinbox_keyword_nodesj.setValue(1)
-            self.ui.run.spinbox_keyword_nodesk.setValue(1)
-        self.ui.run.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
-        self.ui.run.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled)
         self.update_run_options()
 
     def remove_output_files(self, output_files=None, message_text=None):
@@ -1594,9 +1581,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             run_cmd = [mfix_exe]
 
         if self.smp_enabled:
+            #FIXME obtain this value from run popup dialog
+            NUM_THREADS = '2'
             if not "OMP_NUM_THREADS" in os.environ:
-                os.environ["OMP_NUM_THREADS"] = self.spinbox_openmp_threads.value()
-            log.info('SMP enabled with OMP_NUM_THREADS=%d', self.spinbox_openmp_threads.value())
+                os.environ["OMP_NUM_THREADS"] = NUM_THREADS
+            log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
 
         project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !
