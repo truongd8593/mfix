@@ -45,6 +45,12 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Factor to normalize gas continuity</string>
         </property>
@@ -62,6 +68,12 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Factor to normalize solid continuity</string>
         </property>
@@ -924,7 +936,7 @@
           </spacer>
          </item>
          <item row="3" column="2">
-          <widget class="QCheckBox" name="checkbox_show_pymfix_output">
+          <widget class="QCheckBox" name="checkbox_pymfix_output">
            <property name="enabled">
             <bool>true</bool>
            </property>

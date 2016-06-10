@@ -313,6 +313,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.combobox_mfix_exes.activated.connect(self.handle_select_exe)
+        run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -668,7 +669,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
-        ui.run.checkbox_show_pymfix_output.setVisible(self.pymfix_enabled)
+        ui.run.checkbox_pymfix_output.setVisible(self.pymfix_enabled)
 
 
     def print_welcome(self):
@@ -1490,6 +1491,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             else:
                 name='unpause'
                 self.job.unpause()
+        except Exception as e:
+            self.print_internal("%s: error %s" % (name, e))
+
+    def handle_set_pymfix_output(self):
+        try:
+            self.job.set_pymfix_output(
+              self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
 

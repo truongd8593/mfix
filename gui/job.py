@@ -208,6 +208,13 @@ class Job(object):
 
         self.mfixproc.start(self.cmd[0], self.cmd[1:])
 
+    def set_pymfix_output(self, state):
+        """toggle Flask messages"""
+        arg = 'enable' if state else 'disable'
+        qurl = QUrl('%s/logging/%s' % (self.pymfix_url, arg))
+        req = QNetworkRequest(qurl)
+        self.control_manager.post(req, b"timeout=1")
+
     def terminate_pymfix(self):
         """update the status of  the pymfix monitor"""
 
