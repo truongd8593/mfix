@@ -32,6 +32,8 @@ MODULE DES_TIME_MARCH
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
 
+      LOGICAL :: EXIT_LOOP
+
 !......................................................................!
 
    CONTAINS
@@ -46,6 +48,9 @@ MODULE DES_TIME_MARCH
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_INIT
          IMPLICIT NONE
+
+         EXIT_LOOP = .FALSE.
+
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
       DTSOLID_TMP = DTSOLID
@@ -106,16 +111,20 @@ MODULE DES_TIME_MARCH
 !     Purpose: Main DEM driver routine                                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_TIME_STEP
+      SUBROUTINE DES_TIME_STEP(NN)
 
 ! Modules
 !---------------------------------------------------------------------//
       IMPLICIT NONE
+      INTEGER, INTENT(IN) :: NN
 
          IF(DES_CONTINUUM_COUPLED) THEN
 ! If the current time in the discrete loop exceeds the current time in
 ! the continuum simulation, exit the discrete loop
-            IF(S_TIME.GE.(TIME+DT)) RETURN
+            IF(S_TIME.GE.(TIME+DT)) THEN
+               EXIT_LOOP = .TRUE.
+               RETURN
+            ENDIF
 ! If next time step in the discrete loop will exceed the current time
 ! in the continuum simulation, modify the discrete time step so final
 ! time will match
@@ -145,6 +154,7 @@ MODULE DES_TIME_MARCH
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
 
+         DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
 ! Add/Remove particles to the system via flow BCs.
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
          IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM(DO_NSEARCH)
@@ -186,7 +196,10 @@ MODULE DES_TIME_MARCH
 
          IF(CALL_USR) CALL USR2_DES
 
-         RETURN
+         IF(ADJUST_PARTITION) THEN
+            EXIT_LOOP = .TRUE.
+            RETURN
+         ENDIF
 
    END SUBROUTINE DES_TIME_STEP
 
