@@ -577,7 +577,7 @@
       USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
       USE vtk, only: VTK_PART_DIAMETER,VTK_PART_VEL,VTK_PART_USR_VAR,VTK_PART_TEMP
       USE vtk, only: VTK_PART_ANGULAR_VEL,VTK_PART_ORIENTATION
-      USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
+      USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION,VTK_PART_RANK
       USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
       USE vtk, only: VTK_DBG_FILE
       USE output, only: FULL_LOG
@@ -590,6 +590,8 @@
       INTEGER :: WRITE_DATA   = 2
       INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
                         ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PARTICLE_RANK
 
       VTK_REGION = LCV
 ! There is nothing to write if we are not in a defined vtk region
@@ -645,6 +647,18 @@
 
       IF(USE_COHESION.AND.VTK_PART_COHESION(VTK_REGION)) &
          CALL WRITE_SCALAR_IN_VTP_BIN('CohesiveForce', PostCohesive,PASS)
+
+      IF(VTK_PART_RANK(VTK_REGION)) THEN
+         IF(PASS==WRITE_DATA) THEN
+            ALLOCATE(PARTICLE_RANK(MAX_PIP))
+            DO L = 1, MAX_PIP
+               PARTICLE_RANK(L) = DBLE(MyPE)
+            ENDDO
+         ENDIF
+
+         CALL WRITE_SCALAR_IN_VTP_BIN('Particle_Rank', PARTICLE_RANK,PASS)
+         IF(PASS==WRITE_DATA) DEALLOCATE(PARTICLE_RANK)
+      ENDIF
 
       ENDDO ! PASS LOOP, EITHER HEADER OR DATA
 

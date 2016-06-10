@@ -1223,6 +1223,11 @@ MODULE CG_INIT_NAMELIST
 !</keyword>
 
 !<keyword category="Output Control" required="false">
+!  <description>Write particle rank in VTK file.</description>
+      VTK_PART_RANK = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
 !  <description>Write cut-cell data only in VTK file.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       VTK_CUTCELL_ONLY= .FALSE.

@@ -504,6 +504,7 @@
 
 
 ! Allocate the global store arrary array. This changes across MPI ranks.
+      if(allocated(DEM_BCMI_IJK)) deallocate(DEM_BCMI_IJK)
       IF(LC > 1) THEN
          allocate( DEM_BCMI_IJK(LC-1) )
          DEM_BCMI_IJK(1:LC-1) = LOC_DEM_BCMI_IJK(1:LC-1)

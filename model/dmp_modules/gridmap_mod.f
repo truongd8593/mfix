@@ -118,17 +118,21 @@
             CALL BCAST(NODESJ)
             CALL BCAST(NODESK)
 
-            CALL BCAST(ISIZE1_ALL)
-            CALL BCAST(JSIZE1_ALL)
-            CALL BCAST(KSIZE1_ALL)
-            allocate( ISIZE_ALL(0:NODESI-1))
-            allocate( JSIZE_ALL(0:NODESJ-1))
-            allocate( KSIZE_ALL(0:NODESK-1))
-            isize_all = isize1_all
-            jsize_all = jsize1_all
-            ksize_all = ksize1_all
          ENDIF
       ENDIF
+
+      CALL BCAST(ISIZE1_ALL)
+      CALL BCAST(JSIZE1_ALL)
+      CALL BCAST(KSIZE1_ALL)
+      if(allocated(ISIZE_ALL)) deallocate(ISIZE_ALL)
+      if(allocated(JSIZE_ALL)) deallocate(JSIZE_ALL)
+      if(allocated(KSIZE_ALL)) deallocate(KSIZE_ALL)
+      allocate( ISIZE_ALL(0:NODESI-1))
+      allocate( JSIZE_ALL(0:NODESJ-1))
+      allocate( KSIZE_ALL(0:NODESK-1))
+      isize_all = isize1_all
+      jsize_all = jsize1_all
+      ksize_all = ksize1_all
 
 ! The following is general for 1-d or 2-d or 3-d decompostion
 ! Determining  istart, jstart and kstart for all the processors

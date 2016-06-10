@@ -266,5 +266,7 @@ use param, only: DIMENSION_N_S
 ! Particle cohesion
       LOGICAL :: VTK_PART_COHESION(DIMENSION_VTK)
 
+! Particle rank
+      LOGICAL :: VTK_PART_RANK(DIMENSION_VTK)
       END MODULE vtk
 

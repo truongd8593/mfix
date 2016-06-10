@@ -617,6 +617,7 @@ MODULE output_man
       use sendrecv 
       use compar, only:MyPE,ADJUST_PARTITION
       use usr
+      USE param1, only: UNDEFINED
 
       implicit none
       INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
@@ -629,6 +630,7 @@ MODULE output_man
 
       IF(NumPEs==1) RETURN  ! Nothing to do in serial
 
+      IF(DLB_DT==UNDEFINED) RETURN ! Nothing to do if DLB_DT is not defined
 
       NP = PIP - IGHOST_CNT                                                                                                                              
       ALLOCATE( NP_ALL(0:NumPEs-1))
@@ -691,7 +693,7 @@ MODULE output_man
       use mpi_init_des
       use usr
       use param1, only: UNDEFINED, ZERO
-      use compar, only:ADJUST_PARTITION
+      use compar, only:ADJUST_PARTITION,ISIZE_ALL,JSIZE_ALL,KSIZE_ALL
 
       implicit none
       INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
@@ -755,6 +757,7 @@ MODULE output_man
       DOUBLE PRECISION :: X_TO_MATCH,Y_TO_MATCH,Z_TO_MATCH,DMAX,DTEST
       INTEGER :: NUMBER_OF_PARTITIONS_TO_TEST
       LOGICAL :: SUGGEST_ONLY_PARTITION = .FALSE.
+      LOGICAL :: PARTITION_CHANGED
 
 
 ! Local Parameters:                                                                                                                                              
@@ -1008,7 +1011,7 @@ MODULE output_man
 
               BEST_DG_XE(1:SIZE(DG_XE)) = DG_XE(:)
               BEST_DG_YN(1:SIZE(DG_YN)) = DG_YN(:)
-              BEST_DG_ZT(1:SIZE(DG_ZT)) = DG_ZT(:)
+              IF(DO_K) BEST_DG_ZT(1:SIZE(DG_ZT)) = DG_ZT(:)
 
               BEST_PARTITION = P
               BEST_LIP_IJK = LIP_IJK 
@@ -1174,6 +1177,42 @@ MODULE output_man
             ENDDO
          ENDIF
 
+! We do not need to doa restart when the partition did not change
+         PARTITION_CHANGED = .FALSE.
+         IF(NODESI/=DLB_NODESI(BEST_PARTITION)) THEN
+            PARTITION_CHANGED = .TRUE.
+         ELSE
+            DO IPROC = 0,NODESI-1
+               IF(ISIZE_ALL(IPROC)/=EG_BEST_I_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+            ENDDO
+         ENDIF
+
+         IF(NODESJ/=DLB_NODESJ(BEST_PARTITION)) THEN
+            PARTITION_CHANGED = .TRUE.
+         ELSE
+            DO IPROC = 0,NODESJ-1
+               IF(JSIZE_ALL(IPROC)/=EG_BEST_J_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+            ENDDO
+         ENDIF
+
+         IF(DO_K) THEN
+            IF(NODESK/=DLB_NODESK(BEST_PARTITION)) THEN
+               PARTITION_CHANGED = .TRUE.
+            ELSE
+               DO IPROC = 0,NODESK-1
+                  IF(KSIZE_ALL(IPROC)/=EG_BEST_K_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+               ENDDO
+            ENDIF
+         ENDIF
+
+         IF(.NOT.PARTITION_CHANGED) THEN
+            ADJUST_PARTITION = .FALSE.
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) ' PARTITION DID NOT CHANGE.'
+            WRITE (*, 1000) '================================================='
+         ENDIF
+
+
 ! Now save the new partition to gridmap.dat before restarting
          IF(ADJUST_PARTITION) THEN
             OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat')
@@ -1204,7 +1243,7 @@ MODULE output_man
                   WRITE(*,*) IPROC,EG_BEST_K_SIZE(IPROC)
             ENDDO
             WRITE (*, 1000) '================================================='
-         ELSE
+         ELSEIF(PARTITION_CHANGED) THEN
             WRITE (*, 1000) '================================================='
             WRITE (*, 1000) 'INVALID GRID PARTITION '
             WRITE (*, 1000) '================================================='
