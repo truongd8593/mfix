@@ -88,7 +88,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.text_changed_flag = False
 
     @classmethod
-    def print_internal(self, text):
+    def value_error(self, text):
         print(text)
 
     def mark_changed(self):
@@ -128,7 +128,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     self.saved_value = f
                     return f
                 except ValueError as e:
-                    self.print_internal("Error: %s" %e)
+                    self.value_error(e)
                     return self.saved_value or ''
             elif re_float_exp.match(text):
                 try:
@@ -137,7 +137,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     self.saved_value = f
                     return f
                 except ValueError as e:
-                    self.print_internal("Error: %s" %e)
+                    self.value_error(e)
                     return self.saved_value or ''
             elif re_math.search(text):
                 try:
@@ -149,7 +149,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     self.saved_value = eq
                     return eq
                 except ValueError as e:
-                    self.print_internal("Error: value %s" %e)
+                    self.value_error("Error: value %s" %e)
                     return self.saved_value or ''
             else:
                 return self.saved_value or ''
@@ -161,7 +161,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 self.saved_value = i
                 return i
             except ValueError as e:
-                self.print_internal("Error: value %s" %e)
+                self.value_error("Error: value %s" %e)
                 return self.saved_value or ''
 
         else:
