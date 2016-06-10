@@ -94,13 +94,17 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     stderr_signal = pyqtSignal(str)
     update_run_options_signal = pyqtSignal(str)
 
+    # Allow LineEdit widgets to report out-of-bounds values.
+    def popup_value_error(self, text):
+        self.message(icon='Error', title='Range error', text=text)
+
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
         if project_file:
             self.set_project_file(project_file)
 
-        # Allow LineEdit widgets to report out-of-bounds values.
-        LineEdit.print_internal = self.print_internal
+
+        LineEdit.value_error = self.popup_value_error
 
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(get_icon('mfix.png'))
@@ -1345,7 +1349,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # These are routine messages that we are not going to trouble the user with
         # Note, the set is only constructed once (at load time)
-        return line.strip() in boilerplate
+        # Also skip lines containing only '*'
+        stripped = line.strip()
+        return all(c=='*' for c in stripped) or stripped in boilerplate
 
 
     def handle_stdout(self, text):
@@ -1380,8 +1386,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         stripped = line.strip()
         if not stripped:
             # Let's just skip blank lines completely
-            return
-        if set(stripped)==set('*'): # Also skip lines of stars
             return
         if not line.endswith('\n'):
             line += '\n'
