@@ -438,10 +438,8 @@ libmfix_src = \
 	../model/des/mpi_node_des_mod.f \
 	../model/des/mpi_pack_des_mod.f \
 	../model/des/mpi_unpack_des_mod.f \
-	../model/des/multisap.f \
 	../model/des/neighbour.f \
 	../model/des/nsquare.f \
-	../model/des/pair_manager.f \
 	../model/des/particle_filter_mod.f \
 	../model/des/particles_in_cell.f \
 	../model/des/pic/apply_wall_bc_pic.f \
@@ -466,7 +464,6 @@ libmfix_src = \
 	../model/des/read_res1_des_mod.f \
 	../model/des/resize.f \
   ../model/des/rxns_gs_des1.f \
-	../model/des/sap.f \
 	../model/des/sendrecvnode_mod.f \
 	../model/des/set_bc_dem.f \
 	../model/des/set_bc_dem_mi.f \

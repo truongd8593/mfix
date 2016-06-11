@@ -95,7 +95,6 @@
       use desgrid, only: DG_IEND2, DG_ISTART2
       use desgrid, only: DG_JEND2, DG_JSTART2
       use desgrid, only: DG_KEND2, DG_KSTART2
-      use desgrid, only: dg_dxinv, dg_dyinv, dg_dzinv
 
       use stl, only: FACETS_AT_DG
 
@@ -113,14 +112,12 @@
       IMPLICIT NONE
 
 ! DES Grid cell index.
-      INTEGER :: IJK, IJK2
+      INTEGER :: IJK
 ! Loop counters:
       INTEGER :: I1, I2, II  ! X-axis
       INTEGER :: J1, J2, JJ  ! Y-axis
       INTEGER :: K1, K2, KK  ! Z-axis
       INTEGER :: NN          ! STLs
-! Generic accumulator
-      INTEGER :: COUNT_FAC
 
 ! Maximum and minimum extents of the indexed STL
       DOUBLE PRECISION:: X1,Y1,Z1
@@ -224,8 +221,6 @@
       DOUBLE PRECISION :: lDX, lDY, lDZ
 ! Buffer to ensure all particle-STL collisions are captured.
       DOUBLE PRECISION :: BUFFER
-! Legacy variable - should be removed
-      INTEGER ::  CURRENT_COUNT
 
       BUFFER = 1.1d0*MAX_RADIUS
 

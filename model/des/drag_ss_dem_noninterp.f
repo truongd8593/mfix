@@ -165,7 +165,7 @@
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
       use derived_types, only: PIC
-      use discretelement, only: PINC, PIJK, DES_VOL_NODE
+      use discretelement, only: PINC, PIJK
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.

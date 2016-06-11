@@ -527,7 +527,7 @@
 ! User-Input: solids velocity at wall BCs.
       use bc, only: BC_UW_s, BC_VW_s, BC_WW_s
 ! User-Input: solids energy eq BCs.
-      use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
+      use bc, only: BC_HW_T_s, BC_C_T_s
 ! User-Input: solids species eq BCs.
       use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
 

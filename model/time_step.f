@@ -16,16 +16,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE TIME_STEP_INIT
 
-      USE compar, only: mype
-      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
-      USE error_manager, only: err_msg
+      USE discretelement, only: des_continuum_hybrid, discrete_element
       USE error_manager, only: flush_err_msg
       USE output_man, only: output_manager
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
+      USE run, only: call_usr, chk_batchq_end
+      USE run, only: cn_on, dt, ghd_2007, kt_type_enum
+      USE run, only: nstep, nsteprst, odt, run_type, time
       USE toleranc, only: max_inlet_vel
       USE utilities, only: max_vel_inlet
 
@@ -114,9 +112,9 @@
       USE output, only: DLB
       USE output_man, only: output_manager
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: chk_batchq_end, call_dqmom, pic_solids
+      USE run, only: call_dqmom, pic_solids
       USE run, only: cn_on, dt, dt_prev
-      USE run, only: nstep, nsteprst, odt, run_type, time, tstop, use_dt_prev, steady_state
+      USE run, only: nstep, nsteprst, odt, run_type, time, use_dt_prev, steady_state
       IMPLICIT NONE
 
 ! Other solids model implementations

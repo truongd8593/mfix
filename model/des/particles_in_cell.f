@@ -36,7 +36,6 @@
       USE geometry, only: KMIN2, KMAX2
 ! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-      use param, only: DIMENSION_3
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 

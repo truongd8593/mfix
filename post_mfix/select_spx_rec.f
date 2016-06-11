@@ -67,7 +67,7 @@
          unit_add = 10
          OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
             STATUS='NEW',&
-            RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=10,convert='big_endian')
+            RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=10)
          write (*,*) ' enter starting time to write output'
          read  (*,*) tstart
       END IF

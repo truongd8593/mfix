@@ -50,7 +50,7 @@
       DOUBLE PRECISION HLOSS, HLOSSm
 !
 !                      Indices
-      INTEGER          M, IER
+      INTEGER          M
 !
 !-----------------------------------------------
 !

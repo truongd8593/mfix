@@ -21,8 +21,7 @@
       USE indices
       USE param, only: dimension_n_s
       USE param1, only: zero
-      USE run, only: ANY_SPECIES_EQ, SPECIES_EQ
-      USE physprop, only: NMAX
+      USE run, only: ANY_SPECIES_EQ
       USE run, only: DT
       USE run, only: SOLVE_ROs
       USE functions

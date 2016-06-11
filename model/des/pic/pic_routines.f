@@ -689,7 +689,7 @@
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', &
-           status='unknown',CONVERT='BIG_ENDIAN')
+           status='unknown')
       IF(DIMN.eq.2) then
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
               ' "EP_s " ', ' "pU_S" ', ' "pV_S" ',' "dU_s" ',&
@@ -736,7 +736,7 @@
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') &
          TRIM(RUN_NAME)//'_PS_FORCE_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted',&
-           status='unknown',CONVERT='BIG_ENDIAN')
+           status='unknown')
 
       IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',&
            ' "DELPX" ', '"DELPY"', '"DELPZ" ',&

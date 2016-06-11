@@ -11,13 +11,8 @@ MODULE DERIVED_TYPES
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-  USE multi_sweep_and_prune, only: multisap_t, boxhandlelist_t
   IMPLICIT NONE
 !-----------------------------------------------
-  ! the global multisap
-  type(multisap_t) multisap
-
-  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>

@@ -102,7 +102,7 @@
          WRITE(*,'(/,A)')' Average EP_g'
          CALL GET_FILE_NAME(TEMP_FILE4)
       END IF
-      OPEN (UNIT=40,FILE=TEMP_FILE4,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+      OPEN (UNIT=40,FILE=TEMP_FILE4,STATUS='UNKNOWN')
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1
@@ -125,7 +125,7 @@
          WRITE(*,'(/,A)')' Standard Deviation of EP_g'
          CALL GET_FILE_NAME(TEMP_FILE2)
       END IF
-      OPEN (UNIT=40,FILE=TEMP_FILE2,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+      OPEN (UNIT=40,FILE=TEMP_FILE2,STATUS='UNKNOWN')
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1
@@ -148,7 +148,7 @@
          WRITE(*,'(/,A)') ' Average V_g'
          CALL GET_FILE_NAME(TEMP_FILE3)
       END IF
-      OPEN (UNIT=40,FILE=TEMP_FILE3,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+      OPEN (UNIT=40,FILE=TEMP_FILE3,STATUS='UNKNOWN')
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1
@@ -171,7 +171,7 @@
          WRITE(*,'(/,A)') ' Standard deviation of V_g'
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF
-      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1
       NZ = KMAX1 - KMIN1 + 1

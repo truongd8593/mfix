@@ -25,7 +25,7 @@
 ! Flag: Use legacy rrates implementation.
       use rxns, only: USE_RRATES
 ! Number of continuum solids phases.
-      use physprop, only: SMAX, MMAX
+      use physprop, only: SMAX
 ! Number of discrete (DEM/MPPIC) solids.
       use discretelement, only: DES_MMAX
 ! User specified: Constant solids specific heat.
@@ -536,12 +536,6 @@
       CALL FINL_ERR_MSG
 
       RETURN
-
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-         'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
 
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.',&
          'Please correct the mfix.dat file.')

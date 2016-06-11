@@ -92,8 +92,8 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      integer :: lcurpar,lparid,lprvijk,lparijk,lparcnt,ltot_ind
-      integer :: lbuf,llocpar,lnewcnt,lpicloc
+      integer :: lcurpar,lparid,lprvijk,lparijk,lparcnt
+      integer :: lbuf,llocpar,lnewcnt
       logical,dimension(:),allocatable :: lfound
       integer,dimension(:),allocatable :: lnewspot,lnewpic
       logical :: tmp
@@ -328,12 +328,11 @@
 ! Local variables
 !---------------------------------------------------------------------//
       integer :: lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
-      integer :: lneigh,lcontactindx,lcontactid,lcontact,&
+      integer :: lneigh,&
                  lneighid,lneighijk
       logical :: lfound
-      integer :: lbuf,lcount
-      logical :: lneighfound
-      integer :: cc,kk,num_neighborlists_sent,nn
+      integer :: lbuf
+      integer :: cc,num_neighborlists_sent,nn
 
       logical :: tmp
 !......................................................................!

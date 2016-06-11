@@ -75,7 +75,7 @@
 ! current value of F_gs (i.e., without underrelaxation)
       DOUBLE PRECISION F_gstmp
 ! indices of solids phases (continuous, discrete)
-      INTEGER :: CM, DM, L
+      INTEGER :: L
 ! temporary shift of total number of solids phases to account for both
 ! discrete and continuous solids phases used for the hybrid mdoel
       INTEGER :: MAXM

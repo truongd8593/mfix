@@ -41,7 +41,7 @@
       use param, only: dim_m
 ! number of continuous solids phases and
 ! solids 'phase' diameters and densities
-      USE physprop, only: MMAX, D_p0, RO_s0
+      USE physprop, only: MMAX, D_p0
 ! Calculated baseline variable solids density.
       USE physprop, only: CLOSE_PACKED
 ! Runtime Flag: Solve energy equations
@@ -49,8 +49,6 @@
 ! Runtime Flag: One or more species equations are solved.
       use run, only: ANY_SPECIES_EQ
 ! Flag: Solve variable solids density.
-      use run, only: SOLVE_ROs
-      use run, only: SOLIDS_MODEL
       USE run, only: MOMENTUM_X_EQ
       USE run, only: MOMENTUM_Y_EQ
       USE run, only: MOMENTUM_Z_EQ
@@ -59,7 +57,7 @@
 
 ! Local Variables
 !---------------------------------------------------------------------//
-      INTEGER :: M 
+      INTEGER :: M
 !......................................................................!
 
 ! Initialize the error manager.
@@ -222,7 +220,6 @@
       use physprop, only: MMAX
       use physprop, only: K_S0
       use run, only: UNITS
-      use run, only: SOLIDS_MODEL
 
       IMPLICIT NONE
 

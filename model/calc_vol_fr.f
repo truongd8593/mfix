@@ -58,12 +58,8 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-! volume of particle type M for GHD theory
-      DOUBLE PRECISION :: VOL_M
 ! volume fraction of close-packed region
       DOUBLE PRECISION :: EPcp
-! volume fraction of solids phase
-      DOUBLE PRECISION :: EPS
 ! sum of volume fractions
       DOUBLE PRECISION :: SUMVF
 ! Whichever phase is given by MF becomes the phase whose volume fraction

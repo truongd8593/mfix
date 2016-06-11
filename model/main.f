@@ -45,49 +45,28 @@
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
       USE cdist, only: bdoing_postmfix
-      USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
       USE check, only: check_mass_balance
       USE check_data_cg, only: check_bc_flags, report_best_processor_size
       USE coeff, only: init_coeff
-      USE compar, only: mpierr, mype, pe_io
-      USE cont, only: do_cont
-      USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
-      USE discretelement, only: discrete_element
-      USE drag, only: f_gs
-      USE error_manager, only: err_msg, flush_err_msg
+      USE compar, only: mype, pe_io
+      USE error_manager, only: flush_err_msg
       USE error_manager, only: init_err_msg, finl_err_msg
-      USE fldvar, only: rop_g, rop_s
       USE funits, only: dmp_log, unit_log, unit_res
       USE machine, only: start_log, end_log
       USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
       USE mfix_netcdf, only: mfix_usingnetcdf
-      USE output, only: dbgprn_layout
       USE output_man, only: init_output_vars, output_manager
       USE parallel_mpi, only: parallel_init, parallel_fin
       USE param1, only: n_spx, undefined, zero
-      USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
-      USE physprop, only: mmax
-      USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: id_version, ier
-      USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
+      USE run, only: id_version
+      USE run, only: time
       USE time_cpu, only: CPU00, wall0
-      USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
-      USE vtk, only: write_vtk_files
 
       IMPLICIT NONE
 
 !$    INTEGER num_threads, threads_specified, omp_id
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
-
-      ! Temporary storage for DT
-      DOUBLE PRECISION :: DT_tmp
-      ! Save TIME in input file for RESTART_2
-      DOUBLE PRECISION :: TIME_SAVE
-
-      INTEGER :: LL, MM
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -116,7 +95,7 @@
 !$      if (status.eq.0 .and. length.ne.0) then
 !$        read(omp_num_threads,*) threads_specified
 !$      else
-!$        WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
+!$        WRITE(*,'(A)') 'Enter the number of threads to be used for SMP: '
 !$        READ(*,*) threads_specified
 !$      endif
 
@@ -147,7 +126,6 @@
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
-      USE cdist, only: bdoing_postmfix
       USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
       USE check, only: check_mass_balance
       USE check_data_cg, only: check_bc_flags, report_best_processor_size
@@ -173,17 +151,14 @@
       USE physprop, only: mmax
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: id_version, ier
-      USE run, only: iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
-      USE time_cpu, only: CPU00, wall0
+      USE run, only: call_usr, dem_solids, dt_max, dt_min
+      USE run, only: ier
+      USE run, only: nstep, pic_solids, run_type, dt, shear, time, v_sh
       USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
       USE vtk, only: write_vtk_files
       IMPLICIT NONE
 
-      !$    INTEGER num_threads, threads_specified, omp_id
-      !$    INTEGER omp_get_num_threads
-      !$    INTEGER omp_get_thread_num
+      !$    INTEGER threads_specified
 
       ! Temporary storage for DT
       DOUBLE PRECISION :: DT_tmp

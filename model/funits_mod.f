@@ -96,11 +96,11 @@
       IF(IOS == 0 )THEN
          close(tUNIT)
          WRITE(CMD,"('rm ',A,'/tmp')")adjustl(trim(pDIR))
-         CALL SYSTEM(trim(CMD))
+         CALL EXECUTE_COMMAND_LINE(trim(CMD))
       ELSE
          write(*,"('Creating directory ',A)") PDIR
          WRITE(CMD,"('mkdir ',A)")pDIR
-         CALL SYSTEM(trim(CMD))
+         CALL EXECUTE_COMMAND_LINE(trim(CMD))
       ENDIF
 
       RETURN

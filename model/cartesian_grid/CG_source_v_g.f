@@ -39,7 +39,7 @@
 ! Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, J, K, IJK, IJKN
@@ -274,15 +274,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CG_SOURCE_V_G_BC(A_M, B_M)
 
-! Modules 
+! Modules
 !---------------------------------------------------------------------//
       USE bc
       USE compar
       USE cutcell
       USE fldvar
       USE fun_avg
-      use geometry, only: do_k, vol, vol_v
-      use geometry, only: ayz, axy, ayz_v, axy_v
       use geometry, only: odx_e, ody_n
       USE indices
       USE param
@@ -588,4 +586,3 @@
       INCLUDE 'functions.inc'
 
       END SUBROUTINE CG_SOURCE_V_G_BC
-

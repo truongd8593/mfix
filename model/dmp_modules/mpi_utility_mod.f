@@ -148,7 +148,7 @@ contains
     integer, optional, intent(in) ::  idebug
 
 #ifdef MPI
-    integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug,mpierr
+    integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug
 
     if (.not. present(idebug)) then
        lidebug = 0
@@ -177,7 +177,7 @@ contains
     integer, optional, intent(in) ::  idebug
 
 #ifdef MPI
-    integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug,mpierr
+    integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug
 
     if (.not. present(idebug)) then
        lidebug = 0
@@ -206,7 +206,7 @@ contains
     integer, intent(in), dimension(:) :: disp
     integer, intent(out), dimension(:) :: gbuf
     integer, optional, intent(in) :: mroot, idebug
-    integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+    integer :: sendtype,recvtype,sendcnt,lroot,ierr,lidebug
 
 #ifdef MPI
     !       check to see whether there is root
@@ -242,7 +242,7 @@ contains
     integer, intent(in), dimension(:) :: disp
     double precision, intent(out), dimension(:) :: gbuf
     integer, optional, intent(in) :: mroot, idebug
-    integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+    integer :: sendtype,recvtype,sendcnt,lroot,ierr,lidebug
 
 #ifdef MPI
     !       check to see whether there is root
@@ -293,7 +293,6 @@ contains
 
     integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk
 
 #ifdef MPI
     !       check to see whether there is root
@@ -363,7 +362,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -450,7 +449,6 @@ contains
 
     integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -516,7 +514,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -603,7 +601,6 @@ contains
 
     integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -669,7 +666,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -754,10 +751,9 @@ contains
     integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
     character(len=80) :: string
 
-    integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-    integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk
-    integer :: lenchar, icount
+    integer :: ijk1, ijk2, lroot, lidebug
+    integer :: i,j
+    integer :: lenchar
 
     !       check to see whether there is root
 
@@ -831,7 +827,6 @@ contains
 
     integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk
 
     !       check to see whether there is root
 
@@ -913,10 +908,10 @@ contains
 
     integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk, ijk_gl
+    integer :: ijk_gl
     integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-    logical :: isok_k,isok_j,isok_i, isinterior
-    logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+    logical :: isok_k,isok_j,isok_i
+    logical :: need_copy
 
     !       check to see whether there is root
 
@@ -1008,7 +1003,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1094,10 +1089,10 @@ contains
 
     integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk, ijk_gl
+    integer :: ijk_gl
     integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-    logical :: isok_k,isok_j,isok_i, isinterior
-    logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+    logical :: isok_k,isok_j,isok_i
+    logical :: need_copy
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1186,7 +1181,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1273,9 +1268,9 @@ contains
 
     integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk, ijk_gl
-    logical :: isok_k,isok_j,isok_i, isinterior
-    logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+    integer :: ijk_gl
+    logical :: isok_k,isok_j,isok_i
+    logical :: need_copy
     integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 
     if (.not. present(mroot)) then
@@ -1365,7 +1360,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1451,13 +1446,9 @@ contains
     integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
     character(len=80) :: string
 
-    integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
-    integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk, ijk_gl
-    integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-    integer :: lenchar, icount
-    logical :: isok_k,isok_j,isok_i, isinterior
-    logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+    integer :: ijk1,ijk2, lroot, lidebug
+    integer :: i,j
+    integer :: lenchar
 
     !       check to see whether there is root
 
@@ -1533,10 +1524,10 @@ contains
 
     integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
     integer :: i,j,k,ibuffer,iproc, ioffset
-    integer :: ijk, ijk_gl
+    integer :: ijk_gl
     integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-    logical :: isok_k,isok_j,isok_i, isinterior
-    logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
+    logical :: isok_k,isok_j,isok_i
+    logical :: need_copy
 
     !       check to see whether there is root
 
@@ -1692,7 +1683,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1808,7 +1799,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1925,7 +1916,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -1983,7 +1974,7 @@ contains
 
 #ifdef MPI
     integer :: datatype, count, ierr,lroot, lidebug
-    integer :: lenchar,icount, i, j
+    integer :: lenchar,icount, j
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -2234,7 +2225,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -2383,7 +2374,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -2532,7 +2523,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -2821,7 +2812,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -2966,7 +2957,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3111,7 +3102,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3256,7 +3247,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3405,7 +3396,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3554,7 +3545,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3846,7 +3837,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -3991,7 +3982,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -4136,7 +4127,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -4281,7 +4272,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -4430,7 +4421,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -4579,7 +4570,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -4870,7 +4861,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -5015,7 +5006,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -5160,7 +5151,7 @@ contains
     integer, optional, intent(in) :: mroot, idebug
 
 #ifdef MPI
-    integer :: i,j,lroot, lidebug
+    integer :: j,lroot, lidebug
 
     if (.not. present(mroot)) then
        lroot = 0
@@ -5436,7 +5427,6 @@ contains
   SUBROUTINE ExitMPI(myid)
 
     USE funits, only: UNIT_LOG
-    USE funits, only: DMP_LOG
 
     implicit none
 

@@ -24,7 +24,6 @@ MODULE read_input
       USE des_thermo
       USE discretelement
       USE funits
-      USE iterate, only: max_nit
       USE leqsol
       USE main, only: mfix_dat
       USE mfix_pic
@@ -33,7 +32,6 @@ MODULE read_input
       USE param
       USE param1
       USE run
-      USE visc_g, only: MU_GMAX
 
       IMPLICIT NONE
 
@@ -52,10 +50,10 @@ MODULE read_input
          IF(PRESENT) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)'Reading partition layout from grimap.dat...'
-               OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
-                 
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+
                 READ (777, *) NODESI,NODESJ,NODESK
-                
+
                 CLOSE(777)
             ENDIF
 

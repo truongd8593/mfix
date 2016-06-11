@@ -170,8 +170,6 @@
 
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
-! Loop bound for filter
-      DOUBLE PRECISION :: GAMMAxTp
 ! Local gas phase values.
       DOUBLE PRECISION :: lRgp(NMAX(0)) ! Rate of species production
       DOUBLE PRECISION :: lRgc(NMAX(0)) ! Rate of species consumption
@@ -276,7 +274,6 @@
       use toleranc, only: ZERO_X_gs
       use physprop, only: NMAX
 
-      use compar, only: myPE
       IMPLICIT NONE
 
 ! Passed variables

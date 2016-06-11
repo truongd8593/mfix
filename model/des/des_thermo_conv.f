@@ -27,7 +27,6 @@
       Use interpolation
       Use param1
       use des_thermo, only: GAMMAxSA
-      use geometry, only: NO_K
       use particle_filter, only: DES_INTERP_ON
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
@@ -119,8 +118,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CONV_GS_GAS1
 
-! Flag: The fluid and discrete solids are explicitly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Size of particle array on this process.
       use discretelement, only: MAX_PIP
 ! Flag to use interpolation
@@ -237,4 +234,3 @@
 
       RETURN
       END SUBROUTINE ZERO_ENERGY_SOURCE
-

@@ -190,8 +190,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! The (max) number of particles in process
-      use discretelement, only: PIP, MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
       use discretelement, only: PIJK
 ! The number of particles in cell IJK

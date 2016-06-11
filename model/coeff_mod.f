@@ -54,8 +54,6 @@
       use run, only: ENERGY_EQ
 ! Run-time flag for to solve species equations.
       use run, only: SPECIES_EQ
-! Flag to recalculate gas viscosity.
-      use visc_g, only: RECALC_VISC_G
 ! Run-time flag for invoking discrete element model
       use discretelement, only: DISCRETE_ELEMENT
 ! Run-time flag for gas/DEM coupling
@@ -74,15 +72,13 @@
       use physprop, only: DIF_G0, DIF_S0
 ! Specified number of solids phases.
       use physprop, only: MMAX
-! Specified constant viscosity.
-      use physprop, only: MU_g0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
 ! MMS flag
       use mms, only: USE_MMS
 ! user defined flags
       use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
-      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
+      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_difs
       use usr_prop, only: usr_gama, usr_fgs, usr_fss
       implicit none
 

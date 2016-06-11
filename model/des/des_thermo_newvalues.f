@@ -22,7 +22,6 @@
       Use physprop
       use run, only: ENERGY_EQ
       use functions
-      use funits, only: dmp_log
       use run, only: ANY_SPECIES_EQ
       USE des_thermo_cond, only: DES_QW_cond
       IMPLICIT NONE
@@ -33,10 +32,6 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-! Index of neighbor particle of particle I such that I < J
-      INTEGER IJK
-! Loop index for particles.
-      INTEGER NP, lNP
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 !---------------------------------------------------------------------//

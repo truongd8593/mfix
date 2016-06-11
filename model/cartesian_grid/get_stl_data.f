@@ -105,11 +105,11 @@
 !
 !     OPEN geometry.msh ASCII FILE
 !
-      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
+      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910)
 
       IF(MyPE == PE_IO) WRITE(*,2000)'MSH file opened. Starting reading data...'
 
-      OPEN(UNIT=444, FILE='checkgeometry.stl',CONVERT='BIG_ENDIAN')
+      OPEN(UNIT=444, FILE='checkgeometry.stl')
       write(444,*)'solid vcg'
 
       CALL SKIP(333,3)
@@ -513,7 +513,7 @@
 
       CLOSE(333)
 
-      OPEN(UNIT=444, FILE='msgeometry.stl',CONVERT='BIG_ENDIAN')
+      OPEN(UNIT=444, FILE='msgeometry.stl')
 
          DO ZONE = 1,N_FACE_ZONES
             IF(BC_ASSIGNED(ZONE)) THEN
@@ -567,7 +567,6 @@
       CALL MFIX_EXIT(myPE)
 
  1000 FORMAT(1X,I4,7X,A8,I8,1X,A20,1X,A20)
- 1010 FORMAT(1X,I4,5X,A20,1X,A20)
  1020 FORMAT(5X,I3,2X,3(I10,2X))
 !
  1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
@@ -577,7 +576,6 @@
  1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
       'End of file reached while reading stl file',/1X,70('*')/)
  2000 FORMAT(1X,A)
- 2010 FORMAT(1X,A,I4,A)
  3000 FORMAT(1X,A,'(',F10.4,';',F10.4,';',F10.4,')')
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
  5000 FORMAT(1X,A,F10.4)
@@ -814,7 +812,7 @@
 !
 !     OPEN geometry.stl ASCII FILE
 !
-         OPEN(UNIT=333, FILE=TRIM(geometryfile(NN)), STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
+         OPEN(UNIT=333, FILE=TRIM(geometryfile(NN)), STATUS='OLD', ERR=910)
 
          IF(MyPE == PE_IO) WRITE(*,2000)'STL file opened. Starting reading data...'
 
@@ -1004,7 +1002,7 @@
       IF(mype.eq.pe_io.and..false.) then
          WRITE(fname,'(A,"_FACETS_READ", ".stl")') &
          TRIM(RUN_NAME)
-         open(stl_unit, file = fname, form='formatted',convert='big_endian')
+         open(stl_unit, file = fname, form='formatted')
          write(stl_unit,*)'solid vcg'
 
 
@@ -1049,10 +1047,7 @@
       'Unable to open stl file',/1X,70('*')/)
  1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
       'Error while reading stl file',/1X,70('*')/)
- 1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/)
  2000 FORMAT(1X,A)
- 2010 FORMAT(1X,A,I4,A)
  3000 FORMAT(1X,A,'(',F10.4,';',F10.4,';',F10.4,')')
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
  5000 FORMAT(1X,A,F10.4)
@@ -1294,10 +1289,6 @@
       IF(d_ac<TOL_STL.OR.d_bc<TOL_STL) THEN
          INTERSECT_FLAG = .FALSE.             ! Exclude corner intersection
       ENDIF
-
-
- 1000 FORMAT(A,3(2X,G12.5))
-
 
       RETURN
 

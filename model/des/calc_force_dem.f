@@ -16,12 +16,10 @@
 !---------------------------------------------------------------------//
       USE calc_collision_wall
       USE constant, ONLY: Pi
-      USE derived_types, only: multisap, boxhandle
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
       USE run
-      use pair_manager
       use param1, only: one, small_number, zero
 
       IMPLICIT NONE
@@ -72,54 +70,12 @@
 
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
-      integer :: nn, mm, box_id, box_id2
-      logical :: found
-      integer :: pair(2)
-
 !......................................................................!
 
 ! Initialize cohesive forces
       IF(USE_COHESION) PostCohesive(:) = ZERO
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
-
-#ifdef do_sap
-      ! do nn=0, size(multisap%saps)-1
-      !    !print *,"nn = ",nn
-      !    if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
-      !    if (.not.check_sort(multisap%saps(nn))) ERROR_STOP __LINE__
-      ! enddo
-
-!print *,"CALC_FORCE_DEM =================================================================================="
-
-print *," TOTAL NUM OF NEIGHBORS IS ",NEIGHBOR_INDEX(MAX_PIP-1)
-
-open (unit=123,file="neighbors.txt",action="write",status="replace")
-
-DO LL = 1, MAX_PIP
-   CC_START = 1
-   IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
-   CC_END   = NEIGHBOR_INDEX(LL)
-
-   DO CC = CC_START, CC_END-1
-      I  = NEIGHBORS(CC)
-      write (123,*) ll,i
-   enddo
-enddo
-
-close (unit=123)
-
-             call reset_pairs(multisap%hashtable)
-             do
-                call get_pair(multisap%hashtable,pair)
-                if (pair(1).eq.0 .and. pair(2).eq.0) exit
-
-                if ( des_radius(pair(1))+des_radius(pair(2))> sqrt(dot_product(DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:),DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:)))) then
-                   print *,"invalid pair: ",pair(1),pair(2)
-                   stop __LINE__
-                endif
-             enddo
-#endif
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -135,7 +91,7 @@ close (unit=123)
 !!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !!$omp    hamaker_constant,asperities,surface_energy,                   &
-!!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, multisap, boxhandle)
+!!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !!$omp do
 
@@ -198,44 +154,6 @@ close (unit=123)
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
-
-#ifdef do_sap
-               if (.not.is_pair(multisap%hashtable,ll,i)) then
-
-                  print *,"SAP DIDNT FIND PAIR: ",ll,i
-                  print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-                  print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
-
-                  print *,""
-                  print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
-                  print *,""
-
-                  ! print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
-                  ! print *,"IIIIIIIII ",boxhandle(i)%list(:)
-
-                  do mm=1,size(boxhandle(ll)%list)
-                     if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
-                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
-                     box_id = boxhandle(ll)%list(mm)%box_id
-
-                     found = .false.
-                     do nn=1,size(boxhandle(i)%list)
-                        if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-                           ! print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
-                           box_id2 = boxhandle(i)%list(nn)%box_id
-                           found = .true.
-                        endif
-                     enddo
-
-                     if (.not.found) cycle
-
-                     ! print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
-
-                  enddo
-
-                  ERROR_STOP __LINE__
-               endif
-#endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I

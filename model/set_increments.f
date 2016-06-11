@@ -385,7 +385,6 @@
       USE cdist
       USE compar
       USE cutcell
-      USE discretelement, only: DISCRETE_ELEMENT
       USE energy
       USE exit, only: mfix_exit
       USE fldvar
@@ -2247,7 +2246,7 @@
       USE param1, only: undefined
       IMPLICIT NONE
 
-! Dummy arguments 
+! Dummy arguments
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY_1, ARRAY_2
 
@@ -2453,7 +2452,7 @@
              IF(IJK_FILE_NAME(I:I)==' ') IJK_FILE_NAME(I:I)='0'
           ENDDO
 
-          OPEN(CONVERT='BIG_ENDIAN',UNIT=IJK_FILE_UNIT,FILE=IJK_FILE_NAME)
+          OPEN(UNIT=IJK_FILE_UNIT,FILE=IJK_FILE_NAME)
 
 
          WRITE(IJK_FILE_UNIT,200)'          MyPE = ',MyPE

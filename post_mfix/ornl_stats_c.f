@@ -18,8 +18,7 @@
       real(kind=8)  :: vmin , vmax , vavg , variance , skw , krt
       real(kind=8)  :: dev  , AAD , tOrb  , tDev
 
-      integer :: nOrb , L , spx_num , nt , nstep_1
-      integer :: i , j , k , ijk
+      integer :: nOrb , nt
 
       real(kind=8)    :: time_series(*)
 

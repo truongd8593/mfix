@@ -24,37 +24,30 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR_SOURCES(lEQ_NO, IJK, sourcelhs, sourcerhs, M, N)
 
-! Modules 
+! Modules
 !-----------------------------------------------
-      use constant, only: pi, gas_const, gravity
-      use fldvar, only: u_g, v_g, w_g
-      use fldvar, only: u_s, v_s, w_s
-      use fldvar, only: ep_g, rop_g, ro_g, T_g, X_g, P_g
-      use fldvar, only: ep_s, rop_s, ro_s, T_s, X_s, d_p, theta_m
-      use fldvar, only: k_turb_g, e_turb_g, scalar
+      use constant, only: pi
+      use fldvar, only: ep_s
       use functions
       use geometry
-      use indices, only: i_of, j_of, k_of
-      use indices, only: im1, ip1, jm1, jp1, km1, kp1
       use param1, only: zero, one, half, undefined, undefined_i
       use physprop
-      use scalars, only: phase4scalar
       use usr_src
       IMPLICIT NONE
 
 ! Dummy arguments
 !-----------------------------------------------
-! reference equation 
+! reference equation
       INTEGER, INTENT(IN) :: lEQ_NO
 ! index
       INTEGER, INTENT(IN) :: IJK
-! source terms which appear appear in the 
+! source terms which appear appear in the
 ! center coefficient (lhs) - part of a_m matrix
 ! source vector (rhs) - part of b_m vector
       DOUBLE PRECISION, INTENT(OUT) :: sourcelhs, sourcerhs
-! Phase index 
+! Phase index
       INTEGER, INTENT(IN) :: M
-! Species index OR scalar equation number 
+! Species index OR scalar equation number
 ! (if applicable otherwise undefined_i)
       INTEGER, INTENT(IN) :: N
 
@@ -125,6 +118,3 @@
       END SELECT
       RETURN
       END SUBROUTINE USR_SOURCES
-
-
-

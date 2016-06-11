@@ -38,7 +38,6 @@
       USE toleranc
       use turb, only: k_epsilon
       USE ur_facs
-      USE visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -53,8 +52,6 @@
       INTEGER :: L, M, NN
 
       INTEGER :: MMAX_TOT
-      DOUBLE PRECISION :: TMP_DP
-
 
       DOUBLE PRECISION, DIMENSION(6) :: LOC
 
@@ -1079,5 +1076,3 @@
          'the characters will be over-written in the above order',/1X,A1)
          RETURN
          END SUBROUTINE WRITE_FLAGS
-
-

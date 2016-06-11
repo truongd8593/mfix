@@ -50,7 +50,17 @@ AC_OPENMP()
 AX_CHECK_COMPILE_FLAG([-assume byterecl], [
                         FCFLAGS="$FCFLAGS -assume byterecl"])
 
+# Convert to big-endian for GNU Fortran compiler
+AX_CHECK_COMPILE_FLAG([-fconvert=big-endian], [
+                                 FCFLAGS="$FCFLAGS -fconvert=big-endian"])
 
+# Convert to big-endian for Intel Fortran compiler
+AX_CHECK_COMPILE_FLAG([-convert big_endian], [
+                                 FCFLAGS="$FCFLAGS -convert big_endian"])
+
+# Convert to big-endian for IBM Fortran compiler
+AX_CHECK_COMPILE_FLAG([-qufmt=be], [
+                                   FCFLAGS="$FCFLAGS -qufmt=be"])
 
 # If pymfix support is enabled, require f2py to be in PATH and add -fPIC to
 # FCFLAGS and FFLAGS.

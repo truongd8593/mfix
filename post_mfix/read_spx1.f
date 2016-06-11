@@ -31,7 +31,7 @@
       use turb, only: k_epsilon
       IMPLICIT NONE
 
-! Dummy arguments 
+! Dummy arguments
 !---------------------------------------------------------------------//
 ! flag whether to read a particular SPx file this time step
       LOGICAL READ_SPX(*)
@@ -42,19 +42,17 @@
       INTEGER NSTEP_1
       REAL    TIME_REAL(*)
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 ! Dummy variable for reading T_s2
       DOUBLE PRECISION Tmp(DIMENSION_3)
 ! loop counters
-      INTEGER LC,M,N,IJK
+      INTEGER LC,N
 ! Pointer to the next record
       INTEGER NEXT_REC , num_recs
 
       integer :: gas_species_index , solid_species_index , solid_index
       logical :: bRead_all
-
-      DOUBLE PRECISION :: SUM_XoRO
 
       common /fast_sp7/ gas_species_index , solid_species_index , &
                          solid_index , bRead_all

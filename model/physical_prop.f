@@ -608,10 +608,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)),  &
-            status='old', position='append', convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -709,10 +708,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -770,12 +768,9 @@
       use cutcell, only: xg_e, yg_n, zg_t
 ! Gas phase species mass fractions.
       use fldvar, only: T_g, X_g, EP_g
-! Gas phase density (variable).
-      use fldvar, only: RO_g
-!
       use indices, only: i_of, j_of, k_of
 
-      use physprop, only: MW_g, C_pg, nmax
+      use physprop, only: C_pg, nmax
 ! Simulation time
       use run, only: TIME
       IMPLICIT NONE
@@ -796,7 +791,6 @@
       CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
-      CHARACTER(LEN=7) :: X_gN
 !......................................................................!
 
       lFile = '';
@@ -808,10 +802,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -871,12 +864,9 @@
       use cutcell, only: xg_e, yg_n, zg_t
 ! Solid phase species mass fractions.
       use fldvar, only: T_s, X_s, EP_S
-! Solid phase density (variable).
-      use fldvar, only: RO_s
-!
       use indices, only: i_of, j_of, k_of
 
-      use physprop, only: MW_s, C_ps, nmax
+      use physprop, only: C_ps, nmax
 ! Simulation time
       use run, only: TIME
       IMPLICIT NONE
@@ -897,7 +887,6 @@
       CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
-      CHARACTER(LEN=7) :: X_sN
 !......................................................................!
 
       lFile = '';
@@ -909,10 +898,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then

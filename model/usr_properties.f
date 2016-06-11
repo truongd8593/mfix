@@ -9,10 +9,8 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: t_g, x_g, p_g, ro_g
+      use fldvar, only: ro_g
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_g, mw_avg, nmax
-      use run, only: units
       implicit none
 
 ! Dummy arguments
@@ -86,11 +84,9 @@
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
       use constant, only: RGAS => GAS_CONST_cal
-      use fldvar, only: t_g, x_g
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_g, c_pg, nmax
+      use physprop, only: c_pg
       use read_thermochemical, only: calc_CpoR
-      use run, only: units
       implicit none
 
 ! Dummy arguments
@@ -145,12 +141,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use constant, only: to_si
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: t_g, x_g, p_g, ro_g
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mu_g, mw_g, mw_avg, nmax
-      use run, only: units
+      use physprop, only: mu_g
       implicit none
 
 ! Dummy arguments
@@ -196,10 +189,8 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: t_g, x_g, p_g, ro_g
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: k_g, mw_g, mw_avg, nmax
-      use run, only: units
+      use physprop, only: k_g
       implicit none
 
 ! Dummy arguments
@@ -246,10 +237,8 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: t_g, x_g, p_g, ro_g, rop_g
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: dif_g, mw_g, mw_avg, nmax
-      use run, only: units
+      use physprop, only: dif_g
       use scales, only: unscale_pressure
       use toleranc, only: zero_x_gs
       implicit none
@@ -298,10 +287,8 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: ro_s, T_s, X_s
+      use fldvar, only: ro_s
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_s, nmax
-      use run, only: units
       implicit none
 
 ! Dummy arguments
@@ -352,11 +339,9 @@
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
       use constant, only: RGAS => GAS_CONST_cal
-      use fldvar, only: t_s, x_s
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_s, c_ps, nmax
+      use physprop, only: c_ps
       use read_thermochemical, only: calc_CpoR
-      use run, only: units
       implicit none
 
 ! Dummy arguments
@@ -416,12 +401,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use constant, only: to_si
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: t_s, x_s, rop_s, ro_s, ep_s, p_s
+      use fldvar, only: ep_s, p_s
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_s, nmax
-      use run, only: units
       use visc_s, only: mu_s, lambda_s
       implicit none
 
@@ -471,10 +453,9 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: ro_s, T_s, X_s, ep_s, ep_g, rop_s
+      use fldvar, only: ep_s
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_s, nmax, k_s, k_g
-      use run, only: units
+      use physprop, only: k_s
       use toleranc, only: dil_ep_s
       implicit none
 
@@ -527,10 +508,9 @@
 ! Modules
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: ro_s, T_s, X_s, ep_s, ep_g, rop_s
+      use fldvar, only: ep_s
       use param1, only: undefined_i, zero, one, half
-      use physprop, only: mw_s, nmax, dif_s
-      use run, only: units
+      use physprop, only: dif_s
       implicit none
 
 ! Dummy arguments
@@ -588,17 +568,11 @@
 !---------------------------------------------------------------------//
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
       use energy, only: gama_gs
-      use fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
-      use fldvar, only: ep_s, ep_g, rop_s, rop_g, ro_s, ro_g
-      use fldvar, only: T_s, T_g, d_p
+      use fldvar, only: ep_s
       Use fun_avg, only: avg_x_e, avg_y_n, avg_z_t
       use functions, only: im_of, jm_of, km_of
-      use indices, only: i_of
       use param1, only: undefined_i, zero, one, half
       use param1, only: small_number, large_number
-      use physprop, only: mu_g, k_g, c_pg
-      use run, only: units
-      use rxns, only: r_phase
       implicit none
 
 ! Dummy arguments
@@ -656,20 +630,14 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use constant, only: segregation_slope_coefficient
       use drag, only: f_ss
       use error_manager, only: init_err_msg, err_msg, flush_err_msg
-      use fldvar, only: u_s, v_s, w_s
-      use fldvar, only: ep_s, ep_g, rop_s, ro_s
-      use fldvar, only: d_p, p_star
+      use fldvar, only: ep_s
       use fun_avg, only: avg_x_e, avg_y_n, avg_z_t
       use functions, only: funlm
       use functions, only: im_of, jm_of, km_of
-      use indices, only: i_of
       use param1, only: undefined_i, zero, one, half
       use param1, only: small_number, large_number
-      use physprop, only: smax, close_packed
-      use run, only: units
       use rdf, only: g_0
       implicit none
 
@@ -755,27 +723,15 @@
 
 ! Modules
 !-----------------------------------------------
-      use constant, only: pi, gas_const, gravity
+      use constant, only: pi
       use error_manager
 
-      use fldvar, only: u_g, v_g, w_g, ep_g
-      use fldvar, only: u_s, v_s, w_s, ep_s
-      use fldvar, only: p_g, rop_g, ro_g, T_g, X_g
-      use fldvar, only: p_s, rop_s, ro_s, T_s, X_s
-      use fldvar, only: d_p, theta_m
+      use fldvar, only: ep_s
 
-      use fldvar, only: scalar
       use functions
       use geometry
 
-      use indices, only: i_of, j_of, k_of
-      use indices, only: im1, ip1, jm1, jp1, km1, kp1
-
       use param1, only: zero, one, half, undefined, undefined_i
-      use physprop, only: k_g, c_pg, dif_g, mu_g
-      use physprop, only: k_s, c_ps, dif_s
-      use scalars, only: phase4scalar
-      use visc_s, only: mu_s, lambda_s
       use usr_prop
       IMPLICIT NONE
 
@@ -926,4 +882,3 @@
 
       RETURN
       END SUBROUTINE USR_PROPERTIES
-

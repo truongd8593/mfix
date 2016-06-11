@@ -111,7 +111,7 @@
 !-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype
-      open(44,file=filename,convert='big_endian')
+      open(44,file=filename)
       select case(ptype)
       case (1)
          write(44,*)&

@@ -17,7 +17,7 @@
 
 
       integer :: minlag , maxlag
-      integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
+      integer :: i , k , L , nt
       integer :: lagstep
 
       real(kind=8)    :: time_series(*)
@@ -101,7 +101,7 @@
 
 
       integer :: minlag , maxlag , lagstep
-      integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
+      integer :: i , k , L , nt
 
       real(kind=8) :: time_series(*) , time_series2(*)
 
@@ -186,7 +186,7 @@
 
 
       integer :: minlag , maxlag
-      integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
+      integer :: i , k , L , nt
       integer :: lagstep
 
       real(kind=8)    :: time_series(100000)
@@ -273,7 +273,7 @@
 
 
       integer :: minlag , maxlag
-      integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
+      integer :: i , k , L , nt
       integer :: lagstep
 
       real(kind=8)    :: time_series(*)
