@@ -1931,10 +1931,6 @@
       if(allocated(   PFT_NEIGHBOR  )) deallocate(    PFT_NEIGHBOR  )
       if(allocated(   PFT_NEIGHBOR_OLD  )) deallocate(    PFT_NEIGHBOR_OLD  )
 
-#ifdef do_sap
-      if(allocated(   boxhandle )) deallocate(    boxhandle )
-#endif
-
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
       if(allocated( PIC )) deallocate(  PIC )
