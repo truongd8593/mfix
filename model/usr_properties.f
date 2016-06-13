@@ -536,7 +536,7 @@
 
       IF (IER /= UNDEFINED_I) THEN
          write(err_prop, '("solids phase ",I2," species ", I2, &
-                           " diffusivity")') M, N
+            &" diffusivity")') M, N
          CALL INIT_ERR_MSG('USR_PROP_DIFS')
          WRITE(ERR_MSG,9999) trim(err_prop)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -596,7 +596,7 @@
 
       IF (IER /= UNDEFINED_I) THEN
          write(err_prop, '("gas-solids phase ",I2," heat transfer ", &
-                           "coefficient")') M
+           &"coefficient")') M
          CALL INIT_ERR_MSG('USR_PROP_Gama')
          WRITE(ERR_MSG,9999) trim(err_prop)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -666,7 +666,8 @@
 
       IF (IER /= UNDEFINED_I) THEN
          write(err_prop, '("solids phase ",I2," solids phase ", I2, &
-                           " drag coefficient")') M, L
+            &" drag coefficient")') M, L
+
          CALL INIT_ERR_MSG('USR_PROP_FSS')
          WRITE(ERR_MSG,9999) trim(err_prop)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
