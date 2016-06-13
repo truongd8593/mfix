@@ -150,6 +150,28 @@ endif
 
 ################################################################
 #                                                              #
+#      Convert unformatted output to bigendian (for Paraview)  #
+#                                                              #
+################################################################
+
+if GNU
+AM_FCFLAGS += -fconvert=big-endian
+endif
+
+if INTEL
+AM_FCFLAGS += -convert big_endian
+endif
+
+if PGI
+AM_FCFLAGS += -byteswapio
+endif
+
+if IBM
+AM_FCFLAGS += -qufmt=be
+endif
+
+################################################################
+#                                                              #
 #      OpenMP and MPI support                                  #
 #                                                              #
 #      --enable-smp and --enable-dmp options in configure.ac   #
