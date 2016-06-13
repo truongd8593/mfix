@@ -724,7 +724,8 @@
                   WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))') XE(I-1)+DX(I),&
                      YN(J-1)+DY(J), ZCOR, 1.D0-EP_G(IJK), &
                      PIC_U_S(IJK,MMAX+1), PIC_V_S(IJK,MMAX+1), PIC_W_S(IJK,MMAX+1),&
-                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1), W_S(IJK,MMAX+1)!, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
+                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1), W_S(IJK,MMAX+1)
+                     !, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
                ENDIF
             ENDDO
          ENDDO

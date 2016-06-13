@@ -188,8 +188,10 @@ CONTAINS
 
           class = cell_class(funijk(core_istart,core_jstart,core_kstart))
 
-!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop,class) &
-!$omp&   private(ijk,i,j,k) collapse (3)
+!$omp    parallel do default(none) private(ijk,i,j,k) collapse (3) &
+!$omp                shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart, &
+!$omp                       iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,    &
+!$omp                       core_iend,core_jend,core_kend,use_corecell_loop,class)
              do k = core_kstart,core_kend
                 do i = core_istart,core_iend
                    do j = core_jstart,core_jend
@@ -216,8 +218,9 @@ CONTAINS
           j_start(2) = 0 ! no iterations
           j_end(2) = -1  ! no iterations
 
-!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
-!$omp&   private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2)
+!$omp    parallel do default(none) private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2) &
+!$omp                shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,  &
+!$omp         cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
           do k = kstart,kend
              do i = istart,iend
 

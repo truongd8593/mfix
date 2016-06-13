@@ -21,12 +21,11 @@
       SUBROUTINE CONV_GS_DES1
 
       use constant, only: Pi
-      Use des_thermo
       Use discretelement
       Use fldvar
       Use interpolation
       Use param1
-      use des_thermo, only: GAMMAxSA
+      use des_thermo, only: GAMMAXSA, CONV_QS, Q_SOURCE, CONV_SC, DES_T_S
       use particle_filter, only: DES_INTERP_ON
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT

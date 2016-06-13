@@ -108,6 +108,7 @@
       integer lsize
       double precision xpos,ypos
       integer li,lj,lparcount
+      logical any_ghost
 !-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype
@@ -182,7 +183,8 @@
              xpos = des_pos_new(lcurpar,1)
              ypos = des_pos_new(lcurpar,2)
              li=iofpos(xpos);lj=jofpos(ypos)
-             write(44,*)(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)),xpos,ypos,li,lj,dg_funijk(li,lj,1)
+             any_ghost = (is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar))
+             write(44,*)any_ghost,xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
       case (5)
          ltordimn = merge(1,3,NO_K)

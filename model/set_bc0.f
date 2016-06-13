@@ -9,12 +9,12 @@
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SET_BC0
+SUBROUTINE SET_BC0
 
 ! Modules
 !--------------------------------------------------------------------//
-      use bc, only: ijk_p_g
-      use bc
+      use bc, only: ijk_p_g, bc_defined, bc_type_enum, free_slip_wall, no_slip_wall, par_slip_wall
+      use bc, only: p_outflow, mass_outflow, outflow, mass_inflow, p_inflow
       use fldvar, only: x_g, t_g, p_g
       use mms, only: calculate_mms, calculate_mms_source, use_mms
 
