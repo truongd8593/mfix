@@ -1,5 +1,7 @@
 # methods to deal with fluids, split off from gui.py
 
+# TODO: factor out common base between solids_ & fluid_handler, reduce code duplication
+
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from copy import deepcopy
@@ -151,10 +153,10 @@ class FluidHandler(object):
         tb.clicked.connect(self.fluid_species_delete)
         tw = f.tablewidget_fluid_species
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
-        self.fixup_column_widths()
+        self.fixup_fluids_table()
 
 
-    def fixup_column_widths(self):
+    def fixup_fluids_table(self):
         hv = QtWidgets.QHeaderView
         f=self.ui.fluid
         table = f.tablewidget_fluid_species
@@ -220,7 +222,7 @@ class FluidHandler(object):
         table = self.ui.fluid.tablewidget_fluid_species
         table.clearContents()
         if self.fluid_species is None:
-            self.fixup_column_widths()
+            self.fixup_fluids_table()
             return
         nrows = len(self.fluid_species)
         table.setRowCount(nrows)
@@ -254,17 +256,25 @@ class FluidHandler(object):
             #self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)
-        self.fixup_column_widths()
+        self.fixup_fluids_table()
 
     def handle_fluid_species_selection(self):
-        row = get_selected_row(self.ui.fluid.tablewidget_fluid_species)
+        table = self.ui.fluid.tablewidget_fluid_species
+        row = get_selected_row(table)
         enabled = (row is not None)
         self.ui.fluid.toolbutton_fluid_species_delete.setEnabled(enabled)
         self.ui.fluid.toolbutton_fluid_species_copy.setEnabled(enabled)
+        if enabled:
+            table.doubleClicked.connect(self.fluid_species_edit)
+        else:
+            try:
+                table.doubleClicked.disconnect() #self.fluids_species_edit)
+            except:
+                pass
 
     def fluid_species_add(self):
         sp = self.species_popup
-        sp.phases='GL' # ? is this correct
+        sp.phases = 'GL' # ? is this correct
         sp.default_phase = 'G'
         sp.do_search('') # Init to full db
         # how to avoid this if dialog open already?
@@ -275,9 +285,8 @@ class FluidHandler(object):
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
         sp.setWindowTitle("Fluid Species")
-        sp.show()
-        sp.raise_()
-        sp.activateWindow()
+        sp.enable_density(False)
+        sp.popup()
 
     def fluid_species_delete(self):
         # XXX FIXME this is potentially a big problem since
@@ -315,9 +324,9 @@ class FluidHandler(object):
         else:
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
         sp.setWindowTitle("Fluid Species")
-        sp.show()
-        sp.raise_()
-        sp.activateWindow()
+        sp.enable_density(False)
+        sp.popup()
+
 
     def reset_fluids(self):
         # Set all fluid-related state back to default

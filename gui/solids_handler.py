@@ -144,7 +144,7 @@ class SolidsHandler(object):
         s = ui.solids
         tb = s.toolbutton_solids_species_add
         tb.clicked.connect(self.solids_species_add)
-        tb = s.toolbutton_solids_species_copy # misnomer
+        tb = s.toolbutton_solids_species_copy # misnomer - edit
         tb.clicked.connect(self.solids_species_edit)
         tb.setEnabled(False)
         tb = s.toolbutton_solids_species_delete
@@ -161,11 +161,11 @@ class SolidsHandler(object):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
 
-        self.fixup_column_widths_S(1)
-        self.fixup_column_widths_S(2)
-        self.fixup_column_widths_S(3)
+        self.fixup_solids_table(1)
+        self.fixup_solids_table(2)
+        self.fixup_solids_table(3)
 
-    def fixup_column_widths_S(self, n): # clean this up
+    def fixup_solids_table(self, n):
         # fixme, this is getting called excessively
         s = self.ui.solids
         hv = QtWidgets.QHeaderView
@@ -187,8 +187,7 @@ class SolidsHandler(object):
             # 34 px is empirical, fixme, should calc. row height
             tw.setMaximumHeight(header_height + 34)
         else:
-            tw.setMaximumHeight(header_height+nrows*tw.rowHeight(0) + 4)
-            # a little extra to avoid horiz scrollbar when not needed
+            tw.setMaximumHeight(header_height+nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
@@ -283,7 +282,7 @@ class SolidsHandler(object):
         row = get_selected_row(tw)
         enabled = (row is not None)
         s.toolbutton_solids_delete.setEnabled(enabled)
-        s.toolbutton_solids_copy.setEnabled(enabled)
+        #s.toolbutton_solids_copy.setEnabled(enabled) - removed from ui
         name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
         self.update_solids_detail_pane()
@@ -297,7 +296,7 @@ class SolidsHandler(object):
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
             self.update_solids_species_table()
-            self.fixup_column_widths_S(1)
+            self.fixup_solids_table(1)
             sa.setEnabled(False)
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
@@ -385,7 +384,7 @@ class SolidsHandler(object):
         self.update_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
-        self.fixup_column_widths_S(1)
+        self.fixup_solids_table(1)
 
 
     def update_solids_table(self):
@@ -556,7 +555,7 @@ class SolidsHandler(object):
     def update_solids_baseline_table(self):
         phase = self.solids_current_phase
 
-        self.fixup_column_widths_S(3)
+        self.fixup_solids_table(3)
 
     def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
@@ -592,8 +591,8 @@ class SolidsHandler(object):
     def solids_species_save(self):
         self.solids_species = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
-        self.fixup_column_widths_S(2)
-        self.fixup_column_widths_S(3)
+        self.fixup_solids_table(2)
+        self.fixup_solids_table(3)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
@@ -619,7 +618,8 @@ class SolidsHandler(object):
         else:
             self.unset_keyword('nmax_s', args=phase)
         for (row, (species,data)) in enumerate(self.solids_species.items()):
-            for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
+            # order must match table headers
+            for (col, key) in enumerate(('alias', 'phase', 'density', 'mol_weight',
                                         'h_f', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
@@ -640,14 +640,22 @@ class SolidsHandler(object):
 
         # FIXME, what's the right place for this?
         #self.project.update_thermo_data(self.solids_species)
-        self.fixup_column_widths_S(2)
-        self.fixup_column_widths_S(3)
+        self.fixup_solids_table(2)
+        self.fixup_solids_table(3)
 
     def handle_solids_species_selection(self):
-        row = get_selected_row(self.ui.solids.tablewidget_solids_species)
+        table = self.ui.solids.tablewidget_solids_species
+        row = get_selected_row(table)
         enabled = (row is not None)
         self.ui.solids.toolbutton_solids_species_delete.setEnabled(enabled)
-        self.ui.solids.toolbutton_solids_species_copy.setEnabled(enabled)
+        self.ui.solids.toolbutton_solids_species_copy.setEnabled(enabled) # edit
+        if enabled:
+            table.doubleClicked.connect(self.solids_species_edit)
+        else:
+            try:
+                table.doubleClicked.disconnect() #self.solids_species_edit)
+            except:
+                pass
 
     def solids_species_add(self):
         sp = self.species_popup
@@ -662,9 +670,8 @@ class SolidsHandler(object):
         sp.defined_species = self.solids_species
         sp.update_defined_species()
         sp.setWindowTitle("Species for %s" %self.phase_name)
-        sp.show()
-        sp.raise_()
-        sp.activateWindow()
+        sp.enable_density(True)
+        sp.popup()
 
     def solids_species_delete(self):
         # XXX FIXME this is potentially a big problem since
@@ -679,8 +686,8 @@ class SolidsHandler(object):
         key = self.solids_species.keys()[row]
         del self.solids_species[key]
         self.update_solids_species_table()
-        self.fixup_column_widths_S(2)
-        self.fixup_column_widths_S(3)
+        self.fixup_solids_table(2)
+        self.fixup_solids_table(3)
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
@@ -693,8 +700,8 @@ class SolidsHandler(object):
         row = get_selected_row(table)
         sp = self.species_popup
         sp.phases='SC' # ? is this correct
-        sp.default_phase = 'S' # FIXME no control
-        #sp.search('')
+        sp.default_phase = 'S' # FIXME no user control
+
         self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
@@ -702,14 +709,16 @@ class SolidsHandler(object):
         sp.defined_species = self.solids_species
         sp.update_defined_species()
         if row is None:
+            sp.do_search('')
             sp.tablewidget_defined_species.clearSelection()
         else:
+            print(self.solids_species.keys()[row])
+            # Initialize search box to current species (?)
+            sp.do_search(self.solids_species.keys()[row])
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
         sp.setWindowTitle("Species for %s" % self.phase_name)
-        sp.show()
-        sp.raise_()
-        sp.activateWindow()
-
+        sp.enable_density(True)
+        sp.popup()
 
     def reset_solids(self):
         # Set all solid-related state back to default

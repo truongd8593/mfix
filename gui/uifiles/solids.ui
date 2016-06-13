@@ -203,19 +203,6 @@ QPushButton:checked {
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolbutton_solids_copy">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Copy</string>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="horizontalSpacer_7">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -341,9 +328,9 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-301</y>
+             <y>0</y>
              <width>606</width>
-             <height>1147</height>
+             <height>1141</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -956,6 +943,9 @@ QPushButton:checked {
                <property name="bottomMargin">
                 <number>5</number>
                </property>
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QFrame" name="frame_add_delete_copy_species">
                  <property name="sizePolicy">
@@ -978,6 +968,9 @@ QPushButton:checked {
                  </property>
                  <layout class="QGridLayout" name="gridLayout_9">
                   <property name="margin">
+                   <number>0</number>
+                  </property>
+                  <property name="spacing">
                    <number>0</number>
                   </property>
                   <item row="0" column="0">
@@ -1090,6 +1083,11 @@ QPushButton:checked {
                   </property>
                   <property name="toolTip">
                    <string>Phase</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Density</string>
                   </property>
                  </column>
                  <column>

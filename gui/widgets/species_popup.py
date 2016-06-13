@@ -67,6 +67,10 @@ class SpeciesPopup(QtWidgets.QDialog):
                                         for (k,v) in self.db[phase].items())
 
     def do_search(self, string):
+        lineedit = self.ui.lineedit_search
+        if string != lineedit.text():
+            lineedit.setText(string)
+
         results = {}
         self.ui.tablewidget_search.clearContents()
         results = []
@@ -150,7 +154,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             item.setValidator(QDoubleValidator(item))
             item.setFrame(False)
             if key:
-                item.textEdited.connect(make_handler(key=key))
+                item.editingFinished.connect(make_handler(key=key))
             return item
 
         def make_handler(key):
@@ -164,7 +168,9 @@ class SpeciesPopup(QtWidgets.QDialog):
                         data[key[0]][key[1]] = val
                     else:
                         data[key] = val
-                    data['source'] = 'User Defined' # Data has been modified
+                    if key != 'density':
+                        data['source'] = 'User Defined' # Data has been modified
+                        # Density is not in BURCAT so we don't consider this a mod (?)
                     ui.label_species_source.setText(data['source'])
                 except ValueError:
                     # reset field to prev. value
@@ -175,10 +181,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.label_species.setText(species)
         ui.lineedit_alias.setText(data['alias'])
         ui.lineedit_mol_weight.setText(str(data['mol_weight']))
-        ui.lineedit_mol_weight.textEdited.connect(make_handler('mol_weight'))
+        ui.lineedit_mol_weight.editingFinished.connect(make_handler('mol_weight'))
         ui.lineedit_h_f.setText(str(data['h_f']))
-        ui.lineedit_h_f.textEdited.connect(make_handler('h_f'))
-        # Density - disabled
+        ui.lineedit_h_f.editingFinished.connect(make_handler('h_f'))
+        if self.density_enabled:
+            ui.lineedit_density.setText(str(data['density']))
+            ui.lineedit_density.editingFinished.connect(make_handler('density'))
 
         table = ui.tablewidget_params
         table.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
@@ -187,6 +195,19 @@ class SpeciesPopup(QtWidgets.QDialog):
             table.setCellWidget(i, 0, make_item(x, key=('a_low', i)))
         for (i,x) in enumerate(data['a_high'], 1):
             table.setCellWidget(i, 1, make_item(x, key=('a_high', i)))
+
+
+    def enable_density(self, enabled):
+        self.density_enabled = enabled
+        ui = self.ui
+        for w in (ui.label_density, ui.label_density_units):
+            w.setEnabled(enabled)
+        if not enabled:
+            if ui.lineedit_density in self.species_panel_items:
+                self.species_panel_items.remove(ui.lineedit_density)
+            ui.lineedit_density.clear()
+        else:
+            self.species_panel_items.append(ui.lineedit_density)
 
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
@@ -240,7 +261,8 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'tmax': tmax,
                         'a_low': a_low,
                         'a_high': a_high}
-
+        if self.density_enabled:
+            species_data['density'] = None # ? where do we get this?
         self.defined_species[species] = species_data
         self.add_defined_species_row(species, select=True)
         self.set_save_button(True)
@@ -293,6 +315,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         species = self.make_user_species_name()
         alias = species.replace(' ', '') #?
         mol_weight = 0
+        density = None
         h_f = 0
         tmin = 200.0 # ?
         tmax = 600.0 # ?
@@ -303,6 +326,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'phase': phase,
                         'alias': alias,
                         'mol_weight': mol_weight,
+                        'density': density,
                         'h_f': h_f,
                         'tmin':  tmin,
                         'tmax': tmax,
@@ -405,7 +429,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         lineedit = ui.lineedit_alias
         lineedit.setValidator(AliasValidator(parent=self))
-        lineedit.textEdited.connect(self.handle_alias)
+        lineedit.editingFinished.connect(self.handle_alias)
 
         for l in (ui.lineedit_mol_weight,
                   ui.lineedit_h_f,
@@ -419,6 +443,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             ui.lineedit_mol_weight,
             ui.lineedit_h_f,
             ui.combobox_specific_heat_model,
+            ui.lineedit_density,
             ui.tablewidget_params]
 
         hv = QtWidgets.QHeaderView
@@ -431,6 +456,11 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.set_save_button(False) # nothing to Save
         self.clear_species_panel()
+
+    def popup(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
 
 if __name__ == '__main__':
