@@ -244,6 +244,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Toolbuttons at top of frame
         ui = self.ui
         for (button, icon_name, function) in (
+                (ui.toolbutton_settings, 'settings', self.toggle_nav_menu),
                 (ui.toolbutton_new, 'newfolder', self.new_project),
                 (ui.toolbutton_open, 'openfolder', self.handle_open),
                 (ui.toolbutton_save, 'save', self.handle_save),
@@ -269,8 +270,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.ui.action_compile_tool = self.ui.menu_more.addAction(
             get_icon('build.png'), 'Compile', self.handle_compile)
         self.ui.menu_more.addSeparator()
-        self.ui.action_about = self.ui.menu_more.addAction(
-            get_icon('settings.png'), 'Settings', self.handle_settings)
+        #self.ui.action_about = self.ui.menu_more.addAction(
+        #    get_icon('settings.png'), 'Settings', self.handle_settings)
         self.ui.action_about = self.ui.menu_more.addAction(
             get_icon('help.png'), 'Help', self.handle_help)
         self.ui.action_about = self.ui.menu_more.addAction(
@@ -483,9 +484,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.print_internal(msg, color='red')
             traceback.print_exception(*sys.exc_info())
 
+
     def unimplemented(self):
         self.message(title='Unimplemented',
                      text='Feature not implemented')
+
+
+    def toggle_nav_menu(self):
+        nav_menu = self.ui.treewidget_model_navigation
+        nav_menu.setVisible(not nav_menu.isVisible())
 
 
     def new_project_X(self):
@@ -1736,10 +1743,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def handle_save_as(self):
         self.save_as()
 
-    def handle_settings(self):
-        """handle user settings"""
-        # TODO: implement
-        self.unimplemented()
+#    def handle_settings(self):
+#        """handle user settings"""
+#        # TODO: implement
+#        self.unimplemented()
+
+
 
     def handle_compile(self):
         """compiling tool"""
