@@ -157,7 +157,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1049,7 +1049,7 @@ QPushButton:checked {
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>
@@ -1494,7 +1494,7 @@ QPushButton:checked {
           <bool>false</bool>
          </property>
          <property name="styleSheet">
-          <string notr="true">QWidget#scrollarea_des_model{background-color:transparent;}</string>
+          <string notr="true">QWidget#scrollareawidgetcontents_dem_model{background-color:white}</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -1505,17 +1505,17 @@ QPushButton:checked {
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollareawidgetcontents_des_model_2">
+         <widget class="QWidget" name="scrollareawidgetcontents_dem_model">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>399</width>
+            <width>608</width>
             <height>1033</height>
            </rect>
           </property>
           <property name="autoFillBackground">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="styleSheet">
            <string notr="true">QWidget#scrollareawidgetcontents_des_model{
