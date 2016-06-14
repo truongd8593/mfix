@@ -628,8 +628,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
-        log.debug("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s" %
-                  (running, paused, resumable))
+        log.debug("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s",
+                  running, paused, resumable)
 
         self.update_window_title() # put run state in window titlebar
 
@@ -1832,24 +1832,28 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
             return False
 
-    def new_project(self, project_dir=None):
-        if not project_dir:
-            project_dir = str(
-                QtWidgets.QFileDialog.getExistingDirectory(
-                    self, 'Create Project in Directory',
-                    ""))
-        if not project_dir:
+    def new_project(self):
+        project_file = str(
+            QtWidgets.QFileDialog.getSaveFileName(
+                self, 'Create Project File',
+                "", "MFX files (*.mfx)"))
+        if not project_file:
             return
 
-        # TODO: allow user to set run name
-        project_file = os.path.join(project_dir, 'mfix.dat')
+        project_filename = os.path.basename(project_file)
+        run_name = os.path.splitext(project_filename)[0]
         if not self.check_writable(project_dir):
+            self.message(text='Unable to write to %s' % project_dir,
+                         buttons=['Ok'],
+                         default='Ok')
             return
         # Start with a nice template - note, there's too much set in this file.
         # FIXME, this can clobber files
         template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
-        self.open_project(project_file)
+        self.open_project(project_file, auto_rename=False)
+        self.ui.general.lineedit_keyword_run_name.setText(run_name)
+        self.save_project()
 
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
