@@ -157,7 +157,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             if key:
                 item.editingFinished.connect(make_handler(item=item, key=key))
             return item
-
+        self.ui.combobox_phase.setEnabled(False)
         def make_handler(item, key):
             def handler(item=item,key=key):
                 if not self.current_species:
@@ -181,6 +181,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             return handler
         ui.label_species_source.setText(data['source'])
         ui.label_species.setText(species)
+        ui.combobox_phase.setCurrentIndex('GLSC'.index(data['phase']))
         ui.lineedit_alias.setText(data['alias'])
         ui.lineedit_mol_weight.setText(str(data['mol_weight']))
         ui.lineedit_mol_weight.editingFinished.connect(make_handler(ui.lineedit_mol_weight,'mol_weight'))
@@ -221,6 +222,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.current_species = None
             self.clear_species_panel()
             self.pushbutton_delete.setEnabled(False)
+            self.ui.combobox_phase.setEnabled(False)
         else:
             self.pushbutton_delete.setEnabled(True)
             self.current_species = table.item(row, 0).data(UserRole)
@@ -241,6 +243,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         row = get_selected_row(self.tablewidget_search)
         if row is None: # No selection
             return
+        self.ui.combobox_phase.setEnabled(False)
         rowdata = self.search_results[row]
         key, phase = rowdata
         data = self.db[phase][key]
@@ -312,6 +315,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.current_species = None
         self.clear_species_panel()
         self.set_save_button(True)
+        self.ui.combobox_phase.setEnabled(False)
 
     def handle_new(self):
         phase = self.default_phase
@@ -343,6 +347,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit = self.ui.lineedit_alias
         lineedit.selectAll()
         lineedit.setFocus()
+        self.ui.combobox_phase.setEnabled(True)
 
     def handle_alias(self):
         val = self.ui.lineedit_alias.text()
@@ -359,6 +364,12 @@ class SpeciesPopup(QtWidgets.QDialog):
     def set_save_button(self, state):
         self.ui.buttonbox.buttons()[0].setEnabled(state)
 
+    def handle_combobox_phase(self, index):
+        phase = 'GLSC'[index]
+        if not self.current_species:
+            return
+        species =  self.defined_species[self.current_species]
+        species['phase'] = phase
 
     def reset_signals(self):
         # todo:  fix this so it's not the caller's responsibility
@@ -419,6 +430,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             button = getattr(self.ui, 'pushbutton_%s' % phase)
             button.clicked.connect(self.handle_phase)
 
+        ui.combobox_phase.currentIndexChanged.connect(self.handle_combobox_phase)
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
