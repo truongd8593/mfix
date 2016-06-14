@@ -186,7 +186,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.lineedit_h_f.setText(str(data['h_f']))
         ui.lineedit_h_f.editingFinished.connect(make_handler(ui.lineedit_h_f,'h_f'))
         if self.density_enabled:
-            ui.lineedit_density.setText(str(data.get('density','')))
+            density = data.get('density')
+            ui.lineedit_density.setText('' if density is None else str(density))
             ui.lineedit_density.editingFinished.connect(make_handler(ui.lineedit_density,'density'))
 
         table = ui.tablewidget_params
