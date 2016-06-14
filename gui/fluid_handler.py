@@ -298,7 +298,7 @@ class FluidHandler(object):
         if row is None: # No selection
             return
         table.clearSelection()
-        key = self.fluid_species.keys()[row]
+        key = list(self.fluid_species.keys())[row]
         del self.fluid_species[key]
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.

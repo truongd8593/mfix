@@ -432,13 +432,12 @@ class SolidsHandler(object):
 
         self.update_solids_detail_pane() # Do we want to do this every time?
 
-
     def handle_solids_phase_name(self):
         new_name = self.ui.solids.lineedit_solids_phase_name.text()
         phase = self.solids_current_phase
         if phase is None:
             return
-        old_name = self.solids.keys()[phase-1]
+        old_name = list(self.solids.keys())[phase-1]
         if new_name in self.solids: # Reject the input
             self.ui.solids.lineedit_solids_phase_name.setText(old_name)
             return
@@ -678,51 +677,58 @@ class SolidsHandler(object):
         # it results in species being renumbered, or a hole in
         # the sequence - either way is trouble.  Have to warn
         # user, if species is referenced elsewhere.
+        phase = self.solids_current_phase
+        if phase is None:
+            return
         table = self.ui.solids.tablewidget_solids_species
         row = get_selected_row(table)
         if row is None: # No selection
             return
         table.clearSelection()
-        key = self.solids_species.keys()[row]
-        del self.solids_species[key]
+        key = list(self.solids_species[phase].keys())[row]
+        del self.solids_species[phase][key]
         self.update_solids_species_table()
+        self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(2)
         self.fixup_solids_table(3)
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
-        sp.defined_species = self.solids_species
+        sp.defined_species = self.solids_species[phase]
         sp.update_defined_species()
 
     def solids_species_edit(self):
+        phase = self.solids_current_phase
+        if phase is None:
+            return
         table = self.ui.solids.tablewidget_solids_species
         row = get_selected_row(table)
         sp = self.species_popup
         sp.phases='SC' # ? is this correct
         sp.default_phase = 'S' # FIXME no user control
 
-        self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
-        sp.defined_species = self.solids_species
+        sp.defined_species = self.solids_species[phase]
         sp.update_defined_species()
         if row is None:
             sp.do_search('')
             sp.tablewidget_defined_species.clearSelection()
         else:
-            print(self.solids_species.keys()[row])
             # Initialize search box to current species (?)
-            sp.do_search(self.solids_species.keys()[row])
+            sp.do_search(list(self.solids_species[phase].keys())[row])
             sp.tablewidget_defined_species.setCurrentCell(row, 0)
-        sp.setWindowTitle("Species for %s" % self.phase_name)
+        sp.setWindowTitle("Species for %s" % self.solids_current_phase_name)
         sp.enable_density(True)
         sp.popup()
 
     def reset_solids(self):
         # Set all solid-related state back to default
         self.solids_current_phase = None
+        self.solids_current_phase_name = None
         self.saved_solids_species = None
         self.solids.clear()
         self.solids_species.clear()
