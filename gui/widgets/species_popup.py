@@ -154,13 +154,14 @@ class SpeciesPopup(QtWidgets.QDialog):
             item.setValidator(QDoubleValidator(item))
             item.setFrame(False)
             if key:
-                item.editingFinished.connect(make_handler(key=key))
+                item.editingFinished.connect(make_handler(item=item, key=key))
             return item
 
-        def make_handler(key):
-            def handler(val, key=key):
+        def make_handler(item, key):
+            def handler(item=item,key=key):
                 if not self.current_species:
                     print("Error, no current species")
+                val = item.text()
                 try:
                     data = self.defined_species[self.current_species]
                     val = float(val)
@@ -181,12 +182,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.label_species.setText(species)
         ui.lineedit_alias.setText(data['alias'])
         ui.lineedit_mol_weight.setText(str(data['mol_weight']))
-        ui.lineedit_mol_weight.editingFinished.connect(make_handler('mol_weight'))
+        ui.lineedit_mol_weight.editingFinished.connect(make_handler(ui.lineedit_mol_weight,'mol_weight'))
         ui.lineedit_h_f.setText(str(data['h_f']))
-        ui.lineedit_h_f.editingFinished.connect(make_handler('h_f'))
+        ui.lineedit_h_f.editingFinished.connect(make_handler(ui.lineedit_h_f,'h_f'))
         if self.density_enabled:
-            ui.lineedit_density.setText(str(data['density']))
-            ui.lineedit_density.editingFinished.connect(make_handler('density'))
+            ui.lineedit_density.setText(str(data.get('density','')))
+            ui.lineedit_density.editingFinished.connect(make_handler(ui.lineedit_density,'density'))
 
         table = ui.tablewidget_params
         table.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
@@ -341,7 +342,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit.selectAll()
         lineedit.setFocus()
 
-    def handle_alias(self, val):
+    def handle_alias(self):
+        val = self.ui.lineedit_alias.text()
         table = self.ui.tablewidget_defined_species
         row = get_selected_row(table)
         if row is None: # No selection
@@ -371,6 +373,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.phases = phases
         self.include_comments = False
         self.default_phase = phases[0]
+        self.density_enabled = True
         thisdir = os.path.abspath(os.path.dirname(__file__))
         datadir = thisdir
         self.load_burcat(os.path.join(datadir, 'burcat.pickle'))
