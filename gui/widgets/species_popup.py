@@ -70,6 +70,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         lineedit = self.ui.lineedit_search
         if string != lineedit.text():
             lineedit.setText(string)
+            return
 
         results = {}
         self.ui.tablewidget_search.clearContents()
@@ -313,7 +314,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.set_save_button(True)
 
     def handle_new(self):
-        phase = self.default_phase # Note - no way for user to specify phase - FIXME
+        phase = self.default_phase
         species = self.make_user_species_name()
         alias = species.replace(' ', '') #?
         mol_weight = 0
@@ -368,12 +369,26 @@ class SpeciesPopup(QtWidgets.QDialog):
             except:
                 pass # isSignalConnected only exists in qt5.
 
+
+    def handle_phase(self):
+        phases = ''
+        for phase in 'GLSC':
+            button = getattr(self.ui, 'pushbutton_%s' % phase)
+            if button.isChecked():
+                phases += phase
+        if phases == self.phases:
+            return
+        self.phases = phases
+        self.default_phase = phases[0] if phases else ''
+        self.do_search(self.ui.lineedit_search.text())
+
+
     def __init__(self, app, parent=None, phases='GLCS'):
         super(SpeciesPopup, self).__init__(parent)
         self.app = app
         self.phases = phases
         self.include_comments = False
-        self.default_phase = phases[0]
+        self.default_phase = phases[0] if phases else ''
         self.density_enabled = True
         thisdir = os.path.abspath(os.path.dirname(__file__))
         datadir = thisdir
@@ -399,6 +414,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.pushbutton_new.clicked.connect(self.handle_new)
         ui.pushbutton_delete.clicked.connect(self.handle_delete)
         ui.checkbox_include_comments.clicked.connect(self.handle_include_comments)
+
+        for phase in 'GLSC':
+            button = getattr(self.ui, 'pushbutton_%s' % phase)
+            button.clicked.connect(self.handle_phase)
 
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
@@ -460,6 +479,17 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.set_save_button(False) # nothing to Save
         self.clear_species_panel()
+
+    def set_phases(self, phases):
+        if phases == self.phases:
+            return
+        self.phases = phases
+        for phase in 'GLSC':
+            button = getattr(self.ui, 'pushbutton_%s' % phase)
+            button.setChecked(phase in phases)
+        self.default_phase = phases[0] if phases else ''
+        self.do_search(self.ui.lineedit_search.text())
+
 
     def popup(self):
         self.show()

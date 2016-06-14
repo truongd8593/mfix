@@ -274,8 +274,7 @@ class FluidHandler(object):
 
     def fluid_species_add(self):
         sp = self.species_popup
-        sp.phases = 'GL' # ? is this correct
-        sp.default_phase = 'G'
+        sp.set_phases('GL')
         sp.do_search('') # Init to full db
         # how to avoid this if dialog open already?
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
@@ -311,8 +310,7 @@ class FluidHandler(object):
         table = self.ui.fluid.tablewidget_fluid_species
         row = get_selected_row(table)
         sp = self.species_popup
-        sp.phases = 'GL'
-        sp.default_phase = 'G' # FIXME, no control for this
+        sp.set_phases('GL')
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.fluid_species_revert)

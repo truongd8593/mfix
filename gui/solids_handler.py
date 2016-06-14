@@ -830,8 +830,7 @@ class SolidsHandler(object):
         if phase is None:
             return
         sp = self.species_popup
-        sp.phases='SC' # ? is this correct
-        sp.default_phase = 'S' # FIXME no control
+        sp.set_phases('SC')
         sp.do_search('')
         # how to avoid this if dialog open already?
         self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
@@ -877,8 +876,7 @@ class SolidsHandler(object):
         table = self.ui.solids.tablewidget_solids_species
         row = get_selected_row(table)
         sp = self.species_popup
-        sp.phases='SC' # ? is this correct
-        sp.default_phase = 'S' # FIXME no user control
+        sp.set_phases('SC')
 
         self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
         sp.reset_signals()
