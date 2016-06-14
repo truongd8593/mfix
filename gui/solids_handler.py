@@ -606,12 +606,99 @@ class SolidsHandler(object):
         s.groupbox_baseline.setEnabled(enabled)
         if not enabled:
             s.tablewidget_solids_baseline.clearContents()
+            s.tablewidget_solids_baseline.setRowCount(0)
         else:
             self.update_solids_baseline_table()
 
+    def handle_solids_mass_fraction(self, widget, value_dict, args):
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        key = 'x_s0'
+        val = value_dict[key]
+        table = self.ui.solids.tablewidget_solids_baseline
+        widget.updateValue(key, val)
+        if val == '':
+            self.unset_keyword(key, args=[phase]+args)
+        else:
+            self.update_keyword(key, val, args=[phase]+args)
+        self.update_solids_mass_fraction_total()
+
+    def update_solids_mass_fraction_total(self):
+        key = 'x_s0'
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        table = self.ui.solids.tablewidget_solids_baseline
+        total = sum(float(self.project.get_value(key, default=0.0, args=[phase,i]))
+                    for i in range(1,len(self.solids_species[phase])+1))
+        table.item(table.rowCount()-1, 1).setText(str(total))
+
+    def handle_solids_inert_species(self, species_index, val):
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        if val:
+            self.update_keyword('inert_species', species_index, args=phase)
+        else:
+            self.unset_keyword('inert_species', args=phase)
+
+        for (i, cb) in enumerate(self.solids_inert_species_checkboxes, 1):
+            if i != species_index:
+                cb.setChecked(False)
+
 
     def update_solids_baseline_table(self):
+        table = self.ui.solids.tablewidget_solids_baseline
         phase = self.solids_current_phase
+        if phase is None:
+            return
+        table.clearContents()
+        nrows = len(self.solids_species[phase])+1
+        table.setRowCount(nrows) # TOTAL row at end
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+
+        inert_species = self.project.get_value('inert_species', default=None, args=phase)
+        self.solids_inert_species_checkboxes = []
+        for (row, (species,data)) in enumerate(self.solids_species[phase].items()):
+            alias = data.get('alias', species) # default to species if no alias
+            table.setItem(row, 0, make_item(alias))
+
+            # mass fraction
+            le = LineEdit()
+            le.setdtype('dp')
+            le.setValInfo(min=0.0, max=1.0)
+            key = 'x_s0'
+            le.key = key
+            le.args = [row+1]
+            val = self.project.get_value(key, args=[phase, row+1], default=None)
+            if val is not None:
+                le.updateValue(key, val)
+
+            le.value_updated.connect(self.handle_solids_mass_fraction)
+            table.setCellWidget(row, 1, le)
+
+            # "Inert" checkbox
+            cb = QtWidgets.QCheckBox()
+            self.solids_inert_species_checkboxes.append(cb)
+            cb.setChecked(row+1 == inert_species)
+            cb.clicked.connect(lambda val, species_index=row+1:
+                               self.handle_solids_inert_species(species_index, val))
+            # center checkbox in cell
+            layout =QtWidgets.QHBoxLayout()
+            layout.addWidget(cb)
+            layout.setAlignment(Qt.AlignCenter);
+            layout.setContentsMargins(0,0,0,0);
+            widget = QtWidgets.QWidget()
+            widget.setLayout(layout);
+            table.setCellWidget(row, 2, widget)
+
+        table.setItem(nrows-1, 0, make_item("TOTAL"))
+        table.setItem(nrows-1, 1, make_item(''))
+        self.update_solids_mass_fraction_total()
 
         self.fixup_solids_table(3)
 
