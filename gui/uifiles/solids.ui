@@ -157,7 +157,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -328,7 +328,7 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-315</y>
              <width>606</width>
              <height>1141</height>
             </rect>
@@ -443,7 +443,7 @@ QPushButton:checked {
              </widget>
             </item>
             <item row="4" column="0" colspan="6">
-             <widget class="QGroupBox" name="groupBox_options">
+             <widget class="QGroupBox" name="groupbox_options">
               <property name="title">
                <string>Options</string>
               </property>
@@ -558,6 +558,18 @@ QPushButton:checked {
                  <property name="frameShadow">
                   <enum>QFrame::Plain</enum>
                  </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::NoSelection</enum>
+                 </property>
+                 <attribute name="horizontalHeaderHighlightSections">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderHighlightSections">
+                  <bool>false</bool>
+                 </attribute>
                  <column>
                   <property name="text">
                    <string>Species</string>
@@ -884,7 +896,7 @@ QPushButton:checked {
              </widget>
             </item>
             <item row="13" column="0" colspan="6">
-             <widget class="QGroupBox" name="groupBox_advanced">
+             <widget class="QGroupBox" name="groupbox_advanced">
               <property name="title">
                <string>Advanced</string>
               </property>
@@ -1049,7 +1061,7 @@ QPushButton:checked {
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>
@@ -1510,7 +1522,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>608</width>
+            <width>399</width>
             <height>1033</height>
            </rect>
           </property>
