@@ -64,7 +64,6 @@ from constants import *
 
 if PRECOMPILE_UI:
     try:
-        from uifiles.general import Ui_general
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
@@ -145,7 +144,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                         self.setupUi(self)
                 return Widget()
 
-            for cls in (Ui_general, Ui_geometry, Ui_mesh, RegionsWidget,
+            for cls in (Ui_geometry, Ui_mesh, RegionsWidget,
                         Ui_model, Ui_fluid, Ui_solids,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
@@ -155,7 +154,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 else:
                     widget = make_widget(cls)
                     name = cls.__name__.split('_',1)[1] # part after "Ui_"
-                # assign 'self.ui.general', etc
+                # assign 'self.ui.model', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
                 self.ui.panes.append(widget)
@@ -167,7 +166,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.setCentralWidget(self.ui)
             assert self is not self.ui
 
-            for name in ('general', 'geometry', 'mesh', 'regions',
+            for name in ('geometry', 'mesh', 'regions',
                          'model', 'fluid', 'solids', 'numerics',
                          'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
@@ -337,7 +336,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # --- default ---
         self.mode_changed('modeler')
-        self.change_pane('general') #? start at the top?
+        self.change_pane('model')
 
         # Update run options
         self.update_run_options()
@@ -489,17 +488,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.message(title='Unimplemented',
                      text='Feature not implemented')
 
-
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_model_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
-
-
-    def new_project_X(self):
-        # Make run name editable FIXME
-        self.ui.general.lineedit_keyword_run_name.setEnabled(True)
-        self.ui.stackedwidget_mode.setEnabled(True)
-        self.reset()
 
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
@@ -1841,6 +1832,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             return
 
         project_filename = os.path.basename(project_file)
+        project_dir = os.path.dirname(project_file)
         run_name = os.path.splitext(project_filename)[0]
         if not self.check_writable(project_dir):
             self.message(text='Unable to write to %s' % project_dir,
@@ -1852,7 +1844,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
         self.open_project(project_file, auto_rename=False)
-        self.ui.general.lineedit_keyword_run_name.setText(run_name)
+        self.project['RUN_NAME'] = run_name
         self.save_project()
 
     def get_open_filename(self):
