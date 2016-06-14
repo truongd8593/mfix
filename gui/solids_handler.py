@@ -161,9 +161,54 @@ class SolidsHandler(object):
             btn.pressed.connect(
                 make_callback(self.solids_change_tab, i, btn))
 
+
         self.fixup_solids_table(1)
         self.fixup_solids_table(2)
         self.fixup_solids_table(3)
+
+        # Advanced
+        s.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
+        s.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
+
+
+    def disable_close_pack(self, val):
+        cb = self.ui.solids.checkbox_disable_close_pack
+        if val != cb.isChecked(): # not from a click action
+            cb.setChecked(val)
+            return
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        close_packed = self.project.get_value('close_packed', default=None, args=phase)
+        if (close_packed is not False) and val: # Disabling - popup as per SRS p15
+            resp=self.message(text="disabling close-packing for %s\nAre you sure?" % self.solids_current_phase_name,
+                              buttons=['yes','no'],
+                              default = 'no')
+            if resp != 'yes':
+                cb.setChecked(False)
+                return
+
+        if close_packed is None and not val:
+            return # We will leave the keyword at its default unset value
+
+        self.update_keyword('close_packed', not val, args=phase)
+
+    def enable_added_mass_force(self, val):
+        cb = self.ui.solids.checkbox_enable_added_mass_force
+        if val != cb.isChecked(): # not from a click action
+            cb.setChecked(val)
+            return
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        if val:
+            self.update_keyword('m_am', phase)
+            self.update_keyword('added_mass', True)
+
+        else:
+            self.unset_keyword('m_am')
+            self.unset_keyword('added_mass')
+
 
     def fixup_solids_table(self, n):
         # fixme, this is getting called excessively
@@ -381,10 +426,24 @@ class SolidsHandler(object):
         # Species input is in its own function
         self.update_solids_species_groupbox()
         # as is the baseline table
-        self.update_baseline_groupbox(self.solids_density_model)
+        self.update_solids_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
         self.fixup_solids_table(1)
+
+        # Advanced
+        enabled = (model=='TFM')
+        s.groupbox_advanced.setEnabled(enabled)
+        if enabled:
+            close_packed = self.project.get_value('close_packed', default=True, args=phase)
+            self.disable_close_pack(not(close_packed))
+        else:
+            s.checkbox_disable_close_pack.setChecked(False)
+            s.checkbox_enable_added_mass_force.setChecked(False)
+
+        added_mass = self.project.get_value('added_mass', default=False)
+        m_am = self.project.get_value('m_am', default=None)
+        self.enable_added_mass_force(added_mass and (m_am == phase))
 
 
     def update_solids_table(self):
