@@ -496,20 +496,20 @@ QPushButton:checked {
                <item>
                 <widget class="QTreeWidget" name="treewidget_model_navigation">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>68</width>
+                   <width>70</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>145</width>
+                   <width>120</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -546,6 +546,9 @@ QPushButton:checked {
                   <number>10</number>
                  </property>
                  <property name="rootIsDecorated">
+                  <bool>true</bool>
+                 </property>
+                 <property name="uniformRowHeights">
                   <bool>true</bool>
                  </property>
                  <property name="animated">
@@ -603,7 +606,7 @@ QPushButton:checked {
                   </item>
                   <item>
                    <property name="text">
-                    <string>Boundary Cond.</string>
+                    <string>Boundary C...ns</string>
                    </property>
                   </item>
                   <item>
