@@ -9,12 +9,16 @@ log = logging.getLogger(__name__)
 
 #import Qt
 from qtpy import QtCore, QtWidgets, PYQT5
-
+from qtpy.QtCore import Qt
 QT_MAX = 16777215
+UserRole = QtCore.Qt.UserRole
 
 #local imports
 from constants import *
-from tools.general import set_item_noedit, get_selected_row, widget_iter, make_callback
+from tools.general import (set_item_noedit, get_selected_row,
+                           widget_iter, make_callback)
+
+from widgets.base import LineEdit
 
 class SolidsHandler(object):
 
@@ -28,13 +32,13 @@ class SolidsHandler(object):
 
     def handle_solids_density_model(self, model):
         self.solids_density_model = model
-        self.update_baseline_groupbox(model) # availability
+        self.update_solids_baseline_groupbox(model) # availability
         self.update_solids_table() # 'density' column changes
 
     def init_solids_handler(self):
         self.solids = OrderedDict()
         self.solids_current_phase = None
-        self.solids_species = OrderedDict()
+        self.solids_species = {} #dict of OrderedDict, keyed by phase
 
         ui = self.ui
         s = ui.solids
@@ -44,7 +48,7 @@ class SolidsHandler(object):
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
         tw_solids, tw_solids_species = s.tablewidget_solids, s.tablewidget_solids_species
-        # Hack - force summary table to update  on kw updates
+        # Force summary table to update on kw updates
         class TableWidgetProxy:
             def objectName(self):
                 return "proxy"
@@ -225,7 +229,7 @@ class SolidsHandler(object):
             resize(n, hv.ResizeToContents if n>0
                    else hv.Stretch)
 
-                # trim excess horizontal space - can't figure out how to do this in designer
+        # trim excess horizontal space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
         nrows = tw.rowCount()
         if nrows==0:
@@ -287,7 +291,7 @@ class SolidsHandler(object):
             return # shouldn't get here
 
         phase = self.solids_current_phase
-        name, data = self.solids.items()[phase-1] # FIXME, use SpeciesCollection not OrderedDict here
+        name, data = self.solids.items()[phase-1]
         model = ('TFM', 'DEM', 'PIC')[index]
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
@@ -318,6 +322,7 @@ class SolidsHandler(object):
         self.solids[name] = {'model': model,
                              'diameter': diameter, # TODO: diameter is REQUIRED
                              'density': density} # more?
+        self.solids_species[n] = OrderedDict()
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
@@ -328,7 +333,7 @@ class SolidsHandler(object):
         enabled = (row is not None)
         s.toolbutton_solids_delete.setEnabled(enabled)
         #s.toolbutton_solids_copy.setEnabled(enabled) - removed from ui
-        name = None if row is None else tw.item(row,0).text()
+        self.solids_current_phase_name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
         self.update_solids_detail_pane()
 
@@ -348,15 +353,13 @@ class SolidsHandler(object):
                     item.setChecked(False)
                 # Clear out all values?
             return
-
         name = list(self.solids.keys())[phase-1]
-        self.phase_name = name
         solid = self.solids[name]
         model = solid['model']
 
         # Enable the input areas, initialize to values for current solid
         sa.setEnabled(True)
-        s.lineedit_solids_phase_name.setText(name)
+        s.lineedit_solids_phase_name.setText(self.solids_current_phase_name)
         self.setup_combobox_solids_model()
 
         # Inialize all the line edit widgets
@@ -515,6 +518,8 @@ class SolidsHandler(object):
     def solids_delete(self):
         ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
         # hole
+        self.solids_current_phase = None
+        self.solids_current_phase_name = None
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
@@ -535,6 +540,9 @@ class SolidsHandler(object):
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
+
+        # TODO clear out solids species keywords
+        del self.solids_species[phase]
 
         tw.removeRow(row)
         tw.clearSelection()
@@ -590,7 +598,7 @@ class SolidsHandler(object):
         s.groupbox_species.setEnabled(enabled)
         s.frame_add_delete_copy_species.setVisible(enabled)# Buttons seem to take up a lot of space when table is shrunk
 
-        tw = s.tablewidget_solids_species
+        #tw = s.tablewidget_solids_species
         #if not enabled: # Hide species?  shrink input area?
         #    tw.clearContents()
         #    tw.setMaximumHeight(32) #?
@@ -598,7 +606,7 @@ class SolidsHandler(object):
         #    tw.setMaximumHeight(QT_MAX)
         #    self.update_solids_species_table()
 
-    def update_baseline_groupbox(self, density_model):
+    def update_solids_baseline_groupbox(self, density_model):
         #Baseline (unreacted) composition selection:
         # Available only for variable solids density model
         s = self.ui.solids
@@ -729,13 +737,21 @@ class SolidsHandler(object):
     def solids_species_revert(self):
         if self.saved_solids_species is None:
             return
-        self.solids_species = self.saved_solids_species
-        self.species_popup.defined_species = deepcopy(self.solids_species)
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        self.solids_species[phase] = self.saved_solids_species
+        self.species_popup.defined_species = deepcopy(self.solids_species[phase])
         self.update_solids_species_table()
+        self.update_solids_baseline_groupbox(self.solids_density_model)
 
     def solids_species_save(self):
-        self.solids_species = deepcopy(self.species_popup.defined_species)
+        phase = self.solids_current_phase
+        if phase is None:
+            return
+        self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
+        self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(2)
         self.fixup_solids_table(3)
 
@@ -745,32 +761,39 @@ class SolidsHandler(object):
 
         table = self.ui.solids.tablewidget_solids_species
         table.clearContents()
-        if self.solids_species is None:
-            return
         phase = self.solids_current_phase
         if phase is None:
             return
-        nrows = len(self.solids_species)
+        if self.solids_species.get(phase) is None:
+            return
+
+        nrows = len(self.solids_species[phase])
         table.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
         old_nmax_s = self.project.get_value('nmax_s', args=phase)
-        nmax_s = len(self.solids_species) #FIXME this is per-phase
+        nmax_s = len(self.solids_species[phase])
         if nmax_s > 0:
             self.update_keyword('nmax_s', nmax_s, args=phase)
         else:
             self.unset_keyword('nmax_s', args=phase)
-        for (row, (species,data)) in enumerate(self.solids_species.items()):
+        for (row, (species,data)) in enumerate(self.solids_species[phase].items()):
             # order must match table headers
+            args = [phase,row+1]
             for (col, key) in enumerate(('alias', 'phase', 'density', 'mol_weight',
                                         'h_f', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 table.setItem(row, col, make_item(data.get(key)))
-                self.update_keyword('species_s', species, args=[phase,row+1])
-                self.update_keyword('species_alias_s', alias, args=[phase,row+1])
+                self.update_keyword('species_s', species, args=args)
+                self.update_keyword('species_alias_s', alias, args=args)
+                density = data.get('density')
+                if density is not None:
+                    self.update_keyword('ro_xs0', density, args=args)
+                else:
+                    self.unset_keyword('ro_xs0', args=args)
 
                 # We're avoiding mw_s in favor of the settings in THERMO DATA
                 #self.update_keyword('mw_s', data['mol_weight'], args=row+1)#
@@ -779,12 +802,12 @@ class SolidsHandler(object):
         if old_nmax_s is None:
             old_nmax_s = 0
         for i in range(nmax_s+1, old_nmax_s+1):
-            self.unset_keyword('species_s', args=[phase,i])
-            self.unset_keyword('species_alias_s', args=[phase,i])
-            #self.unset_keyword('mw_s', i) # TBD
+            for kw in ('species_s', 'species_alias_s', 'x_s0', 'ro_xs0'):
+                self.unset_keyword(kw, args=[phase,i])
+            #self.unset_keyword('mw_s', args=[phase,i]) # TBD
 
         # FIXME, what's the right place for this?
-        #self.project.update_thermo_data(self.solids_species)
+        #self.project.update_thermo_data(self.solids_species[phase])
         self.fixup_solids_table(2)
         self.fixup_solids_table(3)
 
@@ -803,18 +826,21 @@ class SolidsHandler(object):
                 pass
 
     def solids_species_add(self):
+        phase = self.solids_current_phase
+        if phase is None:
+            return
         sp = self.species_popup
         sp.phases='SC' # ? is this correct
         sp.default_phase = 'S' # FIXME no control
         sp.do_search('')
         # how to avoid this if dialog open already?
-        self.saved_solids_species = deepcopy(self.solids_species) # So we can revert
+        self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
-        sp.defined_species = self.solids_species
+        sp.defined_species = self.solids_species[phase]
         sp.update_defined_species()
-        sp.setWindowTitle("Species for %s" %self.phase_name)
+        sp.setWindowTitle("Species for %s" %self.solids_current_phase_name)
         sp.enable_density(True)
         sp.popup()
 

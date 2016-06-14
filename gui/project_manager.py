@@ -17,6 +17,7 @@ a notification loop is possible """
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+from collections import OrderedDict
 import sys
 import traceback
 import logging
@@ -224,7 +225,7 @@ class ProjectManager(Project):
 
             for g in self.gasSpecies:
                 # First look for definition in THERMO DATA section
-                phase = g.phase.upper() # phase and species are guaranteed to be set
+                phase = g.phase.upper() # phase and species_g are guaranteed to be set
                 species = g.get('species_g')
                 source = "User Defined"
                 if species is None:
@@ -300,23 +301,96 @@ class ProjectManager(Project):
 
             for s in self.solids:
                 name = s.name
-                species = list(s.species)
-                species.sort(key=lambda a:a.ind)
                 if not s.get('solids_model'):
                     # Make sure all solids have a defined solids model, even if its just the default
                     s['solids_model'] = default_solids_model
                     self.updateKeyword('solids_model', default_solids_model, args=[s.ind])
 
+                self.gui.solids_species[s.ind] = OrderedDict()
+
+                species = list(s.species)
+                species.sort(key=lambda a:a.ind)
+
+                for sp in species:
+                    # First look for definition in THERMO DATA section
+                    phase = sp.phase.upper() # phase and species_g are guaranteed to be set
+                    species = sp.get('species_s')
+                    source = "User Defined"
+                    if species is None:
+                        species = 'Solid %s' % sp.ind
+                        source = "Auto"
+                        #warnings.warn("no species_s for solid %d" % sp.ind)
+                    alias = sp.get('species_alias_s', species)
+                    mw_s = sp.get('mw_s', None)
+                    density = sp.get('ro_xs0',None)
+                    # Note, we're going to unset mw_s and migrate it into THERMO DATA
+
+                    # TODO:  make sure alias is set & unique
+                    user_def = user_species.get((species, phase))
+                    # Hack, look for mismatched phase
+                    if not user_def:
+                        for ((s_,p),v) in user_species.items():
+                            if s_ == species:
+                                # This is all-too-common.  existing mfix files all have 'S' for
+                                # phase in thermo data.
+                                #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                #              % (species, p, phase))
+                                user_def = v
+                                break
+                    if user_def:
+                        (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                        if mw_s is not None:
+                            mol_weight = mw_s # mw_s overrides values in THERMO DATA
+                        species_data = {'source': source,
+                                        'phase': phase,
+                                        'alias': alias,
+                                        'mol_weight': mol_weight,
+                                        'h_f': coeffs[14],
+                                        'tmin': tmin,
+                                        'tmax': tmax,
+                                        'a_low': coeffs[:7],
+                                        'a_high': coeffs[7:14]}
+
+                    else:
+                        # get this from the species popup so we don't have to load
+                        # another copy of the database.  currently the database is
+                        # owned by the species popup.
+                        species_data = self.gui.species_popup.get_species_data(species, phase)
+                        if species_data:
+                            species_data['alias'] = alias
+                            if mw_s is not None:
+                                species_data['mol_weight'] = mw_s
+                                source = 'Burcat*' # Modifed mol. weight
+                    if not species_data:
+                        warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
+                        species_data = {
+                            'alias' : alias,
+                            'source': 'Auto',
+                            'phase': phase,
+                            'mol_weight': mw_s or 0,
+                            'h_f': 0.0,
+                            'tmin':  0.0,
+                            'tmax': 0.0,
+                            'a_low': [0.0]*7,
+                            'a_high': [0.0]*7}
+
+                    species_data['density'] = density
+                    self.gui.solids_species[s.ind][species] = species_data
+
+                self.update_thermo_data(self.gui.solids_species[s.ind])
+
+
 
                 solids_data =  {'model': s.get("solids_model"),
                                'diameter': s.get('d_p0'),
                                'density': s.get('ro_s0'),
-                               'species': species}
+                                #'species': species
+                }
                 self.gui.solids[name] = solids_data
 
 
             # Now submit all remaining keyword updates, except the ones we're skipping
-            skipped_keys = set(['mw_g'])
+            skipped_keys = set(['mw_g', 'mw_s'])
             for kw in kwlist:
                 if kw.key in skipped_keys:
                     # is this a warn or info?
