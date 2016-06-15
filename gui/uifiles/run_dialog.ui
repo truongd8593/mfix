@@ -52,10 +52,13 @@
          <string>Run Options</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="margin">
+         <property name="horizontalSpacing">
+          <number>9</number>
+         </property>
+         <property name="verticalSpacing">
           <number>0</number>
          </property>
-         <property name="spacing">
+         <property name="margin">
           <number>0</number>
          </property>
          <item row="0" column="1">
