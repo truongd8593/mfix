@@ -46,6 +46,7 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
+from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 
 from fluid_handler import FluidHandler
@@ -206,6 +207,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
+
+        self.run_popup = RunPopup(QtWidgets.QDialog())
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -1485,7 +1488,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         name = 'Run'
         try:
             if not self.job.is_running():
-                self.run_mfix()
+                self.get_run_job_options()
             else:
                 name='unpause'
                 self.job.unpause()
@@ -1567,6 +1570,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.clear_unsaved_flag()
         self.update_source_view()
         self._start_mfix()
+
+    def get_run_job_options(self):
+
+        # run options dialog
+        rd = self.run_popup
+        rd.run.connect(self.run_mfix)
+        rd.show()
+        rd.raise_()
+        rd.activateWindow()
+
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
