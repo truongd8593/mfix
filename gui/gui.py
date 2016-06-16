@@ -30,10 +30,7 @@ from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 PRECOMPILE_UI = False
 
 if not PRECOMPILE_UI:
-    try:
-        from PyQt5 import uic
-    except ImportError:
-        from PyQt4 import uic
+    from qtpy import uic
 
 
 # local imports
@@ -1844,7 +1841,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
         self.open_project(project_file, auto_rename=False)
-        self.project['RUN_NAME'] = run_name
+        self.project.run_name.updateValue(run_name)
         self.save_project()
 
     def get_open_filename(self):
