@@ -16,10 +16,12 @@ class RunPopup(QtWidgets.QDialog):
     run = QtCore.Signal()
     cancel = QtCore.Signal()
 
-    def __init__(self, project, title, parent=None):
+    def __init__(self, project, settings, title, parent=None):
+
         super(RunPopup, self).__init__(parent)
 
         self.project = project
+        self.settings = settings
         thisdir = os.path.abspath(os.path.dirname(__file__))
         datadir = thisdir
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
@@ -33,9 +35,33 @@ class RunPopup(QtWidgets.QDialog):
         self.ui.spinbox_keyword_nodesj.setValue(project.get_value('nodesj', 1))
         self.ui.spinbox_keyword_nodesk.setValue(project.get_value('nodesk', 1))
 
+        self.ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
+
         buttons = self.ui.buttonBox.buttons()
         buttons[0].clicked.connect(self.handle_run)
         buttons[1].clicked.connect(lambda: self.cancel.emit())
+
+    def handle_browse_exe(self):
+        """Handle file open dialog for user specified exe"""
+        new_exe = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select Executable")
+        self.update_combobox_mfix_exes(new_exe)
+
+    def set_saved_exe_list(self, exe_list):
+        self.settings.setValue('saved_mfix_exes', ','.join(exe_list))
+
+    def get_saved_exe_list(self):
+        saved_exes = self.settings.value('saved_mfix_exes')
+        if saved_exes is not None:
+            saved_exes = saved_exes.split(',')
+        return saved_exes if saved_exes else []
+
+    def update_combobox_mfix_exes(self, new_exe):
+        saved_exes = self.get_saved_exe_list()
+        saved_exes.append(new_exe)
+        self.set_saved_exe_list(saved_exes)
+        self.ui.combobox_mfix_exes.addItem(new_exe)
+        #TODO: change the global mfix_exe in gui
 
     def handle_abort(self):
         pass
@@ -52,7 +78,9 @@ class RunPopup(QtWidgets.QDialog):
         self.raise_()
         self.activateWindow()
 
+
 if __name__ == '__main__':
+
     args = sys.argv
     qapp = QtWidgets.QApplication(args)
     dialog = QtWidgets.QDialog()

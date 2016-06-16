@@ -1419,7 +1419,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if scrolled_to_end:
             scrollbar.setValue(scrollbar.maximum())
 
-
     def handle_select_exe(self):
         """Enable/disable run options based on selected executable"""
         mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
@@ -1571,7 +1570,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # run options dialog
         popup_title = self.ui.run.button_run_mfix.text()
-        rd = RunPopup(self.project, popup_title)
+        rd = RunPopup(self.project, self.settings, popup_title)
         rd.run.connect(self.run_mfix)
         rd.setModal(True)
         rd.show()
