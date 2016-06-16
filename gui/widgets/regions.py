@@ -13,10 +13,7 @@ from qtpy import QtWidgets, QtGui, QtCore
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
 # TODO: cache ui file to a py file, use the ui file if newer, else py file
-try:
-    from PyQt5 import uic
-except ImportError:
-    from PyQt4 import uic
+from qtpy import uic
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, CellColor,

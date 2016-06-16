@@ -95,7 +95,7 @@ class MfixGuiTests(TestQApplication):
         # We will get a confirmer for auto-rename
 
 
-        self.assertEqual(self.runname, self.mfix.ui.general.lineedit_keyword_run_name.text())
+        self.assertEqual(self.runname, self.mfix.project.run_name.value)
         mfxfile = os.path.join(self.rundir, '%s.mfx' % self.runname)
         self.assertTrue(os.path.exists(mfxfile))
 
@@ -135,7 +135,7 @@ class MfixGuiTests(TestQApplication):
         self.mfix.ui.action_save_as.trigger()
 
         QTest.qWait(500)
-        self.assertEqual(newname, self.mfix.ui.general.lineedit_keyword_run_name.text())
+        self.assertEqual(newname, self.mfix.project.run_name.value)
         self.assertTrue(os.path.exists(newpath))
 
 
@@ -205,7 +205,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_description_ascii(self):
         self.open_tree_item('run')
-        cb = self.mfix.ui.general.combobox_keyword_description
+        cb = self.mfix.ui.model.combobox_keyword_description
         description = cb.value
         cb.setFocus()
         QTest.keyClick(cb, Qt.Key_Right)
@@ -228,7 +228,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_description_unicode(self):
         self.open_tree_item('run')
-        cb = self.mfix.ui.general.combobox_keyword_description
+        cb = self.mfix.ui.model.combobox_keyword_description
         description = cb.value
         cb.setFocus()
         QTest.keyClick(cb, Qt.Key_Right)
