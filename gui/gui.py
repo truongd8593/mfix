@@ -205,7 +205,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
 
-        self.run_popup = RunPopup(QtWidgets.QDialog())
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -1571,8 +1570,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def get_run_job_options(self):
 
         # run options dialog
-        rd = self.run_popup
+        popup_title = self.ui.run.button_run_mfix.text()
+        rd = RunPopup(self.project, popup_title)
         rd.run.connect(self.run_mfix)
+        rd.setModal(True)
         rd.show()
         rd.raise_()
         rd.activateWindow()
