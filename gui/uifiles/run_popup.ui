@@ -216,43 +216,51 @@
         <property name="title">
          <string>Executable</string>
         </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
         <layout class="QGridLayout" name="gridLayout_5">
+         <property name="margin">
+          <number>5</number>
+         </property>
+         <property name="spacing">
+          <number>5</number>
+         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="label_3">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="text">
-            <string>Selected executable</string>
+            <string>Selected</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
             <string>Search Paths</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="text">
-            <string>Add</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QComboBox" name="comboBox_3">
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
           <widget class="QComboBox" name="comboBox_2">
            <property name="editable">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="comboBox_3">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
           <widget class="QPushButton" name="pushButton">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -262,6 +270,13 @@
            </property>
            <property name="text">
             <string>Browse</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="text">
+            <string>Add</string>
            </property>
           </widget>
          </item>
