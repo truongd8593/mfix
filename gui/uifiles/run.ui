@@ -11,7 +11,7 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="0">
+   <item row="8" column="0">
     <widget class="QGroupBox" name="groupbox_run_options">
      <property name="title">
       <string>Options</string>
@@ -247,7 +247,7 @@
      </layout>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="12" column="0">
     <spacer name="verticalSpacer_2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -488,6 +488,19 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QComboBox" name="combobox_mfix_exes">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
     </widget>
    </item>
   </layout>
