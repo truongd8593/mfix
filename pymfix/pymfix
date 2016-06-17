@@ -90,8 +90,6 @@ class Mfix:
             MAIN.add_command_line_argument(arg)
 
         MAIN.initialize()
-        READ_INPUT.get_data()
-        MAIN.initialize_2()
 
         if (DEM.discrete_element and not DEM.des_continuum_coupled):
             if RUN.dem_solids:
