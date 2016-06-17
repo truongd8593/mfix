@@ -544,7 +544,6 @@ libmfix_src = \
 	../model/funits_mod.f \
 	../model/geometry_mod.f \
 	../model/get_bc_area.f \
-	../model/get_data.f \
 	../model/get_eq.f \
 	../model/get_flow_bc.f \
 	../model/get_hloss.f \

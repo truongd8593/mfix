@@ -71,7 +71,6 @@
       USE physprop, only: mmax
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
       USE qmom_kinetic_equation, only: qmomk
-      USE read_input, only: get_data
       USE run, only: call_usr, dem_solids, dt_max, dt_min
       USE run, only: id_version
       USE run, only: ier
@@ -430,6 +429,60 @@
            DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
       END SUBROUTINE INITIALIZE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: GET_DATA                                                C
+!  Purpose: read and verify input data, open files                     C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 04-DEC-91  C
+!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_DATA
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+
+      USE compar, only: adjust_partition, mype, nodesi, nodesj, nodesk, pe_io
+      USE mpi_utility, only: bcast
+      USE run, only: run_type
+
+      IMPLICIT NONE
+
+      LOGICAL :: PRESENT
+
+! This module call routines to initialize the namelist variables.
+      CALL INIT_NAMELIST
+! Read in the namelist variables from the ascii input file.
+      CALL READ_NAMELIST(0,MFIX_DAT)
+! Set RUN_TYPE to RESTART_1 when adjusting partition
+! and read partition layout in gridmap.dat if it exists
+      IF(ADJUST_PARTITION) THEN
+         RUN_TYPE = 'RESTART_1'
+
+         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'Reading partition layout from grimap.dat...'
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+
+                READ (777, *) NODESI,NODESJ,NODESK
+
+                CLOSE(777)
+            ENDIF
+
+            CALL BCAST(NODESI)
+            CALL BCAST(NODESJ)
+            CALL BCAST(NODESK)
+         ENDIF
+
+      ENDIF
+
+      RETURN
+
+    END SUBROUTINE GET_DATA
 
       SUBROUTINE CHECK_DATA
          USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
