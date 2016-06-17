@@ -1566,16 +1566,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_source_view()
         self._start_mfix()
 
+    def handle_new_mfix_exe(self):
+        self.mfix_exe = self.rd.mfix_exe
+
     def get_run_job_options(self):
 
         # run options dialog
         popup_title = self.ui.run.button_run_mfix.text()
-        rd = RunPopup(self.project, self.settings, popup_title)
-        rd.run.connect(self.run_mfix)
-        rd.setModal(True)
-        rd.show()
-        rd.raise_()
-        rd.activateWindow()
+        self.rd = RunPopup(self.project, self.settings, popup_title)
+        self.rd.run.connect(self.run_mfix)
+        self.rd.mfix_exe_changed.connect(self.handle_new_mfix_exe)
+        self.rd.setModal(True)
+        self.rd.show()
+        self.rd.raise_()
+        self.rd.activateWindow()
 
 
     def _start_mfix(self):
