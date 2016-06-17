@@ -87,14 +87,13 @@
          IMJK = IM_OF(IJK)
          IPJK = IP_OF(IJK)
 
-         IF(IMIN1 == IMAX1) THEN
-         ELSEIF((I>IMIN1).AND.(I<IMAX1)) THEN
+         IF(FLUID_AT(IMJK) .AND. FLUID_AT(IPJK)) THEN
             DEL_PHI(1,IJK) = oDX(I)*(AVG_X(PHI(IJK),PHI(IPJK),I) -     &
                AVG_X(PHI(IMJK),PHI(IJK),I-1))
-         ELSEIF(I == IMIN1) THEN
+         ELSEIF(FLUID_AT(IPJK)) THEN
             DEL_PHI(1,IJK) = 2.0d0*oDX(I) *                            &
                (AVG_X(PHI(IJK),PHI(IPJK),I) -  PHI(IJK))
-         ELSEIF(I == IMAX1) THEN
+         ELSEIF(FLUID_AT(IMJK)) THEN
             DEL_PHI(1,IJK) = 2.0d0*oDX(I) *                            &
                (PHI(IJK) - AVG_X(PHI(IMJK), PHI(IJK), I-1))
          ELSE
@@ -106,14 +105,13 @@
          IJMK = JM_OF(IJK)
          IJPK = JP_OF(IJK)
 
-         IF(JMIN1 == JMAX1) THEN
-         ELSEIF((J>JMIN1) .AND. (J<JMAX1)) THEN
+         IF(FLUID_AT(IJMK) .AND. FLUID_AT(IJPK)) THEN
             DEL_PHI(2,IJK) = oDY(J)*(AVG_Y(PHI(IJK),PHI(IJPK),J) -     &
                AVG_Y(PHI(IJMK),PHI(IJK),J-1))
-         ELSEIF(J == JMIN1) THEN
+         ELSEIF(FLUID_AT(IJPK)) THEN
             DEL_PHI(2,IJK) = 2.0d0*oDY(J) *                            &
                (AVG_Y(PHI(IJK),PHI(IJPK),J) - PHI(IJK))
-         ELSEIF(J == JMAX1) THEN
+         ELSEIF(FLUID_AT(IJMK)) THEN
             DEL_PHI(2,IJK) = 2.0d0*oDY(J) *                            &
                (PHI(IJK)- AVG_Y(PHI(IJMK),PHI(IJK),J-1))
          ELSE
@@ -126,14 +124,13 @@
             IJKM = KM_OF(IJK)
             IJKP = KP_OF(IJK)
 
-            IF(KMIN1 == KMAX1) THEN
-            ELSEIF((K>KMIN1) .AND. (K<KMAX1)) THEN
+            IF(FLUID_AT(IJKM) .AND. FLUID_AT(IJKP)) THEN
                DEL_PHI(3,IJK) = oDZ(K)*(AVG_Z(PHI(IJK),PHI(IJKP),K) -  &
                   AVG_Z(PHI(IJKM),PHI(IJK),K-1))
-            ELSEIF(K == KMIN1) THEN
+            ELSEIF(FLUID_AT(IJKP)) THEN
                DEL_PHI(3,IJK) = 2.0d0*oDZ(K) *                         &
                   (AVG_Z(PHI(IJK),PHI(IJKP),K) - PHI(IJK))
-            ELSEIF(K == KMAX1) THEN
+            ELSEIF(FLUID_AT(IJKM)) THEN
                DEL_PHI(3,IJK) = 2.0d0*oDZ(K) *                         &
                   (PHI(IJK) - AVG_Z(PHI(IJKM),PHI(IJK),K-1))
             ENDIF
