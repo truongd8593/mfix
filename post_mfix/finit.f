@@ -26,7 +26,6 @@
       USE param1
       USE physprop
       USE post3d
-      USE read_input
       USE run
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
