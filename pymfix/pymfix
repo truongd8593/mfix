@@ -62,7 +62,7 @@ def main():
             time.sleep(10)
 
 
-class Mfix:
+class Mfix(object):
     " Class to represent the running instance of MFIX "
 
     mfix_stopped = True
@@ -90,10 +90,8 @@ class Mfix:
             MAIN.add_command_line_argument(arg)
 
         MAIN.initialize()
-        READ_INPUT.get_data()
-        MAIN.initialize_2()
 
-        if (DEM.discrete_element and not DEM.des_continuum_coupled):
+        if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
                 DEM.des_time_march()
             if RUN.pic_solids:

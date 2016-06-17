@@ -45,24 +45,50 @@
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
       USE cdist, only: bdoing_postmfix
+      USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
       USE check, only: check_mass_balance
       USE check_data_cg, only: check_bc_flags, report_best_processor_size
       USE coeff, only: init_coeff
+      USE compar, only: mpierr, mype, pe_io
       USE compar, only: mype, pe_io
-      USE error_manager, only: flush_err_msg
+      USE cont, only: do_cont
+      USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
+      USE dbg, only: debug_write_layout, write_parallel_info
+      USE discretelement, only: discrete_element
+      USE drag, only: f_gs
+      USE error_manager, only: err_msg, flush_err_msg
       USE error_manager, only: init_err_msg, finl_err_msg
+      USE fldvar, only: rop_g, rop_s
       USE funits, only: dmp_log, unit_log, unit_res
       USE machine, only: start_log, end_log
       USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
       USE mfix_netcdf, only: mfix_usingnetcdf
+      USE output, only: dbgprn_layout
       USE output_man, only: init_output_vars, output_manager
       USE parallel_mpi, only: parallel_init, parallel_fin
       USE param1, only: n_spx, undefined, zero
+      USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
+      USE physprop, only: mmax
+      USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
+      USE qmom_kinetic_equation, only: qmomk
+      USE read_input, only: get_data
+      USE run, only: call_usr, dem_solids, dt_max, dt_min
       USE run, only: id_version
+      USE run, only: ier
+      USE run, only: nstep, pic_solids, run_type, dt, shear, time, v_sh
       USE run, only: time
       USE time_cpu, only: CPU00, wall0
+      USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
+      USE vtk, only: write_vtk_files
 
       IMPLICIT NONE
+
+      ! Temporary storage for DT
+     DOUBLE PRECISION :: DT_tmp
+      ! Save TIME in input file for RESTART_2
+     DOUBLE PRECISION :: TIME_SAVE
+
+     INTEGER :: LL, MM
 
 !$    INTEGER num_threads, threads_specified, omp_id
 !$    INTEGER omp_get_num_threads
@@ -119,53 +145,10 @@
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
       WALL0 = WALL_TIME()
-   END SUBROUTINE INITIALIZE
 
-
-      SUBROUTINE INITIALIZE_2
-#ifdef MPI
-      USE mpi, only: mpi_comm_world, mpi_barrier
-#endif
-      USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
-      USE check, only: check_mass_balance
-      USE check_data_cg, only: check_bc_flags, report_best_processor_size
-      USE coeff, only: init_coeff
-      USE compar, only: mpierr, mype, pe_io
-      USE cont, only: do_cont
-      USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
-      USE dbg, only: debug_write_layout, write_parallel_info
-      USE discretelement, only: discrete_element
-      USE drag, only: f_gs
-      USE error_manager, only: err_msg, flush_err_msg
-      USE error_manager, only: init_err_msg, finl_err_msg
-      USE fldvar, only: rop_g, rop_s
-      USE funits, only: dmp_log, unit_log, unit_res
-      USE machine, only: start_log, end_log
-      USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
-      USE mfix_netcdf, only: mfix_usingnetcdf
-      USE output, only: dbgprn_layout
-      USE output_man, only: init_output_vars, output_manager
-      USE parallel_mpi, only: parallel_init, parallel_fin
-      USE param1, only: n_spx, undefined, zero
-      USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
-      USE physprop, only: mmax
-      USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: call_usr, dem_solids, dt_max, dt_min
-      USE run, only: ier
-      USE run, only: nstep, pic_solids, run_type, dt, shear, time, v_sh
-      USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
-      USE vtk, only: write_vtk_files
-      IMPLICIT NONE
-
-      !$    INTEGER threads_specified
-
-      ! Temporary storage for DT
-      DOUBLE PRECISION :: DT_tmp
-      ! Save TIME in input file for RESTART_2
-      DOUBLE PRECISION :: TIME_SAVE
-
-      INTEGER :: LL, MM
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL GET_DATA
 
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -446,7 +429,7 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
            DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
-      END SUBROUTINE INITIALIZE_2
+      END SUBROUTINE INITIALIZE
 
       SUBROUTINE CHECK_DATA
          USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
