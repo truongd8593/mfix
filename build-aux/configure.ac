@@ -5,9 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
 AC_CONFIG_AUX_DIR([../build-aux])
 
-m4_include([ax_append_flag.m4])
 m4_include([ax_check_compile_flag.m4])
-m4_include([ax_fc_check_define.m4])
 m4_include([ax_prog_fc_mpi.m4])
 m4_include([netcdf.m4])
 m4_include([netcdff.m4])
@@ -185,20 +183,6 @@ AC_FC_IMPLICIT_NONE
 
 AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
-
-dnl Check to see if the pre-processor supports __BIGGEST_ALIGNMENT__ .
-dnl Intel does not but it is a feature request (DPD200378449).
-dnl GNU (v5.1) only goes up to 16.
-dnl PGI does not support it.
-AX_FC_CHECK_DEFINE(__BIGGEST_ALIGNMENT__,
-                   [if test "$ax_cv_fc_defined___BIGGEST_ALIGNMENT__" -le 16
-                      then
-                        ax_cv_fc_defined___BIGGEST_ALIGNMENT__=64
-                        AX_APPEND_FLAG([${FC_DEFINE}__BIGGEST_ALIGNMENT__=64],
-                                       [FCFLAGS])
-                    fi ],
-                   AX_APPEND_FLAG([${FC_DEFINE}__BIGGEST_ALIGNMENT__=64],
-                                  [FCFLAGS]))
 
 AC_CONFIG_FILES([Makefile Makefile.usr])
 AC_CONFIG_FILES([fdep], [chmod +x fdep])
