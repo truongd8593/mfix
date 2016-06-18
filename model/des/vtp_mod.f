@@ -1,11 +1,11 @@
       MODULE vtp
 
-      use mpi_utility
       use cdist
-
       use desmpi
-      use mpi_comm_des
       use error_manager
+      use mpi_comm_des
+      use mpi_utility
+      use, intrinsic :: iso_c_binding
 
       IMPLICIT NONE
 
