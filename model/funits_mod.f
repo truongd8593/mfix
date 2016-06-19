@@ -1,3 +1,5 @@
+#include "version.inc"
+
       MODULE FUNITS
 
 ! Whether this processor should write the log file in DMP mode.

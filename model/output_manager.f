@@ -1,3 +1,5 @@
+#include "version.inc"
+
 MODULE output_man
    CONTAINS
 !----------------------------------------------------------------------!

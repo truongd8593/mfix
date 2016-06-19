@@ -1,3 +1,5 @@
+#include "version.inc"
+
       MODULE vtp
 
       use cdist
@@ -892,6 +894,7 @@
   SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN(PASS)
 
       USE vtk, only: NUMBER_OF_POINTS,BUFFER, VTU_UNIT,END_REC,VTU_OFFSET,BELONGS_TO_VTK_SUBDOMAIN
+      use, intrinsic :: iso_c_binding
 
       IMPLICIT NONE
 

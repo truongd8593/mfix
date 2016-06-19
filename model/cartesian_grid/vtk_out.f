@@ -1,3 +1,5 @@
+#include "version.inc"
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: WRITE_DBG_VTU_AND_VTP_FILES                            C
