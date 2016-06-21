@@ -119,6 +119,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.pymfix_enabled = False
         self.open_succeeded = False
         self.unsaved_flag = False
+        self.run_dialog = None
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -1576,19 +1577,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def open_run_dialog(self):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
-        self.rd = RunPopup(self.project, self.settings, popup_title, self)
-        self.rd.run.connect(self.run_mfix)
-        self.rd.mfix_exe_changed.connect(self.handle_exe_changed)
-        self.rd.setModal(True)
-        self.rd.show()
-        self.rd.raise_()
-        self.rd.activateWindow()
+        self.run_dialog = RunPopup(self.project, self.settings, popup_title, self)
+        self.run_dialog.run.connect(self.run_mfix)
+        self.run_dialog.mfix_exe_changed.connect(self.handle_exe_changed)
+        self.run_dialog.setModal(True)
+        self.run_dialog.show()
+        self.run_dialog.raise_()
+        self.run_dialog.activateWindow()
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
         print('handle_new_mfix_exe: %s' % self.mfix_exe)
         print('previous: %s' % self.mfix_exe)
-        self.mfix_exe = self.rd.mfix_exe
+        self.mfix_exe = self.run_dialog.mfix_exe
         print('new: %s' % self.mfix_exe)
 
         self.handle_select_exe() # FIXME: suss this out so we aren't calling a gui slot
@@ -2190,7 +2191,7 @@ def main(args):
 
     saved_exe = mfix.settings.value('mfix_exe') #
     cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe is not None and os.path.exists(saved_exe):
+    if saved_exe and os.path.exists(saved_exe):
         if cb.findText(saved_exe) == -1:
             cb.addItem(saved_exe)
         cb.setCurrentText(saved_exe)

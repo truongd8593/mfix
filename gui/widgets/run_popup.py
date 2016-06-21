@@ -75,7 +75,7 @@ class RunPopup(QtWidgets.QDialog):
     def handle_browse_exe(self):
         """Handle file open dialog for user specified exe"""
         new_exe = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select Executable")
+            self, "Select Executable", directory=self.parent.get_project_dir())
         self.mfix_exe = new_exe
         self.update_combobox_mfix_exes(new_exe)
         # save new exe list, set mfix_exe in settings, set mfix_exe in project
