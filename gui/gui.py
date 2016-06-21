@@ -1438,7 +1438,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             return
 
         self.settings.setValue('mfix_exe', mfix_exe)
-        config = self.monitor.exes.get(mfix_exe)
+        config = self.monitor.get_exes().get(mfix_exe)
         self.mfix_config = config
         self.smp_enabled = 'smp' in config if config else False
         self.dmp_enabled = 'dmp' in config if config else False
@@ -2007,13 +2007,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # set up rundir watcher
         self.rundir_watcher.addPath(project_dir)
         self.slot_rundir_changed()
-
-        # set up exe watcher (it got cleared in 'reset')
-        dirs = (project_dir, ) # any others?
-        for d in dirs:
-            if d not in self.exe_watcher.directories():
-                self.exe_watcher.addPath(d)
-        self.slot_exes_changed()
 
         ### Geometry
         # Look for geometry.stl and load automatically
