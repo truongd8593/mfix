@@ -2169,7 +2169,7 @@ def main(args):
 
     saved_exe = mfix.settings.value('mfix_exe') #
     cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe is not None and os.path.exists(saved_exe):
+    if saved_exe and os.path.exists(saved_exe):
         if cb.findText(saved_exe) == -1:
             cb.addItem(saved_exe)
         cb.setCurrentText(saved_exe)
