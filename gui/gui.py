@@ -1129,46 +1129,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         to_widget.raise_()
         #to_widget.activateWindow() ? needed?
 
+        self.stack_animation = QtCore.QParallelAnimationGroup()
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
-        animnow.setDuration(self.animation_speed)
-        animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnow.setStartValue(
-            QtCore.QPoint(0,0))
-        animnow.setEndValue(
-            QtCore.QPoint(0 - offsetx,
-                          0 - offsety))
+        self.animation_setup(from_widget, 0, 0, -offsetx, -offsety)
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
-        animnext.setDuration(self.animation_speed)
-        animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnext.setStartValue(
-            QtCore.QPoint(0 + offsetx,
-                          0 + offsety))
-        animnext.setEndValue(
-            QtCore.QPoint(0,0))
+        self.animation_setup(to_widget, offsetx, offsety, 0, 0)
 
         # line
-        animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
-            animline.setDuration(self.animation_speed)
-            animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-            animline.setStartValue(
-                QtCore.QPoint(line.geometry().x(),
-                              line.geometry().y()))
-            animline.setEndValue(
-                QtCore.QPoint(to_btn.geometry().x(),
-                              line.geometry().y()))
+            self.animation_setup(line, line.geometry().x(), line.geometry().y(), to_btn.geometry().x(), line.geometry().y())
 
         # animation group
-        self.stack_animation = QtCore.QParallelAnimationGroup()
-        self.stack_animation.addAnimation(animnow)
-        self.stack_animation.addAnimation(animnext)
-        if animline is not None:
-            self.stack_animation.addAnimation(animline)
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
                           stackedwidget, from_, to, btn_layout, line)
@@ -1179,6 +1152,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.animating = True
         self.stack_animation.start()
+
+    def animation_setup(self, target, x_start, y_start, x_end, y_end):
+        """setup an animation widget"""
+        animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
+        animation.setDuration(self.animation_speed)
+        animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        animation.setStartValue(QtCore.QPoint(x_start, y_start))
+        animation.setEndValue(QtCore.QPoint(x_end,y_end))
+        self.stack_animation.addAnimation(animation)
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, line=None):
