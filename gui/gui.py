@@ -1421,15 +1421,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_select_exe(self):
         """Enable/disable run options based on selected executable"""
-        mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
-        if mfix_exe == self.mfix_exe:
-            return
+        #mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
+        #if mfix_exe == self.mfix_exe:
+        #    return
 
-        self.mfix_exe = mfix_exe
+        #self.mfix_exe = mfix_exe
 
-        if not mfix_exe:
-            self.update_run_options()
-            return
+        #if not mfix_exe:
+        #    self.update_run_options()
+        #    return
+
+        # FIXME: clean up merge with run dialog methods
+        if self.mfix_exe is not None:
+            mfix_exe = self.mfix_exe
+        else:
+            mfix_exe = ''
 
         self.settings.setValue('mfix_exe', mfix_exe)
         config = self.monitor.exes.get(mfix_exe)
@@ -1483,7 +1489,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         name = 'Run'
         try:
             if not self.job.is_running():
-                self.get_run_job_options()
+                # open the run dialog for job options
+                self.open_run_dialog()
             else:
                 name='unpause'
                 self.job.unpause()
@@ -1566,21 +1573,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_source_view()
         self._start_mfix()
 
-    def handle_new_mfix_exe(self):
-        self.mfix_exe = self.rd.mfix_exe
-
-    def get_run_job_options(self):
-
-        # run options dialog
+    def open_run_dialog(self):
+        """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
-        self.rd = RunPopup(self.project, self.settings, popup_title)
+        self.rd = RunPopup(self.project, self.settings, popup_title, self)
         self.rd.run.connect(self.run_mfix)
-        self.rd.mfix_exe_changed.connect(self.handle_new_mfix_exe)
+        self.rd.mfix_exe_changed.connect(self.handle_exe_changed)
         self.rd.setModal(True)
         self.rd.show()
         self.rd.raise_()
         self.rd.activateWindow()
 
+    def handle_exe_changed(self):
+        """callback from run dialog when combobox is changed"""
+        print('handle_new_mfix_exe: %s' % self.mfix_exe)
+        print('previous: %s' % self.mfix_exe)
+        self.mfix_exe = self.rd.mfix_exe
+        print('new: %s' % self.mfix_exe)
+
+        self.handle_select_exe() # FIXME: suss this out so we aren't calling a gui slot
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
