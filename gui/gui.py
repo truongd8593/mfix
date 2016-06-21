@@ -290,9 +290,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             btn.clicked.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
-        ui.treewidget_model_navigation.itemSelectionChanged.connect(
+        ui.treewidget_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
+        # Make tree fully open & non-closable
+        # We expect "rootIsDecorated" has been set False in the .ui file
+        ui.treewidget_navigation.expandAll()
+        ui.treewidget_navigation.setExpandsOnDoubleClick(False)
+
+
+        # Job manager / monitor
         self.job = Job(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
@@ -486,7 +493,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                      text='Feature not implemented')
 
     def toggle_nav_menu(self):
-        nav_menu = self.ui.treewidget_model_navigation
+        nav_menu = self.ui.treewidget_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
 
     def status_message(self, message=''):
@@ -683,7 +690,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         event.accept()
 
     def find_navigation_tree_item(self, item_name):
-        tree = self.ui.treewidget_model_navigation
+        tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
         assert len(items) == 1
@@ -1048,18 +1055,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
-        """change to the specified pane"""
-        clist = self.ui.treewidget_model_navigation.findItems(
+        """set current pane to the one matching 'name'"""
+        clist = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
         assert len(clist) == 1
         item = clist[0]
-        self.ui.treewidget_model_navigation.setCurrentItem(item)
+        self.ui.treewidget_navigation.setCurrentItem(item)
         self.navigation_changed()
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-        current_selection = self.ui.treewidget_model_navigation.selectedItems()
+        current_selection = self.ui.treewidget_navigation.selectedItems()
 
         # Force any open popup to close
         # if dialog is modal we don't need this
