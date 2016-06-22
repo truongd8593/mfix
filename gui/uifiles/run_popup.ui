@@ -69,7 +69,7 @@
           <number>0</number>
          </property>
          <item row="0" column="0">
-          <widget class="ComboBox" name="combobox_mfix_exes">
+          <widget class="ComboBox" name="combobox_mfix_exe">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -296,7 +296,7 @@
  </customwidgets>
  <tabstops>
   <tabstop>buttonBox</tabstop>
-  <tabstop>combobox_mfix_exes</tabstop>
+  <tabstop>combobox_mfix_exe</tabstop>
   <tabstop>button_browse_exe</tabstop>
   <tabstop>spinbox_threads</tabstop>
   <tabstop>spinbox_keyword_nodesi</tabstop>

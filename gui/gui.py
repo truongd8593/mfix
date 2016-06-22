@@ -1563,7 +1563,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def open_run_dialog(self):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
-        self.run_dialog = RunPopup(self.project, self.settings, popup_title, self)
+        self.run_dialog = RunPopup(popup_title, self)
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
