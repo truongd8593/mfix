@@ -638,7 +638,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Pause only available w/ pymfix
         if running:
             self.status_message("MFIX running, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -648,7 +647,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
@@ -657,7 +655,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
@@ -666,7 +663,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         else: # Not running, ready for input
             self.status_message("Ready" if project_open else "Loading %s"%project_file)
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
@@ -1481,6 +1477,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if not self.job.is_running():
                 # open the run dialog for job options
                 self.open_run_dialog()
+                return
             else:
                 name='unpause'
                 self.job.unpause()
@@ -1568,7 +1565,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         popup_title = self.ui.run.button_run_mfix.text()
         self.run_dialog = RunPopup(self.project, self.settings, popup_title, self)
         self.run_dialog.run.connect(self.run_mfix)
-        self.run_dialog.mfix_exe_changed.connect(self.handle_exe_changed)
+        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
         self.run_dialog.show()
         self.run_dialog.raise_()
