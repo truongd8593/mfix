@@ -2006,6 +2006,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
         # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
+
+        # User-specified names for fluid & solids phases.  (Non-keyword)
         solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
