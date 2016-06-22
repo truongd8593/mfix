@@ -55,17 +55,22 @@ class RunPopup(QtWidgets.QDialog):
         self.cancel.emit()
 
     def handle_run(self):
-        os.environ['OMP_NUM_THREADS'] = str(self.ui.spinbox_threads.value())
+        thread_count = str(self.ui.spinbox_threads.value())
+        os.environ['OMP_NUM_THREADS'] = thread_count
+        self.project.mfix_gui_comments['OMP_NUM_THREADS'] = thread_count
         if self.NODES_SET:
             self.project.updateKeyword('nodesi', self.ui.spinbox_keyword_nodesi.value())
             self.project.updateKeyword('nodesj', self.ui.spinbox_keyword_nodesj.value())
             self.project.updateKeyword('nodesk', self.ui.spinbox_keyword_nodesk.value())
+        self.mfix_exe_changed.emit()
         self.run.emit()
 
     def handle_exe_change(self):
         """ emit signals when exe combobox changes """
+        # get exe config features (smp/dmp)
+        # update run options (enable/disable NODES*)
         self.mfix_exe = new_exe = self.ui.combobox_mfix_exes.currentText()
-        print('changed exe: %s' % self.mfix_exe)
+
         # save new exe list, set mfix_exe in settings, set mfix_exe in project
         self.saved_exe_append(new_exe)
         self.set_config_mfix_exe(new_exe)
@@ -108,8 +113,10 @@ class RunPopup(QtWidgets.QDialog):
 
     def get_exe_list(self):
         """ assemble list of executables from:
-        - config item 'saved_mfix_exes'
+        - config item 'saved_mfix_exes' (ordered by last used)
         - project file 'mfix_exe'
+        ? command line
+        ? 
         """
         exe_list = self.settings.value('saved_mfix_exes')
         if exe_list is not None:
