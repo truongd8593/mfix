@@ -221,7 +221,7 @@
       <item row="14" column="1">
        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_fac">
         <property name="suffix">
-         <string> sec</string>
+         <string> </string>
         </property>
         <property name="decimals">
          <number>10</number>
