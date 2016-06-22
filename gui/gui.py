@@ -293,9 +293,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             btn.clicked.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
-        ui.treewidget_model_navigation.itemSelectionChanged.connect(
+        ui.treewidget_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
+        # Make tree fully open & non-closable
+        # We expect "rootIsDecorated" has been set False in the .ui file
+        ui.treewidget_navigation.expandAll()
+        ui.treewidget_navigation.setExpandsOnDoubleClick(False)
+
+
+        # Job manager / monitor
         self.job = Job(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
@@ -489,7 +496,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                      text='Feature not implemented')
 
     def toggle_nav_menu(self):
-        nav_menu = self.ui.treewidget_model_navigation
+        nav_menu = self.ui.treewidget_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
 
     def status_message(self, message=''):
@@ -686,7 +693,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         event.accept()
 
     def find_navigation_tree_item(self, item_name):
-        tree = self.ui.treewidget_model_navigation
+        tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
         assert len(items) == 1
@@ -1051,18 +1058,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
-        """change to the specified pane"""
-        clist = self.ui.treewidget_model_navigation.findItems(
+        """set current pane to the one matching 'name'"""
+        clist = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
         assert len(clist) == 1
         item = clist[0]
-        self.ui.treewidget_model_navigation.setCurrentItem(item)
+        self.ui.treewidget_navigation.setCurrentItem(item)
         self.navigation_changed()
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-        current_selection = self.ui.treewidget_model_navigation.selectedItems()
+        current_selection = self.ui.treewidget_navigation.selectedItems()
 
         # Force any open popup to close
         # if dialog is modal we don't need this
@@ -1125,46 +1132,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         to_widget.raise_()
         #to_widget.activateWindow() ? needed?
 
+        self.stack_animation = QtCore.QParallelAnimationGroup()
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
-        animnow.setDuration(self.animation_speed)
-        animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnow.setStartValue(
-            QtCore.QPoint(0,0))
-        animnow.setEndValue(
-            QtCore.QPoint(0 - offsetx,
-                          0 - offsety))
+        self.animation_setup(from_widget, 0, 0, -offsetx, -offsety)
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
-        animnext.setDuration(self.animation_speed)
-        animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnext.setStartValue(
-            QtCore.QPoint(0 + offsetx,
-                          0 + offsety))
-        animnext.setEndValue(
-            QtCore.QPoint(0,0))
+        self.animation_setup(to_widget, offsetx, offsety, 0, 0)
 
         # line
-        animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
-            animline.setDuration(self.animation_speed)
-            animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-            animline.setStartValue(
-                QtCore.QPoint(line.geometry().x(),
-                              line.geometry().y()))
-            animline.setEndValue(
-                QtCore.QPoint(to_btn.geometry().x(),
-                              line.geometry().y()))
+            self.animation_setup(line, line.geometry().x(), line.geometry().y(), to_btn.geometry().x(), line.geometry().y())
 
         # animation group
-        self.stack_animation = QtCore.QParallelAnimationGroup()
-        self.stack_animation.addAnimation(animnow)
-        self.stack_animation.addAnimation(animnext)
-        if animline is not None:
-            self.stack_animation.addAnimation(animline)
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
                           stackedwidget, from_, to, btn_layout, line)
@@ -1175,6 +1155,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.animating = True
         self.stack_animation.start()
+
+    def animation_setup(self, target, x_start, y_start, x_end, y_end):
+        """setup an animation widget"""
+        animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
+        animation.setDuration(self.animation_speed)
+        animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        animation.setStartValue(QtCore.QPoint(x_start, y_start))
+        animation.setEndValue(QtCore.QPoint(x_end,y_end))
+        self.stack_animation.addAnimation(animation)
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, line=None):
@@ -1439,7 +1428,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             mfix_exe = ''
 
         self.settings.setValue('mfix_exe', mfix_exe)
-        config = self.monitor.exes.get(mfix_exe)
+        config = self.monitor.get_exes().get(mfix_exe)
         self.mfix_config = config
         self.smp_enabled = 'smp' in config if config else False
         self.dmp_enabled = 'dmp' in config if config else False
@@ -2029,13 +2018,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # set up rundir watcher
         self.rundir_watcher.addPath(project_dir)
         self.slot_rundir_changed()
-
-        # set up exe watcher (it got cleared in 'reset')
-        dirs = (project_dir, ) # any others?
-        for d in dirs:
-            if d not in self.exe_watcher.directories():
-                self.exe_watcher.addPath(d)
-        self.slot_exes_changed()
 
         ### Geometry
         # Look for geometry.stl and load automatically
