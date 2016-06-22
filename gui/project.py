@@ -63,7 +63,6 @@ from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            safe_shlex_split)
 
 from regexes import *
-
 from constants import *
 
 NaN = float('NaN')
@@ -215,9 +214,7 @@ class Equation(object):
         else:
             try:
                 return float(simple_eval(self.eq.lower(),
-                                         names={"pi": math.pi,
-                                                "e": math.e,
-                                                "p": 1} # what is p?
+                                         names=PARAMETER_DICT
                                          ))
             except:
                 raise ValueError(self.eq)

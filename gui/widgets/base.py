@@ -29,6 +29,7 @@ except ImportError:
 # local imports
 from project import Keyword, Equation, FloatExp, make_FloatExp
 from regexes import *
+from constants import *
 
 from tools.general import to_text_string
 
@@ -75,9 +76,43 @@ class BaseWidget(QtCore.QObject):
 
         return self.default_value
 
+
+class EquationCompleter(QtWidgets.QCompleter):
+    def __init__(self, parent=None):
+        QtWidgets.QCompleter.__init__(self, parent)
+        self.delimiators = ['*', '**', '/', '-', '+', ' ']
+        self.model = QtWidgets.QStringListModel()
+        self.model.setStringList(PARAMETER_DICT.keys())
+        self.setModel(self.model)
+
+    def pathFromIndex(self, index):
+        auto_string = index.data(QtCore.Qt.EditRole)
+        line_edit = self.parent()
+        text = line_edit.text()
+
+        cur_index = line_edit.cursorPosition()
+        prev_delimiter_index = max([cur_index - text[cur_index::-1].index(sep)
+                                    if sep in text[:cur_index] else 0
+                                    for sep in self.delimiators])
+        next_delimiter_index = min([cur_index + text[cur_index:].index(sep)
+                                    if sep in text[cur_index:] else len(text)
+                                    for sep in self.delimiators])
+
+        return text[0:prev_delimiter_index] + auto_string + text[next_delimiter_index:]
+
+    def splitPath(self, path):
+        line_edit = self.parent()
+
+        cur_index = line_edit.cursorPosition()
+        index = max([cur_index - path[cur_index::-1].index(sep) + 1
+                     if sep in path[:cur_index] else 0
+                     for sep in self.delimiators])
+
+        return [path[index:cur_index]]
+
+
 class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
-
 
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
@@ -86,6 +121,9 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
         self.text_changed_flag = False
+
+        self.completer = EquationCompleter(self)
+        self.setCompleter(self.completer)
 
     @classmethod
     def value_error(self, text):

@@ -23,6 +23,7 @@ except ImportError:
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, make_callback,)
+from widgets.base import LineEdit
 
 CELL_TYPE_ENUM = {
     0:  'empty_cell',
@@ -291,6 +292,17 @@ class VtkWidget(QtWidgets.QWidget):
             self.color_dict['mesh_edge'].getRgbF()[:3])
 
         self.vtkrenderer.AddActor(self.mesh_actor)
+        
+        # set types on lineedits
+        for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
+            if isinstance(widget, LineEdit):
+                parameter = str(widget.objectName()).lower().split('_')
+                
+                if any([s in parameter for s in ['divisions', 'resolution',
+                                                 'nhills', 'iterations']]):
+                    widget.dtype = int
+                else:
+                    widget.dtype = float
 
         self.__connect_events()
         self.__add_tool_buttons()
@@ -690,13 +702,8 @@ class VtkWidget(QtWidgets.QWidget):
                     break
 
             # if widget is a lineedit
-            if isinstance(widget, QtWidgets.QLineEdit):
-                string = str(widget.text())
-                if any([s in parameter for s in ['divisions', 'resolution',
-                                                 'nhills', 'iterations']]):
-                    value = int(string)
-                else:
-                    value = float(string)
+            if isinstance(widget, LineEdit):
+                value = widget.value
             elif isinstance(widget, QtWidgets.QCheckBox):
                 value = widget.isChecked()
 
@@ -730,29 +737,30 @@ class VtkWidget(QtWidgets.QWidget):
 
         # update source
         if primtype == 'sphere':
-            source.SetRadius(self.geometrydict[name]['radius'])
-            source.SetThetaResolution(
-                self.geometrydict[name]['thetaresolution'])
-            source.SetPhiResolution(self.geometrydict[name]['phiresolution'])
+            source.SetRadius(float(self.geometrydict[name]['radius']))
+            source.SetThetaResolution(int(
+                self.geometrydict[name]['thetaresolution']))
+            source.SetPhiResolution(int(
+                self.geometrydict[name]['phiresolution']))
 
         elif primtype == 'box':
-            source.SetXLength(self.geometrydict[name]['lengthx'])
-            source.SetYLength(self.geometrydict[name]['lengthy'])
-            source.SetZLength(self.geometrydict[name]['lengthz'])
+            source.SetXLength(float(self.geometrydict[name]['lengthx']))
+            source.SetYLength(float(self.geometrydict[name]['lengthy']))
+            source.SetZLength(float(self.geometrydict[name]['lengthz']))
 
         elif primtype == 'cone':
-            source.SetRadius(self.geometrydict[name]['radius'])
-            source.SetHeight(self.geometrydict[name]['height'])
-            source.SetDirection(self.geometrydict[name]['directionx'],
-                                self.geometrydict[name]['directiony'],
-                                self.geometrydict[name]['directionz'])
-            source.SetResolution(self.geometrydict[name]['resolution'])
+            source.SetRadius(float(self.geometrydict[name]['radius']))
+            source.SetHeight(float(self.geometrydict[name]['height']))
+            source.SetDirection(float(self.geometrydict[name]['directionx']),
+                                float(self.geometrydict[name]['directiony']),
+                                float(self.geometrydict[name]['directionz']))
+            source.SetResolution(int(self.geometrydict[name]['resolution']))
             source.CappingOn()
 
         elif primtype == 'cylinder':
-            source.SetRadius(self.geometrydict[name]['radius'])
-            source.SetHeight(self.geometrydict[name]['height'])
-            source.SetResolution(self.geometrydict[name]['resolution'])
+            source.SetRadius(float(self.geometrydict[name]['radius']))
+            source.SetHeight(float(self.geometrydict[name]['height']))
+            source.SetResolution(int(self.geometrydict[name]['resolution']))
 
         elif primtype == 'stl':
             pass
@@ -762,9 +770,9 @@ class VtkWidget(QtWidgets.QWidget):
 
         # common props
         if source is not None:
-            source.SetCenter(self.geometrydict[name]['centerx'],
-                             self.geometrydict[name]['centery'],
-                             self.geometrydict[name]['centerz'])
+            source.SetCenter(float(self.geometrydict[name]['centerx']),
+                             float(self.geometrydict[name]['centery']),
+                             float(self.geometrydict[name]['centerz']))
 
             source.Update()
 
@@ -782,27 +790,27 @@ class VtkWidget(QtWidgets.QWidget):
         transform.PostMultiply()
 
         # translate to center
-        transform.Translate(-self.geometrydict[name]['centerx'],
-                            -self.geometrydict[name]['centery'],
-                            -self.geometrydict[name]['centerz'])
+        transform.Translate(-float(self.geometrydict[name]['centerx']),
+                            -float(self.geometrydict[name]['centery']),
+                            -float(self.geometrydict[name]['centerz']))
 
         # rotation
-        transform.RotateWXYZ(self.geometrydict[name]['rotationx'], 1, 0, 0)
-        transform.RotateWXYZ(self.geometrydict[name]['rotationy'], 0, 1, 0)
-        transform.RotateWXYZ(self.geometrydict[name]['rotationz'], 0, 0, 1)
+        transform.RotateWXYZ(float(self.geometrydict[name]['rotationx']), 1, 0, 0)
+        transform.RotateWXYZ(float(self.geometrydict[name]['rotationy']), 0, 1, 0)
+        transform.RotateWXYZ(float(self.geometrydict[name]['rotationz']), 0, 0, 1)
 
         # back to position
-        transform.Translate(self.geometrydict[name]['centerx'],
-                            self.geometrydict[name]['centery'],
-                            self.geometrydict[name]['centerz'])
+        transform.Translate(float(self.geometrydict[name]['centerx']),
+                            float(self.geometrydict[name]['centery']),
+                            float(self.geometrydict[name]['centerz']))
 
         # translate stl files
         if self.geometrydict[name]['type'] in ['stl'] + \
                 list(self.parametricdict.keys()):
             transform.Translate(
-                self.geometrydict[name]['translationx'],
-                self.geometrydict[name]['translationy'],
-                self.geometrydict[name]['translationz'],
+                float(self.geometrydict[name]['translationx']),
+                float(self.geometrydict[name]['translationy']),
+                float(self.geometrydict[name]['translationz']),
                 )
 
         # update
@@ -900,59 +908,65 @@ class VtkWidget(QtWidgets.QWidget):
         source = self.geometrydict[name]['source']
 
         if paratype == 'torus':
-            para_object.SetRingRadius(self.geometrydict[name]['ringradius'])
-            para_object.SetCrossSectionRadius(
-                self.geometrydict[name]['crosssectionradius'])
+            para_object.SetRingRadius(float(
+                self.geometrydict[name]['ringradius']))
+            para_object.SetCrossSectionRadius(float(
+                self.geometrydict[name]['crosssectionradius']))
         elif paratype == 'boy':
-            para_object.SetZScale(self.geometrydict[name]['zscale'])
+            para_object.SetZScale(float(self.geometrydict[name]['zscale']))
         elif paratype == 'conic_spiral':
-            para_object.SetA(self.geometrydict[name]['ascale'])
-            para_object.SetB(self.geometrydict[name]['bfunc'])
-            para_object.SetC(self.geometrydict[name]['cfunc'])
-            para_object.SetN(self.geometrydict[name]['nfunc'])
+            para_object.SetA(float(self.geometrydict[name]['ascale']))
+            para_object.SetB(float(self.geometrydict[name]['bfunc']))
+            para_object.SetC(float(self.geometrydict[name]['cfunc']))
+            para_object.SetN(float(self.geometrydict[name]['nfunc']))
         elif paratype == 'dini':
-            para_object.SetA(self.geometrydict[name]['ascale'])
-            para_object.SetB(self.geometrydict[name]['bscale'])
+            para_object.SetA(float(self.geometrydict[name]['ascale']))
+            para_object.SetB(float(self.geometrydict[name]['bscale']))
         elif paratype == 'ellipsoid':
-            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
-            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
-            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
+            para_object.SetXRadius(float(self.geometrydict[name]['radiusx']))
+            para_object.SetYRadius(float(self.geometrydict[name]['radiusy']))
+            para_object.SetZRadius(float(self.geometrydict[name]['radiusz']))
         elif paratype == 'figure_8_klein':
-            para_object.SetRadius(self.geometrydict[name]['radius'])
+            para_object.SetRadius(float(self.geometrydict[name]['radius']))
         elif paratype == 'mobius':
-            para_object.SetRadius(self.geometrydict[name]['radius'])
+            para_object.SetRadius(float(self.geometrydict[name]['radius']))
         elif paratype == 'random_hills':
-            para_object.SetHillXVariance(self.geometrydict[name]['variancex'])
-            para_object.SetXVarianceScaleFactor(
-                self.geometrydict[name]['scalex'])
-            para_object.SetHillYVariance(self.geometrydict[name]['variancey'])
-            para_object.SetYVarianceScaleFactor(
-                self.geometrydict[name]['scaley'])
-            para_object.SetHillAmplitude(self.geometrydict[name]['amplitude'])
-            para_object.SetAmplitudeScaleFactor(
-                self.geometrydict[name]['scaleamplitude'])
-            para_object.SetNumberOfHills(self.geometrydict[name]['nhills'])
+            para_object.SetHillXVariance(float(
+                self.geometrydict[name]['variancex']))
+            para_object.SetXVarianceScaleFactor(float(
+                self.geometrydict[name]['scalex']))
+            para_object.SetHillYVariance(float(
+                self.geometrydict[name]['variancey']))
+            para_object.SetYVarianceScaleFactor(float(
+                self.geometrydict[name]['scaley']))
+            para_object.SetHillAmplitude(float(
+                self.geometrydict[name]['amplitude']))
+            para_object.SetAmplitudeScaleFactor(float(
+                self.geometrydict[name]['scaleamplitude']))
+            para_object.SetNumberOfHills(int(
+                self.geometrydict[name]['nhills']))
             if self.geometrydict[name]['allowrandom']:
                 para_object.AllowRandomGenerationOn()
             else:
                 para_object.AllowRandomGenerationOff()
         elif paratype == 'roman':
-            para_object.SetRadius(self.geometrydict[name]['radius'])
+            para_object.SetRadius(float(self.geometrydict[name]['radius']))
         elif paratype == 'super_ellipsoid':
-            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
-            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
-            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
-            para_object.SetN1(self.geometrydict[name]['n1'])
-            para_object.SetN2(self.geometrydict[name]['n2'])
+            para_object.SetXRadius(float(self.geometrydict[name]['radiusx']))
+            para_object.SetYRadius(float(self.geometrydict[name]['radiusy']))
+            para_object.SetZRadius(float(self.geometrydict[name]['radiusz']))
+            para_object.SetN1(float(self.geometrydict[name]['n1']))
+            para_object.SetN2(float(self.geometrydict[name]['n2']))
         elif paratype == 'super_toroid':
-            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
-            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
-            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
-            para_object.SetRingRadius(self.geometrydict[name]['ringradius'])
-            para_object.SetCrossSectionRadius(
-                self.geometrydict[name]['crosssectionradius'])
-            para_object.SetN1(self.geometrydict[name]['n1'])
-            para_object.SetN2(self.geometrydict[name]['n2'])
+            para_object.SetXRadius(float(self.geometrydict[name]['radiusx']))
+            para_object.SetYRadius(float(self.geometrydict[name]['radiusy']))
+            para_object.SetZRadius(float(self.geometrydict[name]['radiusz']))
+            para_object.SetRingRadius(float(
+                self.geometrydict[name]['ringradius']))
+            para_object.SetCrossSectionRadius(float(
+                self.geometrydict[name]['crosssectionradius']))
+            para_object.SetN1(float(self.geometrydict[name]['n1']))
+            para_object.SetN2(float(self.geometrydict[name]['n2']))
 
         source.Update()
 

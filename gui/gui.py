@@ -44,6 +44,7 @@ from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
+from widgets.parameter_dialog import ParameterDialog
 
 from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
@@ -265,6 +266,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             get_icon('open_in_new.png'), 'Export', self.handle_export)
         self.ui.action_compile_tool = self.ui.menu_more.addAction(
             get_icon('build.png'), 'Compile', self.handle_compile)
+        self.ui.menu_more.addSeparator()
+        self.ui.action_compile_tool = self.ui.menu_more.addAction(
+            get_icon('functions.png'), 'Parameters', self.handle_parameters)
         self.ui.menu_more.addSeparator()
         #self.ui.action_about = self.ui.menu_more.addAction(
         #    get_icon('settings.png'), 'Settings', self.handle_settings)
@@ -1736,7 +1740,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 #        # TODO: implement
 #        self.unimplemented()
 
-
+    def handle_parameters(self):
+        """add/change parameters"""
+        new_parameters = ParameterDialog.get_parameters(PARAMETER_DICT)
+        PARAMETER_DICT.update(new_parameters)
 
     def handle_compile(self):
         """compiling tool"""
