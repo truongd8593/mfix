@@ -373,7 +373,6 @@ class ProjectManager(Project):
                                 if p == phase:
                                     continue
                                 species_data = self.gui.species_popup.get_species_data(species, p)
-                                print("GOT", species_data)
                                 if species_data:
                                     warnings.warn("species '%s' defined as phase '%s', expected '%s'"
                                                   % (species, p, phase))

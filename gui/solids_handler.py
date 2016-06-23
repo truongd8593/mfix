@@ -838,10 +838,21 @@ class SolidsHandler(object):
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
         sp.defined_species = self.solids_species[phase]
+        sp.extra_aliases = self.solids_make_extra_aliases(phase)
         sp.update_defined_species()
         sp.setWindowTitle("Species for %s" %self.solids_current_phase_name)
         sp.enable_density(True)
         sp.popup()
+
+    def solids_make_extra_aliases(self, phase):
+        # Construct the 'extra_aliases' set to pass to the species popup
+        # Exclude the specified phase
+        aliases = set(f['alias'] for f in self.fluid_species.values())
+        for (p, ss) in self.solids_species.items():
+            if p == phase:
+               continue
+            aliases.update(s['alias'] for s in ss.values())
+        return aliases
 
     def solids_species_delete(self):
         # XXX FIXME this is potentially a big problem since
@@ -883,6 +894,7 @@ class SolidsHandler(object):
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
         sp.defined_species = self.solids_species[phase]
+        sp.extra_aliases = self.solids_make_extra_aliases(phase)
         sp.update_defined_species()
         if row is None:
             sp.do_search('')

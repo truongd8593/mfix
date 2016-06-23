@@ -403,6 +403,8 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
+        self.extra_aliases = set() # To support enforcing
+        # uniqueness of aliases across all phases
 
         self.search_results = []
         self.user_species_names = set()
@@ -453,6 +455,10 @@ class SpeciesPopup(QtWidgets.QDialog):
                         self.parent.set_save_button(False)
                         # More visual indication of invalid alias?
                         return (QValidator.Intermediate, text, pos)
+                if text in self.parent.extra_aliases:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Intermediate, text, pos)
                 self.parent.set_save_button(True)
                 return (QValidator.Acceptable, text, pos)
 
