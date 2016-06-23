@@ -3,6 +3,7 @@
 import os
 import sys
 import signal
+from subprocess import Popen, PIPE
 from glob import glob
 
 from qtpy import QtWidgets, QtCore
@@ -21,7 +22,6 @@ class RunPopup(QtWidgets.QDialog):
     def __init__(self, title, parent):
 
         super(RunPopup, self).__init__(parent)
-        print(parent.__repr__())
 
         self.recent_exe_limit = 5
         self.mfix_exe = ''
@@ -38,6 +38,9 @@ class RunPopup(QtWidgets.QDialog):
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
         self.setWindowTitle(title)
 
+        # create initial executable list
+        self.generate_exe_list()
+
         # set initial UI element values
         self.populate_combobox_mfix_exe()
 
@@ -51,7 +54,6 @@ class RunPopup(QtWidgets.QDialog):
         else:
             ui.spinbox_threads.setValue(1)
 
-        # FIXME: enable/disable based on smp/dmp
         try:
             ui.spinbox_keyword_nodesi.setValue(project.get_value('nodesi'))
             ui.spinbox_keyword_nodesj.setValue(project.get_value('nodesj'))
@@ -63,8 +65,9 @@ class RunPopup(QtWidgets.QDialog):
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
-        buttons = self.ui.buttonBox.buttons()
-        buttons[0].clicked.connect(self.handle_run)
+        buttons = self.ui.buttonbox.buttons()
+        self.ok_button = buttons[0]
+        self.ok_button.clicked.connect(self.handle_run)
         buttons[1].clicked.connect(self.handle_abort)
 
 
@@ -72,20 +75,36 @@ class RunPopup(QtWidgets.QDialog):
     # UI update functions
 
     def populate_combobox_mfix_exe(self):
-        """ add items from generate_exe_list() to combobox """
-        # FIXME: handle generate_exe_list being empty (ie during first run)
-        #  - if empty, search for exe
-        #  - if no exe found, disable combobox and present popup warning
-        exe_list = self.generate_exe_list()
-        print(exe_list)
-        self.ui.combobox_mfix_exe.addItems(exe_list)
-        self.ui.combobox_mfix_exe.setCurrentText(exe_list[-1])
+        """ Add items from self.exe_list to combobox, select the last item """
+        self.ui.combobox_mfix_exe.clear()
+        print(self.exe_list)
+        self.ui.combobox_mfix_exe.addItems(self.exe_list)
+        self.ui.combobox_mfix_exe.removeItem(0)
+        self.ui.combobox_mfix_exe.setCurrentIndex(-1)
+        self.ui.combobox_mfix_exe.setCurrentText(self.exe_list[-1]) # 
+        self.update_run_options()
         self.set_run_mfix_exe.emit()
 
-    def update_combobox_mfix_exe(self, new_exe):
-        self.ui.combobox_mfix_exe.addItem(new_exe)
-        self.ui.combobox_mfix_exe.setCurrentText(new_exe)
-        self.set_run_mfix_exe.emit()
+    def update_run_options(self):
+        """ Enable or disable run options based on self.mfix_exe features,
+        local or remote settings """
+
+        mfix_exe_available = self.mfix_exe != ''
+        self.ui.buttonbox.buttons()[0].setEnabled(mfix_exe_available)
+        
+
+        mode = 'local' # TODO: base element status on local vs queue
+        queue_enabled = mode == 'queue'
+        self.ui.groupbox_queue_options.setEnabled(queue_enabled)
+
+        cfg = self.mfix_exe_flags.get(self.mfix_exe, None) 
+        dmp = 'dmp' in cfg if cfg else False
+        smp = 'smp' in cfg if cfg else False
+        dmp = smp = True
+        self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
+        self.ui.spinbox_keyword_nodesj.setEnabled(dmp)
+        self.ui.spinbox_keyword_nodesk.setEnabled(dmp)
+        self.ui.spinbox_threads.setEnabled(smp)
 
     def popup(self):
         self.show()
@@ -116,15 +135,19 @@ class RunPopup(QtWidgets.QDialog):
         # get exe config features (smp/dmp)
         # update run options (enable/disable NODES*)
         self.mfix_exe = new_exe = self.ui.combobox_mfix_exe.currentText()
+        self.append_to_exe_list(new_exe)
         self.persist_selected_exe(new_exe)
+        self.set_run_mfix_exe.emit()
 
     def handle_browse_exe(self):
         """ Handle file open dialog for user specified exe """
         new_exe = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select Executable", directory=self.project_dir)
         self.mfix_exe = new_exe
-        self.update_combobox_mfix_exe(new_exe)
+        self.append_to_exe_list(new_exe)
         self.persist_selected_exe(new_exe)
+        self.populate_combobox_mfix_exe()
+        self.set_run_mfix_exe.emit()
 
 
 
@@ -134,78 +157,101 @@ class RunPopup(QtWidgets.QDialog):
         """ add new executable to recent list, save in project file and config,
         send signal(s) """
         # save new exe list, set mfix_exe in settings, set mfix_exe in project
-        self.append_recent_exe(new_exe)
-        self.set_config_mfix_exe(new_exe)
-        self.set_project_exe(new_exe)
-        self.set_run_mfix_exe.emit()
-
-    def set_saved_exe_list(self, exe_list):
-        new_list = self.verify_exe_list(exe_list)
-        self.settings.setValue('recent_executables', ','.join(new_list))
-
-    def set_project_exe(self, new_exe):
-        self.gui_comments['mfix_exe'] = new_exe
-
-    def set_config_mfix_exe(self, new_exe):
         self.settings.setValue('mfix_exe', new_exe)
+        self.gui_comments['mfix_exe'] = new_exe
+        self.settings.setValue('recent_executables', ','.join(self.exe_list))
 
-    def generate_exe_list(self, new_exe=None):
+    def append_to_exe_list(self, exe):
+        """ Verify exe exists, is executable, and appears only once in list.
+        Truncate to (last) 5 items """
+        exe_list = self.exe_list
+        if not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
+            return exe_list
+        if exe in exe_list:
+            exe_list.pop(exe_list.index(exe))
+
+        exe_list.append(exe)
+        self.update_exe_flags(exe)
+
+        if len(exe_list) >= self.recent_exe_limit:
+            drop_exe_list = exe_list[:-5]
+            exe_list = exe_list[-5:]
+            # cull dropped exes from self.mfix_exe_flags
+            for exe in drop_exe_list:
+                self.mfix_exe_flags.pop(exe)
+
+        self.exe_list = exe_list
+
+    def generate_exe_list(self):
         """ assemble list of executables from:
-        - argument 'new_exe'
+        ? command line
         - config item 'recent_executables'
         - project file 'mfix_exe'
         - project dir
         - default install location
-        ? command line
+
+        Add exes in reverse order (combobox addItem default is at bottom).
         """
-        exe_list = []
+        self.exe_list = []
 
-        def append(exe, exe_list):
-            print('append %s' % exe)
-            new_list = exe_list
-            """ verify exe exists and is executable, append to list """
-            #if not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
-            #    return exe_list
-            if exe in new_list:
-                new_list.pop(new_list.index(exe))
-                new_list.append(exe)
-            if len(exe_list) >= self.recent_exe_limit:
-                new_list = new_list[-4:]
-            return new_list
+        # FIXME: handle empty list (ie during first run and no default exe)
+        #  - disable combobox and present popup warning
+        #  - if popup 'ok' is pressed, do handle_browse_exe
+        #  - if popup 'cancel' is pressed, disable combobox and enable warning
 
-        # default install location
+        # default install location(s)
         # TODO: where will the default binaries be installed?
+        #for location in default_install_dirs:
+        #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+        #        for exe in glob(os.path.join(self.project_dir, name)):
+        #            exe = os.path.abspath(exe)
+        #            self.append_to_exe_list(exe)
 
         # project dir executable
         for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
             for exe in glob(os.path.join(self.project_dir, name)):
-                exe_list = append(os.path.abspath(exe), exe_list)
+                exe = os.path.abspath(exe)
+                self.append_to_exe_list(exe)
+                self.update_exe_flags(exe)
 
         # recently used executables
         recent_list = self.settings.value('recent_executables')
         if recent_list:
-            for exe in recent_list.split(','):
-                exe_list = append(exe, exe_list)
+            for recent_exe in recent_list.split(','):
+                self.append_to_exe_list(recent_exe)
+                self.update_exe_flags(recent_exe)
 
         # project executable
         project_exe = self.project.get_value('mfix_exe')
         if project_exe:
-            exe_list = append(project_exe, exe_list)
+            self.append_to_exe_list(project_exe)
+            self.update_exe_flags(project_exe)
 
-        # append new exe if provided
-        if new_exe:
-            exe_list = append(new_exe, exe_list)
 
-        return exe_list
+    def update_exe_flags(self, mfix_exe):
+        """ run mfix to get executable features (like dmp/smp support) """
+        cache = self.mfix_exe_flags
+        try: # Possible race, file may have been deleted/renamed since isfile check!
+            stat = os.stat(mfix_exe)
+        except OSError as err:
+            log.exception("could not run %s --print-flags", mfix_exe)
 
-    def get_exe_features(self, exe):
-        """ run mfix -f to get executable features (like MP support) """
-        pass
+        cached_stat, cached_flags = cache.get(mfix_exe, (None, None))
+        if cached_stat and cached_stat == stat:
+            return cached_flags
 
-    def append_recent_exe(self, new_exe):
-        """ Get exe list, append new_exe. Ensure list items are unique. """
-        exe_list = self.generate_exe_list(new_exe)
-        self.set_saved_exe_list(exe_list)
+        exe_dir = os.path.dirname(mfix_exe)
+        popen = Popen(mfix_exe + " --print-flags",
+                      cwd=exe_dir,
+                      stdout=PIPE,
+                      stderr=PIPE,
+                      shell=True) # needed?
+        (out, err) = popen.communicate()
+        flags = '' if err else out.strip()
+        cache[mfix_exe] = (stat, flags)
+        return flags
+
+
 
 
 if __name__ == '__main__':
