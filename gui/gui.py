@@ -1568,9 +1568,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
-        self.run_dialog.show()
-        self.run_dialog.raise_()
-        self.run_dialog.activateWindow()
+        self.run_dialog.popup()
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
@@ -2169,14 +2167,14 @@ def main(args):
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    saved_exe = mfix.settings.value('mfix_exe') #
-    cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe and os.path.exists(saved_exe):
-        if cb.findText(saved_exe) == -1:
-            cb.addItem(saved_exe)
-        cb.setCurrentText(saved_exe)
+    #saved_exe = mfix.settings.value('mfix_exe') #
+    #cb =  mfix.ui.run.combobox_mfix_exes
+    #if saved_exe and os.path.exists(saved_exe):
+    #    if cb.findText(saved_exe) == -1:
+    #        cb.addItem(saved_exe)
+    #    cb.setCurrentText(saved_exe)
     #mfix.mfix_exe = saved_exe
-    mfix.handle_select_exe()
+    #mfix.handle_select_exe()
 
     mfix.update_no_mfix_warning()
 
