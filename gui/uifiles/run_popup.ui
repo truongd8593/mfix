@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="groupbox_executable_options">
      <property name="minimumSize">
       <size>
        <width>300</width>
@@ -110,7 +110,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupbox_run_options">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
        <horstretch>0</horstretch>
@@ -130,7 +130,7 @@
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="1" column="1">
+      <item row="0" column="1">
        <widget class="QLabel" name="label_threads">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -139,69 +139,48 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>OpenMP threads</string>
+         <string>Threads</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="1">
        <widget class="QLabel" name="label_nodesi">
         <property name="text">
          <string>NODESI</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="2" column="1">
        <widget class="QLabel" name="label_nodesj">
         <property name="text">
          <string>NODESJ</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="3" column="1">
        <widget class="QLabel" name="label_nodesk">
         <property name="text">
          <string>NODESK</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="2">
+      <item row="2" column="2">
        <widget class="QSpinBox" name="spinbox_keyword_nodesj"/>
       </item>
-      <item row="4" column="2">
+      <item row="3" column="2">
        <widget class="QSpinBox" name="spinbox_keyword_nodesk"/>
       </item>
       <item row="1" column="2">
-       <widget class="QSpinBox" name="spinbox_threads"/>
-      </item>
-      <item row="2" column="2">
        <widget class="QSpinBox" name="spinbox_keyword_nodesi"/>
       </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QFrame" name="frame_2">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
-        </property>
-        <property name="lineWidth">
-         <number>0</number>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="margin">
-          <number>0</number>
-         </property>
-        </layout>
-       </widget>
+      <item row="0" column="2">
+       <widget class="QSpinBox" name="spinbox_threads"/>
       </item>
      </layout>
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupbox_queue_options">
      <property name="enabled">
       <bool>true</bool>
      </property>
@@ -225,48 +204,48 @@
        <number>5</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="label_queue_name">
         <property name="text">
          <string>Queue</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_2">
+       <widget class="QLineEdit" name="lineedit_job_name">
         <property name="enabled">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="comboBox">
+       <widget class="QComboBox" name="combobox_queue_name">
         <property name="editable">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="label_job_name">
         <property name="text">
          <string>Job Name</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_queue_modules">
         <property name="text">
          <string>Modules</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="lineedit_queue_modules"/>
       </item>
      </layout>
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="buttonbox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
@@ -295,21 +274,21 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>buttonbox</tabstop>
   <tabstop>combobox_mfix_exe</tabstop>
   <tabstop>button_browse_exe</tabstop>
   <tabstop>spinbox_threads</tabstop>
   <tabstop>spinbox_keyword_nodesi</tabstop>
   <tabstop>spinbox_keyword_nodesj</tabstop>
   <tabstop>spinbox_keyword_nodesk</tabstop>
-  <tabstop>comboBox</tabstop>
-  <tabstop>lineEdit_2</tabstop>
-  <tabstop>lineEdit</tabstop>
+  <tabstop>combobox_queue_name</tabstop>
+  <tabstop>lineedit_job_name</tabstop>
+  <tabstop>lineedit_queue_modules</tabstop>
  </tabstops>
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>buttonbox</sender>
    <signal>accepted()</signal>
    <receiver>run_dialog</receiver>
    <slot>accept()</slot>
@@ -325,7 +304,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>buttonbox</sender>
    <signal>rejected()</signal>
    <receiver>run_dialog</receiver>
    <slot>reject()</slot>
