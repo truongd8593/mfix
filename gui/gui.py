@@ -1477,6 +1477,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.job.unpause()
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            traceback.print_exception(*sys.exc_info())
 
     def handle_set_pymfix_output(self):
         try:
@@ -1484,18 +1485,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
               self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            traceback.print_exception(*sys.exc_info())
 
     def handle_pause(self):
         try:
             self.job.pause()
         except Exception as e:
             self.print_internal("Pause: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def handle_stop(self):
         try:
             self.job.stop_mfix()
         except Exception as e:
             self.print_internal("Stop: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def run_mfix(self):
         output_files = self.monitor.get_outputs()
