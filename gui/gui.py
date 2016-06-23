@@ -92,7 +92,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):
-        self.message(icon='Error', title='Range error', text=str(exc))
+        self.message(title='Error', text=str(exc))
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
