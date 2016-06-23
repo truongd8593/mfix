@@ -76,12 +76,15 @@ class RunPopup(QtWidgets.QDialog):
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.exe_list to combobox, select the last item """
+        if not self.exe_list:
+            self.ui.combobox_mfix_exe.setEnabled(False)
+            return
         self.ui.combobox_mfix_exe.clear()
         print(self.exe_list)
         self.ui.combobox_mfix_exe.addItems(self.exe_list)
         self.ui.combobox_mfix_exe.removeItem(0)
-        self.ui.combobox_mfix_exe.setCurrentIndex(-1)
-        self.ui.combobox_mfix_exe.setCurrentText(self.exe_list[-1]) # 
+        self.ui.combobox_mfix_exe.setCurrentIndex(0)
+        #self.ui.combobox_mfix_exe.setCurrentText(self.exe_list[0]) 
         self.update_run_options()
         self.set_run_mfix_exe.emit()
 
@@ -165,6 +168,7 @@ class RunPopup(QtWidgets.QDialog):
         """ Verify exe exists, is executable, and appears only once in list.
         Truncate to (last) 5 items """
         exe_list = self.exe_list
+        exe_list.reverse()
         if not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
             return exe_list
         if exe in exe_list:
@@ -180,6 +184,7 @@ class RunPopup(QtWidgets.QDialog):
             for exe in drop_exe_list:
                 self.mfix_exe_flags.pop(exe)
 
+        exe_list.reverse()
         self.exe_list = exe_list
 
     def generate_exe_list(self):
