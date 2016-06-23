@@ -1483,6 +1483,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.job.unpause()
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            raise e
 
     def handle_set_pymfix_output(self):
         try:

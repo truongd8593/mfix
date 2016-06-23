@@ -89,8 +89,8 @@ class RunPopup(QtWidgets.QDialog):
         """ Enable or disable run options based on self.mfix_exe features,
         local or remote settings """
 
-        mfix_exe_available = self.mfix_exe != ''
-        self.ui.buttonbox.buttons()[0].setEnabled(mfix_exe_available)
+        #mfix_exe_available = self.mfix_exe != ''
+        #self.ui.buttonbox.buttons()[0].setEnabled(mfix_exe_available)
         
 
         mode = 'local' # TODO: base element status on local vs queue
