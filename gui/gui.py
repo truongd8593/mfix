@@ -1942,9 +1942,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
-            save_msg = 'Saving %s as %s based on run name' % (project_path, runname_mfx)
+            save_msg = 'Renaming mfix.dat to %s based on run name' % runname_mfx
             response = self.message(title='Info',
-                                    icon='info',
+                                    icon='question',
                                     text=save_msg,
                                     buttons=['ok', 'cancel'],
                                     default='ok')
@@ -1966,7 +1966,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 project_file = renamed_project_file
                 try:
                     self.force_default_settings()
-                    self.print_internal("Info: saving %s" % project_file)
+                    self.print_internal("Info: Saving %s" % project_file)
                     self.project.writeDatFile(project_file) #XX
                     #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
@@ -1980,6 +1980,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                  default='ok')
                     traceback.print_exception(*sys.exc_info())
                     return
+            else:
+                self.print_internal("Rename canceled at user request")
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
