@@ -2079,7 +2079,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
-        self.ui.regions.extract_regions(self.project)
+        self.ui.regions.extract_regions(self.project, defer_render=True)
+        # Take care of updates we deferred during extract_region
+        self.ui.regions.tablewidget_regions.fit_to_contents()
+        self.vtkwidget.render()
 
         # FIXME: is this a good idea?  it means we can't open a file read-only
         #self.force_default_settings()
