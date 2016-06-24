@@ -4,10 +4,13 @@ import os
 import sys
 import signal
 import logging
+from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
 from qtpy import QtWidgets, QtCore, PYQT4, PYQT5
+
+from tools.general import get_mfix_home
 
 try:
     from PyQt5 import uic
@@ -16,18 +19,21 @@ except ImportError:
 
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
+RECENT_EXE_LIMIT = 5
+MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
+
 class RunPopup(QtWidgets.QDialog):
 
     run = QtCore.Signal()
     cancel = QtCore.Signal()
     set_run_mfix_exe = QtCore.Signal()
 
-    def __init__(self, title, parent):
+    def __init__(self, title, mfix_exe, parent):
 
         super(RunPopup, self).__init__(parent)
 
-        self.recent_exe_limit = 5
-        self.mfix_exe = False
+        self.commandline_option_exe = mfix_exe if mfix_exe else None
+        self.mfix_exe = None
         self.mfix_exe_list = []
         self.mfix_exe_flags = {}
         self.title = title
@@ -60,8 +66,6 @@ class RunPopup(QtWidgets.QDialog):
 
         # create initial executable list
         self.generate_exe_list()
-        if self.mfix_exe:
-            self.set_run_mfix_exe.emit()
         self.populate_combobox_mfix_exe()
 
         # set OMP_NUM_THREADS
@@ -84,11 +88,11 @@ class RunPopup(QtWidgets.QDialog):
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.exe_list to combobox, select the last item """
-        if not self.exe_list:
+        if not self.mfix_exe_list:
             self.ui.combobox_mfix_exe.setEnabled(False)
             return
         self.ui.combobox_mfix_exe.clear()
-        self.ui.combobox_mfix_exe.addItems(self.exe_list)
+        self.ui.combobox_mfix_exe.addItems(self.mfix_exe_list)
         self.ui.combobox_mfix_exe.setCurrentIndex(0)
         self.update_dialog_options()
         self.set_run_mfix_exe.emit()
@@ -175,14 +179,14 @@ class RunPopup(QtWidgets.QDialog):
         send signal(s) """
         self.settings.setValue('mfix_exe', new_exe)
         self.gui_comments['mfix_exe'] = new_exe
-        exe_list = self.exe_list
-        exe_list.reverse()
-        self.settings.setValue('recent_executables', ','.join(exe_list))
+        exe_list = self.mfix_exe_list
+        #exe_list.reverse()
+        self.settings.setValue('recent_executables', str(os.pathsep).join(exe_list))
 
     def prepend_to_exe_list(self, exe):
         """ Verify exe exists, is executable, and appears only once in list.
         Truncate to 5 items """
-        exe_list = self.exe_list
+        exe_list = self.mfix_exe_list
         exe_list.reverse()
 
         if not self.update_exe_flags(exe):
@@ -192,18 +196,9 @@ class RunPopup(QtWidgets.QDialog):
             exe_list.pop(exe_list.index(exe))
 
         exe_list.append(exe)
-
-        if len(exe_list) >= self.recent_exe_limit:
-            drop_exe_list = exe_list[6:]
-            exe_list = exe_list[:5]
-            # cull dropped exes from self.mfix_exe_flags
-            for exe in drop_exe_list:
-                self.mfix_exe_flags.pop(exe)
-
         exe_list.reverse()
-        self.mfix_exe = exe_list[0]
-        self.exe_list = exe_list
-        print(self.exe_list)
+        self.mfix_exe_list = exe_list
+        print(self.mfix_exe_list)
 
     def update_no_mfix_warning(self):
         ok = bool(self.mfix_exe)
@@ -215,49 +210,98 @@ class RunPopup(QtWidgets.QDialog):
 
     def generate_exe_list(self):
         """ assemble list of executables from:
-        ? command line
-        - config item 'recent_executables'
+        - command line
         - project file 'mfix_exe'
         - project dir
+        - config item 'recent_executables'
         - default install location
         """
-        self.exe_list = []
 
-        # default install location(s)
-        # TODO: where will the default binaries be installed?
-        #for location in default_install_dirs:
-        #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
-        #        for exe in glob(os.path.join(self.project_dir, name)):
-        #            exe = os.path.abspath(exe)
-        #            self.prepend_to_exe_list(exe)
+        def default_install_location():
+            # TODO? default install location(s)
+            # ... where will the default binaries be installed?
+            #for location in default_install_dirs:
+            #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+            #        for exe in glob(os.path.join(self.project_dir, name)):
+            #            exe = os.path.abspath(exe)
+            #            self.prepend_to_exe_list(exe)
+            pass
 
-        # recently used executables
-        recent_list = self.settings.value('recent_executables')
-        if recent_list:
-            for recent_exe in recent_list.split(','):
-                self.prepend_to_exe_list(recent_exe)
-                self.update_exe_flags(recent_exe)
+        def recently_used_executables():
+            recent_list = self.settings.value('recent_executables')
+            if recent_list:
+                # limit recently used exes to RECENT_EXE_LIMIT
+                recent_list = recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT]
+                for recent_exe in recent_list:
+                    yield recent_exe
 
-        # project dir executable
-        for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
-            for exe in glob(os.path.join(self.project_dir, name)):
-                exe = os.path.abspath(exe)
+        def project_directory_executables():
+            for name in MFIX_EXE_NAMES:
+                for exe in glob(os.path.join(self.project_dir, name)):
+                    yield os.path.abspath(exe)
+
+        def project_file_executable():
+            project_exe = self.project.get_value('mfix_exe')
+            if project_exe:
+                yield project_exe
+
+        def os_path():
+            PATH = os.environ.get("PATH")
+            if PATH:
+                # using OrderedDict to preserve PATH order
+                dirs = OrderedDict.fromkeys(PATH.split(os.pathsep))
+            else:
+                dirs = OrderedDict()
+            for d in dirs.keys():
+                # filter out empty strings and current directory from $PATH
+                if d and d != os.path.curdir and os.path.isdir(d):
+                    for name in MFIX_EXE_NAMES:
+                        for exe in glob(os.path.join(d, name)):
+                            yield exe
+
+        def mfix_build_directories():
+            mfix_home = get_mfix_home()
+            build_dir_name = 'build-aux'
+            if mfix_home:
+                dir_list = [
+                    os.path.join(mfix_home, 'bin'),
+                    os.path.join(mfix_home, 'build')]
+                for d in dir_list:
+                    if not os.path.isdir(d):
+                        continue
+                    for child in os.listdir(d):
+                        build_dir = os.path.join(d, child, build_dir_name)
+                        if os.path.isdir(build_dir):
+                            for name in MFIX_EXE_NAMES:
+                                for exe in glob(os.path.join(build_dir, name)):
+                                    yield exe
+
+        def command_line_option():
+            if self.commandline_option_exe:
+                yield self.commandline_option_exe
+
+        exe_list_order = [
+            recently_used_executables,
+            project_directory_executables,
+            project_file_executable,
+            os_path,
+            mfix_build_directories,
+            command_line_option]
+
+        # look for executables in the order listed in exe_list_order
+        for exe_spec in exe_list_order:
+            for exe in exe_spec():
                 self.prepend_to_exe_list(exe)
-                self.update_exe_flags(exe)
-
-        # project executable
-        project_exe = self.project.get_value('mfix_exe')
-        if project_exe:
-            self.prepend_to_exe_list(project_exe)
-            self.update_exe_flags(project_exe)
 
         # no exe found
-        if not self.exe_list:
+        if not self.mfix_exe_list:
             self.parent.message(
                 icon='warning',
                 text='MFIX executable not found. Please browse for an executable.',
                 buttons=['ok','cancel'],
                 default='ok')
+            return
+        self.mfix_exe = self.mfix_exe_list[0]
 
     def exe_exists(self, exe):
         """ Verify exe exists and is executable """

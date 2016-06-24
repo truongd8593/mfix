@@ -112,6 +112,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Initialize data members
         self.solver_name = None
         self.mfix_exe = None
+        self.commandline_option_exe = None
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
@@ -307,6 +308,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
+        # FIXME: do we need this anymore? exes are to be populated at startup
+        # and at user interaction with the select exe widget
         self.exe_watcher = QFileSystemWatcher()
         self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
 
@@ -1567,7 +1570,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def open_run_dialog(self):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
-        self.run_dialog = RunPopup(popup_title, self)
+        print('passing mfix_exe to dialog: %s' % self.mfix_exe)
+        self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
@@ -2134,7 +2138,7 @@ def main(args):
     """Handle command line options and start the GUI"""
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:", ["help", "quit", "new", "log="])
+        opts, args = getopt.getopt(args[1:], "hqnle:", ["help", "quit", "new", "log=", "exe="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
@@ -2143,6 +2147,7 @@ def main(args):
     project_file = None
     new_project = False
     log_level = 'WARN'
+    mfix_exe = None
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
@@ -2153,6 +2158,8 @@ def main(args):
             quit_after_loading = True
         elif opt in ("-n", "--new"):
             new_project = True
+        elif opt in ("-e", "--exe"):
+            mfix_exe = arg
         else:
             Usage(name)
 
@@ -2183,8 +2190,10 @@ def main(args):
     #    if cb.findText(saved_exe) == -1:
     #        cb.addItem(saved_exe)
     #    cb.setCurrentText(saved_exe)
-    #mfix.mfix_exe = saved_exe
-    #mfix.handle_select_exe()
+    if mfix_exe:
+        print('exe option passed: %s' % mfix_exe)
+        mfix.commandline_option_exe = mfix_exe
+        mfix.handle_select_exe()
 
     mfix.update_no_mfix_warning()
 
