@@ -238,14 +238,14 @@ class ProjectManager(Project):
 
                 # TODO:  make sure alias is set & unique
                 user_def = user_species.get((species, phase))
-                # Hack, look for mismatched phase
+                # Look for mismatched phase
                 if not user_def:
                     for ((s,p),v) in user_species.items():
                         if s == species:
                             # This is all-too-common.  existing mfix files all have 'S' for
                             # phase in thermo data.
-                            #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
-                            #              % (species, p, phase))
+                            warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                          % (species, p, phase))
                             user_def = v
                             break
                 if user_def:
@@ -264,14 +264,25 @@ class ProjectManager(Project):
 
                 else:
                     # get this from the species popup so we don't have to load
-                    # another copy of the database.  currently the database is
-                    # owned by the species popup.
+                    # another copy of the database.  the database is owned by
+                    # the species popup.
                     species_data = self.gui.species_popup.get_species_data(species, phase)
+                    if not species_data:
+                        # Look for mismatched phase definition
+                        for p in 'GLSC':
+                            if p == phase:
+                                continue
+                            species_data = self.gui.species_popup.get_species_data(species, p)
+                            if species_data:
+                                warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                              % (species, p, phase))
+                                break
                     if species_data:
                         species_data['alias'] = alias
                         if mw_g is not None:
                             species_data['mol_weight'] = mw_g
                             source = 'Burcat*' # Modifed mol. weight
+
                 if not species_data:
                     warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
                     species_data = {
@@ -356,11 +367,24 @@ class ProjectManager(Project):
                         # another copy of the database.  currently the database is
                         # owned by the species popup.
                         species_data = self.gui.species_popup.get_species_data(species, phase)
+                        if not species_data:
+                            # Look for  mismatched phase definition
+                            for p in 'SCLG':
+                                if p == phase:
+                                    continue
+                                species_data = self.gui.species_popup.get_species_data(species, p)
+                                if species_data:
+                                    warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                                  % (species, p, phase))
+                                    break
+
+
                         if species_data:
                             species_data['alias'] = alias
                             if mw_s is not None:
                                 species_data['mol_weight'] = mw_s
                                 source = 'Burcat*' # Modifed mol. weight
+
                     if not species_data:
                         warnings.warn("no definition found for species '%s' phase '%s'" % (species, phase))
                         species_data = {

@@ -113,7 +113,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.set_value(data)
 
     def new_region(self, name='new', extents=[[0, 0, 0], [0, 0, 0]],
-                   rtype='box'):
+                   rtype='box', defer_render=False):
         """create a new region"""
 
         data = self.tablewidget_regions.value
@@ -134,9 +134,13 @@ class RegionsWidget(QtWidgets.QWidget):
                       'visible':         image }
 
 
-        self.vtkwidget.new_region(name, data[name])
+        self.vtkwidget.new_region(name, data[name], defer_render=defer_render)
 
         self.tablewidget_regions.set_value(data)
+
+        if defer_render:
+            return
+
         self.tablewidget_regions.fit_to_contents()
 
     def delete_region(self):
@@ -378,7 +382,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
 
-    def extract_regions(self, proj):
+    def extract_regions(self, proj, defer_render=False):
         """ extract regions from IC, BC, PS """
 
         for condtype, conds in [('ic', proj.ics), ('bc', proj.bcs),
@@ -405,7 +409,7 @@ class RegionsWidget(QtWidgets.QWidget):
                         rtype = self.get_region_type(extents)
 
                     name = '{}_{}'.format(condtype.upper(), cond.ind)
-                    self.new_region(name, extents, rtype)
+                    self.new_region(name, extents, rtype, defer_render=defer_render)
 
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """

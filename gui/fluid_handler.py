@@ -282,10 +282,19 @@ class FluidHandler(object):
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
         sp.defined_species = self.fluid_species
+        sp.extra_aliases = self.fluid_make_extra_aliases()
         sp.update_defined_species()
         sp.setWindowTitle("Fluid Species")
         sp.enable_density(False)
         sp.popup()
+
+    def fluid_make_extra_aliases(self):
+        # Construct the 'extra_aliases' set to pass to the species popup
+        # Exclude the fluid phase
+        aliases = set()
+        for ss in self.solids_species.values():
+            aliases.update(set(s['alias'] for s in ss.values()))
+        return aliases
 
     def fluid_species_delete(self):
         # XXX FIXME this is potentially a big problem since
@@ -316,6 +325,7 @@ class FluidHandler(object):
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
         sp.defined_species = self.fluid_species
+        sp.extra_aliases = self.fluid_make_extra_aliases()
         sp.update_defined_species()
         if row is None:
             sp.tablewidget_defined_species.clearSelection()

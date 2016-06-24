@@ -93,7 +93,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):
-        self.message(icon='Error', title='Range error', text=str(exc))
+        self.message(title='Error', text=str(exc))
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -1483,7 +1483,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.job.unpause()
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
-            raise e
+            traceback.print_exception(*sys.exc_info())
 
     def handle_set_pymfix_output(self):
         try:
@@ -1491,18 +1491,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
               self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            traceback.print_exception(*sys.exc_info())
 
     def handle_pause(self):
         try:
             self.job.pause()
         except Exception as e:
             self.print_internal("Pause: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def handle_stop(self):
         try:
             self.job.stop_mfix()
         except Exception as e:
             self.print_internal("Stop: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def run_mfix(self):
         output_files = self.monitor.get_outputs()
@@ -1967,9 +1970,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
-            save_msg = 'Saving %s as %s based on run name' % (project_path, runname_mfx)
+            save_msg = 'Renaming mfix.dat to %s based on run name' % runname_mfx
             response = self.message(title='Info',
-                                    icon='info',
+                                    icon='question',
                                     text=save_msg,
                                     buttons=['ok', 'cancel'],
                                     default='ok')
@@ -1991,7 +1994,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 project_file = renamed_project_file
                 try:
                     self.force_default_settings()
-                    self.print_internal("Info: saving %s" % project_file)
+                    self.print_internal("Info: Saving %s" % project_file)
                     self.project.writeDatFile(project_file) #XX
                     #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
@@ -2005,6 +2008,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                  default='ok')
                     traceback.print_exception(*sys.exc_info())
                     return
+            else:
+                self.print_internal("Rename canceled at user request")
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
@@ -2031,6 +2036,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
         # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
+
+        # User-specified names for fluid & solids phases.  (Non-keyword)
         solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
@@ -2100,7 +2107,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
-        self.ui.regions.extract_regions(self.project)
+        self.ui.regions.extract_regions(self.project, defer_render=True)
+        # Take care of updates we deferred during extract_region
+        self.ui.regions.tablewidget_regions.fit_to_contents()
+        self.vtkwidget.render()
 
         # FIXME: is this a good idea?  it means we can't open a file read-only
         #self.force_default_settings()
