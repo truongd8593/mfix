@@ -105,7 +105,7 @@ class RunPopup(QtWidgets.QDialog):
         queue_enabled = mode == 'queue'
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
-        cfg = self.mfix_exe_flags.get(self.mfix_exe, None) 
+        cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
         dmp = 'dmp' in cfg[1] if cfg else False
         smp = 'smp' in cfg[1] if cfg else False
         #dmp = smp = True
@@ -151,7 +151,7 @@ class RunPopup(QtWidgets.QDialog):
     def handle_browse_exe(self):
         """ Handle file open dialog for user specified exe """
         new_exe = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select Executable", directory=self.project_dir)
+            self, "Select Executable", directory=self.project_dir, options=QtWidgets.QFileDialog.DontResolveSymlinks)
         if not new_exe:
             return
         if PYQT5:
