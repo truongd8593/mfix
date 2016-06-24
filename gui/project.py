@@ -205,6 +205,7 @@ class Equation(object):
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
         self.eq = eq
+        self.dtype = float
 
     def _eval(self):
         if len(self.eq) == 0:
@@ -233,6 +234,10 @@ class Equation(object):
 
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
+
+    def dumps(self):
+        if self.dtype == float:
+            return '%s #!MFIX-GUI eq{%s}' % (float(self._eval()), self.eq)
 
     def __add__(self, value):
         return float(self._eval()) + float(value)
@@ -333,12 +338,17 @@ class Keyword(Comparable):
             self.dtype = str
 
     def line(self):
+        if self.dtype == Equation:
+            val = self.value.dumps()
+        else:
+            val = to_text_string(self)
+
         if len(self.args) == 0:
-            line = '  {} = {}'.format(self.key, to_text_string(self))
+            line = '  {} = {}'.format(self.key, val)
         else:
             line = '  {}({}) = {}'.format(self.key,
                                           ','.join([to_text_string(x) for x in self.args]),
-                                          to_text_string(self))
+                                          val)
 
         if len(self.comment) > 0:
             line = '    !'.join([line, self.comment])
@@ -855,7 +865,7 @@ class Project(object):
             self._parsemfixdat(StringIO(self.dat_file))
             return
 
-    def parseKeywordLine(self, line):
+    def parseKeywordLine(self, line, equation_str):
         if not line.strip():
             yield(None, None, None)
             return
@@ -892,6 +902,10 @@ class Project(object):
                         vals = safe_shlex_split(val_string.strip())
                     except ValueError:
                         vals = []
+
+                # if equation in comment, replace last value
+                if equation_str is not None and vals:
+                    vals[-1] = '@(' + equation_str +')'
 
                 # clean the values converting to python types
                 cleanVals = []
@@ -1002,6 +1016,7 @@ class Project(object):
             elif thermoSection:
                 self.thermo_data.append(line)
             elif not reactionSection and not thermoSection:
+                equation_str = None
                 # remove comments
                 commentedline = ''
                 if line.startswith('#') or line.startswith('!'):
@@ -1009,12 +1024,17 @@ class Project(object):
                     line = ''
                 elif '#' in line or '!' in line:
                     line, keywordComment = re.split('[#!]', line, maxsplit=1)
+
+                    # look for equation
+                    if 'MFIX-GUI' in keywordComment and 'eq{' in keywordComment:
+                        start = keywordComment.find('eq{')
+                        equation_str = keywordComment[start+3:keywordComment.find('}', start)]
                 else:
                     keywordComment = ''
 
                 # loop through all keywords in the line
                 try:
-                    for (key, args, value) in self.parseKeywordLine(line):
+                    for (key, args, value) in self.parseKeywordLine(line, equation_str):
                         if key is None:
                             self.dat_file_list.append(line+commentedline)
                         else:

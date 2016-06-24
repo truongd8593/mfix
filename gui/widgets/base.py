@@ -187,7 +187,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     self.saved_value = eq
                     return eq
                 except ValueError as e:
-                    self.value_error("Error: value %s" %e)
+                    self.value_error("Equation Error: value %s" %e)
                     return self.saved_value or ''
             else:
                 return self.saved_value or ''
