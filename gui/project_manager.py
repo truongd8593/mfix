@@ -244,8 +244,8 @@ class ProjectManager(Project):
                         if s == species:
                             # This is all-too-common.  existing mfix files all have 'S' for
                             # phase in thermo data.
-                            warnings.warn("species '%s' defined as phase '%s', expected '%s'"
-                                          % (species, p, phase))
+                            #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                            #              % (species, p, phase))
                             user_def = v
                             break
                 if user_def:
@@ -269,13 +269,16 @@ class ProjectManager(Project):
                     species_data = self.gui.species_popup.get_species_data(species, phase)
                     if not species_data:
                         # Look for mismatched phase definition
+                        # This is not really 'mismatched'.  Fluid phase may contain solids and v.v.
                         for p in 'GLSC':
                             if p == phase:
                                 continue
                             species_data = self.gui.species_popup.get_species_data(species, p)
                             if species_data:
-                                warnings.warn("species '%s' defined as phase '%s', expected '%s'"
-                                              % (species, p, phase))
+                                #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                #              % (species, p, phase))
+                                log.info("species '%s' defined as phase '%s', expected '%s'"
+                                         % (species, p, phase))
                                 break
                     if species_data:
                         species_data['alias'] = alias
@@ -369,16 +372,17 @@ class ProjectManager(Project):
                         species_data = self.gui.species_popup.get_species_data(species, phase)
                         if not species_data:
                             # Look for  mismatched phase definition
+                            # This is not really 'mismatched'.  Solids phase may contain fluids and v.v.
                             for p in 'SCLG':
                                 if p == phase:
                                     continue
                                 species_data = self.gui.species_popup.get_species_data(species, p)
                                 if species_data:
-                                    warnings.warn("species '%s' defined as phase '%s', expected '%s'"
-                                                  % (species, p, phase))
+                                    #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
+                                    #              % (species, p, phase))
+                                    log.info("species '%s' defined as phase '%s', expected '%s'"
+                                             % (species, p, phase))
                                     break
-
-
                         if species_data:
                             species_data['alias'] = alias
                             if mw_s is not None:
