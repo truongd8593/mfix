@@ -119,12 +119,12 @@ class MfixGuiTests(TestQApplication):
 
     def get_tree_item(self, name):
         flags = Qt.MatchFixedString | Qt.MatchRecursive
-        clist = self.mfix.ui.treewidget_model_navigation.findItems(name, flags, 0)
+        clist = self.mfix.ui.treewidget_navigation.findItems(name, flags, 0)
         assert len(clist) == 1
         return clist[0]
 
     def open_tree_item(self, name):
-        self.mfix.ui.treewidget_model_navigation.setCurrentItem(self.get_tree_item(name))
+        self.mfix.ui.treewidget_navigation.setCurrentItem(self.get_tree_item(name))
 
     def test_save_as(self):
         #http://stackoverflow.com/questions/16536286/qt-ui-testing-how-to-simulate-a-click-on-a-qmenubar-item-using-qtest
