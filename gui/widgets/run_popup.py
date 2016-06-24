@@ -152,7 +152,7 @@ class RunPopup(QtWidgets.QDialog):
     def handle_browse_exe(self):
         """ Handle file open dialog for user specified exe """
         new_exe = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Select Executable", directory=self.project_dir)
+            self, "Select Executable", directory=self.project_dir, options=QtWidgets.QFileDialog.DontResolveSymlinks)
         if not new_exe:
             return
         if PYQT5:
