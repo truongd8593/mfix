@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import json
 from qtpy import QtWidgets, QtCore
+import copy
 
 from base import Table
 from tools.general import get_icon, get_unique_string
@@ -32,10 +33,12 @@ class ParameterDialog(QtWidgets.QDialog):
         self.toolbutton_remove = QtWidgets.QToolButton()
         self.toolbutton_remove.pressed.connect(self.remove_parameter)
         self.toolbutton_remove.setIcon(get_icon('remove.png'))
+        self.toolbutton_remove.setEnabled(False)
 
         self.toolbutton_copy = QtWidgets.QToolButton()
         self.toolbutton_copy.pressed.connect(self.copy_parameter)
         self.toolbutton_copy.setIcon(get_icon('copy.png'))
+        self.toolbutton_copy.setEnabled(False)
 
         for widget in [self.toolbutton_add, self.toolbutton_remove,
                        self.toolbutton_copy]:
@@ -61,6 +64,7 @@ class ParameterDialog(QtWidgets.QDialog):
             )
         self.table.show_vertical_header(False)
         self.table.auto_update_rows(True)
+        self.table.new_selection.connect(self.table_clicked)
 
         self.grid_layout.addWidget(self.table, 1, 0)
 
@@ -68,6 +72,16 @@ class ParameterDialog(QtWidgets.QDialog):
         self.pushbutton_close = QtWidgets.QPushButton('Close')
         self.pushbutton_close.pressed.connect(self.close)
         self.grid_layout.addWidget(self.pushbutton_close, 2, 0)
+
+    def table_clicked(self):
+        row = self.table.current_row()
+
+        if row >= 0:
+            self.toolbutton_remove.setEnabled(True)
+            self.toolbutton_copy.setEnabled(True)
+        else:
+            self.toolbutton_remove.setEnabled(False)
+            self.toolbutton_copy.setEnabled(False)
 
     def new_parameter(self):
         param = self.table.value
@@ -80,10 +94,28 @@ class ParameterDialog(QtWidgets.QDialog):
         self.table.set_value(param)
 
     def remove_parameter(self):
-        pass
+        row = self.table.current_row()
+
+        if row >= 0:
+            data = self.table.value
+            name = list(data.keys())[row]
+            data.pop(name)
+            self.table.set_value(data)
 
     def copy_parameter(self):
-        pass
+        row = self.table.current_row()
+
+        if row >= 0:
+            data = self.table.value
+            name = list(data.keys())[row]
+
+            new_name = get_unique_string(
+                name, [val['parameter'] for val in data.values()])
+
+            data[len(data)] = {'parameter': new_name,
+                                 'type': copy.deepcopy(data[row]['type']),
+                                 'value': copy.deepcopy(data[row]['value'])}
+            self.table.set_value(data)
 
     def load_parameters(self):
         new_param_dict = OrderedDict()
