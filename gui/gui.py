@@ -27,7 +27,7 @@ from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
 
-PRECOMPILE_UI = False
+PRECOMPILE_UI = True
 
 if not PRECOMPILE_UI:
     from qtpy import uic
@@ -61,17 +61,17 @@ from constants import *
 
 if PRECOMPILE_UI:
     try:
+        from uifiles.fluid import Ui_fluid
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
         from uifiles.model import Ui_model
-        from uifiles.solids import Ui_solids
-        from uifiles.fluid import Ui_fluid
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
+        from uifiles.solids import Ui_solids
         from uifiles.vtk import Ui_vtk
     except ImportError:
         print("You must compile ui files!  cd uifiles; make")

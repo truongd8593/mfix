@@ -10,7 +10,7 @@ all: ${PY_UIFILES}
 	${PYUIC} -o $@ $<
 
 clean:
-	rm -f ${PY_UIFILES}
+	-rm -rf ${PY_UIFILES} dist __pycache__
 	find . -name \*.pyc -delete
 
 test2: all
@@ -38,3 +38,6 @@ test-load-all:
 	(Xvfb :99 &)
 	find .. -name mfix.dat -print0 | DISPLAY=:99 MFIX_NO_VTK=1 xargs -0 -n 1 ./gui.py -lwarn -q &> /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
 	pkill Xvfb
+
+pyinst: all
+	pyinstaller gui.spec
