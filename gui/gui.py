@@ -541,13 +541,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_no_mfix_warning()
 
         cb = self.ui.run.combobox_mfix_exes
-        if not self.mfix_available:
-            # Disable run/pause/stop buttons
-            self.set_run_button(enabled=False)
-            self.set_stop_button(enabled=False)
-            self.set_reset_button(enabled=(res_file_exists and not running))
-            # How did we get here if running? maybe somebody deleted the exe!
-            return
 
         cb.clear()
         for exe in exes:
@@ -667,7 +660,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         else: # Not running, ready for input
             self.status_message("Ready" if project_open else "Loading %s"%project_file)
             self.set_reset_button(enabled=False)
-            self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
+            self.set_run_button(text="Run", enabled=project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
 

@@ -109,7 +109,7 @@ class RunPopup(QtWidgets.QDialog):
         queue_enabled = mode == 'queue'
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
-        cfg = self.mfix_exe_flags.get(self.mfix_exe, None) 
+        cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
         dmp = 'dmp' in cfg['flags'] if cfg else False
         smp = 'smp' in cfg['flags'] if cfg else False
         self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
@@ -333,7 +333,7 @@ class RunPopup(QtWidgets.QDialog):
                       stderr=PIPE,
                       shell=True) # needed?
         (out, err) = popen.communicate()
-        flags = '' if err else out.strip()
+        flags = '' if err else str(out.strip())
         cache[mfix_exe] = {'stat': stat, 'flags': flags}
         return True
 
