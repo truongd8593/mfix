@@ -43,6 +43,7 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
+from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 
 from fluid_handler import FluidHandler
@@ -111,6 +112,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Initialize data members
         self.solver_name = None
         self.mfix_exe = None
+        self.commandline_option_exe = None
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
@@ -118,6 +120,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.pymfix_enabled = False
         self.open_succeeded = False
         self.unsaved_flag = False
+        self.run_dialog = None
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -203,6 +206,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
+
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -304,6 +308,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
+        # FIXME: do we need this anymore? exes are to be populated at startup
+        # and at user interaction with the select exe widget
         self.exe_watcher = QFileSystemWatcher()
         self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
 
@@ -635,7 +641,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Pause only available w/ pymfix
         if running:
             self.status_message("MFIX running, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -645,7 +650,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
@@ -654,7 +658,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
@@ -663,7 +666,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         else: # Not running, ready for input
             self.status_message("Ready" if project_open else "Loading %s"%project_file)
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
@@ -1406,18 +1408,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if scrolled_to_end:
             scrollbar.setValue(scrollbar.maximum())
 
-
     def handle_select_exe(self):
         """Enable/disable run options based on selected executable"""
-        mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
-        if mfix_exe == self.mfix_exe:
-            return
+        #mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
+        #if mfix_exe == self.mfix_exe:
+        #    return
 
-        self.mfix_exe = mfix_exe
+        #self.mfix_exe = mfix_exe
 
-        if not mfix_exe:
-            self.update_run_options()
-            return
+        #if not mfix_exe:
+        #    self.update_run_options()
+        #    return
+
+        # FIXME: clean up merge with run dialog methods
+        if self.mfix_exe is not None:
+            mfix_exe = self.mfix_exe
+        else:
+            mfix_exe = ''
 
         self.settings.setValue('mfix_exe', mfix_exe)
         config = self.monitor.get_exes().get(mfix_exe)
@@ -1471,7 +1478,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         name = 'Run'
         try:
             if not self.job.is_running():
-                self.run_mfix()
+                # open the run dialog for job options
+                self.open_run_dialog()
+                return
             else:
                 name='unpause'
                 self.job.unpause()
@@ -1557,6 +1566,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.clear_unsaved_flag()
         self.update_source_view()
         self._start_mfix()
+
+    def open_run_dialog(self):
+        """Open run popup dialog"""
+        popup_title = self.ui.run.button_run_mfix.text()
+        print('passing mfix_exe to dialog: %s' % self.mfix_exe)
+        self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
+        self.run_dialog.run.connect(self.run_mfix)
+        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
+        self.run_dialog.setModal(True)
+        self.run_dialog.popup()
+
+    def handle_exe_changed(self):
+        """callback from run dialog when combobox is changed"""
+        print('handle_new_mfix_exe: %s' % self.mfix_exe)
+        print('previous: %s' % self.mfix_exe)
+        self.mfix_exe = self.run_dialog.mfix_exe
+        print('new: %s' % self.mfix_exe)
+
+        self.handle_select_exe() # FIXME: suss this out so we aren't calling a gui slot
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
@@ -2110,7 +2138,7 @@ def main(args):
     """Handle command line options and start the GUI"""
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:", ["help", "quit", "new", "log="])
+        opts, args = getopt.getopt(args[1:], "hqnle:", ["help", "quit", "new", "log=", "exe="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
@@ -2119,6 +2147,7 @@ def main(args):
     project_file = None
     new_project = False
     log_level = 'WARN'
+    mfix_exe = None
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
@@ -2129,6 +2158,8 @@ def main(args):
             quit_after_loading = True
         elif opt in ("-n", "--new"):
             new_project = True
+        elif opt in ("-e", "--exe"):
+            mfix_exe = arg
         else:
             Usage(name)
 
@@ -2153,14 +2184,16 @@ def main(args):
     # --- print welcome message
     #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
 
-    saved_exe = mfix.settings.value('mfix_exe') #
-    cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe and os.path.exists(saved_exe):
-        if cb.findText(saved_exe) == -1:
-            cb.addItem(saved_exe)
-        cb.setCurrentText(saved_exe)
-    #mfix.mfix_exe = saved_exe
-    mfix.handle_select_exe()
+    #saved_exe = mfix.settings.value('mfix_exe') #
+    #cb =  mfix.ui.run.combobox_mfix_exes
+    #if saved_exe and os.path.exists(saved_exe):
+    #    if cb.findText(saved_exe) == -1:
+    #        cb.addItem(saved_exe)
+    #    cb.setCurrentText(saved_exe)
+    if mfix_exe:
+        print('exe option passed: %s' % mfix_exe)
+        mfix.commandline_option_exe = mfix_exe
+        mfix.handle_select_exe()
 
     mfix.update_no_mfix_warning()
 
