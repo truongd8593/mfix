@@ -82,10 +82,19 @@ class EquationCompleter(QtWidgets.QCompleter):
         QtWidgets.QCompleter.__init__(self, parent)
         self.delimiators = ['*', '**', '/', '-', '+', ' ']
         self.update_model(self)
-        
+
     def update_model(self, dtype=None):
         self.model = QtWidgets.QStringListModel()
-        self.model.setStringList(PARAMETER_DICT.keys())
+
+        line_edit = self.parent()
+        dtype = line_edit.dtype
+
+        comp_list = []
+        for key, value in PARAMETER_DICT.items():
+            if isinstance(value, dtype):
+                comp_list.append(key)
+
+        self.model.setStringList(comp_list)
         self.setModel(self.model)
 
     def pathFromIndex(self, index):
