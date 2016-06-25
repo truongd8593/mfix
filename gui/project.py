@@ -1029,6 +1029,7 @@ class Project(object):
                     if 'MFIX-GUI' in keywordComment and 'eq{' in keywordComment:
                         start = keywordComment.find('eq{')
                         equation_str = keywordComment[start+3:keywordComment.find('}', start)]
+                        keywordComment = '' # clears the comment so that it is not saved again
                 else:
                     keywordComment = ''
 

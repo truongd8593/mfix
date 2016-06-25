@@ -81,6 +81,9 @@ class EquationCompleter(QtWidgets.QCompleter):
     def __init__(self, parent=None):
         QtWidgets.QCompleter.__init__(self, parent)
         self.delimiators = ['*', '**', '/', '-', '+', ' ']
+        self.update_model(self)
+        
+    def update_model(self, dtype=None):
         self.model = QtWidgets.QStringListModel()
         self.model.setStringList(PARAMETER_DICT.keys())
         self.setModel(self.model)
@@ -108,6 +111,7 @@ class EquationCompleter(QtWidgets.QCompleter):
                      if sep in path[:cur_index] else 0
                      for sep in self.delimiators])
 
+        self.update_model()
         return [path[index:cur_index]]
 
 

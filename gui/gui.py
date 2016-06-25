@@ -334,6 +334,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # --- workflow setup ---
         self.__setup_workflow_widget()
+        
+        # --- parameter dialog
+        self.parameter_dialog = ParameterDialog(self)
 
         # --- default ---
         self.mode_changed('modeler')
@@ -1667,6 +1670,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
+        
+        # save parameters
+        self.project.mfix_gui_comments['parameters'] = self.parameter_dialog.parameters_to_str()
 
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
@@ -1742,8 +1748,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_parameters(self):
         """add/change parameters"""
-        new_parameters = ParameterDialog.get_parameters(PARAMETER_DICT)
-        PARAMETER_DICT.update(new_parameters)
+        self.parameter_dialog.get_parameters()
+        self.set_unsaved_flag()
 
     def handle_compile(self):
         """compiling tool"""
@@ -2040,6 +2046,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 solids_phase_names[n] = val
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
+            if key == 'parameters':
+                self.parameter_dialog.parameters_from_str(val)
             # Add more here
 
         # hack, copy ordered dict to modify keys w/o losing order

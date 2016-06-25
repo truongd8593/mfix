@@ -1,14 +1,14 @@
-
 from collections import OrderedDict
+import json
 from qtpy import QtWidgets, QtCore
 
 from base import Table
 from tools.general import get_icon, get_unique_string
-
+from constants import *
 
 class ParameterDialog(QtWidgets.QDialog):
 
-    def __init__(self, parent, param_dict):
+    def __init__(self, parent):
         QtWidgets.QDialog.__init__(self, parent)
 
         self.setWindowIcon(get_icon('mfix.png'))
@@ -30,10 +30,15 @@ class ParameterDialog(QtWidgets.QDialog):
         self.toolbutton_add.setIcon(get_icon('add.png'))
 
         self.toolbutton_remove = QtWidgets.QToolButton()
-#        self.toolbutton_remove.pressed.connect(self.reset_view)
+        self.toolbutton_remove.pressed.connect(self.remove_parameter)
         self.toolbutton_remove.setIcon(get_icon('remove.png'))
 
-        for widget in [self.toolbutton_add, self.toolbutton_remove]:
+        self.toolbutton_copy = QtWidgets.QToolButton()
+        self.toolbutton_copy.pressed.connect(self.copy_parameter)
+        self.toolbutton_copy.setIcon(get_icon('copy.png'))
+
+        for widget in [self.toolbutton_add, self.toolbutton_remove,
+                       self.toolbutton_copy]:
             self.button_bar_layout.addWidget(widget)
             widget.setAutoRaise(True)
 
@@ -51,7 +56,6 @@ class ParameterDialog(QtWidgets.QDialog):
                                  'items':  ['integer', 'float', 'string'],
                                  },
                              2: {'widget': 'lineedit',
-                                 'dtype':  'dp'
                                  },
                              }
             )
@@ -60,15 +64,10 @@ class ParameterDialog(QtWidgets.QDialog):
 
         self.grid_layout.addWidget(self.table, 1, 0)
 
-        new_param_dict = OrderedDict()
-        for i, key in enumerate(param_dict.keys()):
-            new_param_dict[i] = {'parameter': key, 'type': 'float',
-                                 'value': param_dict[key]}
-
-        self.table.set_value(new_param_dict)
-        self.table.fit_to_contents()
-
         # --- apply/close ---
+        self.pushbutton_close = QtWidgets.QPushButton('Close')
+        self.pushbutton_close.pressed.connect(self.close)
+        self.grid_layout.addWidget(self.pushbutton_close, 2, 0)
 
     def new_parameter(self):
         param = self.table.value
@@ -80,16 +79,65 @@ class ParameterDialog(QtWidgets.QDialog):
 
         self.table.set_value(param)
 
+    def remove_parameter(self):
+        pass
+
+    def copy_parameter(self):
+        pass
+
+    def load_parameters(self):
+        new_param_dict = OrderedDict()
+        for i, key in enumerate(PARAMETER_DICT.keys()):
+            dtype = 'string'
+            if isinstance(PARAMETER_DICT[key], float):
+                dtype = 'float'
+            elif isinstance(PARAMETER_DICT[key], int):
+                dtype = 'integer'
+            new_param_dict[i] = {'parameter': key, 'type': dtype,
+                                 'value': PARAMETER_DICT[key]}
+
+        self.table.set_value(new_param_dict)
+        self.table.fit_to_contents()
+
     @property
     def parameters(self):
         param_dict = OrderedDict()
         for key, value in self.table.value.items():
-            param_dict[value['parameter']] = value['value']
+            par_value = str(value['value'])
+            if value['type'] == 'float':
+                par_value = float(value['value'])
+            elif value['type'] == 'integer':
+                par_value = int(value['value'])
+            param_dict[value['parameter']] = par_value
         return param_dict
 
-    @staticmethod
-    def get_parameters(parameters, parent=None):
+    def get_parameters(self):
+        self.load_parameters()
+        self.exec_()
+        self.update_parameter_dict(self.parameters)
 
-        dialog = ParameterDialog(parent, parameters)
-        result = dialog.exec_()
-        return dialog.parameters
+    def parameters_from_str(self, string):
+        """load parameter data from a saved string"""
+        loaded_data = json.loads(string)
+
+        if 'order' not in loaded_data:
+            return
+
+        data = OrderedDict()
+        for par in loaded_data['order']:
+            data[par] = loaded_data['parameters'][par]
+
+        self.update_parameter_dict(data)
+
+    def parameters_to_str(self):
+        """convert parameter data to a string for saving"""
+        data = {'order': list(PARAMETER_DICT.keys()),
+                'parameters': PARAMETER_DICT
+                }
+        return json.dumps(data)
+
+    def update_parameter_dict(self, data):
+        PARAMETER_DICT.update(data)
+
+        for key in set(PARAMETER_DICT.keys()) - set(data.keys()):
+            PARAMETER_DICT.pop(key)
