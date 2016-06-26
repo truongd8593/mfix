@@ -107,14 +107,14 @@ class ParameterDialog(QtWidgets.QDialog):
 
         if row >= 0:
             data = self.table.value
-            name = list(data.keys())[row]
+            name = data[row]['parameter']
 
             new_name = get_unique_string(
                 name, [val['parameter'] for val in data.values()])
 
             data[len(data)] = {'parameter': new_name,
-                                 'type': copy.deepcopy(data[row]['type']),
-                                 'value': copy.deepcopy(data[row]['value'])}
+                               'type': copy.deepcopy(data[row]['type']),
+                               'value': copy.deepcopy(data[row]['value'])}
             self.table.set_value(data)
 
     def load_parameters(self):
