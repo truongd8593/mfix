@@ -308,12 +308,16 @@ class FluidHandler(object):
         table.clearSelection()
         key = list(self.fluid_species.keys())[row]
         del self.fluid_species[key]
+        if key in self.thermo_data:
+            del self.thermo_data[key]
+
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
         sp.defined_species = self.fluid_species
         sp.update_defined_species()
+
 
     def fluid_species_edit(self):
         table = self.ui.fluid.tablewidget_fluid_species

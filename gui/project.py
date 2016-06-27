@@ -762,7 +762,7 @@ class Project(object):
         self._keyword_dict = {}
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
-        self.thermo_data =  []
+        self.thermo_data =  {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
         # See also 'reset'
 
@@ -978,10 +978,11 @@ class Project(object):
         self._keyword_dict.clear()
         self.__initDataStructure__()
         self.dat_file_list = []
-        self.thermo_data = []
+        self.thermo_data.clear()
         self.mfix_gui_comments.clear()
         reactionSection = False
         thermoSection = False
+        thermo_lines = [] # Temporary holder for thermo_data section
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip()
             if line.startswith("#!MFIX-GUI"):
@@ -1003,7 +1004,7 @@ class Project(object):
                 thermoSection = True
                 # Don't save 'THERMO SECTION' line - we'll regenerate it.
             elif thermoSection:
-                self.thermo_data.append(line)
+                thermo_lines.append(line)
             elif not reactionSection and not thermoSection:
                 # remove comments
                 commentedline = ''
@@ -1029,6 +1030,21 @@ class Project(object):
                 except Exception as e:
                     traceback.print_exception(*sys.exc_info())
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
+
+        # turn THERMO DATA section into a dictionary
+        if thermo_lines:
+            species = None
+            for line in thermo_lines:
+                if not line.strip():
+                    species = None
+                    continue
+                if species is None:
+                    species = line[:18].strip()
+                    if not species: # Blank lines
+                        continue
+                    self.thermo_data[species] = [line]
+                else:
+                    self.thermo_data[species].append(line)
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
         """Update or add a keyword to the project.  Raises ValueError if there is a
@@ -1366,8 +1382,9 @@ class Project(object):
         if self.thermo_data:
             yield '\n'
             yield 'THERMO DATA\n'
-        for line in self.thermo_data:
-            yield line+'\n'
+            for lines in self.thermo_data.values():
+                for line in lines:
+                    yield line + '\n'
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
@@ -1387,7 +1404,7 @@ class Project(object):
         self.dat_file_list = []
         self._keyword_dict.clear()
         self.comments.clear()
-        self.thermo_data = []
+        self.thermo_data.clear()
         self.mfix_gui_comments.clear()
 
         for name in dir(self):

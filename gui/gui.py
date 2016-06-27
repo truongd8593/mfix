@@ -75,7 +75,7 @@ if PRECOMPILE_UI:
         from uifiles.solids import Ui_solids
         from uifiles.vtk import Ui_vtk
     except ImportError:
-        print("You must compile ui files!  cd uifiles; make")
+        print("You must compile ui files! (run 'make'")
         sys.exit(1)
 
 
@@ -1563,7 +1563,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def open_run_dialog(self):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
-        print('passing mfix_exe to dialog: %s' % self.mfix_exe)
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
@@ -1572,10 +1571,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
-        print('handle_new_mfix_exe: %s' % self.mfix_exe)
-        print('previous: %s' % self.mfix_exe)
         self.mfix_exe = self.run_dialog.mfix_exe
-        print('new: %s' % self.mfix_exe)
 
         self.handle_select_exe() # FIXME: suss this out so we aren't calling a gui slot
 

@@ -160,7 +160,7 @@ class ProjectManager(Project):
         # mfix settings are inconsistent, warn user.  (Popup here?)
         msg = "Warning, cannot deduce solver type"
         self.gui.print_internal(msg, color='red')
-        log.warn(msg)
+        #log.warn(msg)
         #default
         return SINGLE
 
@@ -200,25 +200,11 @@ class ProjectManager(Project):
             # Species objects
             user_species = {}
             if self.thermo_data is not None:
-                thermo_data = self.thermo_data[:]
-                thermo_data.append('') # slight hack, add blank line to force parsing last block
-                section = []
-                for line in thermo_data:
-                    line = line.strip()
-                    if not line: # sections separated by blank lines
-                        if not section:
-                            continue # multiple blank lines
-                        # slight hack: read_burcat expects a CAS ID and a comment block
-                        # Note, currently this comment is not exposed to the user ... only
-                        #  comments from BURCAT.THR wind up in the gui.
-                        section.insert(0, 'User defined,')
-                        section.insert(1, 'loaded from %s' % project_file)
-                        data = read_burcat.parse_section(section)
-                        for (species, phase, tmin, tmax, mol_weight, coeffs, comment) in data:
-                            user_species[(species, phase)] = (tmin, tmax, mol_weight, coeffs, comment)
-                        section = []
-                    else:
-                        section.append(line)
+                for (species, lines) in self.thermo_data.items():
+                    section = ['User defined', 'loaded from %s' % project_file] + lines
+                    data = read_burcat.parse_section(section)
+                    for (species, phase, tmin, tmax, mol_weight, coeffs, comment) in data:
+                        user_species[(species, phase)] = (tmin, tmax, mol_weight, coeffs, comment)
 
 
             for g in self.gasSpecies:
@@ -423,10 +409,9 @@ class ProjectManager(Project):
             skipped_keys = set(['mw_g', 'mw_s'])
             for kw in kwlist:
                 if kw.key in skipped_keys:
-                    # is this a warn or info?
-                    log.warn("%s=%s moved to THERMO DATA section",
-                             format_key_with_args(kw.key, kw.args),
-                             kw.value)
+                    self.gui.print_internal("%s=%s moved to THERMO DATA section" % (
+                        format_key_with_args(kw.key, kw.args),
+                        kw.value))
 
                     self.gui.unset_keyword(kw.key, args=kw.args) # print msg in window
                     continue
@@ -485,47 +470,15 @@ class ProjectManager(Project):
         Unmatching entries are not modified"""
 
         changed = False
-
-        new_thermo_data = []
-        #species_to_save = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
-        # We're going to save all of them, even the ones from BURCAT. so that mfix does
-        #  not need mfix.dat at runtime.  Note, that means "source" will be "User Defined"
-        #  next time this project is loaded
-        species_to_save = set(species_dict.keys())
-        # Keep sections of thermo_data not mentioned in species_dict, for now
-        replace_entry = False
-        for line in self.thermo_data:
-            line = line.rstrip()
-            if replace_entry:
-                if line:
-                    changed = True
-                    continue
-                else:
-                    skip = False
-            elif line.endswith(' 1'):
-                species = line[:18].strip()
-                if species in species_to_save:
-                    species_to_save.remove(species) # We've handled this one
-                    replace_entry = True
-                    continue
-            # Avoid repeated blanks
-            if not line:
-                if new_thermo_data and not new_thermo_data[-1] :
-                    changed = True
-                    continue
-            # Keep the line
-            new_thermo_data.append(line)
-        self.thermo_data = new_thermo_data
-
-        # Now append records for species not handled yet
-        for species in species_to_save:
-            data = species_dict[species]
-            #if data['source'] != 'BURCAT':
-            #    self.thermo_data.extend(format_burcat(species,data))
-            self.thermo_data.extend(format_burcat(species,data))
-            changed = True
+        update_dict =  dict((species, format_burcat(species, data))
+                            for (species, data) in species_dict.items())
+        for (k,v) in update_dict.items():
+            if self.thermo_data.get(k) != v:
+                changed = True
+                break
 
         if changed:
+            self.thermo_data.update(update_dict)
             self.gui.set_unsaved_flag()
 
     def objectName(self):

@@ -869,6 +869,8 @@ class SolidsHandler(object):
         table.clearSelection()
         key = list(self.solids_species[phase].keys())[row]
         del self.solids_species[phase][key]
+        if key in self.thermo_data:
+            del self.thermo_data[key]
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(2)
