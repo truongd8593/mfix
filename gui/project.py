@@ -97,6 +97,10 @@ def clean_string(string):
     string = string.replace("'", '').replace('"', '')
     # remove any leading or trailing space, after removing quotes
     string = string.strip()
+    # Remove comma separators if present
+    if string.endswith(','):
+        string = string[:-1]
+
     # lower-case version of string
     s_low = string.lower()
 
