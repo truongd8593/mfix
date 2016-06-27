@@ -167,6 +167,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     @property
     def value(self):
         text = self.text().strip()
+        self.used_parameters = []
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:

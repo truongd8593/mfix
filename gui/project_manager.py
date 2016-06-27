@@ -41,8 +41,7 @@ class ProjectManager(Project):
         self.gui = gui
         self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
-        self.solver = SINGLE # default
-
+        self.solver = SINGLE  # default
 
     def submit_change(self, widget, newValueDict, args=None):
 
@@ -499,6 +498,7 @@ class ProjectManager(Project):
 
     def objectName(self):
         return 'Project Manager'
+
 
 def format_burcat(species, data):
     """Return a list of lines in BURCAT.THR format"""

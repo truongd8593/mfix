@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+"""Parameter Dialog and management of the PARAMETER_DICT constant"""
+
+# Import from the future for Python 2 and 3 compatability!
+from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 import json
 from qtpy import QtWidgets, QtCore
 import copy
 
-from base import Table
+from widgets.base import Table
 from tools.general import get_icon, get_unique_string
 from constants import *
 

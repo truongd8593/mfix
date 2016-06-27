@@ -193,6 +193,7 @@ def remove_spaces_from_equations(string):
 
     return ret
 
+
 class Equation(object):
     """represents a simple arithmetic expression, which can be evaluated
     by simple_eval, in a namespace which includes the math constants 'e'
@@ -206,6 +207,11 @@ class Equation(object):
             eq = eq[2:-1]
         self.eq = eq
         self.dtype = float
+
+    def get_used_parameters(self):
+        av_params = PARAMETER_DICT.keys()
+        eq = re.split('[\*\/\-\+ ]', self.eq)
+        return [p for p in av_params if p in eq]
 
     def _eval(self):
         if len(self.eq) == 0:
@@ -771,6 +777,7 @@ class Project(object):
                             # keywords as parsed
         self.thermo_data =  []
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
+        self.parameter_key_map = {}  #data structure to hold parameter->keyword mapping
         # See also 'reset'
 
         self.__initDataStructure__()
@@ -982,17 +989,10 @@ class Project(object):
                     break # no more keywords on this line
         else:
             yield (None, None, None)
-
-    def _parsemfixdat(self, fobject):
-        """This does the actual parsing."""
-        self.comments.clear()
-        self._keyword_dict.clear()
-        self.__initDataStructure__()
-        self.dat_file_list = []
-        self.thermo_data = []
+            
+    def parse_mfix_gui_comments(self, fobject):
+        """read through the file looking for #!MFIX-GUI"""
         self.mfix_gui_comments.clear()
-        reactionSection = False
-        thermoSection = False
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip()
             if line.startswith("#!MFIX-GUI"):
@@ -1004,6 +1004,21 @@ class Project(object):
                     # comments, and an experimental feature.  Don't want to create
                     # tight dependencies on GUI version - treat them like HTML tags,
                     # ignore the ones you can't handle
+
+    def _parsemfixdat(self, fobject):
+        """This does the actual parsing."""
+        self.comments.clear()
+        self._keyword_dict.clear()
+        self.__initDataStructure__()
+        self.dat_file_list = []
+        self.thermo_data = []
+        
+        reactionSection = False
+        thermoSection = False
+        for i, line in enumerate(fobject):
+            line = to_unicode_from_fs(line).strip()
+            if line.startswith("#!MFIX-GUI"):
+                # these should be already parsed
                 continue
 
             if '@(RXNS)' in line:
@@ -1066,6 +1081,11 @@ class Project(object):
         # TODO:  refactor
         if args is None:
             args = []
+            
+        # if equation, update the parameter dict
+        if isinstance(value, Equation):
+            self.update_parameter_map(value, [key]+args)            
+            
         # check to see if the keyword already exists
         if [key]+args in self:
             self[[key]+args].updateValue(value)
@@ -1407,12 +1427,21 @@ class Project(object):
         self.comments.clear()
         self.thermo_data = []
         self.mfix_gui_comments.clear()
+        self.parameter_key_map = {}
 
         for name in dir(self):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
 
-if  __name__ == '__main__':
+    def update_parameter_map(self, value, key_args):
+        keys = value.get_used_parameters()
+        for key in keys:
+            if key not in self.parameter_key_map:
+                self.parameter_key_map[key] = set()
+            self.parameter_key_map[key].add(','.join(key_args))
+
+
+if __name__ == '__main__':
     proj = Project()
     print(list(proj.parseKeywordLine('key = @( 2* 10)')))

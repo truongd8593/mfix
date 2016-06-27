@@ -1937,9 +1937,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_no_project()
             return
 
+        # --- read the mfix.dat or *.mfx file
         self.reset() # resets gui, keywords, file system watchers, etc
 
         self.print_internal("Loading %s" % project_file, color='blue')
+        
+        # read the MFIX-GUI tags first
+        with open(project_file) as f:
+            self.project.parse_mfix_gui_comments(f)
+            
+        # setup MFIX-GUI info before the reading of the keywords
+        for (key, val) in self.project.mfix_gui_comments.items():
+            if key == 'parameters':
+                self.parameter_dialog.parameters_from_str(val)
+        
+        # parse the keywords
         try:
             self.project.load_project_file(project_file)
         except Exception as e:
@@ -2021,11 +2033,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.exe_watcher.addPath(d)
         self.slot_exes_changed()
 
-        ### Geometry
+        #--- Geometry ---
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry_file):
             self.vtkwidget.add_stl(None, filename=geometry_file)
+        # TODO: load more geometry
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -2046,8 +2059,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 solids_phase_names[n] = val
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
-            if key == 'parameters':
-                self.parameter_dialog.parameters_from_str(val)
             # Add more here
 
         # hack, copy ordered dict to modify keys w/o losing order
