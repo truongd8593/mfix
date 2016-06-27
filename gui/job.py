@@ -106,7 +106,7 @@ class Job(object):
 
         while self.is_running():
             t0 = time.time()
-            self.mfixproc.waitForFinished(1000)
+            self.mfixproc.waitForFinished(2000)
             t1 = time.time()
             if self.is_running():
                 log.warn("mfix still running after %.2f ms", (1000*(t1-t0)))
