@@ -1684,6 +1684,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.print_internal("Info: Saving %s" % project_file)
         self.project.writeDatFile(project_file)
         self.clear_unsaved_flag()
+        self.update_source_view()
 
     def save_as(self):
         """Prompt user for new filename, save project to that file and make
