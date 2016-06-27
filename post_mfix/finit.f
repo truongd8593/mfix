@@ -26,14 +26,12 @@
       USE param1
       USE physprop
       USE post3d
-      USE read_input
       USE run
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 
 ! Local Variables
 !---------------------------------------------------------------------//
-      CHARACTER(LEN=30)  FILE_NAME
       INTEGER L
       INTEGER REC_POINTER(N_SPX)
       LOGICAL READ_SPX(N_SPX)
@@ -41,7 +39,6 @@
       REAL    TIME_REAL(N_SPX), TIME_LAST
       LOGICAL OPEN_FILEP
 
-      INTEGER M_PASS,N_PASS
       integer :: gas_species_index , solid_species_index , solid_index
       logical :: bRead_all
 
@@ -240,7 +237,7 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      integer   :: L , nb , n , i , nArrays , kfile
+      integer   :: L , nb , i , nArrays , kfile
 !---------------------------------------------------------------------//
 
 ! deallocate some of MFIX variables so we can allocate in
@@ -436,7 +433,7 @@
       write (*,*)  fname_scav(1:nb+8) , ' : processing'
       allocate( r_array(ijkmax2,nArrays) )
       open (unit=10,file=fname_scav,status='old',recl=512, &
-            access='direct',form='unformatted',convert='big_endian')
+            access='direct',form='unformatted')
 
       read(unit=10,rec=3) next_rec
 
@@ -450,7 +447,7 @@
            write (fname_dist(nb+9:nb+9),'(a1)') ext(L:L)
 
            open(unit=20,file=fname_dist,status='old',recl=512, &
-               access='direct',form='unformatted',convert='big_endian')
+               access='direct',form='unformatted')
 
            read (20,rec=3) last_r
 
@@ -547,15 +544,14 @@
       do L = 1,np
          fname = 'p_info_xxxxx.txt'
          write (fname(8:12),'(i5.5)') L-1
-         open (unit=10,file=fname,status='old',err=100,&
-               convert='big_endian')
+         open (unit=10,file=fname,status='old',err=100)
          goto 101
 
  100     continue
          fname = 'p_info_xxxx.txt'
          write (fname(8:11),'(i4.4)') L-1
 
-         open (unit=10,file=fname,status='old',convert='big_endian')
+         open (unit=10,file=fname,status='old')
 
  101     continue
          read (10,*)
@@ -645,13 +641,13 @@
          write (fname_scav(NB+8:NB+8),'(a1)') ext(L:L)
 
          open (unit=10,file=fname_scav,status='unknown',recl=512, &
-               access='direct',form='unformatted',convert='big_endian')
+               access='direct',form='unformatted')
 
          fname_dist = run_name(1:NB-1) // '_00000.SPx'
          write (fname_dist(nb+9:nb+9),'(a1)') ext(L:L)
 
          open(unit=20,file=fname_dist,status='old',recl=512, &
-             access='direct',form='unformatted',convert='big_endian')
+             access='direct',form='unformatted')
 
          read(20,rec=1)  pbuffer
          write(10,rec=1) pbuffer
@@ -716,10 +712,10 @@
 
 
       open (unit=10,file=fname_scav(1:nb+8),status='unknown',recl=512, &
-            access='direct',form='unformatted',convert='big_endian')
+            access='direct',form='unformatted')
 
       open(unit=20,file=fname_dist,status='old',recl=512, &
-           access='direct',form='unformatted',convert='big_endian')
+           access='direct',form='unformatted')
 
 !      open(unit=11,file='deb.txt',status='unknown')
 
@@ -742,7 +738,7 @@
          if (n_cells(L) .gt. max_dim) max_dim = n_cells(L)
          call set_res_name(run_name,nb,L,fname)
          open(unit=21,file=fname,status='old',recl=512, &
-             access='direct',form='unformatted',convert='big_endian')
+             access='direct',form='unformatted')
 
          read(21,rec=3) cr(L)
 
@@ -779,7 +775,7 @@
 
             call set_res_name(run_name,nb,N,fname)
             open(unit=20,file=fname,status='old',recl=512, &
-               access='direct',form='unformatted',convert='big_endian')
+               access='direct',form='unformatted')
             call in_bin_512(20,d_tmp,n_cells(N),cr(N))
             close (unit=20)
 

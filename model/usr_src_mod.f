@@ -42,9 +42,7 @@
       use indices, only: i_of, j_of, k_of
       use param, only: dimension_3, dimension_m
       use param1, only: undefined_i, zero
-      use pgcor, only: phase_4_p_g
       use physprop, only: smax, mmax
-      use pscor, only: phase_4_p_s
       use run, only: kt_type_enum, ghd_2007
       use run, only: momentum_x_eq, momentum_y_eq, momentum_z_eq
       use toleranc, only: dil_ep_s
@@ -348,4 +346,3 @@
       END SUBROUTINE CALC_USR_SOURCE
 
       end module usr_src
-

@@ -101,8 +101,6 @@
       DOUBLE PRECISION :: Pos_Tauij_gDUi_gODxj, Neg_Tauij_gDUi_gODxj
       DOUBLE PRECISION :: Check_Log
       DOUBLE PRECISION :: Pos_PI_kq_2, Neg_PI_kq_2
-! Modif. for Sof Local Var.
-      INTEGER :: P,Q
 !---------------------------------------------------------------------//
 
       IF( .NOT. K_Epsilon) RETURN

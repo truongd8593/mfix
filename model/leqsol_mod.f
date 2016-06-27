@@ -105,8 +105,8 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2, mype
-    USE cutcell, ONLY: re_indexing, CARTESIAN_GRID
+    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2
+    USE cutcell, ONLY: re_indexing
     USE geometry, ONLY: do_k, use_corecell_loop, CORE_ISTART, CORE_IEND, CORE_JSTART, CORE_JEND, CORE_KSTART, CORE_KEND
     USE indices
     USE param, ONLY: DIMENSION_3
@@ -188,8 +188,10 @@ CONTAINS
 
           class = cell_class(funijk(core_istart,core_jstart,core_kstart))
 
-!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop,class) &
-!$omp&   private(ijk,i,j,k) collapse (3)
+!$omp    parallel do default(none) private(ijk,i,j,k) collapse (3) &
+!$omp                shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart, &
+!$omp                       iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,    &
+!$omp                       core_iend,core_jend,core_kend,use_corecell_loop,class)
              do k = core_kstart,core_kend
                 do i = core_istart,core_iend
                    do j = core_jstart,core_jend
@@ -216,8 +218,9 @@ CONTAINS
           j_start(2) = 0 ! no iterations
           j_end(2) = -1  ! no iterations
 
-!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
-!$omp&   private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2)
+!$omp    parallel do default(none) private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2) &
+!$omp                shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,  &
+!$omp         cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop)
           do k = kstart,kend
              do i = istart,iend
 
@@ -326,7 +329,7 @@ CONTAINS
 !-----------------------------------------------
 !
     INTEGER :: ITER, NITER
-    INTEGER :: IJK, I , J, K
+    INTEGER :: I , J, K
     INTEGER :: I1, J1, K1, I2, J2, K2, IK, JK, IJ
     INTEGER :: ISIZE, JSIZE, KSIZE
     INTEGER :: ICASE

@@ -129,7 +129,6 @@
       use bc, only: BC_PLANE
       use bc, only: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t
       USE cutcell, only: CUT_CELL_AT
-      USE discretelement, only : DES_MMAX
       use error_manager
       use functions
       use funits, only: DMP_LOG

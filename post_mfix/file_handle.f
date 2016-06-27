@@ -427,10 +427,10 @@
       FILE_NAME(NB:NB+3) = EXT(1:4)
       IF(RUN_TYPE .EQ. 'NEW')THEN
         OPEN (UNIT=UNIT_RES,FILE=FILE_NAME,STATUS='NEW',RECL=OPEN_N1,&
-            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=300,CONVERT='BIG_ENDIAN')
+            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=300)
       ELSE
         OPEN (UNIT=UNIT_RES,FILE=FILE_NAME,STATUS='OLD',RECL=OPEN_N1,&
-            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=300,CONVERT='BIG_ENDIAN')
+            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=300)
       ENDIF
       IF(NO_FILES .EQ. 0) THEN
         OPEN_FILEP = .TRUE.
@@ -447,10 +447,10 @@
         FILE_NAME(NB:NB+3) = EXT(1:4)
         IF(RUN_TYPE .EQ. 'NEW') THEN
           OPEN (UNIT=UNIT_SPX+LC,FILE=FILE_NAME,STATUS='NEW',&
-                RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=150,CONVERT='BIG_ENDIAN')
+                RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=150)
         ELSE
           OPEN (UNIT=UNIT_SPX+LC,FILE=FILE_NAME,STATUS='OLD',&
-                RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=150,CONVERT='BIG_ENDIAN')
+                RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED',ERR=150)
         ENDIF
         SPX_OPEN(LC) = .TRUE.
         GOTO 200
@@ -637,7 +637,7 @@
       INTEGER          NTAB
 !
 !                      loop indices
-      INTEGER          L1x, L2x, L3, IJK
+      INTEGER          L1x, L2x, L3
 !
 !                      start and end 'I' for current table
       INTEGER          IFORM1 , IFORM2
@@ -719,7 +719,7 @@
       INTEGER          NTAB
 !
 !                      loop indices
-      INTEGER          L1x, L2x, L3, IJK
+      INTEGER          L1x, L2x, L3
 !
 !                      start and end 'I' for current table
       INTEGER          IFORM1 , IFORM2

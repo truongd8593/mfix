@@ -126,9 +126,9 @@
 !         WRITE(ERR_MSG, 2002)
 !         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
-         ' available',/' for DEM only. Please correct the mfix.dat',   &
-         ' file.')
+ ! 2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
+ !         ' available',/' for DEM only. Please correct the mfix.dat',   &
+ !         ' file.')
       ENDIF
 
 

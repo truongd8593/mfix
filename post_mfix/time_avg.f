@@ -30,14 +30,11 @@
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 
-! Local Variables 
+! Local Variables
 !---------------------------------------------------------------------//
-      REAL    :: TIME_FOR_RES, TIME_FOUND
       LOGICAL :: AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
-      INTEGER :: REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
-      INTEGER :: NSTEP_1 , ERROR_CODE , solmax
-      CHARACTER(LEN=1)   :: IANS
-      CHARACTER(LEN=13)  :: line
+      INTEGER :: REC_POINTER(N_SPX)
+      INTEGER :: NSTEP_1 , solmax
       REAL    :: TIME_REAL(N_SPX)
       LOGICAL :: ERROR
 
@@ -47,7 +44,7 @@
       integer :: tcount
       real    :: tstart , tend
 
-      INTEGER L, L_SPX , LL , M , i , NB
+      INTEGER L, L_SPX , M , i , NB
       integer :: unit_add = 10
 
       CHARACTER(LEN=35) :: EXT_END
@@ -88,7 +85,7 @@
             OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
                  STATUS='NEW', &
                  RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED', &
-                 ERR=101,CONVERT='BIG_ENDIAN')
+                 ERR=101)
          ENDIF
 
 ! allocate variables as needed  (what if no scalars or nRR ??)

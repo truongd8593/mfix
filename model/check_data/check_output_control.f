@@ -107,7 +107,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2000 FORMAT('Error 2000: Invalid value for FRAME = ',A'. Acceptable ',&
+ 2000 FORMAT('Error 2000: Invalid value for FRAME = ',A, '. Acceptable ',&
          'values',/'are integers >= -1. Please correct mfix.dat and',/ &
          'try again.')
 
@@ -116,7 +116,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2001 FORMAT('Error 2001: Invalid value for VTK_DT = ',A'. Acceptable',&
+ 2001 FORMAT('Error 2001: Invalid value for VTK_DT = ',A, '. Acceptable',&
          ' values',/'are positive numbers (e.g., 0.1).  Please ',      &
          'correct mfix.dat and',/'try again.')
 

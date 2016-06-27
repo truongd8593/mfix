@@ -23,7 +23,6 @@
       use residual, only: resid, max_resid, ijk_resid
       use residual, only: num_resid, den_resid
       use residual, only: resid_p
-      use run, only: momentum_x_eq, momentum_y_eq
       use usr_src, only: call_usr_source, calc_usr_source
       use usr_src, only: solids_correction
       IMPLICIT NONE

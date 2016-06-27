@@ -1,11 +1,13 @@
+#include "version.inc"
+
       MODULE vtp
 
-      use mpi_utility
       use cdist
-
       use desmpi
-      use mpi_comm_des
       use error_manager
+      use mpi_comm_des
+      use mpi_utility
+      use, intrinsic :: iso_c_binding
 
       IMPLICIT NONE
 
@@ -331,7 +333,7 @@
 
 ! Open the file and record any erros.
          IF(IER == 0) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=DES_UNIT, FILE=FNAME_VTP,   &
+            OPEN(UNIT=DES_UNIT, FILE=FNAME_VTP,   &
                STATUS=STATUS_VTP, IOSTAT=IOS)
             IF(IOS /= 0) IER = 2
          ENDIF
@@ -674,7 +676,7 @@
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
          DO L = 1, DIMENSION_VTK
             IF(VTK_DEFINED(L)) WRITE(VTU_FRAME_UNIT,*) L,FRAME(L)
          ENDDO
@@ -731,7 +733,7 @@
       IF(TIME_DEPENDENT_FILENAME) THEN
          INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
          IF(VTU_FRAME_FILE_EXISTS) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
             DO L = 1, DIMENSION_VTK
                IF(VTK_DEFINED(L)) THEN
                   READ(VTU_FRAME_UNIT,*)BUFF1,BUFF2
@@ -789,7 +791,7 @@
       IF (NEED_TO_WRITE_VTP) THEN
 
          VTU_UNIT = 678
-         OPEN(CONVERT='BIG_ENDIAN',UNIT     = VTU_UNIT,           &
+         OPEN(UNIT     = VTU_UNIT,           &
               FILE     = TRIM(VTU_FILENAME), &
               FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'BINARY' if 'UNFORMATTED' is not supported
@@ -842,7 +844,7 @@
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
 
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
 
          WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
          WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
@@ -892,6 +894,7 @@
   SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN(PASS)
 
       USE vtk, only: NUMBER_OF_POINTS,BUFFER, VTU_UNIT,END_REC,VTU_OFFSET,BELONGS_TO_VTK_SUBDOMAIN
+      use, intrinsic :: iso_c_binding
 
       IMPLICIT NONE
 
@@ -930,7 +933,7 @@
          NUMBER_OF_POINTS = GLOBAL_CNT
 
 ! Number of bytes of position field (vector,3 components)
-         nbytes_vector       = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_vector       = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
 ! Offset of each field
          offset_xyz = 0
@@ -956,7 +959,7 @@
                WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! calculate offset for next field
-               VTU_offset = offset_xyz + sizeof(int) + nbytes_vector
+               VTU_offset = offset_xyz + c_sizeof(int) + nbytes_vector
 
             ENDIF
 
@@ -1051,7 +1054,7 @@
          NUMBER_OF_POINTS = LOCAL_CNT
 
 ! Number of bytes of position field (vector,3 components)
-         nbytes_vector       = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_vector       = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
 ! Offset of each field
          offset_xyz = 0
@@ -1076,7 +1079,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! calculate offset for next field
-            VTU_offset = offset_xyz + sizeof(int) + nbytes_vector
+            VTU_offset = offset_xyz + c_sizeof(int) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1164,9 +1167,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
+      USE output, only: FULL_LOG
       USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,PVTU_UNIT
       USE vtk, only: END_REC,BELONGS_TO_VTK_SUBDOMAIN
-      USE output, only: FULL_LOG
 
       IMPLICIT NONE
       INTEGER :: I,LC1,PC
@@ -1185,7 +1189,7 @@
       IF (.NOT.BDIST_IO) THEN
 
 ! Number of bytes for each scalar field
-         nbytes_scalar = GLOBAL_CNT * sizeof(float)
+         nbytes_scalar = GLOBAL_CNT * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 
@@ -1200,7 +1204,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1240,7 +1244,7 @@
       ELSEIF(BDIST_IO.AND.LOCAL_CNT>0) THEN
 
 ! Number of bytes for each scalar field
-         nbytes_scalar = LOCAL_CNT * sizeof(float)
+         nbytes_scalar = LOCAL_CNT * c_sizeof(float)
 
 ! Remove possible white space with underscore
          DO I = 1,LEN_TRIM(VAR_NAME)
@@ -1255,7 +1259,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1319,9 +1323,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
+      USE output, only: FULL_LOG
       USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,PVTU_UNIT
       USE vtk, only: END_REC,BELONGS_TO_VTK_SUBDOMAIN
-      USE output, only: FULL_LOG
 
       IMPLICIT NONE
 
@@ -1345,7 +1350,7 @@
       IF (.NOT.BDIST_IO) THEN
 
 ! Number of bytes for each vector field
-         nbytes_vector = GLOBAL_CNT * 3 * sizeof(float)
+         nbytes_vector = GLOBAL_CNT * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 ! For each vector, write a tag, with corresponding offset
@@ -1355,7 +1360,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1408,7 +1413,7 @@
       ELSEIF(BDIST_IO.AND.LOCAL_CNT>0) THEN
 
 ! Number of bytes for each vector field
-         nbytes_vector = LOCAL_CNT * 3 * sizeof(float)
+         nbytes_vector = LOCAL_CNT * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 ! For each vector, write a tag, with corresponding offset
@@ -1418,7 +1423,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN

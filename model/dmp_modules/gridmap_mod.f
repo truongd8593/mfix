@@ -99,7 +99,7 @@
          IF(PRESENT) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)'Reading gridmap from grimap.dat...'
-               OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 
                READ (777, *) NODESI,NODESJ,NODESK
                DO IPROC = 0,NODESI-1

@@ -150,6 +150,28 @@ endif
 
 ################################################################
 #                                                              #
+#      Convert unformatted output to bigendian (for Paraview)  #
+#                                                              #
+################################################################
+
+if GNU
+AM_FCFLAGS += -fconvert=big-endian
+endif
+
+if INTEL
+AM_FCFLAGS += -convert big_endian
+endif
+
+if PGI
+AM_FCFLAGS += -byteswapio
+endif
+
+if IBM
+AM_FCFLAGS += -qufmt=be
+endif
+
+################################################################
+#                                                              #
 #      OpenMP and MPI support                                  #
 #                                                              #
 #      --enable-smp and --enable-dmp options in configure.ac   #
@@ -438,10 +460,8 @@ libmfix_src = \
 	../model/des/mpi_node_des_mod.f \
 	../model/des/mpi_pack_des_mod.f \
 	../model/des/mpi_unpack_des_mod.f \
-	../model/des/multisap.f \
 	../model/des/neighbour.f \
 	../model/des/nsquare.f \
-	../model/des/pair_manager.f \
 	../model/des/particle_filter_mod.f \
 	../model/des/particles_in_cell.f \
 	../model/des/pic/apply_wall_bc_pic.f \
@@ -466,7 +486,6 @@ libmfix_src = \
 	../model/des/read_res1_des_mod.f \
 	../model/des/resize.f \
   ../model/des/rxns_gs_des1.f \
-	../model/des/sap.f \
 	../model/des/sendrecvnode_mod.f \
 	../model/des/set_bc_dem.f \
 	../model/des/set_bc_dem_mi.f \
@@ -525,7 +544,6 @@ libmfix_src = \
 	../model/funits_mod.f \
 	../model/geometry_mod.f \
 	../model/get_bc_area.f \
-	../model/get_data.f \
 	../model/get_eq.f \
 	../model/get_flow_bc.f \
 	../model/get_hloss.f \

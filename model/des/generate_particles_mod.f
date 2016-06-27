@@ -161,7 +161,7 @@
 ! Number of particles in the lattice
       INTEGER :: SEED_X, SEED_Y, SEED_Z
 ! Loop indices phase/fluid cell
-      INTEGER :: M, MM, I, J, K, IJK, LB, UB
+      INTEGER :: M, MM, I, J, K, IJK
 ! Loop indicies for seeding
       INTEGER :: II, JJ, KK
 ! Start and end bound for IC region.
@@ -184,11 +184,7 @@
       DOUBLE PRECISION :: SOLIDS_DATA(0:DIM_M)
 
       LOGICAL :: VEL_FLUCT
-      DOUBLE PRECISION :: VEL_SIG
       DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
-
-      logical :: report = .true.
-      logical :: found
 
 !......................................................................!
 
@@ -452,14 +448,8 @@
 !---------------------------------------------------------------------//
 ! Number of DES solids phases.
       use discretelement, only: DES_MMAX
-! Flag indicating that the IC region is defined.
-      use ic, only: IC_DEFINED
 ! IC Region bulk density (RO_s * EP_s)
       use ic, only: IC_ROP_s
-! IC Region gas volume fraction.
-      use ic, only: IC_EP_G
-! MPPIC specific IC region specification.
-      use ic, only: IC_PIC_CONST_NPC, IC_PIC_CONST_STATWT
 
       use param1, only: UNDEFINED, UNDEFINED_I
       use param1, only: ZERO, ONE, HALF
@@ -484,8 +474,6 @@
 !---------------------------------------------------------------------//
 ! Generic loop counters
       INTEGER :: M
-! Actual volume of IC region
-      DOUBLE PRECISION :: IC_VOL
 ! Solids data in IC Region by phase:
       DOUBLE PRECISION :: SOLIDS_DATA(0:4*DIM_M)
 !......................................................................!
@@ -574,8 +562,6 @@
       use des_allocate, only: PARTICLE_GROW
       use discretelement
 
-! Flag indicating that the IC region is defined.
-      use ic, only: IC_DEFINED
 ! IC Region bulk density (RO_s * EP_s)
       use ic, only: IC_EP_s
       use ic, only: IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t
@@ -595,12 +581,10 @@
 
 ! solid phase diameters and densities.
       use physprop, only: D_p0, RO_s0
-      use run, only: solids_model
 
       use randomno
       use error_manager
       use functions
-      use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
       IMPLICIT NONE
@@ -616,7 +600,6 @@
 
 ! Local variables
 !----------------------------------------------------------------------//
-      DOUBLE PRECISION :: EP_SM
 
 ! Number of real and comp. particles in a cell.
       DOUBLE PRECISION ::  rPARTS

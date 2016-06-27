@@ -286,7 +286,7 @@
 !---------------------------------------------------------------------//
       use compar, only: ijkstart3, ijkend3
       use cutcell, only: cut_cell_at, delh_scalar
-      use fldvar, only: k_turb_G, e_turb_g
+      use fldvar, only: k_turb_G
       use functions, only: fluid_at, wall_at
       use functions, only: im_of, jm_of, km_of
       use functions, only: ip_of, jp_of, kp_of

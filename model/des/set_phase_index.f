@@ -21,7 +21,7 @@
       use mpi_utility
       use param1, only: small_number
       USE physprop, only: MMAX, D_p0, RO_s0
-      USE run, only: RUN_TYPE, solids_model
+      USE run, only: RUN_TYPE
       USE run, only: ANY_SPECIES_EQ
       use sendrecv
       IMPLICIT NONE
@@ -32,8 +32,6 @@
       INTEGER :: L
 ! solids phase no.
       INTEGER :: M
-! May need to offset index when using d_p0 and ro_s
-      INTEGER :: DM
 ! IER for error reporting
       INTEGER :: IER
 ! Difference between a particles diameter (density) and the diameter

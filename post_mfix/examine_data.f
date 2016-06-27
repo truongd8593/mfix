@@ -228,7 +228,7 @@
       Use physprop
       Use post3d, only: xdist_vec, xdist_sc, ydist_vec, ydist_sc, zdist_vec, zdist_sc
       use post_precision
-      Use run, only: any_solve_ros, time, run_name
+      Use run, only: any_solve_ros, time
       Use rxns
       Use scalars
       use turb, only: k_epsilon
@@ -244,7 +244,7 @@
       CHARACTER(LEN=120)  :: STRING, SUBSTR
       CHARACTER(LEN=8)   :: VAR, VAR_DAT(N_VAR)
       CHARACTER(LEN=120) :: FILE_NAME
-      INTEGER      L, L3, L4, LMAX, IANS, NSTEP_1
+      INTEGER      L, L3, LMAX, IANS, NSTEP_1
       REAL         DIST(DIMENSION_3), VALUE(DIMENSION_3)
       REAL         TIME_IN_RES
       INTEGER      DISPLAY, DIRECTION, NT
@@ -254,7 +254,7 @@
       LOGICAL      STRCMP,INTER
       REAL         XTMP, YTMP, ZTMP, VALUE_TMP
       INTEGER      IJK1
-      INTEGER      M_LOCAL, mIJK, lIJK, IER
+      INTEGER      M_LOCAL, mIJK, lIJK
       INTEGER      I, J, K, IJK, M, N
       REAL         DELm, DELl, FAC1, FAC2
 
@@ -982,9 +982,9 @@
 !         IF (L3.EQ.0) THEN
 !            IF (APPEND_MODE) THEN
 !               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN', &
-!                             POSITION='APPEND',CONVERT='BIG_ENDIAN')
+!                             POSITION='APPEND')
 !            ELSE
-!               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+!               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
 !            END IF
 !            FILE_NAME(1:1) = 'A'
 !         ELSE
@@ -1015,12 +1015,12 @@
                   READ(*,*)IANS
                   IF(IANS .NE. 1)GOTO 70
                ENDIF
-               OPEN (UNIT=40,FILE=FILE_NAME,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+               OPEN (UNIT=40,FILE=FILE_NAME,STATUS='UNKNOWN')
             ENDIF
          ENDIF
       ENDIF
 
- 5502 CONTINUE
+ ! 5502 CONTINUE
 
       IF (TIME_START .LT. TIME_IN_RES) THEN
          CALL SEEK_TIME(READ_SPX,TIME_START,REC_POINTER,TIME_FOUND)
@@ -1768,8 +1768,7 @@
         ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append',&
-                   convert='big_endian')
+             open (unit=40,file=file_name,position='append')
           end if
           GOTO 10
         ENDIF
@@ -1782,8 +1781,7 @@
         ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append',&
-                   convert='big_endian')
+             open (unit=40,file=file_name,position='append')
           end if
           GOTO 10
         ENDIF

@@ -186,8 +186,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_GS_GAS1
 
-! Flag: The fluid and discrete solids are explicitly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Size of particle array on this process.
       use discretelement, only: MAX_PIP
 ! IJK of fluid cell containing particles center
@@ -204,7 +202,6 @@
       use fldvar, only: EP_G
 ! Gas phase velocities
       use fldvar, only: U_G, V_G, W_G
-      use fldvar, only: U_GO, V_GO, W_GO
       use functions, only: FLUID_AT
       use functions, only: IS_NORMAL
 ! Volume of scalar cell.

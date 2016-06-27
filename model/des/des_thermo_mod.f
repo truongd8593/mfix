@@ -106,7 +106,7 @@
 ! Local Variables
 !---------------------------------------------------------------------//
 ! loop counter and error indicator
-      INTEGER :: NN, IER, MM
+      INTEGER :: NN, MM
       DOUBLE PRECISION :: lTs
 !......................................................................!
 

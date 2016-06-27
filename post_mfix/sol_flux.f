@@ -41,7 +41,7 @@
       DOUBLE PRECISION  TAVG(DIMENSION_3,3)
       REAL              TIME_REAL(N_SPX)
       REAL              TIME_FOUND, TIME_NOW
-      INTEGER           FILE1_INDEX , FILE2_INDEX , NSTEP_1
+      INTEGER           NSTEP_1
       INTEGER           NX , NY , NZ
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
@@ -56,7 +56,7 @@
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF
 !
-      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
 !
       DO IJK = 1,IJKMAX2
          TAVG(IJK,1) = ZERO

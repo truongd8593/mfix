@@ -154,11 +154,10 @@
          USE pscor, only: k_cp, mcp
          USE qmom_kinetic_equation, only: qmomk
          USE residual, only: resid_p, resid
-         USE run, only: auto_restart, automatic_restart, chk_batchq_end
-         use run, only: call_dqmom, call_usr
+         use run, only: call_usr
          use run, only: ghd_2007, granular_energy, kt_type_enum
          use run, only: friction
-         use run, only: phip_out_iter, energy_eq, dt, ier, steady_state
+         use run, only: phip_out_iter, energy_eq, ier, steady_state
          USE scalars, only: nscalar
          use turb, only: k_epsilon
 

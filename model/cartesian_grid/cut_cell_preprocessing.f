@@ -46,12 +46,12 @@ MODULE CUT_CELL_PREPROC
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
 
-! Initialize the error manager.                                                                  
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CUT CELL PRE-PROCESSING")
 
       IF(RO_G0==ZERO.AND..NOT.DEM_MIO) THEN  ! Nothing to do for granular flow and no IC/MIO for DEM
          IF((RUN_TYPE=='NEW'.AND..NOT.GENER_PART_CONFIG).OR.RUN_TYPE(1:3)=='RES') THEN
-            WRITE(ERR_MSG,1000) 
+            WRITE(ERR_MSG,1000)
             CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
             RETURN
          ENDIF
@@ -157,7 +157,7 @@ MODULE CUT_CELL_PREPROC
 
 10    FORMAT(1X,A)
 20    FORMAT(1X,A,F8.2,A)
-1000  FORMAT('Info: THIS IS A DEM GRANULAR FLOW SIMULATION.'/   &                          
+1000  FORMAT('Info: THIS IS A DEM GRANULAR FLOW SIMULATION.'/   &
              '      SKIPPING CARTESIAN GRID PRE-PROCESSING.'/)
 
       END SUBROUTINE CUT_CELL_PREPROCESSING
@@ -337,11 +337,6 @@ MODULE CUT_CELL_PREPROC
             END DO
          ENDIF
       END DO
-
-100         FORMAT(1X,A,I8)
-110         FORMAT(1X,A,A)
-120         FORMAT(1X,A,F14.8,/)
-130         FORMAT(1X,A,I8,F14.8,/)
 
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
@@ -752,32 +747,6 @@ MODULE CUT_CELL_PREPROC
 !         ENDIF
 !      ENDDO
 
-100         FORMAT(1X,A,I8)
-110         FORMAT(1X,A,A)
-120         FORMAT(1X,A,F14.8,/)
-130         FORMAT(1X,A,I8,F14.8,/)
-
-
- 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Computed volumetric flow is not equal to specified value',/,&
-         ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
-
-
- 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
-         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
-
-
- 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Computed volumetric flow is not equal to specified value',/,&
-         ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
-
- 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
-         I1,' = 0.',/1X,70('*')/)
- 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
       RETURN
 
       END SUBROUTINE CONVERT_CG_MI_TO_PS_PE
@@ -2026,7 +1995,7 @@ MODULE CUT_CELL_PREPROC
       IMPLICIT NONE
 
       IF(MyPE == PE_IO)  THEN
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = UNIT_CUT_CELL_LOG, FILE = 'CUT_CELL.LOG')
+         OPEN(UNIT = UNIT_CUT_CELL_LOG, FILE = 'CUT_CELL.LOG')
       ENDIF
 
       RETURN

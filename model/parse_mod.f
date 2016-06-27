@@ -733,8 +733,6 @@ MODULE parse
 
  1010 FORMAT(/' Chemical Equation: ',A,/1X, A/)
 
- 1011 FORMAT(/' Chemical Equation: ',A,/)
-
       END SUBROUTINE splitAliasAndCoeff
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
@@ -917,9 +915,6 @@ MODULE parse
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
  1010 FORMAT(/' Chemical Equation: ',A,/1X, A/)
-
- 1011 FORMAT(/' Chemical Equation: ',A,/)
-
 
       contains
 

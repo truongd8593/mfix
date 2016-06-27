@@ -40,11 +40,6 @@
       USE visc_s
       USE vshear
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER M
-!-----------------------------------------------
 
 !ambm
       Deallocate( A_m )
@@ -441,4 +436,3 @@
 
       RETURN
       END SUBROUTINE Deallocate_ARRAYS_POST
-

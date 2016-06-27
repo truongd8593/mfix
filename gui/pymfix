@@ -115,8 +115,6 @@ class Mfix(object):
 
 
         MAIN.initialize()
-        READ_INPUT.get_data()
-        MAIN.initialize_2()
 
         self.t0 = float(RUN.time)
 

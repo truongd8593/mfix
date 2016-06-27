@@ -26,7 +26,6 @@
       USE param1
       USE particle_filter, only: DES_REPORT_MASS_INTERP
       USE physprop, only: MMAX
-      USE run, only: solids_model
       USE sendrecv
 
       IMPLICIT NONE

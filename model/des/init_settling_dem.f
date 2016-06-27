@@ -11,24 +11,20 @@
       SUBROUTINE INIT_SETTLING_DEM
 
       USE desgrid, ONLY: desgrid_pic
-      USE derived_types, only: multisap, boxhandle
       USE discretelement
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use functions, only: is_nonexistent
-      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep
       use geometry
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: FACTOR, nn
+      INTEGER :: FACTOR
 
-      type(aabb_t) :: aabb
-
-      real :: mins(3), maxs(3), rad
+      real :: mins(3), maxs(3)
 
 !-----------------------------------------------
 ! Include statement functions
@@ -59,31 +55,6 @@
       maxs(1) = XLENGTH
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
-
-#ifdef do_sap
-      rad = 100*maxval(des_radius)
-      print *,"rad = ",rad
-      print *,"XLENGTH = ",XLENGTH
-      print *,"YLENGTH = ",YLENGTH
-      print *,"ZLENGTH = ",ZLENGTH
-         call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
-         ! initialize SAP
-         do nn=1, MAX_PIP
-            if(is_nonexistent(nn)) cycle
-            aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
-            aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
-
-            if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
-               print *,"BAD RADIUS..grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
-               ERROR_STOP __LINE__
-            endif
-
-            call multisap_add(multisap,aabb,nn,boxhandle(nn))
-         enddo
-
-         call multisap_quicksort(multisap)
-         call multisap_sweep(multisap)
-#endif
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces

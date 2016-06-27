@@ -16,9 +16,9 @@
       implicit none
 
 
-      integer   :: i , j , k , ijk , L , spx_num , nt , nstep_1
+      integer   :: ijk , L , spx_num , nt , nstep_1
 
-      real      :: time_in_res , time_now , value, time_prev
+      real      :: time_in_res , time_now , time_prev
       real      :: arr(*)
       real(kind=8)    :: time_series(*)
 

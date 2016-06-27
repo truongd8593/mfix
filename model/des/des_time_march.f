@@ -120,6 +120,8 @@ MODULE DES_TIME_MARCH
 !---------------------------------------------------------------------//
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: NN
+      logical :: flark
+      flark = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
 
          IF(DES_CONTINUUM_COUPLED) THEN
 ! If the current time in the discrete loop exceeds the current time in
@@ -158,6 +160,10 @@ MODULE DES_TIME_MARCH
          CALL DES_THERMO_NEWVALUES
 
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
+         if (DO_NSEARCH .neqv. flark) THEN
+            print *,"buh "
+            stop 123
+            ENDIF
 ! Add/Remove particles to the system via flow BCs.
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
          IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM(DO_NSEARCH)

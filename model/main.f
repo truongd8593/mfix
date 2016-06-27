@@ -51,8 +51,10 @@
       USE check_data_cg, only: check_bc_flags, report_best_processor_size
       USE coeff, only: init_coeff
       USE compar, only: mpierr, mype, pe_io
+      USE compar, only: mype, pe_io
       USE cont, only: do_cont
       USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
+      USE dbg, only: debug_write_layout, write_parallel_info
       USE discretelement, only: discrete_element
       USE drag, only: f_gs
       USE error_manager, only: err_msg, flush_err_msg
@@ -70,25 +72,27 @@
       USE physprop, only: mmax
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
       USE qmom_kinetic_equation, only: qmomk
-      USE run, only: id_version, ier
-      USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
+      USE run, only: call_usr, dem_solids, dt_max, dt_min
+      USE run, only: id_version
+      USE run, only: ier
+      USE run, only: nstep, pic_solids, run_type, dt, shear, time, v_sh
+      USE run, only: time
       USE time_cpu, only: CPU00, wall0
       USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
       USE vtk, only: write_vtk_files
 
       IMPLICIT NONE
 
+      ! Temporary storage for DT
+     DOUBLE PRECISION :: DT_tmp
+      ! Save TIME in input file for RESTART_2
+     DOUBLE PRECISION :: TIME_SAVE
+
+     INTEGER :: LL, MM
+
 !$    INTEGER num_threads, threads_specified, omp_id
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
-
-      ! Temporary storage for DT
-      DOUBLE PRECISION :: DT_tmp
-      ! Save TIME in input file for RESTART_2
-      DOUBLE PRECISION :: TIME_SAVE
-
-      INTEGER :: LL, MM
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -117,7 +121,7 @@
 !$      if (status.eq.0 .and. length.ne.0) then
 !$        read(omp_num_threads,*) threads_specified
 !$      else
-!$        WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
+!$        WRITE(*,'(A)') 'Enter the number of threads to be used for SMP: '
 !$        READ(*,*) threads_specified
 !$      endif
 
@@ -141,58 +145,10 @@
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
       WALL0 = WALL_TIME()
-   END SUBROUTINE INITIALIZE
 
-
-      SUBROUTINE INITIALIZE_2
-!f2py threadsafe
-#ifdef MPI
-      USE mpi, only: mpi_comm_world, mpi_barrier
-#endif
-      USE cdist, only: bdoing_postmfix
-      USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
-      USE check, only: check_mass_balance
-      USE check_data_cg, only: check_bc_flags, report_best_processor_size
-      USE coeff, only: init_coeff
-      USE compar, only: mpierr, mype, pe_io
-      USE cont, only: do_cont
-      USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
-      USE dbg, only: debug_write_layout, write_parallel_info
-      USE discretelement, only: discrete_element
-      USE drag, only: f_gs
-      USE error_manager, only: err_msg, flush_err_msg
-      USE error_manager, only: init_err_msg, finl_err_msg
-      USE fldvar, only: rop_g, rop_s
-      USE funits, only: dmp_log, unit_log, unit_res
-      USE machine, only: start_log, end_log
-      USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
-      USE mfix_netcdf, only: mfix_usingnetcdf
-      USE output, only: dbgprn_layout
-      USE output_man, only: init_output_vars, output_manager
-      USE parallel_mpi, only: parallel_init, parallel_fin
-      USE param1, only: n_spx, undefined, zero
-      USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
-      USE physprop, only: mmax
-      USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: id_version, ier
-      USE run, only: iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
-      USE time_cpu, only: CPU00, wall0
-      USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
-      USE vtk, only: write_vtk_files
-      IMPLICIT NONE
-
-      !$    INTEGER num_threads, threads_specified, omp_id
-      !$    INTEGER omp_get_num_threads
-      !$    INTEGER omp_get_thread_num
-
-      ! Temporary storage for DT
-      DOUBLE PRECISION :: DT_tmp
-      ! Save TIME in input file for RESTART_2
-      DOUBLE PRECISION :: TIME_SAVE
-
-      INTEGER :: LL, MM
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL GET_DATA
 
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -473,7 +429,61 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
            DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
-      END SUBROUTINE INITIALIZE_2
+      END SUBROUTINE INITIALIZE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: GET_DATA                                                C
+!  Purpose: read and verify input data, open files                     C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 04-DEC-91  C
+!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_DATA
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+
+      USE compar, only: adjust_partition, mype, nodesi, nodesj, nodesk, pe_io
+      USE mpi_utility, only: bcast
+      USE run, only: run_type
+
+      IMPLICIT NONE
+
+      LOGICAL :: PRESENT
+
+! This module call routines to initialize the namelist variables.
+      CALL INIT_NAMELIST
+! Read in the namelist variables from the ascii input file.
+      CALL READ_NAMELIST(0,MFIX_DAT)
+! Set RUN_TYPE to RESTART_1 when adjusting partition
+! and read partition layout in gridmap.dat if it exists
+      IF(ADJUST_PARTITION) THEN
+         RUN_TYPE = 'RESTART_1'
+
+         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)'Reading partition layout from grimap.dat...'
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+
+                READ (777, *) NODESI,NODESJ,NODESK
+
+                CLOSE(777)
+            ENDIF
+
+            CALL BCAST(NODESI)
+            CALL BCAST(NODESJ)
+            CALL BCAST(NODESK)
+         ENDIF
+
+      ENDIF
+
+      RETURN
+
+    END SUBROUTINE GET_DATA
 
       SUBROUTINE CHECK_DATA
 !f2py threadsafe

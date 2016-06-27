@@ -40,7 +40,7 @@
 
       DOUBLE PRECISION    ARRAY(DIMENSION_3,DIMENSION_M), K_1m
       LOGICAL             INTER
-      INTEGER             IER, M, IJK
+      INTEGER             M, IJK
 
       INTER = .FALSE.
 !
@@ -55,7 +55,7 @@
 !
       CLOSE(UNIT_OUT)
       IF (.NOT.DO_XFORMS) CALL GET_FILE_NAME(TEMP_FILE)
-      OPEN (UNIT=UNIT_OUT,FILE=TEMP_FILE,STATUS='UNKNOWN',convert='big_endian')
+      OPEN (UNIT=UNIT_OUT,FILE=TEMP_FILE,STATUS='UNKNOWN')
       CALL READ_RES1
       WRITE (UNIT_OUT,*) RUN_NAME
       WRITE (UNIT_OUT,*) ' '
