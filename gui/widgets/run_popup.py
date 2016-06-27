@@ -101,7 +101,6 @@ class RunPopup(QtWidgets.QDialog):
         """ Enable or disable options based on self.mfix_exe features,
         local or remote settings """
 
-        print('update_dialog_options')
 
         self.update_no_mfix_warning()
 
@@ -198,7 +197,6 @@ class RunPopup(QtWidgets.QDialog):
         exe_list.append(exe)
         exe_list.reverse()
         self.mfix_exe_list = exe_list
-        print(self.mfix_exe_list)
 
     def update_no_mfix_warning(self):
         ok = bool(self.mfix_exe)
