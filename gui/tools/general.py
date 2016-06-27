@@ -37,24 +37,40 @@ def get_mfix_home():
     return os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
+
 def format_key_with_args(key, args=None):
     if args:
         return "%s(%s)" % (key, ','.join(str(a) for a in args))
     else:
         return str(key)
 
+
+def unformat_key_with_args(string):
+    """companion function to "undo" format_key_with_args"""
+    if string.endswith(')'):
+        key, args = string[:-1].split('(')
+        args = [int(arg) for arg in args.split(',')]
+    else:
+        key = string
+        args = []
+    return key, args
+
+
 def plural(n, word):
-    fmt = "%d %s" if n==1 else "%d %ss"
+    fmt = "%d %s" if n == 1 else "%d %ss"
     return fmt % (n, word)
+
 
 def set_item_noedit(item):
     item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+
 
 def get_selected_row(table):
     """get index of selected row from a QTable"""
     # note, currentRow can return  >0 even when there is no selection
     rows = set(i.row() for i in table.selectedItems())
     return None if not rows else rows.pop()
+
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
@@ -107,8 +123,8 @@ def get_image_path(name):
 
 def make_callback(func, *args, **kwargs):
     """Helper function to make sure lambda functions are cached and not lost."""
-
     return lambda: func(*args, **kwargs)
+
 
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
@@ -140,6 +156,7 @@ def get_icon(name, default=None, resample=False):
         ret= icon
     icon_cache[(name, default, resample)] = ret
     return ret
+
 
 def get_unique_string(base, listofstrings):
     "uniquify a string"

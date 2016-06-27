@@ -1750,6 +1750,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         """add/change parameters"""
         self.parameter_dialog.get_parameters()
         self.set_unsaved_flag()
+        self.project.update_parameters()
 
     def handle_compile(self):
         """compiling tool"""

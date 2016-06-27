@@ -60,7 +60,7 @@ from tools.comparable import Comparable
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string,
-                           safe_shlex_split)
+                           safe_shlex_split, format_key_with_args)
 
 from regexes import *
 from constants import *
@@ -1084,7 +1084,7 @@ class Project(object):
             
         # if equation, update the parameter dict
         if isinstance(value, Equation):
-            self.update_parameter_map(value, [key]+args)            
+            self.update_parameter_map(value, key, args)            
             
         # check to see if the keyword already exists
         if [key]+args in self:
@@ -1434,12 +1434,13 @@ class Project(object):
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
 
-    def update_parameter_map(self, value, key_args):
-        keys = value.get_used_parameters()
-        for key in keys:
-            if key not in self.parameter_key_map:
-                self.parameter_key_map[key] = set()
-            self.parameter_key_map[key].add(','.join(key_args))
+    def update_parameter_map(self, value, key, args):
+        key_args = format_key_with_args(key, args)
+        params = value.get_used_parameters()
+        for param in params:
+            if param not in self.parameter_key_map:
+                self.parameter_key_map[param] = set()
+            self.parameter_key_map[param].add(key_args)
 
 
 if __name__ == '__main__':

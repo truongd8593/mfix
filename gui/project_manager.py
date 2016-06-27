@@ -29,7 +29,8 @@ from constants import *
 
 from widgets.base import LineEdit # a little special handling needed
 
-from tools.general import (format_key_with_args, plural, to_text_string)
+from tools.general import (format_key_with_args, unformat_key_with_args,
+                           plural, to_text_string)
 from tools import read_burcat
 
 
@@ -495,6 +496,14 @@ class ProjectManager(Project):
 
         if changed:
             self.gui.set_unsaved_flag()
+            
+    def update_parameters(self):
+        """parameter values have changed, loop through and update"""
+        for p, key_args in self.parameter_key_map.items():
+            for key_arg in key_args:
+                key, args = unformat_key_with_args(key_arg)
+                keyword_obj = self.keywordLookup(key, args)
+                self._change(self, key, keyword_obj.value, args=args)
 
     def objectName(self):
         return 'Project Manager'
