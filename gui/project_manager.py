@@ -189,8 +189,6 @@ class ProjectManager(Project):
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
 
-            # TODO:  make sure aliases are unique
-
             # Make sure they are sorted by index before inserting into gui
             self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
             self.solids.sort(key=lambda a:a.ind)
@@ -227,6 +225,7 @@ class ProjectManager(Project):
                 # First look for definition in THERMO DATA section
                 phase = g.phase.upper() # phase and species_g are guaranteed to be set
                 species = g.get('species_g')
+
                 source = "User Defined"
                 if species is None:
                     species = 'Gas %s' % g.ind
@@ -236,7 +235,6 @@ class ProjectManager(Project):
                 mw_g = g.get('mw_g', None)
                 # Note, we're going to unset mw_g and migrate it into THERMO DATA
 
-                # TODO:  make sure alias is set & unique
                 user_def = user_species.get((species, phase))
                 # Look for mismatched phase
                 if not user_def:
@@ -298,6 +296,10 @@ class ProjectManager(Project):
                         'tmax': 0.0,
                         'a_low': [0.0]*7,
                         'a_high': [0.0]*7}
+
+                if species in self.gui.fluid_species:
+                    self.gui.print_internal("Copying %s to %s" % (species, alias))
+                    species = alias # Create a new species, so we can override mol. weight, etc
 
                 self.gui.fluid_species[species] = species_data
 
@@ -487,7 +489,7 @@ class ProjectManager(Project):
         new_thermo_data = []
         #species_to_save = set(k for (k,v) in species_dict.items() if v['source'] != 'BURCAT')
         # We're going to save all of them, even the ones from BURCAT. so that mfix does
-        #  not need mfix.dat at runtime.  Note, that means "source" will be "User Decoolfined"
+        #  not need mfix.dat at runtime.  Note, that means "source" will be "User Defined"
         #  next time this project is loaded
         species_to_save = set(species_dict.keys())
         # Keep sections of thermo_data not mentioned in species_dict, for now
@@ -514,6 +516,7 @@ class ProjectManager(Project):
             # Keep the line
             new_thermo_data.append(line)
         self.thermo_data = new_thermo_data
+
         # Now append records for species not handled yet
         for species in species_to_save:
             data = species_dict[species]
