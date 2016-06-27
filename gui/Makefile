@@ -2,7 +2,7 @@
 
 UIFILES := $(wildcard uifiles/*ui)
 PY_UIFILES := $(patsubst %.ui,%.py,$(UIFILES))
-PYUIC := $(shell { command -v pyuic4 || command -v pyuic5; } 2>/dev/null)
+PYUIC := $(shell { command -v pyuic5 || command -v pyuic4; } 2>/dev/null)
 
 all: ${PY_UIFILES}
 
