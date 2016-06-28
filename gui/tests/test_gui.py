@@ -140,6 +140,7 @@ class MfixGuiTests(TestQApplication):
 
 
     def test_run_mfix(self):
+        self.skipTest("TODO: run mfix test based on run_popup modal dialog inputs")
         #TODO: write similar test for pymfix
         mfix_exe = os.path.join(self.mfix_home, "mfix")
         cme = self.mfix.ui.run.combobox_mfix_exes
