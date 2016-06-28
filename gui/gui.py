@@ -373,11 +373,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
-        #self.mfix_exe = None
-        #self.mfix_config = None
-        #self.smp_enabled = False
-        #self.dmp_enabled = False
-        #self.pymfix_enabled = False
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
@@ -388,9 +383,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.project.reset() # Clears all keywords & collections
 
-        #reset filesystem watchers: TODO: promote watchers to their own objects
-        for d in self.rundir_watcher.directories():
-            self.rundir_watcher.removePath(d)
         self.slot_rundir_changed()
 
         self.reset_fluids()
@@ -2089,15 +2081,6 @@ def main(args):
     mfix = MfixGui(qapp, project_file=project_file)
     mfix.show()
 
-    # --- print welcome message
-    #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
-
-    #saved_exe = mfix.settings.value('mfix_exe') #
-    #cb =  mfix.ui.run.combobox_mfix_exes
-    #if saved_exe and os.path.exists(saved_exe):
-    #    if cb.findText(saved_exe) == -1:
-    #        cb.addItem(saved_exe)
-    #    cb.setCurrentText(saved_exe)
     if mfix_exe_option:
         print('exe option passed: %s' % mfix_exe_option)
         mfix.commandline_option_exe = mfix_exe_option

@@ -1042,12 +1042,11 @@ class Project(object):
                 if not line.strip():
                     species = None
                     continue
-                if species is None:
+                # Skip over comment block. (Should we just use read_burcat here?)
+                if species is None and 79<=len(line)<=80 and line.endswith('1'):
                     species = line[:18].strip()
-                    if not species: # Blank lines
-                        continue
-                    self.thermo_data[species] = [line]
-                else:
+                    self.thermo_data[species] = []
+                if species:
                     self.thermo_data[species].append(line)
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
