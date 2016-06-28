@@ -205,6 +205,17 @@ class SolidsHandler(object):
         phase = self.solids_current_phase
         if phase is None:
             return
+        # Warn when unsetting added mass for other phases
+        prev_phase = self.project.get_value('m_am')
+        if prev_phase is not None and prev_phase != phase and val:
+            prev_phase_name = list(self.solids.keys())[prev_phase-1]
+            resp=self.message(text="Disabling added mass force for %s\nAre you sure?" % prev_phase_name,
+                              buttons=['yes','no'],
+                              default = 'no')
+            if resp == 'no':
+                cb.setChecked(False)
+                return
+
         if val:
             self.update_keyword('m_am', phase)
             self.update_keyword('added_mass', True)
