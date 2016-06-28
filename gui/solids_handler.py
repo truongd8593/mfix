@@ -185,7 +185,7 @@ class SolidsHandler(object):
             return
         close_packed = self.project.get_value('close_packed', default=None, args=phase)
         if (close_packed is not False) and val: # Disabling - popup as per SRS p15
-            resp=self.message(text="disabling close-packing for %s\nAre you sure?" % self.solids_current_phase_name,
+            resp=self.message(text="Disabling close-packing for %s\nAre you sure?" % self.solids_current_phase_name,
                               buttons=['yes','no'],
                               default = 'no')
             if resp != 'yes':
