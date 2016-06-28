@@ -308,11 +308,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
-        # FIXME: do we need this anymore? exes are to be populated at startup
-        # and at user interaction with the select exe widget
-        self.exe_watcher = QFileSystemWatcher()
-        self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
-
         self.monitor = Monitor(self)
 
         # buttons in 'run' pane
@@ -322,7 +317,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run.button_pause_mfix.setVisible(self.pymfix_enabled)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        run.combobox_mfix_exes.activated.connect(self.handle_select_exe)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
 
         # Print welcome message.  Do this early so it appears before any
@@ -379,11 +373,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
-        #self.mfix_exe = None
-        #self.mfix_config = None
-        #self.smp_enabled = False
-        #self.dmp_enabled = False
-        #self.pymfix_enabled = False
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
@@ -394,34 +383,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.project.reset() # Clears all keywords & collections
 
-        #reset filesystem watchers: TODO: promote watchers to their own objects
-        for w in (self.exe_watcher, self.rundir_watcher):
-            for d in w.directories():
-                w.removePath(d)
         self.slot_rundir_changed()
-        # just the system dirs, no project dirs (TODO: reevaluate $PATH)
-        PATH = os.environ.get("PATH")
-        if PATH:
-            dirs = set(PATH.split(os.pathsep))
-        else:
-            dirs = set()
-        mfix_home = get_mfix_home()
-        if mfix_home:
-            dirs.add(mfix_home)
-            dirs.add(os.path.join(mfix_home, 'bin'))
-            dirs.add(os.path.join(mfix_home, 'build'))
-        for d in dirs:
-            # filter out empty strings and current directory from $PATH
-            if d and d != os.path.curdir and os.path.isdir(d):
-                if d not in self.exe_watcher.directories():
-                    self.exe_watcher.addPath(d)
-        self.slot_exes_changed()
-
-        if self.mfix_exe: # Do we need to do this again here?
-            cb = self.ui.run.combobox_mfix_exes
-            if cb.findText(self.mfix_exe) == -1:
-                cb.addItem(self.mfix_exe)
-            cb.setCurrentText(self.mfix_exe)
 
         self.reset_fluids()
         self.reset_solids()
@@ -505,49 +467,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
 
-    def update_no_mfix_warning(self):
-        ok = bool(self.mfix_exe or self.mfix_available)
-        self.ui.run.label_mfix_exes_warning.setVisible(not ok)
-        self.ui.run.combobox_mfix_exes.setVisible(ok)
-        if not ok:
-            self.print_internal("Warning: no MFIX executables available")
-
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
         log.debug("rundir changed")
         # TODO figure out if we really need to do this update
         self.update_run_options()
-
-    def slot_exes_changed(self):
-        # The list of executables (maybe) changed.
-        # Note: since log files get written to project dirs, this callback
-        # is triggered frequently during a run
-        running = self.job.is_running()
-        res_file_exists = bool(self.monitor.get_res_files())
-
-        exes = list(self.monitor.get_exes())
-        mfix_exe = self.mfix_exe
-
-        # Did the current exe go away?
-        if mfix_exe and not os.path.exists(mfix_exe):
-            self.print_internal("Warning: %s is gone" % mfix_exe)
-            mfix_exe = self.mfix_exe = None
-
-        # Make sure we don't loose the current selection
-        if mfix_exe and mfix_exe not in exes:
-            exes.insert(0, mfix_exe)
-        self.mfix_available = bool(exes)
-        self.update_no_mfix_warning()
-
-        cb = self.ui.run.combobox_mfix_exes
-
-        cb.clear()
-        for exe in exes:
-            cb.addItem(exe)
-
-        if self.mfix_exe:
-            cb.setCurrentText(self.mfix_exe)
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
@@ -1403,15 +1328,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_select_exe(self):
         """Enable/disable run options based on selected executable"""
-        #mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
-        #if mfix_exe == self.mfix_exe:
-        #    return
-
-        #self.mfix_exe = mfix_exe
-
-        #if not mfix_exe:
-        #    self.update_run_options()
-        #    return
 
         # FIXME: clean up merge with run dialog methods
         if self.mfix_exe is not None:
@@ -2172,21 +2088,10 @@ def main(args):
     mfix = MfixGui(qapp, project_file=project_file)
     mfix.show()
 
-    # --- print welcome message
-    #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
-
-    #saved_exe = mfix.settings.value('mfix_exe') #
-    #cb =  mfix.ui.run.combobox_mfix_exes
-    #if saved_exe and os.path.exists(saved_exe):
-    #    if cb.findText(saved_exe) == -1:
-    #        cb.addItem(saved_exe)
-    #    cb.setCurrentText(saved_exe)
     if mfix_exe:
         print('exe option passed: %s' % mfix_exe)
         mfix.commandline_option_exe = mfix_exe
         mfix.handle_select_exe()
-
-    mfix.update_no_mfix_warning()
 
     if project_file is None and not new_project:
         # autoload last project

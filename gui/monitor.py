@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 class Monitor(object):
     """class for monitoring available MFIX executables and output files"""
-    # TODO move exe_watcher stuff from gui.py here
     def __init__(self, parent):
         self.parent = parent
         self.cache = {}
@@ -49,7 +48,7 @@ class Monitor(object):
             return flags
 
         exes = {} # map exes -> flags
-        for d in self.parent.exe_watcher.directories():
+        for d in [self.parent.get_project_dir(),]:
             for name in 'mfix', 'mfix.exe', 'pymfix', 'pymfix.exe':
                 exe = os.path.abspath(os.path.join(d, name))
                 if os.path.isfile(exe):
