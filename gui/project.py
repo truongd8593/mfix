@@ -1042,7 +1042,8 @@ class Project(object):
                 if not line.strip():
                     species = None
                     continue
-                # Skip over comment block. (Should we just use read_burcat here?)
+                # Skip over comment block.
+                #  (Should we just use read_burcat here? - comment is dropped)
                 if species is None and 79<=len(line)<=80 and line.endswith('1'):
                     species = line[:18].strip()
                     self.thermo_data[species] = []
