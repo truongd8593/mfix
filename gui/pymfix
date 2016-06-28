@@ -7,6 +7,7 @@ import getopt
 import json
 import logging
 import os
+import socket
 import sys
 import tempfile
 import threading
@@ -17,6 +18,7 @@ from timeit import default_timer as timer
 from flask import Flask, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
+hp_filename = None
 
 # append the path of the symlink __file__ (not its realpath)
 sys.path.append(os.path.dirname(__file__))
@@ -53,7 +55,7 @@ def main():
     paused, port, keyword_args = parse_command_line_arguments()
 
     global mfix_thread
-    mfix_thread = Mfix(paused, keyword_args)
+    mfix_thread = Mfix(paused, keyword_args, port=port)
     mfix_thread.start()
 
     # log = logging.getLogger('werkzeug')
@@ -67,6 +69,7 @@ def main():
             traceback.print_exc()
             # If we get here, the user hit Ctrl-C to shutdown the server,
             # so we call _exit() to kill the run_mfix thread.
+            os.remove(hp_filename)
             os._exit(0)
     else:
         # nothing else for rank>0 to do
@@ -80,13 +83,14 @@ class Mfix(object):
     requests = {}
     responses = {}
 
-    def __init__(self, paused, keyword_args):
+    def __init__(self, paused, keyword_args, port):
         " constructor "
         self.keyword_args = keyword_args
         self.thread = None
         self.status = json.dumps({})
         self.stopped = False
         self.paused = paused
+        self.port = port
         self.t0 = 0.
         self.walltime = 0.
         self.walltime_remaining = 'unknown'
@@ -112,12 +116,17 @@ class Mfix(object):
         for arg in keyword_args:
             MAIN.add_command_line_keyword(arg)
 
-
         MAIN.initialize()
 
         self.t0 = float(RUN.time)
 
         self.update_status()
+
+        global hp_filename
+        hp_filename = '%s.hp' % RUN.run_name.tobytes().strip().decode('utf-8')
+        hp = open(hp_filename, 'w')
+        hp.write('%s:%s' % (socket.gethostname(), self.port))
+        hp.close()
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
@@ -508,6 +517,8 @@ def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, data = mfix_thread.do_command("EXIT")
     time.sleep(int(request.form['timeout'])) # wait for MFIX thread to end
+    global hp_filename
+    os.remove(hp_filename)
     os._exit(0)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
