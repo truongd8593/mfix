@@ -11,6 +11,9 @@ import copy
 from widgets.base import Table
 from tools.general import get_icon, get_unique_string
 from constants import *
+from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
+
+PROTECTED_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
 
 class ParameterDialog(QtWidgets.QDialog):
 
@@ -185,4 +188,27 @@ class ParameterDialog(QtWidgets.QDialog):
     def parameter_changed(self, row, col, value):
         """parameter changed"""
         data = self.table.value
-        self.changed_parameters.add(data[row]['parameter'])
+
+        if col == 'value':
+            self.changed_parameters.add(data[row]['parameter'])
+
+        # check name
+        elif col == 'parameter':
+            new_name = self.check_name(value)
+            
+            data[row][col] = new_name
+            self.table.set_value(data)
+
+    def check_name(self, name):
+
+        data = self.table.value
+        param_names = [val['parameter'] for val in data.values()]
+        param_names.remove(name)
+
+        if name in PROTECTED_NAMES + self.parent().keyword_doc.keys():
+            self.parent().message(title='Error', text='The parameter name: <b>{}</b> is protected and cannot be used'.format(name))
+            return name
+        elif name in param_names:
+            return get_unique_string(name, param_names)
+        else:
+            return name

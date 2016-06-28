@@ -4,7 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import re
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui
@@ -32,6 +31,7 @@ from regexes import *
 from constants import *
 
 from tools.general import to_text_string
+from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 
 class BaseWidget(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
@@ -80,7 +80,7 @@ class BaseWidget(QtCore.QObject):
 class EquationCompleter(QtWidgets.QCompleter):
     def __init__(self, parent=None):
         QtWidgets.QCompleter.__init__(self, parent)
-        self.delimiators = ['*', '**', '/', '-', '+', ' ']
+        self.delimiators = ['*', '**', '/', '-', '+', ' ', '(', ')']
         self.update_model(self)
 
     def update_model(self, dtype=None):
@@ -93,6 +93,7 @@ class EquationCompleter(QtWidgets.QCompleter):
         for key, value in PARAMETER_DICT.items():
             if isinstance(value, dtype):
                 comp_list.append(key)
+        comp_list.extend(DEFAULT_FUNCTIONS.keys())
 
         self.model.setStringList(comp_list)
         self.setModel(self.model)
@@ -110,6 +111,7 @@ class EquationCompleter(QtWidgets.QCompleter):
                                     if sep in text[cur_index:] else len(text)
                                     for sep in self.delimiators])
 
+        #print(text, text[0:prev_delimiter_index], auto_string, text[next_delimiter_index:])
         return text[0:prev_delimiter_index] + auto_string + text[next_delimiter_index:]
 
     def splitPath(self, path):
@@ -167,7 +169,6 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     @property
     def value(self):
         text = self.text().strip()
-        self.used_parameters = []
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:
