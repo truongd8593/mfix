@@ -56,7 +56,16 @@ QPushButton:checked {
       <enum>QFrame::Plain</enum>
      </property>
      <layout class="QGridLayout" name="gridlayout_solid_tab_btns">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <property name="spacing">
@@ -161,7 +170,16 @@ QPushButton:checked {
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <property name="spacing">
@@ -179,7 +197,16 @@ QPushButton:checked {
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -328,9 +355,9 @@ QPushButton:checked {
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-315</y>
-             <width>606</width>
-             <height>1141</height>
+             <y>0</y>
+             <width>603</width>
+             <height>1222</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -979,7 +1006,16 @@ QPushButton:checked {
                   <enum>QFrame::Plain</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_9">
-                  <property name="margin">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
                    <number>0</number>
                   </property>
                   <property name="spacing">
@@ -1164,9 +1200,18 @@ QPushButton:checked {
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="continuum">
+     <widget class="QWidget" name="TFM">
       <layout class="QGridLayout" name="gridLayout_3">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <property name="spacing">
@@ -1492,12 +1537,21 @@ QPushButton:checked {
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="discrete">
+     <widget class="QWidget" name="DEM">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>5</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -1522,8 +1576,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>399</width>
-            <height>1033</height>
+            <width>605</width>
+            <height>1200</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -2102,9 +2156,18 @@ background-color:transparent;
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="particle">
+     <widget class="QWidget" name="PIC">
       <layout class="QGridLayout" name="gridLayout_4">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <property name="spacing">
@@ -2113,7 +2176,16 @@ background-color:transparent;
        <item row="0" column="0">
         <widget class="QFrame" name="frame_14">
          <layout class="QGridLayout" name="gridLayout_59">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
