@@ -28,6 +28,11 @@ import gui
 # Note, qWaitForWindowShown is deprecated in qt5, which provides a better version,
 #  including a timeout.
 
+try:
+    waitForWindow = QTest.qWaitForWindowActive
+except NameError:
+    waitForWindow = QTest.qWaitForWindowShown
+
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
@@ -86,7 +91,7 @@ class MfixGuiTests(TestQApplication):
 
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
-        self.assertTrue(QTest.qWaitForWindowShown(self.mfix), "main mfix app not open")
+        self.assertTrue(waitForWindow(self.mfix), "main mfix app not open")
 
         self.mfix.get_open_filename = lambda: mfix_dat
         QTimer.singleShot(500, self.click_ok)
