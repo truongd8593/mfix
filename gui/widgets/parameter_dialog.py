@@ -70,6 +70,7 @@ class ParameterDialog(QtWidgets.QDialog):
         self.table.show_vertical_header(False)
         self.table.auto_update_rows(True)
         self.table.new_selection.connect(self.table_clicked)
+        self.table.value_changed.connect(self.parameter_changed)
 
         self.grid_layout.addWidget(self.table, 1, 0)
 
@@ -150,8 +151,10 @@ class ParameterDialog(QtWidgets.QDialog):
 
     def get_parameters(self):
         self.load_parameters()
+        self.changed_parameters = set()
         self.exec_()
         self.update_parameter_dict(self.parameters)
+        return self.changed_parameters
 
     def parameters_from_str(self, string):
         """load parameter data from a saved string"""
@@ -178,3 +181,8 @@ class ParameterDialog(QtWidgets.QDialog):
 
         for key in set(PARAMETER_DICT.keys()) - set(data.keys()):
             PARAMETER_DICT.pop(key)
+
+    def parameter_changed(self, row, col, value):
+        """parameter changed"""
+        data = self.table.value
+        self.changed_parameters.add(data[row]['parameter'])

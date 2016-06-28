@@ -491,19 +491,21 @@ class ProjectManager(Project):
             data = species_dict[species]
             #if data['source'] != 'BURCAT':
             #    self.thermo_data.extend(format_burcat(species,data))
-            self.thermo_data.extend(format_burcat(species,data))
+            self.thermo_data.extend(format_burcat(species, data))
             changed = True
 
         if changed:
             self.gui.set_unsaved_flag()
-            
-    def update_parameters(self):
+
+    def update_parameters(self, params):
         """parameter values have changed, loop through and update"""
-        for p, key_args in self.parameter_key_map.items():
-            for key_arg in key_args:
-                key, args = unformat_key_with_args(key_arg)
-                keyword_obj = self.keywordLookup(key, args)
-                self._change(self, key, keyword_obj.value, args=args)
+        for p in params:
+            if p in self.parameter_key_map:
+                key_args = self.parameter_key_map[p]
+                for key_arg in key_args:
+                    key, args = unformat_key_with_args(key_arg)
+                    keyword_obj = self.keywordLookup(key, args)
+                    self._change(self, key, keyword_obj.value, args=args)
 
     def objectName(self):
         return 'Project Manager'
