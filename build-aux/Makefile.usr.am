@@ -163,7 +163,6 @@ pymfix_src = \
 	$(top_srcdir)/../model/residual_mod.f \
 	$(top_srcdir)/../model/time_step.f \
 	$(top_srcdir)/../model/main.f \
-	$(top_srcdir)/../model/get_data.f \
 	$(top_srcdir)/../model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)

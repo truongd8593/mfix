@@ -28,7 +28,6 @@ from mfix import des_time_march as DES_TIME_MARCH
 from mfix import discretelement as DEM
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
-from mfix import read_input as READ_INPUT
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import step as STEP

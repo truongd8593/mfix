@@ -1386,11 +1386,8 @@ class Project(object):
         if self.thermo_data:
             yield '\n'
             yield 'THERMO DATA\n'
-            keys = self.thermo_data.keys()
-            keys.sort()
-            for key in keys:
-            for lines in self.thermo_data.values():
-                for line in self.thermo_data[key]
+            for key in sorted(self.thermo_data.keys()):
+                for line in self.thermo_data[key]:
                     yield line + '\n'
                 yield '\n'
 
