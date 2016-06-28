@@ -14,7 +14,7 @@ import os
 from qtpy.QtTest import QTest
 from qtpy import QtCore
 from qtpy.QtCore import Qt, QTimer
-from qtpy import QtWidgets
+from qtpy import QtWidgets, PYQT5
 
 import logging
 import errno
@@ -28,9 +28,9 @@ import gui
 # Note, qWaitForWindowShown is deprecated in qt5, which provides a better version,
 #  including a timeout.
 
-try:
+if PYQT5:
     waitForWindow = QTest.qWaitForWindowActive
-except NameError:
+else:
     waitForWindow = QTest.qWaitForWindowShown
 
 class MfixGuiTests(TestQApplication):
