@@ -30,7 +30,8 @@ from project import Keyword, Equation, FloatExp, make_FloatExp
 from regexes import *
 from constants import *
 
-from tools.general import to_text_string, get_icon
+from tools.general import (to_text_string, get_icon, insert_append_action,
+                           insert_append_separator, get_unique_string)
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 
 class BaseWidget(QtCore.QObject):
@@ -45,26 +46,37 @@ class BaseWidget(QtCore.QObject):
         self.max = None
         self.required = None
         self.help_text = 'No help avaliable.'
+        self.context_menu = None
+        self.allow_parameters = False
 
     def extend_context_menu(self):
-        first_default_action = self.context_menu.actions()[0]
+        menu = self.context_menu()
+        first_default_action = menu.actions()
+
+        if first_default_action:
+            first_default_action = first_default_action[0]
 
         # help
         help_action = QtWidgets.QAction(
-            get_icon('help.png'), 'Help', self.context_menu)
+            get_icon('help.png'), 'Help', menu)
         help_action.triggered.connect(self.show_help_message)
-        self.context_menu.insertAction(first_default_action, help_action)
+        insert_append_action(menu, help_action, first_default_action)
 
         # create parameter
-        create_param_action = QtWidgets.QAction(
-            get_icon('functions.png'), 'Create Parameter', self.context_menu)
-        create_param_action.triggered.connect(self.show_help_message)
-        self.context_menu.insertAction(first_default_action, create_param_action)
+        if self.allow_parameters:
+            create_param_action = QtWidgets.QAction(
+                get_icon('functions.png'), 'Create Parameter', menu)
+            create_param_action.triggered.connect(self.create_parameter)
+            insert_append_action(menu, create_param_action, first_default_action)
 
-        self.context_menu.insertSeparator(first_default_action)
+        insert_append_separator(menu, first_default_action)
+
+        return menu
 
     def contextMenuEvent(self, event):
-        self.context_menu.exec_(event.globalPos())
+        if self.context_menu is not None:
+            menu = self.extend_context_menu()
+            menu.exec_(event.globalPos())
 
     def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
@@ -112,6 +124,30 @@ class BaseWidget(QtCore.QObject):
 
         message_box.addButton(QtWidgets.QMessageBox.Ok)
         message_box.exec_()
+
+    def create_parameter(self):
+
+        btn = QtWidgets.QMessageBox.Yes
+        if isinstance(self.value, Equation):
+            message_box = QtWidgets.QMessageBox(self)
+            message_box.setWindowTitle('Warning')
+            message_box.setIcon(QtWidgets.QMessageBox.Warning)
+
+            # Text
+            message_box.setText("Warning: Replace equation with parameter?")
+
+            message_box.addButton(QtWidgets.QMessageBox.Yes)
+            message_box.addButton(QtWidgets.QMessageBox.No)
+            message_box.setDefaultButton(QtWidgets.QMessageBox.No)
+            btn = message_box.exec_()
+
+        if btn == QtWidgets.QMessageBox.Yes:
+            name = get_unique_string('param', PARAMETER_DICT.keys())
+
+            PARAMETER_DICT[name] = self.dtype(self.value)
+
+            self.updateValue(None, name)
+            self.emitUpdatedValue()
 
 
 class EquationCompleter(QtWidgets.QCompleter):
@@ -176,10 +212,9 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
         self.completer = EquationCompleter(self)
         self.setCompleter(self.completer)
-        
+
         # right click menu
-        self.context_menu = self.createStandardContextMenu()
-        self.extend_context_menu()
+        self.context_menu = self.createStandardContextMenu
 
     @classmethod
     def value_error(self, text):
@@ -233,7 +268,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.value_error(e)
                     return self.saved_value or ''
-            elif re_math.search(text):
+            elif re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
                         text = text[2:-1]
@@ -293,6 +328,7 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
         # stateChanged:  called on both user interaction and programmatic change
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
+        self.context_menu = QtWidgets.QMenu
 
     @property
     def value(self):
@@ -318,6 +354,8 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
         #self.currentIndexChanged.connect(self.emitUpdatedValue)
         self.dtype = str
         self.is_pop_up = False
+
+        self.context_menu = QtWidgets.QMenu
 
     @property
     def value(self):
@@ -362,6 +400,8 @@ class SpinBox(QtWidgets.QSpinBox, BaseWidget):
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
 
+        self.context_menu = QtWidgets.QMenu
+
     def emitUpdatedValue(self): # calls self.value() instead of using self.value
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
 
@@ -390,6 +430,7 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         self.valueChanged.connect(self.emitUpdatedValue)
 
         self.dtype = float
+        self.context_menu = QtWidgets.QMenu
 
     def textFromValue(self, value):
         ret = repr(value)

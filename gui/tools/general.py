@@ -390,6 +390,20 @@ class CellColor(object):
     def __repr__(self):
         return self.text
 
+
+def insert_append_action(menu, action, insert=None):
+    if insert:
+        menu.insertAction(insert, action)
+    else:
+        menu.addAction(action)
+
+
+def insert_append_separator(menu, insert=None):
+    if insert:
+        menu.insertSeparator(insert)
+    else:
+        menu.addSeparator()
+
 if __name__ == '__main__':
     test_recurse_dict()
     test_recurse_dict_empty()

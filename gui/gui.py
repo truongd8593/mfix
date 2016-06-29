@@ -960,6 +960,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     description = doc.get('description')
                     if description is not None:
                         widget.help_text = description
+                        widget.setWhatsThis(description)
+                        
+                    if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
+                        widget.allow_parameters = True
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
