@@ -20,7 +20,7 @@ class SolidsTFM(object):
         #             s.label_friction_model, s.combobox_friction_model):
         #    item.setEnabled(enabled)
 
-        enabled = (self.project.get_value("friction_model") == 'SIRVASTAVA')
+        enabled = (self.project.get_value("friction_model") == 'SRIVASTAVA')
         for item in (s.label_eps_f_min, s.lineedit_keyword_eps_f_min):
             item.setEnabled(enabled)
 
