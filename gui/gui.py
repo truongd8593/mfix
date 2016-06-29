@@ -1851,13 +1851,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_no_project()
             return
 
-        if hasattr(self.project, 'run_name'):
-            name = self.project.run_name.value
-        else:
-            name = 'new_file'
-        for char in ('.', '"', "'", '/', '\\', ':'):
-            name = name.replace(char, '_')
-        runname_mfx = name + '.mfx'
+        run_name = self.project.get_value('run_name', '')
+        runname_mfx = run_name + '.mfx'
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
