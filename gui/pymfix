@@ -18,7 +18,7 @@ from timeit import default_timer as timer
 from flask import Flask, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
-hp_filename = None
+pidfile = None
 
 # append the path of the symlink __file__ (not its realpath)
 sys.path.append(os.path.dirname(__file__))
@@ -69,7 +69,7 @@ def main():
             traceback.print_exc()
             # If we get here, the user hit Ctrl-C to shutdown the server,
             # so we call _exit() to kill the run_mfix thread.
-            os.remove(hp_filename)
+            os.remove(pidfile)
             os._exit(0)
     else:
         # nothing else for rank>0 to do
@@ -122,11 +122,12 @@ class Mfix(object):
 
         self.update_status()
 
-        global hp_filename
-        hp_filename = '%s.hp' % RUN.run_name.tobytes().strip().decode('utf-8')
-        hp = open(hp_filename, 'w')
-        hp.write('%s:%s' % (socket.gethostname(), self.port))
-        hp.close()
+        if COMPAR.mype == 0:
+            global pidfile
+            pidfile = '%s.pid' % RUN.run_name.tobytes().strip().decode('utf-8')
+            with open(pidfile, 'w') as pid:
+                pid.write('%s\n' % os.getpid())
+                pid.write('%s:%s\n' % (socket.gethostname(), self.port))
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
@@ -517,8 +518,8 @@ def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, data = mfix_thread.do_command("EXIT")
     time.sleep(int(request.form['timeout'])) # wait for MFIX thread to end
-    global hp_filename
-    os.remove(hp_filename)
+    global pidfile
+    os.remove(pidfile)
     os._exit(0)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
