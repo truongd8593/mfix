@@ -989,7 +989,7 @@ class Project(object):
                     break # no more keywords on this line
         else:
             yield (None, None, None)
-            
+
     def parse_mfix_gui_comments(self, fobject):
         """read through the file looking for #!MFIX-GUI"""
         self.mfix_gui_comments.clear()
@@ -1012,7 +1012,7 @@ class Project(object):
         self.__initDataStructure__()
         self.dat_file_list = []
         self.thermo_data = []
-        
+
         reactionSection = False
         thermoSection = False
         for i, line in enumerate(fobject):
@@ -1081,17 +1081,20 @@ class Project(object):
         # TODO:  refactor
         if args is None:
             args = []
-            
-        # if equation, update the parameter dict
-        if isinstance(value, Equation):
-            self.update_parameter_map(value, key, args)            
-            
+
         # check to see if the keyword already exists
         if [key]+args in self:
+            # if previous value is equation, update the parameter dict
+            if isinstance(self[[key]+args].value, Equation) or isinstance(value, Equation):
+                self.update_parameter_map(value, key, args)
             self[[key]+args].updateValue(value)
             if keywordComment:
                 self[[key]+args].comment = keywordComment
             return self[[key]+args]
+
+        # if equation, update the parameter dict
+        if isinstance(value, Equation):
+            self.update_parameter_map(value, key, args)
 
         keywordobject = None
 
@@ -1434,13 +1437,33 @@ class Project(object):
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
 
-    def update_parameter_map(self, value, key, args):
+    def update_parameter_map(self, new_value, key, args):
+        """update the mapping of parameters and keywords"""
         key_args = format_key_with_args(key, args)
-        params = value.get_used_parameters()
-        for param in params:
+
+        # new params
+        if isinstance(new_value, Equation):
+            new_params = new_value.get_used_parameters()
+        else:
+            new_params = []
+
+        # old params
+        if [key]+args in self and isinstance(self[[key]+args].value, Equation):
+            old_params = self[[key]+args].value.get_used_parameters()
+        else:
+            old_params = []
+
+        add = set(new_params)-set(old_params)
+        for param in add:
             if param not in self.parameter_key_map:
                 self.parameter_key_map[param] = set()
             self.parameter_key_map[param].add(key_args)
+
+        remove = set(old_params)-set(new_params)
+        for param in remove:
+            self.parameter_key_map[param].remove(key_args)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
 
 
 if __name__ == '__main__':
