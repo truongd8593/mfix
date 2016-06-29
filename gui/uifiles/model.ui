@@ -165,14 +165,14 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="label_drag_model">
         <property name="text">
          <string>Drag Model</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="ComboBox" name="comboBox_3">
+       <widget class="ComboBox" name="combobox_drag_model">
         <item>
          <property name="text">
           <string>Wen and Yu</string>
@@ -181,14 +181,14 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="label_heat_transfer">
         <property name="text">
          <string>Heat Transfer</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="ComboBox" name="comboBox_4">
+       <widget class="ComboBox" name="combobox_heat_transfer">
         <item>
          <property name="text">
           <string>Gunn, 1979</string>
@@ -288,32 +288,40 @@
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item row="1" column="0" colspan="2">
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>Enable wall correction</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Filter size ratio</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="LineEdit" name="lineedit_vfilter_size_ratio">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>107</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Enable wall correction</string>
            </property>
           </widget>
          </item>
@@ -344,8 +352,6 @@
   <zorder>groupBox_advanced</zorder>
   <zorder>groupBox_options</zorder>
   <zorder>verticalSpacer</zorder>
-  <zorder>combobox_keyword_description</zorder>
-  <zorder>label_description</zorder>
  </widget>
  <customwidgets>
   <customwidget>
