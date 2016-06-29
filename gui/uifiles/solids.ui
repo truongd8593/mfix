@@ -1242,7 +1242,7 @@ QPushButton:checked {
            <number>5</number>
           </property>
           <item row="4" column="2" colspan="2">
-           <widget class="ComboBox" name="comboBox_22">
+           <widget class="ComboBox" name="combobox_max_packing_correlation">
             <item>
              <property name="text">
               <string>Constant</string>
@@ -1261,14 +1261,14 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="4" column="0" colspan="2">
-           <widget class="QLabel" name="label_147">
+           <widget class="QLabel" name="label_max_packing_correlation">
             <property name="text">
              <string>Max packing correlation</string>
             </property>
            </widget>
           </item>
           <item row="1" column="2" colspan="2">
-           <widget class="ComboBox" name="comboBox_21">
+           <widget class="ComboBox" name="combobox_stress_blending">
             <item>
              <property name="text">
               <string>None</string>
@@ -1287,38 +1287,38 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_146">
+           <widget class="QLabel" name="label_segregation_slope_coefficient">
             <property name="text">
              <string>Segregation Slope coefficient</string>
             </property>
            </widget>
           </item>
           <item row="6" column="0" colspan="2">
-           <widget class="QLabel" name="label_148">
+           <widget class="QLabel" name="label_v_ex">
             <property name="text">
              <string>Excluded volume in Boyle-Massoudi stress</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="label_145">
+           <widget class="QLabel" name="label_stress_blending">
             <property name="text">
              <string>Stress Blending</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label_144">
+           <widget class="QLabel" name="label_rdf_type">
             <property name="text">
              <string>Radial Distribution Function</string>
             </property>
            </widget>
           </item>
           <item row="0" column="2" colspan="2">
-           <widget class="ComboBox" name="combobox_keyword_rdf_type">
+           <widget class="ComboBox" name="combobox_rdf_type">
             <item>
              <property name="text">
-              <string>Carnahan Starling</string>
+              <string>Carnahan-Starling</string>
              </property>
             </item>
             <item>
@@ -1380,28 +1380,28 @@ QPushButton:checked {
            <widget class="LineEdit" name="lineedit_keyword_ep_star_2"/>
           </item>
           <item row="8" column="0">
-           <widget class="QLabel" name="label_142">
+           <widget class="QLabel" name="label_c_f">
             <property name="text">
              <string>Interphase friction coefficient</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_139">
+           <widget class="QLabel" name="label_kt_type">
             <property name="text">
              <string>Viscous Stress Model</string>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_140">
+           <widget class="QLabel" name="label_friction_model">
             <property name="text">
              <string>Frictional Stress Model</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="ComboBox" name="comboBox_19">
+           <widget class="ComboBox" name="combobox_friction_model">
             <item>
              <property name="text">
               <string>Schaeffer</string>
@@ -1420,14 +1420,14 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="label_202">
+           <widget class="QLabel" name="label_eps_f_min">
             <property name="text">
              <string>Solids volume fraction at onset of friction</string>
             </property>
            </widget>
           </item>
           <item row="10" column="0">
-           <widget class="QLabel" name="label_143">
+           <widget class="QLabel" name="label_phi">
             <property name="text">
              <string>Angle of internal friction (degrees)</string>
             </property>
@@ -1441,7 +1441,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="ComboBox" name="comboBox">
+           <widget class="ComboBox" name="combobox_kt_type">
             <item>
              <property name="text">
               <string>Algebraic Formulation</string>
@@ -1488,7 +1488,7 @@ QPushButton:checked {
            <widget class="LineEdit" name="lineedit_keyword_eps_f_min"/>
           </item>
           <item row="6" column="0">
-           <widget class="QLabel" name="label_141">
+           <widget class="QLabel" name="label_c_e">
             <property name="text">
              <string>Particle-particle restitution coeff.</string>
             </property>
@@ -1576,7 +1576,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>605</width>
+            <width>418</width>
             <height>1200</height>
            </rect>
           </property>
