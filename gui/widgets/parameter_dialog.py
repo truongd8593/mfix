@@ -19,6 +19,8 @@ class ParameterDialog(QtWidgets.QDialog):
 
     def __init__(self, parent):
         QtWidgets.QDialog.__init__(self, parent)
+        
+        self.data_old = {}
 
         self.setWindowIcon(get_icon('mfix.png'))
         self.setWindowTitle('Parameters')
@@ -82,6 +84,10 @@ class ParameterDialog(QtWidgets.QDialog):
         self.pushbutton_close.pressed.connect(self.close)
         self.grid_layout.addWidget(self.pushbutton_close, 2, 0)
 
+    def update_table(self, data):
+        self.table.set_value(data)
+        self.data_old = copy.deepcopy(data)
+
     def table_clicked(self):
         row = self.table.current_row()
 
@@ -93,23 +99,27 @@ class ParameterDialog(QtWidgets.QDialog):
             self.toolbutton_copy.setEnabled(False)
 
     def new_parameter(self):
-        param = self.table.value
+        data = self.table.value
         new_name = get_unique_string(
-            'new', [val['parameter'] for val in param.values()])
+            'new', [val['parameter'] for val in data.values()])
 
-        param[len(param)] = {'parameter': new_name, 'type': 'float',
-                             'value': 0.0}
+        data[len(data)] = {'parameter': new_name, 'type': 'float',
+                           'value': 0.0}
 
-        self.table.set_value(param)
+        self.update_table(data)
 
     def remove_parameter(self):
         row = self.table.current_row()
 
         if row >= 0:
             data = self.table.value
-            name = list(data.keys())[row]
-            data.pop(name)
-            self.table.set_value(data)
+            index = list(data.keys())[row]
+            name = data[row]['parameter']
+            if name in self.parent().project.parameter_key_map.keys():
+                self.parent().message(title='Error', text='The parameter name: <b>{}</b> is being used. Please remove reference before deleting.'.format(name))
+            else:
+                data.pop(index)
+                self.update_table(data)
 
     def copy_parameter(self):
         row = self.table.current_row()
@@ -124,7 +134,7 @@ class ParameterDialog(QtWidgets.QDialog):
             data[len(data)] = {'parameter': new_name,
                                'type': copy.deepcopy(data[row]['type']),
                                'value': copy.deepcopy(data[row]['value'])}
-            self.table.set_value(data)
+            self.update_table(data)
 
     def load_parameters(self):
         new_param_dict = OrderedDict()
@@ -137,7 +147,7 @@ class ParameterDialog(QtWidgets.QDialog):
             new_param_dict[i] = {'parameter': key, 'type': dtype,
                                  'value': PARAMETER_DICT[key]}
 
-        self.table.set_value(new_param_dict)
+        self.update_table(new_param_dict)
         self.table.fit_to_contents()
 
     @property
@@ -195,19 +205,20 @@ class ParameterDialog(QtWidgets.QDialog):
         # check name
         elif col == 'parameter':
             new_name = self.check_name(value)
-            
+
             data[row][col] = new_name
-            self.table.set_value(data)
+            self.update_table(data)
 
     def check_name(self, name):
-
+        """check the parameter name"""
         data = self.table.value
         param_names = [val['parameter'] for val in data.values()]
         param_names.remove(name)
+        old_name = list(set([val['parameter'] for val in self.data_old.values()]) - set(param_names))[0]
 
         if name in PROTECTED_NAMES + self.parent().keyword_doc.keys():
             self.parent().message(title='Error', text='The parameter name: <b>{}</b> is protected and cannot be used'.format(name))
-            return name
+            return old_name
         elif name in param_names:
             return get_unique_string(name, param_names)
         else:
