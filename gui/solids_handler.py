@@ -20,7 +20,9 @@ from tools.general import (set_item_noedit, get_selected_row,
 
 from widgets.base import LineEdit
 
-class SolidsHandler(object):
+from solids_tfm import SolidsTFM
+
+class SolidsHandler(SolidsTFM):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -28,7 +30,6 @@ class SolidsHandler(object):
         self.solids_mol_weight_model = MIXTURE
         self.solids_specific_heat_model = CONSTANT
         self.solids_conductivity_model = OTHER
-
 
     def handle_solids_density_model(self, model):
         self.solids_density_model = model
@@ -157,6 +158,11 @@ class SolidsHandler(object):
 
         tw_solids_species.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
+        # Advanced
+        s.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
+        s.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
+
+
         # connect solid tab buttons
         for i, btn in enumerate((s.pushbutton_solids_materials,
                                  s.pushbutton_solids_tfm,
@@ -170,11 +176,34 @@ class SolidsHandler(object):
         self.fixup_solids_table(2)
         self.fixup_solids_table(3)
 
-        # Advanced
-        s.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
-        s.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
+        self.init_solids_tfm()
 
 
+    # Solids sub-pane navigation
+    def solids_change_tab(self, tabnum, btn):
+        self.animate_stacked_widget(
+            self.ui.solids.stackedwidget_solids,
+            self.ui.solids.stackedwidget_solids.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=self.ui.solids.line_solids,
+            to_btn=btn,
+            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
+        if tabnum == 1:
+            self.setup_tfm_tab()
+        elif tabnum == 2:
+            self.setup_dem_tab()
+        elif tabnum == 3:
+            self.setup_pic_tab()
+
+
+    def setup_dem_tab(self):
+        pass
+
+    def setup_pic_tab(self):
+        pass
+
+    # Advanced
     def disable_close_pack(self, val):
         cb = self.ui.solids.checkbox_disable_close_pack
         if val != cb.isChecked(): # not from a click action
@@ -334,6 +363,7 @@ class SolidsHandler(object):
                              'diameter': diameter, # TODO: diameter is REQUIRED
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
+        self.update_keyword('mmax', len(self.solids))
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
@@ -464,7 +494,9 @@ class SolidsHandler(object):
         table = self.ui.solids.tablewidget_solids
         if self.solids is None:
             table.clearContents()
+            self.unset_keyword('mmax')
             return
+
         nrows = len(self.solids)
         table.setRowCount(nrows)
 

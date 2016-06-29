@@ -27,7 +27,7 @@ from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
 
-PRECOMPILE_UI = True
+PRECOMPILE_UI = False
 
 if not PRECOMPILE_UI:
     from qtpy import uic
@@ -960,18 +960,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                     self.ui.stackedwidget_mode.currentIndex(),
                                     current_index,
                                     'horizontal')
-
-    # Solids sub-pane navigation
-    def solids_change_tab(self, tabnum, btn):
-        """ switch solids stacked widget based on selected """
-        self.animate_stacked_widget(
-            self.ui.solids.stackedwidget_solids,
-            self.ui.solids.stackedwidget_solids.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=self.ui.solids.line_solids,
-            to_btn=btn,
-            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
