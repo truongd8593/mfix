@@ -30,7 +30,7 @@ from project import Keyword, Equation, FloatExp, make_FloatExp
 from regexes import *
 from constants import *
 
-from tools.general import to_text_string
+from tools.general import to_text_string, get_icon
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 
 class BaseWidget(QtCore.QObject):
@@ -44,6 +44,27 @@ class BaseWidget(QtCore.QObject):
         self.min = None
         self.max = None
         self.required = None
+        self.help_text = 'No help avaliable.'
+
+    def extend_context_menu(self):
+        first_default_action = self.context_menu.actions()[0]
+
+        # help
+        help_action = QtWidgets.QAction(
+            get_icon('help.png'), 'Help', self.context_menu)
+        help_action.triggered.connect(self.show_help_message)
+        self.context_menu.insertAction(first_default_action, help_action)
+
+        # create parameter
+        create_param_action = QtWidgets.QAction(
+            get_icon('functions.png'), 'Create Parameter', self.context_menu)
+        create_param_action.triggered.connect(self.show_help_message)
+        self.context_menu.insertAction(first_default_action, create_param_action)
+
+        self.context_menu.insertSeparator(first_default_action)
+
+    def contextMenuEvent(self, event):
+        self.context_menu.exec_(event.globalPos())
 
     def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
@@ -75,6 +96,22 @@ class BaseWidget(QtCore.QObject):
             self.updateValue(self.key, self.default_value, args=self.args)
 
         return self.default_value
+
+    def show_help_message(self):
+        message_box = QtWidgets.QMessageBox(self)
+        if self.key is not None:
+            key = ': ' + self.key
+        else:
+            key = ''
+        message_box.setWindowTitle('Help' + key)
+        message_box.setIcon(QtWidgets.QMessageBox.Information)
+
+        # Text
+        message_box.setText(self.help_text)
+        #message_box.setInformativeText(infoText)
+
+        message_box.addButton(QtWidgets.QMessageBox.Ok)
+        message_box.exec_()
 
 
 class EquationCompleter(QtWidgets.QCompleter):
@@ -139,6 +176,10 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
         self.completer = EquationCompleter(self)
         self.setCompleter(self.completer)
+        
+        # right click menu
+        self.context_menu = self.createStandardContextMenu()
+        self.extend_context_menu()
 
     @classmethod
     def value_error(self, text):

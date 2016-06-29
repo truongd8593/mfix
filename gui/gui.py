@@ -956,6 +956,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     default = doc.get('initpython') # "Initial Python Value"
                     if default is not None:
                         widget.default(default)
+                        
+                    description = doc.get('description')
+                    if description is not None:
+                        widget.help_text = description
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
