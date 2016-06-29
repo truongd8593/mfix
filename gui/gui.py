@@ -709,14 +709,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_window_title()
 
     def disable_fluid_solver(self, disabled):
+        m = self.ui.model
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
         item.setDisabled(disabled)
-        ms = self.ui.model
-        checkbox = ms.checkbox_enable_turbulence
-        checkbox.setEnabled(enabled)
-        ms.combobox_turbulence_model.setEnabled(enabled and
-                                                checkbox.isChecked())
+        if disabled:
+            self.enable_turbulence(False)
+        m.checkbox_enable_turbulence.setEnabled(enabled)
+        m.combobox_turbulence_model.setEnabled(enabled and
+                        m.checkbox_enable_turbulence.isChecked())
+
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -759,16 +761,30 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         groupbox_subgrid_params = self.ui.model.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
-    def enable_turbulence(self):
-        model = self.ui.model
-        enabled = model.checkbox_enable_turbulence.isChecked()
-        model.combobox_turbulence_model.setEnabled(enabled)
+    def enable_turbulence(self, enabled):
+        m = self.ui.model
+        if enabled != m.checkbox_enable_turbulence.isChecked():
+            m.checkbox_enable_turbulence.setChecked(enabled)
+        m.combobox_turbulence_model.setEnabled(enabled)
+        if not enabled:
+            self.unset_keyword('turbulence_model')
+        else:
+            self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
+
+    def set_turbulence_model(self, val):
+        m = self.ui.model
+        cb = m.combobox_turbulence_model
+        if cb.currentIndex() != val:
+            cb.setCurrentIndex(val)
+            return
+        self.update_keyword('turbulence_model',
+                            ['MIXING_LENGTH', 'K_EPSILON'][val])
+
 
     def update_scalar_equations(self, prev_nscalar):
         """sets nscalar and phase4scalar(#) for all phases"""
         # Used by both fluid & solid han
-        # This is a little messy.  We may have reduced
-        # nscalar, so we need to unset phase4scalar(i)
+        # We may have reduced nscalar, so we need to unset phase4scalar(i)
         # for any values of i > nscalar.
         nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
         if nscalar > 0:
@@ -806,6 +822,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         checkbox = model.checkbox_enable_turbulence
         checkbox.clicked.connect(self.enable_turbulence)
+
+        combobox = model.combobox_turbulence_model
+        combobox.currentIndexChanged.connect(self.set_turbulence_model)
 
         combobox = model.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
@@ -1923,7 +1942,24 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
 
-        # User-specified names for fluid & solids phases.  (Non-keyword)
+        # Model paramaters
+        # TODO: set 'disable fluid solver' checkbox if appropriate
+
+        turbulence_model = self.project.get_value('turbulence_model')
+        if turbulence_model is None:
+            self.enable_turbulence(False)
+        else:
+            turbulence_models = ['MIXING_LENGTH', 'K_EPSILON']
+            if turbulence_model not in turbulence_models:
+                self.message("Error: Invalid turbulence model %s" % turbulence_model)
+                self.unset_keyword('turbulence_model')
+            else:
+                # set model first to avoid extra keyword settings
+                self.set_turbulence_model(turbulence_models.index(turbulence_model))
+                self.enable_turbulence(True)
+
+
+        #  Non-keyword params stored as !#MFIX_GUI comments
         solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
