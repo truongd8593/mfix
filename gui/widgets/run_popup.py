@@ -9,7 +9,9 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import QtWidgets, QtCore, PYQT4, PYQT5
+from qtpy import PYQT4, PYQT5
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox
 
 from tools.general import get_mfix_home
 
@@ -23,17 +25,18 @@ log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 RECENT_EXE_LIMIT = 5
 MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
 
-class RunPopup(QtWidgets.QDialog):
+class RunPopup(QDialog):
 
-    run = QtCore.Signal()
-    cancel = QtCore.Signal()
-    set_run_mfix_exe = QtCore.Signal()
+    run = Signal()
+    cancel = Signal()
+    set_run_mfix_exe = Signal()
 
     def __init__(self, title, mfix_exe, parent):
 
         super(RunPopup, self).__init__(parent)
 
         self.commandline_option_exe = mfix_exe if mfix_exe else None
+        self.mfix_available = False
         self.mfix_exe = None
         self.mfix_exe_list = []
         self.mfix_exe_flags = {}
@@ -48,14 +51,17 @@ class RunPopup(QtWidgets.QDialog):
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
-        self.initialize_ui()
 
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
-        buttons = self.ui.buttonbox.buttons()
-        buttons[0].clicked.connect(self.handle_run)
-        buttons[1].clicked.connect(self.handle_abort)
+        self.bbox = self.ui.buttonbox
+        self.ok_button = self.bbox.button(QDialogButtonBox.Ok)
+        self.cancel_button = self.bbox.button(QDialogButtonBox.Cancel)
+        self.ok_button.clicked.connect(self.handle_run)
+        self.cancel_button.clicked.connect(self.handle_abort)
+
+        self.initialize_ui()
 
     # UI update functions
 
@@ -84,15 +90,18 @@ class RunPopup(QtWidgets.QDialog):
             self.NODES_SET = False
 
         if len(self.mfix_exe_list) > 0:
+            self.mfix_available = True
             self.mfix_exe = self.mfix_exe_list[0]
             self.populate_combobox_mfix_exe()
-            self.update_dialog_options()
         else:
+            self.mfix_available = False
             self.parent.message(
                 icon='warning',
                 text='MFIX not found. Please browse for an executable.',
                 buttons=['ok','cancel'],
                 default='ok')
+
+        self.update_dialog_options()
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
@@ -104,8 +113,8 @@ class RunPopup(QtWidgets.QDialog):
         """ Enable or disable options based on self.mfix_exe features,
         local or remote settings """
 
-        if not self.mfix_exe_list:
-            self.ui.combobox_mfix_exe.setEnabled(False)
+        self.ui.combobox_mfix_exe.setEnabled(self.mfix_available)
+        self.ok_button.setEnabled(self.mfix_available)
 
         self.update_no_mfix_warning()
 
@@ -114,6 +123,7 @@ class RunPopup(QtWidgets.QDialog):
         queue_enabled = mode == 'queue'
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
+        self.ui.groupbox_run_options.setEnabled(self.mfix_available)
         cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
         dmp = 'dmp' in cfg['flags'] if cfg else False
         smp = 'smp' in cfg['flags'] if cfg else False
@@ -168,10 +178,10 @@ class RunPopup(QtWidgets.QDialog):
 
     def handle_browse_exe(self):
         """ Handle file open dialog for user specified exe """
-        new_exe = QtWidgets.QFileDialog.getOpenFileName(
+        new_exe = QFileDialog.getOpenFileName(
             self, "Select Executable",
             directory=self.project_dir,
-            options=QtWidgets.QFileDialog.DontResolveSymlinks)
+            options=QFileDialog.DontResolveSymlinks)
         if not new_exe:
             return
         if PYQT5:
@@ -182,6 +192,7 @@ class RunPopup(QtWidgets.QDialog):
                 title='Warning',
                 text='The selected file is not an executable MFIX binary')
             return
+        self.mfix_available = True
         self.mfix_exe = new_exe
         self.prepend_to_exe_list(new_exe)
         self.populate_combobox_mfix_exe()
@@ -271,20 +282,23 @@ class RunPopup(QtWidgets.QDialog):
 
         def mfix_build_directories():
             mfix_home = get_mfix_home()
-            build_dir_name = 'build-aux'
-            if mfix_home:
-                dir_list = [
-                    os.path.join(mfix_home, 'bin'),
-                    os.path.join(mfix_home, 'build')]
+            bin_dir = os.path.join(mfix_home, 'bin')
+            builds_dir = os.path.join(mfix_home, 'build')
+            #if mfix_home:
+            if True:
+                dir_list = set([mfix_home])
+                if os.path.isdir(bin_dir):
+                    dir_list.add(bin_dir)
+                # add mfix_home/build/*/build-aux
+                if os.path.isdir(builds_dir):
+                    for child in os.listdir(builds_dir):
+                        build = os.path.join(builds_dir, child, 'build-aux')
+                        if os.path.isdir(build):
+                            dir_list.add(build)
                 for d in dir_list:
-                    if not os.path.isdir(d):
-                        continue
-                    for child in os.listdir(d):
-                        build_dir = os.path.join(d, child, build_dir_name)
-                        if os.path.isdir(build_dir):
-                            for name in MFIX_EXE_NAMES:
-                                for exe in glob(os.path.join(build_dir, name)):
-                                    yield exe
+                    for name in MFIX_EXE_NAMES:
+                        for exe in glob(os.path.join(d, name)):
+                            yield exe
 
         def get_saved_exe():
             last_exe = self.settings.value('mfix_exe')
@@ -352,8 +366,8 @@ class RunPopup(QtWidgets.QDialog):
 if __name__ == '__main__':
 
     args = sys.argv
-    app = QtWidgets.QApplication(args)
-    run_popup = Run_Popup(QtWidgets.QDialog())
+    app = QApplication(args)
+    run_popup = Run_Popup(QDialog())
     run_popup.show()
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)
