@@ -302,7 +302,7 @@
       CASE ('SCHAEFFER')
          SCHAEFFER = .TRUE.
          FRICTION = .FALSE.
-      CASE ('SIRVASTAVA')
+      CASE ('SRIVASTAVA')
          SCHAEFFER = .FALSE.
          FRICTION = .TRUE.
       CASE ('NONE')
@@ -339,7 +339,7 @@
          TAN_PHI_W = TAN(PHI_W*PI/180.D0)
       ENDIF
 
- 1201 FORMAT('Error 1201: The SIRVASTAVA solids stress model requires',&
+ 1201 FORMAT('Error 1201: The SRIVASTAVA solids stress model requires',&
          /,' GRANULAR_ENERGY /= ALGEBRAIC',/&
         'Please correct the mfix.dat file.')
  1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&

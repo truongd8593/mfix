@@ -15,7 +15,7 @@
   DT_MIN                = 1.0d-8                       !min. time step
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .FALSE.    .FALSE.            !do not solve species eq
-  FRICTION_MODEL = 'SIRVASTAVA'
+  FRICTION_MODEL = 'SRIVASTAVA'
 
 ! Geometry Section
 

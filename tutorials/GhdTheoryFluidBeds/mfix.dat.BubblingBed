@@ -58,7 +58,7 @@
   DRAG_TYPE             = 'WEN_YU'
 #  LAM_HYS = 0.0001d0 
   
-  FRICTION_MODEL = 'SIRVASTAVA'
+  FRICTION_MODEL = 'SRIVASTAVA'
 
   MMAX = 2 !the code will internally modify mmax to 3 to solve for mixture.
   RO_s         = 2*2.5d0

@@ -24,7 +24,7 @@
   SPECIES_EQ = .T. .F.
 
   KT_TYPE = 'LUN_1984'
-  FRICTION_MODEL = 'SIRVASTAVA'
+  FRICTION_MODEL = 'SRIVASTAVA'
 
   C(1) = 30. !reaction rate constant
   C_NAME(1) = 'RXN Rate Constant'
