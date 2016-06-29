@@ -9,7 +9,7 @@ from qtpy import QtWidgets, QtCore
 import copy
 
 from widgets.base import Table
-from tools.general import get_icon, get_unique_string
+from tools.general import get_icon, get_unique_string, unformat_key_with_args
 from constants import *
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 
@@ -19,7 +19,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
     def __init__(self, parent):
         QtWidgets.QDialog.__init__(self, parent)
-        
+
         self.data_old = {}
 
         self.setWindowIcon(get_icon('mfix.png'))
@@ -167,6 +167,7 @@ class ParameterDialog(QtWidgets.QDialog):
         self.changed_parameters = set()
         self.exec_()
         self.update_parameter_dict(self.parameters)
+        self.table.clear_selection()
         return self.changed_parameters
 
     def parameters_from_str(self, string):
@@ -204,17 +205,20 @@ class ParameterDialog(QtWidgets.QDialog):
 
         # check name
         elif col == 'parameter':
-            new_name = self.check_name(value)
+            old_name = self.data_old[row][col]
+            new_name = self.check_name(value, old_name)
 
             data[row][col] = new_name
             self.update_table(data)
 
-    def check_name(self, name):
+            if new_name != old_name:
+                self.change_parameter_name(old_name, new_name)
+
+    def check_name(self, name, old_name):
         """check the parameter name"""
         data = self.table.value
         param_names = [val['parameter'] for val in data.values()]
         param_names.remove(name)
-        old_name = list(set([val['parameter'] for val in self.data_old.values()]) - set(param_names))[0]
 
         if name in PROTECTED_NAMES + self.parent().keyword_doc.keys():
             self.parent().message(title='Error', text='The parameter name: <b>{}</b> is protected and cannot be used'.format(name))
@@ -223,3 +227,19 @@ class ParameterDialog(QtWidgets.QDialog):
             return get_unique_string(name, param_names)
         else:
             return name
+
+    def change_parameter_name(self, old_name, new_name):
+
+        proj = self.parent().project
+        p_map = proj.parameter_key_map
+
+        if old_name in p_map.keys():
+            for keyword in p_map[old_name]:
+                key, args = unformat_key_with_args(keyword)
+                if [key]+args in proj:
+                    eq = proj[[key]+args].value
+                    eq.eq = eq.eq.replace(old_name, new_name)
+
+            p_map[new_name] = p_map.pop(old_name)
+            self.changed_parameters.add(new_name)
+            print(p_map)

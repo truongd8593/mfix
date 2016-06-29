@@ -587,6 +587,10 @@ class Table(QtWidgets.QTableView, BaseWidget):
             else:
                 self.new_selection.emit(None, None)
 
+    def clear_selection(self):
+        sel_model = self.selectionModel()
+        sel_model.clearSelection()
+
     @property
     def value(self):
         if self.model():
