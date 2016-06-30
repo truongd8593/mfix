@@ -309,8 +309,8 @@ class SolidsHandler(SolidsTFM):
             item.setFlags(flags)
         # Set for current phase
         if self.solids_current_phase is not None:
-            model = self.project.get_value("solids_model", args = self.solids_current_phase)
-            i = 0 if model=='TFM' else 1 if model=='DEM' else 2 if model=='PIC' else None
+            mod = self.project.get_value("solids_model", args=self.solids_current_phase)
+            i = 0 if mod=='TFM' else 1 if mod=='DEM' else 2 if mod=='PIC' else None
             if i is None:
                 i = 0 if solver in (TFM, HYBRID) else 1 if solver == DEM else 2
 

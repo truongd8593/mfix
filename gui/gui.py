@@ -1944,7 +1944,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
 
-        # Model paramaters
+        # Model parameters
         # TODO: set 'disable fluid solver' checkbox if appropriate
 
         turbulence_model = self.project.get_value('turbulence_model')
