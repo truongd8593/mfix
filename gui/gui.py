@@ -428,6 +428,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 w.default()
             else:
                 pass # What to do for rest of widgets?
+                
+        # reset parameters
+        PARAMETER_DICT.clear()
 
         self.unsaved_flag = False
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file

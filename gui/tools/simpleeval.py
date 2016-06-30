@@ -177,7 +177,7 @@ DEFAULT_FUNCTIONS = {"rand": random, "randint": random_int,
                      
                      }
 
-DEFAULT_NAMES = {"True": True, "False": False}
+DEFAULT_NAMES = {"True": True, "False": False, 'e': math.e, 'pi': math.pi}
 
 ########################################
 # And the actual evaluator:

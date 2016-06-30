@@ -103,7 +103,11 @@ class ParameterDialog(QtWidgets.QDialog):
         new_name = get_unique_string(
             'new', [val['parameter'] for val in data.values()])
 
-        data[len(data)] = {'parameter': new_name, 'type': 'float',
+        new_index = 0
+        if len(data.keys()) > 0:
+            new_index = max(data.keys())+1
+
+        data[new_index] = {'parameter': new_name, 'type': 'float',
                            'value': 0.0}
 
         self.update_table(data)
@@ -114,7 +118,7 @@ class ParameterDialog(QtWidgets.QDialog):
         if row >= 0:
             data = self.table.value
             index = list(data.keys())[row]
-            name = data[row]['parameter']
+            name = data[index]['parameter']
             if name in self.parent().project.parameter_key_map.keys():
                 self.parent().message(title='Error', text='The parameter name: <b>{}</b> is being used. Please remove reference before deleting.'.format(name))
             else:
@@ -126,14 +130,19 @@ class ParameterDialog(QtWidgets.QDialog):
 
         if row >= 0:
             data = self.table.value
-            name = data[row]['parameter']
+            index = list(data.keys())[row]
+            name = data[index]['parameter']
 
             new_name = get_unique_string(
                 name, [val['parameter'] for val in data.values()])
 
-            data[len(data)] = {'parameter': new_name,
-                               'type': copy.deepcopy(data[row]['type']),
-                               'value': copy.deepcopy(data[row]['value'])}
+            new_index = 0
+            if len(data.keys()) > 0:
+                new_index = max(data.keys())+1
+
+            data[new_index] = {'parameter': new_name,
+                               'type': copy.deepcopy(data[index]['type']),
+                               'value': copy.deepcopy(data[index]['value'])}
             self.update_table(data)
 
     def load_parameters(self):
@@ -210,6 +219,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
             data[row][col] = new_name
             self.update_table(data)
+            self.table.clear_selection()
 
             if new_name != old_name:
                 self.change_parameter_name(old_name, new_name)
@@ -242,4 +252,3 @@ class ParameterDialog(QtWidgets.QDialog):
 
             p_map[new_name] = p_map.pop(old_name)
             self.changed_parameters.add(new_name)
-            print(p_map)
