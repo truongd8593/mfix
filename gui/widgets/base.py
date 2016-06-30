@@ -272,7 +272,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
                         text = text[2:-1]
-                    eq = Equation(text)
+                    eq = Equation(text, dtype=float)
                     f = float(eq)
                     self.check_range(f)
                     self.saved_value = eq
@@ -284,14 +284,25 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 return self.saved_value or ''
 
         elif self.dtype is int:
-            try:
-                i = int(float(text))
-                self.check_range(i)
-                self.saved_value = i
-                return i
-            except ValueError as e:
-                self.value_error("Error: value %s" %e)
-                return self.saved_value or ''
+            if re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
+                try:
+                    eq = Equation(text, dtype=int)
+                    i = int(eq)
+                    self.check_range(i)
+                    self.saved_value = eq
+                    return eq
+                except ValueError as e:
+                    self.value_error("Equation Error: value %s" %e)
+                    return self.saved_value or ''
+            else:
+                try:
+                    i = int(float(text))
+                    self.check_range(i)
+                    self.saved_value = i
+                    return i
+                except ValueError as e:
+                    self.value_error("Error: value %s" %e)
+                    return self.saved_value or ''
 
         else:
             raise TypeError(self.dtype)

@@ -201,16 +201,16 @@ class Equation(object):
     ValueError on any failures.  Evaluating an empty string returns 0.0,
     while evaluating None returns NaN"""
 
-    def __init__(self, eq):
+    def __init__(self, eq, dtype=float):
         eq = str(eq)
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
         self.eq = eq
-        self.dtype = float
+        self.dtype = dtype
 
     def get_used_parameters(self):
         av_params = PARAMETER_DICT.keys()
-        eq = re.split('[\*\/\-\+ ]', self.eq)
+        eq = re.split('[\*\/\-\+ \(\)]', self.eq)
         return [p for p in av_params if p in eq]
 
     def _eval(self):
@@ -242,8 +242,7 @@ class Equation(object):
         return ''.join(['@(', str(self.eq), ')'])
 
     def dumps(self):
-        if self.dtype == float:
-            return '%s #!MFIX-GUI eq{%s}' % (float(self._eval()), self.eq)
+        return '%s #!MFIX-GUI eq{%s}' % (self.dtype(self._eval()), self.eq)
 
     def __add__(self, value):
         return float(self._eval()) + float(value)
@@ -872,7 +871,7 @@ class Project(object):
             self._parsemfixdat(StringIO(self.dat_file))
             return
 
-    def parseKeywordLine(self, line, equation_str):
+    def parseKeywordLine(self, line, equation_str=None):
         if not line.strip():
             yield(None, None, None)
             return
