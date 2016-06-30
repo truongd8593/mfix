@@ -16,7 +16,8 @@ UserRole = QtCore.Qt.UserRole
 #local imports
 from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
-                           widget_iter, make_callback)
+                           widget_iter, make_callback,
+                           get_combobox_item, set_item_enabled)
 
 from widgets.base import LineEdit
 
@@ -300,13 +301,8 @@ class SolidsHandler(SolidsTFM):
         enabled[1] = (solver==DEM or solver==HYBRID)
         enabled[2] = (solver==PIC)
         for (i, e) in enumerate(enabled):
-            item = model.item(i, 0)
-            flags = item.flags()
-            if e:
-                flags |= QtCore.Qt.ItemIsEnabled
-            else:
-                flags &= ~QtCore.Qt.ItemIsEnabled
-            item.setFlags(flags)
+            set_item_enabled(get_combobox_item(cb,i), e)
+
         # Set for current phase
         if self.solids_current_phase is not None:
             mod = self.project.get_value("solids_model", args=self.solids_current_phase)
