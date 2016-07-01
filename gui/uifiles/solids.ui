@@ -1598,20 +1598,8 @@ background-color:transparent;
 }</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>5</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
-            <number>5</number>
-           </property>
            <item row="0" column="0" colspan="3">
-            <widget class="CheckBox" name="checkbox_keyword_gener_part_config_2">
+            <widget class="CheckBox" name="checkbox_keyword_gener_part_config">
              <property name="text">
               <string>Enable automatic particle generation</string>
              </property>
@@ -1624,8 +1612,8 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="1" column="2" colspan="2">
-            <widget class="LineEdit" name="lineedit_keyword_particles_2"/>
+           <item row="1" column="2">
+            <widget class="LineEdit" name="lineedit_keyword_particles"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_152">
@@ -1656,7 +1644,18 @@ background-color:transparent;
             </widget>
            </item>
            <item row="3" column="2">
-            <widget class="ComboBox" name="combobox_des_coll_model"/>
+            <widget class="ComboBox" name="combobox_des_coll_model">
+             <item>
+              <property name="text">
+               <string>Linear Spring-Dashpot</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hertzian</string>
+              </property>
+             </item>
+            </widget>
            </item>
            <item row="4" column="0" colspan="7">
             <widget class="Line" name="line_11">
@@ -1672,7 +1671,7 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="5" column="2" colspan="2">
+           <item row="5" column="2">
             <widget class="ComboBox" name="comboBox_23">
              <item>
               <property name="text">
@@ -1700,30 +1699,6 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="7" column="2" colspan="4">
-            <widget class="ComboBox" name="comboBox_20">
-             <item>
-              <property name="text">
-               <string>field-to-particle and particle-to-field</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>field-to-particle only</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>particle-to-field only</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>no-interpolation</string>
-              </property>
-             </item>
-            </widget>
-           </item>
            <item row="8" column="0">
             <widget class="QLabel" name="label_181">
              <property name="text">
@@ -1731,7 +1706,7 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="8" column="2" colspan="2">
+           <item row="8" column="2">
             <widget class="ComboBox" name="comboBox_26">
              <item>
               <property name="text">
@@ -1808,7 +1783,7 @@ background-color:transparent;
               </widget>
              </item>
              <item row="4" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac"/>
              </item>
              <item row="6" column="0">
               <widget class="QLabel" name="label_175">
@@ -1818,16 +1793,16 @@ background-color:transparent;
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_des_etat_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_fac"/>
              </item>
              <item row="2" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_kn_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kn"/>
              </item>
              <item row="3" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_kt_w_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kt_w_fac"/>
              </item>
              <item row="1" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_mew_w_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_mew_w"/>
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_176">
@@ -1837,13 +1812,13 @@ background-color:transparent;
               </widget>
              </item>
              <item row="5" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_ew_young_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_ew_young"/>
              </item>
              <item row="6" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_vw_poisson_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_vw_poisson"/>
              </item>
              <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_kn_w_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kn_w"/>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_177">
@@ -1853,10 +1828,10 @@ background-color:transparent;
               </widget>
              </item>
              <item row="6" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_v_poisson_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_v_poisson"/>
              </item>
              <item row="3" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_kt_fac_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_kt_fac"/>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="label_178">
@@ -1866,10 +1841,10 @@ background-color:transparent;
               </widget>
              </item>
              <item row="5" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_e_young_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_e_young"/>
              </item>
              <item row="1" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_mew_3"/>
+              <widget class="LineEdit" name="lineedit_keyword_mew"/>
              </item>
              <item row="0" column="1">
               <widget class="QLabel" name="label_179">
@@ -1937,7 +1912,7 @@ background-color:transparent;
            <item row="17" column="0" colspan="6">
             <layout class="QGridLayout" name="gridLayout_72">
              <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff"/>
              </item>
              <item row="0" column="2">
               <widget class="QLabel" name="label_206">
@@ -1954,10 +1929,10 @@ background-color:transparent;
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_vdw_outer_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_vdw_outer_cutoff"/>
              </item>
              <item row="1" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_hamaker_constant_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_hamaker_constant"/>
              </item>
              <item row="0" column="1">
               <widget class="QLabel" name="label_208">
@@ -1974,7 +1949,7 @@ background-color:transparent;
               </widget>
              </item>
              <item row="1" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_hamaker_constant_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_wall_hamaker_constant"/>
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_210">
@@ -1991,13 +1966,13 @@ background-color:transparent;
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_vdw_inner_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_vdw_inner_cutoff"/>
              </item>
              <item row="3" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_inner_cutoff_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_inner_cutoff"/>
              </item>
              <item row="4" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_asperities_2"/>
+              <widget class="LineEdit" name="lineedit_keyword_asperities"/>
              </item>
             </layout>
            </item>
@@ -2008,7 +1983,7 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="19" column="0" colspan="7">
+           <item row="19" column="0" colspan="6">
             <widget class="QFrame" name="frame_29">
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
@@ -2018,7 +1993,7 @@ background-color:transparent;
              </property>
              <layout class="QGridLayout" name="gridLayout_73">
               <item row="1" column="1">
-               <widget class="LineEdit" name="lineedit_keyword_neighbor_search_n_2"/>
+               <widget class="LineEdit" name="lineedit_keyword_neighbor_search_n"/>
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_216">
@@ -2028,7 +2003,7 @@ background-color:transparent;
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="LineEdit" name="lineedit_keyword_neighbor_search_rad_ratio_2"/>
+               <widget class="LineEdit" name="lineedit_keyword_neighbor_search_rad_ratio"/>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_217">
@@ -2073,7 +2048,7 @@ background-color:transparent;
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="LineEdit" name="lineedit_keyword_factor_rlm_2"/>
+               <widget class="LineEdit" name="lineedit_keyword_factor_rlm"/>
               </item>
               <item row="5" column="0" colspan="2">
                <widget class="QFrame" name="frame_36">
@@ -2092,7 +2067,7 @@ background-color:transparent;
                   </widget>
                  </item>
                  <item>
-                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_imax_2"/>
+                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_imax"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_222">
@@ -2102,7 +2077,7 @@ background-color:transparent;
                   </widget>
                  </item>
                  <item>
-                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_jmax_2"/>
+                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_jmax"/>
                  </item>
                  <item>
                   <widget class="QLabel" name="label_223">
@@ -2112,7 +2087,7 @@ background-color:transparent;
                   </widget>
                  </item>
                  <item>
-                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_kmax_2"/>
+                  <widget class="LineEdit" name="lineedit_keyword_desgridsearch_kmax"/>
                  </item>
                 </layout>
                </widget>
@@ -2120,56 +2095,80 @@ background-color:transparent;
              </layout>
             </widget>
            </item>
-           <item row="20" column="0" colspan="7">
+           <item row="20" column="0" rowspan="2" colspan="7">
             <widget class="Line" name="line_13">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="21" column="0" colspan="3">
+           <item row="21" column="5" rowspan="2">
+            <widget class="LineEdit" name="lineedit_keyword_des_usr_var_size"/>
+           </item>
+           <item row="22" column="0" colspan="3">
             <widget class="QCheckBox" name="checkBox_6">
              <property name="text">
               <string>Enable user scalar tracking</string>
              </property>
             </widget>
            </item>
-           <item row="21" column="5">
-            <widget class="LineEdit" name="lineedit_keyword_des_usr_var_size_2"/>
-           </item>
-           <item row="22" column="0" colspan="7">
+           <item row="23" column="0" colspan="7">
             <widget class="Line" name="line_14">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="23" column="0" colspan="3">
+           <item row="24" column="0" colspan="3">
             <widget class="QLabel" name="label_213">
              <property name="text">
               <string>Minimum conduction distance</string>
              </property>
             </widget>
            </item>
-           <item row="23" column="5">
+           <item row="24" column="5">
             <widget class="QLineEdit" name="lineEdit_39"/>
            </item>
-           <item row="23" column="6">
+           <item row="24" column="6">
             <widget class="QLabel" name="label_215">
              <property name="text">
               <string>m</string>
              </property>
             </widget>
            </item>
-           <item row="24" column="0" colspan="3">
+           <item row="25" column="0" colspan="3">
             <widget class="QLabel" name="label_214">
              <property name="text">
               <string>Fluid lens proportional constant</string>
              </property>
             </widget>
            </item>
-           <item row="24" column="5">
+           <item row="25" column="5">
             <widget class="QLineEdit" name="lineEdit_40"/>
+           </item>
+           <item row="7" column="2" colspan="3">
+            <widget class="ComboBox" name="comboBox_20">
+             <item>
+              <property name="text">
+               <string>field-to-particle and particle-to-field</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>field-to-particle only</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>particle-to-field only</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>no-interpolation</string>
+              </property>
+             </item>
+            </widget>
            </item>
           </layout>
          </widget>
