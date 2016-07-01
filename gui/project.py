@@ -214,15 +214,27 @@ class Equation(object):
         eq = re.split('[\*\/\-\+ \(\)]', self.eq)
         return [p for p in av_params if p in eq]
 
+    def check_parameters(self):
+        print(set(self.get_used_parameters()), set(PARAMETER_DICT.keys()))
+        return list(set(self.get_used_parameters())-set(PARAMETER_DICT.keys()))
+
     def _eval(self):
         if len(self.eq) == 0:
             return 0
         elif self.eq is None or self.eq == 'None':
             return NaN
+        elif len(self.check_parameters()) > 0:
+            raise ValueError('invalid parameter(s): {}'.format(','.join(self.check_parameters())))
         else:
+            name_dict = {}
+            for key, value in PARAMETER_DICT.items():
+                try:
+                    name_dict[key] = float(value)
+                except:
+                    pass
             try:
                 return float(simple_eval(self.eq.lower(),
-                                         names=PARAMETER_DICT
+                                         names=name_dict
                                          ))
             except:
                 raise ValueError(self.eq)

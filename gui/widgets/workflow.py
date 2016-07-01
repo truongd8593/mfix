@@ -174,7 +174,13 @@ class WorkflowWidget(QtWidgets.QWidget):
         return self.mfixgui.project.parameter_key_map.keys()
 
     def export_project(self, path=None, param_dict={}, keyword_dict={}):
+        """
+        export a mfix project
 
+        :path: directory to export the project to
+        :param_dict: dictionary of parameters and values to use {'x':1.3}
+        :keyword_dict: dictionary of keywords and values {'BC_V_g,1': 5.0}
+        """
         # copy parameters
         param_copy = copy.deepcopy(PARAMETER_DICT)
 
@@ -206,6 +212,10 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # reset parameters
         PARAMETER_DICT.update(param_copy)
+
+    def run_project(self, fname):
+        """Run the mfix project"""
+        pass
 
     def save(self, fname):
         """save a node chart file at the given path"""

@@ -12,6 +12,8 @@ from widgets.base import Table
 from tools.general import get_icon, get_unique_string, unformat_key_with_args
 from constants import *
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
+from regexes import *
+from project import Equation
 
 PROTECTED_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
 
@@ -149,12 +151,16 @@ class ParameterDialog(QtWidgets.QDialog):
         new_param_dict = OrderedDict()
         for i, key in enumerate(PARAMETER_DICT.keys()):
             dtype = 'string'
-            if isinstance(PARAMETER_DICT[key], float):
+            value = PARAMETER_DICT[key]
+            if isinstance(value, float):
                 dtype = 'float'
-            elif isinstance(PARAMETER_DICT[key], int):
+            elif isinstance(value, int):
                 dtype = 'integer'
+            elif isinstance(value, Equation):
+                dtype = {int:'integer', float:'float'}[value.dtype]
+                value = value.eq
             new_param_dict[i] = {'parameter': key, 'type': dtype,
-                                 'value': PARAMETER_DICT[key]}
+                                 'value': value}
 
         self.update_table(new_param_dict)
         self.table.fit_to_contents()
@@ -162,9 +168,13 @@ class ParameterDialog(QtWidgets.QDialog):
     @property
     def parameters(self):
         param_dict = OrderedDict()
-        for key, value in self.table.value.items():
+        data = self.table.value
+        param_names = [val['parameter'] for val in data.values()]
+        for key, value in data.items():
             par_value = str(value['value'])
-            if value['type'] == 'float':
+            if value['type'] in ['float', 'integer'] and (re_math.search(par_value) or any([par in par_value for par in param_names])):
+                par_value = Equation(par_value)
+            elif value['type'] == 'float':
                 par_value = float(value['value'])
             elif value['type'] == 'integer':
                 par_value = int(value['value'])
@@ -189,8 +199,13 @@ class ParameterDialog(QtWidgets.QDialog):
         """parameter changed"""
         data = self.table.value
 
+        # check value
         if col == 'value':
             self.changed_parameters.add(data[row]['parameter'])
+            old_value = self.data_old[row][col]
+            new_value = self.check_value(value, old_value, self.data_old[row]['type'])
+            data[row][col] = new_value
+            self.update_table(data)
 
         # check name
         elif col == 'parameter':
@@ -203,6 +218,21 @@ class ParameterDialog(QtWidgets.QDialog):
 
             if new_name != old_name:
                 self.change_parameter_name(old_name, new_name)
+                
+    def check_value(self, value, old_value, dtype):
+        if dtype == 'float':
+            try:
+                value = float(value)
+            except:
+                self.parent().message(title='Error', text='The value: <b>{}</b> is not a valid float'.format(value))
+                value = old_value
+        elif dtype == 'integer':
+            try:
+                value = int(value)
+            except:
+                self.parent().message(title='Error', text='The value: <b>{}</b> is not a valid integer'.format(value))
+                value = old_value
+        return value
 
     def check_name(self, name, old_name):
         """check the parameter name"""
