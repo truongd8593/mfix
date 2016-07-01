@@ -13,7 +13,7 @@ friction_models = ['SCHAEFFER', 'SRIVASTAVA', 'NONE']
 rdf_types = ['LEBOWITZ', 'LEBOWITZ', #sic
              'MANSOORI', 'MODIFIED_LEBOWITZ', 'MODIFIED_MANSOORI']
 
-blending_funcs = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
+blending_functions = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
 
 class SolidsTFM(object):
     def init_solids_tfm(self):
@@ -21,7 +21,7 @@ class SolidsTFM(object):
         s.combobox_kt_type.currentIndexChanged.connect(self.set_kt_type)
         s.combobox_friction_model.currentIndexChanged.connect(self.set_friction_model)
         s.combobox_rdf_type.currentIndexChanged.connect(self.set_rdf_type)
-        s.combobox_blending_func.currentIndexChanged.connect(self.set_blending_func)
+        s.combobox_blending_function.currentIndexChanged.connect(self.set_blending_function)
         s.combobox_max_packing_correlation.currentIndexChanged.connect(self.set_max_packing_correlation)
 
     def setup_tfm_tab(self):
@@ -136,20 +136,20 @@ class SolidsTFM(object):
 
         # Select stress blending model
         # Selection only available with FRICTION_MODEL=SCHAEFFER
-        blending_func = self.project.get_value('blending_function', 'NONE')
-        if blending_func not in blending_funcs:
-            log.warn('Invalid blending_function %s' % blending_func)
+        blending_function = self.project.get_value('blending_function', 'NONE')
+        if blending_function not in blending_functions:
+            log.warn('Invalid blending_function %s' % blending_function)
             self.unset_keyword('blending_function')
-            blending_func = 'NONE'
-        s.combobox_blending_func.setCurrentIndex(blending_funcs.index(blending_func))
+            blending_function = 'NONE'
+        s.combobox_blending_function.setCurrentIndex(blending_functions.index(blending_function))
         enabled = (friction_model=='SCHAEFFER')
-        for item in (s.label_blending_func, s.combobox_blending_func):
+        for item in (s.label_blending_function, s.combobox_blending_function):
                     item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('blending_function') #
         else:
-            v = s.combobox_blending_func.currentIndex()
-            self.update_keyword('blending_function', blending_functions[v])
+            v = s.combobox_blending_function.currentIndex()
+            self.update_keyword('blending_function', blending_function[v])
 
 
         # Specify the segregation slope coefficient
@@ -246,9 +246,9 @@ class SolidsTFM(object):
         self.update_keyword('rdf_type', rdf_types[val])
         self.setup_tfm_tab()
 
-    def set_blending_func(self, val):
+    def set_blending_function(self, val):
         s = self.ui.solids
-        cb = s.combobox_blending_func
+        cb = s.combobox_blending_function
         if cb.currentIndex() != val:
             cb.setCurrentIndex(val)
             return
