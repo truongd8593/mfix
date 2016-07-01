@@ -149,7 +149,7 @@ class SolidsTFM(object):
             self.unset_keyword('blending_function') #
         else:
             v = s.combobox_blending_function.currentIndex()
-            self.update_keyword('blending_function', blending_function[v])
+            self.update_keyword('blending_function', blending_functions[v])
 
 
         # Specify the segregation slope coefficient
