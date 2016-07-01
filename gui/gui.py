@@ -1681,9 +1681,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
-        
-        # save parameters
-        self.project.mfix_gui_comments['parameters'] = self.parameter_dialog.parameters_to_str()
 
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
@@ -1953,17 +1950,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.reset() # resets gui, keywords, file system watchers, etc
 
         self.print_internal("Loading %s" % project_file, color='blue')
-        
-        # read the MFIX-GUI tags first
-        with open(project_file) as f:
-            self.project.parse_mfix_gui_comments(f)
-            
-        # setup MFIX-GUI info before the reading of the keywords
-        for (key, val) in self.project.mfix_gui_comments.items():
-            if key == 'parameters':
-                self.parameter_dialog.parameters_from_str(val)
-        
-        # parse the keywords
         try:
             self.project.load_project_file(project_file)
         except Exception as e:

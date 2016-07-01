@@ -179,26 +179,6 @@ class ParameterDialog(QtWidgets.QDialog):
         self.table.clear_selection()
         return self.changed_parameters
 
-    def parameters_from_str(self, string):
-        """load parameter data from a saved string"""
-        loaded_data = json.loads(string)
-
-        if 'order' not in loaded_data:
-            return
-
-        data = OrderedDict()
-        for par in loaded_data['order']:
-            data[par] = loaded_data['parameters'][par]
-
-        self.update_parameter_dict(data)
-
-    def parameters_to_str(self):
-        """convert parameter data to a string for saving"""
-        data = {'order': list(PARAMETER_DICT.keys()),
-                'parameters': PARAMETER_DICT
-                }
-        return json.dumps(data)
-
     def update_parameter_dict(self, data):
         PARAMETER_DICT.update(data)
 

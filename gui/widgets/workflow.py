@@ -8,9 +8,13 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from qtpy import QtCore, QtWidgets
 from collections import OrderedDict
+import copy
+import os
+import shutil
+import glob
 
 try:
-    from pyqtnode import NodeWidget
+    from pyqtnode import NodeWidget, Node, tools
     PYQTNODE_AVAILABLE = True
 except ImportError:
     NodeWidget = None
@@ -19,6 +23,49 @@ except ImportError:
 # local imports
 from widgets.base import Table
 from tools.general import make_callback, get_icon
+from constants import PARAMETER_DICT
+from project import Project
+
+# --- Custom MFIX GUI Nodes ---
+class TestNode(Node):
+    name = 'test'
+
+    def __init__(self):
+        self.terminalOpts = OrderedDict([
+            ('used parameters', {'widget': 'pushbutton',
+                      'in': False,
+                      'out': False,
+                      'showlabel': False,
+                      'dtype': bool,
+                      }),
+            ('export', {'widget': 'pushbutton',
+                        'in': False,
+                        'out': False,
+                        'showlabel': False,
+                        'dtype': bool,
+                        }),
+             ])
+
+        Node.__init__(self)
+
+        self.terminals['used parameters'].valueChanged.connect(self.used_parameters)
+        self.terminals['export'].valueChanged.connect(self.export)
+
+    def used_parameters(self):
+        print(self.parent.workflow_widget.used_parameters)
+
+    def export(self):
+
+        curr_proj_dir = self.parent.mfixgui.get_project_dir()
+        exp_path = os.path.join(curr_proj_dir, 'test')
+        if not os.path.exists(exp_path):
+            os.mkdir(exp_path)
+
+        self.parent.workflow_widget.export_project(
+            exp_path, # export path
+            {'x': 1, 'y': 2, 'z': 1}, # parameters
+            {'drag_type': 'WEN_YU', 'BC_V_g,1': 5.0}, # keywords
+            )
 
 
 # --- Workflow Widget ---
@@ -35,13 +82,15 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.nodeChart.project = project
 
         # add an attribute for the mfixgui
+        self.mfixgui = parent
+        self.nodeChart.workflow_widget = self
         self.nodeChart.mfixgui = parent
 
         # Build defualt node library
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
 
         # Add custom Nodes
-        for node in []:
+        for node in [TestNode]:
             self.nodeChart.nodeLibrary.addNode(node, ['MFIX', ])
 
         # --- initialize job status table ---
@@ -89,6 +138,48 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
         self.layout.addWidget(self.splitter)
+
+    @property
+    def parameter_dict(self):
+        return PARAMETER_DICT
+
+    @property
+    def used_parameters(self):
+        return self.mfixgui.project.parameter_key_map.keys()
+
+    def export_project(self, path=None, param_dict={}, keyword_dict={}):
+
+        # copy parameters
+        param_copy = copy.deepcopy(PARAMETER_DICT)
+
+        # copy project
+        proj = copy.deepcopy(self.mfixgui.project)
+
+        # copy files
+        proj_dir = self.mfixgui.get_project_dir()
+        files_to_copy = glob.glob(os.path.join(proj_dir, '*.stl'))
+        for f in files_to_copy:
+            shutil.copyfile(f, os.path.join(path, os.path.basename(f)))
+
+        # change parameters
+        PARAMETER_DICT.update(param_dict)
+
+        # change keywords
+        for key_args, value in keyword_dict.items():
+            key_args = key_args.split(',')
+            key = key_args[0]
+            if len(key_args) > 1:
+                args = [int(arg) for arg in key_args[1:]]
+            else:
+                args = []
+            proj.updateKeyword(key, value, args=args)
+
+        copied_proj = os.path.join(path, proj.run_name.value+'.mfx')
+        self.mfixgui.print_internal("Exporting to: %s" % copied_proj, color='blue')
+        proj.writeDatFile(copied_proj)
+
+        # reset parameters
+        PARAMETER_DICT.update(param_copy)
 
     def save(self, fname):
         """save a node chart file at the given path"""

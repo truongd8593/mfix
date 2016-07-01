@@ -44,6 +44,7 @@ import math
 import warnings
 import traceback
 from collections import OrderedDict
+import json
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -1003,6 +1004,10 @@ class Project(object):
                     # comments, and an experimental feature.  Don't want to create
                     # tight dependencies on GUI version - treat them like HTML tags,
                     # ignore the ones you can't handle
+                    
+        # look for parameters
+        if 'parameters' in self.mfix_gui_comments:
+            self.parameters_from_str(self.mfix_gui_comments['parameters'])
 
     def _parsemfixdat(self, fobject):
         """This does the actual parsing."""
@@ -1011,6 +1016,11 @@ class Project(object):
         self.__initDataStructure__()
         self.dat_file_list = []
         self.thermo_data = []
+        
+        # parse MFIX-GUI comments first
+        self.parse_mfix_gui_comments(fobject)
+        
+        fobject.seek(0)
 
         reactionSection = False
         thermoSection = False
@@ -1080,6 +1090,8 @@ class Project(object):
         # TODO:  refactor
         if args is None:
             args = []
+            
+        key = key.lower()
 
         # check to see if the keyword already exists
         if [key]+args in self:
@@ -1413,6 +1425,9 @@ class Project(object):
         """ Write the project to specified text file"""
         ### TODO:  format species sections
         # delimit new additions from initial file contents (comment line)
+        
+        # save parameters
+        self.mfix_gui_comments['parameters'] = self.parameters_to_str()
 
         last_line = None
         with open(fname, 'wb') as dat_file:
@@ -1435,6 +1450,28 @@ class Project(object):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
+                
+    def parameters_from_str(self, string):
+        """load parameter data from a saved string"""
+        loaded_data = json.loads(string)
+
+        if 'order' not in loaded_data:
+            return
+
+        data = OrderedDict()
+        for par in loaded_data['order']:
+            data[par] = loaded_data['parameters'][par]
+
+        PARAMETER_DICT.update(data)
+        for key in set(PARAMETER_DICT.keys()) - set(data.keys()):
+            PARAMETER_DICT.pop(key)
+
+    def parameters_to_str(self):
+        """convert parameter data to a string for saving"""
+        data = {'order': list(PARAMETER_DICT.keys()),
+                'parameters': PARAMETER_DICT
+                }
+        return json.dumps(data)
 
     def update_parameter_map(self, new_value, key, args):
         """update the mapping of parameters and keywords"""
