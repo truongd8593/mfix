@@ -19,12 +19,12 @@ try:
 except ImportError:
     NodeWidget = None
     PYQTNODE_AVAILABLE = False
+    Node = None
 
 # local imports
 from widgets.base import Table
 from tools.general import make_callback, get_icon
 from constants import PARAMETER_DICT
-from project import Project
 
 # --- Custom MFIX GUI Nodes ---
 class TestNode(Node):
@@ -77,6 +77,23 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
+        if hasattr(self.nodeChart, 'needsSavedEvent'):
+            self.nodeChart.needsSavedEvent.connect(self.set_save_btn)
+        self.nodeChart.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                     QtWidgets.QSizePolicy.Preferred)
+        self.nodeChart.setGeometry(0, 0, 100, 1000)
+
+        # modify toolbar
+        i = 2
+        for tool, icon, callback in [('import', 'import.png', self.handle_import),
+                                     ('export', 'open_in_new.png', self.handle_import)]:
+            btn = QtWidgets.QToolButton()
+            btn.setIcon(get_icon(icon))
+            btn.pressed.connect(callback)
+            btn.setAutoRaise(True)
+            btn.setToolTip(tool)
+            self.nodeChart.toolbarLayout.insertWidget(i, btn)
+            i += 1
 
         # add an attribute for the project manager
         self.nodeChart.project = project
@@ -98,9 +115,13 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.job_layout = QtWidgets.QVBoxLayout(self.job_frame)
         self.job_layout.setContentsMargins(0, 0, 0, 0)
         self.job_layout.setSpacing(0)
+        self.job_frame.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                     QtWidgets.QSizePolicy.Preferred)
         self.job_frame.setLayout(self.job_layout)
 
         self.job_toolbar = QtWidgets.QWidget()
+        self.job_toolbar.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                       QtWidgets.QSizePolicy.Fixed)
         self.job_toolbar_layout = QtWidgets.QHBoxLayout(self.job_toolbar)
         self.job_toolbar_layout.setContentsMargins(0, 0, 0, 0)
         self.job_toolbar_layout.setSpacing(0)
@@ -125,6 +146,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.job_status_table.show_vertical_header(True)
         self.job_status_table.auto_update_rows(True)
         self.job_status_table.default_value = OrderedDict()
+        self.job_status_table.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                            QtWidgets.QSizePolicy.Preferred)
         self.job_layout.addWidget(self.job_status_table)
 
         # splitter
@@ -138,6 +161,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
         self.layout.addWidget(self.splitter)
+
+    def set_save_btn(self):
+        self.mfixgui.set_unsaved_flag()
 
     @property
     def parameter_dict(self):
@@ -200,3 +226,11 @@ class WorkflowWidget(QtWidgets.QWidget):
     def handle_open_job(self):
         """open the selected job"""
         print('open')
+
+    def handle_import(self):
+        """immport a nc file"""
+        print('import')
+
+    def handle_export(self):
+        """export a nc file"""
+        print('export')

@@ -36,7 +36,6 @@ from tools import read_burcat
 
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
-
     def __init__(self, gui=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
         self.gui = gui

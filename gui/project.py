@@ -1450,7 +1450,7 @@ class Project(object):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
-                
+
     def parameters_from_str(self, string):
         """load parameter data from a saved string"""
         loaded_data = json.loads(string)

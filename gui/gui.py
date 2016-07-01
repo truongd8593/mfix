@@ -334,7 +334,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         # --- workflow setup ---
         self.__setup_workflow_widget()
-        
+
         # --- parameter dialog
         self.parameter_dialog = ParameterDialog(self)
 
@@ -428,7 +428,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 w.default()
             else:
                 pass # What to do for rest of widgets?
-                
+
         # reset parameters
         PARAMETER_DICT.clear()
 
@@ -959,12 +959,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     default = doc.get('initpython') # "Initial Python Value"
                     if default is not None:
                         widget.default(default)
-                        
+
                     description = doc.get('description')
                     if description is not None:
                         widget.help_text = description
                         widget.setWhatsThis(description)
-                        
+
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
                         widget.allow_parameters = True
 
@@ -1687,6 +1687,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_keyword('run_name', run_name)
         self.print_internal("Info: Saving %s" % project_file)
         self.project.writeDatFile(project_file)
+
+        # save workflow
+        if PYQTNODE_AVAILABLE:
+            self.ui.workflow_widget.save(
+                os.path.abspath(os.path.join(project_dir, 'workflow.nc')))
+
         self.clear_unsaved_flag()
 
     def save_as(self):
@@ -2118,6 +2124,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
+
+        ### Workflow
+        workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
+        if PYQTNODE_AVAILABLE and os.path.exists(workflow_file):
+            self.ui.workflow_widget.clear()
+            self.ui.workflow_widget.load(workflow_file)
 
         # FIXME: is this a good idea?  it means we can't open a file read-only
         #self.force_default_settings()
