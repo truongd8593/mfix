@@ -25,12 +25,6 @@
 
       IMPLICIT NONE
 
-! Local variables
-!---------------------------------------------------------------------//
-! Cell indices
-      INTEGER :: IJK
-!---------------------------------------------------------------------//
-
       IF (USR_MUg) THEN
          CALL CALC_USR_PROP(Gas_Viscosity,lm=0)
       ELSEIF (MU_G0 == UNDEFINED) THEN

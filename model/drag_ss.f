@@ -87,10 +87,10 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use compar, only: mype, ijkstart3, ijkend3
+      use compar, only: ijkstart3, ijkend3
       USE constant, only: segregation_slope_coefficient
       USE drag, only: f_ss
-      USE fldvar, only: d_p, ro_s, rop_s, theta_m, p_star
+      USE fldvar, only: d_p, ro_s, rop_s, p_star
       USE fldvar, only: u_s, v_s, w_s
       USE fun_avg, only: avg_x_e, avg_y_n, avg_z_t
       use functions, only: wall_at, funlm
@@ -184,7 +184,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
       SUBROUTINE DRAG_SS_SYAM0(ldss, d_pm, d_pl, ro_m, ro_l, g0_ml, vrel)
 
-! Modules 
+! Modules
 !---------------------------------------------------------------------//
       use param1, only: one
       use constant, only: c_e, c_f, pi

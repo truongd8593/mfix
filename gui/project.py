@@ -97,6 +97,10 @@ def clean_string(string):
     string = string.replace("'", '').replace('"', '')
     # remove any leading or trailing space, after removing quotes
     string = string.strip()
+    # Remove comma separators if present
+    if string.endswith(','):
+        string = string[:-1]
+
     # lower-case version of string
     s_low = string.lower()
 
@@ -215,7 +219,6 @@ class Equation(object):
         return [p for p in av_params if p in eq]
 
     def check_parameters(self):
-        print(set(self.get_used_parameters()), set(PARAMETER_DICT.keys()))
         return list(set(self.get_used_parameters())-set(PARAMETER_DICT.keys()))
 
     def _eval(self):
@@ -787,7 +790,7 @@ class Project(object):
         self._keyword_dict = {}
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
-        self.thermo_data =  []
+        self.thermo_data =  {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
         self.parameter_key_map = {}  #data structure to hold parameter->keyword mapping
         # See also 'reset'
@@ -1002,6 +1005,7 @@ class Project(object):
         else:
             yield (None, None, None)
 
+
     def parse_mfix_gui_comments(self, fobject):
         """read through the file looking for #!MFIX-GUI"""
         self.mfix_gui_comments.clear()
@@ -1027,15 +1031,16 @@ class Project(object):
         self._keyword_dict.clear()
         self.__initDataStructure__()
         self.dat_file_list = []
-        self.thermo_data = []
+        self.thermo_data.clear()
+        reactionSection = False
+        thermoSection = False
+        thermo_lines = [] # Temporary holder for thermo_data section
         
         # parse MFIX-GUI comments first
         self.parse_mfix_gui_comments(fobject)
         
         fobject.seek(0)
 
-        reactionSection = False
-        thermoSection = False
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip()
             if line.startswith("#!MFIX-GUI"):
@@ -1050,7 +1055,7 @@ class Project(object):
                 thermoSection = True
                 # Don't save 'THERMO SECTION' line - we'll regenerate it.
             elif thermoSection:
-                self.thermo_data.append(line)
+                thermo_lines.append(line)
             elif not reactionSection and not thermoSection:
                 equation_str = None
                 # remove comments
@@ -1083,6 +1088,21 @@ class Project(object):
                 except Exception as e:
                     traceback.print_exception(*sys.exc_info())
                     warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
+
+        # turn THERMO DATA section into a dictionary
+        if thermo_lines:
+            species = None
+            for line in thermo_lines:
+                if not line.strip():
+                    species = None
+                    continue
+                # Skip over comment block.
+                #  (Should we just use read_burcat here? - comment is dropped)
+                if species is None and 79<=len(line)<=80 and line.endswith('1'):
+                    species = line[:18].strip()
+                    self.thermo_data[species] = []
+                if species:
+                    self.thermo_data[species].append(line)
 
     def updateKeyword(self, key, value, args=None,  keywordComment=''):
         """Update or add a keyword to the project.  Raises ValueError if there is a
@@ -1430,8 +1450,10 @@ class Project(object):
         if self.thermo_data:
             yield '\n'
             yield 'THERMO DATA\n'
-        for line in self.thermo_data:
-            yield line+'\n'
+            for key in sorted(self.thermo_data.keys()):
+                for line in self.thermo_data[key]:
+                    yield line + '\n'
+                yield '\n'
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
@@ -1454,7 +1476,7 @@ class Project(object):
         self.dat_file_list = []
         self._keyword_dict.clear()
         self.comments.clear()
-        self.thermo_data = []
+        self.thermo_data.clear()
         self.mfix_gui_comments.clear()
         self.parameter_key_map = {}
 

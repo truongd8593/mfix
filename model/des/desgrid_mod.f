@@ -68,7 +68,7 @@
 
       double precision, dimension(:), allocatable :: dg_xe,dg_yn,dg_zt
       double precision, dimension(:), allocatable :: dg_dx_all,dg_dy_all,dg_dz_all
-          
+
 ! Variables related to cyclic boundary  used in desgrid_functions
       integer,dimension(:,:),allocatable :: dg_cycoffset, icycoffset
 
@@ -612,7 +612,7 @@
       i = dg_imin2
       do liproc=0,nodesi-1
          do li = 1,DG_ISIZE_ALL(liproc)
-            i = i + 1 
+            i = i + 1
             DG_XE(i) = DG_XE(i-1) + DG_DX_ALL(liproc)
          enddo
       enddo
@@ -624,7 +624,7 @@
       j = dg_jmin2
       do ljproc=0,nodesj-1
          do lj = 1,DG_JSIZE_ALL(ljproc)
-            j = j + 1 
+            j = j + 1
             DG_YN(j) = DG_YN(j-1) + DG_DY_ALL(ljproc)
          enddo
       enddo
@@ -636,7 +636,7 @@
          k = dg_kmin2
          do lkproc=0,nodesk-1
             do lk = 1,DG_KSIZE_ALL(lkproc)
-               k = k + 1 
+               k = k + 1
                DG_ZT(k) = DG_ZT(k-1) + DG_DZ_ALL(lkproc)
             enddo
          enddo
@@ -644,7 +644,7 @@
 
  1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN ',A,' DIRECTION.'/   &
              '      ORIGINAL SIZE (',A,') =',I6/                                &
-             '      NEW SIZE                           =',I6) 
+             '      NEW SIZE                           =',I6)
 
 
 ! set offset indices for periodic boundaries
@@ -720,8 +720,8 @@
 ! set constants required for dg_funijk dg_funijk_gl for all processors
       if(allocated(dg_c1_all)) deallocate(dg_c1_all)
       if(allocated(dg_c2_all)) deallocate(dg_c2_all)
-      if(allocated(dg_c3_all)) deallocate(dg_c3_all)            
-      
+      if(allocated(dg_c3_all)) deallocate(dg_c3_all)
+
       allocate(dg_c1_all(0:numpes-1),dg_c2_all(0:numpes-1),dg_c3_all(0:numpes-1))
 
       dg_c1_all=0;dg_c2_all=0;dg_c3_all=0
@@ -1014,7 +1014,8 @@
             endif
 !$  endif
 
-         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
+            if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) &
+                 .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
          ljc = dg_jof_lo(lijk)
@@ -1174,7 +1175,7 @@
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype
-      open(44,file=filename,convert='big_endian')
+      open(44,file=filename)
       do lproc = 0,numpes-1
          write(44,*) "Information for Proc =", lproc
          liproc= iofproc(lproc)

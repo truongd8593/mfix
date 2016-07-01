@@ -164,8 +164,6 @@
 
       DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
 
-      INTEGER :: IER
-
 ! If there is no mass flow for this phase, then there is no need to
 ! calculate a CPxMFLUX. Set it to zero and return.
       if(.NOT.ENERGY_EQ .OR. PS_MFLOW == ZERO) then
@@ -389,4 +387,3 @@
       if(allocated(gFlags_i)) deallocate(gFlags_i)
 
       END SUBROUTINE DEBUG_PS
-

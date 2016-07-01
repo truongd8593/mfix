@@ -163,7 +163,6 @@ pymfix_src = \
 	$(top_srcdir)/../model/residual_mod.f \
 	$(top_srcdir)/../model/time_step.f \
 	$(top_srcdir)/../model/main.f \
-	$(top_srcdir)/../model/get_data.f \
 	$(top_srcdir)/../model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
@@ -231,6 +230,28 @@ endif
 if MKL
 AM_FCFLAGS += -mkl
 AM_LDFLAGS += -mkl
+endif
+
+################################################################
+#                                                              #
+#      Convert unformatted output to bigendian (for Paraview)  #
+#                                                              #
+################################################################
+
+if GNU
+AM_FCFLAGS += -fconvert=big-endian
+endif
+
+if INTEL
+AM_FCFLAGS += -convert big_endian
+endif
+
+if PGI
+AM_FCFLAGS += -byteswapio
+endif
+
+if IBM
+AM_FCFLAGS += -qufmt=be
 endif
 
 ################################################################

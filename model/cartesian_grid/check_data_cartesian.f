@@ -40,7 +40,6 @@ MODULE CHECK_DATA_CG
       USE run
       USE scalars
       USE stl
-      use turb, only: k_epsilon
       USE vtk
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1396,34 +1395,14 @@ MODULE CHECK_DATA_CG
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
          ') not specified',/1X,70('*')/)
- 1001 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: Illegal BC_TYPE for BC # = ',I2,/'   BC_TYPE = ',A,/&
-         '  Valid BC_TYPE are: ')
- 1002 FORMAT(5X,A16)
- 1003 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') value is unphysical',/1X,70('*')/)
  1004 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
          ') not specified',/1X,70('*')/)
- 1005 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ') value is unphysical',/1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_P_g( ',I2,&
          ') = ',G12.5,/&
          ' Pressure should be greater than zero for compressible flow',/1X,70(&
          '*')/)
- 1050 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,' should be ',A,' zero.',/1X,70('*')/)
- 1060 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_g(',I2,',',I2&
-         ,') not specified',/1X,70('*')/)
- 1065 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/)
  1100 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
          ') not specified',/1X,70('*')/)
- 1103 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') value is unphysical',/1X,70('*')/)
- 1104 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') not specified',/1X,70('*')/)
- 1105 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') value is unphysical',/1X,70('*')/)
  1110 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_s(',I2,',',I2&
          ,',',I2,') not specified',/1X,70('*')/)
  1120 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
@@ -1431,26 +1410,6 @@ MODULE CHECK_DATA_CG
          '*')/)
  1125 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
          ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/)
- 1150 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/)
- 1160 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: Boundary condition no', &
-         I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/)
- 1200 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') specified',' for an undefined BC location',/1X,70('*')/)
- 1300 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined BC location',/1X,70('*')/)
- 1400 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K')
- 1410 FORMAT(I5,3X,I5,3X,I5)
- 1420 FORMAT(/1X,70('*')/)
-
- 1500 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K')
-
 
       END SUBROUTINE CHECK_BC_FLAGS
 
@@ -3264,8 +3223,6 @@ MODULE CHECK_DATA_CG
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
 1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 
 
       RETURN
@@ -3876,7 +3833,7 @@ MODULE CHECK_DATA_CG
          ENDIF                  ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
 
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
+         OPEN(UNIT=777, FILE='suggested_gridmap.dat')
          WRITE (777, 1005) NODESI,NODESJ,NODESK, '     ! NODESI, NODESJ, NODESK'
          DO IPROC = 0,NODESI-1
                WRITE(777,1060) IPROC,Isize_all(IPROC)
@@ -3916,9 +3873,6 @@ MODULE CHECK_DATA_CG
 1005  FORMAT(1x,I10,I10,I10,A)
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
-1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 1060  FORMAT(1x,I10,I10)
 
       RETURN
@@ -4208,8 +4162,6 @@ MODULE CHECK_DATA_CG
 !      ENDDO
 
 1000  FORMAT(1x,A)
-1010  FORMAT(1x,A,I10,I10)
-1020  FORMAT(1X,I8,2(I12),F12.2)
 
       RETURN
       END SUBROUTINE MINIMIZE_LOAD_IMBALANCE
@@ -4587,7 +4539,7 @@ MODULE CHECK_DATA_CG
             ENDIF
 
 
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
+            OPEN(UNIT=777, FILE='suggested_gridmap.dat')
             WRITE (777, 1000) 'J-SIZE DISTRIBUTION'
             WRITE (777, 1010) 'NUMBER OF PROCESSORS = ',NumPEs
             WRITE (777, 1000) '================================================='
@@ -4680,8 +4632,6 @@ MODULE CHECK_DATA_CG
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
 1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 1060  FORMAT(1x,I8,I12)
 
       RETURN
@@ -4971,8 +4921,6 @@ MODULE CHECK_DATA_CG
 !      ENDDO
 
 1000  FORMAT(1x,A)
-1010  FORMAT(1x,A,I10,I10)
-1020  FORMAT(1X,I8,2(I12),F12.2)
 
       RETURN
       END SUBROUTINE MINIMIZE_LOAD_IMBALANCE0

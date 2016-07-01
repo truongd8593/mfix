@@ -58,8 +58,6 @@
       use discretelement, only: DES_RADIUS
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
-! Number of particles on the process (max particle array size)
-      use discretelement, only: MAX_PIP
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 ! Function to convert DES grid IJK to new proc value.

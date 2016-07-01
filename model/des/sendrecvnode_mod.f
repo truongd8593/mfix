@@ -494,7 +494,7 @@
 
       implicit none
 
-! dummy arguments 
+! dummy arguments
 !-----------------------------------------------
       double precision, intent(inout) :: pvar(:,:)
       integer :: lc
@@ -795,7 +795,7 @@
 
 ! pradeep remove print the flags
       write(filename,'("dbg_nodesr",I4.4,".dat")') mype
-      open(44,file=filename,convert='big_endian')
+      open(44,file=filename)
       do lcount = 1,itotalneigh
          lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
          write(44,"(2/,72('*'))")
@@ -828,11 +828,9 @@
 
       close (44)
 
- 1100 FORMAT(2x,'Send Proc ',I2,'   -->   Recv Proc' I2)
+ 1100 FORMAT(2x,'Send Proc ',I2,'   -->   Recv Proc', I2)
  1000 FORMAT(3x,A,': (',I3,',',I3,',',I3,') :: ',I7)
 
       end subroutine des_dbgnodesr
 
       end module
-
-

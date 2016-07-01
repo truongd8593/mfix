@@ -14,7 +14,7 @@ import os
 from qtpy.QtTest import QTest
 from qtpy import QtCore
 from qtpy.QtCore import Qt, QTimer
-from qtpy import QtWidgets
+from qtpy import QtWidgets, PYQT5
 
 import logging
 import errno
@@ -27,6 +27,11 @@ import gui
 # TODO : replace all qWaits with a 'waitFor' function
 # Note, qWaitForWindowShown is deprecated in qt5, which provides a better version,
 #  including a timeout.
+
+if PYQT5:
+    waitForWindow = QTest.qWaitForWindowActive
+else:
+    waitForWindow = QTest.qWaitForWindowShown
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
@@ -86,7 +91,7 @@ class MfixGuiTests(TestQApplication):
 
         self.mfix = gui.MfixGui(self.qapp)
         self.mfix.show()
-        self.assertTrue(QTest.qWaitForWindowShown(self.mfix), "main mfix app not open")
+        self.assertTrue(waitForWindow(self.mfix), "main mfix app not open")
 
         self.mfix.get_open_filename = lambda: mfix_dat
         QTimer.singleShot(500, self.click_ok)
@@ -119,12 +124,12 @@ class MfixGuiTests(TestQApplication):
 
     def get_tree_item(self, name):
         flags = Qt.MatchFixedString | Qt.MatchRecursive
-        clist = self.mfix.ui.treewidget_model_navigation.findItems(name, flags, 0)
+        clist = self.mfix.ui.treewidget_navigation.findItems(name, flags, 0)
         assert len(clist) == 1
         return clist[0]
 
     def open_tree_item(self, name):
-        self.mfix.ui.treewidget_model_navigation.setCurrentItem(self.get_tree_item(name))
+        self.mfix.ui.treewidget_navigation.setCurrentItem(self.get_tree_item(name))
 
     def test_save_as(self):
         #http://stackoverflow.com/questions/16536286/qt-ui-testing-how-to-simulate-a-click-on-a-qmenubar-item-using-qtest
@@ -141,18 +146,17 @@ class MfixGuiTests(TestQApplication):
 
     def test_run_mfix(self):
         #TODO: write similar test for pymfix
+
+        #  FIXME:  The run dialog will get the exe from the ~/.config/MFIX file,
+        #   need to control the QSettings for running tests
         mfix_exe = os.path.join(self.mfix_home, "mfix")
-        cme = self.mfix.ui.run.combobox_mfix_exes
-        if cme.findText(mfix_exe) < 0:
+
+        # Don't run the test if default mfix binary doesn't exist
+        if not (os.path.isfile(mfix_exe) and os.access(mfix_exe, os.X_OK)):
             self.skipTest("Only valid when %s is present" % mfix_exe)
 
-        #  FIXME:  we're getting the exe from the ~/.config/MFIX file,
-        #   need to control the QSettings for running tests, instead
-        #   of doing this!
-        cme.setCurrentText(mfix_exe)
-        self.mfix.handle_select_exe()
-
         self.open_tree_item("run")
+        QTest.qWait(1000)
 
         runbuttons = (self.mfix.ui.run.button_run_mfix,
                       self.mfix.ui.toolbutton_run_mfix)
@@ -163,18 +167,23 @@ class MfixGuiTests(TestQApplication):
         #  But we trust that they are connected to the same slot
 
         # Before running, button says 'Run'
-        self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
+        #self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
         self.assertTrue(all (b.isEnabled() for b in runbuttons))
         self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
         self.assertEqual(runbuttons[0].text(), "Run")
         self.assertEqual(runbuttons[1].toolTip(), "Run MFIX")
 
-        # Start run, run button disables, stop button enabled
+        # Open run dialog
+        # FIXME: This will hang if run dialog doesn't find exe.
+        # Need to dismiss the warning message box.
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
         QTest.qWait(500)
 
+        # Press OK in run dialog
+        QTest.mouseClick(self.mfix.run_dialog.ok_button, Qt.LeftButton)
+        QTest.qWait(500)
 
-
+        # Job is running, run button disabled, stop button enabled
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
 
@@ -193,6 +202,11 @@ class MfixGuiTests(TestQApplication):
         # Resume
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
         QTest.qWait(100)
+
+        # Press OK in run dialog
+        QTest.mouseClick(self.mfix.run_dialog.ok_button, Qt.LeftButton)
+        QTest.qWait(500)
+
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
         QTest.qWait(300)

@@ -24,7 +24,6 @@
       use discretelement, only: F_GDS
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
-      use run, only: ANY_SPECIES_EQ
 
       use des_thermo, only: CALC_CONV_DES
       use rxns, only: RRATE
@@ -138,9 +137,7 @@
       SUBROUTINE  DES_2FLUID_RXNS
 
       Use discretelement, only: DES_EXPLICITLY_COUPLED
-      Use des_thermo, only: CONV_Sp, CONV_Sc
-      USE geometry, only: FLAG
-      Use param, only: DIMENSION_3
+      Use des_thermo, only: CONV_Sp
       USE rxns, only : RRATE
       USE rxns
       USE des_rxns

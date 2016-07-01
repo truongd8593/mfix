@@ -73,9 +73,6 @@
         ENDIF
       ENDIF
 
- 1100 FORMAT('Error 1100: The grid specification must start with D',   &
-         A1,'(0)',/'Please correct the mfix.dat file.')
-
 ! 1) MAKE SURE AT LEAST TWO OF NA, ALENGTH, DA ARE SPECIFIED
       N_SPECIFIED = 0
       IF (NA /= UNDEFINED_I) N_SPECIFIED = N_SPECIFIED + 1

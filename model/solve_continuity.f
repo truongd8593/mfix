@@ -26,7 +26,7 @@ CONTAINS
       use fldvar, only: rop_g, rop_s
       use geometry, only: ijkmax2
       use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
-      use param, only: dimension_3, dimension_m
+      use param, only: dimension_3
       use param1, only: undefined_i, zero, one
       use ps, only: point_source
       use residual, only: resid, max_resid, ijk_resid

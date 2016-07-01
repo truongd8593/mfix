@@ -16,7 +16,6 @@
       USE discretelement
       USE fldvar
       USE param1
-      USE physprop, only: SMAX
       USE toleranc
       use functions, only: FLUID_AT
       use functions, only: IS_NORMAL
@@ -116,7 +115,6 @@
       INTEGER :: NP, lNP
 ! Sum of particle temperatures in fluid cell.
       DOUBLE PRECISION :: SUM_T_s
-      INTEGER, SAVE :: PASS=0
 !---------------------------------------------------------------------//
 
       IF(.NOT.ENERGY_EQ) RETURN

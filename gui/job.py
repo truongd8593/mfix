@@ -5,7 +5,6 @@ import time
 import json
 import logging
 
-#
 DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
 import socket
 socket.setdefaulttimeout(DEFAULT_TIMEOUT)
@@ -34,7 +33,7 @@ class Job(object):
 
         def slot_update_status(reply):
             """update self.status when request finishes"""
-            response_str = str(reply.readAll())
+            response_str = reply.readAll().data().decode('utf-8')
             try:
                 self.status = json.loads(response_str)
                 log.debug("status is %s", self.status)
@@ -44,8 +43,7 @@ class Job(object):
                 self.parent.ui.residuals.setText(status_str)
             except ValueError:
                 self.status.clear()
-                if response_str:
-                    log.error("could not decode JSON: %s", response_str)
+                log.error("could not decode JSON: %s", response_str)
             self.parent.update_run_options()
 
         def slot_control(reply):
@@ -106,7 +104,7 @@ class Job(object):
 
         while self.is_running():
             t0 = time.time()
-            self.mfixproc.waitForFinished(1000)
+            self.mfixproc.waitForFinished(2000)
             t1 = time.time()
             if self.is_running():
                 log.warn("mfix still running after %.2f ms", (1000*(t1-t0)))
@@ -120,7 +118,8 @@ class Job(object):
             try:
                 self.status.clear()
                 log.warn("killing mfix process %d", self.mfix_pid)
-                self.mfixproc.terminate()
+                if self.mfixproc:
+                    self.mfixproc.terminate()
             except OSError as err:
                 log.error("Error terminating process: %s", err)
 

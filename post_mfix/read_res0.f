@@ -51,7 +51,7 @@
 ! Local variables
 !-----------------------------------------------
 ! loop counters
-      INTEGER    LC, L , N, M
+      INTEGER    LC, L , N
 ! Pointer to the next record
       INTEGER    NEXT_RECA
 ! file version id
@@ -74,10 +74,6 @@
 ! declare global scratch arrays:
 ! declare integer Global SCRatch array
       INTEGER, ALLOCATABLE, DIMENSION(:) :: IGTEMP1, iGTEMP2
-! declare real*4 Global SCRatch array
-      REAL, ALLOCATABLE, DIMENSION(:) :: rGTEMP
-! declare real*8 Global SCRatch array
-      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: dGTEMP
 ! declaring following arrays to pack scalar variables when
 ! BCASTing to reduce the number of BCAST calls:
 ! packing array for integers
@@ -1135,4 +1131,3 @@
       call exitMPI(myPE)
 
       END SUBROUTINE READ_RES0
-

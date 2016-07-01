@@ -20,18 +20,19 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)
 
+      USE compar
+      USE constant
+      USE des_rxns
+      USE discretelement
+      USE error_manager
+      USE funits
+      USE main, only: MFIX_DAT
       USE param
       USE param1
       USE physprop
-      USE constant
-      USE compar
-      USE rxns
-      USE funits
-      USE discretelement
-      USE des_rxns
       USE read_thermochemical, only: read_therm, calc_ICpoR, THERM
-      use run, only: REINITIALIZING
-      use error_manager
+      USE run, only: REINITIALIZING
+      USE rxns
 
       IMPLICIT NONE
 
@@ -86,13 +87,13 @@
          FILE = FILE + 1
 ! Check for thermochemical data in the mfix.dat file.
          IF(FILE == 1) THEN
-           OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
+           OPEN(UNIT=FUNIT, FILE=MFIX_DAT, STATUS='OLD', IOSTAT= IOS)
            IF(IOS /= 0) CYCLE DB_LP
-           DB=''; WRITE(DB,1000) 'mfix.dat'
+           DB=''; WRITE(DB,1000) MFIX_DAT
 ! Read thermochemical data from the BURCAT.THR database in the local
 ! run directory.
          ELSEIF(FILE == 2) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
+            OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) TRIM(THERM)
           ELSE

@@ -47,10 +47,10 @@ AC_PROG_F77([$FC])
 AC_PROG_CC
 AC_PROG_SED
 AC_OPENMP()
-AX_CHECK_COMPILE_FLAG([-assume byterecl], [
-                        FCFLAGS="$FCFLAGS -assume byterecl"])
-
-
+AM_CONDITIONAL([GNU], [$FC --version|grep GNU\ Fortran])
+AM_CONDITIONAL([INTEL], [$FC --version|grep ifort])
+AM_CONDITIONAL([IBM], [$FC --version|grep -i ibm])
+AM_CONDITIONAL([PGI], [$FC --version|grep Portland])
 
 # If pymfix support is enabled, require f2py to be in PATH and add -fPIC to
 # FCFLAGS and FFLAGS.

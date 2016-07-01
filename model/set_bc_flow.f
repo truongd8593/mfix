@@ -23,7 +23,7 @@
 ! Flag: BC dimensions or Type is specified
       use bc, only: BC_DEFINED
 ! Use specified BC type
-      use bc
+      use bc, only: bc_type_enum, mass_inflow, mass_outflow
 ! User specifed BC solids bulk density
       use bc, only: BC_ROP_s
 ! Solids volume fraction at BC

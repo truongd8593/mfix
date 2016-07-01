@@ -1,3 +1,5 @@
+#include "version.inc"
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: WRITE_DBG_VTU_AND_VTP_FILES                            C
@@ -47,7 +49,6 @@
       USE compar
       USE constant
       USE cutcell
-      USE discretelement, Only :  DISCRETE_ELEMENT
       USE fldvar
       USE functions
       USE geometry
@@ -77,8 +78,6 @@
 
       IMPLICIT NONE
       INTEGER :: I,J,K,L,M,NN,R,IJK,LCV
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
 
       INTEGER :: SPECIES_COUNTER,LT
 
@@ -324,7 +323,7 @@
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
          DO L = 1, DIMENSION_VTK
             IF(VTK_DEFINED(L)) WRITE(VTU_FRAME_UNIT,*) L,FRAME(L)
          ENDDO
@@ -392,7 +391,7 @@
       IF(TIME_DEPENDENT_FILENAME) THEN
          INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
          IF(VTU_FRAME_FILE_EXISTS) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
             DO L = 1, DIMENSION_VTK
                IF(VTK_DEFINED(L)) THEN
                   READ(VTU_FRAME_UNIT,*)BUFF1,BUFF2
@@ -449,7 +448,7 @@
 
       IF(NUMBER_OF_VTK_CELLS>0) THEN
 
-         OPEN(CONVERT='BIG_ENDIAN',UNIT     = VTU_UNIT,           &
+         OPEN(UNIT     = VTU_UNIT,           &
               FILE     = TRIM(VTU_FILENAME), &
               FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'BINARY' if 'UNFORMATTED' is not supported
@@ -502,7 +501,7 @@
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
 
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
 
          WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
          WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
@@ -552,23 +551,23 @@
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
 
       USE, INTRINSIC :: iso_c_binding
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
+      USE cdist
       USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
+      USE constant
       USE cutcell
       USE fldvar
-      USE vtk
-      USE cdist
       USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE quadric
+      USE run
+      USE sendrecv
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 
@@ -599,7 +598,7 @@
 ! offset, in number of bytes must be specified.  The offset includes
 ! the size of the data for each field, plus the size of the integer
 ! that stores the number of bytes.  this is why the offset of a field
-! equals the offset of the previous field plus sizeof(int) plus the
+! equals the offset of the previous field plus c_sizeof(int) plus the
 ! number of bytes of the field.
 
 ! Next, the actual data is written for the geometry (PASS=WRITE_DATA)
@@ -610,7 +609,7 @@
 ! SETUP_VTK_REGION
 
 ! Number of bytes of each field
-         nbytes_xyz          = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_xyz          = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
          nbytes_connectivity = 0
          DO IJK = 1,IJKMAX3
@@ -618,19 +617,19 @@
                   nbytes_connectivity = nbytes_connectivity + GLOBAL_NUMBER_OF_NODES(IJK)
             ENDIF
          END DO
-         nbytes_connectivity = nbytes_connectivity * sizeof(int)
+         nbytes_connectivity = nbytes_connectivity * c_sizeof(int)
 
 
-         nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_offset       = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
-         nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_type         = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
 
 ! Offset of each field
          offset_xyz = 0
-         offset_connectivity = offset_xyz          + sizeof(int) + nbytes_xyz
-         offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
-         offset_type         = offset_offset       + sizeof(int) + nbytes_offset
+         offset_connectivity = offset_xyz          + c_sizeof(int) + nbytes_xyz
+         offset_offset       = offset_connectivity + c_sizeof(int) + nbytes_connectivity
+         offset_type         = offset_offset       + c_sizeof(int) + nbytes_offset
 
 
          IF(PASS==WRITE_HEADER) THEN
@@ -664,7 +663,7 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type  ! Store offset for first variable to be written
+            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type  ! Store offset for first variable to be written
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -743,7 +742,7 @@
 ! SETUP_VTK_REGION
 
 ! Number of bytes of each field
-         nbytes_xyz          = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_xyz          = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
          nbytes_connectivity = 0
          DO IJK = 1,IJKEND3
@@ -751,19 +750,19 @@
                   nbytes_connectivity = nbytes_connectivity + NUMBER_OF_NODES(IJK)
             ENDIF
          END DO
-         nbytes_connectivity = nbytes_connectivity * sizeof(int)
+         nbytes_connectivity = nbytes_connectivity * c_sizeof(int)
 
 
-         nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_offset       = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
-         nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_type         = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
 
 ! Offset of each field
          offset_xyz = 0
-         offset_connectivity = offset_xyz          + sizeof(int) + nbytes_xyz
-         offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
-         offset_type         = offset_offset       + sizeof(int) + nbytes_offset
+         offset_connectivity = offset_xyz          + c_sizeof(int) + nbytes_xyz
+         offset_offset       = offset_connectivity + c_sizeof(int) + nbytes_connectivity
+         offset_type         = offset_offset       + c_sizeof(int) + nbytes_offset
 
 
          IF(PASS==WRITE_HEADER) THEN
@@ -797,7 +796,7 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type  ! Store offset for first variable to be written
+            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type  ! Store offset for first variable to be written
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -934,7 +933,7 @@
 
 ! For each scalar, write a tag, with corresponding offset
 
-         nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
+         nbytes_scalar = NUMBER_OF_VTK_CELLS * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
@@ -947,7 +946,7 @@
                  TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -984,7 +983,7 @@
       ELSE ! BDIST_IO=.TRUE.
 
 
-         nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
+         nbytes_scalar = NUMBER_OF_VTK_CELLS * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
@@ -998,7 +997,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1085,7 +1084,7 @@
 
       IF (.NOT.BDIST_IO) THEN
 
-         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
+         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
@@ -1095,7 +1094,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1150,7 +1149,7 @@
       ELSE ! BDIST_IO=.TRUE.
 
 
-         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
+         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
@@ -1161,7 +1160,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1334,7 +1333,7 @@
          IF(RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2')THEN
             ! For a new or RESTART_2 run, the pvd file should not exist, and is created with appropriate header
             IF (.NOT.PVD_EXISTS) THEN
-               OPEN(CONVERT='BIG_ENDIAN',UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
+               OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
                WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
                WRITE(PVD_UNIT,100) '<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">'
                WRITE(PVD_UNIT,100) '<Collection>'
@@ -1354,7 +1353,7 @@
                CALL MFIX_EXIT(myPE)
             ELSE
            ! If it already exists, go to the bottom of the file and prepare to append data (remove last two lines)
-               OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+               OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
                BACKSPACE(PVD_UNIT)
                BACKSPACE(PVD_UNIT)
                PVD_FILE_INITIALIZED(VTK_REGION)=.TRUE.
@@ -1363,7 +1362,7 @@
       ELSE
          ! When properly initialized, open the file and go to the
          ! bottom of the file and prepare to append data (remove last two lines)
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+         OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
       ENDIF
@@ -1624,7 +1623,7 @@
 
       FILENAME= TRIM(RUN_NAME) // '_boundary.vtk'
       FILENAME = TRIM(FILENAME)
-      OPEN(CONVERT='BIG_ENDIAN',UNIT = 123, FILE = FILENAME)
+      OPEN(UNIT = 123, FILE = FILENAME)
       WRITE(123,1001)'# vtk DataFile Version 2.0'
       WRITE(123,1001)'3D CUT-CELL SURFACE'
       WRITE(123,1001)'ASCII'
@@ -1744,7 +1743,7 @@
 
 !     IF(.NOT.GLOBAL_VAR_ALLOCATED) THEN
      IF(.TRUE.) THEN
-   
+
         IF(ALLOCATED(GLOBAL_I_OF)) DEALLOCATE(GLOBAL_I_OF)
         IF(ALLOCATED(GLOBAL_J_OF)) DEALLOCATE(GLOBAL_J_OF)
         IF(ALLOCATED(GLOBAL_K_OF)) DEALLOCATE(GLOBAL_K_OF)
@@ -1759,7 +1758,7 @@
         IF(ALLOCATED(GLOBAL_Y_NEW_POINT)) DEALLOCATE(GLOBAL_Y_NEW_POINT)
         IF(ALLOCATED(GLOBAL_Z_NEW_POINT)) DEALLOCATE(GLOBAL_Z_NEW_POINT)
         IF(ALLOCATED(GLOBAL_F_AT)) DEALLOCATE(GLOBAL_F_AT)
-        
+
 
 
          IF (myPE == PE_IO) THEN

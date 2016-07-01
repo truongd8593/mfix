@@ -6,84 +6,80 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
+    <width>405</width>
     <height>748</height>
    </rect>
   </property>
-  <layout class="QGridLayout" name="gridLayout_4">
-   <item row="6" column="1">
-    <spacer name="verticalSpacer_10">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="5" column="0" colspan="5">
-    <widget class="QGroupBox" name="groupbox_interphase">
-     <property name="title">
-      <string>Interphase Transfer</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_12">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>5</number>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
-      <item row="1" column="1">
-       <widget class="ComboBox" name="comboBox_4">
-        <item>
-         <property name="text">
-          <string>Gunn, 1979</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="ComboBox" name="comboBox_3">
-        <item>
-         <property name="text">
-          <string>Wen and Yu</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_7">
+  <layout class="QGridLayout" name="gridLayout_2">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_description">
+       <property name="text">
+        <string>Description</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="LineEdit" name="combobox_keyword_description"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Solver</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="ComboBox" name="combobox_solver">
+       <item>
         <property name="text">
-         <string>Drag Model</string>
+         <string>Single Phase</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_8">
+       </item>
+       <item>
         <property name="text">
-         <string>Heat Transfer</string>
+         <string>Two-Fluid Model (MFIX-TFM)</string>
         </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+       </item>
+       <item>
+        <property name="text">
+         <string>Discrete Element Model (MFIX-DEM)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Particle-in-Cell (MFIX-PIC)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>MFIX-Hybrid</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </item>
-   <item row="2" column="4">
+   <item row="1" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -96,7 +92,7 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="0" colspan="5">
+   <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox_options">
      <property name="title">
       <string>Options</string>
@@ -158,69 +154,7 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" colspan="5">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_6">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Solver</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="ComboBox" name="combobox_solver">
-       <item>
-        <property name="text">
-         <string>Single Phase</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Two-Fluid Model (MFIX-TFM)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Discrete Element Model (MFIX-DEM)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Particle-in-Cell (MFIX-PIC)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>MFIX-Hybrid</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="8" column="1">
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>120</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="4" column="1">
+   <item row="3" column="0">
     <spacer name="verticalSpacer_9">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -234,33 +168,63 @@
     </spacer>
    </item>
    <item row="4" column="0">
-    <widget class="QFrame" name="frame_9">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+    <widget class="QGroupBox" name="groupbox_interphase">
+     <property name="title">
+      <string>Interphase Transfer</string>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
+     <property name="flat">
+      <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_drag_model">
+        <property name="text">
+         <string>Drag Model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="ComboBox" name="combobox_drag_model">
+        <item>
+         <property name="text">
+          <string>Wen and Yu</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_heat_transfer">
+        <property name="text">
+         <string>Heat Transfer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="ComboBox" name="combobox_heat_transfer">
+        <item>
+         <property name="text">
+          <string>Gunn, 1979</string>
+         </property>
+        </item>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-   <item row="7" column="0" colspan="5">
+   <item row="5" column="0">
+    <spacer name="verticalSpacer_10">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="6" column="0">
     <widget class="QGroupBox" name="groupBox_advanced">
      <property name="title">
       <string>Advanced</string>
@@ -268,22 +232,7 @@
      <property name="flat">
       <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_13">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>5</number>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
+     <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
        <widget class="QLabel" name="label_26">
         <property name="layoutDirection">
@@ -321,6 +270,13 @@
         </item>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_subgrid_model">
+        <property name="text">
+         <string>Subgrid Model</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="ComboBox" name="combobox_subgrid_model">
         <item>
@@ -335,14 +291,7 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_subgrid_model">
-        <property name="text">
-         <string>Subgrid Model</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="2">
+      <item row="2" column="0" colspan="2">
        <widget class="QGroupBox" name="groupbox_subgrid_params">
         <property name="title">
          <string>Subgrid Parameters</string>
@@ -351,32 +300,40 @@
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item row="1" column="0" colspan="2">
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>Enable wall correction</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Filter size ratio</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="LineEdit" name="lineedit_vfilter_size_ratio">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>107</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Enable wall correction</string>
            </property>
           </widget>
          </item>
@@ -386,24 +343,27 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_description">
-     <property name="text">
-      <string>Description</string>
+   <item row="7" column="0">
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="4">
-    <widget class="LineEdit" name="combobox_keyword_description"/>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>120</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
   <zorder>groupbox_interphase</zorder>
-  <zorder>frame_9</zorder>
   <zorder>groupBox_advanced</zorder>
   <zorder>groupBox_options</zorder>
   <zorder>verticalSpacer</zorder>
-  <zorder>combobox_keyword_description</zorder>
-  <zorder>label_description</zorder>
  </widget>
  <customwidgets>
   <customwidget>

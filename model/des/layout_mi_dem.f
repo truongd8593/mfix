@@ -78,7 +78,6 @@
 
       use des_bc, only: DEM_MI
 
-      use stl, only: N_FACETS_DES
       use stl, only: STL_START, DEFAULT_STL
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
@@ -492,7 +491,6 @@
       use des_bc, only: DEM_MI
 
       use stl, only: STL_START, DEFAULT_STL
-      use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
 
@@ -563,8 +561,6 @@
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
-! Separating axis test dummy variable
-      INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
       LOGICAL :: OVERLAP
 ! Local debug flag.
@@ -912,7 +908,6 @@
       use des_bc, only: DEM_MI
 
       use stl, only: STL_START, DEFAULT_STL
-      use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
       use compar, only: myPE
@@ -982,8 +977,6 @@
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
-! Separating axis test dummy variable
-      INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
       LOGICAL :: OVERLAP
 ! Local Debug flag.

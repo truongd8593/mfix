@@ -73,13 +73,18 @@ class SpeciesPopup(QtWidgets.QDialog):
         if match_empty or string:
             needle = string.lower()
             for ((k, key, phase)) in self.haystack:
-                if ( (needle in k[0] and phase in self.phases) or
-                     (self.include_comments and needle in k[1] and phase in self.phases) ):
+                if (phase in self.phases and
+                    (needle in k[0] or
+                     (self.include_comments and needle in k[1]))):
                     results.append((key, phase))
         table = self.ui.tablewidget_search
         nrows = len(results)
+        self.ui.tablewidget_search.clearContents()
         self.ui.tablewidget_search.setRowCount(nrows)
         self.search_results = [None]*nrows
+
+        # http://stackoverflow.com/questions/10192579/
+        table.model().blockSignals(True);
         for (i,r) in enumerate(results):
             key, phase = r
             comment = self.comments[phase][key]
@@ -89,6 +94,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             item = QTableWidgetItem(phase)
             table.setItem(i, 1, item)
             self.search_results[i] = (key, phase)
+        table.model().blockSignals(False);
 
     def get_species_data(self, key, phase):
         """exposes species database to external clients"""
@@ -403,6 +409,8 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
+        self.extra_aliases = set() # To support enforcing
+        # uniqueness of aliases across all phases
 
         self.search_results = []
         self.user_species_names = set()
@@ -453,6 +461,10 @@ class SpeciesPopup(QtWidgets.QDialog):
                         self.parent.set_save_button(False)
                         # More visual indication of invalid alias?
                         return (QValidator.Intermediate, text, pos)
+                if text in self.parent.extra_aliases:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Intermediate, text, pos)
                 self.parent.set_save_button(True)
                 return (QValidator.Acceptable, text, pos)
 

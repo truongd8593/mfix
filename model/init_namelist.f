@@ -1363,7 +1363,7 @@
 !    Solids stress firction model selection.
 !  </description>
 !  <valid value="SCHAEFFER" note="Schaeffer friction model"/>
-!  <valid value="SIRVASTAVA"  note="Sirvastava friction model"/>
+!  <valid value="SRIVASTAVA"  note="Srivastava friction model"/>
       FRICTION_MODEL = 'SCHAEFFER'
 !</keyword>
 

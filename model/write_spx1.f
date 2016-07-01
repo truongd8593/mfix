@@ -536,7 +536,7 @@
       USE param1, only: undefined
       IMPLICIT NONE
 
-! Dummy arguments 
+! Dummy arguments
 !---------------------------------------------------------------------//
       integer uspxL, NEXT_REC
       double precision, dimension(ijkmax2) :: array1
@@ -659,7 +659,7 @@
       integer :: arr4d(nx,ny,nz,1)
       integer :: var(dimension_3)
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
       integer :: ii, jj, kk, ijk
 !---------------------------------------------------------------------//
@@ -875,7 +875,7 @@
       use turb, only: k_epsilon
       implicit none
 
-! Dummy arguments 
+! Dummy arguments
 !---------------------------------------------------------------------//
       integer :: L, unit_add
       double precision :: the_time
@@ -1060,7 +1060,9 @@
               var_name = 'X_s_xxx_xxx'
               write (var_name(5:7) ,'(i3.3)') I
               write (var_name(9:11),'(i3.3)') nn
-              if (bWrite_netcdf(10)) call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,nn)) )
+              if (bWrite_netcdf(10)) then
+                 call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,nn)) )
+              endif
            END DO
 
 

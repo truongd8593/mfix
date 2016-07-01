@@ -29,7 +29,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE DES_THERMO_COND
- 
+
 
       IMPLICIT NONE
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_Qw_cond
@@ -75,8 +75,6 @@
       DOUBLE PRECISION Q_pfp
 ! Outer radius of region delineating particle-fluid-particle conduction
       DOUBLE PRECISION RD_OUT
-! Inner radius of region delineating particle-fluid-particle conduction
-      DOUBLE PRECISION RD_IN
 ! The radius of the fluid lens containing the larger particle
       DOUBLE PRECISION LENS_RAD
 ! Temperature difference between two particles
@@ -101,7 +99,7 @@
       DOUBLE PRECISION :: H_1, H_2
 ! Analytic thermal conductance between particles
       DOUBLE PRECISION :: H
-! Dummy variable for calculations 
+! Dummy variable for calculations
       DOUBLE PRECISION :: RATIO
 ! Functions
 !---------------------------------------------------------------------//
@@ -154,7 +152,7 @@
          LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
          OLAP_Actual = MAX_RAD + MIN_RAD - CENTER_DIST_CORR
 ! check to see if particles are within lens thickness from eachother
-! a negative overlap indicates particles are separated 
+! a negative overlap indicates particles are separated
          IF(OLAP_actual > (-MAX_RAD*FLPC))THEN
             RD_OUT = RADIUS(LENS_RAD, MIN_RAD)
             ! get overlap between each particle and contact plane
@@ -169,7 +167,7 @@
             ! get effective lens radius for particle-contact plane
             RLENS_1 = sqrt(RD_OUT*RD_OUT+(MIN_RAD-OLAP_1)**2.0)
             RLENS_2 = sqrt(RD_OUT*RD_OUT+(MAX_RAD-OLAP_2)**2.0)
-            
+
 
 ! GET GAS THERMAL CONDUCTIVITY (default calculation is done in calc_k_g and is for air)
             if(k_g0.eq.UNDEFINED)then
@@ -181,7 +179,7 @@
             else
                K_Gas=k_g0
             endif
-   
+
             H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_gas
             H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_gas
             IF(H_1.eq.ZERO.OR.H_2.eq.ZERO)THEN
@@ -189,18 +187,18 @@
             ELSE
                H = H_1*H_2/(H_1+H_2)
             ENDIF
-     
+
             Q_pfp = H *DeltaTp
 ! Particle-fluid-particle is analytically computed using conductance for each
 ! particle to the contact plane.  The effective lens radius and minimum conduction
-! distance are first calculated for each particle-fluid-contact_plane conduction. 
-            
+! distance are first calculated for each particle-fluid-contact_plane conduction.
+
          ELSE
             Q_pfp = ZERO
          ENDIF
          DES_CONDUCTION = Q_pp + Q_pfp
-               
-            
+
+
  !!        ENDIF ! NEW WAY
 !-------------------------------------------------------------------------------------
 ! OLD WAY
@@ -438,7 +436,7 @@
      DOUBLE PRECISION FUNCTION EVAL_H_PFP(RLENS_dim,S,OLAP_dim,RP)
       USE CONSTANT
       USE PARAM1
-     
+
       IMPLICIT NONE
       ! Note: Function inputs dimensional quantities
       DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
@@ -447,7 +445,7 @@
       DOUBLE PRECISION :: TERM1,TERM2,TERM3
       DOUBLE PRECISION :: Rout,Rkn
       DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
-      
+
       RLENS = RLENS_dim/RP
       KN = S/RP
       OLAP = OLAP_dim/RP
@@ -464,7 +462,7 @@
          STOP
       ENDIF
       Rout=MIN(Rout,ONE)
-      
+
       IF(OLAP.ge.ZERO)THEN
      !     Particle in contact (below code verified)
          TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
@@ -477,11 +475,11 @@
          ELSE
             Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
          ENDIF
-    
+
          TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
          TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
          EVAL_H_PFP = TWO*PI*(TERM1+TERM2)
-         
+
       ENDIF
       RETURN
       END FUNCTION EVAL_H_PFP
@@ -502,11 +500,11 @@
       USE param1, only: zero
       USE DES_THERMO, only: des_min_cond_dist
 
-      DOUBLE PRECISION :: DES_CONDUCTION_WALL 
+      DOUBLE PRECISION :: DES_CONDUCTION_WALL
       DOUBLE PRECISION, intent(in) :: OLAP, K_sol, K_wall, K_gas, TWall&
       &                               ,TPart,RPart, RLens
-      DOUBLE PRECISION :: Rin, Rout
-      DOUBLE PRECISION :: OLAP_ACTUAL, TAUC_CORRECTION
+      DOUBLE PRECISION :: Rin
+      DOUBLE PRECISION :: OLAP_ACTUAL
       DOUBLE PRECISION :: KEff
       DOUBLE PRECISION :: Q_pw, Q_pfw
       INTEGER :: M ! Solids phase index
@@ -536,20 +534,19 @@
       &     K_gas*RPart*(TWall-TPart)
 
       DES_CONDUCTION_WALL=Q_pw+Q_pfw
-     
-      RETURN 
+
+      RETURN
       END FUNCTION DES_CONDUCTION_WALL
 
 
 !     THIS FUNCTION COMPUTES THE OVERLAP THAT WOULD OCCUR (for a given force)
-!     IF ACTUAL MATERIAL PROPERTIES WERE USED. 
+!     IF ACTUAL MATERIAL PROPERTIES WERE USED.
       FUNCTION CORRECT_OLAP(OLAP,M,L)
       use discretelement
       IMPLICIT NONE
       DOUBLE PRECISION :: CORRECT_OLAP
       DOUBLE PRECISION, INTENT (IN) :: OLAP
       INTEGER, INTENT (IN) :: M, L
-      DOUBLE PRECISION :: KN_ACTUAL, KN_SIM
       ! L=-1 corresponds to wall
       IF(L.eq.-1)THEN
          ! WALL CONTACT
@@ -573,7 +570,7 @@
       DOUBLE PRECISION FUNCTION EVAL_H_PFW(RLENS_dim,S,OLAP_dim,RP)
       USE CONSTANT
       USE PARAM1
-     
+
       IMPLICIT NONE
       ! Note: Function inputs dimensional quantities
       DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
@@ -582,7 +579,7 @@
       DOUBLE PRECISION :: TERM1,TERM2,TERM3
       DOUBLE PRECISION :: Rout,Rkn
       DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
-      
+
       RLENS = RLENS_dim/RP
       KN = S/RP
       OLAP = OLAP_dim/RP
@@ -599,7 +596,7 @@
          STOP
       ENDIF
       Rout=MIN(Rout,ONE)
-      
+
       IF(OLAP.ge.ZERO)THEN
      !     Particle in contact (below code verified)
          TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
@@ -612,11 +609,11 @@
          ELSE
             Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
          ENDIF
-    
+
          TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
          TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
          EVAL_H_PFW = TWO*PI*(TERM1+TERM2)
-         
+
       ENDIF
       RETURN
       END FUNCTION EVAL_H_PFW
@@ -628,7 +625,7 @@
       use discretelement, only: des_coll_model_enum, HERTZIAN
       IMPLICIT NONE
       INTEGER, intent (in) :: phaseI, phaseJ
-      DOUBLE PRECISION :: time_corr, tau_actual, tau_sim
+      DOUBLE PRECISION :: time_corr
       DOUBLE PRECISION :: vimp ! impact veloctiy
       INTEGER :: M, N
       vimp = 1.0D0
@@ -656,7 +653,7 @@
             M = phaseJ
             N = phaseI
          endif
-         
+
          IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
             time_corr = tau_c_base_actual(M,N) / tau_c_base_sim(M,N)
          ELSE
@@ -669,11 +666,11 @@
          ENDIF
       ENDIF
       time_corr = time_corr **(2.0D0/3.0D0)
-      ! TEMPORARY 
+      ! TEMPORARY
       time_corr = 1.0D0
       RETURN
       END SUBROUTINE CALC_TIME_CORRECTION
 
 
-      
+
   END MODULE DES_THERMO_COND

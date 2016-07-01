@@ -25,7 +25,7 @@
 
   KT_TYPE = 'LUN_1984'
 
-  FRICTION_MODEL = 'SIRVASTAVA'
+  FRICTION_MODEL = 'SRIVASTAVA'
 
 #_______________________________________________________________________
 # NUMERICAL SECTION

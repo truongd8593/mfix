@@ -23,7 +23,7 @@
       USE compar, ONLY: IJKSTART3, IJKEND3
       USE cutcell, ONLY: CARTESIAN_GRID, A_UPG_E, A_VPG_N, A_WPG_T
       USE fldvar, ONLY: U_G, V_G, W_G, U_S, V_S, W_S, ROP_G, ROP_S
-      USE fldvar, only: ROP_GO, ROP_SO, RO_G
+      USE fldvar, only: ROP_GO, ROP_SO
       USE geometry, ONLY: VOL
       USE param, only: dimension_3, dimension_m
       USE param, only: east, west, south, north, top, bottom
@@ -189,7 +189,7 @@
          ENDDO
       ENDIF
 
-! Modification for compressibility 
+! Modification for compressibility
       IF (RO_G0 == UNDEFINED) CALL COMPRESSIBLE_PP_G(A_M)
 
 ! Remove the asymmetry in matrix caused by the pressure outlet or inlet
@@ -286,12 +286,12 @@ END SUBROUTINE SOURCE_PP_G
 ! under relaxation factor for pressure
       double precision :: fac
 ! Indices
-      INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
+      INTEGER :: IJK, IMJK, IJMK, IJKM
       INTEGER :: IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
 !---------------------------------------------------------------------//
 
 ! since p_g = p_g* + ur_fac * pp_g
-      fac = UR_FAC(1)  
+      fac = UR_FAC(1)
 
      IF (.NOT.HS_CORRECT) THEN
 !!$omp    parallel do  &
@@ -355,5 +355,3 @@ END SUBROUTINE SOURCE_PP_G
 
       RETURN
       END SUBROUTINE COMPRESSIBLE_PP_G
-
-

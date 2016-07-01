@@ -15,8 +15,8 @@
       use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
       use bc, only: bc_scalar, bc_hw_scalar, bc_c_scalar, bc_scalarw
       use compar, only: ijkstart3, ijkend3
-      use fldvar, only: rop_g, rop_go, ep_g, u_g, v_g, w_g
-      use fldvar, only: rop_s, rop_so, ep_s, u_s, v_s, w_s
+      use fldvar, only: rop_go, ep_g, u_g, v_g, w_g
+      use fldvar, only: rop_so, ep_s, u_s, v_s, w_s
       use fldvar, only: scalar, scalaro
       use functions, only: fluid_at, zmax
       use geometry, only: vol, ijkmax2

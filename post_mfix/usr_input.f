@@ -1311,7 +1311,7 @@ subroutine usr_get_fname
               READ(*,*)IANS
               IF(IANS .NE. 1)GOTO 70
            ENDIF
-           OPEN (UNIT=40,FILE=usr_fname,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
+           OPEN (UNIT=40,FILE=usr_fname,STATUS='UNKNOWN')
         ENDIF
      ENDIF
   ENDIF
@@ -1439,4 +1439,3 @@ subroutine usr_write_input2(usr_t1_a,usr_t2_a,usr_tavg_a, &
 
   return
 end subroutine usr_write_input2
-

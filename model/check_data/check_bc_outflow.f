@@ -244,15 +244,16 @@
             BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1102) trim(iVar('BC_MASSFLOW_S',BCV,M)), &
                trim(iVar('BC_VOLFLOW_S',BCV,M))
+            CALL FLUSH_ERR_MSG
  1102 FORMAT('Warning 1102: ', A,' and/or ', A,' have been defined',/&
          'at a mass outflow boundary. A specified solids flow ',&
          'rate may not be ',/'physically achievable depending on the ',&
          'system and simulation ',/'setup.')
 
-             IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN
-                WRITE(ERR_MSG,1103) trim(iVar('BC_ROP_S',BCV,M))
-                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-             ENDIF
+            IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN
+               WRITE(ERR_MSG,1103) trim(iVar('BC_ROP_S',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
  1103 FORMAT('Error 1103: Invalid mass outflow boundary condition: ', /&
          'BC_MASSFLOW_S and/or BC_VOLFLOW_S are DEFINED but ',&
          A,' is not ',/'Please correct the mfix.dat file.')

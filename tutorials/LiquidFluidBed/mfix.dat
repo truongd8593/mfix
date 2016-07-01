@@ -15,7 +15,7 @@
   DT_MIN                = 1.0d-8                       !min. time step
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .FALSE.    .FALSE.            !do not solve species eq
-  FRICTION_MODEL = 'SIRVASTAVA'
+  FRICTION_MODEL = 'SRIVASTAVA'
 
 ! Geometry Section
 
@@ -45,7 +45,7 @@
   MU_g0                 = 1.0E-2                        !constant water viscosity
   RO_g0                 = 1.0                           !constant water density
 
-  TURBULENCE_MODEL = 'MIXING_LENGTH_MODEL'
+  TURBULENCE_MODEL = 'MIXING_LENGTH'
   Mu_gmax               = 1000.0                        !maximum fluid turb. viscosity
 
 

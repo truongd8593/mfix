@@ -43,6 +43,7 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
+from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 from widgets.parameter_dialog import ParameterDialog
 
@@ -62,20 +63,20 @@ from constants import *
 
 if PRECOMPILE_UI:
     try:
+        from uifiles.fluid import Ui_fluid
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
         from uifiles.model import Ui_model
-        from uifiles.solids import Ui_solids
-        from uifiles.fluid import Ui_fluid
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
+        from uifiles.solids import Ui_solids
         from uifiles.vtk import Ui_vtk
     except ImportError:
-        print("You must compile ui files!  cd uifiles; make")
+        print("You must compile ui files! (run 'make'")
         sys.exit(1)
 
 
@@ -93,7 +94,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):
-        self.message(icon='Error', title='Range error', text=str(exc))
+        self.message(title='Error', text=str(exc))
+
+    def warn(self, msg, popup=False):
+        """Convenience function to show the user a warning & log it"""
+        if not popup:
+            self.print_internal("Warning: %s" % msg)
+            # print_internal will call log.warn if message starts with "Warning"
+        else:
+            self.message("Warning: %s" % msg)
+            # Will also print-internal and log
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -109,9 +119,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.message_box = None # for tests to access
 
 
-        # Initialize data members
+        # Initialize data members - make sure these values match 'reset'!
         self.solver_name = None
+        self.fluid_solver_disabled = False
         self.mfix_exe = None
+        self.commandline_option_exe = None
         self.mfix_config = None
         self.smp_enabled = False
         self.dmp_enabled = False
@@ -119,6 +131,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.pymfix_enabled = False
         self.open_succeeded = False
         self.unsaved_flag = False
+        self.run_dialog = None
 
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
@@ -204,6 +217,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
+
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -294,15 +308,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             btn.clicked.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
-        ui.treewidget_model_navigation.itemSelectionChanged.connect(
+        ui.treewidget_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
+        # Make tree fully open & non-closable
+        # We expect "rootIsDecorated" has been set False in the .ui file
+        ui.treewidget_navigation.expandAll()
+        ui.treewidget_navigation.setExpandsOnDoubleClick(False)
+
+
+        # Job manager / monitor
         self.job = Job(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
-
-        self.exe_watcher = QFileSystemWatcher()
-        self.exe_watcher.directoryChanged.connect(self.slot_exes_changed)
 
         self.monitor = Monitor(self)
 
@@ -313,7 +331,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run.button_pause_mfix.setVisible(self.pymfix_enabled)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        run.combobox_mfix_exes.activated.connect(self.handle_select_exe)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
 
         # Print welcome message.  Do this early so it appears before any
@@ -373,49 +390,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
-        #self.mfix_exe = None
-        #self.mfix_config = None
-        #self.smp_enabled = False
-        #self.dmp_enabled = False
-        #self.pymfix_enabled = False
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
         self.solids_nscalar_eq = 0 # Infer these from phase4scalar
-        # Defaults
 
+        # Defaults - see __init__
         self.solver_name = None
+        self.fluid_solver_disabled = False  # TODO: infer at load time
 
         self.project.reset() # Clears all keywords & collections
 
-        #reset filesystem watchers: TODO: promote watchers to their own objects
-        for w in (self.exe_watcher, self.rundir_watcher):
-            for d in w.directories():
-                w.removePath(d)
         self.slot_rundir_changed()
-        # just the system dirs, no project dirs (TODO: reevaluate $PATH)
-        PATH = os.environ.get("PATH")
-        if PATH:
-            dirs = set(PATH.split(os.pathsep))
-        else:
-            dirs = set()
-        mfix_home = get_mfix_home()
-        if mfix_home:
-            dirs.add(mfix_home)
-            dirs.add(os.path.join(mfix_home, 'bin'))
-            dirs.add(os.path.join(mfix_home, 'build'))
-        for d in dirs:
-            # filter out empty strings and current directory from $PATH
-            if d and d != os.path.curdir and os.path.isdir(d):
-                if d not in self.exe_watcher.directories():
-                    self.exe_watcher.addPath(d)
-        self.slot_exes_changed()
-
-        if self.mfix_exe: # Do we need to do this again here?
-            cb = self.ui.run.combobox_mfix_exes
-            if cb.findText(self.mfix_exe) == -1:
-                cb.addItem(self.mfix_exe)
-            cb.setCurrentText(self.mfix_exe)
 
         self.reset_fluids()
         self.reset_solids()
@@ -496,18 +482,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                      text='Feature not implemented')
 
     def toggle_nav_menu(self):
-        nav_menu = self.ui.treewidget_model_navigation
+        nav_menu = self.ui.treewidget_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
 
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
-
-    def update_no_mfix_warning(self):
-        ok = bool(self.mfix_exe or self.mfix_available)
-        self.ui.run.label_mfix_exes_warning.setVisible(not ok)
-        self.ui.run.combobox_mfix_exes.setVisible(ok)
-        if not ok:
-            self.print_internal("Warning: no MFIX executables available")
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -515,43 +494,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         log.debug("rundir changed")
         # TODO figure out if we really need to do this update
         self.update_run_options()
-
-    def slot_exes_changed(self):
-        # The list of executables (maybe) changed.
-        # Note: since log files get written to project dirs, this callback
-        # is triggered frequently during a run
-        running = self.job.is_running()
-        res_file_exists = bool(self.monitor.get_res_files())
-
-        exes = list(self.monitor.get_exes())
-        mfix_exe = self.mfix_exe
-
-        # Did the current exe go away?
-        if mfix_exe and not os.path.exists(mfix_exe):
-            self.print_internal("Warning: %s is gone" % mfix_exe)
-            mfix_exe = self.mfix_exe = None
-
-        # Make sure we don't loose the current selection
-        if mfix_exe and mfix_exe not in exes:
-            exes.insert(0, mfix_exe)
-        self.mfix_available = bool(exes)
-        self.update_no_mfix_warning()
-
-        cb = self.ui.run.combobox_mfix_exes
-        if not self.mfix_available:
-            # Disable run/pause/stop buttons
-            self.set_run_button(enabled=False)
-            self.set_stop_button(enabled=False)
-            self.set_reset_button(enabled=(res_file_exists and not running))
-            # How did we get here if running? maybe somebody deleted the exe!
-            return
-
-        cb.clear()
-        for exe in exes:
-            cb.addItem(exe)
-
-        if self.mfix_exe:
-            cb.setCurrentText(self.mfix_exe)
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
@@ -638,7 +580,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Pause only available w/ pymfix
         if running:
             self.status_message("MFIX running, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -648,7 +589,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job.mfix_pid)
-            ui.run.combobox_mfix_exes.setEnabled(False)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
@@ -657,7 +597,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
@@ -666,9 +605,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         else: # Not running, ready for input
             self.status_message("Ready" if project_open else "Loading %s"%project_file)
-            ui.run.combobox_mfix_exes.setEnabled(True)
             self.set_reset_button(enabled=False)
-            self.set_run_button(text="Run", enabled=self.mfix_available and project_open)
+            self.set_run_button(text="Run", enabled=project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
             self.set_stop_button(enabled=False)
 
@@ -693,7 +631,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         event.accept()
 
     def find_navigation_tree_item(self, item_name):
-        tree = self.ui.treewidget_model_navigation
+        tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
         assert len(items) == 1
@@ -792,14 +730,17 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_window_title()
 
     def disable_fluid_solver(self, disabled):
+        self.fluid_solver_disabled = disabled
+        m = self.ui.model
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
         item.setDisabled(disabled)
-        ms = self.ui.model
-        checkbox = ms.checkbox_enable_turbulence
-        checkbox.setEnabled(enabled)
-        ms.combobox_turbulence_model.setEnabled(enabled and
-                                                checkbox.isChecked())
+        if disabled:
+            self.enable_turbulence(False)
+        m.checkbox_enable_turbulence.setEnabled(enabled)
+        m.combobox_turbulence_model.setEnabled(enabled and
+                        m.checkbox_enable_turbulence.isChecked())
+
 
     def enable_energy_eq(self, state):
         # Additional callback on top of automatic keyword update,
@@ -842,16 +783,30 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         groupbox_subgrid_params = self.ui.model.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
-    def enable_turbulence(self):
-        model = self.ui.model
-        enabled = model.checkbox_enable_turbulence.isChecked()
-        model.combobox_turbulence_model.setEnabled(enabled)
+    def enable_turbulence(self, enabled):
+        m = self.ui.model
+        if enabled != m.checkbox_enable_turbulence.isChecked():
+            m.checkbox_enable_turbulence.setChecked(enabled)
+        m.combobox_turbulence_model.setEnabled(enabled)
+        if not enabled:
+            self.unset_keyword('turbulence_model')
+        else:
+            self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
+
+    def set_turbulence_model(self, val):
+        m = self.ui.model
+        cb = m.combobox_turbulence_model
+        if cb.currentIndex() != val:
+            cb.setCurrentIndex(val)
+            return
+        self.update_keyword('turbulence_model',
+                            ['MIXING_LENGTH', 'K_EPSILON'][val])
+
 
     def update_scalar_equations(self, prev_nscalar):
         """sets nscalar and phase4scalar(#) for all phases"""
         # Used by both fluid & solid han
-        # This is a little messy.  We may have reduced
-        # nscalar, so we need to unset phase4scalar(i)
+        # We may have reduced nscalar, so we need to unset phase4scalar(i)
         # for any values of i > nscalar.
         nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
         if nscalar > 0:
@@ -882,13 +837,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         checkbox = model.checkbox_disable_fluid_solver
         checkbox.clicked.connect(self.disable_fluid_solver)
-        self.disable_fluid_solver(False)
+        self.disable_fluid_solver(self.fluid_solver_disabled)
 
         checkbox = model.checkbox_keyword_energy_eq
         checkbox.clicked.connect(self.enable_energy_eq)
 
         checkbox = model.checkbox_enable_turbulence
         checkbox.clicked.connect(self.enable_turbulence)
+
+        combobox = model.combobox_turbulence_model
+        combobox.currentIndexChanged.connect(self.set_turbulence_model)
 
         combobox = model.combobox_subgrid_model
         combobox.currentIndexChanged.connect(self.set_subgrid_model)
@@ -951,7 +909,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 # add info from keyword documentation
                 if key in self.keyword_doc:
                     doc = self.keyword_doc[key]
-                    widget.setdtype(doc['dtype'])
+                    try:
+                        widget.setdtype(doc['dtype'])
+                    except:
+                        print(widget, widget.objectName())
+                        raise
                     vr = doc.get('validrange', {})
                     widget.setValInfo(min=vr.get("min"), max=vr.get("max"),
                                       required=doc.get("required"))
@@ -1052,32 +1014,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                     current_index,
                                     'horizontal')
 
-    # Solids sub-pane navigation
-    def solids_change_tab(self, tabnum, btn):
-        """ switch solids stacked widget based on selected """
-        self.animate_stacked_widget(
-            self.ui.solids.stackedwidget_solids,
-            self.ui.solids.stackedwidget_solids.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=self.ui.solids.line_solids,
-            to_btn=btn,
-            btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
-
     # --- modeler pane navigation ---
     def change_pane(self, name):
-        """change to the specified pane"""
-        clist = self.ui.treewidget_model_navigation.findItems(
+        """set current pane to the one matching 'name'"""
+        clist = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
         assert len(clist) == 1
         item = clist[0]
-        self.ui.treewidget_model_navigation.setCurrentItem(item)
+        self.ui.treewidget_navigation.setCurrentItem(item)
         self.navigation_changed()
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-        current_selection = self.ui.treewidget_model_navigation.selectedItems()
+        current_selection = self.ui.treewidget_navigation.selectedItems()
 
         # Force any open popup to close
         # if dialog is modal we don't need this
@@ -1140,46 +1090,19 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         to_widget.raise_()
         #to_widget.activateWindow() ? needed?
 
+        self.stack_animation = QtCore.QParallelAnimationGroup()
         # animate
         # from widget
-        animnow = QtCore.QPropertyAnimation(from_widget, "pos".encode('utf-8'))
-        animnow.setDuration(self.animation_speed)
-        animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnow.setStartValue(
-            QtCore.QPoint(0,0))
-        animnow.setEndValue(
-            QtCore.QPoint(0 - offsetx,
-                          0 - offsety))
+        self.animation_setup(from_widget, 0, 0, -offsetx, -offsety)
 
         # to widget
-        animnext = QtCore.QPropertyAnimation(to_widget, "pos".encode('utf-8'))
-        animnext.setDuration(self.animation_speed)
-        animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animnext.setStartValue(
-            QtCore.QPoint(0 + offsetx,
-                          0 + offsety))
-        animnext.setEndValue(
-            QtCore.QPoint(0,0))
+        self.animation_setup(to_widget, offsetx, offsety, 0, 0)
 
         # line
-        animline = None
         if line is not None and to_btn is not None:
-            animline = QtCore.QPropertyAnimation(line, "pos".encode('utf-8'))
-            animline.setDuration(self.animation_speed)
-            animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-            animline.setStartValue(
-                QtCore.QPoint(line.geometry().x(),
-                              line.geometry().y()))
-            animline.setEndValue(
-                QtCore.QPoint(to_btn.geometry().x(),
-                              line.geometry().y()))
+            self.animation_setup(line, line.geometry().x(), line.geometry().y(), to_btn.geometry().x(), line.geometry().y())
 
         # animation group
-        self.stack_animation = QtCore.QParallelAnimationGroup()
-        self.stack_animation.addAnimation(animnow)
-        self.stack_animation.addAnimation(animnext)
-        if animline is not None:
-            self.stack_animation.addAnimation(animline)
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
                           stackedwidget, from_, to, btn_layout, line)
@@ -1190,6 +1113,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.animating = True
         self.stack_animation.start()
+
+    def animation_setup(self, target, x_start, y_start, x_end, y_end):
+        """setup an animation widget"""
+        animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
+        animation.setDuration(self.animation_speed)
+        animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        animation.setStartValue(QtCore.QPoint(x_start, y_start))
+        animation.setEndValue(QtCore.QPoint(x_end,y_end))
+        self.stack_animation.addAnimation(animation)
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, line=None):
@@ -1436,29 +1368,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             scrollbar.setValue(scrollbar.maximum())
 
 
-    def handle_select_exe(self):
-        """Enable/disable run options based on selected executable"""
-        mfix_exe = self.ui.run.combobox_mfix_exes.currentText()
-        if mfix_exe == self.mfix_exe:
-            return
-
-        self.mfix_exe = mfix_exe
-
-        if not mfix_exe:
-            self.update_run_options()
-            return
-
-        self.settings.setValue('mfix_exe', mfix_exe)
-        config = self.monitor.exes.get(mfix_exe)
-        self.mfix_config = config
-        self.smp_enabled = 'smp' in config if config else False
-        self.dmp_enabled = 'dmp' in config if config else False
-
-        self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
-                                  for x in ('pymfix', 'pymfix.exe'))
-
-        self.update_run_options()
-
     def remove_output_files(self, output_files=None, message_text=None):
         """ remove MFIX output files from current project directory
 
@@ -1500,12 +1409,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         name = 'Run'
         try:
             if not self.job.is_running():
-                self.run_mfix()
+                # open the run dialog for job options
+                self.open_run_dialog()
+                return
             else:
                 name='unpause'
                 self.job.unpause()
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            traceback.print_exception(*sys.exc_info())
 
     def handle_set_pymfix_output(self):
         try:
@@ -1513,18 +1425,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
               self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
+            traceback.print_exception(*sys.exc_info())
 
     def handle_pause(self):
         try:
             self.job.pause()
         except Exception as e:
             self.print_internal("Pause: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def handle_stop(self):
         try:
             self.job.stop_mfix()
         except Exception as e:
             self.print_internal("Stop: error %s" % e)
+            traceback.print_exception(*sys.exc_info())
 
     def run_mfix(self):
         output_files = self.monitor.get_outputs()
@@ -1583,11 +1498,38 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_source_view()
         self._start_mfix()
 
+    def open_run_dialog(self):
+        """Open run popup dialog"""
+        popup_title = self.ui.run.button_run_mfix.text()
+        self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
+        self.run_dialog.run.connect(self.run_mfix)
+        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
+        self.run_dialog.setModal(True)
+        self.run_dialog.popup()
+
+    def handle_exe_changed(self):
+        """callback from run dialog when combobox is changed"""
+        self.mfix_exe = mfix_exe = self.run_dialog.mfix_exe
+        self.mfix_config = config = \
+                self.run_dialog.mfix_exe_flags.get(mfix_exe, None)
+        log.debug('exe changed signal recieved: %s' % mfix_exe)
+
+        self.settings.setValue('mfix_exe', mfix_exe)
+        self.mfix_config = config
+        self.smp_enabled = 'smp' in config if config else False
+        self.dmp_enabled = 'dmp' in config if config else False
+
+        self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
+                                  for x in ('pymfix', 'pymfix.exe'))
+
+        self.update_run_options()
+
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
 
         if not self.mfix_exe:
             self.print_internal("ERROR: MFIX not available")
+            self.update_run_options()
             return
 
         mfix_exe = self.mfix_exe
@@ -1694,6 +1636,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 os.path.abspath(os.path.join(project_dir, 'workflow.nc')))
 
         self.clear_unsaved_flag()
+        self.update_source_view()
 
     def save_as(self):
         """Prompt user for new filename, save project to that file and make
@@ -1972,19 +1915,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_no_project()
             return
 
-        if hasattr(self.project, 'run_name'):
-            name = self.project.run_name.value
-        else:
-            name = 'new_file'
+        name = self.project.get_value('run_name', default='new_file')
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         runname_mfx = name + '.mfx'
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
-            save_msg = 'Saving %s as %s based on run name' % (project_path, runname_mfx)
+            save_msg = 'Renaming mfix.dat to %s based on run name' % runname_mfx
             response = self.message(title='Info',
-                                    icon='info',
+                                    icon='question',
                                     text=save_msg,
                                     buttons=['ok', 'cancel'],
                                     default='ok')
@@ -2006,7 +1946,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 project_file = renamed_project_file
                 try:
                     self.force_default_settings()
-                    self.print_internal("Info: saving %s" % project_file)
+                    self.print_internal("Info: Saving %s" % project_file)
                     self.project.writeDatFile(project_file) #XX
                     #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
@@ -2020,6 +1960,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                  default='ok')
                     traceback.print_exception(*sys.exc_info())
                     return
+            else:
+                self.print_internal("Rename canceled at user request")
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
@@ -2030,14 +1972,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.rundir_watcher.addPath(project_dir)
         self.slot_rundir_changed()
 
-        # set up exe watcher (it got cleared in 'reset')
-        dirs = (project_dir, ) # any others?
-        for d in dirs:
-            if d not in self.exe_watcher.directories():
-                self.exe_watcher.addPath(d)
-        self.slot_exes_changed()
-
-        #--- Geometry ---
+        ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry_file):
@@ -2054,6 +1989,25 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
         # make sure exceptions are handled & reported
         # values that don't map to keywords, saved as #!MFIX-GUI params
+
+        # Model parameters
+        # TODO: set 'disable fluid solver' checkbox if appropriate
+
+        turbulence_model = self.project.get_value('turbulence_model')
+        if turbulence_model is None:
+            self.enable_turbulence(False)
+        else:
+            turbulence_models = ['MIXING_LENGTH', 'K_EPSILON']
+            if turbulence_model not in turbulence_models:
+                self.message("Error: Invalid turbulence model %s" % turbulence_model)
+                self.unset_keyword('turbulence_model')
+            else:
+                # set model first to avoid extra keyword settings
+                self.set_turbulence_model(turbulence_models.index(turbulence_model))
+                self.enable_turbulence(True)
+
+
+        #  Non-keyword params stored as !#MFIX_GUI comments
         solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
@@ -2123,7 +2077,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
-        self.ui.regions.extract_regions(self.project)
+        self.ui.regions.extract_regions(self.project, defer_render=True)
+        # Take care of updates we deferred during extract_region
+        self.ui.regions.tablewidget_regions.fit_to_contents()
+        self.vtkwidget.render()
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
@@ -2144,6 +2101,7 @@ def Usage(name):
     directory: open mfix.dat file in specified directory
     file: open mfix.dat or <RUN_NAME>.mfx project file
     -h, --help: display this help message
+    -e, --exe:  specify MFIX executable (full path)
     -l, --log=LEVEL: set logging level (error,warning,info,debug)
     -n, --new:  open new project (do not autoload previous)
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
@@ -2153,7 +2111,7 @@ def main(args):
     """Handle command line options and start the GUI"""
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:", ["help", "quit", "new", "log="])
+        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "new", "log=", "exe="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
@@ -2162,6 +2120,7 @@ def main(args):
     project_file = None
     new_project = False
     log_level = 'WARN'
+    mfix_exe_option = None
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
@@ -2172,6 +2131,8 @@ def main(args):
             quit_after_loading = True
         elif opt in ("-n", "--new"):
             new_project = True
+        elif opt in ("-e", "--exe"):
+            mfix_exe_option = arg
         else:
             Usage(name)
 
@@ -2193,19 +2154,9 @@ def main(args):
     mfix = MfixGui(qapp, project_file=project_file)
     mfix.show()
 
-    # --- print welcome message
-    #mfix.print_internal("MFiX-GUI version %s" % mfix.get_version())
-
-    saved_exe = mfix.settings.value('mfix_exe') #
-    cb =  mfix.ui.run.combobox_mfix_exes
-    if saved_exe is not None and os.path.exists(saved_exe):
-        if cb.findText(saved_exe) == -1:
-            cb.addItem(saved_exe)
-        cb.setCurrentText(saved_exe)
-    #mfix.mfix_exe = saved_exe
-    mfix.handle_select_exe()
-
-    mfix.update_no_mfix_warning()
+    if mfix_exe_option:
+        print('exe option passed: %s' % mfix_exe_option)
+        mfix.commandline_option_exe = mfix_exe_option
 
     if project_file is None and not new_project:
         # autoload last project

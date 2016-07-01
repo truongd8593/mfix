@@ -1528,7 +1528,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         return source
 
-    def new_region(self, name, region):
+    def new_region(self, name, region, defer_render=False):
         self.region_dict[name] = copy.deepcopy(region)
 
         if region['type'] == 'point':
@@ -1557,9 +1557,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.select_facets(name)
 
         self.change_region_visibility(name,
-                                      self.region_dict[name]['visibility'])
+                                      self.region_dict[name]['visibility'],
+                                      defer_render=defer_render)
 
-        self.vtkRenderWindow.Render()
 
     def delete_region(self, name):
         region = self.region_dict.pop(name)
@@ -1614,7 +1614,7 @@ class VtkWidget(QtWidgets.QWidget):
         region = self.region_dict.pop(old_name)
         self.region_dict[new_name] = region
 
-    def change_region_visibility(self, name, visible):
+    def change_region_visibility(self, name, visible, defer_render=False):
         """ change the visibility of a region """
 
         if visible and self.regions_visible:
@@ -1626,6 +1626,9 @@ class VtkWidget(QtWidgets.QWidget):
             if 'clip_actor' in self.region_dict[name]:
                 self.region_dict[name]['clip_actor'].VisibilityOff()
         self.region_dict[name]['visible'] = visible
+
+        if defer_render:
+            return
 
         self.vtkRenderWindow.Render()
 
@@ -2070,6 +2073,9 @@ class VtkWidget(QtWidgets.QWidget):
 
     def reset_view(self):
         self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()
+
+    def render(self):
         self.vtkRenderWindow.Render()
 
     def change_visibility(self, name, toolbutton):

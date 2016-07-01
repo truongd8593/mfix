@@ -702,17 +702,17 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE DEALLOCATE_ARRAYS  !@@
-      
+
       CALL DEALLOCATE_ARRAYS_MAIN
-      CALL DEALLOCATE_ARRAYS_GEOMETRY      
+      CALL DEALLOCATE_ARRAYS_GEOMETRY
       CALL DEALLOCATE_ARRAYS_INCREMENTS
       CALL DEALLOCATE_ARRAYS_PARALLEL
       CALL DEALLOCATE_CUT_CELL_ARRAYS
       CALL DEALLOCATE_DEM_MI
       CALL DEALLOCATE_PIC_MIO
       CALL DES_DEALLOCATE_ARRAYS
-      
-      
+
+
       END SUBROUTINE DEALLOCATE_ARRAYS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1131,7 +1131,6 @@
       use geometry, only: FY_N, FY_N_bar
       use geometry, only: FZ_T, FZ_T_bar
 ! Domain flags.
-      use geometry, only: ICBC_FLAG
       use geometry, only: FLAG, FLAG3
       use geometry, only: FLAG_E, FLAG_N, FLAG_T
 ! Domain volumes and areas.
@@ -1139,12 +1138,6 @@
       use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
       use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
       use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
-! Axis decomposition
-      USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-      USE param, only: DIMENSION_3, DIMENSION_4
-      USE param, only: DIMENSION_3L, DIMENSION_3P
-! Flag for POST_MFIX
-      use cdist, only: bDoing_postmfix
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -1165,38 +1158,38 @@
       if(allocated(  oX_E   )) deallocate(  oX_E   )
       if(allocated(  oDX    )) deallocate(  oDX    )
       if(allocated(  oDX_E  )) deallocate(  oDX_E  )
-      
-     
+
+
       if(allocated(  oDY    )) deallocate(  oDY    )
       if(allocated(  oDY_N  )) deallocate(  oDY_N  )
-    
-   
+
+
       if(allocated(  Z      )) deallocate(  Z      )
       if(allocated(  Z_T    )) deallocate(  Z_T    )
       if(allocated(  oDZ    )) deallocate(  oDZ    )
       if(allocated(  oDZ_T  )) deallocate(  oDZ_T  )
-  
- 
+
+
       if(allocated(  FX      )) deallocate(  FX      )
       if(allocated(  FX_bar  )) deallocate(  FX_bar  )
-      
-     
+
+
       if(allocated(  FX_E      )) deallocate(  FX_E      )
       if(allocated(  FX_E_bar  )) deallocate(  FX_E_bar  )
-    
-   
+
+
       if(allocated(  FY_N      )) deallocate(  FY_N      )
       if(allocated(  FY_N_bar  )) deallocate(  FY_N_bar  )
- 
+
       if(allocated(  FZ_T      )) deallocate(  FZ_T      )
       if(allocated(  FZ_T_bar  )) deallocate(  FZ_T_bar  )
 
 
-! Flags for the scalar grid.      
+! Flags for the scalar grid.
       if(allocated(  FLAG   )) deallocate(  FLAG   )
       if(allocated(  FLAG3  )) deallocate(  FLAG3  )
 
-! Flags for the momentum grids.      
+! Flags for the momentum grids.
       if(allocated(  FLAG_E  )) deallocate(  FLAG_E  )
       if(allocated(  FLAG_N  )) deallocate(  FLAG_N  )
       if(allocated(  FLAG_T  )) deallocate(  FLAG_T  )
@@ -1265,15 +1258,7 @@
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
 
-
       IMPLICIT NONE
-
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! Error flag.
-      INTEGER :: IER
-
 
 ! Allocate increment arrays and report an allocation errors.
       if(allocated(  I_OF  )) deallocate(  I_OF  )
@@ -1359,26 +1344,18 @@
       use derived_types, only: dg_pic
       use desmpi
 
-
       IMPLICIT NONE
-
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! Error flag.
-      INTEGER :: IER
-
 
 ! gridmap_mod
 
       if(allocated(ISIZE_ALL)) deallocate(ISIZE_ALL)
       if(allocated(JSIZE_ALL)) deallocate(JSIZE_ALL)
       if(allocated(KSIZE_ALL)) deallocate(KSIZE_ALL)
- 
+
       if(allocated(imap)) deallocate(imap)
       if(allocated(jmap)) deallocate(jmap)
       if(allocated(kmap)) deallocate(kmap)
- 
+
       if(allocated(imap_c)) deallocate(imap_c)
       if(allocated(jmap_c)) deallocate(jmap_c)
       if(allocated(kmap_c)) deallocate(kmap_c)
@@ -1411,30 +1388,30 @@
 
       if(allocated(dg_c1_all)) deallocate(dg_c1_all)
       if(allocated(dg_c2_all)) deallocate(dg_c2_all)
-      if(allocated(dg_c3_all)) deallocate(dg_c3_all)            
+      if(allocated(dg_c3_all)) deallocate(dg_c3_all)
 
       if(allocated(dg_pic)) deallocate(dg_pic)
-      
-      
+
+
 ! des/mpi_init_des_mod.f
       if(allocated(dsendbuf)) deallocate(dsendbuf)
       if(allocated(drecvbuf)) deallocate(drecvbuf)
       if(allocated(isendindices)) deallocate(isendindices)
-      if(allocated(irecvindices)) deallocate(irecvindices)                  
+      if(allocated(irecvindices)) deallocate(irecvindices)
       if(allocated(isendreq)) deallocate(isendreq)
       if(allocated(irecvreq)) deallocate(irecvreq)
       if(allocated(isendcnt)) deallocate(isendcnt)
-      if(allocated(dcycl_offset)) deallocate(dcycl_offset)                  
+      if(allocated(dcycl_offset)) deallocate(dcycl_offset)
       if(allocated(ineighproc)) deallocate(ineighproc)
       if(allocated(iexchflag)) deallocate(iexchflag)
       if(allocated(iscattercnts)) deallocate(iscattercnts)
-      if(allocated(igathercnts)) deallocate(igathercnts)                  
-      if(allocated(idispls)) deallocate(idispls)   
-      
+      if(allocated(igathercnts)) deallocate(igathercnts)
+      if(allocated(idispls)) deallocate(idispls)
+
 
       RETURN
       END SUBROUTINE DEALLOCATE_ARRAYS_PARALLEL
-      
+
       SUBROUTINE DEALLOCATE_CUT_CELL_ARRAYS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -1461,192 +1438,192 @@
       if(allocated(INTERIOR_CELL_AT)) Deallocate(  INTERIOR_CELL_AT   )
 
       if(allocated(XG_E)) Deallocate( XG_E )
-      if(allocated(	 YG_N 	)) deallocate(	 YG_N 	)
-      if(allocated(	 ZG_T 	)) deallocate(	 ZG_T 	)
+      if(allocated(  YG_N   )) deallocate(   YG_N   )
+      if(allocated(  ZG_T   )) deallocate(   ZG_T   )
 
-      if(allocated(	  X_U  	)) deallocate(	  X_U  	)
-      if(allocated(	  Y_U  	)) deallocate(	  Y_U  	)
-      if(allocated(	  Z_U  	)) deallocate(	  Z_U  	)
+      if(allocated(   X_U   )) deallocate(    X_U   )
+      if(allocated(   Y_U   )) deallocate(    Y_U   )
+      if(allocated(   Z_U   )) deallocate(    Z_U   )
 
-      if(allocated(	  X_V  	)) deallocate(	  X_V  	)
-      if(allocated(	  Y_V  	)) deallocate(	  Y_V  	)
-      if(allocated(	  Z_V  	)) deallocate(	  Z_V  	)
+      if(allocated(   X_V   )) deallocate(    X_V   )
+      if(allocated(   Y_V   )) deallocate(    Y_V   )
+      if(allocated(   Z_V   )) deallocate(    Z_V   )
 
-      if(allocated(	  X_W  	)) deallocate(	  X_W  	)
-      if(allocated(	  Y_W  	)) deallocate(	  Y_W  	)
-      if(allocated(	  Z_W  	)) deallocate(	  Z_W  	)
+      if(allocated(   X_W   )) deallocate(    X_W   )
+      if(allocated(   Y_W   )) deallocate(    Y_W   )
+      if(allocated(   Z_W   )) deallocate(    Z_W   )
 
-      if(allocated(	  INTERSECT_X   	)) deallocate(	  INTERSECT_X   	)
-      if(allocated(	  INTERSECT_Y   	)) deallocate(	  INTERSECT_Y   	)
-      if(allocated(	  INTERSECT_Z   	)) deallocate(	  INTERSECT_Z   	)
+      if(allocated(   INTERSECT_X     )) deallocate(    INTERSECT_X     )
+      if(allocated(   INTERSECT_Y     )) deallocate(    INTERSECT_Y     )
+      if(allocated(   INTERSECT_Z     )) deallocate(    INTERSECT_Z     )
 
-      if(allocated(	  X_int  	)) deallocate(	  X_int  	)
-      if(allocated(	  Y_int  	)) deallocate(	  Y_int  	)
-      if(allocated(	  Z_int  	)) deallocate(	  Z_int  	)
+      if(allocated(   X_int   )) deallocate(    X_int   )
+      if(allocated(   Y_int   )) deallocate(    Y_int   )
+      if(allocated(   Z_int   )) deallocate(    Z_int   )
 
-      if(allocated(	  X_NEW_POINT   	)) deallocate(	  X_NEW_POINT   	)
-      if(allocated(	  Y_NEW_POINT   	)) deallocate(	  Y_NEW_POINT   	)
-      if(allocated(	  Z_NEW_POINT   	)) deallocate(	  Z_NEW_POINT   	)
+      if(allocated(   X_NEW_POINT     )) deallocate(    X_NEW_POINT     )
+      if(allocated(   Y_NEW_POINT     )) deallocate(    Y_NEW_POINT     )
+      if(allocated(   Z_NEW_POINT     )) deallocate(    Z_NEW_POINT     )
 
-      if(allocated(	  X_NEW_U_POINT   	)) deallocate(	  X_NEW_U_POINT   	)
-      if(allocated(	  Y_NEW_U_POINT   	)) deallocate(	  Y_NEW_U_POINT   	)
-      if(allocated(	  Z_NEW_U_POINT   	)) deallocate(	  Z_NEW_U_POINT   	)
+      if(allocated(   X_NEW_U_POINT     )) deallocate(    X_NEW_U_POINT     )
+      if(allocated(   Y_NEW_U_POINT     )) deallocate(    Y_NEW_U_POINT     )
+      if(allocated(   Z_NEW_U_POINT     )) deallocate(    Z_NEW_U_POINT     )
 
-      if(allocated(	  X_NEW_V_POINT   	)) deallocate(	  X_NEW_V_POINT   	)
-      if(allocated(	  Y_NEW_V_POINT   	)) deallocate(	  Y_NEW_V_POINT   	)
-      if(allocated(	  Z_NEW_V_POINT   	)) deallocate(	  Z_NEW_V_POINT   	)
+      if(allocated(   X_NEW_V_POINT     )) deallocate(    X_NEW_V_POINT     )
+      if(allocated(   Y_NEW_V_POINT     )) deallocate(    Y_NEW_V_POINT     )
+      if(allocated(   Z_NEW_V_POINT     )) deallocate(    Z_NEW_V_POINT     )
 
-      if(allocated(	  X_NEW_W_POINT   	)) deallocate(	  X_NEW_W_POINT   	)
-      if(allocated(	  Y_NEW_W_POINT   	)) deallocate(	  Y_NEW_W_POINT   	)
-      if(allocated(	  Z_NEW_W_POINT   	)) deallocate(	  Z_NEW_W_POINT   	)
+      if(allocated(   X_NEW_W_POINT     )) deallocate(    X_NEW_W_POINT     )
+      if(allocated(   Y_NEW_W_POINT     )) deallocate(    Y_NEW_W_POINT     )
+      if(allocated(   Z_NEW_W_POINT     )) deallocate(    Z_NEW_W_POINT     )
 
-      if(allocated(	  NUMBER_OF_NODES   	)) deallocate(	  NUMBER_OF_NODES   	)
-      if(allocated(	  NUMBER_OF_U_NODES   	)) deallocate(	  NUMBER_OF_U_NODES   	)
-      if(allocated(	  NUMBER_OF_V_NODES   	)) deallocate(	  NUMBER_OF_V_NODES   	)
-      if(allocated(	  NUMBER_OF_W_NODES   	)) deallocate(	  NUMBER_OF_W_NODES   	)
+      if(allocated(   NUMBER_OF_NODES     )) deallocate(    NUMBER_OF_NODES     )
+      if(allocated(   NUMBER_OF_U_NODES     )) deallocate(    NUMBER_OF_U_NODES     )
+      if(allocated(   NUMBER_OF_V_NODES     )) deallocate(    NUMBER_OF_V_NODES     )
+      if(allocated(   NUMBER_OF_W_NODES     )) deallocate(    NUMBER_OF_W_NODES     )
 
-      if(allocated(	  CONNECTIVITY  	)) deallocate(	  CONNECTIVITY  	)
-      if(allocated(	  CONNECTIVITY_U  	)) deallocate(	  CONNECTIVITY_U  	)
-      if(allocated(	  CONNECTIVITY_V  	)) deallocate(	  CONNECTIVITY_V  	)
-      if(allocated(	  CONNECTIVITY_W  	)) deallocate(	  CONNECTIVITY_W  	)
+      if(allocated(   CONNECTIVITY    )) deallocate(    CONNECTIVITY    )
+      if(allocated(   CONNECTIVITY_U    )) deallocate(    CONNECTIVITY_U    )
+      if(allocated(   CONNECTIVITY_V    )) deallocate(    CONNECTIVITY_V    )
+      if(allocated(   CONNECTIVITY_W    )) deallocate(    CONNECTIVITY_W    )
 
-      if(allocated(	  PARTITION   	)) deallocate(	  PARTITION   	)
+      if(allocated(   PARTITION     )) deallocate(    PARTITION     )
 
-      if(allocated(	  WALL_U_AT  	)) deallocate(	  WALL_U_AT  	)
-      if(allocated(	  WALL_V_AT  	)) deallocate(	  WALL_V_AT  	)
-      if(allocated(	  WALL_W_AT  	)) deallocate(	  WALL_W_AT  	)
+      if(allocated(   WALL_U_AT   )) deallocate(    WALL_U_AT   )
+      if(allocated(   WALL_V_AT   )) deallocate(    WALL_V_AT   )
+      if(allocated(   WALL_W_AT   )) deallocate(    WALL_W_AT   )
 
-      if(allocated(	 Area_CUT   	)) deallocate(	 Area_CUT   	)
-      if(allocated(	 Area_U_CUT   	)) deallocate(	 Area_U_CUT   	)
-      if(allocated(	 Area_V_CUT   	)) deallocate(	 Area_V_CUT   	)
-      if(allocated(	 Area_W_CUT   	)) deallocate(	 Area_W_CUT   	)
+      if(allocated(  Area_CUT     )) deallocate(   Area_CUT     )
+      if(allocated(  Area_U_CUT     )) deallocate(   Area_U_CUT     )
+      if(allocated(  Area_V_CUT     )) deallocate(   Area_V_CUT     )
+      if(allocated(  Area_W_CUT     )) deallocate(   Area_W_CUT     )
 
 
-      if(allocated(	 DELX_Ue   	)) deallocate(	 DELX_Ue   	)
-      if(allocated(	 DELX_Uw   	)) deallocate(	 DELX_Uw   	)
-      if(allocated(	 DELY_Un   	)) deallocate(	 DELY_Un   	)
-      if(allocated(	 DELY_Us   	)) deallocate(	 DELY_Us   	)
-      if(allocated(	 DELZ_Ut   	)) deallocate(	 DELZ_Ut   	)
-      if(allocated(	 DELZ_Ub   	)) deallocate(	 DELZ_Ub   	)
+      if(allocated(  DELX_Ue    )) deallocate(   DELX_Ue    )
+      if(allocated(  DELX_Uw    )) deallocate(   DELX_Uw    )
+      if(allocated(  DELY_Un    )) deallocate(   DELY_Un    )
+      if(allocated(  DELY_Us    )) deallocate(   DELY_Us    )
+      if(allocated(  DELZ_Ut    )) deallocate(   DELZ_Ut    )
+      if(allocated(  DELZ_Ub    )) deallocate(   DELZ_Ub    )
 
-      if(allocated(	 DELX_Ve   	)) deallocate(	 DELX_Ve   	)
-      if(allocated(	 DELX_Vw   	)) deallocate(	 DELX_Vw   	)
-      if(allocated(	 DELY_Vn   	)) deallocate(	 DELY_Vn   	)
-      if(allocated(	 DELY_Vs   	)) deallocate(	 DELY_Vs   	)
-      if(allocated(	 DELZ_Vt   	)) deallocate(	 DELZ_Vt   	)
-      if(allocated(	 DELZ_Vb   	)) deallocate(	 DELZ_Vb   	)
+      if(allocated(  DELX_Ve    )) deallocate(   DELX_Ve    )
+      if(allocated(  DELX_Vw    )) deallocate(   DELX_Vw    )
+      if(allocated(  DELY_Vn    )) deallocate(   DELY_Vn    )
+      if(allocated(  DELY_Vs    )) deallocate(   DELY_Vs    )
+      if(allocated(  DELZ_Vt    )) deallocate(   DELZ_Vt    )
+      if(allocated(  DELZ_Vb    )) deallocate(   DELZ_Vb    )
 
-      if(allocated(	 DELX_We   	)) deallocate(	 DELX_We   	)
-      if(allocated(	 DELX_Ww   	)) deallocate(	 DELX_Ww   	)
-      if(allocated(	 DELY_Wn   	)) deallocate(	 DELY_Wn   	)
-      if(allocated(	 DELY_Ws   	)) deallocate(	 DELY_Ws   	)
-      if(allocated(	 DELZ_Wt   	)) deallocate(	 DELZ_Wt   	)
-      if(allocated(	 DELZ_Wb   	)) deallocate(	 DELZ_Wb   	)
+      if(allocated(  DELX_We    )) deallocate(   DELX_We    )
+      if(allocated(  DELX_Ww    )) deallocate(   DELX_Ww    )
+      if(allocated(  DELY_Wn    )) deallocate(   DELY_Wn    )
+      if(allocated(  DELY_Ws    )) deallocate(   DELY_Ws    )
+      if(allocated(  DELZ_Wt    )) deallocate(   DELZ_Wt    )
+      if(allocated(  DELZ_Wb    )) deallocate(   DELZ_Wb    )
 
-      if(allocated(	 X_U_ec   	)) deallocate(	 X_U_ec   	)
-      if(allocated(	 Y_U_ec   	)) deallocate(	 Y_U_ec   	)
-      if(allocated(	 Z_U_ec   	)) deallocate(	 Z_U_ec   	)
-      if(allocated(	 X_U_nc   	)) deallocate(	 X_U_nc   	)
-      if(allocated(	 Y_U_nc   	)) deallocate(	 Y_U_nc   	)
-      if(allocated(	 Z_U_nc   	)) deallocate(	 Z_U_nc   	)
-      if(allocated(	 X_U_tc   	)) deallocate(	 X_U_tc   	)
-      if(allocated(	 Y_U_tc   	)) deallocate(	 Y_U_tc   	)
-      if(allocated(	 Z_U_tc   	)) deallocate(	 Z_U_tc   	)
+      if(allocated(  X_U_ec     )) deallocate(   X_U_ec     )
+      if(allocated(  Y_U_ec     )) deallocate(   Y_U_ec     )
+      if(allocated(  Z_U_ec     )) deallocate(   Z_U_ec     )
+      if(allocated(  X_U_nc     )) deallocate(   X_U_nc     )
+      if(allocated(  Y_U_nc     )) deallocate(   Y_U_nc     )
+      if(allocated(  Z_U_nc     )) deallocate(   Z_U_nc     )
+      if(allocated(  X_U_tc     )) deallocate(   X_U_tc     )
+      if(allocated(  Y_U_tc     )) deallocate(   Y_U_tc     )
+      if(allocated(  Z_U_tc     )) deallocate(   Z_U_tc     )
 
-      if(allocated(	 X_V_ec   	)) deallocate(	 X_V_ec   	)
-      if(allocated(	 Y_V_ec   	)) deallocate(	 Y_V_ec   	)
-      if(allocated(	 Z_V_ec   	)) deallocate(	 Z_V_ec   	)
-      if(allocated(	 X_V_nc   	)) deallocate(	 X_V_nc   	)
-      if(allocated(	 Y_V_nc   	)) deallocate(	 Y_V_nc   	)
-      if(allocated(	 Z_V_nc   	)) deallocate(	 Z_V_nc   	)
-      if(allocated(	 X_V_tc   	)) deallocate(	 X_V_tc   	)
-      if(allocated(	 Y_V_tc   	)) deallocate(	 Y_V_tc   	)
-      if(allocated(	 Z_V_tc   	)) deallocate(	 Z_V_tc   	)
+      if(allocated(  X_V_ec     )) deallocate(   X_V_ec     )
+      if(allocated(  Y_V_ec     )) deallocate(   Y_V_ec     )
+      if(allocated(  Z_V_ec     )) deallocate(   Z_V_ec     )
+      if(allocated(  X_V_nc     )) deallocate(   X_V_nc     )
+      if(allocated(  Y_V_nc     )) deallocate(   Y_V_nc     )
+      if(allocated(  Z_V_nc     )) deallocate(   Z_V_nc     )
+      if(allocated(  X_V_tc     )) deallocate(   X_V_tc     )
+      if(allocated(  Y_V_tc     )) deallocate(   Y_V_tc     )
+      if(allocated(  Z_V_tc     )) deallocate(   Z_V_tc     )
 
-      if(allocated(	 X_W_ec   	)) deallocate(	 X_W_ec   	)
-      if(allocated(	 Y_W_ec   	)) deallocate(	 Y_W_ec   	)
-      if(allocated(	 Z_W_ec   	)) deallocate(	 Z_W_ec   	)
-      if(allocated(	 X_W_nc   	)) deallocate(	 X_W_nc   	)
-      if(allocated(	 Y_W_nc   	)) deallocate(	 Y_W_nc   	)
-      if(allocated(	 Z_W_nc   	)) deallocate(	 Z_W_nc   	)
-      if(allocated(	 X_W_tc   	)) deallocate(	 X_W_tc   	)
-      if(allocated(	 Y_W_tc   	)) deallocate(	 Y_W_tc   	)
-      if(allocated(	 Z_W_tc   	)) deallocate(	 Z_W_tc   	)
-       
-      if(allocated(	 DELH_Scalar   	)) deallocate(	 DELH_Scalar   	)
-       
-      if(allocated(	 DELH_U   	)) deallocate(	 DELH_U   	)
-      if(allocated(	 Theta_Ue   	)) deallocate(	 Theta_Ue   	)
-      if(allocated(	 Theta_Ue_bar  	)) deallocate(	 Theta_Ue_bar  	)
-      if(allocated(	 Theta_U_ne   	)) deallocate(	 Theta_U_ne   	)
-      if(allocated(	 Theta_U_nw   	)) deallocate(	 Theta_U_nw   	)
-      if(allocated(	 Theta_U_te   	)) deallocate(	 Theta_U_te   	)
-      if(allocated(	 Theta_U_tw   	)) deallocate(	 Theta_U_tw   	)
-      if(allocated(	 ALPHA_Ue_c   	)) deallocate(	 ALPHA_Ue_c   	)
-      if(allocated(	 NOC_U_E   	)) deallocate(	 NOC_U_E   	)
-      if(allocated(	 Theta_Un   	)) deallocate(	 Theta_Un   	)
-      if(allocated(	 Theta_Un_bar  	)) deallocate(	 Theta_Un_bar  	)
-      if(allocated(	 ALPHA_Un_c   	)) deallocate(	 ALPHA_Un_c   	)
-      if(allocated(	 NOC_U_N   	)) deallocate(	 NOC_U_N   	)
-      if(allocated(	 Theta_Ut   	)) deallocate(	 Theta_Ut   	)
-      if(allocated(	 Theta_Ut_bar  	)) deallocate(	 Theta_Ut_bar  	)
-      if(allocated(	 ALPHA_Ut_c   	)) deallocate(	 ALPHA_Ut_c   	)
-      if(allocated(	 NOC_U_T   	)) deallocate(	 NOC_U_T   	)
-      if(allocated(	 A_UPG_E  	)) deallocate(	 A_UPG_E  	)
-      if(allocated(	 A_UPG_W  	)) deallocate(	 A_UPG_W  	)
+      if(allocated(  X_W_ec     )) deallocate(   X_W_ec     )
+      if(allocated(  Y_W_ec     )) deallocate(   Y_W_ec     )
+      if(allocated(  Z_W_ec     )) deallocate(   Z_W_ec     )
+      if(allocated(  X_W_nc     )) deallocate(   X_W_nc     )
+      if(allocated(  Y_W_nc     )) deallocate(   Y_W_nc     )
+      if(allocated(  Z_W_nc     )) deallocate(   Z_W_nc     )
+      if(allocated(  X_W_tc     )) deallocate(   X_W_tc     )
+      if(allocated(  Y_W_tc     )) deallocate(   Y_W_tc     )
+      if(allocated(  Z_W_tc     )) deallocate(   Z_W_tc     )
 
-      if(allocated(	 DELH_V   	)) deallocate(	 DELH_V   	)
-      if(allocated(	 Theta_V_ne   	)) deallocate(	 Theta_V_ne   	)
-      if(allocated(	 Theta_V_se   	)) deallocate(	 Theta_V_se   	)
-      if(allocated(	 Theta_Vn   	)) deallocate(	 Theta_Vn   	)
-      if(allocated(	 Theta_Vn_bar  	)) deallocate(	 Theta_Vn_bar  	)
-      if(allocated(	 Theta_V_nt   	)) deallocate(	 Theta_V_nt   	)
-      if(allocated(	 Theta_V_st  	)) deallocate(	 Theta_V_st  	)
-      if(allocated(	 Theta_Ve   	)) deallocate(	 Theta_Ve   	)
-      if(allocated(	 Theta_Ve_bar  	)) deallocate(	 Theta_Ve_bar  	)
-      if(allocated(	 ALPHA_Ve_c   	)) deallocate(	 ALPHA_Ve_c   	)
-      if(allocated(	 NOC_V_E   	)) deallocate(	 NOC_V_E   	)
-      if(allocated(	 ALPHA_Vn_c   	)) deallocate(	 ALPHA_Vn_c   	)
-      if(allocated(	 NOC_V_N   	)) deallocate(	 NOC_V_N   	)
-      if(allocated(	 Theta_Vt   	)) deallocate(	 Theta_Vt   	)
-      if(allocated(	 Theta_Vt_bar  	)) deallocate(	 Theta_Vt_bar  	)
-      if(allocated(	 ALPHA_Vt_c   	)) deallocate(	 ALPHA_Vt_c   	)
-      if(allocated(	 NOC_V_T   	)) deallocate(	 NOC_V_T   	)
-      if(allocated(	 A_VPG_N  	)) deallocate(	 A_VPG_N  	)
-      if(allocated(	 A_VPG_S  	)) deallocate(	 A_VPG_S  	)
+      if(allocated(  DELH_Scalar    )) deallocate(   DELH_Scalar    )
 
-      if(allocated(	 DELH_W  	)) deallocate(	 DELH_W  	)
-      if(allocated(	 Theta_W_te  	)) deallocate(	 Theta_W_te  	)
-      if(allocated(	 Theta_W_be  	)) deallocate(	 Theta_W_be  	)
-      if(allocated(	 Theta_W_tn  	)) deallocate(	 Theta_W_tn  	)
-      if(allocated(	 Theta_W_bn  	)) deallocate(	 Theta_W_bn  	)
-      if(allocated(	 Theta_Wt  	)) deallocate(	 Theta_Wt  	)
-      if(allocated(	 Theta_Wt_bar  	)) deallocate(	 Theta_Wt_bar  	)
-      if(allocated(	 Theta_We  	)) deallocate(	 Theta_We  	)
-      if(allocated(	 Theta_We_bar  	)) deallocate(	 Theta_We_bar  	)
-      if(allocated(	 ALPHA_We_c  	)) deallocate(	 ALPHA_We_c  	)
-      if(allocated(	 NOC_W_E  	)) deallocate(	 NOC_W_E  	)
-      if(allocated(	 Theta_Wn  	)) deallocate(	 Theta_Wn  	)
-      if(allocated(	 Theta_Wn_bar  	)) deallocate(	 Theta_Wn_bar  	)
-      if(allocated(	 ALPHA_Wn_c  	)) deallocate(	 ALPHA_Wn_c  	)
-      if(allocated(	 NOC_W_N  	)) deallocate(	 NOC_W_N  	)
-      if(allocated(	 ALPHA_Wt_c  	)) deallocate(	 ALPHA_Wt_c  	)
-      if(allocated(	 NOC_W_T  	)) deallocate(	 NOC_W_T  	)
-      if(allocated(	 A_WPG_T  	)) deallocate(	 A_WPG_T  	)
-      if(allocated(	 A_WPG_B  	)) deallocate(	 A_WPG_B  	)
+      if(allocated(  DELH_U     )) deallocate(   DELH_U     )
+      if(allocated(  Theta_Ue     )) deallocate(   Theta_Ue     )
+      if(allocated(  Theta_Ue_bar   )) deallocate(   Theta_Ue_bar   )
+      if(allocated(  Theta_U_ne     )) deallocate(   Theta_U_ne     )
+      if(allocated(  Theta_U_nw     )) deallocate(   Theta_U_nw     )
+      if(allocated(  Theta_U_te     )) deallocate(   Theta_U_te     )
+      if(allocated(  Theta_U_tw     )) deallocate(   Theta_U_tw     )
+      if(allocated(  ALPHA_Ue_c     )) deallocate(   ALPHA_Ue_c     )
+      if(allocated(  NOC_U_E    )) deallocate(   NOC_U_E    )
+      if(allocated(  Theta_Un     )) deallocate(   Theta_Un     )
+      if(allocated(  Theta_Un_bar   )) deallocate(   Theta_Un_bar   )
+      if(allocated(  ALPHA_Un_c     )) deallocate(   ALPHA_Un_c     )
+      if(allocated(  NOC_U_N    )) deallocate(   NOC_U_N    )
+      if(allocated(  Theta_Ut     )) deallocate(   Theta_Ut     )
+      if(allocated(  Theta_Ut_bar   )) deallocate(   Theta_Ut_bar   )
+      if(allocated(  ALPHA_Ut_c     )) deallocate(   ALPHA_Ut_c     )
+      if(allocated(  NOC_U_T    )) deallocate(   NOC_U_T    )
+      if(allocated(  A_UPG_E    )) deallocate(   A_UPG_E    )
+      if(allocated(  A_UPG_W    )) deallocate(   A_UPG_W    )
 
-      if(allocated(	 NORMAL_S  	)) deallocate(	 NORMAL_S  	)
-      if(allocated(	 NORMAL_U  	)) deallocate(	 NORMAL_U  	)
-      if(allocated(	 NORMAL_V  	)) deallocate(	 NORMAL_V  	)
-      if(allocated(	 NORMAL_W  	)) deallocate(	 NORMAL_W  	)
+      if(allocated(  DELH_V     )) deallocate(   DELH_V     )
+      if(allocated(  Theta_V_ne     )) deallocate(   Theta_V_ne     )
+      if(allocated(  Theta_V_se     )) deallocate(   Theta_V_se     )
+      if(allocated(  Theta_Vn     )) deallocate(   Theta_Vn     )
+      if(allocated(  Theta_Vn_bar   )) deallocate(   Theta_Vn_bar   )
+      if(allocated(  Theta_V_nt     )) deallocate(   Theta_V_nt     )
+      if(allocated(  Theta_V_st   )) deallocate(   Theta_V_st   )
+      if(allocated(  Theta_Ve     )) deallocate(   Theta_Ve     )
+      if(allocated(  Theta_Ve_bar   )) deallocate(   Theta_Ve_bar   )
+      if(allocated(  ALPHA_Ve_c     )) deallocate(   ALPHA_Ve_c     )
+      if(allocated(  NOC_V_E    )) deallocate(   NOC_V_E    )
+      if(allocated(  ALPHA_Vn_c     )) deallocate(   ALPHA_Vn_c     )
+      if(allocated(  NOC_V_N    )) deallocate(   NOC_V_N    )
+      if(allocated(  Theta_Vt     )) deallocate(   Theta_Vt     )
+      if(allocated(  Theta_Vt_bar   )) deallocate(   Theta_Vt_bar   )
+      if(allocated(  ALPHA_Vt_c     )) deallocate(   ALPHA_Vt_c     )
+      if(allocated(  NOC_V_T    )) deallocate(   NOC_V_T    )
+      if(allocated(  A_VPG_N    )) deallocate(   A_VPG_N    )
+      if(allocated(  A_VPG_S    )) deallocate(   A_VPG_S    )
 
-      if(allocated(	 REFP_S  	)) deallocate(	 REFP_S  	)
-      if(allocated(	 REFP_U  	)) deallocate(	 REFP_U  	)
-      if(allocated(	 REFP_V  	)) deallocate(	 REFP_V  	)
-      if(allocated(	 REFP_W  	)) deallocate(	 REFP_W  	)
-      
-      
-      
+      if(allocated(  DELH_W   )) deallocate(   DELH_W   )
+      if(allocated(  Theta_W_te   )) deallocate(   Theta_W_te   )
+      if(allocated(  Theta_W_be   )) deallocate(   Theta_W_be   )
+      if(allocated(  Theta_W_tn   )) deallocate(   Theta_W_tn   )
+      if(allocated(  Theta_W_bn   )) deallocate(   Theta_W_bn   )
+      if(allocated(  Theta_Wt   )) deallocate(   Theta_Wt   )
+      if(allocated(  Theta_Wt_bar   )) deallocate(   Theta_Wt_bar   )
+      if(allocated(  Theta_We   )) deallocate(   Theta_We   )
+      if(allocated(  Theta_We_bar   )) deallocate(   Theta_We_bar   )
+      if(allocated(  ALPHA_We_c   )) deallocate(   ALPHA_We_c   )
+      if(allocated(  NOC_W_E    )) deallocate(   NOC_W_E    )
+      if(allocated(  Theta_Wn   )) deallocate(   Theta_Wn   )
+      if(allocated(  Theta_Wn_bar   )) deallocate(   Theta_Wn_bar   )
+      if(allocated(  ALPHA_Wn_c   )) deallocate(   ALPHA_Wn_c   )
+      if(allocated(  NOC_W_N    )) deallocate(   NOC_W_N    )
+      if(allocated(  ALPHA_Wt_c   )) deallocate(   ALPHA_Wt_c   )
+      if(allocated(  NOC_W_T    )) deallocate(   NOC_W_T    )
+      if(allocated(  A_WPG_T    )) deallocate(   A_WPG_T    )
+      if(allocated(  A_WPG_B    )) deallocate(   A_WPG_B    )
+
+      if(allocated(  NORMAL_S   )) deallocate(   NORMAL_S   )
+      if(allocated(  NORMAL_U   )) deallocate(   NORMAL_U   )
+      if(allocated(  NORMAL_V   )) deallocate(   NORMAL_V   )
+      if(allocated(  NORMAL_W   )) deallocate(   NORMAL_W   )
+
+      if(allocated(  REFP_S   )) deallocate(   REFP_S   )
+      if(allocated(  REFP_U   )) deallocate(   REFP_U   )
+      if(allocated(  REFP_V   )) deallocate(   REFP_V   )
+      if(allocated(  REFP_W   )) deallocate(   REFP_W   )
+
+
+
 
       if(allocated(ONEoDX_E_U)) Deallocate(  ONEoDX_E_U  )
       if(allocated(ONEoDY_N_U)) Deallocate(  ONEoDY_N_U  )
@@ -1717,7 +1694,7 @@
       if(allocated(V_MASTER_OF)) Deallocate(  V_MASTER_OF  )
       if(allocated(W_MASTER_OF)) Deallocate(  W_MASTER_OF  )
 
-      if(allocated(BC_ID)) Deallocate(  BC_ID ) 
+      if(allocated(BC_ID)) Deallocate(  BC_ID )
       if(allocated(BC_U_ID)) Deallocate(  BC_U_ID  )
       if(allocated(BC_V_ID)) Deallocate(  BC_V_ID  )
       if(allocated(BC_W_ID)) Deallocate(  BC_W_ID  )
@@ -1733,7 +1710,7 @@
       if(allocated(W_s_CC )) Deallocate(  W_s_CC  )
 
       if(allocated(N_FACET_AT)) Deallocate(N_FACET_AT)
-   
+
 
       if(allocated(LIST_FACET_AT)) Deallocate(LIST_FACET_AT)
 
@@ -1746,10 +1723,10 @@
 
 
       RETURN
-      END SUBROUTINE DEALLOCATE_CUT_CELL_ARRAYS    
+      END SUBROUTINE DEALLOCATE_CUT_CELL_ARRAYS
 
 
-      
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: DEALLOCATE_DEM_MIO                                        !
@@ -1768,7 +1745,6 @@
 ! Modules
 !-----------------------------------------------
       USE param1, only: undefined
-      USE des_bc, only: dem_bcmi
       USE des_bc, only: pi_factor, pi_count
       use des_bc, only: numfrac_limit
       use des_bc, only: dem_mi_time, dem_bc_poly_layout
@@ -1778,21 +1754,21 @@
 !-----------------------------------------------
 
 ! Particle injection factor
-      if(allocated(	 PI_FACTOR 	)) deallocate(	 PI_FACTOR 	)
+      if(allocated(  PI_FACTOR  )) deallocate(   PI_FACTOR  )
 ! Particle injection count (injection number)
-      if(allocated(	 PI_COUNT 	)) deallocate(	 PI_COUNT 	)
+      if(allocated(  PI_COUNT   )) deallocate(   PI_COUNT   )
 ! Particle injection time scale
-      if(allocated(	 DEM_MI_TIME 	)) deallocate(	 DEM_MI_TIME 	)
+      if(allocated(  DEM_MI_TIME  )) deallocate(   DEM_MI_TIME  )
 ! Array used for polydisperse inlets: stores the particle number
 ! distribution of an inlet scaled with numfrac_limit
-      if(allocated(	 DEM_BC_POLY_LAYOUT	)) deallocate(	 DEM_BC_POLY_LAYOUT	)
+      if(allocated(  DEM_BC_POLY_LAYOUT )) deallocate(   DEM_BC_POLY_LAYOUT )
 ! Data structure for storing BC data.
-      if(allocated(	 DEM_MI	)) deallocate(	 DEM_MI	)
+      if(allocated(  DEM_MI )) deallocate(   DEM_MI )
 
-      if(allocated(	 DEM_BCMI_IJKSTART	)) deallocate(	 DEM_BCMI_IJKSTART	)
-      if(allocated(	 DEM_BCMI_IJKEND	)) deallocate(	 DEM_BCMI_IJKEND	)
+      if(allocated(  DEM_BCMI_IJKSTART  )) deallocate(   DEM_BCMI_IJKSTART  )
+      if(allocated(  DEM_BCMI_IJKEND  )) deallocate(   DEM_BCMI_IJKEND  )
 
- 
+
 
 ! Boundary classification
 !         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
@@ -1817,7 +1793,6 @@
 
 ! Modules
 !-----------------------------------------------
-      USE pic_bc, only: pic_bcmi, pic_bcmo
       USE pic_bc, only: pic_bcmi_ijkstart, pic_bcmi_ijkend
       USE pic_bc, only: pic_bcmo_ijkstart, pic_bcmo_ijkend
       USE pic_bc, only: pic_bcmi_normdir
@@ -1828,14 +1803,14 @@
 
 ! Allocate/Initialize for inlets
 
-      if(allocated(	 PIC_BCMI_IJKSTART	)) deallocate(	 PIC_BCMI_IJKSTART	)
-      if(allocated(	 PIC_BCMI_IJKEND  	)) deallocate(	 PIC_BCMI_IJKEND  	)
-      if(allocated(	 PIC_BCMI_NORMDIR 	)) deallocate(	 PIC_BCMI_NORMDIR 	)
-      if(allocated(	 PIC_BCMI_OFFSET  	)) deallocate(	 PIC_BCMI_OFFSET  	)
-      if(allocated(	 PIC_BCMI_INCL_CUTCELL	)) deallocate(	 PIC_BCMI_INCL_CUTCELL	)
+      if(allocated(  PIC_BCMI_IJKSTART  )) deallocate(   PIC_BCMI_IJKSTART  )
+      if(allocated(  PIC_BCMI_IJKEND    )) deallocate(   PIC_BCMI_IJKEND    )
+      if(allocated(  PIC_BCMI_NORMDIR   )) deallocate(   PIC_BCMI_NORMDIR   )
+      if(allocated(  PIC_BCMI_OFFSET    )) deallocate(   PIC_BCMI_OFFSET    )
+      if(allocated(  PIC_BCMI_INCL_CUTCELL  )) deallocate(   PIC_BCMI_INCL_CUTCELL  )
 
-      if(allocated(	 PIC_BCMO_IJKSTART	)) deallocate(	 PIC_BCMO_IJKSTART	)
-      if(allocated(	 PIC_BCMO_IJKEND	)) deallocate(	 PIC_BCMO_IJKEND	)
+      if(allocated(  PIC_BCMO_IJKSTART  )) deallocate(   PIC_BCMO_IJKSTART  )
+      if(allocated(  PIC_BCMO_IJKEND  )) deallocate(   PIC_BCMO_IJKEND  )
 
       RETURN
       END SUBROUTINE DEALLOCATE_PIC_MIO
@@ -1855,7 +1830,7 @@
       USE compar
       USE constant
       USE cutcell
-      USE derived_types, only: boxhandle, pic
+      USE derived_types, only: pic
       USE des_bc
       USE des_rxns
       USE des_thermo
@@ -1870,15 +1845,10 @@
       USE physprop
       USE pic_bc, only: pic_bcmo, pic_bcmi
 
-      USE run, only: ENERGY_EQ
-      USE run, only: ANY_SPECIES_EQ
-
-      USE particle_filter, only: DES_INTERP_SCHEME_ENUM
       USE particle_filter, only: DES_INTERP_GARG
       USE particle_filter, only: DES_INTERP_DPVM
       USE particle_filter, only: DES_INTERP_GAUSS
       USE particle_filter, only: DES_INTERP_LHAT
-      USE particle_filter, only: FILTER_SIZE
       USE particle_filter, only: FILTER_CELL
       USE particle_filter, only: FILTER_WEIGHT
       use des_bc, only: DEM_BCMO_IJKSTART, DEM_BCMO_IJKEND
@@ -1888,12 +1858,6 @@
       USE error_manager
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! indices
-      INTEGER :: IJK
-!-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_DEALLOCATE_ARRAYS")
 
@@ -1902,173 +1866,169 @@
 !-----------------------------------------------
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
-      if(allocated(	 PARTICLE_STATE 	)) deallocate(	 PARTICLE_STATE 	)
-      if(allocated(	iglobal_id	)) deallocate(	iglobal_id	)
+      if(allocated(  PARTICLE_STATE   )) deallocate(   PARTICLE_STATE   )
+      if(allocated( iglobal_id  )) deallocate(  iglobal_id  )
 
 ! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
             if(PIC_BCMI /= 0 .OR. PIC_BCMO /=0) CALL DEALLOCATE_PIC_MIO
 
 ! Particle attributes
 ! Radius, density, mass, moment of inertia
-      if(allocated(	  DES_RADIUS 	)) deallocate(	  DES_RADIUS 	)
-      if(allocated(	  RO_Sol 	)) deallocate(	  RO_Sol 	)
-      if(allocated(	  PVOL 	)) deallocate(	  PVOL 	)
-      if(allocated(	  PMASS 	)) deallocate(	  PMASS 	)
-      if(allocated(	  OMOI 	)) deallocate(	  OMOI 	)
+      if(allocated(   DES_RADIUS  )) deallocate(    DES_RADIUS  )
+      if(allocated(   RO_Sol  )) deallocate(    RO_Sol  )
+      if(allocated(   PVOL  )) deallocate(    PVOL  )
+      if(allocated(   PMASS   )) deallocate(    PMASS   )
+      if(allocated(   OMOI  )) deallocate(    OMOI  )
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      if(allocated(	  DES_POS_NEW 	)) deallocate(	  DES_POS_NEW 	)
-      if(allocated(	  DES_VEL_NEW 	)) deallocate(	  DES_VEL_NEW 	)
-      if(allocated(	  OMEGA_NEW 	)) deallocate(	  OMEGA_NEW 	)
+      if(allocated(   DES_POS_NEW   )) deallocate(    DES_POS_NEW   )
+      if(allocated(   DES_VEL_NEW   )) deallocate(    DES_VEL_NEW   )
+      if(allocated(   OMEGA_NEW   )) deallocate(    OMEGA_NEW   )
 
-      if(allocated(	  ORIENTATION 	)) deallocate(	  ORIENTATION 	)
+      if(allocated(   ORIENTATION   )) deallocate(    ORIENTATION   )
 
-      if(allocated(	  DES_POS_OLD 	)) deallocate(	  DES_POS_OLD 	)
-      if(allocated(	  DES_VEL_OLD 	)) deallocate(	  DES_VEL_OLD 	)
-      if(allocated(	  DES_ACC_OLD 	)) deallocate(	  DES_ACC_OLD 	)
-      if(allocated(	  OMEGA_OLD 	)) deallocate(	  OMEGA_OLD 	)
-      if(allocated(	  ROT_ACC_OLD 	)) deallocate(	  ROT_ACC_OLD 	)
+      if(allocated(   DES_POS_OLD   )) deallocate(    DES_POS_OLD   )
+      if(allocated(   DES_VEL_OLD   )) deallocate(    DES_VEL_OLD   )
+      if(allocated(   DES_ACC_OLD   )) deallocate(    DES_ACC_OLD   )
+      if(allocated(   OMEGA_OLD   )) deallocate(    OMEGA_OLD   )
+      if(allocated(   ROT_ACC_OLD   )) deallocate(    ROT_ACC_OLD   )
 
 
 ! Allocating user defined array
-      if(allocated(	 DES_USR_VAR	)) deallocate(	 DES_USR_VAR	)
+      if(allocated(  DES_USR_VAR  )) deallocate(   DES_USR_VAR  )
 
 ! Particle positions at the last call neighbor search algorithm call
-      if(allocated(	  PPOS 	)) deallocate(	  PPOS 	)
+      if(allocated(   PPOS  )) deallocate(    PPOS  )
 
 ! Total, normal and tangetial forces
-      if(allocated(	  FC 	)) deallocate(	  FC 	)
+      if(allocated(   FC  )) deallocate(    FC  )
 
 ! Torque
-      if(allocated(	  TOW 	)) deallocate(	  TOW 	)
+      if(allocated(   TOW   )) deallocate(    TOW   )
 
 
 ! allocate variable for des grid binning
-      if(allocated(	dg_pijk	)) deallocate(	dg_pijk	)
-      if(allocated(	dg_pijkprv	)) deallocate(	dg_pijkprv	)
+      if(allocated( dg_pijk )) deallocate(  dg_pijk )
+      if(allocated( dg_pijkprv  )) deallocate(  dg_pijkprv  )
 
 ! allocate variables related to ghost particles
-      if(allocated(	ighost_updated	)) deallocate(	ighost_updated	)
+      if(allocated( ighost_updated  )) deallocate(  ighost_updated  )
 
 
-      if(allocated(	  wall_collision_facet_id 	)) deallocate(	  wall_collision_facet_id 	)
+      if(allocated(   wall_collision_facet_id   )) deallocate(    wall_collision_facet_id   )
 
-      if(allocated(	  wall_collision_PFT 	)) deallocate(	  wall_collision_PFT 	)
+      if(allocated(   wall_collision_PFT  )) deallocate(    wall_collision_PFT  )
 
 ! Temporary variables to store wall position, velocity and normal vector
-      if(allocated(	  WALL_NORMAL  	)) deallocate(	  WALL_NORMAL  	)
+      if(allocated(   WALL_NORMAL   )) deallocate(    WALL_NORMAL   )
 
-      if(allocated(	  NEIGHBOR_INDEX 	)) deallocate(	  NEIGHBOR_INDEX 	)
-      if(allocated(	  NEIGHBOR_INDEX_OLD 	)) deallocate(	  NEIGHBOR_INDEX_OLD 	)
-      if(allocated(	  NEIGHBORS 	)) deallocate(	  NEIGHBORS 	)
+      if(allocated(   NEIGHBOR_INDEX  )) deallocate(    NEIGHBOR_INDEX  )
+      if(allocated(   NEIGHBOR_INDEX_OLD  )) deallocate(    NEIGHBOR_INDEX_OLD  )
+      if(allocated(   NEIGHBORS   )) deallocate(    NEIGHBORS   )
 
-      if(allocated(	  NEIGHBORS_OLD 	)) deallocate(	  NEIGHBORS_OLD 	)
-      if(allocated(	  PFT_NEIGHBOR 	)) deallocate(	  PFT_NEIGHBOR 	)
-      if(allocated(	  PFT_NEIGHBOR_OLD 	)) deallocate(	  PFT_NEIGHBOR_OLD 	)
-
-#ifdef do_sap
-      if(allocated(	  boxhandle	)) deallocate(	  boxhandle	)
-#endif
+      if(allocated(   NEIGHBORS_OLD   )) deallocate(    NEIGHBORS_OLD   )
+      if(allocated(   PFT_NEIGHBOR  )) deallocate(    PFT_NEIGHBOR  )
+      if(allocated(   PFT_NEIGHBOR_OLD  )) deallocate(    PFT_NEIGHBOR_OLD  )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
-      if(allocated(	PIC	)) deallocate(	PIC	)
+      if(allocated( PIC )) deallocate(  PIC )
 
 ! Particles in a computational fluid cell (for volume fraction)
-      if(allocated(	  PINC 	)) deallocate(	  PINC 	)
+      if(allocated(   PINC  )) deallocate(    PINC  )
 
 ! For each particle track its i,j,k location on computational fluid grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
-      if(allocated(	  PIJK 	)) deallocate(	  PIJK 	)
+      if(allocated(   PIJK  )) deallocate(    PIJK  )
 
-      if(allocated(	DRAG_AM	)) deallocate(	DRAG_AM	)
-      if(allocated(	DRAG_BM	)) deallocate(	DRAG_BM	)
-      if(allocated(	F_gp	)) deallocate(	F_gp	)
+      if(allocated( DRAG_AM )) deallocate(  DRAG_AM )
+      if(allocated( DRAG_BM )) deallocate(  DRAG_BM )
+      if(allocated( F_gp  )) deallocate(  F_gp  )
 
 
 ! Explicit drag force acting on a particle.
-      if(allocated(	DRAG_FC 	)) deallocate(	DRAG_FC 	)
+      if(allocated( DRAG_FC   )) deallocate(  DRAG_FC   )
 
 ! force due to gas-pressure gradient
-      if(allocated(	P_FORCE	)) deallocate(	P_FORCE	)
+      if(allocated( P_FORCE )) deallocate(  P_FORCE )
 
 ! Volume of nodes
-      if(allocated(	DES_VOL_NODE	)) deallocate(	DES_VOL_NODE	)
+      if(allocated( DES_VOL_NODE  )) deallocate(  DES_VOL_NODE  )
 
-      if(allocated(	F_GDS	)) deallocate(	F_GDS	)
-      if(allocated(	VXF_GDS	)) deallocate(	VXF_GDS	)
+      if(allocated( F_GDS )) deallocate(  F_GDS )
+      if(allocated( VXF_GDS )) deallocate(  VXF_GDS )
 
-      if(allocated(	FILTER_CELL	)) deallocate(	FILTER_CELL	)
-      if(allocated(	FILTER_WEIGHT	)) deallocate(	FILTER_WEIGHT	)
-      if(allocated(	DES_ROPS_NODE	)) deallocate(	DES_ROPS_NODE	)
-      if(allocated(	DES_VEL_NODE	)) deallocate(	DES_VEL_NODE	)
+      if(allocated( FILTER_CELL )) deallocate(  FILTER_CELL )
+      if(allocated( FILTER_WEIGHT )) deallocate(  FILTER_WEIGHT )
+      if(allocated( DES_ROPS_NODE )) deallocate(  DES_ROPS_NODE )
+      if(allocated( DES_VEL_NODE  )) deallocate(  DES_VEL_NODE  )
 
 ! Variables for hybrid model
 
-      if(allocated(	SDRAG_AM	)) deallocate(	SDRAG_AM	)
-      if(allocated(	SDRAG_BM	)) deallocate(	SDRAG_BM	)
+      if(allocated( SDRAG_AM  )) deallocate(  SDRAG_AM  )
+      if(allocated( SDRAG_BM  )) deallocate(  SDRAG_BM  )
 
-      if(allocated(	F_SDS	)) deallocate(	F_SDS	)
-      if(allocated(	VXF_SDS	)) deallocate(	VXF_SDS	)
+      if(allocated( F_SDS )) deallocate(  F_SDS )
+      if(allocated( VXF_SDS )) deallocate(  VXF_SDS )
 
 
 ! MP-PIC related
-      if(allocated(	PS_FORCE_PIC	)) deallocate(	PS_FORCE_PIC	)
-      if(allocated(	DES_STAT_WT	)) deallocate(	DES_STAT_WT	)
-      if(allocated(	DES_VEL_MAX	)) deallocate(	DES_VEL_MAX	)
-      if(allocated(	PS_GRAD	)) deallocate(	PS_GRAD	)
-      if(allocated(	AVGSOLVEL_P	)) deallocate(	AVGSOLVEL_P	)
-      if(allocated(	EPG_P	)) deallocate(	EPG_P	)
+      if(allocated( PS_FORCE_PIC  )) deallocate(  PS_FORCE_PIC  )
+      if(allocated( DES_STAT_WT )) deallocate(  DES_STAT_WT )
+      if(allocated( DES_VEL_MAX )) deallocate(  DES_VEL_MAX )
+      if(allocated( PS_GRAD )) deallocate(  PS_GRAD )
+      if(allocated( AVGSOLVEL_P )) deallocate(  AVGSOLVEL_P )
+      if(allocated( EPG_P )) deallocate(  EPG_P )
 
-      if(allocated(	PIC_U_s 	)) deallocate(	PIC_U_s 	)
-      if(allocated(	PIC_V_s 	)) deallocate(	PIC_V_s 	)
-      if(allocated(	PIC_W_s 	)) deallocate(	PIC_W_s 	)
-      if(allocated(	PIC_P_s 	)) deallocate(	PIC_P_s 	)
+      if(allocated( PIC_U_s   )) deallocate(  PIC_U_s   )
+      if(allocated( PIC_V_s   )) deallocate(  PIC_V_s   )
+      if(allocated( PIC_W_s   )) deallocate(  PIC_W_s   )
+      if(allocated( PIC_P_s   )) deallocate(  PIC_P_s   )
 
 ! Averaged velocity obtained by averaging over all the particles
-      if(allocated(	DES_VEL_AVG	)) deallocate(	DES_VEL_AVG	)
+      if(allocated( DES_VEL_AVG )) deallocate(  DES_VEL_AVG )
 
 ! Global Granular Energy
-      if(allocated(	GLOBAL_GRAN_ENERGY	)) deallocate(	GLOBAL_GRAN_ENERGY	)
-      if(allocated(	GLOBAL_GRAN_TEMP	)) deallocate(	GLOBAL_GRAN_TEMP	)
+      if(allocated( GLOBAL_GRAN_ENERGY  )) deallocate(  GLOBAL_GRAN_ENERGY  )
+      if(allocated( GLOBAL_GRAN_TEMP  )) deallocate(  GLOBAL_GRAN_TEMP  )
 
 ! variable for bed height of solids phase M
-      if(allocated(	BED_HEIGHT	)) deallocate(	BED_HEIGHT	)
+      if(allocated( BED_HEIGHT  )) deallocate(  BED_HEIGHT  )
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-      if(allocated(	  PostCohesive 	)) deallocate(	  PostCohesive 	)
+      if(allocated(   PostCohesive  )) deallocate(    PostCohesive  )
 ! END COHESION
 ! ----------------------------------------------------------------<<<
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation
 ! Particle temperature
-      if(allocated(	 DES_T_s	)) deallocate(	 DES_T_s	)
+      if(allocated(  DES_T_s  )) deallocate(   DES_T_s  )
 ! Spec      ific heat
-      if(allocated(	 DES_C_PS	)) deallocate(	 DES_C_PS	)
+      if(allocated(  DES_C_PS )) deallocate(   DES_C_PS )
 ! Species mass fractions comprising a particle. This array may not be
 ! needed for all thermo problems.
-      if(allocated(	 DES_X_s	)) deallocate(	 DES_X_s	)
+      if(allocated(  DES_X_s  )) deallocate(   DES_X_s  )
 ! Total rate of heat transfer to individual particles.
-      if(allocated(	 Q_Source	)) deallocate(	 Q_Source	)
+      if(allocated(  Q_Source )) deallocate(   Q_Source )
 ! Average solids temperature in fluid cell
-      if(allocated(	avgDES_T_s	)) deallocate(	avgDES_T_s	)
+      if(allocated( avgDES_T_s  )) deallocate(  avgDES_T_s  )
 ! Gas/Solids convective heat transfer coupling
 
 ! Fluid phase energy equation source terms
-      if(allocated(	CONV_Sc	)) deallocate(	CONV_Sc	)
-      if(allocated(	CONV_Sp	)) deallocate(	CONV_Sp	)
+      if(allocated( CONV_Sc )) deallocate(  CONV_Sc )
+      if(allocated( CONV_Sp )) deallocate(  CONV_Sp )
 ! Particle convection source term (explicit coupled)
-      if(allocated(	CONV_Qs	)) deallocate(	CONV_Qs	)
+      if(allocated( CONV_Qs )) deallocate(  CONV_Qs )
 ! Gas-particle heat transfer coefficient TIMES surface area
-      if(allocated(	GAMMAxSA	)) deallocate(	GAMMAxSA	)
+      if(allocated( GAMMAxSA  )) deallocate(  GAMMAxSA  )
 
 ! Allocate the history variables for Adams-Bashforth integration
-      if(allocated(	 Q_Source0	)) deallocate(	 Q_Source0	)
+      if(allocated(  Q_Source0  )) deallocate(   Q_Source0  )
 
 ! End Thermodynamic Allocation
 ! ----------------------------------------------------------------<<<
@@ -2077,26 +2037,26 @@
 ! ---------------------------------------------------------------->>>
 ! BEGIN Species Allocation
 ! Rate of solids phase production/consumption for each species
-      if(allocated(	 DES_R_s	)) deallocate(	 DES_R_s	)
+      if(allocated(  DES_R_s  )) deallocate(   DES_R_s  )
 
-      if(allocated(	 DES_R_gp	)) deallocate(	 DES_R_gp	)
-      if(allocated(	 DES_R_gc	)) deallocate(	 DES_R_gc	)
-      if(allocated(	 DES_SUM_R_g	)) deallocate(	 DES_SUM_R_g	)
-      if(allocated(	 DES_R_PHASE	)) deallocate(	 DES_R_PHASE	)
-      if(allocated(	 DES_HOR_g	)) deallocate(	 DES_HOR_g	)
+      if(allocated(  DES_R_gp )) deallocate(   DES_R_gp )
+      if(allocated(  DES_R_gc )) deallocate(   DES_R_gc )
+      if(allocated(  DES_SUM_R_g  )) deallocate(   DES_SUM_R_g  )
+      if(allocated(  DES_R_PHASE  )) deallocate(   DES_R_PHASE  )
+      if(allocated(  DES_HOR_g  )) deallocate(   DES_HOR_g  )
 
 
 ! Allocate the history variables for Adams-Bashforth integration
- 
+
 ! Rate of change of particle mass
-      if(allocated(	 dMdt_OLD	)) deallocate(	 dMdt_OLD	)
+      if(allocated(  dMdt_OLD )) deallocate(   dMdt_OLD )
 ! Rate of change of particle mass percent species
-      if(allocated(	 dXdt_OLD	)) deallocate(	 dXdt_OLD	)
-  
+      if(allocated(  dXdt_OLD )) deallocate(   dXdt_OLD )
+
 
 ! Energy generation from reaction (cal/sec)
-      if(allocated(	 RXNS_Qs	)) deallocate(	 RXNS_Qs	)
-  
+      if(allocated(  RXNS_Qs  )) deallocate(   RXNS_Qs  )
+
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<
 

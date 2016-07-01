@@ -217,7 +217,7 @@ MODULE RXN_COM
 
 ! Check the local run directory.
          CASE(1); FILENAME = 'species.inc'
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
+            OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
             IF(IOS /= 0) CYCLE SRC_LP
             IF(.NOT.REINITIALIZING)THEN
                WRITE(ERR_MSG, 1000)'species.inc'

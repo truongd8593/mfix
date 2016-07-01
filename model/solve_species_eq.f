@@ -33,8 +33,8 @@
       use mflux, only: flux_se, flux_sse, flux_sn, flux_ssn
       use mflux, only: flux_gt, flux_gst, flux_st, flux_sst
       use mpi_utility, only: global_all_sum
-      use param, only: dimension_3, dimension_m
-      use param, only: dimension_n_s, dimension_n_g
+      use param, only: dimension_3
+      use param, only: dimension_n_s
       use param1, only: zero
       use physprop, only: nmax, dif_g, dif_s
       use physprop, only: smax
@@ -93,8 +93,6 @@
 ! array3 (locally eps)
 ! alias for solids volume fraction
       DOUBLE PRECISION :: eps(DIMENSION_3)
-! array4 (locally vxgama)
-      DOUBLE PRECISION :: vxgama(DIMENSION_3)
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)

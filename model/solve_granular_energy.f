@@ -31,7 +31,7 @@
       use mflux, only: flux_ne, flux_nn, flux_nt
       use mms, only: use_mms, mms_theta_m_src
       use mpi_utility, only: global_all_sum
-      use param, only: dimension_3, dimension_m
+      use param, only: dimension_3
       use param1, only: zero, one, dimension_lm
       use physprop, only: kth_s
       use physprop, only: smax, mmax

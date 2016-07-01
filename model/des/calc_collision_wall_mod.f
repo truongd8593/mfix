@@ -327,9 +327,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
       INTEGER :: CC, FREE_INDEX, LC, dgIJK
 
-      INTEGER :: lSIZE1, lSIZE2, lSIZE3
-      INTEGER, ALLOCATABLE :: tmpI2(:,:)
-      DOUBLE PRECISION, ALLOCATABLE :: tmpR3(:,:,:)
 
       free_index = -1
 
@@ -544,7 +541,7 @@
 
       USE bc
       USE compar, only: istart3, iend3, jstart3, jend3, kstart3, kend3
-      USE cutcell, only: cut_cell_at, area_cut, blocked_cell_at, small_cell_at
+      USE cutcell, only: area_cut, blocked_cell_at
       USE des_thermo
       USE des_thermo_cond
       USE desgrid
@@ -836,8 +833,8 @@
                IF(BC_ID.eq.0)then
                   IF(OUTPUT_WARNING)THEN
                      write(*,*)'WARNING: Could not find BC'
-                     write(*,*)'Check input deck to make sure domain boundaries &
-                     are defined'
+                     write(*,*)'Check input deck to make sure domain boundaries', &
+                     'are defined'
                      write(*,*)'SUPPRESSING FUTURE OUTPUT'
                      write(*,*)'DES_POS_NEW'
                      write(*,'(3(F12.5, 3X))')(DES_POS_NEW(LL,IBC),IBC=1,3)
