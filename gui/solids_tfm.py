@@ -13,7 +13,7 @@ friction_models = ['SCHAEFFER', 'SRIVASTAVA', 'NONE']
 rdf_types = ['LEBOWITZ', 'LEBOWITZ', #sic
              'MANSOORI', 'MODIFIED_LEBOWITZ', 'MODIFIED_MANSOORI']
 
-stress_blends = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
+blending_funcs = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
 
 class SolidsTFM(object):
     def init_solids_tfm(self):
@@ -21,7 +21,7 @@ class SolidsTFM(object):
         s.combobox_kt_type.currentIndexChanged.connect(self.set_kt_type)
         s.combobox_friction_model.currentIndexChanged.connect(self.set_friction_model)
         s.combobox_rdf_type.currentIndexChanged.connect(self.set_rdf_type)
-        s.combobox_stress_blending.currentIndexChanged.connect(self.set_stress_blending)
+        s.combobox_blending_func.currentIndexChanged.connect(self.set_blending_func)
         s.combobox_max_packing_correlation.currentIndexChanged.connect(self.set_max_packing_correlation)
 
     def setup_tfm_tab(self):
@@ -110,29 +110,46 @@ class SolidsTFM(object):
         for item in (s.label_phi, s.lineedit_keyword_phi):
             item.setEnabled(enabled)
 
-        # Advanced
+        ### Advanced
         # Select radial distribution function
-        enabled = [mmax==1] + 4*[mmax>1]
+        rdf_type = self.project.get_value('rdf_type', 'LEBOWITZ') #default??
+        if rdf_type not in rdf_types:
+            log.warn('Invalid rdf_type %s' % rdf_type)
+            self.update_keyword('rdf_type', 'LEBOWITZ')
+            rdf_type = 'LEBOWITZ'
+        if rdf_type == 'LEBOWITZ':
+            if mmax == 1:
+                index = 0
+            else:
+                index = 1
+        else:
+            index = rdf_types.index(rdf_type)
+
         cb = s.combobox_rdf_type
+        cb.setCurrentIndex(index)
+
+        enabled = [mmax==1] + 4*[mmax>1]
+
         for (i,e) in enumerate(enabled):
-            set_item_enabled(get_combobox_item(cb,i),e)
+            set_item_enabled(get_combobox_item(cb,i), e)
+
 
         # Select stress blending model
         # Selection only available with FRICTION_MODEL=SCHAEFFER
-        blending_function = self.project.get_value('blending_function', 'NONE')
-        if blending_function and blending_function not in stress_blends:
-            log.warn('Invalid blending_function %s' % blending_function)
+        blending_func = self.project.get_value('blending_function', 'NONE')
+        if blending_func not in blending_funcs:
+            log.warn('Invalid blending_function %s' % blending_func)
             self.unset_keyword('blending_function')
-            blending_function = 'None'
-        s.combobox_stress_blending.setCurrentIndex(stress_blends.index(blending_function))
+            blending_func = 'NONE'
+        s.combobox_blending_func.setCurrentIndex(blending_funcs.index(blending_func))
         enabled = (friction_model=='SCHAEFFER')
-        for item in (s.label_stress_blending, s.combobox_stress_blending):
+        for item in (s.label_blending_func, s.combobox_blending_func):
                     item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('blending_function') #
         else:
-            v = s.combobox_stress_blending.currentIndex()
-            self.update_keyword('blending_function', stress_blends[v])
+            v = s.combobox_blending_func.currentIndex()
+            self.update_keyword('blending_function', blending_functions[v])
 
 
         # Specify the segregation slope coefficient
@@ -229,13 +246,13 @@ class SolidsTFM(object):
         self.update_keyword('rdf_type', rdf_types[val])
         self.setup_tfm_tab()
 
-    def set_stress_blending(self, val):
+    def set_blending_func(self, val):
         s = self.ui.solids
-        cb = s.combobox_stress_blending
+        cb = s.combobox_blending_func
         if cb.currentIndex() != val:
             cb.setCurrentIndex(val)
             return
-        self.update_keyword('blending_function', stress_blends[val])
+        self.update_keyword('blending_function', blending_functions[val])
         self.setup_tfm_tab()
 
     def set_max_packing_correlation(self, val):
