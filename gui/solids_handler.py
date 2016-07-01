@@ -22,8 +22,9 @@ from tools.general import (set_item_noedit, get_selected_row,
 from widgets.base import LineEdit
 
 from solids_tfm import SolidsTFM
+from solids_dem import SolidsDEM
 
-class SolidsHandler(SolidsTFM):
+class SolidsHandler(SolidsTFM, SolidsDEM):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -196,10 +197,6 @@ class SolidsHandler(SolidsTFM):
             self.setup_dem_tab()
         elif tabnum == 3:
             self.setup_pic_tab()
-
-
-    def setup_dem_tab(self):
-        pass
 
     def setup_pic_tab(self):
         pass
