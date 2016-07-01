@@ -166,7 +166,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1726,7 +1726,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="8" column="4">
-            <widget class="QLabel" name="label_154">
+            <widget class="QLabel" name="label_des_interp_width">
              <property name="text">
               <string>Width</string>
              </property>
@@ -1736,14 +1736,14 @@ background-color:transparent;
             <widget class="LineEdit" name="lineedit_keyword_des_interp_width"/>
            </item>
            <item row="9" column="0" colspan="3">
-            <widget class="QCheckBox" name="checkBox_4">
+            <widget class="QCheckBox" name="checkbox_enable_des_diffuse_width">
              <property name="text">
               <string>Enable mean field diffusion</string>
              </property>
             </widget>
            </item>
            <item row="9" column="4">
-            <widget class="QLabel" name="label_163">
+            <widget class="QLabel" name="label_des_diffuse_width">
              <property name="text">
               <string>Width</string>
              </property>
@@ -1753,7 +1753,7 @@ background-color:transparent;
             <widget class="LineEdit" name="lineedit_keyword_des_diffuse_width"/>
            </item>
            <item row="9" column="6">
-            <widget class="QLabel" name="label_182">
+            <widget class="QLabel" name="label_des_diffuse_width_units">
              <property name="text">
               <string>m</string>
              </property>
@@ -2171,7 +2171,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="8" column="6">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="label_des_interp_width_units">
              <property name="text">
               <string>m</string>
              </property>

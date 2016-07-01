@@ -9,123 +9,6 @@ from tools.general import get_combobox_item, set_item_enabled
 # In-line comments from MFIX-UI SRS as of 2016-07-01
 #  Please update comments along with SRS/code changes!
 
-"""
-Define interpolation width (DPVM only) (required)
-o Specification only available with SQUARE_DPVM interpolation scheme
-o Sets keyword DES_INTERP_WIDTH
-
-Option to enable diffusion of particle data
-o Selection unavailable with GARG_2012 interpolation scheme
-o No keyword is set by this option
-o Enables the user to specify a diffusion width
- Sets keyword DES_DIFFUSE_WIDTH
-
-Specify friction coefficient
-o Specification always required
-o Sets keyword MEW (MEW_W)
-
-Specify normal spring constant
-o Only available for LSD collision model
-o Sets keyword KN (KN_W)
-
-Specify tangential spring constant factor
-o Only available for LSD collision model
-o Sets keyword KT_FAC (KT_W_FAC)
-o Default values of 2.0/7.0
-
-Specify tangential damping coefficient factor
-o Only available for LSD collision model
-o Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
-o Default values of 0.5
-
-Specify Young's modulus
-o Only available for Hertzian collision model
-o Sets keyword E_YOUNG (EW_YOUNG)
-
-Specify Poisson ratio:
-o Only available for Hertzian collision model
-o Sets keyword V_POISSON (VW_POISSON)
-
-Specify normal restitution coefficient
-o Specification always required
-o Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
-o Input given as an upper triangular matrix
-
-Specify tangential restitution coefficient
-o Specification available for Hertzian collision model
-o Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
-o Input given as an upper triangular matrix
-
-Select cohesion model
-o Selection always available
-o Available selections
- None [DEFAULT]
- Selection always available
- Sets keyword USE_COHESION to false
- Sets keyword VAN_DER_WAALS to false
- Van der Waals
- Selection always available
- Sets keyword USE_COHESION to true
- Sets keyword VAN_DER_WAALS to true
-
-Specify Hamaker constant
-o Specification only available for Van der Waals cohesion model
-o Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
-
-Specify outer cutoff;
-o Specification only available for Van der Waals cohesion model
-o Sets keyword VDW_OUTTER_CUTOFF (WALL_OUTTER_CUTOFF)
-
-Specify inner cutoff
-o Specification only available for Van der Waals cohesion model
-o Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
-
-Specify asperities
-o Specification only available for Van der Waals cohesion model
-o Sets keyword ASPERITIES
-
-List the following options under an 'Advanced' section header.
-
-Select Neighbor Search Method
-o Selection always available
-o Available selection
- Grid-based [DEFAULT]
-  Selection always available
-  Sets keyword DES_NEIGHBOR_SEARCH 4
- N-Square
-  Selection always available
-  Sets keyword DES_NEIGHBOR_SEARCH 1
-
-Specify maximum steps between neighbor search
- Specification always available
- Sets keyword NEIGHBOR_SEARCH_N
-
-Specify factor defining particle neighborhood
- Specification always available
- Sets keyword FACTOR_RLM
-
-Specify neighborhood search radius ratio
- Specification always available
- Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
-
-Specify search grid partitions (optional)
- Specification always available
- Sets keyword DESGRIDSEARCH_IMAX
- Sets keyword DESGRIDSEARCH_JMAX
- Sets keyword DESGRIDSEARCH_KMAX
-
-Enable user scalar tracking
- Selection always available
- Does not directly set any keywords
- Enables specification of number of user scalars
- Sets keyword DES_USR_VAR_SIZE
-
-Define minimum distance for contact conduction (optional)
- Unavailable if not solving energy equations
-
-Define fluid lens proportion constant (optional)
- Unavailable if not solving energy equations
-"""
 
 des_intg_methods = ['EULER', 'ADAMS_BASHFORTH']
 des_coll_models = ['LSD', 'HERTZIAN']
@@ -146,6 +29,7 @@ class SolidsDEM(object):
         s.checkbox_keyword_des_explicitly_coupled.clicked.connect(self.setup_dem_tab)
         s.combobox_des_interp.activated.connect(self.set_des_interp)
         s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
+        s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
 
     def set_des_intg_method(self, val):
         self.update_keyword('des_intg_method', des_intg_methods[val])
@@ -171,9 +55,27 @@ class SolidsDEM(object):
         self.update_keyword('des_interp_scheme', des_interp_scheme)
         self.setup_dem_tab()
 
-    def setup_dem_tab(self):
+    def enable_des_diffuse_width(self, val):
         s = self.ui.solids
+        enabled = val
+        for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
+                     s.label_des_diffuse_width_units):
+            item.setEnabled(enabled)
+        if not enabled:
+            self.unset_keyword('des_diffuse_width')
+        else: #Restore value
+            self.update_keyword('des_diffuse_width',
+                                s.lineedit_keyword_des_diffuse_width.text())
 
+    def setup_dem_tab(self):
+        # Ensures all constraints (items enabled/disabled) are set
+        # called by each 'set_' function, so don't call those here
+
+        s = self.ui.solids
+        # Inline comments from MFIX-UI SRS as of 2016-07-01
+        #  Pleas update as needed!
+
+        #MFIX-UI SRS
         #Enable automatic particle generation
         # Enabled sets keyword GENER_PART_CONFIG to true
         # Disabled enables the user to specify number of entries in particle input file
@@ -290,7 +192,7 @@ class SolidsDEM(object):
         # Square DPVM
         # Selection always available
         # Requires an interpolation width, DES_INTERP_WIDTH
-        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPM'
 
         cb = s.combobox_des_interp_scheme
         des_interp_scheme = self.project.get_value('des_interp_scheme')
@@ -311,3 +213,136 @@ class SolidsDEM(object):
             cb.setCurrentIndex(index)
             des_interp_scheme = des_interp_schemes[index]
             self.update_keyword('des_interp_scheme', des_interp_scheme)
+
+        #Define interpolation width (DPVM only) (required)
+        # Specification only available with SQUARE_DPVM interpolation scheme
+        # Sets keyword DES_INTERP_WIDTH
+        enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
+        for item in (s.label_des_interp_width, s.lineedit_keyword_des_interp_width,
+                     s.label_des_interp_width_units):
+            item.setEnabled(enabled)
+
+        #Option to enable diffusion of particle data
+        # Selection unavailable with GARG_2012 interpolation scheme
+        # No keyword is set by this option
+        # Enables the user to specify a diffusion width
+        # Sets keyword DES_DIFFUSE_WIDTH
+        enabled = (des_interp_scheme!='GARG_2012') # and interp_enabled #?
+        s.checkbox_enable_des_diffuse_width.setEnabled(enabled)
+        if not enabled:
+            s.checkbox_enable_des_diffuse_width.setChecked(False)
+            self.unset_keyword('des_diffuse_width')
+            s.lineedit_keyword_des_diffuse_width.clear() # ??? FIXME
+        enabled = s.checkbox_enable_des_diffuse_width.isChecked()
+        for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
+                     s.label_des_diffuse_width_units):
+            item.setEnabled(enabled)
+
+
+"""
+Specify friction coefficient
+o Specification always required
+o Sets keyword MEW (MEW_W)
+
+Specify normal spring constant
+o Only available for LSD collision model
+o Sets keyword KN (KN_W)
+
+Specify tangential spring constant factor
+o Only available for LSD collision model
+o Sets keyword KT_FAC (KT_W_FAC)
+o Default values of 2.0/7.0
+
+Specify tangential damping coefficient factor
+o Only available for LSD collision model
+o Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
+o Default values of 0.5
+
+Specify Young's modulus
+o Only available for Hertzian collision model
+o Sets keyword E_YOUNG (EW_YOUNG)
+
+Specify Poisson ratio:
+o Only available for Hertzian collision model
+o Sets keyword V_POISSON (VW_POISSON)
+
+Specify normal restitution coefficient
+o Specification always required
+o Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
+o Input given as an upper triangular matrix
+
+Specify tangential restitution coefficient
+o Specification available for Hertzian collision model
+o Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
+o Input given as an upper triangular matrix
+
+Select cohesion model
+o Selection always available
+o Available selections
+ None [DEFAULT]
+ Selection always available
+ Sets keyword USE_COHESION to false
+ Sets keyword VAN_DER_WAALS to false
+ Van der Waals
+ Selection always available
+ Sets keyword USE_COHESION to true
+ Sets keyword VAN_DER_WAALS to true
+
+Specify Hamaker constant
+o Specification only available for Van der Waals cohesion model
+o Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
+
+Specify outer cutoff;
+o Specification only available for Van der Waals cohesion model
+o Sets keyword VDW_OUTTER_CUTOFF (WALL_OUTTER_CUTOFF)
+
+Specify inner cutoff
+o Specification only available for Van der Waals cohesion model
+o Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
+
+Specify asperities
+o Specification only available for Van der Waals cohesion model
+o Sets keyword ASPERITIES
+
+List the following options under an 'Advanced' section header.
+
+Select Neighbor Search Method
+o Selection always available
+o Available selection
+ Grid-based [DEFAULT]
+  Selection always available
+  Sets keyword DES_NEIGHBOR_SEARCH 4
+ N-Square
+  Selection always available
+  Sets keyword DES_NEIGHBOR_SEARCH 1
+
+Specify maximum steps between neighbor search
+ Specification always available
+ Sets keyword NEIGHBOR_SEARCH_N
+
+Specify factor defining particle neighborhood
+ Specification always available
+ Sets keyword FACTOR_RLM
+
+Specify neighborhood search radius ratio
+ Specification always available
+ Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
+
+Specify search grid partitions (optional)
+ Specification always available
+ Sets keyword DESGRIDSEARCH_IMAX
+ Sets keyword DESGRIDSEARCH_JMAX
+ Sets keyword DESGRIDSEARCH_KMAX
+
+Enable user scalar tracking
+ Selection always available
+ Does not directly set any keywords
+ Enables specification of number of user scalars
+ Sets keyword DES_USR_VAR_SIZE
+
+Define minimum distance for contact conduction (optional)
+ Unavailable if not solving energy equations
+
+Define fluid lens proportion constant (optional)
+ Unavailable if not solving energy equations
+"""
