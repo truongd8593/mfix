@@ -1280,7 +1280,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="1" column="2" colspan="2">
-           <widget class="ComboBox" name="combobox_stress_blending">
+           <widget class="ComboBox" name="combobox_blending_func">
             <item>
              <property name="text">
               <string>None</string>
@@ -1313,7 +1313,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="label_stress_blending">
+           <widget class="QLabel" name="label_blending_func">
             <property name="text">
              <string>Stress Blending</string>
             </property>
