@@ -24,6 +24,8 @@ from widgets.base import LineEdit
 from solids_tfm import SolidsTFM
 from solids_dem import SolidsDEM
 
+# Change from 'currentIndexChanged' to 'activated' ?
+
 class SolidsHandler(SolidsTFM, SolidsDEM):
 
     def init_solids_default_models(self):
@@ -179,7 +181,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.fixup_solids_table(3)
 
         self.init_solids_tfm()
-
+        self.init_solids_dem()
 
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, btn):

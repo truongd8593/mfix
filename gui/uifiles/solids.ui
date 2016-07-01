@@ -1586,7 +1586,7 @@ QPushButton:checked {
             <x>0</x>
             <y>0</y>
             <width>600</width>
-            <height>1192</height>
+            <height>1200</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1606,7 +1606,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="label_205">
+            <widget class="QLabel" name="label_particles">
              <property name="text">
               <string>Data file particle count</string>
              </property>
@@ -1665,14 +1665,14 @@ background-color:transparent;
             </widget>
            </item>
            <item row="5" column="0">
-            <widget class="QLabel" name="label_172">
+            <widget class="QLabel" name="label_coupling_method">
              <property name="text">
               <string>Coupling method</string>
              </property>
             </widget>
            </item>
            <item row="5" column="2">
-            <widget class="ComboBox" name="comboBox_23">
+            <widget class="ComboBox" name="combobox_coupling_method">
              <item>
               <property name="text">
                <string>One-way Coupled</string>
@@ -1686,28 +1686,28 @@ background-color:transparent;
             </widget>
            </item>
            <item row="6" column="0" colspan="4">
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="CheckBox" name="checkbox_keyword_des_explicitly_coupled">
              <property name="text">
               <string>Enable explicit coupling of interphase quantities</string>
              </property>
             </widget>
            </item>
            <item row="7" column="0">
-            <widget class="QLabel" name="label_153">
+            <widget class="QLabel" name="label_des_interp">
              <property name="text">
               <string>Interpolation</string>
              </property>
             </widget>
            </item>
            <item row="8" column="0">
-            <widget class="QLabel" name="label_181">
+            <widget class="QLabel" name="label_des_interp_scheme">
              <property name="text">
               <string>Scheme:</string>
              </property>
             </widget>
            </item>
            <item row="8" column="2">
-            <widget class="ComboBox" name="comboBox_26">
+            <widget class="ComboBox" name="combobox_des_interp_scheme">
              <item>
               <property name="text">
                <string>None</string>
@@ -1733,7 +1733,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="8" column="5">
-            <widget class="LineEdit" name="lineedit_dem_keyword_des_interp_width"/>
+            <widget class="LineEdit" name="lineedit_keyword_des_interp_width"/>
            </item>
            <item row="9" column="0" colspan="3">
             <widget class="QCheckBox" name="checkBox_4">
@@ -2147,27 +2147,34 @@ background-color:transparent;
             <widget class="QLineEdit" name="lineEdit_40"/>
            </item>
            <item row="7" column="2" colspan="3">
-            <widget class="ComboBox" name="comboBox_20">
+            <widget class="ComboBox" name="combobox_des_interp">
              <item>
               <property name="text">
-               <string>field-to-particle and particle-to-field</string>
+               <string>Field-to-Particle and Particle-to-Field</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>field-to-particle only</string>
+               <string>Field-to-Particle only</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>particle-to-field only</string>
+               <string>Particle-to-Field only</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>no-interpolation</string>
+               <string>No Interpolation</string>
               </property>
              </item>
+            </widget>
+           </item>
+           <item row="8" column="6">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>m</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -2333,7 +2340,7 @@ background-color:transparent;
            <number>5</number>
           </property>
           <item row="2" column="3">
-           <widget class="LineEdit" name="lineedit_keyword_des_interp_width"/>
+           <widget class="LineEdit" name="lineedit_keyword_des_interp_width_2"/>
           </item>
           <item row="2" column="2">
            <widget class="QLabel" name="label_234">

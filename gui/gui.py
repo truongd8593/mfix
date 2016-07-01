@@ -95,6 +95,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def popup_value_error(self, exc):
         self.message(title='Error', text=str(exc))
 
+    def warn(self, msg, popup=False):
+        """Convenience function to show the user a warning & log it"""
+        if not popup:
+            self.print_internal("Warning: %s" % msg)
+            # print_internal will call log.warn if message starts with "Warning"
+        else:
+            self.message("Warning: %s" % msg)
+            # Will also print-internal and log
+
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
         if project_file:
@@ -109,8 +118,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.message_box = None # for tests to access
 
 
-        # Initialize data members
+        # Initialize data members - make sure these values match 'reset'!
         self.solver_name = None
+        self.fluid_solver_disabled = False
         self.mfix_exe = None
         self.commandline_option_exe = None
         self.mfix_config = None
@@ -377,9 +387,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
         self.solids_nscalar_eq = 0 # Infer these from phase4scalar
-        # Defaults
 
+        # Defaults - see __init__
         self.solver_name = None
+        self.fluid_solver_disabled = False  # TODO: infer at load time
 
         self.project.reset() # Clears all keywords & collections
 
@@ -709,6 +720,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_window_title()
 
     def disable_fluid_solver(self, disabled):
+        self.fluid_solver_disabled = disabled
         m = self.ui.model
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
@@ -815,7 +827,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         checkbox = model.checkbox_disable_fluid_solver
         checkbox.clicked.connect(self.disable_fluid_solver)
-        self.disable_fluid_solver(False)
+        self.disable_fluid_solver(self.fluid_solver_disabled)
 
         checkbox = model.checkbox_keyword_energy_eq
         checkbox.clicked.connect(self.enable_energy_eq)
@@ -887,7 +899,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 # add info from keyword documentation
                 if key in self.keyword_doc:
                     doc = self.keyword_doc[key]
-                    widget.setdtype(doc['dtype'])
+                    try:
+                        widget.setdtype(doc['dtype'])
+                    except:
+                        print(widget, widget.objectName())
+                        raise
                     vr = doc.get('validrange', {})
                     widget.setValInfo(min=vr.get("min"), max=vr.get("max"),
                                       required=doc.get("required"))
