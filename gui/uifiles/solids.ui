@@ -21,7 +21,7 @@
     <number>5</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>5</number>
    </property>
    <property name="bottomMargin">
     <number>5</number>
@@ -356,8 +356,8 @@ QPushButton:checked {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>603</width>
-             <height>1222</height>
+             <width>598</width>
+             <height>1214</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -631,7 +631,7 @@ QPushButton:checked {
              </spacer>
             </item>
             <item row="6" column="0" colspan="6">
-             <widget class="QGroupBox" name="groupBox_solids_properties">
+             <widget class="QGroupBox" name="groupBox_solids_parameters">
               <property name="title">
                <string>Parameters</string>
               </property>
@@ -931,6 +931,18 @@ QPushButton:checked {
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_7">
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>5</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QCheckBox" name="checkbox_disable_close_pack">
                  <property name="text">
@@ -1233,7 +1245,7 @@ QPushButton:checked {
            <number>5</number>
           </property>
           <property name="rightMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="bottomMargin">
            <number>5</number>
@@ -1573,8 +1585,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>418</width>
-            <height>1200</height>
+            <width>605</width>
+            <height>1192</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1586,6 +1598,18 @@ background-color:transparent;
 }</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
+           <property name="leftMargin">
+            <number>5</number>
+           </property>
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <property name="rightMargin">
+            <number>5</number>
+           </property>
+           <property name="bottomMargin">
+            <number>5</number>
+           </property>
            <item row="0" column="0" colspan="3">
             <widget class="CheckBox" name="checkbox_keyword_gener_part_config_2">
              <property name="text">
@@ -2333,6 +2357,9 @@ background-color:transparent;
            <widget class="QLabel" name="label_236">
             <property name="text">
              <string>m</string>
+            </property>
+            <property name="margin">
+             <number>0</number>
             </property>
            </widget>
           </item>
