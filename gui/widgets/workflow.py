@@ -19,7 +19,7 @@ try:
 except ImportError:
     NodeWidget = None
     PYQTNODE_AVAILABLE = False
-    Node = None
+    Node = object
 
 # local imports
 from widgets.base import Table
