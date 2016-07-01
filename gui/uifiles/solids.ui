@@ -1280,7 +1280,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="1" column="2" colspan="2">
-           <widget class="ComboBox" name="combobox_blending_func">
+           <widget class="ComboBox" name="combobox_blending_function">
             <item>
              <property name="text">
               <string>None</string>
@@ -1313,7 +1313,7 @@ QPushButton:checked {
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="label_blending_func">
+           <widget class="QLabel" name="label_blending_function">
             <property name="text">
              <string>Stress Blending</string>
             </property>
@@ -1585,7 +1585,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>605</width>
+            <width>600</width>
             <height>1192</height>
            </rect>
           </property>
@@ -1635,15 +1635,15 @@ background-color:transparent;
             </widget>
            </item>
            <item row="2" column="2">
-            <widget class="ComboBox" name="combobox_keyword_des_intg_method">
+            <widget class="ComboBox" name="combobox_des_intg_method">
              <item>
               <property name="text">
-               <string>EULER</string>
+               <string>Euler</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>ADAMS_BASHFORTH</string>
+               <string>Adams-Bashforth</string>
               </property>
              </item>
             </widget>
@@ -1656,7 +1656,7 @@ background-color:transparent;
             </widget>
            </item>
            <item row="3" column="2">
-            <widget class="ComboBox" name="combobox_keyword_des_coll_model_2"/>
+            <widget class="ComboBox" name="combobox_des_coll_model"/>
            </item>
            <item row="4" column="0" colspan="7">
             <widget class="Line" name="line_11">
