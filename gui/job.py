@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 from qtpy.QtCore import QProcess, QTimer, QUrl
 from qtpy.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
-class Job(object):
+class JobManager(object):
     """class for monitoring an MFIX job"""
 
     def __init__(self, parent):
@@ -113,7 +113,7 @@ class Job(object):
             if self.parent.message(text="MFIX is not responding. Force kill?",
                                    buttons=['ok', 'cancel'],
                                    default='cancel')  != 'ok':
-                log.warn("not killing mfix process %d at user request" % self.mfix_pid)
+                log.warn("not killing mfix process %s at user request" % self.mfix_pid)
                 return
             try:
                 self.status.clear()
@@ -176,7 +176,7 @@ class Job(object):
         def slot_finish(status):
             self.status.clear()
             msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
-            self.mfix_pid = 0
+            self.mfix_pid = None
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
             if is_pymfix:

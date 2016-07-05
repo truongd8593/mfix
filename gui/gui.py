@@ -35,7 +35,7 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
-from job import Job
+from job import JobManager
 from monitor import Monitor
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
@@ -314,7 +314,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
 
         # Job manager / monitor
-        self.job = Job(parent=self)
+        self.job_manager = JobManager(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -416,9 +416,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def confirm_close(self):
         # TODO : option to save
         msg = None
-        if self.job.is_running():
+        if self.job_manager.is_job_running():
             msg = "Stop running job?"
-        elif self.job.is_paused():
+        elif self.job_manager.is_job_paused():
             msg = "Stop paused job?"
         if msg:
             confirm = self.message(text=msg,
@@ -427,7 +427,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if confirm == 'no':
                 return
             log.info("Stopping mfix at application exit")
-            self.job.stop_mfix()
+            self.job_manager.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
@@ -553,8 +553,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         project_file = os.path.basename(self.get_project_file() or '')
 
         project_open = bool(project_file and self.open_succeeded)
-        paused = self.job.is_pymfix and self.job.is_paused()
-        running = self.job.is_running() and not paused
+        paused = self.job_manager.is_pymfix and self.job_manager.is_paused()
+        running = self.job_manager.is_running() and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
@@ -569,16 +569,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #handle buttons in order:  RESET RUN PAUSE STOP
         # Pause only available w/ pymfix
         if running:
-            self.status_message("MFIX running, process %s" % self.job.mfix_pid)
+            self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
-            self.set_pause_button(enabled=self.job.is_pausable(), visible=self.pymfix_enabled)
+            self.set_pause_button(enabled=self.job_manager.is_pausable(), visible=self.pymfix_enabled)
             self.set_stop_button(enabled=True)
             self.change_pane('run')
 
         elif paused:
-            self.status_message("MFIX paused, process %s" % self.job.mfix_pid)
+            self.status_message("MFIX paused, process %s" % self.job_manager.mfix_pid)
             self.set_reset_button(enabled=False)
             self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
@@ -1390,20 +1390,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def handle_run(self):
         name = 'Run'
         try:
-            if not self.job.is_running():
+            if not self.job_manager.is_running():
                 # open the run dialog for job options
                 self.open_run_dialog()
                 return
             else:
                 name='unpause'
-                self.job.unpause()
+                self.job_manager.unpause()
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
             traceback.print_exception(*sys.exc_info())
 
     def handle_set_pymfix_output(self):
         try:
-            self.job.set_pymfix_output(
+            self.job_manager.set_pymfix_output(
               self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
@@ -1411,14 +1411,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_pause(self):
         try:
-            self.job.pause()
+            self.job_manager.pause()
         except Exception as e:
             self.print_internal("Pause: error %s" % e)
             traceback.print_exception(*sys.exc_info())
 
     def handle_stop(self):
         try:
-            self.job.stop_mfix()
+            self.job_manager.stop_mfix()
         except Exception as e:
             self.print_internal("Stop: error %s" % e)
             traceback.print_exception(*sys.exc_info())
@@ -1541,7 +1541,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #log.info(msg) # print_internal logs
         self.print_internal(msg, color='blue')
 
-        self.job.start_command(
+        self.job_manager.start_command(
             is_pymfix=self.pymfix_enabled,
             cmd=run_cmd,
             cwd=self.get_project_dir(),
@@ -1704,11 +1704,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if self.unsaved_flag:
             title += '*'
 
-        if self.job.is_running() and not self.job.is_paused():
+        if self.job_manager.is_running() and not self.job_manager.is_paused():
             title += ', RUNNING'
-            if self.job.mfix_pid is not None:
-                title += ', process %s'% self.job.mfix_pid
-        elif self.job.is_paused():
+            if self.job_manager.mfix_pid is not None:
+                title += ', process %s'% self.job_manager.mfix_pid
+        elif self.job_manager.is_paused():
             title += ', PAUSED'
         elif self.monitor.get_res_files():
             title += ', STOPPED, resumable'
