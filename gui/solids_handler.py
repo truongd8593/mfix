@@ -176,9 +176,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
                 make_callback(self.solids_change_tab, i, btn))
 
 
-        self.fixup_solids_table(1)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        for tw in (s.tablewidget_solids, s.tablewidget_solids_species,
+                   s.tablewidget_solids_baseline):
+            self.fixup_solids_table(tw)
 
         self.init_solids_tfm()
         self.init_solids_dem()
@@ -254,14 +254,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             self.unset_keyword('added_mass')
 
 
-    def fixup_solids_table(self, n):
+    def fixup_solids_table(self, tw):
         # fixme, this is getting called excessively
         # Should we just hide the entire table (including header) if no rows?
         s = self.ui.solids
         hv = QtWidgets.QHeaderView
-        tw = (s.tablewidget_solids if n==1
-              else s.tablewidget_solids_species if n==2
-              else s.tablewidget_solids_baseline)
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
         else:
@@ -384,7 +381,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
             self.update_solids_species_table()
-            self.fixup_solids_table(1)
+            self.fixup_solids_table(s.tablewidget_solids)
             sa.setEnabled(False)
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
@@ -470,7 +467,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.update_solids_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
-        self.fixup_solids_table(1)
+        self.fixup_solids_table(s.tablewidget_solids)
 
         # Advanced
         enabled = (model=='TFM')
@@ -748,7 +745,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         table.setItem(nrows-1, 1, make_item(''))
         self.update_solids_mass_fraction_total()
 
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(table)
 
     def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
@@ -792,14 +789,16 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        s = self.ui.solids
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
 
-        table = self.ui.solids.tablewidget_solids_species
+        s = self.ui.soliuds
+        table = s.tablewidget_solids_species
         table.clearContents()
         phase = self.solids_current_phase
         if phase is None:
@@ -848,8 +847,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         # FIXME, what's the right place for this?
         #self.project.update_thermo_data(self.solids_species[phase])
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
     def handle_solids_species_selection(self):
         table = self.ui.solids.tablewidget_solids_species
@@ -902,7 +901,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         phase = self.solids_current_phase
         if phase is None:
             return
-        table = self.ui.solids.tablewidget_solids_species
+        s = self.ui.solids
+        table = s.tablewidget_solids_species
         row = get_selected_row(table)
         if row is None: # No selection
             return
@@ -913,8 +913,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             del self.project.thermo_data[key]
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
