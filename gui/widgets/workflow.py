@@ -25,6 +25,7 @@ except ImportError:
 from widgets.base import Table
 from tools.general import make_callback, get_icon
 from constants import PARAMETER_DICT
+from job import Job
 
 # --- Custom MFIX GUI Nodes ---
 class TestNode(Node):
@@ -44,12 +45,21 @@ class TestNode(Node):
                         'showlabel': False,
                         'dtype': bool,
                         }),
+            ('run', {'widget': 'pushbutton',
+                        'in': False,
+                        'out': False,
+                        'showlabel': False,
+                        'dtype': bool,
+                        }),
              ])
 
         Node.__init__(self)
 
         self.terminals['used parameters'].valueChanged.connect(self.used_parameters)
         self.terminals['export'].valueChanged.connect(self.export)
+        self.terminals['run'].valueChanged.connect(self.run_project)
+
+        self.terminals['run'].widget.setEnabled(False)
 
     def used_parameters(self):
         print(self.parent.workflow_widget.used_parameters)
@@ -57,15 +67,20 @@ class TestNode(Node):
     def export(self):
 
         curr_proj_dir = self.parent.mfixgui.get_project_dir()
-        exp_path = os.path.join(curr_proj_dir, 'test')
-        if not os.path.exists(exp_path):
-            os.mkdir(exp_path)
+        self.exp_path = os.path.join(curr_proj_dir, 'test')
+        if not os.path.exists(self.exp_path):
+            os.mkdir(self.exp_path)
 
-        self.parent.workflow_widget.export_project(
-            exp_path, # export path
+        self.proj_file = self.parent.workflow_widget.export_project(
+            self.exp_path, # export path
             {'x': 1, 'y': 2, 'z': 1}, # parameters
             {'drag_type': 'WEN_YU', 'BC_V_g,1': 5.0}, # keywords
             )
+
+        self.terminals['run'].widget.setEnabled(True)
+
+    def run_project(self):
+        self.parent.workflow_widget.run_project(self.proj_file)
 
 
 # --- Workflow Widget ---
@@ -74,6 +89,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
 
         self.project = project
+        self.job_dict = {}
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
@@ -140,8 +156,11 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.job_toolbar_layout.addWidget(btn)
         self.job_toolbar_layout.addStretch()
 
-        self.job_status_table = Table(dtype=OrderedDict,
-                                      columns=['job', 'status', 'progress'])
+        self.job_status_table = Table(
+            dtype=OrderedDict,
+            columns=['status', 'progress', 'path'],
+            column_delegate={1: {'widget': 'progressbar'}},
+            )
         self.job_status_table.set_value(OrderedDict())
         self.job_status_table.show_vertical_header(True)
         self.job_status_table.auto_update_rows(True)
@@ -207,14 +226,59 @@ class WorkflowWidget(QtWidgets.QWidget):
             proj.updateKeyword(key, value, args=args)
 
         copied_proj = os.path.join(path, proj.run_name.value+'.mfx')
-        self.mfixgui.print_internal("Exporting to: %s" % copied_proj, color='blue')
+        self.mfixgui.print_internal("Exporting to: %s" % copied_proj,
+                                    color='green')
         proj.writeDatFile(copied_proj)
 
         # reset parameters
         PARAMETER_DICT.update(param_copy)
 
-    def run_project(self, fname):
-        """Run the mfix project"""
+        return copied_proj
+
+    def run_project(self, mfx_file):
+        """
+        Run the mfix project
+
+        :mfx_file: path to mfx project file
+        """
+
+        proj_name = os.path.basename(mfx_file)
+        proj_dir = os.path.dirname(mfx_file)
+        dir_base = os.path.basename(proj_dir)
+
+        data = self.job_status_table.value
+        data[dir_base] = {'status':'submitted', 'progress':0, 'path':proj_dir}
+        self.job_status_table.set_value(data)
+        self.mfixgui.print_internal("Starting: %s" % proj_dir, color='green')
+
+        if not os.path.exists(mfx_file):
+            self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
+            return
+
+        run_cmd = self.mfixgui._build_run_cmd(project_filename=proj_name)
+
+        if run_cmd[0] is None:
+            self.mfixgui.open_run_dialog(batch=True)
+            run_cmd = self.mfixgui._build_run_cmd(project_filename=proj_name)
+
+            if run_cmd[0] is None:
+                self.mfixgui.print_internal("Error: A MFIX executable is not selected")
+                return
+
+        job = Job(self.mfixgui)
+
+        self.mfixgui.print_internal("Run CMD: %s" % run_cmd, color='green')
+
+        job.start_command(
+            is_pymfix=self.mfixgui.pymfix_enabled,
+            cmd=run_cmd,
+            cwd=proj_dir,
+            env=os.environ)
+
+        self.job_dict[dir_base] = job
+
+    def cancel_project(self):
+        """Cancel the selected project"""
         pass
 
     def save(self, fname):

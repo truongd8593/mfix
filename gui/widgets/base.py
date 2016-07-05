@@ -824,6 +824,27 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         return False # UNREACHED
 
+    def paint(self, painter, option, index):
+
+        if index.column() in self.column_dict and self.column_dict[index.column()]['widget'] == 'progressbar':
+
+            progress = int(index.model().data(index, QtCore.Qt.EditRole))
+
+            progressbar =  QtWidgets.QStyleOptionProgressBar()
+            progressbar.rect = option.rect
+            progressbar.minimum = 0
+            progressbar.maximum = 100
+            progressbar.progress = progress
+            progressbar.text = '{}%'.format(progress)
+            progressbar.textVisible = True
+            progressbar.textAlignment = QtCore.Qt.AlignCenter
+
+            QtWidgets.QApplication.style().drawControl(
+                QtWidgets.QStyle.CE_ProgressBar, progressbar, painter)
+
+        else:
+            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+
 
 class DictTableModel(QtCore.QAbstractTableModel):
     """Table model that handles dict(dict()).

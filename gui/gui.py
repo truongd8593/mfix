@@ -1498,14 +1498,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_source_view()
         self._start_mfix()
 
-    def open_run_dialog(self):
+    def open_run_dialog(self, batch=False):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
-        self.run_dialog.run.connect(self.run_mfix)
+        if not batch:            
+            self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
-        self.run_dialog.popup()
+        if batch:
+            self.run_dialog.exec_()  # blocking
+        else:
+            self.run_dialog.popup()
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
@@ -1523,15 +1527,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                   for x in ('pymfix', 'pymfix.exe'))
 
         self.update_run_options()
-
-    def _start_mfix(self):
-        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
-
-        if not self.mfix_exe:
-            self.print_internal("ERROR: MFIX not available")
-            self.update_run_options()
-            return
-
+        
+    def _build_run_cmd(self, project_filename=None):
+        """build the mfix run cmd"""
         mfix_exe = self.mfix_exe
 
         if self.dmp_enabled:
@@ -1551,9 +1549,22 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 os.environ["OMP_NUM_THREADS"] = NUM_THREADS
             log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
 
-        project_filename = os.path.basename(self.get_project_file())
+        if project_filename is None:
+            project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
+        
+        return run_cmd
+
+    def _start_mfix(self):
+        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
+
+        if not self.mfix_exe:
+            self.print_internal("ERROR: MFIX not available")
+            self.update_run_options()
+            return
+
+        run_cmd = self._build_run_cmd()
 
         msg = 'Starting %s' % ' '.join(run_cmd)
         #log.info(msg) # print_internal logs
