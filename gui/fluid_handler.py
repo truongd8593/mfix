@@ -308,8 +308,8 @@ class FluidHandler(object):
         table.clearSelection()
         key = list(self.fluid_species.keys())[row]
         del self.fluid_species[key]
-        if key in self.thermo_data:
-            del self.thermo_data[key]
+        if key in self.project.thermo_data:
+            del self.project.thermo_data[key]
 
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.
