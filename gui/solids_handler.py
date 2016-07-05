@@ -272,12 +272,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         # trim excess horizontal space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
-            # 34 px is empirical, fixme, should calc. row height
-            tw.setMaximumHeight(header_height + 34)
+            tw.setMaximumHeight(header_height+scrollbar_height)
         else:
-            tw.setMaximumHeight(header_height+nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+            tw.setMaximumHeight(header_height+scrollbar_height
+                                + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
