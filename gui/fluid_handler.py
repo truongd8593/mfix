@@ -169,8 +169,6 @@ class FluidHandler(object):
                    else hv.Stretch)
 
 
-
-
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
     def set_fluid_mol_weight_model(self, model):
