@@ -1109,7 +1109,7 @@ QPushButton:checked {
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>false</bool>
@@ -1769,7 +1769,7 @@ background-color:transparent;
            <item row="11" column="0" colspan="6">
             <layout class="QGridLayout" name="gridLayout_56">
              <item row="4" column="0">
-              <widget class="QLabel" name="label_173">
+              <widget class="QLabel" name="label_des_etat_fac">
                <property name="text">
                 <string>Damping norm/tan ratio</string>
                </property>
@@ -1786,7 +1786,7 @@ background-color:transparent;
               <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac"/>
              </item>
              <item row="6" column="0">
-              <widget class="QLabel" name="label_175">
+              <widget class="QLabel" name="label_v_poisson">
                <property name="text">
                 <string>Poisson ratio</string>
                </property>
@@ -1805,7 +1805,7 @@ background-color:transparent;
               <widget class="LineEdit" name="lineedit_keyword_mew_w"/>
              </item>
              <item row="3" column="0">
-              <widget class="QLabel" name="label_176">
+              <widget class="QLabel" name="label_kt_fac">
                <property name="text">
                 <string>Spring norm/tan ratio</string>
                </property>
@@ -1821,7 +1821,7 @@ background-color:transparent;
               <widget class="LineEdit" name="lineedit_keyword_kn_w"/>
              </item>
              <item row="2" column="0">
-              <widget class="QLabel" name="label_177">
+              <widget class="QLabel" name="label_kn">
                <property name="text">
                 <string>Normal spring constant</string>
                </property>
@@ -1834,7 +1834,7 @@ background-color:transparent;
               <widget class="LineEdit" name="lineedit_keyword_kt_fac"/>
              </item>
              <item row="5" column="0">
-              <widget class="QLabel" name="label_178">
+              <widget class="QLabel" name="label_e_young">
                <property name="text">
                 <string>Young's modulus</string>
                </property>
@@ -1863,7 +1863,11 @@ background-color:transparent;
             </layout>
            </item>
            <item row="12" column="0" colspan="7">
-            <widget class="QTableWidget" name="tableWidget_4"/>
+            <widget class="QTableWidget" name="tableWidget_4">
+             <attribute name="horizontalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
            </item>
            <item row="13" column="0" colspan="7">
             <widget class="QTableWidget" name="tableWidget_3"/>
