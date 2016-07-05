@@ -256,6 +256,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
     def fixup_solids_table(self, n):
         # fixme, this is getting called excessively
+        # Should we just hide the entire table (including header) if no rows?
         s = self.ui.solids
         hv = QtWidgets.QHeaderView
         tw = (s.tablewidget_solids if n==1
