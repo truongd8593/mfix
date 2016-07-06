@@ -129,17 +129,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
-        # more stuff moved from gui.__init__
-        checkbox = ui.solids.checkbox_keyword_species_eq_args_S
-        checkbox.clicked.connect(self.handle_solids_species_eq)
-
-        ui.solids.lineedit_solids_phase_name.editingFinished.connect(
-            self.handle_solids_phase_name)
-        ui.solids.checkbox_enable_scalar_eq.clicked.connect(
-            self.enable_solids_scalar_eq)
-        ui.solids.spinbox_nscalar_eq.valueChanged.connect(
-            self.set_solids_nscalar_eq)
-
         # Solids phase models
         for name in ('density', 'viscosity', 'specific_heat', 'conductivity',
                          #'mol_weight' - locked
