@@ -463,6 +463,17 @@ class ProjectManager(Project):
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
+    def unregister_widget(self, widget):
+        widget.disconnect()
+
+        #for key in widget.keys:
+        #    self.registered_keywords.discard(key) #possibly overzealous
+
+        # This is inefficient
+        for (k,v) in self.keyword_and_args_to_widget.items():
+            if widget in v:
+                v.remove(widget)
+
 
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.

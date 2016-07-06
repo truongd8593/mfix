@@ -169,8 +169,6 @@ class FluidHandler(object):
                    else hv.Stretch)
 
 
-
-
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
     def set_fluid_mol_weight_model(self, model):
@@ -194,7 +192,7 @@ class FluidHandler(object):
 
 
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
-        value = self.ui.fluid.linedit_fluid_phase_name.text()
+        value = self.ui.fluid.lineedit_fluid_phase_name.text()
         self.set_fluid_phase_name(value)
 
     def set_fluid_phase_name(self, value):
@@ -308,8 +306,8 @@ class FluidHandler(object):
         table.clearSelection()
         key = list(self.fluid_species.keys())[row]
         del self.fluid_species[key]
-        if key in self.thermo_data:
-            del self.thermo_data[key]
+        if key in self.project.thermo_data:
+            del self.project.thermo_data[key]
 
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.

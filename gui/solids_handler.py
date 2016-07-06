@@ -129,17 +129,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
-        # more stuff moved from gui.__init__
-        checkbox = ui.solids.checkbox_keyword_species_eq_args_S
-        checkbox.clicked.connect(self.handle_solids_species_eq)
-
-        ui.solids.lineedit_solids_phase_name.editingFinished.connect(
-            self.handle_solids_phase_name)
-        ui.solids.checkbox_enable_scalar_eq.clicked.connect(
-            self.enable_solids_scalar_eq)
-        ui.solids.spinbox_nscalar_eq.valueChanged.connect(
-            self.set_solids_nscalar_eq)
-
         # Solids phase models
         for name in ('density', 'viscosity', 'specific_heat', 'conductivity',
                          #'mol_weight' - locked
@@ -150,7 +139,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             combobox.currentIndexChanged.connect(setter)
 
         # Solids species
-        s = ui.solids
         tb = s.toolbutton_solids_species_add
         tb.clicked.connect(self.solids_species_add)
         tb = s.toolbutton_solids_species_copy # misnomer - edit
@@ -176,9 +164,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
                 make_callback(self.solids_change_tab, i, btn))
 
 
-        self.fixup_solids_table(1)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        for tw in (s.tablewidget_solids, s.tablewidget_solids_species,
+                   s.tablewidget_solids_baseline):
+            self.fixup_solids_table(tw)
 
         self.init_solids_tfm()
         self.init_solids_dem()
@@ -254,29 +242,32 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             self.unset_keyword('added_mass')
 
 
-    def fixup_solids_table(self, n):
+    def fixup_solids_table(self, tw, stretch_column=0):
         # fixme, this is getting called excessively
+        # Should we just hide the entire table (including header) if no rows?
         s = self.ui.solids
         hv = QtWidgets.QHeaderView
-        tw = (s.tablewidget_solids if n==1
-              else s.tablewidget_solids_species if n==2
-              else s.tablewidget_solids_baseline)
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
         else:
             resize = tw.horizontalHeader().setResizeMode
-        for n in range(tw.columnCount()):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
+        ncols = tw.columnCount()
+        resize(0, hv.Stretch)
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
 
-        # trim excess horizontal space - can't figure out how to do this in designer
+        # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
+
         if nrows==0:
-            # 34 px is empirical, fixme, should calc. row height
-            tw.setMaximumHeight(header_height + 34)
+            height = header_height+scrollbar_height
         else:
-            tw.setMaximumHeight(header_height+nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+            height =  (header_height+scrollbar_height
+                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
@@ -382,7 +373,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
             self.update_solids_species_table()
-            self.fixup_solids_table(1)
+            self.fixup_solids_table(s.tablewidget_solids)
             sa.setEnabled(False)
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
@@ -468,7 +459,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.update_solids_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
-        self.fixup_solids_table(1)
+        self.fixup_solids_table(s.tablewidget_solids)
 
         # Advanced
         enabled = (model=='TFM')
@@ -502,7 +493,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             return item
 
         #Update the internal table from keywords
-        # TODO: remove this, use SolidsCollection
         for (i, (k,v)) in enumerate(self.solids.items(), 1):
             for (myname, realname) in (('model', 'solids_model'),
                                        ('diameter', 'd_p0'),
@@ -541,8 +531,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         if new_name in self.solids: # Reject the input
             self.ui.solids.lineedit_solids_phase_name.setText(old_name)
             return
-
-        # Rewriting dict to change key while preserving order - hack
+        self.solids_current_phase_name = new_name
+        # rewriting dict to change key while preserving order - hack
         d = OrderedDict()
         for (k,v) in self.solids.iteritems():
             if k==old_name:
@@ -552,16 +542,20 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.update_solids_table()
         self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
         self.set_unsaved_flag()
+        return True
 
     def solids_delete(self):
         ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
-        # hole
+        # hole.  This is going to mess up a lot of things, eg restitution coeffs.
         self.solids_current_phase = None
         self.solids_current_phase_name = None
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
             return
+        # avoid callbacks to handle_solids_table_selection
+        tw.clearSelection()
+
         name = tw.item(row, 0).text()
         phase = row+1
         for key in ('ro', 'mu', 'c_p', 'k'):
@@ -572,18 +566,18 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         for key in ('d_p0', 'solids_model', 'species_eq', 'nmax_s'):
             self.unset_keyword(key, args=phase)
-        # FIX SCALAR EQ
+        # TODO FIX SCALAR EQ!
         del self.solids[name]
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        # TODO clear out solids species keywords
-        del self.solids_species[phase]
+        # TODO clear out all keywords related to deleted phase!
+        if self.solids_species.has_key(phase):
+            del self.solids_species[phase]
 
         tw.removeRow(row)
-        tw.clearSelection()
         self.update_solids_table()
         self.set_unsaved_flag()
 
@@ -746,7 +740,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         table.setItem(nrows-1, 1, make_item(''))
         self.update_solids_mass_fraction_total()
 
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(table)
 
     def set_solids_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
@@ -790,14 +784,16 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        s = self.ui.solids
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
 
-        table = self.ui.solids.tablewidget_solids_species
+        s = self.ui.solids
+        table = s.tablewidget_solids_species
         table.clearContents()
         phase = self.solids_current_phase
         if phase is None:
@@ -846,8 +842,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         # FIXME, what's the right place for this?
         #self.project.update_thermo_data(self.solids_species[phase])
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
     def handle_solids_species_selection(self):
         table = self.ui.solids.tablewidget_solids_species
@@ -900,19 +896,20 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         phase = self.solids_current_phase
         if phase is None:
             return
-        table = self.ui.solids.tablewidget_solids_species
+        s = self.ui.solids
+        table = s.tablewidget_solids_species
         row = get_selected_row(table)
         if row is None: # No selection
             return
         table.clearSelection()
         key = list(self.solids_species[phase].keys())[row]
         del self.solids_species[phase][key]
-        if key in self.thermo_data:
-            del self.thermo_data[key]
+        if key in self.project.thermo_data:
+            del self.project.thermo_data[key]
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        self.fixup_solids_table(2)
-        self.fixup_solids_table(3)
+        self.fixup_solids_table(s.tablewidget_solids_species)
+        self.fixup_solids_table(s.tablewidget_solids_baseline)
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
