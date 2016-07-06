@@ -915,6 +915,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
+                    widget.setToolTip('%s<br/>' % doc['description'])
                 else:
                     log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
                     continue
