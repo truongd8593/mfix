@@ -424,10 +424,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             confirm = self.message(text=msg,
                                    buttons=['yes', 'no'],
                                    default='no')
-            if confirm == 'no':
-                return
-            log.info("Stopping mfix at application exit")
-            self.job_manager.stop_mfix()
+            if confirm == 'yes':
+                log.info("Stopping mfix at application exit")
+                self.job_manager.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="File not saved, really quit?",
