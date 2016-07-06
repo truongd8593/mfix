@@ -359,15 +359,16 @@ class SolidsDEM(object):
 
         self.fixup_solids_table(tw, stretch_column=mmax-1)
 
-
+        #Specify tangential restitution coefficient
+        # Specification available for Hertzian collision model
+        # Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
+        # Input given as an upper triangular matrix
+        enabled = (des_coll_model=='HERTZIAN')
+        s.label_des_et_input.setEnabled(enabled)
+        s.tablewidget_des_et_input.setVisible(enabled) # ?
 
 
 """
-Specify tangential restitution coefficient
-o Specification available for Hertzian collision model
-o Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
-o Input given as an upper triangular matrix
-
 Select cohesion model
 o Selection always available
 o Available selections

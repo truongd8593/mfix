@@ -1928,7 +1928,7 @@ background-color:transparent;
               <enum>QAbstractItemView::SingleSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
             </widget>
            </item>
