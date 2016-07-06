@@ -1,11 +1,15 @@
 # Methods to deal with solids tfm tab, slip off from solids_handler.py
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from tools.general import get_combobox_item, set_item_enabled
+from qtpy import QtWidgets
+
+from widgets.base import LineEdit
+from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
 
 
-# TODO:
+
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
+
 # In-line comments from MFIX-UI SRS as of 2016-07-01
 #  Please update comments along with SRS/code changes!
 
@@ -239,38 +243,128 @@ class SolidsDEM(object):
             item.setEnabled(enabled)
 
 
+        #Specify friction coefficient
+        # Specification always required
+        # Sets keyword MEW (MEW_W)
+        pass
+
+        #Specify normal spring constant
+        # Only available for LSD collision model
+        # Sets keyword KN (KN_W)
+        #Specify tangential spring constant factor
+        # Only available for LSD collision model
+        # Sets keyword KT_FAC (KT_W_FAC)
+        # Default values of 2.0/7.0
+        #Specify tangential damping coefficient factor
+        # Only available for LSD collision model
+        # Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
+        # Default values of 0.5
+        enabled = (des_coll_model=='LSD')
+        for item in (s.label_kn,
+                     s.lineedit_keyword_kn,
+                     s.lineedit_keyword_kn_w,
+                     s.label_kt_fac,
+                     s.lineedit_keyword_kt_fac,
+                     s.lineedit_keyword_kt_w_fac,
+                     s.label_des_etat_fac,
+                     s.lineedit_keyword_des_etat_fac,
+                     s.lineedit_keyword_des_etat_w_fac):
+            item.setEnabled(enabled)
+
+        if enabled: # TODO set these defaults at load-time, not when this tab is shown
+            for (key, default) in [('kt_fac', 2.0), ('kt_w_fac', 7.0),
+                                   ('des_etat_fac', 0.5), ('des_etat_w_fac', 0.5)]:
+                if self.project.get_value(key) is None:
+                    self.update_keyword(key, default)
+        # Unset keywords if not enabled? TODO
+
+        #Specify Young's modulus
+        # Only available for Hertzian collision model
+        # Sets keyword E_YOUNG (EW_YOUNG)
+        #Specify Poisson ratio:
+        # Only available for Hertzian collision model
+        # Sets keyword V_POISSON (VW_POISSON)
+        enabled = (des_coll_model=='HERTZIAN')
+        for item in (s.label_e_young,
+                     s.lineedit_keyword_e_young,
+                     s.lineedit_keyword_ew_young,
+                     s.label_v_poisson,
+                     s.lineedit_keyword_v_poisson,
+                     s.lineedit_keyword_vw_poisson):
+            item.setEnabled(enabled)
+
+        #Specify normal restitution coefficient
+        # Specification always required
+        # Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
+        # Input given as an upper triangular matrix
+        mmax = self.project.get_value('mmax', 1)
+        tw = s.tablewidget_des_en_input
+        names = list(self.solids.keys())
+        # Really only need to do this if a name changes
+        tw.setHorizontalHeaderLabels(names)
+        tw.setVerticalHeaderLabels(names + ['Wall'])
+        # Table size changed
+        if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
+            # Clear out old lineedit widgets
+            for row in range(tw.rowCount()):
+                for col in range(tw.columnCount()):
+                    w = tw.cellWidget(row, col)
+                    if w:
+                        self.project.unregister_widget(w)
+                        del w
+            tw.clearContents()
+
+            # Make a new batch
+            tw.setRowCount(mmax+1) # extra row for "Wall"
+            tw.setColumnCount(mmax)
+
+            def make_item(str):
+                item = QtWidgets.QTableWidgetItem(str)
+                set_item_noedit(item)
+                set_item_enabled(item, False)
+                return item
+            arg = 1 # One-based
+            key = 'des_en_input'
+            for row in range(mmax):
+                for col in range(mmax):
+                    if col < row:
+                        tw.setItem(row, col, make_item('--'))
+                    else:
+                        le = LineEdit()#FIXME.  lineedit in table works but looks a bit odd
+                        le.setMaximumWidth(60)
+                        le.key = key
+                        le.args = [arg]
+                        le.setdtype('d')
+                        tw.setCellWidget(row, col, le)
+                        val = self.project.get_value(key, args=[arg])
+                        if val is not None:
+                            le.updateValue(key, val)
+                        self.project.register_widget(le, keys=[key], args=[arg])
+                        arg += 1
+            key = 'des_en_wall_input'
+            row = mmax
+            arg = 1
+            for col in range(mmax):
+                le = LineEdit()
+                le.setMaximumWidth(60)
+                le.key = key
+                le.args = [arg]
+                le.setdtype('d')
+                tw.setCellWidget(row, col, le)
+                val = self.project.get_value(key, args=[arg])
+                if val is not None:
+                    le.updateValue(key, val)
+                self.project.register_widget(le, keys=[key], args=[arg])
+                arg += 1
+
+
+
+        self.fixup_solids_table(tw, stretch_column=mmax-1)
+
+
+
+
 """
-Specify friction coefficient
-o Specification always required
-o Sets keyword MEW (MEW_W)
-
-Specify normal spring constant
-o Only available for LSD collision model
-o Sets keyword KN (KN_W)
-
-Specify tangential spring constant factor
-o Only available for LSD collision model
-o Sets keyword KT_FAC (KT_W_FAC)
-o Default values of 2.0/7.0
-
-Specify tangential damping coefficient factor
-o Only available for LSD collision model
-o Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
-o Default values of 0.5
-
-Specify Young's modulus
-o Only available for Hertzian collision model
-o Sets keyword E_YOUNG (EW_YOUNG)
-
-Specify Poisson ratio:
-o Only available for Hertzian collision model
-o Sets keyword V_POISSON (VW_POISSON)
-
-Specify normal restitution coefficient
-o Specification always required
-o Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
-o Input given as an upper triangular matrix
-
 Specify tangential restitution coefficient
 o Specification available for Hertzian collision model
 o Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)

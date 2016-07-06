@@ -139,7 +139,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             combobox.currentIndexChanged.connect(setter)
 
         # Solids species
-        s = ui.solids
         tb = s.toolbutton_solids_species_add
         tb.clicked.connect(self.solids_species_add)
         tb = s.toolbutton_solids_species_copy # misnomer - edit
@@ -243,7 +242,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             self.unset_keyword('added_mass')
 
 
-    def fixup_solids_table(self, tw):
+    def fixup_solids_table(self, tw, stretch_column=0):
         # fixme, this is getting called excessively
         # Should we just hide the entire table (including header) if no rows?
         s = self.ui.solids
@@ -252,19 +251,23 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             resize = tw.horizontalHeader().setSectionResizeMode
         else:
             resize = tw.horizontalHeader().setResizeMode
-        for n in range(tw.columnCount()):
-            resize(n, hv.ResizeToContents if n>0
-                   else hv.Stretch)
+        ncols = tw.columnCount()
+        resize(0, hv.Stretch)
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
 
-        # trim excess horizontal space - can't figure out how to do this in designer
+        # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
+
         if nrows==0:
-            tw.setMaximumHeight(header_height+scrollbar_height)
+            height = header_height+scrollbar_height
         else:
-            tw.setMaximumHeight(header_height+scrollbar_height
-                                + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+            height =  (header_height+scrollbar_height
+                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
@@ -490,7 +493,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             return item
 
         #Update the internal table from keywords
-        # TODO: remove this, use SolidsCollection
         for (i, (k,v)) in enumerate(self.solids.items(), 1):
             for (myname, realname) in (('model', 'solids_model'),
                                        ('diameter', 'd_p0'),
@@ -529,8 +531,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         if new_name in self.solids: # Reject the input
             self.ui.solids.lineedit_solids_phase_name.setText(old_name)
             return
-
-        # Rewriting dict to change key while preserving order - hack
+        self.solids_current_phase_name = new_name
+        # rewriting dict to change key while preserving order - hack
         d = OrderedDict()
         for (k,v) in self.solids.iteritems():
             if k==old_name:
@@ -540,16 +542,20 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.update_solids_table()
         self.project.mfix_gui_comments['solids_phase_name(%s)'%phase] = new_name
         self.set_unsaved_flag()
+        return True
 
     def solids_delete(self):
         ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
-        # hole
+        # hole.  This is going to mess up a lot of things, eg restitution coeffs.
         self.solids_current_phase = None
         self.solids_current_phase_name = None
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
         if row is None: # No selection
             return
+        # avoid callbacks to handle_solids_table_selection
+        tw.clearSelection()
+
         name = tw.item(row, 0).text()
         phase = row+1
         for key in ('ro', 'mu', 'c_p', 'k'):
@@ -560,18 +566,18 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         for key in ('d_p0', 'solids_model', 'species_eq', 'nmax_s'):
             self.unset_keyword(key, args=phase)
-        # FIX SCALAR EQ
+        # TODO FIX SCALAR EQ!
         del self.solids[name]
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        # TODO clear out solids species keywords
-        del self.solids_species[phase]
+        # TODO clear out all keywords related to deleted phase!
+        if self.solids_species.has_key(phase):
+            del self.solids_species[phase]
 
         tw.removeRow(row)
-        tw.clearSelection()
         self.update_solids_table()
         self.set_unsaved_flag()
 
@@ -786,7 +792,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
 
-        s = self.ui.soliuds
+        s = self.ui.solids
         table = s.tablewidget_solids_species
         table.clearContents()
         phase = self.solids_current_phase

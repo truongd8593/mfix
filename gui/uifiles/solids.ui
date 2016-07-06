@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>629</width>
-    <height>896</height>
+    <height>1345</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -357,7 +357,7 @@ QPushButton:checked {
              <x>0</x>
              <y>0</y>
              <width>598</width>
-             <height>1214</height>
+             <height>1406</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -1176,6 +1176,9 @@ QPushButton:checked {
                  </column>
                 </widget>
                </item>
+               <item row="2" column="0">
+                <widget class="QTreeView" name="treeView"/>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1585,8 +1588,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>600</width>
-            <height>1200</height>
+            <width>619</width>
+            <height>1299</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1598,31 +1601,31 @@ background-color:transparent;
 }</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="0" column="0" colspan="3">
+           <item row="0" column="0" colspan="5">
             <widget class="CheckBox" name="checkbox_keyword_gener_part_config">
              <property name="text">
               <string>Enable automatic particle generation</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2">
+           <item row="1" column="0" colspan="4">
             <widget class="QLabel" name="label_particles">
              <property name="text">
               <string>Data file particle count</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="4">
             <widget class="LineEdit" name="lineedit_keyword_particles"/>
            </item>
-           <item row="2" column="0">
+           <item row="2" column="0" colspan="3">
             <widget class="QLabel" name="label_152">
              <property name="text">
               <string>Integration method</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
+           <item row="2" column="4">
             <widget class="ComboBox" name="combobox_des_intg_method">
              <item>
               <property name="text">
@@ -1636,14 +1639,14 @@ background-color:transparent;
              </item>
             </widget>
            </item>
-           <item row="3" column="0">
+           <item row="3" column="0" colspan="3">
             <widget class="QLabel" name="label_151">
              <property name="text">
               <string>Collision Model</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="2">
+           <item row="3" column="4">
             <widget class="ComboBox" name="combobox_des_coll_model">
              <item>
               <property name="text">
@@ -1657,21 +1660,21 @@ background-color:transparent;
              </item>
             </widget>
            </item>
-           <item row="4" column="0" colspan="7">
+           <item row="4" column="0" colspan="8">
             <widget class="Line" name="line_11">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="5" column="0" colspan="3">
             <widget class="QLabel" name="label_coupling_method">
              <property name="text">
               <string>Coupling method</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="2">
+           <item row="5" column="4">
             <widget class="ComboBox" name="combobox_coupling_method">
              <item>
               <property name="text">
@@ -1685,18 +1688,42 @@ background-color:transparent;
              </item>
             </widget>
            </item>
-           <item row="6" column="0" colspan="4">
+           <item row="6" column="0" colspan="5">
             <widget class="CheckBox" name="checkbox_keyword_des_explicitly_coupled">
              <property name="text">
               <string>Enable explicit coupling of interphase quantities</string>
              </property>
             </widget>
            </item>
-           <item row="7" column="0">
+           <item row="7" column="0" colspan="2">
             <widget class="QLabel" name="label_des_interp">
              <property name="text">
               <string>Interpolation</string>
              </property>
+            </widget>
+           </item>
+           <item row="7" column="4" colspan="2">
+            <widget class="ComboBox" name="combobox_des_interp">
+             <item>
+              <property name="text">
+               <string>Field-to-Particle and Particle-to-Field</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Field-to-Particle only</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Particle-to-Field only</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>No Interpolation</string>
+              </property>
+             </item>
             </widget>
            </item>
            <item row="8" column="0">
@@ -1706,7 +1733,7 @@ background-color:transparent;
              </property>
             </widget>
            </item>
-           <item row="8" column="2">
+           <item row="8" column="4">
             <widget class="ComboBox" name="combobox_des_interp_scheme">
              <item>
               <property name="text">
@@ -1725,49 +1752,56 @@ background-color:transparent;
              </item>
             </widget>
            </item>
-           <item row="8" column="4">
+           <item row="8" column="5">
             <widget class="QLabel" name="label_des_interp_width">
              <property name="text">
               <string>Width</string>
              </property>
             </widget>
            </item>
-           <item row="8" column="5">
+           <item row="8" column="6">
             <widget class="LineEdit" name="lineedit_keyword_des_interp_width"/>
            </item>
-           <item row="9" column="0" colspan="3">
+           <item row="8" column="7">
+            <widget class="QLabel" name="label_des_interp_width_units">
+             <property name="text">
+              <string>m</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0" colspan="5">
             <widget class="QCheckBox" name="checkbox_enable_des_diffuse_width">
              <property name="text">
               <string>Enable mean field diffusion</string>
              </property>
             </widget>
            </item>
-           <item row="9" column="4">
+           <item row="9" column="5">
             <widget class="QLabel" name="label_des_diffuse_width">
              <property name="text">
               <string>Width</string>
              </property>
             </widget>
            </item>
-           <item row="9" column="5">
+           <item row="9" column="6">
             <widget class="LineEdit" name="lineedit_keyword_des_diffuse_width"/>
            </item>
-           <item row="9" column="6">
+           <item row="9" column="7">
             <widget class="QLabel" name="label_des_diffuse_width_units">
              <property name="text">
               <string>m</string>
              </property>
             </widget>
            </item>
-           <item row="10" column="0" colspan="7">
+           <item row="10" column="0" colspan="8">
             <widget class="Line" name="line_15">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="11" column="0" colspan="6">
-            <layout class="QGridLayout" name="gridLayout_56">
+           <item row="11" column="0" colspan="7">
+            <layout class="QGridLayout" name="gridlayout_dem_parameters">
              <item row="4" column="0">
               <widget class="QLabel" name="label_des_etat_fac">
                <property name="text">
@@ -1862,44 +1896,106 @@ background-color:transparent;
              </item>
             </layout>
            </item>
-           <item row="12" column="0" colspan="7">
-            <widget class="QTableWidget" name="tableWidget_4">
+           <item row="12" column="0" colspan="8">
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="13" column="0" colspan="5">
+            <widget class="QLabel" name="label_des_en_input">
+             <property name="text">
+              <string>Restitution coefficients (normal):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="14" column="0" colspan="8">
+            <widget class="QTableWidget" name="tablewidget_des_en_input">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>60</height>
+              </size>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
              <attribute name="horizontalHeaderVisible">
               <bool>false</bool>
              </attribute>
             </widget>
            </item>
-           <item row="13" column="0" colspan="7">
-            <widget class="QTableWidget" name="tableWidget_3"/>
+           <item row="15" column="1" colspan="2">
+            <spacer name="verticalSpacer_11">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>13</height>
+              </size>
+             </property>
+            </spacer>
            </item>
-           <item row="14" column="0" rowspan="2" colspan="7">
+           <item row="16" column="0" colspan="5">
+            <widget class="QLabel" name="label_des_et_input">
+             <property name="text">
+              <string>Restitution coefficients (tangential):</string>
+             </property>
+            </widget>
+           </item>
+           <item row="17" column="0" colspan="7">
+            <widget class="QTableWidget" name="tablewidget_des_et_input">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>60</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="18" column="2">
+            <spacer name="verticalSpacer_12">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="19" column="0" colspan="8">
             <widget class="Line" name="line_12">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="15" column="3" rowspan="2" colspan="3">
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>216</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="16" column="0">
+           <item row="20" column="0" rowspan="2" colspan="3">
             <widget class="QLabel" name="label_212">
              <property name="text">
               <string>Cohesion Model</string>
              </property>
             </widget>
            </item>
-           <item row="16" column="1" colspan="2">
+           <item row="20" column="3" rowspan="2" colspan="2">
             <widget class="ComboBox" name="comboBox_29">
              <item>
               <property name="text">
@@ -1913,7 +2009,20 @@ background-color:transparent;
              </item>
             </widget>
            </item>
-           <item row="17" column="0" colspan="6">
+           <item row="21" column="5" colspan="2">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>216</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="22" column="0" colspan="6">
             <layout class="QGridLayout" name="gridLayout_72">
              <item row="2" column="2">
               <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff"/>
@@ -1980,14 +2089,14 @@ background-color:transparent;
              </item>
             </layout>
            </item>
-           <item row="18" column="0" colspan="7">
+           <item row="23" column="0" colspan="8">
             <widget class="Line" name="line_10">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="19" column="0" colspan="6">
+           <item row="24" column="0" colspan="7">
             <widget class="QFrame" name="frame_29">
              <property name="frameShape">
               <enum>QFrame::NoFrame</enum>
@@ -2099,87 +2208,56 @@ background-color:transparent;
              </layout>
             </widget>
            </item>
-           <item row="20" column="0" rowspan="2" colspan="7">
+           <item row="25" column="0" rowspan="2" colspan="8">
             <widget class="Line" name="line_13">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="21" column="5" rowspan="2">
+           <item row="26" column="6" rowspan="2">
             <widget class="LineEdit" name="lineedit_keyword_des_usr_var_size"/>
            </item>
-           <item row="22" column="0" colspan="3">
+           <item row="27" column="0" colspan="5">
             <widget class="QCheckBox" name="checkBox_6">
              <property name="text">
               <string>Enable user scalar tracking</string>
              </property>
             </widget>
            </item>
-           <item row="23" column="0" colspan="7">
+           <item row="28" column="0" colspan="8">
             <widget class="Line" name="line_14">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
-           <item row="24" column="0" colspan="3">
+           <item row="29" column="0" colspan="5">
             <widget class="QLabel" name="label_213">
              <property name="text">
               <string>Minimum conduction distance</string>
              </property>
             </widget>
            </item>
-           <item row="24" column="5">
+           <item row="29" column="6">
             <widget class="QLineEdit" name="lineEdit_39"/>
            </item>
-           <item row="24" column="6">
+           <item row="29" column="7">
             <widget class="QLabel" name="label_215">
              <property name="text">
               <string>m</string>
              </property>
             </widget>
            </item>
-           <item row="25" column="0" colspan="3">
+           <item row="30" column="0" colspan="5">
             <widget class="QLabel" name="label_214">
              <property name="text">
               <string>Fluid lens proportional constant</string>
              </property>
             </widget>
            </item>
-           <item row="25" column="5">
+           <item row="30" column="6">
             <widget class="QLineEdit" name="lineEdit_40"/>
-           </item>
-           <item row="7" column="2" colspan="3">
-            <widget class="ComboBox" name="combobox_des_interp">
-             <item>
-              <property name="text">
-               <string>Field-to-Particle and Particle-to-Field</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Field-to-Particle only</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Particle-to-Field only</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>No Interpolation</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="8" column="6">
-            <widget class="QLabel" name="label_des_interp_width_units">
-             <property name="text">
-              <string>m</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
