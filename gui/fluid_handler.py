@@ -192,7 +192,7 @@ class FluidHandler(object):
 
 
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
-        value = self.ui.fluid.linedit_fluid_phase_name.text()
+        value = self.ui.fluid.lineedit_fluid_phase_name.text()
         self.set_fluid_phase_name(value)
 
     def set_fluid_phase_name(self, value):
