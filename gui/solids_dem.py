@@ -357,8 +357,6 @@ class SolidsDEM(object):
                 self.project.register_widget(le, keys=[key], args=[arg])
                 arg += 1
 
-
-
         self.fixup_solids_table(tw, stretch_column=mmax-1)
 
 
