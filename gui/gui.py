@@ -1489,6 +1489,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
+        self.run_dialog.spinbox_threads.setEnabled(self.smp_enabled)
+        self.run_dialog.spinbox_keyword_nodesi.setEnabled(self.dmp_enabled)
+        self.run_dialog.spinbox_keyword_nodesj.setEnabled(self.dmp_enabled)
+        self.run_dialog.spinbox_keyword_nodesk.setEnabled(self.dmp_enabled and not self.project.get_value('no_k'))
         self.run_dialog.popup()
 
     def handle_exe_changed(self):
