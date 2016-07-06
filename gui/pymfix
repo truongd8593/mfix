@@ -127,7 +127,7 @@ class Mfix(object):
             pidfile = '%s.pid' % RUN.run_name.tobytes().strip().decode('utf-8')
             with open(pidfile, 'w') as pid:
                 pid.write('%s\n' % os.getpid())
-                pid.write('%s:%s\n' % (socket.gethostname(), self.port))
+                pid.write('http://%s:%s\n' % (socket.gethostname(), self.port))
 
         if DEM.discrete_element and not DEM.des_continuum_coupled:
             if RUN.dem_solids:
