@@ -11,7 +11,7 @@ socket.setdefaulttimeout(DEFAULT_TIMEOUT)
 
 log = logging.getLogger(__name__)
 
-from qtpy.QtCore import QProcess, QTimer, QUrl
+from qtpy.QtCore import QProcess, QProcessEnvironment, QTimer, QUrl
 from qtpy.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
 class JobManager(object):
@@ -19,15 +19,11 @@ class JobManager(object):
 
     def __init__(self, parent):
         self.parent = parent
-        self.cmd = None
-        self.cwd = None
-        self.env = None
-        self.is_pymfix = False
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
         self.status = {}
         self.timer = None
-        self.pymfix_url = 'http://localhost:5000'
+        self.pymfix_url = None
         self.control_manager = QNetworkAccessManager()
         self.status_manager = QNetworkAccessManager()
 
@@ -54,28 +50,19 @@ class JobManager(object):
     def is_running(self):
         """indicate whether an MFIX/pymfix job is running
         Noted, pymfix will be "running" even if paused"""
-        ret = (self.mfixproc is not None
-               and self.mfixproc.state() == QProcess.Running)
+        ret = self.pymfix_url or (self.mfixproc is not None
+                                  and self.mfixproc.state() == QProcess.Running)
         return ret
 
     def is_paused(self):
         """indicate whether pymfix is paused"""
-        if not self.is_pymfix:
+        if not self.pymfix_url:
             return False
         return self.status.get('paused', False)
 
-    def is_pausable(self):
-        """indicate whether pymfix is pausable.
-        Pymfix starts by reading the model, and
-        will not be pausable at first"""
-        if not self.is_pymfix:
-            return False
-        # Wait until least one update occurred
-        return self.status.get('paused', None) != None
-
     def pause(self):
         "pause pymfix job"
-        if not self.is_pymfix:
+        if not self.pymfix_url:
             log.error("pause() called on non-pymfix job")
             return
         qurl = QUrl('%s/pause' % self.pymfix_url)
@@ -84,7 +71,7 @@ class JobManager(object):
 
     def unpause(self):
         "unpause pymfix job"
-        if not self.is_pymfix:
+        if not self.pymfix_url:
             log.error("unpause() called on non-pymfix job")
             return
         qurl = QUrl('%s/unpause' % self.pymfix_url)
@@ -93,8 +80,9 @@ class JobManager(object):
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
-        if self.is_pymfix:
+        if self.pymfix_url:
             self.terminate_pymfix()
+            self.disconnect()
         else:
             mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
             try:
@@ -125,11 +113,35 @@ class JobManager(object):
 
         self.mfixproc = None
 
+    def connect(self, pymfix_url):
+        """Connect to existing pymfix process"""
 
-    def start_command(self, is_pymfix, cmd, cwd, env):
+        if not pymfix_url:
+            log.warn("Cannot connect to process, invalid URL")
+            return
+
+        if self.pymfix_url:
+            log.warn("Cannot connect to process, already connected to mfix process")
+            return
+
+        self.pymfix_url = pymfix_url
+
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.update_status)
+        self.timer.start()
+        self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
+
+    def disconnect(self):
+        """stop pymfix update timer"""
+        if self.timer:
+            self.timer.stop()
+            self.timer = None
+        self.pymfix_url = None
+
+    def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
-        self.is_pymfix, self.cmd, self.cwd, self.env = is_pymfix, cmd, cwd, env
         if self.mfixproc:
             log.warn("Cannot start process, already have an mfix process")
             return
@@ -142,24 +154,23 @@ class JobManager(object):
                 log.error("Cannot remove", mfix_stop_file)
                 return
 
-        self.cmdline = ' '.join(self.cmd) # cmd is a list
+        cmdline = ' '.join(cmd) # cmd is a list
+        self.connect('http://localhost:5000')
         self.mfixproc = QProcess()
         if not self.mfixproc:
             log.warn("QProcess creation failed")
             return
-        self.mfixproc.setWorkingDirectory(self.cwd)
+        self.mfixproc.setWorkingDirectory(cwd)
+        process_env = QProcessEnvironment()
+        for key,val in env.items():
+            process_env.insert(key, val)
+        self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
             self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", self.cmdline)
-            if is_pymfix:
-                self.timer = QTimer()
-                self.timer.setInterval(1000)
-                self.timer.timeout.connect(self.update_status)
-                self.timer.start()
-                self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
+            log.debug("Full MFIX startup parameters: %s", cmdline)
 
         self.mfixproc.started.connect(slot_start)
 
@@ -179,24 +190,22 @@ class JobManager(object):
             self.mfix_pid = None
             #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
             self.mfixproc = None
-            if is_pymfix:
-                self.timer.stop()
-                self.timer = None
+            self.disconnect()
             self.parent.update_run_options_signal.emit(msg)
         self.mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
             self.status.clear()
             if error == QProcess.FailedToStart:
-                msg = "Process failed to start "+self.cmdline
+                msg = "Process failed to start "+cmdline
             elif error == QProcess.Crashed:
-                msg = "Process exit "+self.cmdline
+                msg = "Process exit "+cmdline
             elif error == QProcess.Timedout:
-                msg = "Process timeout "+self.cmdline
+                msg = "Process timeout "+cmdline
             elif error in (QProcess.WriteError, QProcess.ReadError):
-                msg = "Process communication error "+self.cmdline
+                msg = "Process communication error "+cmdline
             else:
-                msg = "Unknown error "+self.cmdline
+                msg = "Unknown error "+cmdline
             log.warn(msg)
             self.mfixproc = None
             self.parent.stderr_signal.emit(msg) # make the message print in red
@@ -205,7 +214,7 @@ class JobManager(object):
 
         self.mfixproc.error.connect(slot_error)
 
-        self.mfixproc.start(self.cmd[0], self.cmd[1:])
+        self.mfixproc.start(cmd[0], cmd[1:])
 
     def set_pymfix_output(self, state):
         """toggle Flask messages"""

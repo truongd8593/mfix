@@ -416,9 +416,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def confirm_close(self):
         # TODO : option to save
         msg = None
-        if self.job_manager.is_job_running():
+        if self.job_manager.is_running():
             msg = "Stop running job?"
-        elif self.job_manager.is_job_paused():
+        elif self.job_manager.is_paused():
             msg = "Stop paused job?"
         if msg:
             confirm = self.message(text=msg,
@@ -553,7 +553,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         project_file = os.path.basename(self.get_project_file() or '')
 
         project_open = bool(project_file and self.open_succeeded)
-        paused = self.job_manager.is_pymfix and self.job_manager.is_paused()
+        paused = self.job_manager.is_paused()
         running = self.job_manager.is_running() and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
@@ -568,20 +568,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         #handle buttons in order:  RESET RUN PAUSE STOP
         # Pause only available w/ pymfix
+        pause_visible = bool(self.job_manager.pymfix_url)
         if running:
             self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
-            self.set_pause_button(enabled=self.job_manager.is_pausable(), visible=self.pymfix_enabled)
+            self.set_pause_button(text="Pause", enabled=True, visible=pause_visible)
             self.set_stop_button(enabled=True)
             self.change_pane('run')
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job_manager.mfix_pid)
             self.set_reset_button(enabled=False)
-            self.set_pause_button(visible=True, enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
+            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=True)
             self.change_pane('run')
 
@@ -589,7 +590,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
-            self.set_pause_button(enabled=False, visible=self.pymfix_enabled)
+            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=False)
             self.change_pane('run')
 
@@ -597,7 +598,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.status_message("Ready" if project_open else "Loading %s"%project_file)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=project_open)
-            self.set_pause_button(text="Pause", enabled=False, visible=self.pymfix_enabled)
+            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=False)
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
@@ -1400,6 +1401,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
             traceback.print_exception(*sys.exc_info())
+        self.update_run_options()
 
     def handle_set_pymfix_output(self):
         try:
@@ -1542,7 +1544,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.print_internal(msg, color='blue')
 
         self.job_manager.start_command(
-            is_pymfix=self.pymfix_enabled,
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             env=os.environ)
@@ -1890,6 +1891,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         runname_mfx = name + '.mfx'
+        runname_pid = name + '.pid'
+        runname_pid = os.path.join(project_dir, runname_pid)
+        if os.path.exists(runname_pid):
+            with open(runname_pid) as pidfile:
+                pid = pidfile.readline().strip()
+                pymfix_url = pidfile.readline().strip()
+                self.job_manager.connect(pymfix_url)
+                self.job_manager.update_status()
+                self.update_run_options()
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
