@@ -139,7 +139,7 @@ class JobManager(object):
             self.timer = None
         self.pymfix_url = None
 
-    def start_command(self, cmd, cwd, env):
+    def start_command(self, cmd, cwd, port, env):
         """Start MFIX in QProcess"""
 
         if self.mfixproc:
@@ -155,7 +155,8 @@ class JobManager(object):
                 return
 
         cmdline = ' '.join(cmd) # cmd is a list
-        self.connect('http://localhost:5000')
+        if port: # port is not None iff using pymfix
+            self.connect('http://%s:%s' % (socket.gethostname(), port))
         self.mfixproc = QProcess()
         if not self.mfixproc:
             log.warn("QProcess creation failed")

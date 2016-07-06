@@ -10,6 +10,7 @@ import os
 import re
 import shutil
 import signal
+import socket
 import sys
 import traceback
 from collections import OrderedDict
@@ -1543,6 +1544,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             # no dmp support
             run_cmd = [mfix_exe]
 
+        port = None
+        if self.pymfix_enabled:
+            # find free port
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(("",0))
+            sock.listen(1)
+            port = sock.getsockname()[1]
+            sock.close()
+            run_cmd += ['-P', str(port)]
+
         if self.smp_enabled:
             #FIXME obtain this value from run popup dialog
             NUM_THREADS = '2'
@@ -1574,6 +1585,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.job_manager.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
+            port=port,
             env=os.environ)
 
 
