@@ -15,7 +15,7 @@ from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 from regexes import *
 from project import Equation
 
-PROTECTED_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
+PROTECTED_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys())
 
 class ParameterDialog(QtWidgets.QDialog):
 
@@ -218,7 +218,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
             if new_name != old_name:
                 self.change_parameter_name(old_name, new_name)
-                
+
     def check_value(self, value, old_value, dtype):
         if dtype == 'float':
             try:
