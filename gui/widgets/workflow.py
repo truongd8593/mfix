@@ -25,7 +25,7 @@ except ImportError:
 from widgets.base import Table
 from tools.general import make_callback, get_icon
 from constants import PARAMETER_DICT
-from job import Job
+from job import JobManager
 
 # --- Custom MFIX GUI Nodes ---
 class TestNode(Node):
@@ -265,7 +265,7 @@ class WorkflowWidget(QtWidgets.QWidget):
                 self.mfixgui.print_internal("Error: A MFIX executable is not selected")
                 return
 
-        job = Job(self.mfixgui)
+        job = JobManager(self.mfixgui)
 
         self.mfixgui.print_internal("Run CMD: %s" % run_cmd, color='green')
 
