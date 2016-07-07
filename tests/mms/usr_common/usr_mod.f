@@ -28,7 +28,7 @@
 ! format (BLOCK format):
         logical                               :: tec_output_block = .false.
 
-! set .true. for writing out tecplot data at cell-center locations 
+! set .true. for writing out tecplot data at cell-center locations
 ! (POINT format)
         logical                               :: tec_output_point = .false.
 

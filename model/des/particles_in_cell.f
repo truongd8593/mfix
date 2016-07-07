@@ -150,7 +150,7 @@
 ! Increment the number of particles in cell IJK
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. &
             .NOT.IS_EXITING_GHOST(L)) THEN
-      
+
             PINC(IJK) = PINC(IJK) + 1
 
          ELSE

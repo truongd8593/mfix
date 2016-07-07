@@ -4,7 +4,7 @@ if test ${REQ_COMP} = 1; then
     *Linux*)  mfix_os="LINUX";;
     *CYGWIN*) mfix_os="WINDOWS";;
     *MING*)   mfix_os="WINDOWS";;
-    *Darwin*) mfix_os="MacOS";;    
+    *Darwin*) mfix_os="MacOS";;
     *) echo "Error: Unsupported OS. $opsys"
     exit;;
   esac
@@ -112,8 +112,8 @@ if test ${REQ_COMP} = 1; then
       echo "MFIX Compilation directives available for following compilers:"
       echo "=============================================================="
       echo " [1] GNU Fortran (gfortran)"
-      echo " [2] Portland Group (pgf90)"  
-      echo " [3] Intel (ifort)"               
+      echo " [2] Portland Group (pgf90)"
+      echo " [3] Intel (ifort)"
       echo " "
       echo -n "Select the compiler to compile MFIX? [1] "
       read compiler
@@ -121,11 +121,11 @@ if test ${REQ_COMP} = 1; then
       case $compiler in
         1)COMP_FILE="gnu_mac_os.sh";;
         2)COMP_FILE="portland_mac_os.sh";;
-        3)COMP_FILE="intel_mac_os.sh";;      
+        3)COMP_FILE="intel_mac_os.sh";;
         *)COMP_FILE="gnu_mac_os.sh";;
       esac
 
-#ALPEMI MacOS system type written out so rxn_preproc.sh handles special sed exception  
+#ALPEMI MacOS system type written out so rxn_preproc.sh handles special sed exception
       export mfix_os="MacOS"
 #      echo "Machine 0" ${mfix_os}
       MACHINE_TYPE_SCRIPT=${MFIX_CONFIG}/compilers/Load_MACHINE_TYPE.sh
@@ -134,6 +134,6 @@ if test ${REQ_COMP} = 1; then
       chmod ug+rwx $MACHINE_TYPE_SCRIPT
 
 # Change from file name to absolute reference.
-      COMP_FILE=${MFIX_CONFIG}/compilers/${COMP_FILE}      
+      COMP_FILE=${MFIX_CONFIG}/compilers/${COMP_FILE}
   esac
 fi

@@ -5,7 +5,7 @@ mpi_libs=
 misc_libs=
 
 echo "GNU gfortran Compiler on Apple MacOS"
-  
+
 #AIKE Make sure it is set to 2 instead of 0 due to -module flag in compilation
 # see build_Makefile.sh: 46-50
 MODULE_CODE=2

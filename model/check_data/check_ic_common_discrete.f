@@ -43,7 +43,7 @@
       use error_manager
       implicit none
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
       INTEGER :: ICV, ICV2, M, IDIM
       INTEGER :: COUNT_IC, COUNT_IC_WITH_SOLS

@@ -8,12 +8,12 @@
 90
 1.5
 
-! 
+!
 ! This is a sample input file for the particle generator
 !
 ! The above inputs are as follows:
-! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
-! 	dimension 
+! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+! 	dimension
 ! 	random distribution (if 1) or alligned distribution (if 0)
 !       Types of particles (ntypes)
 ! 	number of particles x ntypes

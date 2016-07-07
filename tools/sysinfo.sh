@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script displays a series of system information
-# that can be used to troubleshoot the system settings 
+# that can be used to troubleshoot the system settings
 # prior to MFIX installation.
 # To run the script , type the following at the prompt: sh ./sysinfo.sh
 # To redirect the output to a file, type: sh ./sysinfo.sh > sysinfo.txt
@@ -21,7 +21,7 @@ Print_Header()
 }
 
 
-Print_Header "System Information" 
+Print_Header "System Information"
 cat /etc/issue
 echo "Kernel name       : " `uname -s`
 echo "Node hostname     : " `uname -n`

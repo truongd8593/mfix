@@ -65,7 +65,7 @@
       double precision :: maxHS
 ! Loop counter
       integer :: k
-! Save the last location of the loop counter 
+! Save the last location of the loop counter
       integer, save :: last_k = 0
 
       IF(myPE /= PE_IO) RETURN
@@ -86,7 +86,7 @@
 
 ! Write the results to a file.
          WRITE(uHeight,"(3x,I2,5X,F15.8,2(3x,F15.8))") k, &
-            maxHS, MAX_HEIGHT(k), apDiff 
+            maxHS, MAX_HEIGHT(k), apDiff
 
       enddo
       last_k = k

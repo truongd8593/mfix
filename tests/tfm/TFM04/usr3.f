@@ -48,7 +48,7 @@
 !          CALL generate_grid_locations
           CALL write_tecplot_data
         endif
-        
+
         CALL deallocate_usr_variables
 
 
@@ -130,10 +130,10 @@
                                           Ug_tmp, Ug_ex_tmp, &
                                           Vg_tmp, Vg_ex_tmp, &
                                           Og_tmp, Og_ex_tmp
-                                          ! Og = Vorticity    
+                                          ! Og = Vorticity
 
 ! temporary gradients
-        double precision              :: DV_DX, DU_DY      
+        double precision              :: DV_DX, DU_DY
 
         character(len=12), dimension(0:9) :: DISCR_NAME
 
@@ -187,7 +187,7 @@
 
             ijk = funijk_gl(i,j,k)
             imjk = funijk_gl(i-1,j,k)
-            ijmk = funijk_gl(i,j-1,k)          
+            ijmk = funijk_gl(i,j-1,k)
             if(tec_no_k) then
               ijkm = funijk_gl(i,j,k)
             else
@@ -197,14 +197,14 @@
             ijpk = funijk_gl(i,j+1,k)
             ipjmk = funijk_gl(i+1,j-1,k)
             imjmk = funijk_gl(i-1,j-1,k)
-            imjpk = funijk_gl(i-1,j+1,k) 
+            imjpk = funijk_gl(i-1,j+1,k)
 
 
             Pg_tmp(i,j,k) = arr_Pg(ijk)
 
             Ug_tmp(i,j,k) = half*(arr_Ug(ijk)+arr_Ug(imjk))
 
-            Vg_tmp(i,j,k) = half*(arr_Vg(ijk)+arr_Vg(ijmk))      
+            Vg_tmp(i,j,k) = half*(arr_Vg(ijk)+arr_Vg(ijmk))
 
             Pg_ex_tmp(i,j,k) = arr_Pgex(ijk)
 
@@ -333,13 +333,13 @@
           end if ! end of if(tec_output_block)
 
 ! write summary for some solution functionals
-! (1) Total KE = Sum of KE at all locations in the domain 
-! (2) L1 norm of error in P_G          
+! (1) Total KE = Sum of KE at all locations in the domain
+! (2) L1 norm of error in P_G
 
           if(error_summary) then
 
             open(unit=newunit(fes), &
-             file="error_summary.dat", status='unknown', & 
+             file="error_summary.dat", status='unknown', &
              position='append')
 !            write(fes,"(4a)") 'variables = "TKE""TKEex""TKEerrPerc"&
 !                              "PgErrL1"'
@@ -375,13 +375,13 @@
 
         end if ! end of if(myPE==PE_IO)
 
-! deallocate local arrays        
+! deallocate local arrays
         deallocate(arr_Pg)
         deallocate(arr_Ug)
         deallocate(arr_Vg)
         deallocate(arr_Pgex)
         deallocate(arr_Ugex)
-        deallocate(arr_Vgex)        
+        deallocate(arr_Vgex)
         deallocate(arr_xtr)
         deallocate(arr_ytr)
         deallocate(arr_ztr)

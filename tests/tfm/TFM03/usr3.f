@@ -48,7 +48,7 @@
           CALL generate_grid_locations
           CALL write_tecplot_data
         endif
-        
+
         CALL deallocate_usr_variables
 
 
@@ -308,8 +308,8 @@
 ! write tecplot data (point format) for:
 ! x-velocity profile at x=L/2 (vertical centerline), and
 ! y-velocity profile at y=H/2 (horizonontal centerline).
-! face-centered values are averaged to obtain data at grid nodes.          
-! Also included are results from literature.          
+! face-centered values are averaged to obtain data at grid nodes.
+! Also included are results from literature.
 
           if(uv_profile) then
 
@@ -366,7 +366,7 @@
 
         end if ! end of if(myPE==PE_IO)
 
-! deallocate local arrays        
+! deallocate local arrays
         deallocate(arr_Pg)
         deallocate(arr_Ug)
         deallocate(arr_Vg)

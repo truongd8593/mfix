@@ -27,7 +27,7 @@
       ELSE
          CALL DISPLAY_FIELD_RESID
       ENDIF
-!     IF(PRINT_IJK) 
+!     IF(PRINT_IJK)
 
 
 ! Display maximum values of residuals
@@ -57,7 +57,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DISPLAY_FIELD_RESID
 
-! Modules 
+! Modules
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED_I
       use residual, only: RESID_STRING, RESID_INDEX, RESID

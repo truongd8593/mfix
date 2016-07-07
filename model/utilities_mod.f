@@ -145,7 +145,7 @@ CONTAINS
       use discretelement, only: des_continuum_coupled, des_continuum_hybrid
       use fldvar, only: ep_g, u_g, v_g, w_g
       use fldvar, only: ep_s, u_s, v_s, w_s
-      use functions, only: fluid_at 
+      use functions, only: fluid_at
       use indices, only: i_of, j_of, k_of
       use mpi_utility, only: global_all_or
       use physprop, only: mmax

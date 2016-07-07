@@ -971,7 +971,7 @@
 !---------------------------------------------------------------------//
 
 !---------------------------------------------------------------------//
-     
+
       IF(DABS(ODX_WF)>1.0D-5) THEN
 ! Avoid division by near-zero. This can occur when del_h is undefined
 ! for some bad cut-cells. Will probably need user-defined tolerance.

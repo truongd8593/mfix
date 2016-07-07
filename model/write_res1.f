@@ -261,7 +261,7 @@
 !       USE tmp_array
       implicit none
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 
       integer :: I , nn

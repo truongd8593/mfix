@@ -161,7 +161,7 @@
 ! Total distance traveled over the current time step
          DIST(:) = DES_VEL_NEW(NP,:)*DTSOLID
 
-! Limit parcel movement in close pack regions to the mean free path. 
+! Limit parcel movement in close pack regions to the mean free path.
          IF(EPG_P(NP) < EPg_MFP) THEN
             IF(dot_product(DES_VEL_NEW(NP,:),PS_GRAD(:,NP)) > ZERO) THEN
 ! Total distance traveled given current velocity.
@@ -183,7 +183,7 @@
          FC(NP,:) = ZERO
 
 ! Determine the maximum distance traveled by any single parcel.
-         DIST_MAG = dot_product(DES_VEL_NEW(NP,:),DES_VEL_NEW(NP,:)) 
+         DIST_MAG = dot_product(DES_VEL_NEW(NP,:),DES_VEL_NEW(NP,:))
          MAX_VEL = max(MAX_VEL, DIST_MAG)
 
       ENDDO

@@ -10,7 +10,7 @@ module list
   !           Implemented with an array, padded with zeroes.             !
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-  
+
   type list_t
      integer, dimension(:), allocatable :: list
      integer :: list_len

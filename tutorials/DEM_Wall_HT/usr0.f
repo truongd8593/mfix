@@ -48,7 +48,7 @@
 !
       ! DES_QwFlux_Avg is a running average of the particle-wall heat flux
       ALLOCATE(DES_QwFlux_Avg(DIMENSION_3, DIMENSION_M))
-      
+
       ! Zero arrays
       DES_QwFlux_Avg(:,:)=ZERO
       QW_SAMPLE_TIME = ZERO

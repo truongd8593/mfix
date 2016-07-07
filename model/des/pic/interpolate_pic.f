@@ -85,7 +85,7 @@
                EPG_P(NP) = EPG_P(NP) + EP_G(IJK)*WEIGHT
             ENDDO
 
-! Centroid method. 
+! Centroid method.
         ELSE
             IJK = PIJK(NP,4)
 ! Gas phase velocity.
@@ -290,7 +290,7 @@
                DO M = MMAX+1, DES_MMAX+MMAX
                   VEL_SOL_STENCIL(I,J,K,1,M) = &
                      VEL_SOL_STENCIL(I,J,K,1,M) + &
-                     PIC_U_S(IJKP,M)*VOL(IJKP) + & 
+                     PIC_U_S(IJKP,M)*VOL(IJKP) + &
                      PIC_U_S(IJPKP,M)*VOL(IJPKP)
 
                   VEL_SOL_STENCIL(I,J,K,2, M) = &

@@ -1,11 +1,11 @@
 !======================================================================
-!  This is a simple "Hello world" Fortran example  
+!  This is a simple "Hello world" Fortran example
 !  to verify the MPI installation
-!  Compile with: 
+!  Compile with:
 !
 !  mpif90 -o hello_world.exe hello_world.f90
 !
-!  Run on 4 processors with: 
+!  Run on 4 processors with:
 !
 !  mpirun -np 4 hello_world.exe
 !
@@ -27,7 +27,7 @@
    program hello
    include 'mpif.h'
    integer rank, size, ierror, tag, status(MPI_STATUS_SIZE)
-  
+
    call MPI_INIT(ierror)
    call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
    call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
