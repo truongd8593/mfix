@@ -192,6 +192,7 @@
          call send_recv(rop_g)
          call send_recv(ro_g)
          call send_recv(rop_s)
+         call send_recv(ro_s) 
       end if
 
 
