@@ -165,6 +165,9 @@ CONTAINS
 ! Particles in a computational fluid cell (for volume fraction)
       Allocate(  PINC (DIMENSION_3) )
 
+! Ghost Particles in a computational fluid cell (for volume fraction)
+      Allocate(  GPINC (DIMENSION_3) )
+
 ! For each particle track its i,j,k location on computational fluid grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
       Allocate(  PIJK (MAX_PIP,5) )

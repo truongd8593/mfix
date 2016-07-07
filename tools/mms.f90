@@ -11,7 +11,7 @@
 
       INTEGER :: WORKING_CASE
       INTEGER, PARAMETER :: LOWER_CASE = 0
-      INTEGER, PARAMETER :: UPPER_CASE = 1 
+      INTEGER, PARAMETER :: UPPER_CASE = 1
 
       INTEGER, PARAMETER :: UNIT_MAKE = 150
       INTEGER, PARAMETER :: UNIT_TEMP = 250
@@ -359,7 +359,7 @@
 
 
       RETURN
-      END SUBROUTINE FIND_INC 
+      END SUBROUTINE FIND_INC
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -717,7 +717,7 @@
 
          WRITE(OUT, 5060) trim(FILENAME), trim(BASENAME)
          CALL FLUSH_OUT_BUFFER
-     
+
  5060 FORMAT('	$(FORTRAN_CMD) $(FORT_FLAGS) ',A,' -o $(DPO)',A,&
          '_mod.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)')
 
@@ -762,7 +762,7 @@
 
          WRITE(OUT, 5061) trim(FILENAME), trim(BASENAME)
          CALL FLUSH_OUT_BUFFER
-     
+
  5061 FORMAT('	$(FORTRAN_CMD) $(FORT_FLAGS) ',A,' -o $(DPO)',A,&
          '.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)')
 

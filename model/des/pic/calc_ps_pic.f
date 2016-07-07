@@ -91,7 +91,7 @@
 
 ! Set the volume fraction in the wall to close pack.
             lEPg = EP_STAR
- 
+
 ! Use the lowest value across all adjacent fluid cells. This is to keep
 ! cells below close pack from pushing parcels through the walls.
 !            lIJK = EAST_OF(IJK)
@@ -164,7 +164,7 @@
 !......................................................................!
 
 
-! The Garg model uses a coloring function approach. 
+! The Garg model uses a coloring function approach.
       DO IJK = IJKSTART3, IJKEND3
          PS_FORCE_PIC(:,IJK) = ZERO
          IF(FLUID_AT(IJK)) THEN

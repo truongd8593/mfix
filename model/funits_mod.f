@@ -41,7 +41,7 @@
 !                                                                      !
 !  Purpose: Finds an open i/o unit number; Usage:                      !
 !   integer myunit                                                     !
-!   open(convert='big_endian',unit=newunit(myunit),file='filename')    !
+!   open(unit=newunit(myunit),file='filename')                         !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       INTEGER FUNCTION newunit(unit)

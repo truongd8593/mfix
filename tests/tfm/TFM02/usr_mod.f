@@ -31,19 +31,19 @@
 ! set .true. for writing out the gas temerature profile:
         logical                               :: t_g_profile = .true.
 
-! exact solutions      
+! exact solutions
         double precision, allocatable         :: t_g_ex(:)
 
-! norms of discretization errors        
-        double precision, allocatable         :: lnorms_t_g(:)          
+! norms of discretization errors
+        double precision, allocatable         :: lnorms_t_g(:)
 
 ! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh  
+! used to find the node locations in the mesh
         double precision, allocatable         :: xtr(:)
         double precision, allocatable         :: ytr(:)
-        double precision, allocatable         :: ztr(:)     
+        double precision, allocatable         :: ztr(:)
 
-! temporary array for discretization error: de = t_g - t_g_ex ; etc.        
+! temporary array for discretization error: de = t_g - t_g_ex ; etc.
         double precision, allocatable         :: de_t_g(:)
 
       END MODULE usr

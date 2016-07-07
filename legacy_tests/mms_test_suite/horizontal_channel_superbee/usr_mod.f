@@ -28,23 +28,23 @@
 ! format (BLOCK format):
         logical                               :: tec_output_block = .true.
 
-! exact solutions      
+! exact solutions
         double precision, allocatable         :: p_g_ex(:)
         double precision, allocatable         :: u_g_ex(:)
         double precision, allocatable         :: v_g_ex(:)
 
-! norms of discretization errors        
-        double precision, allocatable         :: lnorms_p_g(:)          
-        double precision, allocatable         :: lnorms_u_g(:)       
-        double precision, allocatable         :: lnorms_v_g(:) 
+! norms of discretization errors
+        double precision, allocatable         :: lnorms_p_g(:)
+        double precision, allocatable         :: lnorms_u_g(:)
+        double precision, allocatable         :: lnorms_v_g(:)
 
 ! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh  
+! used to find the node locations in the mesh
         double precision, allocatable         :: xtr(:)
         double precision, allocatable         :: ytr(:)
-        double precision, allocatable         :: ztr(:)     
+        double precision, allocatable         :: ztr(:)
 
-! temporary array for discretization error: de = p_g - p_g_ex ; etc.        
+! temporary array for discretization error: de = p_g - p_g_ex ; etc.
         double precision, allocatable         :: de_p_g(:)
         double precision, allocatable         :: de_u_g(:)
         double precision, allocatable         :: de_v_g(:)

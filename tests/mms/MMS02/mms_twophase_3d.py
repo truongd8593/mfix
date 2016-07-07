@@ -1,10 +1,10 @@
 # Purpose: SymPy script to generate manufactured solution source terms
-# by substituting the manufactured solution functions into the 
+# by substituting the manufactured solution functions into the
 # governing equations.
 #
 # To run: $ python mms_twophase_3d.py > mms_twophase_3d.dat
-# 
-# Notes: 
+#
+# Notes:
 #   - constant volume fraction assumed in governing equations.
 #   - for incompressible and constant volume fractions, continuity is
 #   not being solved.
@@ -76,16 +76,16 @@ divug, divus = symbols('divug divus')
 # vector field of general sinusoidal functions
 Fvecx, Fvecy, Fvecz = symbols('Fvecx Fvecy Fvecz')
 
-Fvecx = ( ug0 + ugx*sin(augx*pi*xt) + ugy*cos(augy*pi*yt) + 
-  ugz*cos(augz*pi*zt) + ugxy*cos(augxy*pi*xt*yt) + 
+Fvecx = ( ug0 + ugx*sin(augx*pi*xt) + ugy*cos(augy*pi*yt) +
+  ugz*cos(augz*pi*zt) + ugxy*cos(augxy*pi*xt*yt) +
   ugyz*sin(augyz*pi*yt*zt) + ugzx*cos(augzx*pi*xt*zt) )
 
-Fvecy = ( vg0 + vgx*sin(avgx*pi*xt) + vgy*cos(avgy*pi*yt) + 
-  vgz*cos(avgz*pi*zt) + vgxy*cos(avgxy*pi*xt*yt) + 
+Fvecy = ( vg0 + vgx*sin(avgx*pi*xt) + vgy*cos(avgy*pi*yt) +
+  vgz*cos(avgz*pi*zt) + vgxy*cos(avgxy*pi*xt*yt) +
   vgyz*sin(avgyz*pi*yt*zt) + vgzx*cos(avgzx*pi*xt*zt) )
 
-Fvecz = ( wg0 + wgx*cos(awgx*pi*xt) + wgy*sin(awgy*pi*yt) + 
-  wgz*cos(awgz*pi*zt) + wgxy*sin(awgxy*pi*xt*yt) + 
+Fvecz = ( wg0 + wgx*cos(awgx*pi*xt) + wgy*sin(awgy*pi*yt) +
+  wgz*cos(awgz*pi*zt) + wgxy*sin(awgxy*pi*xt*yt) +
   wgyz*sin(awgyz*pi*yt*zt) + wgzx*cos(awgzx*pi*xt*zt) )
 
 # gas velocity variables (i.e., curl of F)
@@ -113,21 +113,21 @@ print('\n Solid velocity field is divergence free:')
 print(simplify(divus)==0)
 
 # gas pressure variable
-pg = ( pg0 + pgx*cos(apgx*pi*xt) + pgy*cos(apgy*pi*yt) + pgxy*cos(apgxy*pi*xt*yt) + 
+pg = ( pg0 + pgx*cos(apgx*pi*xt) + pgy*cos(apgy*pi*yt) + pgxy*cos(apgxy*pi*xt*yt) +
        pgzx*cos(apgzx*pi*xt*zt) + pgz*sin(apgz*pi*zt) + pgyz*sin(apgyz*pi*yt*zt) )
 
 # gas temperature variable
-tg = ( tg0 + tgx*cos(atgx*pi*xt) + tgy*cos(atgy*pi*yt) + tgxy*cos(atgxy*pi*xt*yt) + 
+tg = ( tg0 + tgx*cos(atgx*pi*xt) + tgy*cos(atgy*pi*yt) + tgxy*cos(atgxy*pi*xt*yt) +
        tgzx*cos(atgzx*pi*xt*zt) + tgz*sin(atgz*pi*zt) + tgyz*sin(atgyz*pi*yt*zt) )
 
 # solid temperature variable
-ts = ( ts0 + tsx*cos(atsx*pi*xt) + tsy*cos(atsy*pi*yt) + tsxy*cos(atsxy*pi*xt*yt) + 
+ts = ( ts0 + tsx*cos(atsx*pi*xt) + tsy*cos(atsy*pi*yt) + tsxy*cos(atsxy*pi*xt*yt) +
        tszx*cos(atszx*pi*xt*zt) + tsz*sin(atsz*pi*zt) + tsyz*sin(atsyz*pi*yt*zt) )
 
 # solid volume fraction
-# es = ( es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esxy*cos(aesxy*pi*xt*yt) + 
+# es = ( es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esxy*cos(aesxy*pi*xt*yt) +
 #       eszx*cos(aeszx*pi*xt*zt) + esz*sin(aesz*pi*zt) + esyz*sin(aesyz*pi*yt*zt) )
-es = es0  # assumed constant       
+es = es0  # assumed constant
 
 # gas volume fraction
 eg = 1.0 - es
@@ -136,8 +136,8 @@ eg = 1.0 - es
 rops = ros*es
 
 # granular temperature
-ths = ( ths0 + thsx*cos(athsx*pi*xt) + thsy*cos(athsy*pi*yt) + 
-      thsxy*cos(athsxy*pi*xt*yt) + thszx*cos(athszx*pi*xt*zt) + 
+ths = ( ths0 + thsx*cos(athsx*pi*xt) + thsy*cos(athsy*pi*yt) +
+      thsxy*cos(athsxy*pi*xt*yt) + thszx*cos(athszx*pi*xt*zt) +
       thsz*sin(athsz*pi*zt) + thsyz*sin(athsyz*pi*yt*zt) )
 
 # print mms functions
@@ -180,45 +180,45 @@ print('\n rops =')
 print(rops)
 
 # mms source terms
-ugSrc = ( rog*eg*(diff(ug**2, xt) + diff(ug*vg, yt) + diff(ug*wg, zt)) - 
+ugSrc = ( rog*eg*(diff(ug**2, xt) + diff(ug*vg, yt) + diff(ug*wg, zt)) -
    mug*(diff(ug, xt, 2) + diff(ug, yt, 2) + diff(ug, zt, 2)) - (diff(
-      mug*diff(ug, xt), xt) + diff(mug*diff(vg, xt), yt) + 
+      mug*diff(ug, xt), xt) + diff(mug*diff(vg, xt), yt) +
      diff(mug*diff(wg, xt), zt) + diff(-2/3*mug*divug, xt)) + eg*diff(pg, xt) )
 
-vgSrc = ( rog*eg*(diff(ug*vg, xt) + diff(vg**2, yt) + diff(vg*wg, zt)) - 
+vgSrc = ( rog*eg*(diff(ug*vg, xt) + diff(vg**2, yt) + diff(vg*wg, zt)) -
    mug*(diff(vg, xt, 2) + diff(vg, yt, 2) + diff(vg, zt, 2)) - (diff(
-      mug*diff(ug, yt), xt) + diff(mug*diff(vg, yt), yt) + 
+      mug*diff(ug, yt), xt) + diff(mug*diff(vg, yt), yt) +
      diff(mug*diff(wg, yt), zt) + diff(-2/3*mug*divug, yt)) + eg*diff(pg, yt) )
 
-wgSrc = ( rog*eg*(diff(ug*wg, xt) + diff(vg*wg, yt) + diff(wg**2, zt)) - 
+wgSrc = ( rog*eg*(diff(ug*wg, xt) + diff(vg*wg, yt) + diff(wg**2, zt)) -
   mug*(diff(wg, xt, 2) + diff(wg, yt, 2) + diff(wg, zt, 2)) - (diff(
-     mug*diff(ug, zt), xt) + diff(mug*diff(vg, zt), yt) + 
+     mug*diff(ug, zt), xt) + diff(mug*diff(vg, zt), yt) +
     diff(mug*diff(wg, zt), zt) + diff(-2/3*mug*divug, zt)) + eg*diff(pg, zt) )
 
-usSrc = ( rops*(diff(us**2, xt) + diff(us*vs, yt) + diff(us*ws, zt)) - 
+usSrc = ( rops*(diff(us**2, xt) + diff(us*vs, yt) + diff(us*ws, zt)) -
   mus*(diff(us, xt, 2) + diff(us, yt, 2) + diff(us, zt, 2)) - (diff(
-     mus*diff(us, xt), xt) + diff(mus*diff(vs, xt), yt) + 
+     mus*diff(us, xt), xt) + diff(mus*diff(vs, xt), yt) +
     diff(mus*diff(ws, xt), zt) + diff(-2/3*mus*divus, xt)) + es*diff(pg, xt) )
 
-vsSrc = ( rops*(diff(us*vs, xt) + diff(vs**2, yt) + diff(vs*ws, zt)) - 
+vsSrc = ( rops*(diff(us*vs, xt) + diff(vs**2, yt) + diff(vs*ws, zt)) -
   mus*(diff(vs, xt, 2) + diff(vs, yt, 2) + diff(vs, zt, 2)) - (diff(
-     mus*diff(us, yt), xt) + diff(mus*diff(vs, yt), yt) + 
+     mus*diff(us, yt), xt) + diff(mus*diff(vs, yt), yt) +
     diff(mus*diff(ws, yt), zt) + diff(-2/3*mus*divus, yt)) + es*diff(pg, yt) )
 
-wsSrc = ( rops*(diff(us*ws, xt) + diff(vs*ws, yt) + diff(ws**2, zt)) - 
+wsSrc = ( rops*(diff(us*ws, xt) + diff(vs*ws, yt) + diff(ws**2, zt)) -
   mus*(diff(ws, xt, 2) + diff(ws, yt, 2) + diff(ws, zt, 2)) - (diff(
-     mus*diff(us, zt), xt) + diff(mus*diff(vs, zt), yt) + 
+     mus*diff(us, zt), xt) + diff(mus*diff(vs, zt), yt) +
     diff(mus*diff(ws, zt), zt) + diff(-2/3*mus*divus, zt)) + es*diff(pg, zt) )
 
-TgSrc = ( eg*rog*Cpg*(ug*diff(tg, xt) + vg*diff(tg, yt) + wg*diff(tg, zt)) + 
-  diff((-kg*diff(tg, xt)), xt) + diff((-kg*diff(tg, yt)), yt) + 
+TgSrc = ( eg*rog*Cpg*(ug*diff(tg, xt) + vg*diff(tg, yt) + wg*diff(tg, zt)) +
+  diff((-kg*diff(tg, xt)), xt) + diff((-kg*diff(tg, yt)), yt) +
   diff((-kg*diff(tg, zt)), zt) )
 
-TsSrc = ( rops*Cps*(us*diff(ts, xt) + vs*diff(ts, yt) + ws*diff(ts, zt)) + 
-  diff((-ks*diff(ts, xt)), xt) + diff((-ks*diff(ts, yt)), yt) + 
+TsSrc = ( rops*Cps*(us*diff(ts, xt) + vs*diff(ts, yt) + ws*diff(ts, zt)) +
+  diff((-ks*diff(ts, xt)), xt) + diff((-ks*diff(ts, yt)), yt) +
   diff((-ks*diff(ts, zt)), zt) )
 
-ThsSrc = ( 3/2*rops*(diff(us*ths, xt) + diff(vs*ths, yt) + diff(ws*ths, zt)) - 
+ThsSrc = ( 3/2*rops*(diff(us*ths, xt) + diff(vs*ths, yt) + diff(ws*ths, zt)) -
   diff(ks*diff(ths, xt), xt) - diff(ks*diff(ths, yt), yt) - diff(ks*diff(ths, zt), zt) )
 
 ropgSrc = ( diff(eg*rog*ug, xt) + diff(eg*rog*vg, yt) + diff(eg*rog*wg, zt) )

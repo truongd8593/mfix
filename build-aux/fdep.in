@@ -83,7 +83,7 @@ sub parse_args
 			splice(@{$opts{include}}, $i, 1);
 		}
 	}
-	
+
 	# Make sure we have a module directory
 	if (not defined $opts{moddir}) {
 		$opts{moddir} = '.';

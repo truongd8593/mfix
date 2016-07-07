@@ -31,7 +31,7 @@
       Use usr, only     : xtr, ytr, ztr
       Use compar, only  : ijkstart3, ijkend3
       Use indices, only : i_of, j_of
-      Use geometry, only: dx, dy, dz      
+      Use geometry, only: dx, dy, dz
       Use param, only   : dimension_3
       Use param1, only  : half
       use fldvar, only  : p_g, u_g, v_g
@@ -51,7 +51,7 @@
         integer :: ii, jj, kk
 
 ! temporary variables
-        double precision  :: xt, yt      
+        double precision  :: xt, yt
 
 ! for function call
         double precision  :: gresho_ic
@@ -71,7 +71,7 @@
         allocate(u_g_ex(dimension_3))
         allocate(v_g_ex(dimension_3))
 
-       
+
         call generate_grid_locations
 
 ! Set initial conditions for the Gresho problem
@@ -80,7 +80,7 @@
         i = i_of(IJK)
         j = j_of(IJK)
 
-! u_g         
+! u_g
         xt = xtr(ijk)
         yt = ytr(ijk) - dy(j)*half
         u_g(ijk) = gresho_ic(xt,yt,'u_g')
@@ -97,7 +97,7 @@
         yt = ytr(ijk) - dy(j)*half
         p_g(ijk) = gresho_ic(xt,yt,'p_g')
         p_g_ex(ijk) = p_g(ijk)
-         
+
       END DO
 
       RETURN
@@ -172,13 +172,13 @@
 !  Module name: gresho_ic                                              !
 !  Purpose: Function to return gresho problem inital conditions.       !
 !                                                                      !
-!  Reference:                                                          ! 
+!  Reference:                                                          !
 !   [1] Liska, R. & Wendroff, B. (2003). Comparison of Several         !
 !   Difference Schemes on 1D and 2D Test Problems for the              !
 !   Euler Equations.                                                   !
 !   SIAM J. Sci. Comput., 25, 995--1017.                               !
 !   doi: 10.1137/s1064827502402120                                     !
-!                                                                      ! 
+!                                                                      !
 !  Author: Aniruddha Choudhary                        Date: Jun 2015   !
 !  email: anirudd@vt.edu					       !
 !  Reviewer:                                          Date:            !
@@ -192,11 +192,11 @@
       DOUBLE PRECISION FUNCTION gresho_ic(xt,yt,ch)
       IMPLICIT NONE
 
-! input x      
+! input x
       double precision, intent(in)  :: xt
-! input y      
+! input y
       double precision, intent(in)  :: yt
-! variable for which return value is desired      
+! variable for which return value is desired
       character(len=*), intent(in)  :: ch
 
 !! local variables
@@ -206,7 +206,7 @@
 ! radius at (xt,yt)
       double precision  :: r
 
-! u_phi as a function of r at (xt,y)      
+! u_phi as a function of r at (xt,y)
       double precision  :: uphir
 
 ! pressure as a function of r at (xt,yt)
@@ -214,19 +214,19 @@
 
 ! temporary return variables
       double precision  :: p_g_return
-      double precision  :: u_g_return     
+      double precision  :: u_g_return
       double precision  :: v_g_return
 
 
-! center of vortex        
+! center of vortex
         x0 = 0.5d0
         y0 = 0.5d0
 
-! radius at (xt,yt)       
+! radius at (xt,yt)
         r = sqrt((xt-x0)**2 + (yt-y0)**2)
 
-! velocity and pressure distribution based upon 
-! Reference: Liska and Wendroff (2003)        
+! velocity and pressure distribution based upon
+! Reference: Liska and Wendroff (2003)
         if((r.ge.0.0d0).and.(r.lt.0.2d0)) then
           uphir = 5.0d0*r
           pr = 5.0d0 + 25.0d0/2.0d0*r**2
@@ -242,7 +242,7 @@
           ERROR STOP
         end if
 
-! set return values        
+! set return values
         if(.not.(r.eq.0.0d0)) then
           u_g_return = -uphir*((yt-y0)/r)
           v_g_return = uphir*((xt-x0)/r)

@@ -109,7 +109,7 @@
 
 ! Set the flag that one or more DEM MI/MO exists.
       DEM_MIO = (DEM_BCMI /= 0 .OR. DEM_BCMO /= 0)
-      
+
       CALL FINL_ERR_MSG
 
       RETURN
