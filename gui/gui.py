@@ -1793,8 +1793,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run_name = os.path.splitext(project_filename)[0]
         if not self.check_writable(project_dir):
             self.message(text='Unable to write to %s' % project_dir,
-                         buttons=['Ok'],
-                         default='Ok')
+                         buttons=['ok'],
+                         default='ok')
             return
         # Start with a nice template - note, there's too much set in this file.
         # FIXME, this can clobber files
