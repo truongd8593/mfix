@@ -26,7 +26,7 @@ class SolidsDEM(object):
 
     def init_solids_dem(self):
         s = self.ui.solids
-        s.checkbox_keyword_gener_part_config.clicked.connect(self.setup_dem_tab)
+        s.checkbox_keyword_gener_part_config.clicked.connect(self.set_gener_part_config)
         s.combobox_des_intg_method.activated.connect(self.set_des_intg_method)
         s.combobox_des_coll_model.activated.connect(self.set_des_coll_model)
         s.combobox_coupling_method.activated.connect(self.set_coupling_method)
@@ -34,6 +34,18 @@ class SolidsDEM(object):
         s.combobox_des_interp.activated.connect(self.set_des_interp)
         s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
         s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
+
+
+    def set_gener_part_config(self, val):
+        s = self.ui.solids
+        self.update_keyword('gener_part_config', val)
+        if val:
+            self.unset_keyword("particles")
+        else:
+            self.update_keyword("particles", s.lineedit_particles.text()) # Restore prev. value
+        enabled = not val
+        for item in (s.label_particles, s.lineedit_particles):
+            item.setEnabled(enabled)
 
     def set_des_intg_method(self, val):
         self.update_keyword('des_intg_method', des_intg_methods[val])
@@ -96,7 +108,7 @@ class SolidsDEM(object):
             self.update_keyword('gener_part_config', False)
             gener_part_config = False
         enabled = not gener_part_config
-        for item in (s.label_particles, s.lineedit_keyword_particles):
+        for item in (s.label_particles, s.lineedit_particles):
             item.setEnabled(enabled)
 
         #Select numerical integration method

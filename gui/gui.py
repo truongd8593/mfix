@@ -1660,15 +1660,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                 self.get_project_dir(),
                                 self.project.run_name.value + ".mfx"),
                             "*.mfx")
-        # User pressed "cancel"
-        if not filename:
-            return
-        # qt4/qt5 compat hack
-        #if type(filename) == tuple:
         if PYQT5:
-            return filename[0]
-        else:
-            return filename
+            filename = filename[0]
+        return filename
 
 
     def handle_save(self):
@@ -1782,10 +1776,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             return False
 
     def new_project(self):
-        project_file = str(
-            QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Create Project File',
-                "", "MFX files (*.mfx)"))
+        # Why not use get_save_filename here?
+        project_file = QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Create Project File',
+            "", "MFX files (*.mfx)")
+
+        if PYQT5:
+            project_file = project_file[0]
         if not project_file:
             return
 
