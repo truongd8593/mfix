@@ -366,7 +366,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # These are all fractions, must be btwn 0 and 1, not documented as such
         for key in ('des_em', 'eps_f_min'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
-
+        self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
     def set_no_project(self):
         """setup mode when no project is open"""
