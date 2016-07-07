@@ -104,6 +104,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         else:
             self.message("Warning: %s" % msg)
             # Will also print-internal and log
+    warning = warn
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
