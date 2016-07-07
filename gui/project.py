@@ -275,6 +275,7 @@ class Keyword(Comparable):
         if args is None:
             args = []
         self.args = args
+        assert isinstance(args, list)
 
         if dtype is None:
             self._update_dtype()

@@ -877,7 +877,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 # Look for _args_ following <keyword>
                 if 'args' in name_list:
                     args_idx = name_list.index('args')
-                    args = map(try_int, name_list[args_idx+1:])
+                    args = [try_int(name) for name in name_list[args_idx+1:]]
                     key = '_'.join(name_list[key_idx+1:args_idx])
                 else:
                     key = '_'.join(name_list[key_idx+1:])
@@ -1237,7 +1237,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if '(' in key: # This is a little crude, use parser instead?
                 k, a = key.split('(', 1)
                 a = a.split(')')[0]
-                a = map(int, a.split(','))
+                a = [int(x) for x in a.split(',')]
             else:
                 a = None
             self.unset_keyword(k,a)
