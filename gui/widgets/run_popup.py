@@ -129,7 +129,7 @@ class RunPopup(QDialog):
         smp = 'smp' in cfg['flags'] if cfg else False
         self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
         self.ui.spinbox_keyword_nodesj.setEnabled(dmp)
-        self.ui.spinbox_keyword_nodesk.setEnabled(dmp)
+        self.ui.spinbox_keyword_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
         self.ui.spinbox_threads.setEnabled(smp)
 
     def update_no_mfix_warning(self):
