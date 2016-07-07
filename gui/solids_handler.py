@@ -317,7 +317,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             return # shouldn't get here
 
         phase = self.solids_current_phase
-        name, data = self.solids.items()[phase-1]
+        name, data = list(self.solids.items())[phase-1]
         model = ('TFM', 'DEM', 'PIC')[index]
         self.update_keyword('solids_model', model, args=self.solids_current_phase)
         data['model'] = model
