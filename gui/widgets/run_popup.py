@@ -62,6 +62,7 @@ class RunPopup(QDialog):
         self.cancel_button.clicked.connect(self.handle_abort)
 
         self.initialize_ui()
+        self.parent.handle_exe_changed()
 
     # UI update functions
 
