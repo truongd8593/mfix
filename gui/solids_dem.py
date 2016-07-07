@@ -343,12 +343,21 @@ class SolidsDEM(object):
                         tw.setItem(row, col, make_item('--'))
                     else:
                         le = LineEdit()#FIXME.  lineedit in table works but looks a bit odd
-                        le.setMaximumWidth(60)
+                        le.setMaximumWidth(150)
                         le.key = key
                         le.args = [arg]
                         le.setdtype('d')
                         tw.setCellWidget(row, col, le)
-                        val = self.project.get_value(key, args=[arg])
+                        # make sure DES_EN_INPUT is a vector
+                        # (Some files have a single element)
+                        val = None
+                        if mmax==1:
+                            val = self.project.get_value(key)
+                            if val is not None:
+                                self.unset_keyword(key)
+                                self.update_keyword(key, val, args=[arg])
+                        if val is None:
+                            val = self.project.get_value(key, args=[arg])
                         if val is not None:
                             le.updateValue(key, val)
                         self.project.register_widget(le, keys=[key], args=[arg])
@@ -358,12 +367,19 @@ class SolidsDEM(object):
             arg = 1
             for col in range(mmax):
                 le = LineEdit()
-                le.setMaximumWidth(60)
+                le.setMaximumWidth(150)
                 le.key = key
                 le.args = [arg]
                 le.setdtype('d')
                 tw.setCellWidget(row, col, le)
-                val = self.project.get_value(key, args=[arg])
+                val = None
+                if mmax==1: # vectorize single scalar
+                    val = self.project.get_value(key)
+                    if val is not None:
+                        self.unset_keyword(key)
+                        self.update_keyword(key, val, args=[arg])
+                if val is None:
+                    val = self.project.get_value(key, args=[arg])
                 if val is not None:
                     le.updateValue(key, val)
                 self.project.register_widget(le, keys=[key], args=[arg])
