@@ -99,7 +99,7 @@
            ACTION   = 'WRITE')
 
 
-!      OPEN(CONVERT='BIG_ENDIAN',UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
+!      OPEN(UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
       WRITE(111,30) '  _____________________________________________________________________________ '
       WRITE(111,30) ' |                                                                             |'
       WRITE(111,30) ' |                                MFIX DASHBOARD                               |'

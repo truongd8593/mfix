@@ -1119,7 +1119,7 @@ MODULE output_man
 
 ! Now save the new partition to gridmap.dat before restarting
          IF(ADJUST_PARTITION) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat')
+            OPEN(UNIT=777, FILE='gridmap.dat')
             WRITE (777, 1005) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
             DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
                   WRITE(777,1060) IPROC,BEST_I_SIZE(IPROC)
