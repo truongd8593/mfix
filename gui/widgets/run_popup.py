@@ -282,18 +282,11 @@ class RunPopup(QDialog):
         def mfix_build_directories():
             mfix_home = get_mfix_home()
             bin_dir = os.path.join(mfix_home, 'bin')
-            builds_dir = os.path.join(mfix_home, 'build')
             #if mfix_home:
             if True:
                 dir_list = set([mfix_home])
                 if os.path.isdir(bin_dir):
                     dir_list.add(bin_dir)
-                # add mfix_home/build/*/build-aux
-                if os.path.isdir(builds_dir):
-                    for child in os.listdir(builds_dir):
-                        build = os.path.join(builds_dir, child, 'build-aux')
-                        if os.path.isdir(build):
-                            dir_list.add(build)
                 for d in dir_list:
                     for name in MFIX_EXE_NAMES:
                         for exe in glob(os.path.join(d, name)):
