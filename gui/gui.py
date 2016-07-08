@@ -413,14 +413,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
 
     def confirm_close(self):
-        # TODO : option to save
-        msg = None
+        """before closing, ask user whether to end job and save project"""
         if self.job_manager.is_running():
-            msg = "Stop running job?"
-        elif self.job_manager.is_paused():
-            msg = "Stop paused job?"
-        if msg:
-            confirm = self.message(text=msg,
+            confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'yes':
@@ -428,10 +423,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.job_manager.stop_mfix()
 
         if self.unsaved_flag:
-            confirm = self.message(text="File not saved, really quit?",
-                                   buttons=['yes', 'no'],
-                                   default='no')
-            return confirm == 'yes'
+            confirm = self.message(text="Save project before quitting?",
+                                   buttons=['yes', 'no', 'cancel'],
+                                   default='Cancel')
+            if confirm == 'yes':
+                self.save_project()
+            return confirm != 'cancel'
         else:
             return True
 
