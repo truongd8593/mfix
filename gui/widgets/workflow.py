@@ -173,6 +173,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             dtype=OrderedDict,
             columns=['status', 'progress', 'path'],
             column_delegate={1: {'widget': 'progressbar'}},
+            multi_selection=True
             )
         self.job_status_table.set_value(OrderedDict())
         self.job_status_table.show_vertical_header(True)
@@ -340,7 +341,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         projs = self.get_selected_projects()
 
-        if len(projs) > 1:
+        if projs:
             enable_list[:3] = [True]*4
             enable_list[-1] = True
 #        elif len(projs) == 1:
