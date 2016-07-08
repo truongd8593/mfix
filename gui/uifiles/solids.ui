@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>462</width>
-    <height>1043</height>
+    <height>1089</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -290,6 +290,9 @@ QPushButton:checked {
           <property name="rowCount">
            <number>0</number>
           </property>
+          <attribute name="horizontalHeaderCascadingSectionResizes">
+           <bool>true</bool>
+          </attribute>
           <attribute name="horizontalHeaderHighlightSections">
            <bool>false</bool>
           </attribute>
@@ -581,6 +584,9 @@ QPushButton:checked {
                  <property name="selectionMode">
                   <enum>QAbstractItemView::NoSelection</enum>
                  </property>
+                 <attribute name="horizontalHeaderCascadingSectionResizes">
+                  <bool>true</bool>
+                 </attribute>
                  <attribute name="horizontalHeaderHighlightSections">
                   <bool>false</bool>
                  </attribute>
@@ -1632,7 +1638,7 @@ QPushButton:checked {
             <x>0</x>
             <y>0</y>
             <width>433</width>
-            <height>1255</height>
+            <height>1261</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1645,11 +1651,28 @@ background-color:transparent;
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="CheckBox" name="checkbox_keyword_gener_part_config">
-             <property name="text">
-              <string>Enable automatic particle generation</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_21">
+             <item>
+              <widget class="CheckBox" name="checkbox_keyword_gener_part_config">
+               <property name="text">
+                <string>Enable automatic particle generation</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1676,18 +1699,31 @@ background-color:transparent;
                </property>
               </widget>
              </item>
+             <item>
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout_17">
-             <item row="0" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <item>
               <widget class="QLabel" name="label_152">
                <property name="text">
                 <string>Integration method</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
+             <item>
               <widget class="ComboBox" name="combobox_des_intg_method">
                <item>
                 <property name="text">
@@ -1701,14 +1737,31 @@ background-color:transparent;
                </item>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item>
+              <spacer name="horizontalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_19">
+             <item>
               <widget class="QLabel" name="label_151">
                <property name="text">
                 <string>Collision Model</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
+             <item>
               <widget class="ComboBox" name="combobox_des_coll_model">
                <item>
                 <property name="text">
@@ -1722,14 +1775,31 @@ background-color:transparent;
                </item>
               </widget>
              </item>
-             <item row="2" column="0">
+             <item>
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_20">
+             <item>
               <widget class="QLabel" name="label_coupling_method">
                <property name="text">
                 <string>Coupling method</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
+             <item>
               <widget class="ComboBox" name="combobox_coupling_method">
                <item>
                 <property name="text">
@@ -1742,6 +1812,19 @@ background-color:transparent;
                 </property>
                </item>
               </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_12">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>
@@ -1784,6 +1867,19 @@ background-color:transparent;
                 </property>
                </item>
               </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_13">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>
@@ -2041,6 +2137,15 @@ background-color:transparent;
              <attribute name="horizontalHeaderVisible">
               <bool>true</bool>
              </attribute>
+             <attribute name="horizontalHeaderCascadingSectionResizes">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="horizontalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
            <item>
@@ -2067,6 +2172,18 @@ background-color:transparent;
              <property name="selectionMode">
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
+             <attribute name="horizontalHeaderVisible">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="horizontalHeaderCascadingSectionResizes">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="horizontalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderHighlightSections">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
            <item>
@@ -2098,6 +2215,19 @@ background-color:transparent;
                 </property>
                </item>
               </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>
@@ -2316,6 +2446,19 @@ background-color:transparent;
                    </property>
                   </item>
                  </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                </layout>
               </item>
