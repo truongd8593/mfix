@@ -1499,15 +1499,18 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def dmp_enabled(self):
         config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        return 'dmp' in config if config else False
+        flags = config['flags'] if config else ''
+        return 'dmp' in flags
 
     def smp_enabled(self):
         config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        return 'smp' in config if config else False
+        flags = config['flags'] if config else ''
+        return 'smp' in flags
 
     def pymfix_enabled(self):
         config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        return 'python' in config if config else False
+        flags = config['flags'] if config else ''
+        return 'python' in flags
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
