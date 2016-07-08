@@ -23,7 +23,7 @@ except ImportError:
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
+MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
 
 class RunPopup(QDialog):
 
@@ -243,7 +243,7 @@ class RunPopup(QDialog):
             # TODO? default install location(s)
             # ... where will the default binaries be installed?
             #for location in default_install_dirs:
-            #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+            #    for name in ['mfix', 'mfix.exe']:
             #        for exe in glob(os.path.join(self.project_dir, name)):
             #            exe = os.path.abspath(exe)
             #            self.prepend_to_exe_list(exe)
@@ -339,10 +339,6 @@ class RunPopup(QDialog):
         except OSError as err:
             log.debug('Could not stat %s' % mfix_exe)
             return False
-
-        if any(mfix_exe.lower().endswith(x)
-               for x in ('pymfix', 'pymfix.exe')):
-            cache[mfix_exe] = {'stat': stat, 'flags': 'dmp smp'}
 
         cached = cache.get(mfix_exe, None)
         if cached and cached['stat'] == stat:
