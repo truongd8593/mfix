@@ -348,23 +348,14 @@ class SolidsDEM(object):
                         le.args = [arg]
                         le.setdtype('d')
                         tw.setCellWidget(row, col, le)
-                        # make sure DES_EN_INPUT is a vector
-                        # (Some files have a single element)
-                        val = None
-                        if mmax==1:
-                            val = self.project.get_value(key)
-                            if val is not None:
-                                self.unset_keyword(key)
-                                self.update_keyword(key, val, args=[arg])
-                        if val is None:
-                            val = self.project.get_value(key, args=[arg])
+                        val = self.project.get_value(key, args=[arg])
                         if val is not None:
                             le.updateValue(key, val)
                         self.project.register_widget(le, keys=[key], args=[arg])
                         arg += 1
+            arg = 1
             key = 'des_en_wall_input'
             row = mmax
-            arg = 1
             for col in range(mmax):
                 le = LineEdit()
                 le.setMaximumWidth(150)
@@ -372,16 +363,7 @@ class SolidsDEM(object):
                 le.args = [arg]
                 le.setdtype('d')
                 tw.setCellWidget(row, col, le)
-                val = None
-                if mmax==1: # vectorize single scalar
-                    val = self.project.get_value(key)
-                    if val is not None:
-                        self.unset_keyword(key)
-                        self.update_keyword(key, val, args=[arg])
-                if val is None:
-                    val = self.project.get_value(key, args=[arg])
-                if val is not None:
-                    le.updateValue(key, val)
+                val = self.project.get_value(key, args=[arg])
                 self.project.register_widget(le, keys=[key], args=[arg])
                 arg += 1
 

@@ -404,17 +404,22 @@ class ProjectManager(Project):
                 }
                 self.gui.solids[name] = solids_data
 
-
             # Now submit all remaining keyword updates, except the ones we're skipping
-            skipped_keys = set(['mw_g', 'mw_s'])
+            thermo_keys = set(['mw_g', 'mw_s'])
+            vector_keys = set(['des_en_input', 'des_en_wall_input',
+                        'des_et_input', 'des_et_wall_input'])
             for kw in kwlist:
-                if kw.key in skipped_keys:
+                if kw.key in thermo_keys:
                     self.gui.print_internal("%s=%s moved to THERMO DATA section" % (
                         format_key_with_args(kw.key, kw.args),
                         kw.value))
 
                     self.gui.unset_keyword(kw.key, args=kw.args) # print msg in window
                     continue
+                if kw.key in vector_keys: # Make sure they are really vectors
+                    if not kw.args:
+                        self.gui.unset_keyword(kw.key)
+                        kw.args = [1]
                 try:
                     self.submit_change(None, {kw.key: kw.value}, args=kw.args)
                 except ValueError as e:
