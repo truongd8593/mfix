@@ -6,8 +6,6 @@ from qtpy import QtWidgets
 from widgets.base import LineEdit
 from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
 
-
-
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
 
 # In-line comments from MFIX-UI SRS as of 2016-07-01
@@ -86,7 +84,6 @@ class SolidsDEM(object):
     def setup_dem_tab(self):
         # Ensures all constraints (items enabled/disabled) are set
         # called by each 'set_' function, so don't call those here
-
         s = self.ui.solids
         # Inline comments from MFIX-UI SRS as of 2016-07-01
         #  Pleas update as needed!
@@ -375,77 +372,142 @@ class SolidsDEM(object):
         # Input given as an upper triangular matrix
         enabled = (des_coll_model=='HERTZIAN')
         s.label_des_et_input.setEnabled(enabled)
-        s.tablewidget_des_et_input.setVisible(enabled) # ?
+        tw = s.tablewidget_des_et_input
+        # TODO - this is too much of a duplicate of des_en_input above
+        if not enabled:
+            # Clear out old lineedit widgets
+            for row in range(tw.rowCount()):
+                for col in range(tw.columnCount()):
+                    w = tw.cellWidget(row, col)
+                    if w:
+                        self.project.unregister_widget(w)
+                        del w
+            tw.clearContents()
+            tw.setRowCount(0)
+            tw.setColumnCount(0)
+
+        if enabled:
+            names = list(self.solids.keys())
+            # Really only need to do this if a name changes
+            tw.setHorizontalHeaderLabels(names)
+            tw.setVerticalHeaderLabels(names + ['Wall'])
+            # Table size changed
+            if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
+
+                # Clear out old lineedit widgets
+                for row in range(tw.rowCount()):
+                    for col in range(tw.columnCount()):
+                        w = tw.cellWidget(row, col)
+                        if w:
+                            self.project.unregister_widget(w)
+                            del w
+                tw.clearContents()
+                # Make a new batch
+                tw.setRowCount(mmax+1) # extra row for "Wall"
+                tw.setColumnCount(mmax)
+
+                arg = 1
+                key = 'des_et_input'
+                for row in range(mmax):
+                    for col in range(mmax):
+                        if col < row:
+                            tw.setItem(row, col, make_item('--'))
+                        else:
+                            le = LineEdit()#FIXME.  lineedit in table works but looks a bit odd
+                            le.setMaximumWidth(150)
+                            le.key = key
+                            le.args = [arg]
+                            le.setdtype('d')
+                            tw.setCellWidget(row, col, le)
+                            val = self.project.get_value(key, args=[arg])
+                            if val is not None:
+                                le.updateValue(key, val)
+                            self.project.register_widget(le, keys=[key], args=[arg])
+                            arg += 1
+                key = 'des_et_wall_input'
+                row = mmax
+                arg = 1
+                for col in range(mmax):
+                    le = LineEdit()
+                    le.setMaximumWidth(150)
+                    le.key = key
+                    le.args = [arg]
+                    le.setdtype('d')
+                    tw.setCellWidget(row, col, le)
+                    val = self.project.get_value(key, args=[arg])
+                    if val is not None:
+                        le.updateValue(key, val)
+                    self.project.register_widget(le, keys=[key], args=[arg])
+                    arg += 1
+            self.fixup_solids_table(tw, stretch_column=mmax-1)
 
 
-"""
-Select cohesion model
-o Selection always available
-o Available selections
- None [DEFAULT]
- Selection always available
- Sets keyword USE_COHESION to false
- Sets keyword VAN_DER_WAALS to false
- Van der Waals
- Selection always available
- Sets keyword USE_COHESION to true
- Sets keyword VAN_DER_WAALS to true
 
-Specify Hamaker constant
-o Specification only available for Van der Waals cohesion model
-o Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
+        #Select cohesion model
+        # Selection always available
+        # Available selections
+        #None [DEFAULT]
+        #Selection always available
+        #Sets keyword USE_COHESION to false
+        #Sets keyword VAN_DER_WAALS to false
+        #Van der Waals
+        #Selection always available
+        #Sets keyword USE_COHESION to true
+        #Sets keyword VAN_DER_WAALS to true
 
-Specify outer cutoff;
-o Specification only available for Van der Waals cohesion model
-o Sets keyword VDW_OUTTER_CUTOFF (WALL_OUTTER_CUTOFF)
+        #Specify Hamaker constant
+        # Specification only available for Van der Waals cohesion model
+        # Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
 
-Specify inner cutoff
-o Specification only available for Van der Waals cohesion model
-o Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
+        #Specify outer cutoff
+        # Specification only available for Van der Waals cohesion model
+        # Sets keyword VDW_OUTER_CUTOFF (WALL_OUTTER_CUTOFF)
 
-Specify asperities
-o Specification only available for Van der Waals cohesion model
-o Sets keyword ASPERITIES
+        #Specify inner cutoff
+        # Specification only available for Van der Waals cohesion model
+        # Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
 
-List the following options under an 'Advanced' section header.
+        #Specify asperities
+        # Specification only available for Van der Waals cohesion model
+        # Sets keyword ASPERITIES
 
-Select Neighbor Search Method
-o Selection always available
-o Available selection
- Grid-based [DEFAULT]
-  Selection always available
-  Sets keyword DES_NEIGHBOR_SEARCH 4
- N-Square
-  Selection always available
-  Sets keyword DES_NEIGHBOR_SEARCH 1
+        #List the following options under an 'Advanced' section header.
+        #Select Neighbor Search Method
+        # Selection always available
+        # Available selection
+        #Grid-based [DEFAULT]
+        #Selection always available
+        #Sets keyword DES_NEIGHBOR_SEARCH 4
+        #N-Square
+        #Selection always available
+        #Sets keyword DES_NEIGHBOR_SEARCH 1
 
-Specify maximum steps between neighbor search
- Specification always available
- Sets keyword NEIGHBOR_SEARCH_N
+        #Specify maximum steps between neighbor search
+        #Specification always available
+        # Sets keyword NEIGHBOR_SEARCH_N
 
-Specify factor defining particle neighborhood
- Specification always available
- Sets keyword FACTOR_RLM
+        #Specify factor defining particle neighborhood
+        #Specification always available
+        # Sets keyword FACTOR_RLM
 
-Specify neighborhood search radius ratio
- Specification always available
- Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
+        #Specify neighborhood search radius ratio
+        #Specification always available
+        #Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
 
-Specify search grid partitions (optional)
- Specification always available
- Sets keyword DESGRIDSEARCH_IMAX
- Sets keyword DESGRIDSEARCH_JMAX
- Sets keyword DESGRIDSEARCH_KMAX
+        #Specify search grid partitions (optional)
+        #Specification always available
+        #Sets keyword DESGRIDSEARCH_IMAX
+        #Sets keyword DESGRIDSEARCH_JMAX
+        #Sets keyword DESGRIDSEARCH_KMAX
 
-Enable user scalar tracking
- Selection always available
- Does not directly set any keywords
- Enables specification of number of user scalars
- Sets keyword DES_USR_VAR_SIZE
+        #Enable user scalar tracking
+        #Selection always available
+        #Does not directly set any keywords
+        #Enables specification of number of user scalars
+        # Sets keyword DES_USR_VAR_SIZE
 
-Define minimum distance for contact conduction (optional)
- Unavailable if not solving energy equations
+        #Define minimum distance for contact conduction (optional)
+        #Unavailable if not solving energy equations
 
-Define fluid lens proportion constant (optional)
- Unavailable if not solving energy equations
-"""
+        #Define fluid lens proportion constant (optional)
+        # Unavailable if not solving energy equations
