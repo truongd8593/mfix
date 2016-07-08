@@ -1504,7 +1504,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         """Open run popup dialog"""
         popup_title = self.ui.run.button_run_mfix.text()
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
-        if not batch:            
+        if not batch:
             self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
@@ -1529,7 +1529,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                   for x in ('pymfix', 'pymfix.exe'))
 
         self.update_run_options()
-        
+
     def _build_run_cmd(self, project_filename=None):
         """build the mfix run cmd"""
         mfix_exe = self.mfix_exe
@@ -1565,7 +1565,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
-        return (run_cmd, port)
+
+        return run_cmd, port
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""

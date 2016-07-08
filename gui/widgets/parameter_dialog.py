@@ -15,7 +15,7 @@ from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 from regexes import *
 from project import Equation
 
-PROTECTED_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
+PROTECTED_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys())
 
 class ParameterDialog(QtWidgets.QDialog):
 
