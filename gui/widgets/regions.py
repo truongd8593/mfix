@@ -146,14 +146,17 @@ class RegionsWidget(QtWidgets.QWidget):
     def delete_region(self):
         'remove the currently selected region'
 
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
 
-        if row >= 0:
+        if rows:
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
-            data.pop(name)
+
+            for row in rows:
+                name = list(data.keys())[row]
+                data.pop(name)
+                self.vtkwidget.delete_region(name)
+
             self.tablewidget_regions.set_value(data)
-            self.vtkwidget.delete_region(name)
 
             if data:
                 self.groupbox_region_parameters.setEnabled(True)
@@ -163,34 +166,35 @@ class RegionsWidget(QtWidgets.QWidget):
     def copy_region(self):
         'copy the currently selected region'
 
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
 
-        if row >= 0:
+        if rows:
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
-            new_region = copy.deepcopy(data[name])
+            
+            for row in rows:
+                name = list(data.keys())[row]
+                new_region = copy.deepcopy(data[name])
 
-            new_name = get_unique_string(name, list(data.keys()))
-            data[new_name] = new_region
-            data[new_name]['visible'] = self.get_visibility_image(
-                data[new_name]['visibility'])
+                new_name = get_unique_string(name, list(data.keys()))
+                data[new_name] = new_region
+                data[new_name]['visible'] = self.get_visibility_image(
+                    data[new_name]['visibility'])                    
+                self.vtkwidget.new_region(new_name, data[new_name])
 
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
-
-            self.vtkwidget.new_region(new_name, data[new_name])
-
+    
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
 
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
 
-        if row >= 0:
+        if rows:
             # enable groupbox
             self.groupbox_region_parameters.setEnabled(True)
 
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
+            name = list(data.keys())[rows[-1]]
 
             # enable widgets
             self.enable_disable_widgets(name)
@@ -240,9 +244,9 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def region_value_changed(self, widget, value, args):
         'one of the region wigets values changed, update'
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
-        name = list(data.keys())[row]
+        name = list(data.keys())[rows[-1]]
         key = value.keys()[0]
 
         if 'to' in key or 'from' in key:
@@ -317,9 +321,9 @@ class RegionsWidget(QtWidgets.QWidget):
         color = QtWidgets.QColorDialog.getColor()
 
         if color.isValid():
-            row = self.tablewidget_regions.current_row()
+            rows = self.tablewidget_regions.current_rows()
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
+            name = list(data.keys())[rows[-1]]
 
             data[name]['color'].color = color.getRgbF()[:-1]
 

@@ -1565,8 +1565,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
-        
-        return run_cmd
+        return (run_cmd, port)
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
@@ -1576,7 +1575,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.update_run_options()
             return
 
-        run_cmd = self._build_run_cmd()
+        run_cmd, port = self._build_run_cmd()
 
         msg = 'Starting %s' % ' '.join(run_cmd)
         #log.info(msg) # print_internal logs

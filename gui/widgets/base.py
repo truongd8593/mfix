@@ -492,9 +492,9 @@ class Table(QtWidgets.QTableView, BaseWidget):
         a string describing the selection behavior. Either 'row', 'col', or
         'cell' for row selection, column selection, or single cell selection,
         respectively (default 'cell')
-    selection_mode (str):
-        a string describing the selection mode. Either 'single', or 'multi' for
-        single selection or multiple selections (default 'single')
+    multi_selection (bool):
+        Either single selection (False), or multiple selections (True)
+        (default False)
 
     Signals
     -------
@@ -575,8 +575,8 @@ class Table(QtWidgets.QTableView, BaseWidget):
         else:
             self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
 
-        if multi == 'multi':
-            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        if multi:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         else:
             self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
@@ -711,19 +711,19 @@ class Table(QtWidgets.QTableView, BaseWidget):
         value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
         self.model().apply_to_column(column, value)
 
-    def current_row(self):
-        i = self.selectionModel().selection().indexes()
+    def current_rows(self):
+        i = self.selectionModel().selectedRows()
         if i:
-            return i[-1].row()
+            return [ind.row() for ind in i]
         else:
-            return -1
+            return []
 
-    def current_column(self):
-        i = self.selectionModel().selection().indexes()
+    def current_columns(self):
+        i = self.selectionModel().selectedColumns()
         if i:
-            return i[-1].column()
+            return [ind.column() for ind in i]
         else:
-            return -1
+            return []
 
     def clear(self):
         self.model().update({}) # TODO: change based on dtype?

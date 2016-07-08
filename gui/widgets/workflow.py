@@ -60,14 +60,17 @@ class TestNode(Node):
         self.terminals['run'].valueChanged.connect(self.run_project)
 
         self.terminals['run'].widget.setEnabled(False)
+        self.test_num = 1
 
     def used_parameters(self):
         print(self.parent.workflow_widget.used_parameters)
 
     def export(self):
 
+        test_name = 'test'+str(self.test_num)
+        self.test_num+=1
         curr_proj_dir = self.parent.mfixgui.get_project_dir()
-        self.exp_path = os.path.join(curr_proj_dir, 'test')
+        self.exp_path = os.path.join(curr_proj_dir, test_name)
         if not os.path.exists(self.exp_path):
             os.mkdir(self.exp_path)
 
@@ -90,6 +93,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         self.project = project
         self.job_dict = {}
+        self.update_timer = QtCore.QTimer()
+        self.update_timer.timeout.connect(self.update_job_status)
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
@@ -144,13 +149,21 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.job_toolbar.setLayout(self.job_toolbar_layout)
         self.job_layout.addWidget(self.job_toolbar)
 
-        self.tool_btn_dict = {}
-        for tool, icon, callback in [('stop', 'stop.png', self.handle_stop_job),
-                                     ('open', 'folder.png', self.handle_open_job)]:
+        self.tool_btn_dict = OrderedDict()
+        for tool, icon, callback in [
+                ('play', 'play.png', self.handle_play),
+                ('stop', 'stop.png', self.handle_stop),
+                ('pause', 'pause.png', self.handle_pause),
+                ('restart', 'restart.png', self.handle_restart),
+                ('auto restart', 'autorenew.png', self.handle_renew),
+                ('remove from queue', 'removefromqueue.png', self.handle_remove_from_queue),
+                ('submit to queue', 'addtoqueue.png', self.handle_add_to_queue),
+                ('open', 'folder.png', self.handle_open)]:
             btn = QtWidgets.QToolButton()
             btn.setIcon(get_icon(icon))
             btn.pressed.connect(callback)
             btn.setAutoRaise(True)
+            btn.setEnabled(False)
             btn.setToolTip(tool)
             self.tool_btn_dict[tool] = btn
             self.job_toolbar_layout.addWidget(btn)
@@ -167,6 +180,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.job_status_table.default_value = OrderedDict()
         self.job_status_table.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                                             QtWidgets.QSizePolicy.Preferred)
+        self.job_status_table.new_selection.connect(self.update_btns)
         self.job_layout.addWidget(self.job_status_table)
 
         # splitter
@@ -249,37 +263,37 @@ class WorkflowWidget(QtWidgets.QWidget):
         data = self.job_status_table.value
         data[dir_base] = {'status':'submitted', 'progress':0, 'path':proj_dir}
         self.job_status_table.set_value(data)
-        self.mfixgui.print_internal("Starting: %s" % proj_dir, color='green')
+        self.mfixgui.print_internal("Starting: %s" % str(proj_dir), color='green')
 
         if not os.path.exists(mfx_file):
             self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
             return
 
-        run_cmd = self.mfixgui._build_run_cmd(project_filename=proj_name)
+        run_cmd, port = self.mfixgui._build_run_cmd(project_filename=proj_name)
+
 
         if run_cmd[0] is None:
             self.mfixgui.open_run_dialog(batch=True)
-            run_cmd = self.mfixgui._build_run_cmd(project_filename=proj_name)
+            run_cmd, port = self.mfixgui._build_run_cmd(project_filename=proj_name)
 
             if run_cmd[0] is None:
                 self.mfixgui.print_internal("Error: A MFIX executable is not selected")
                 return
 
         job = JobManager(self.mfixgui)
-
-        self.mfixgui.print_internal("Run CMD: %s" % run_cmd, color='green')
+        msg = 'Starting %s' % ' '.join(run_cmd)
+        self.mfixgui.print_internal(msg, color='green')
 
         job.start_command(
-            is_pymfix=self.mfixgui.pymfix_enabled,
             cmd=run_cmd,
             cwd=proj_dir,
-            env=os.environ)
+            env=os.environ,
+            port=port)
 
         self.job_dict[dir_base] = job
 
-    def cancel_project(self):
-        """Cancel the selected project"""
-        pass
+        if not self.update_timer.isActive():
+            self.update_timer.start(1000)
 
     def save(self, fname):
         """save a node chart file at the given path"""
@@ -293,12 +307,90 @@ class WorkflowWidget(QtWidgets.QWidget):
         """clear all nodes"""
         self.nodeChart.deleteAllNodes(confirm=False)
 
-    def handle_stop_job(self):
-        """stop the selected job"""
-        print('stop')
+    # --- job update ---
+    def update_job_status(self):
+        """update the current job status"""
 
-    def handle_open_job(self):
+        data = self.job_status_table.value
+
+        for job_name in data.keys():
+            if job_name in self.job_dict:
+                status = 'submitted'
+                job = self.job_dict[job_name]
+
+                if job.is_running():
+                    status = 'running'
+                elif job.is_paused():
+                    status = 'paused'
+
+                data[job_name]['status'] = status
+
+        self.job_status_table.set_value(data)
+
+    # --- job managment ---
+    def get_selected_projects(self):
+        """get the currently selected projects"""
+        projs = list(self.job_status_table.value.keys())
+        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows()]
+
+    def update_btns(self):
+        """enable/diable btns"""
+
+        enable_list = [False]*len(self.tool_btn_dict)
+
+        projs = self.get_selected_projects()
+
+        if len(projs) > 1:
+            enable_list[:3] = [True]*4
+            enable_list[-1] = True
+#        elif len(projs) == 1:
+#
+
+        for enable, btn in zip(enable_list, self.tool_btn_dict.values()):
+            btn.setEnabled(enable)
+
+    def handle_play(self):
+        """play the selected job"""
+        projs = self.get_selected_projects()
+        for proj in projs:
+            proj.unpause()
+
+    def handle_stop(self):
+        """stop the selected job"""
+        projs = self.get_selected_projects()
+        for proj in projs:
+            proj.terminate_pymfix()
+
+    def handle_pause(self):
+        """pause the selected job"""
+        projs = self.get_selected_projects()
+        for proj in projs:
+            proj.pause()
+
+    def handle_restart(self):
+        """restart the selected job"""
+        projs = self.get_selected_projects()
+        for proj in projs:
+            proj.stop_mfix()
+
+    def handle_remove_from_queue(self):
+        """remove job from queue"""
+        projs = self.get_selected_projects()
+        print('remove')
+
+    def handle_add_to_queue(self):
+        """add job to queue"""
+        projs = self.get_selected_projects()
+        print('add')
+
+    def handle_renew(self):
+        """auto restart the selected job"""
+        projs = self.get_selected_projects()
+        print('auto restart')
+
+    def handle_open(self):
         """open the selected job"""
+        projs = self.get_selected_projects()
         print('open')
 
     def handle_import(self):

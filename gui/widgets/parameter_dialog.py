@@ -63,7 +63,8 @@ class ParameterDialog(QtWidgets.QDialog):
         self.table = Table(
             parent=self,
             dtype=OrderedDict,
-            selection_behavior='cell',
+            selection_behavior='row',
+            multi_selection='multi',
             columns=['parameter', 'type', 'value'],
             column_delegate={0: {'widget': 'lineedit',
                                  },
@@ -91,9 +92,9 @@ class ParameterDialog(QtWidgets.QDialog):
         self.data_old = copy.deepcopy(data)
 
     def table_clicked(self):
-        row = self.table.current_row()
+        rows = self.table.current_rows()
 
-        if row >= 0:
+        if rows:
             self.toolbutton_remove.setEnabled(True)
             self.toolbutton_copy.setEnabled(True)
         else:
@@ -115,37 +116,47 @@ class ParameterDialog(QtWidgets.QDialog):
         self.update_table(data)
 
     def remove_parameter(self):
-        row = self.table.current_row()
+        rows = self.table.current_rows()
 
-        if row >= 0:
+        if rows:
             data = self.table.value
-            index = list(data.keys())[row]
-            name = data[index]['parameter']
-            if name in self.parent().project.parameter_key_map.keys():
-                self.parent().message(title='Error', text='The parameter name: <b>{}</b> is being used. Please remove reference before deleting.'.format(name))
-            else:
-                data.pop(index)
-                self.update_table(data)
+            cant_remove = []
+            for row in rows:
+                index = list(data.keys())[row]
+                name = data[index]['parameter']
+                if name in self.parent().project.parameter_key_map.keys():
+                    cant_remove.append(name)
+                else:
+                    data.pop(index)
+            self.update_table(data)
+            if cant_remove:
+                self.parent().message(title='Error', text='The following parameters are being used: <b>{}</b>. Please remove reference before deleting.'.format(', '.join(cant_remove)))
+
+        self.toolbutton_remove.setDown(False)
 
     def copy_parameter(self):
-        row = self.table.current_row()
+        rows = self.table.current_rows()
 
-        if row >= 0:
+        if rows:
             data = self.table.value
-            index = list(data.keys())[row]
-            name = data[index]['parameter']
+            
+            for row in rows:
+                index = list(data.keys())[row]
+                name = data[index]['parameter']
 
-            new_name = get_unique_string(
-                name, [val['parameter'] for val in data.values()])
+                new_name = get_unique_string(
+                    name, [val['parameter'] for val in data.values()])
 
-            new_index = 0
-            if len(data.keys()) > 0:
-                new_index = max(data.keys())+1
+                new_index = 0
+                if len(data.keys()) > 0:
+                    new_index = max(data.keys())+1
 
-            data[new_index] = {'parameter': new_name,
-                               'type': copy.deepcopy(data[index]['type']),
-                               'value': copy.deepcopy(data[index]['value'])}
+                data[new_index] = {'parameter': new_name,
+                                   'type': copy.deepcopy(data[index]['type']),
+                                   'value': copy.deepcopy(data[index]['value'])}
             self.update_table(data)
+            
+        self.toolbutton_remove.setDown(False)
 
     def load_parameters(self):
         new_param_dict = OrderedDict()
@@ -218,7 +229,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
             if new_name != old_name:
                 self.change_parameter_name(old_name, new_name)
-                
+
     def check_value(self, value, old_value, dtype):
         if dtype == 'float':
             try:
