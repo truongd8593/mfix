@@ -258,6 +258,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
+
+        # TODO FIXME scrollbar handling is not right - scrollbar status can change
+        # outside of this function.  We need to call this everytime window geometry changes
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
 
@@ -554,8 +557,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         if row is None: # No selection
             return
         # avoid callbacks to handle_solids_table_selection
+        tw.itemSelectionChanged.disconnect() #self.handle_solids_table_selection)
         tw.clearSelection()
-
         name = tw.item(row, 0).text()
         phase = row+1
         for key in ('ro', 'mu', 'c_p', 'k'):
@@ -579,6 +582,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
         tw.removeRow(row)
         self.update_solids_table()
+        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+
         self.set_unsaved_flag()
 
     def enable_solids_scalar_eq(self, state):
