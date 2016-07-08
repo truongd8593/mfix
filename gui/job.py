@@ -146,7 +146,7 @@ class JobManager(object):
             log.warn("Cannot start process, already have an mfix process")
             return
 
-        mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        mfix_stop_file = os.path.join(cwd, 'MFIX.STOP')
         if os.path.exists(mfix_stop_file):
             try:
                 os.remove(mfix_stop_file)

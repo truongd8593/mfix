@@ -321,7 +321,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
                 if job.is_running():
                     status = 'running'
-                elif job.is_paused():
+                if job.is_paused():
                     status = 'paused'
 
                 data[job_name]['status'] = status
