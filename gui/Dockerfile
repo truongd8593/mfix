@@ -23,9 +23,10 @@ RUN apt-get install -y curl grep sed dpkg && \
 ENV PATH /opt/conda/bin:$PATH
 
 RUN conda install -y vtk
-RUN pip install future
-RUN pip install qtpy
 RUN pip install coverage
+RUN pip install future
+RUN pip install pyinstaller
+RUN pip install qtpy
 RUN pip install xvfbwrapper
 
 # http://bugs.python.org/issue19846
