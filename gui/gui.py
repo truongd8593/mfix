@@ -124,6 +124,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.solver_name = None
         self.fluid_solver_disabled = False
         self.mfix_exe = None
+        self.mfix_exe_flags = {}
         self.commandline_option_exe = None
         self.mfix_available = False
         self.open_succeeded = False
@@ -1497,16 +1498,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.update_run_options()
 
     def dmp_enabled(self):
-        config = self.run_dialog.mfix_exe_flags.get(self.mfix_exe, None)
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
         return 'dmp' in config if config else False
 
     def smp_enabled(self):
-        config = self.run_dialog.mfix_exe_flags.get(self.mfix_exe, None)
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
         return 'smp' in config if config else False
 
     def pymfix_enabled(self):
-        config = self.run_dialog.mfix_exe_flags.get(self.mfix_exe, None)
-        return any(mfix_exe.lower().endswith(x) for x in ('pymfix', 'pymfix.exe'))
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
+        return 'python' in config if config else False
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""

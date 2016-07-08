@@ -39,7 +39,6 @@ class RunPopup(QDialog):
         self.mfix_available = False
         self.mfix_exe = None
         self.mfix_exe_list = []
-        self.mfix_exe_flags = {}
         self.title = title
         self.parent = parent
         self.project = parent.project
@@ -62,7 +61,6 @@ class RunPopup(QDialog):
         self.cancel_button.clicked.connect(self.handle_abort)
 
         self.initialize_ui()
-        self.parent.handle_exe_changed()
 
     # UI update functions
 
@@ -125,7 +123,7 @@ class RunPopup(QDialog):
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
         self.ui.groupbox_run_options.setEnabled(self.mfix_available)
-        cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
+        cfg = self.parent.mfix_exe_flags.get(self.mfix_exe, None)
         dmp = 'dmp' in cfg['flags'] if cfg else False
         smp = 'smp' in cfg['flags'] if cfg else False
         self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
@@ -332,7 +330,7 @@ class RunPopup(QDialog):
         """ run mfix to get executable features (like dmp/smp support) """
         if not self.exe_exists(mfix_exe):
             return False
-        cache = self.mfix_exe_flags
+        cache = self.parent.mfix_exe_flags
         log.debug('Feature testing MFIX %s' % mfix_exe)
         try: # Possible race, file may have been deleted/renamed since isfile check!
             stat = os.stat(mfix_exe)
