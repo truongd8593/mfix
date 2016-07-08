@@ -23,7 +23,7 @@ except ImportError:
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
+MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
 
 class RunPopup(QDialog):
 
@@ -39,7 +39,6 @@ class RunPopup(QDialog):
         self.mfix_available = False
         self.mfix_exe = None
         self.mfix_exe_list = []
-        self.mfix_exe_flags = {}
         self.title = title
         self.parent = parent
         self.project = parent.project
@@ -124,7 +123,7 @@ class RunPopup(QDialog):
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
         self.ui.groupbox_run_options.setEnabled(self.mfix_available)
-        cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
+        cfg = self.parent.mfix_exe_flags.get(self.mfix_exe, None)
         dmp = 'dmp' in cfg['flags'] if cfg else False
         smp = 'smp' in cfg['flags'] if cfg else False
         self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
@@ -242,7 +241,7 @@ class RunPopup(QDialog):
             # TODO? default install location(s)
             # ... where will the default binaries be installed?
             #for location in default_install_dirs:
-            #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+            #    for name in ['mfix', 'mfix.exe']:
             #        for exe in glob(os.path.join(self.project_dir, name)):
             #            exe = os.path.abspath(exe)
             #            self.prepend_to_exe_list(exe)
@@ -283,18 +282,11 @@ class RunPopup(QDialog):
         def mfix_build_directories():
             mfix_home = get_mfix_home()
             bin_dir = os.path.join(mfix_home, 'bin')
-            builds_dir = os.path.join(mfix_home, 'build')
             #if mfix_home:
             if True:
                 dir_list = set([mfix_home])
                 if os.path.isdir(bin_dir):
                     dir_list.add(bin_dir)
-                # add mfix_home/build/*/build-aux
-                if os.path.isdir(builds_dir):
-                    for child in os.listdir(builds_dir):
-                        build = os.path.join(builds_dir, child, 'build-aux')
-                        if os.path.isdir(build):
-                            dir_list.add(build)
                 for d in dir_list:
                     for name in MFIX_EXE_NAMES:
                         for exe in glob(os.path.join(d, name)):
@@ -331,17 +323,13 @@ class RunPopup(QDialog):
         """ run mfix to get executable features (like dmp/smp support) """
         if not self.exe_exists(mfix_exe):
             return False
-        cache = self.mfix_exe_flags
+        cache = self.parent.mfix_exe_flags
         log.debug('Feature testing MFIX %s' % mfix_exe)
         try: # Possible race, file may have been deleted/renamed since isfile check!
             stat = os.stat(mfix_exe)
         except OSError as err:
             log.debug('Could not stat %s' % mfix_exe)
             return False
-
-        if any(mfix_exe.lower().endswith(x)
-               for x in ('pymfix', 'pymfix.exe')):
-            cache[mfix_exe] = {'stat': stat, 'flags': 'dmp smp'}
 
         cached = cache.get(mfix_exe, None)
         if cached and cached['stat'] == stat:

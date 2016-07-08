@@ -124,12 +124,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.solver_name = None
         self.fluid_solver_disabled = False
         self.mfix_exe = None
+        self.mfix_exe_flags = {}
         self.commandline_option_exe = None
-        self.mfix_config = None
-        self.smp_enabled = False
-        self.dmp_enabled = False
         self.mfix_available = False
-        self.pymfix_enabled = False
         self.open_succeeded = False
         self.unsaved_flag = False
         self.run_dialog = None
@@ -326,7 +323,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run = ui.run
         run.button_run_mfix.clicked.connect(self.handle_run)
         run.button_pause_mfix.clicked.connect(self.handle_pause)
-        run.button_pause_mfix.setVisible(self.pymfix_enabled)
+        run.button_pause_mfix.setVisible(self.pymfix_enabled())
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
@@ -604,7 +601,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
-        ui.run.checkbox_pymfix_output.setEnabled(self.pymfix_enabled)
+        ui.run.checkbox_pymfix_output.setEnabled(self.pymfix_enabled())
 
 
     def print_welcome(self):
@@ -1496,19 +1493,21 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
         self.mfix_exe = mfix_exe = self.run_dialog.mfix_exe
-        self.mfix_config = config = \
-                self.run_dialog.mfix_exe_flags.get(mfix_exe, None)
-        log.debug('exe changed signal recieved: %s' % mfix_exe)
-
         self.settings.setValue('mfix_exe', mfix_exe)
-        self.mfix_config = config
-        self.smp_enabled = 'smp' in config if config else False
-        self.dmp_enabled = 'dmp' in config if config else False
-
-        self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
-                                  for x in ('pymfix', 'pymfix.exe'))
-
+        log.debug('exe changed signal recieved: %s' % mfix_exe)
         self.update_run_options()
+
+    def dmp_enabled(self):
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
+        return 'dmp' in config if config else False
+
+    def smp_enabled(self):
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
+        return 'smp' in config if config else False
+
+    def pymfix_enabled(self):
+        config = self.mfix_exe_flags.get(self.mfix_exe, None)
+        return 'python' in config if config else False
 
     def _start_mfix(self):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
@@ -1520,7 +1519,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         mfix_exe = self.mfix_exe
 
-        if self.dmp_enabled:
+        if self.dmp_enabled():
             mpiranks = (self.project.nodesi.value *
                         self.project.nodesj.value *
                         self.project.nodesk.value)
@@ -1531,7 +1530,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             run_cmd = [mfix_exe]
 
         port = None
-        if self.pymfix_enabled:
+        if self.pymfix_enabled():
             # find free port
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind(("",0))
@@ -1540,7 +1539,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             sock.close()
             run_cmd += ['-P', str(port)]
 
-        if self.smp_enabled:
+        if self.smp_enabled():
             #FIXME obtain this value from run popup dialog
             NUM_THREADS = '2'
             if not "OMP_NUM_THREADS" in os.environ:
