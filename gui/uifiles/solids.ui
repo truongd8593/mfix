@@ -278,6 +278,9 @@ QPushButton:checked {
           <property name="frameShadow">
            <enum>QFrame::Plain</enum>
           </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
           <property name="alternatingRowColors">
            <bool>false</bool>
           </property>
@@ -1637,7 +1640,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>433</width>
+            <width>344</width>
             <height>1261</height>
            </rect>
           </property>
