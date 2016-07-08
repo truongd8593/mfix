@@ -827,9 +827,13 @@ class Project(object):
             key += list(args)
         try:
             r =  get_from_dict(self._keyword_dict, key)
-            return r.value
         except KeyError:
             return default
+
+        if isinstance(r, dict): # Should we return the whole vector?
+            return default
+        return r.value
+
 
     def __deepcopy__(self, memo):
         # TODO: this is not efficient
