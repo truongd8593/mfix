@@ -4,7 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import re
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui
@@ -30,11 +29,11 @@ except ImportError:
 from project import Keyword, Equation, FloatExp, make_FloatExp
 from regexes import *
 from constants import *
+from tools.general import (to_text_string, get_icon, insert_append_action,
+                           insert_append_separator, get_unique_string)
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
+VALID_EXPRESION_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys())
 
-VALID_EXPRESION_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
-
-from tools.general import to_text_string
 
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
@@ -52,6 +51,75 @@ class BaseWidget(QtCore.QObject):
         self.min = None
         self.max = None
         self.required = None
+        self.help_text = 'No help avaliable.'
+        self.context_menu = None
+        self.allow_parameters = False
+
+    def extend_context_menu(self):
+        menu = self.context_menu()
+        first_default_action = menu.actions()
+
+        if first_default_action:
+            first_default_action = first_default_action[0]
+        # help
+        help_action = QtWidgets.QAction(
+            get_icon('help.png'), 'Help', menu)
+        help_action.triggered.connect(self.show_help_message)
+        insert_append_action(menu, help_action, first_default_action)
+
+        # create parameter
+        if self.allow_parameters:
+            create_param_action = QtWidgets.QAction(
+                get_icon('functions.png'), 'Create Parameter', menu)
+            create_param_action.triggered.connect(self.create_parameter)
+            insert_append_action(menu, create_param_action, first_default_action)
+
+        insert_append_separator(menu, first_default_action)
+
+        return menu
+
+    def contextMenuEvent(self, event):
+        if self.context_menu is not None:
+            menu = self.extend_context_menu()
+            menu.exec_(event.globalPos())
+
+    def show_help_message(self):
+        message_box = QtWidgets.QMessageBox(self)
+        if self.key is not None:
+            key = ': ' + self.key
+        else:
+            key = ''
+        message_box.setWindowTitle('Help' + key)
+        message_box.setIcon(QtWidgets.QMessageBox.Information)
+
+        # Text
+        message_box.setText(self.help_text)
+
+        message_box.addButton(QtWidgets.QMessageBox.Ok)
+        message_box.exec_()
+
+    def create_parameter(self):
+        btn = QtWidgets.QMessageBox.Yes
+        if isinstance(self.value, Equation):
+            message_box = QtWidgets.QMessageBox(self)
+            message_box.setWindowTitle('Warning')
+            message_box.setIcon(QtWidgets.QMessageBox.Warning)
+
+            # Text
+            message_box.setText("Warning: Replace equation with parameter?")
+
+            message_box.addButton(QtWidgets.QMessageBox.Yes)
+            message_box.addButton(QtWidgets.QMessageBox.No)
+            message_box.setDefaultButton(QtWidgets.QMessageBox.No)
+            btn = message_box.exec_()
+
+        if btn == QtWidgets.QMessageBox.Yes:
+            name = get_unique_string('param', PARAMETER_DICT.keys())
+
+            PARAMETER_DICT[name] = self.dtype(self.value)
+
+            self.updateValue(None, name)
+            self.emitUpdatedValue()
 
     def emitUpdatedValue(self):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
@@ -160,29 +228,48 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.value_error(e)
                     return self.saved_value or ''
-            elif re_math.search(text):
+            elif re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
                         text = text[2:-1]
-                    eq = Equation(text)
+                    eq = Equation(text, dtype=float)
                     f = float(eq)
                     self.check_range(f)
                     self.saved_value = eq
                     return eq
                 except ValueError as e:
-                    self.value_error("Equation Error: value %s" %e)
+                    self.value_error("Equation Error: value %s" % e)
                     return self.saved_value or ''
             else:
                 return self.saved_value or ''
 
         elif self.dtype is int:
+            if re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
+                try:
+                    eq = Equation(text, dtype=int)
+                    i = int(eq)
+                    self.check_range(i)
+                    self.saved_value = eq
+                    return eq
+                except ValueError as e:
+                    self.value_error("Equation Error: value %s" % e)
+                    return self.saved_value or ''
+            else:
+                try:
+                    i = int(float(text))
+                    self.check_range(i)
+                    self.saved_value = i
+                    return i
+                except ValueError as e:
+                    self.value_error("Error: value %s" % e)
+                    return self.saved_value or ''
             try:
                 i = int(float(text))
                 self.check_range(i)
                 self.saved_value = i
                 return i
             except ValueError as e:
-                self.value_error("Error: value %s" %e)
+                self.value_error("Error: value %s" % e)
                 return self.saved_value or ''
 
         else:
@@ -223,13 +310,13 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
         beg = cur_text[:i]
         end = cur_text[i:]
-        
+
         if text_under:
             beg = rreplace(beg, text_under, completion, 1)
         else:
             beg += completion
         self.setText(beg+end)
-    
+
         self.setCursorPosition(len(beg))
 
     def textUnderCursor(self):
@@ -287,6 +374,7 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
         # stateChanged:  called on both user interaction and programmatic change
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
+        self.context_menu = QtWidgets.QMenu
 
     @property
     def value(self):
@@ -312,6 +400,7 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
         #self.currentIndexChanged.connect(self.emitUpdatedValue)
         self.dtype = str
         self.is_pop_up = False
+        self.context_menu = QtWidgets.QMenu
 
     @property
     def value(self):
@@ -355,6 +444,7 @@ class SpinBox(QtWidgets.QSpinBox, BaseWidget):
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
+        self.context_menu = QtWidgets.QMenu
 
     def emitUpdatedValue(self): # calls self.value() instead of using self.value
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
@@ -382,8 +472,8 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         BaseWidget.__init__(self)
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
-
         self.dtype = float
+        self.context_menu = QtWidgets.QMenu
 
     def textFromValue(self, value):
         ret = repr(value)
@@ -434,9 +524,9 @@ class Table(QtWidgets.QTableView, BaseWidget):
         a string describing the selection behavior. Either 'row', 'col', or
         'cell' for row selection, column selection, or single cell selection,
         respectively (default 'cell')
-    selection_mode (str):
-        a string describing the selection mode. Either 'single', or 'multi' for
-        single selection or multiple selections (default 'single')
+    multi_selection (bool):
+        Either single selection (False), or multiple selections (True)
+        (default False)
 
     Signals
     -------
@@ -517,8 +607,8 @@ class Table(QtWidgets.QTableView, BaseWidget):
         else:
             self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
 
-        if multi == 'multi':
-            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        if multi:
+            self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         else:
             self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
@@ -539,6 +629,10 @@ class Table(QtWidgets.QTableView, BaseWidget):
                                         [to.row(), to.column()])
             else:
                 self.new_selection.emit(None, None)
+
+    def clear_selection(self):
+        sel_model = self.selectionModel()
+        sel_model.clearSelection()
 
     @property
     def value(self):
@@ -649,19 +743,19 @@ class Table(QtWidgets.QTableView, BaseWidget):
         value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
         self.model().apply_to_column(column, value)
 
-    def current_row(self):
-        i = self.selectionModel().selection().indexes()
+    def current_rows(self):
+        i = self.selectionModel().selectedRows()
         if i:
-            return i[-1].row()
+            return [ind.row() for ind in i]
         else:
-            return -1
+            return []
 
-    def current_column(self):
-        i = self.selectionModel().selection().indexes()
+    def current_columns(self):
+        i = self.selectionModel().selectedColumns()
         if i:
-            return i[-1].column()
+            return [ind.column() for ind in i]
         else:
-            return -1
+            return []
 
     def clear(self):
         self.model().update({}) # TODO: change based on dtype?
@@ -751,16 +845,32 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
                 return pop
 
             else:
-                return QtWidgets.QStyledItemDelegate.eventFilter(self,
-                                                                 widget,
-                                                                 event)
+                return QtWidgets.QStyledItemDelegate.eventFilter(
+                    self, widget, event)
 
         else: # ???
-            return QtWidgets.QStyledItemDelegate.eventFilter(self,
-                                                             widget,
-                                                             event)
+            return QtWidgets.QStyledItemDelegate.eventFilter(
+                self, widget, event)
 
-        return False # UNREACHED
+    def paint(self, painter, option, index):
+
+        if index.column() in self.column_dict and self.column_dict[index.column()]['widget'] == 'progressbar':
+
+            progress = int(index.model().data(index, QtCore.Qt.EditRole))
+
+            progressbar = QtWidgets.QStyleOptionProgressBar()
+            progressbar.rect = option.rect
+            progressbar.minimum = 0
+            progressbar.maximum = 100
+            progressbar.progress = progress
+            progressbar.text = '{}%'.format(progress)
+            progressbar.textVisible = True
+            progressbar.textAlignment = QtCore.Qt.AlignCenter
+
+            QtWidgets.QApplication.style().drawControl(
+                QtWidgets.QStyle.CE_ProgressBar, progressbar, painter)
+        else:
+            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
 
 
 class DictTableModel(QtCore.QAbstractTableModel):
