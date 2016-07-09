@@ -30,6 +30,9 @@ except ImportError:
 from project import Keyword, Equation, FloatExp, make_FloatExp
 from regexes import *
 from constants import *
+from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
+
+VALID_EXPRESION_NAMES = DEFAULT_FUNCTIONS.keys() + DEFAULT_NAMES.keys()
 
 from tools.general import to_text_string
 
@@ -255,7 +258,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             self._updateCompleterPopupItems(None)
 
     def _update_completion_list(self):
-        comp_list = []
+        comp_list = VALID_EXPRESION_NAMES
         for key, value in PARAMETER_DICT.items():
             if isinstance(value, self.dtype):
                 comp_list.append(key)
