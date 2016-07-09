@@ -215,16 +215,19 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         it is called when the user selects an item in the completer popup.
         """
         text_under = self.textUnderCursor()
+        cur_text = self.text()
+        i = self.cursorPosition()
+
+        beg = cur_text[:i]
+        end = cur_text[i:]
+        
         if text_under:
-            cur_text = self.text()
-            i = self.cursorPosition()
-
-            beg = cur_text[:i]
-            end = cur_text[i:]
             beg = rreplace(beg, text_under, completion, 1)
-            self.setText(beg+end)
-
-            self.setCursorPosition(len(beg))
+        else:
+            beg += completion
+        self.setText(beg+end)
+    
+        self.setCursorPosition(len(beg))
 
     def textUnderCursor(self):
         text = self.text()
@@ -249,7 +252,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         if len(event.text()) > 0 and len(completionPrefix) > 0:
             self._completer.complete()
         if len(completionPrefix) == 0:
-            self._updateCompleterPopupItems('')
+            self._updateCompleterPopupItems(None)
 
     def _update_completion_list(self):
         comp_list = []
@@ -265,9 +268,12 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         Filters the completer's popup items to only show items
         with the given prefix.
         """
-        self._completer.setCompletionPrefix(completionPrefix)
-        self._completer.popup().setCurrentIndex(
-                self._completer.completionModel().index(0, 0))
+        if completionPrefix is None:
+            self._completer.complete()
+        else:
+            self._completer.setCompletionPrefix(completionPrefix)
+            self._completer.popup().setCurrentIndex(
+                    self._completer.completionModel().index(0, 0))
 
 class CheckBox(QtWidgets.QCheckBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
