@@ -163,6 +163,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
         self.text_changed_flag = False
+        self.context_menu = self.createStandardContextMenu
 
         self._separators = ['*', '**', '/', '-', '+', ' ']
         self._completer_model = QtWidgets.QStringListModel(PARAMETER_DICT.keys())
