@@ -23,10 +23,11 @@ from widgets.base import LineEdit
 
 from solids_tfm import SolidsTFM
 from solids_dem import SolidsDEM
+from solids_pic import SolidsPIC
 
 # Change from 'currentIndexChanged' to 'activated' ?
 
-class SolidsHandler(SolidsTFM, SolidsDEM):
+class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -192,9 +193,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             self.setup_dem_tab()
         elif tabnum == 3:
             self.setup_pic_tab()
-
-    def setup_pic_tab(self):
-        pass
 
     # Advanced
     def disable_close_pack(self, val):
