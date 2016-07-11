@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>462</width>
+    <width>468</width>
     <height>1089</height>
    </rect>
   </property>
@@ -1639,7 +1639,7 @@ QPushButton:checked {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-254</y>
+            <y>0</y>
             <width>433</width>
             <height>1297</height>
            </rect>
@@ -2693,296 +2693,422 @@ background-color:transparent;
       </layout>
      </widget>
      <widget class="QWidget" name="PIC">
-      <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
         <widget class="QFrame" name="frame_14">
-         <layout class="QGridLayout" name="gridLayout_59">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_228">
-            <property name="text">
-             <string>Packed bed void fraction</string>
-            </property>
-           </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_10">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_26">
+            <item>
+             <widget class="QLabel" name="label_228">
+              <property name="text">
+               <string>Packed bed void fraction</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_ep_star"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_15">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
-          <item row="0" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_ep_star"/>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_27">
+            <item>
+             <widget class="QLabel" name="label_229">
+              <property name="text">
+               <string>Parcel CFL number</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_cfl_pic"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_16">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_229">
-            <property name="text">
-             <string>Parcel CFL number</string>
-            </property>
-           </widget>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_28">
+            <item>
+             <widget class="QLabel" name="label_230">
+              <property name="text">
+               <string>Solids Stress Model</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="ComboBox" name="combobox">
+              <item>
+               <property name="text">
+                <string>Snider, 2001</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_17">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
-          <item row="1" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_cfl_pic"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_230">
-            <property name="text">
-             <string>Solids Stress Model</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="ComboBox" name="combobox"/>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item>
            <widget class="CheckBox" name="checkbox_keyword_mppic_pdrag_implicit">
             <property name="text">
              <string>Enable implicit treatment of drag force</string>
             </property>
            </widget>
           </item>
+          <item>
+           <spacer name="verticalSpacer_12">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_15">
+            <property name="title">
+             <string>Parameters</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_22">
+               <item>
+                <widget class="QLabel" name="label_231">
+                 <property name="text">
+                  <string>Particle-particle momentum retention</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_en1"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_18">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_24">
+               <item>
+                <widget class="QLabel" name="label_232">
+                 <property name="text">
+                  <string>Wall normal momentum retention</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_en_wall"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_19">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_25">
+               <item>
+                <widget class="QLabel" name="label_233">
+                 <property name="text">
+                  <string>Wall tangential momentum retention</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_et_wall"/>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_20">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_16">
+            <property name="title">
+             <string>Coupling</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_32">
+               <item>
+                <widget class="QLabel" name="label_coupling_method_2">
+                 <property name="text">
+                  <string>Coupling method</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ComboBox" name="combobox_coupling_method_2">
+                 <item>
+                  <property name="text">
+                   <string>One-way Coupled</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Fully Coupled</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_24">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_33">
+               <item>
+                <widget class="QLabel" name="label_237">
+                 <property name="text">
+                  <string>Interpolation</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ComboBox" name="combobox_des_interp_2">
+                 <item>
+                  <property name="text">
+                   <string>Field-to-Particle and Particle-to-Field</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Field-to-Particle only</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Particle-to-Field only</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>No interpolation</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_25">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_34">
+               <item>
+                <spacer name="horizontalSpacer_26">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>18</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_des_interp_scheme_2">
+                 <property name="text">
+                  <string>Scheme</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="ComboBox" name="combobox_des_interp_scheme_2">
+                 <item>
+                  <property name="text">
+                   <string>None</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Garg 2012</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Square DPVM</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_des_interp_width_2">
+                 <property name="text">
+                  <string>Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="LineEdit" name="lineedit_keyword_des_interp_width_2">
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_des_interp_width_units_2">
+                 <property name="text">
+                  <string>m</string>
+                 </property>
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_27">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+            <zorder>lineedit_keyword_des_interp_width_2</zorder>
+            <zorder>label_des_interp_width_2</zorder>
+            <zorder>combobox_des_interp_scheme_2</zorder>
+            <zorder>label_des_interp_scheme_2</zorder>
+            <zorder>label_des_interp_width_units_2</zorder>
+            <zorder>label_237</zorder>
+            <zorder>label_coupling_method_2</zorder>
+            <zorder>combobox_des_interp_2</zorder>
+            <zorder>combobox_coupling_method_2</zorder>
+            <zorder>frame_14</zorder>
+            <zorder>horizontalSpacer_24</zorder>
+            <zorder>horizontalSpacer_25</zorder>
+            <zorder>horizontalSpacer_26</zorder>
+            <zorder>horizontalSpacer_27</zorder>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_15">
-         <property name="title">
-          <string/>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_60">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
-          <property name="spacing">
-           <number>5</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_231">
-            <property name="text">
-             <string>Particle-particle momentum retention</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_en1"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_232">
-            <property name="text">
-             <string>Wall normal momentum retention</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_en_wall"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_233">
-            <property name="text">
-             <string>Wall tangential momentum retention</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_mppic_coeff_et_wall"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_16">
-         <property name="title">
-          <string/>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_61">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
-          <property name="spacing">
-           <number>5</number>
-          </property>
-          <item row="2" column="3">
-           <widget class="LineEdit" name="lineedit_keyword_des_interp_width_2"/>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="label_234">
-            <property name="text">
-             <string>Width</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="ComboBox" name="combobox_keyword_des_interp_scheme"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_235">
-            <property name="text">
-             <string>Scheme</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QLabel" name="label_236">
-            <property name="text">
-             <string>m</string>
-            </property>
-            <property name="margin">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_237">
-            <property name="text">
-             <string>Interpolation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_238">
-            <property name="text">
-             <string>Coupling method</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="ComboBox" name="comboBox_25">
-            <item>
-             <property name="text">
-              <string>field-to-particle and particle-to-field</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>field-to-particle only</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>particle-to-filed only</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>no-interpolation</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="1" colspan="3">
-           <widget class="ComboBox" name="comboBox_24">
-            <item>
-             <property name="text">
-              <string>One-way Coupled</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Fully Coupled</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QGroupBox" name="groupBox_17">
-         <property name="title">
-          <string>Solids stress model (advanced)</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_62">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>5</number>
-          </property>
-          <property name="spacing">
-           <number>5</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_224">
-            <property name="text">
-             <string>Pressure constant</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_psfac_fric_pic"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_225">
-            <property name="text">
-             <string>Pa</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_226">
-            <property name="text">
-             <string>Volume fraction exponent</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_fric_exp_pic"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_227">
-            <property name="text">
-             <string>Non-singularity factor</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_fric_non_sing_fac"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="4" column="0">
+       <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -2990,14 +3116,140 @@ background-color:transparent;
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>339</height>
+           <height>40</height>
           </size>
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_17">
+         <property name="title">
+          <string>Solids stress model (advanced)</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_29">
+            <item>
+             <widget class="QLabel" name="label_224">
+              <property name="text">
+               <string>Pressure constant</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_psfac_fric_pic"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_225">
+              <property name="text">
+               <string>Pa</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_21">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_30">
+            <item>
+             <widget class="QLabel" name="label_226">
+              <property name="text">
+               <string>Volume fraction exponent</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_fric_exp_pic"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_22">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_31">
+            <item>
+             <widget class="QLabel" name="label_227">
+              <property name="text">
+               <string>Non-singularity factor</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_fric_non_sing_fac"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_23">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
+   </item>
+   <item row="1" column="1">
+    <spacer name="horizontalSpacer_14">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
