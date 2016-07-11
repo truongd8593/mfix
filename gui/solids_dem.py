@@ -32,7 +32,9 @@ class SolidsDEM(object):
         s.combobox_des_interp.activated.connect(self.set_des_interp)
         s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
         s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
-
+        s.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
+        s.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
+        s.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
 
     def set_gener_part_config(self, val):
         s = self.ui.solids
@@ -80,6 +82,25 @@ class SolidsDEM(object):
         else: #Restore value
             self.update_keyword('des_diffuse_width',
                                 s.lineedit_keyword_des_diffuse_width.text())
+
+
+    def set_cohesion_model(self, val):
+        for kw in ('use_cohesion', 'van_der_waals'):
+            self.update_keyword(kw, bool(val))
+        self.setup_dem_tab()
+
+    def enable_des_usr_var_size(self, val):
+        s = self.ui.solids
+        if not val:
+            self.unset_keyword('des_usr_var_size')
+        else:
+            self.update_keyword('des_usr_var_size',
+                                s.lineedit_keyword_des_usr_var_size.text())
+        self.setup_dem_tab()
+
+    def set_des_neighbor_search(self, val):
+        self.update_keyword('des_neighbor_search', 4 if val==0 else 1)
+        # No setup_dem_tab needed
 
     def setup_dem_tab(self):
         # Ensures all constraints (items enabled/disabled) are set
@@ -272,6 +293,7 @@ class SolidsDEM(object):
         for item in (s.label_kn,
                      s.lineedit_keyword_kn,
                      s.lineedit_keyword_kn_w,
+                     s.label_kn_units,
                      s.label_kt_fac,
                      s.lineedit_keyword_kt_fac,
                      s.lineedit_keyword_kt_w_fac,
@@ -297,6 +319,7 @@ class SolidsDEM(object):
         for item in (s.label_e_young,
                      s.lineedit_keyword_e_young,
                      s.lineedit_keyword_ew_young,
+                     s.label_e_young_units,
                      s.label_v_poisson,
                      s.lineedit_keyword_v_poisson,
                      s.lineedit_keyword_vw_poisson):
@@ -308,10 +331,6 @@ class SolidsDEM(object):
         # Input given as an upper triangular matrix
         mmax = self.project.get_value('mmax', 1)
         tw = s.tablewidget_des_en_input
-        names = list(self.solids.keys())
-        # Really only need to do this if a name changes
-        tw.setHorizontalHeaderLabels(names)
-        tw.setVerticalHeaderLabels(names + ['Wall'])
         # Table size changed
         if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
             # Clear out old lineedit widgets
@@ -326,6 +345,11 @@ class SolidsDEM(object):
             # Make a new batch
             tw.setRowCount(mmax+1) # extra row for "Wall"
             tw.setColumnCount(mmax)
+
+            # Really only need to do this if a name changes
+            names = list(self.solids.keys())
+            tw.setHorizontalHeaderLabels(names)
+            tw.setVerticalHeaderLabels(names + ['Wall'])
 
             def make_item(str):
                 item = QtWidgets.QTableWidgetItem(str)
@@ -441,8 +465,6 @@ class SolidsDEM(object):
                     arg += 1
             self.fixup_solids_table(tw, stretch_column=mmax-1)
 
-
-
         #Select cohesion model
         # Selection always available
         # Available selections
@@ -454,22 +476,36 @@ class SolidsDEM(object):
         #Selection always available
         #Sets keyword USE_COHESION to true
         #Sets keyword VAN_DER_WAALS to true
+        use_cohesion = self.project.get_value('use_cohesion')
+        van_der_waals = self.project.get_value('van_der_waals')
+        cb = s.combobox_cohesion_model
+        if use_cohesion:
+            if not van_der_waals:
+                self.warn('inconsistent value for keyword van_der_waals')
+                self.unset_keyword('van_der_waals')
+            cb.setCurrentIndex(1)
+        else:
+            if van_der_waals:
+                self.warn('inconsistent value for keyword van_der_waals')
+                self.update_keyword('van_der_waals', True)
+            cb.setCurrentIndex(0)
 
         #Specify Hamaker constant
         # Specification only available for Van der Waals cohesion model
         # Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
-
         #Specify outer cutoff
         # Specification only available for Van der Waals cohesion model
-        # Sets keyword VDW_OUTER_CUTOFF (WALL_OUTTER_CUTOFF)
-
+        # Sets keyword VDW_OUTER_CUTOFF (WALL_OUTER_CUTOFF)
         #Specify inner cutoff
         # Specification only available for Van der Waals cohesion model
         # Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
-
         #Specify asperities
         # Specification only available for Van der Waals cohesion model
         # Sets keyword ASPERITIES
+        enabled = bool(van_der_waals)
+        s.groupbox_cohesion_parameters.setEnabled(enabled)
+        # (settings handled by keyword widgets.  TODO:
+        #  decide if we want to unset keywords if not enabled
 
         #List the following options under an 'Advanced' section header.
         #Select Neighbor Search Method
@@ -481,33 +517,51 @@ class SolidsDEM(object):
         #N-Square
         #Selection always available
         #Sets keyword DES_NEIGHBOR_SEARCH 1
+        des_neighbor_search = self.project.get_value('des_neighbor_search', default=4)
+        if des_neighbor_search not in (1, 4):
+            self.warn("Invalid des_neighbor_search %s" % des_neighbor_search)
+            des_neighbor_search = 4
+            self.update_keyword('des_neighbor_search', des_neighbor_search)
+        cb = s.combobox_des_neighbor_search
+        cb.setCurrentIndex(0 if des_neighbor_search==4 else 1)
 
         #Specify maximum steps between neighbor search
         #Specification always available
         # Sets keyword NEIGHBOR_SEARCH_N
-
         #Specify factor defining particle neighborhood
         #Specification always available
         # Sets keyword FACTOR_RLM
-
         #Specify neighborhood search radius ratio
         #Specification always available
         #Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
-
         #Specify search grid partitions (optional)
         #Specification always available
         #Sets keyword DESGRIDSEARCH_IMAX
         #Sets keyword DESGRIDSEARCH_JMAX
         #Sets keyword DESGRIDSEARCH_KMAX
+        pass # handled by keyword widgets
 
         #Enable user scalar tracking
         #Selection always available
         #Does not directly set any keywords
         #Enables specification of number of user scalars
         # Sets keyword DES_USR_VAR_SIZE
+        des_usr_var_size = self.project.get_value('des_usr_var_size', None)
+        enabled = (des_usr_var_size is not None)
+        cb = s.checkbox_enable_des_usr_var_size
+        cb.setChecked(enabled)
+        s.lineedit_keyword_des_usr_var_size.setEnabled(enabled)
 
         #Define minimum distance for contact conduction (optional)
         #Unavailable if not solving energy equations
-
         #Define fluid lens proportion constant (optional)
         # Unavailable if not solving energy equations
+        enabled = self.project.get_value('energy_eq', default=True)
+        for item in (s.label_des_min_cond_dist,
+                     s.lineedit_keyword_des_min_cond_dist,
+                     s.label_des_min_cond_dist_units,
+                     s.label_flpc,
+                     s.lineedit_keyword_flpc):
+            item.setEnabled(enabled)
+
+        # Fin!
