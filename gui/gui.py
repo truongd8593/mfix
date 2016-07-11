@@ -1972,7 +1972,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # by keyword updates)
         #    .... is there a way to verify that 'energy_eq' is boolean?
         #    should that get set from keyword doc?
-        self.enable_energy_eq(bool(self.project.get_value('energy_eq')))
+        self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
         # cgw - lots more model setup todo here.  Should we do this here or
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
