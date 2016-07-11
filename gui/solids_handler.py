@@ -44,6 +44,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
         self.solids = OrderedDict()
         self.solids_current_phase = None
         self.solids_species = {} #dict of OrderedDict, keyed by phase
+        self.solids_current_tab = 0 # Materials
 
         ui = self.ui
         s = ui.solids
@@ -173,6 +174,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
 
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, btn):
+        self.solids_current_tab = tabnum
         self.animate_stacked_widget(
             self.ui.solids.stackedwidget_solids,
             self.ui.solids.stackedwidget_solids.currentIndex(),
@@ -181,6 +183,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM):
             line=self.ui.solids.line_solids,
             to_btn=btn,
             btn_layout=self.ui.solids.gridlayout_solid_tab_btns)
+        self.setup_solids_tab(tabnum)
+
+    def setup_solids_tab(self, tabnum):
         if tabnum == 1:
             self.setup_tfm_tab()
         elif tabnum == 2:
