@@ -1006,11 +1006,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-        current_selection = self.ui.treewidget_navigation.selectedItems()
-
         # Force any open popup to close
         # if dialog is modal we don't need this
         self.species_popup.done(0)
+
+        current_selection = self.ui.treewidget_navigation.selectedItems()
 
         if current_selection:
             text = str(current_selection[-1].text(0))
@@ -1026,6 +1026,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.ui.stackedWidgetTaskPane,
                 self.ui.stackedWidgetTaskPane.currentIndex(),
                 current_index)
+
+            if text == 'solids': # Special helper for setting up subpanes,
+                # since params have changed
+                self.setup_solids_tab(self.solids_current_tab)
+
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
