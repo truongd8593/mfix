@@ -171,7 +171,7 @@ class SolidsDEM(object):
         enabled = not self.fluid_solver_disabled
         for item in (s.label_coupling_method, s.combobox_coupling_method):
             item.setEnabled(enabled)
-        des_oneway_coupled = self.project.get_value('des_oneway_coupled', False) #?default?
+        des_oneway_coupled = self.project.get_value('des_oneway_coupled', default=False)
         if des_oneway_coupled not in (True, False):
             self.warn("Invalid des_oneway_coupled %s" % des_oneway_coupled)
             des_oneway_coupled = False
