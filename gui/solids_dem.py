@@ -387,10 +387,6 @@ class SolidsDEM(object):
             tw.setColumnCount(0)
 
         if enabled:
-            names = list(self.solids.keys())
-            # Really only need to do this if a name changes
-            tw.setHorizontalHeaderLabels(names)
-            tw.setVerticalHeaderLabels(names + ['Wall'])
             # Table size changed
             if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
 
@@ -405,6 +401,10 @@ class SolidsDEM(object):
                 # Make a new batch
                 tw.setRowCount(mmax+1) # extra row for "Wall"
                 tw.setColumnCount(mmax)
+                names = list(self.solids.keys())
+                # Really only need to do this if a name changes
+                tw.setHorizontalHeaderLabels(names)
+                tw.setVerticalHeaderLabels(names + ['Wall'])
 
                 arg = 1
                 key = 'des_et_input'
