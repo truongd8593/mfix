@@ -172,6 +172,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         self.init_solids_tfm()
         self.init_solids_dem()
+        self.init_solids_pic()
 
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, btn):
