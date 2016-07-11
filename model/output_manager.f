@@ -705,8 +705,8 @@ MODULE output_man
 1100 FORMAT('Particle load at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
 1200 FORMAT('Number of active/inactive PEs = ', A,1x,'/ ',A,1x,'of ',A//)
 
-2000 FORMAT(/'Particle count (with ghost): Total: ', A,1x,', Min: ',A,1x,'(PE=',A,'), &
-              Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
+2000 FORMAT(/'Particle count (with ghost): Total: ', A,1x,', Min: ',A,1x,'(PE=',A,')', &
+              'Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
 2100 FORMAT('Particle load (with ghost) at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
 2200 FORMAT('Number of active/inactive PEs (with ghost) = ', A,1x,'/ ',A,1x,'of ',A//)
       RETURN
@@ -1120,7 +1120,9 @@ MODULE output_man
 ! Now save the new partition to gridmap.dat before restarting
          IF(ADJUST_PARTITION) THEN
             OPEN(UNIT=777, FILE='gridmap.dat')
-            WRITE (777, 1005) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
+            WRITE (777, 1005) DLB_NODESI(BEST_PARTITION), &
+                              DLB_NODESJ(BEST_PARTITION), &
+                              DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
             DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
                   WRITE(777,1060) IPROC,BEST_I_SIZE(IPROC)
             ENDDO
@@ -1136,7 +1138,9 @@ MODULE output_man
             WRITE (*, 1000) 'GRID PARTITION SAVED IN FILE: gridmap.dat'
             WRITE (*, 1000) 'MFIX WILL DO AN INTERNAL RESTART_1 NOW.'
             WRITE (*, 1000) '================================================='
-            WRITE (*,*) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION),'     ! NODESI, NODESJ, NODESK'
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION), &
+                        DLB_NODESJ(BEST_PARTITION), &
+                        DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
             DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
                   WRITE(*,*) IPROC,BEST_I_SIZE(IPROC)
             ENDDO
@@ -1151,7 +1155,9 @@ MODULE output_man
             WRITE (*, 1000) '================================================='
             WRITE (*, 1000) 'INVALID GRID PARTITION '
             WRITE (*, 1000) '================================================='
-            WRITE (*,*) DLB_NODESI(BEST_PARTITION),DLB_NODESJ(BEST_PARTITION),DLB_NODESK(BEST_PARTITION),'     ! NODESI, NODESJ, NODESK'
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION), &
+                        DLB_NODESJ(BEST_PARTITION), &
+                        DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
             DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
                   WRITE(*,*) IPROC,BEST_I_SIZE(IPROC)
             ENDDO
