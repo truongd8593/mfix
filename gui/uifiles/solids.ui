@@ -1639,9 +1639,9 @@ QPushButton:checked {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>344</width>
-            <height>1261</height>
+            <y>-254</y>
+            <width>433</width>
+            <height>1297</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1991,67 +1991,40 @@ background-color:transparent;
             </widget>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout_72">
-             <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
+            <layout class="QGridLayout" name="gridLayout_16">
+             <item row="0" column="1">
+              <widget class="QLabel" name="label_179">
+               <property name="text">
+                <string>particle-particle</string>
                </property>
               </widget>
              </item>
              <item row="0" column="2">
-              <widget class="QLabel" name="label_206">
+              <widget class="QLabel" name="label_180">
                <property name="text">
                 <string>particle-wall</string>
                </property>
               </widget>
              </item>
              <item row="1" column="0">
-              <widget class="QLabel" name="label_207">
+              <widget class="QLabel" name="label_174">
                <property name="text">
-                <string>Hamaker Constant</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_vdw_outer_cutoff">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
+                <string>Friction coefficient</string>
                </property>
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_hamaker_constant">
+              <widget class="LineEdit" name="lineedit_keyword_mew">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
                  <height>16777215</height>
                 </size>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLabel" name="label_208">
-               <property name="text">
-                <string>particle-particle</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_209">
-               <property name="text">
-                <string>Outer cutoff</string>
                </property>
               </widget>
              </item>
              <item row="1" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_hamaker_constant">
+              <widget class="LineEdit" name="lineedit_keyword_mew_w">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
@@ -2060,22 +2033,49 @@ background-color:transparent;
                </property>
               </widget>
              </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_210">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_kn">
                <property name="text">
-                <string>Inner cutoff</string>
+                <string>Normal spring constant</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_211">
+             <item row="2" column="1">
+              <widget class="LineEdit" name="lineedit_keyword_kn">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_kn_w">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3">
+              <widget class="QLabel" name="label_kn_units">
                <property name="text">
-                <string>Asperities</string>
+                <string>N/m</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_kt_fac">
+               <property name="text">
+                <string>Spring norm/tan ratio</string>
                </property>
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_vdw_inner_cutoff">
+              <widget class="LineEdit" name="lineedit_keyword_kt_fac">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
@@ -2085,7 +2085,7 @@ background-color:transparent;
               </widget>
              </item>
              <item row="3" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_wall_vdw_inner_cutoff">
+              <widget class="LineEdit" name="lineedit_keyword_kt_w_fac">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
@@ -2094,8 +2094,86 @@ background-color:transparent;
                </property>
               </widget>
              </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_des_etat_fac">
+               <property name="text">
+                <string>Damping norm/tan ratio</string>
+               </property>
+              </widget>
+             </item>
              <item row="4" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_asperities">
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_fac">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_e_young">
+               <property name="text">
+                <string>Young's modulus</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="LineEdit" name="lineedit_keyword_e_young">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_ew_young">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="3">
+              <widget class="QLabel" name="label_e_young_units">
+               <property name="text">
+                <string>Pa</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_v_poisson">
+               <property name="text">
+                <string>Poisson ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="LineEdit" name="lineedit_keyword_v_poisson">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_vw_poisson">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
@@ -2206,7 +2284,7 @@ background-color:transparent;
               </widget>
              </item>
              <item>
-              <widget class="ComboBox" name="comboBox_29">
+              <widget class="ComboBox" name="combobox_cohesion_model">
                <item>
                 <property name="text">
                  <string>None</string>
@@ -2235,191 +2313,139 @@ background-color:transparent;
             </layout>
            </item>
            <item>
+            <widget class="QGroupBox" name="groupbox_cohesion_parameters">
+             <property name="title">
+              <string>Parameters</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_18">
+              <item row="0" column="0">
+               <layout class="QGridLayout" name="gridLayout_17">
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_208">
+                  <property name="text">
+                   <string>particle-particle</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_206">
+                  <property name="text">
+                   <string>particle-wall</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_207">
+                  <property name="text">
+                   <string>Hamaker Constant</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="LineEdit" name="lineedit_keyword_hamaker_constant">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="LineEdit" name="lineedit_keyword_wall_hamaker_constant">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_209">
+                  <property name="text">
+                   <string>Outer cutoff</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="LineEdit" name="lineedit_keyword_vdw_outer_cutoff">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="LineEdit" name="lineedit_keyword_wall_vdw_outer_cutoff">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_210">
+                  <property name="text">
+                   <string>Inner cutoff</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="LineEdit" name="lineedit_keyword_vdw_inner_cutoff">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="LineEdit" name="lineedit_keyword_wall_vdw_inner_cutoff">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_211">
+                  <property name="text">
+                   <string>Asperities</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="LineEdit" name="lineedit_keyword_asperities">
+                  <property name="maximumSize">
+                   <size>
+                    <width>150</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="Line" name="line_4">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="gridLayout_16">
-             <item row="0" column="1">
-              <widget class="QLabel" name="label_179">
-               <property name="text">
-                <string>particle-particle</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="label_180">
-               <property name="text">
-                <string>particle-wall</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_174">
-               <property name="text">
-                <string>Friction coefficient</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_mew">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_mew_w">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_kn">
-               <property name="text">
-                <string>Normal spring constant</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_kn">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_kn_w">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_kt_fac">
-               <property name="text">
-                <string>Spring norm/tan ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_kt_fac">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_kt_w_fac">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_des_etat_fac">
-               <property name="text">
-                <string>Damping norm/tan ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_des_etat_fac">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QLabel" name="label_e_young">
-               <property name="text">
-                <string>Young's modulus</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_e_young">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_ew_young">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="label_v_poisson">
-               <property name="text">
-                <string>Poisson ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_v_poisson">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_vw_poisson">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
            <item>
             <widget class="QGroupBox" name="groupbox_dem_advanced">
@@ -2437,7 +2463,7 @@ background-color:transparent;
                  </widget>
                 </item>
                 <item>
-                 <widget class="ComboBox" name="comboBox_30">
+                 <widget class="ComboBox" name="combobox_des_neighbor_search">
                   <item>
                    <property name="text">
                     <string>Grid-based</string>
@@ -2598,7 +2624,7 @@ background-color:transparent;
               <item>
                <layout class="QGridLayout" name="gridLayout_5">
                 <item row="0" column="0">
-                 <widget class="QCheckBox" name="checkBox_6">
+                 <widget class="QCheckBox" name="checkbox_enable_des_usr_var_size">
                   <property name="text">
                    <string>Enable user scalar tracking</string>
                   </property>
@@ -2615,14 +2641,14 @@ background-color:transparent;
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QLabel" name="label_213">
+                 <widget class="QLabel" name="label_des_min_cond_dist">
                   <property name="text">
                    <string>Minimum conduction distance</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLineEdit" name="lineEdit_39">
+                 <widget class="LineEdit" name="lineedit_keyword_des_min_cond_dist">
                   <property name="maximumSize">
                    <size>
                     <width>150</width>
@@ -2632,21 +2658,21 @@ background-color:transparent;
                  </widget>
                 </item>
                 <item row="1" column="2">
-                 <widget class="QLabel" name="label_215">
+                 <widget class="QLabel" name="label_des_min_cond_dist_units">
                   <property name="text">
                    <string>m</string>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="label_214">
+                 <widget class="QLabel" name="label_flpc">
                   <property name="text">
                    <string>Fluid lens proportional constant</string>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLineEdit" name="lineEdit_40">
+                 <widget class="LineEdit" name="lineedit_keyword_flpc">
                   <property name="maximumSize">
                    <size>
                     <width>150</width>
