@@ -80,6 +80,14 @@ if PRECOMPILE_UI:
         print("You must compile ui files! (run 'make'")
         sys.exit(1)
 
+def find_free_port():
+    # find free port
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("",0))
+    sock.listen(1)
+    port = sock.getsockname()[1]
+    sock.close()
+    return port
 
 # --- Main Gui ---
 
@@ -1429,7 +1437,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.print_internal("Stop: error %s" % e)
             traceback.print_exception(*sys.exc_info())
 
-    def run_mfix(self):
+    def check_save(self):
         output_files = self.monitor.get_outputs()
         res_files = self.monitor.get_res_files()
         if output_files:
@@ -1452,7 +1460,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.project.writeDatFile(self.get_project_file())
         self.clear_unsaved_flag()
         self.update_source_view()
-        self._start_mfix()
+
+    def run_mfix(self):
+        self.check_save()
+        self._start_mfix(False)
+
+    def submit_mfix(self):
+        self.check_save()
+        self._start_mfix(True)
 
     def restart_mfix(self):
         """Restart MFIX. This will remove previous output and start a new run."""
@@ -1491,6 +1506,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         popup_title = self.ui.run.button_run_mfix.text()
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
         self.run_dialog.run.connect(self.run_mfix)
+        self.run_dialog.submit.connect(self.submit_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
@@ -1498,9 +1514,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
-        self.mfix_exe = mfix_exe = self.run_dialog.mfix_exe
-        self.settings.setValue('mfix_exe', mfix_exe)
-        log.debug('exe changed signal recieved: %s' % mfix_exe)
+        self.mfix_exe = self.run_dialog.mfix_exe
+        self.settings.setValue('mfix_exe', self.mfix_exe)
+        log.debug('exe changed signal recieved: %s' % self.mfix_exe)
         self.update_run_options()
 
     def dmp_enabled(self):
@@ -1518,35 +1534,36 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         flags = config['flags'] if config else ''
         return 'python' in flags
 
-    def _start_mfix(self):
-        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
-
-        if not self.mfix_exe:
-            self.print_internal("ERROR: MFIX not available")
-            self.update_run_options()
-            return
-
-        mfix_exe = self.mfix_exe
+    def get_run_cmd(self):
 
         if self.dmp_enabled():
             mpiranks = (self.project.nodesi.value *
                         self.project.nodesj.value *
                         self.project.nodesk.value)
 
-            run_cmd = ['mpirun', '-np', str(mpiranks), mfix_exe]
+            run_cmd = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
         else:
             # no dmp support
-            run_cmd = [mfix_exe]
+            run_cmd = [self.mfix_exe]
 
-        port = None
+        port = find_free_port()
         if self.pymfix_enabled():
-            # find free port
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind(("",0))
-            sock.listen(1)
-            port = sock.getsockname()[1]
-            sock.close()
             run_cmd += ['-P', str(port)]
+
+        project_filename = os.path.basename(self.get_project_file())
+        # Warning, not all versions of mfix support '-f' !
+        run_cmd += ['-f', project_filename]
+        msg = 'Starting %s' % ' '.join(run_cmd)
+        self.print_internal(msg, color='blue')
+        return run_cmd, port
+
+    def _start_mfix(self, submit):
+        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
+
+        if not self.mfix_exe:
+            self.print_internal("ERROR: MFIX not available")
+            self.update_run_options()
+            return
 
         if self.smp_enabled():
             #FIXME obtain this value from run popup dialog
@@ -1555,20 +1572,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 os.environ["OMP_NUM_THREADS"] = NUM_THREADS
             log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
 
-        project_filename = os.path.basename(self.get_project_file())
-        # Warning, not all versions of mfix support '-f' !
-        run_cmd += ['-f', project_filename]
-
-        msg = 'Starting %s' % ' '.join(run_cmd)
-        #log.info(msg) # print_internal logs
-        self.print_internal(msg, color='blue')
-
+        run_cmd, port = self.get_run_cmd()
         self.job_manager.start_command(
             cmd=run_cmd,
             cwd=self.get_project_dir(),
             port=port,
+            submit=submit,
             env=os.environ)
-
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""

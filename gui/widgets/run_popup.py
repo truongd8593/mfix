@@ -28,6 +28,7 @@ MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
 class RunPopup(QDialog):
 
     run = Signal()
+    submit = Signal()
     cancel = Signal()
     set_run_mfix_exe = Signal()
 
@@ -54,11 +55,10 @@ class RunPopup(QDialog):
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
-        self.bbox = self.ui.buttonbox
-        self.ok_button = self.bbox.button(QDialogButtonBox.Ok)
-        self.cancel_button = self.bbox.button(QDialogButtonBox.Cancel)
-        self.ok_button.clicked.connect(self.handle_run)
-        self.cancel_button.clicked.connect(self.handle_abort)
+        self.ui.button_local_run.clicked.connect(self.handle_run)
+        self.ui.button_queue_submit.clicked.connect(self.handle_submit)
+        self.ui.button_local_cancel.clicked.connect(self.handle_abort)
+        self.ui.button_queue_cancel.clicked.connect(self.handle_abort)
 
         self.initialize_ui()
 
@@ -113,7 +113,8 @@ class RunPopup(QDialog):
         local or remote settings """
 
         self.ui.combobox_mfix_exe.setEnabled(self.mfix_available)
-        self.ok_button.setEnabled(self.mfix_available)
+        self.ui.button_local_run.setEnabled(self.mfix_available)
+        self.ui.button_queue_submit.setEnabled(self.mfix_available)
 
         self.update_no_mfix_warning()
 
@@ -135,7 +136,8 @@ class RunPopup(QDialog):
         ok = bool(self.mfix_exe)
         self.ui.label_mfix_exe_warning.setVisible(not ok)
         self.ui.combobox_mfix_exe.setEnabled(ok)
-        self.ui.buttonbox.buttons()[0].setEnabled(ok)
+        self.ui.button_local_run.setEnabled(ok)
+        self.ui.button_queue_submit.setEnabled(ok)
         if not ok:
             self.parent.print_internal("Warning: no MFIX executables available")
 
@@ -151,22 +153,29 @@ class RunPopup(QDialog):
     def handle_abort(self):
         self.cancel.emit()
 
-    def handle_run(self):
+    def finish_with_dialog(self):
         """ persist run options in project file, then emit run signal """
         thread_count = str(self.ui.spinbox_threads.value())
         os.environ['OMP_NUM_THREADS'] = thread_count
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
         if self.NODES_SET:
             self.project.updateKeyword('nodesi',
-                                        self.ui.spinbox_keyword_nodesi.value())
+                                       self.ui.spinbox_keyword_nodesi.value())
             self.project.updateKeyword('nodesj',
-                                        self.ui.spinbox_keyword_nodesj.value())
+                                       self.ui.spinbox_keyword_nodesj.value())
             self.project.updateKeyword('nodesk',
-                                        self.ui.spinbox_keyword_nodesk.value())
+                                       self.ui.spinbox_keyword_nodesk.value())
         self.persist_selected_exe(self.mfix_exe)
-        self.set_run_mfix_exe.emit() # possible dupilication, but needed
+        self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
+
+    def handle_run(self):
+        self.finish_with_dialog()
         self.run.emit()
+
+    def handle_submit(self):
+        self.finish_with_dialog()
+        self.submit.emit()
 
     def handle_exe_change(self):
         """ emit signals when exe combobox changes """
