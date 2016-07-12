@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>318</width>
+    <width>324</width>
     <height>392</height>
    </rect>
   </property>
@@ -38,7 +38,16 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <property name="spacing">
@@ -62,7 +71,16 @@
          <number>0</number>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -137,13 +155,31 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="0" column="1">
+      <item row="1" column="2">
+       <widget class="QSpinBox" name="spinbox_threads"/>
+      </item>
+      <item row="2" column="2">
+       <widget class="QSpinBox" name="spinbox_keyword_nodesi"/>
+      </item>
+      <item row="4" column="2">
+       <widget class="QSpinBox" name="spinbox_keyword_nodesk"/>
+      </item>
+      <item row="1" column="1">
        <widget class="QLabel" name="label_threads">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -156,38 +192,36 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label_nodesi">
-        <property name="text">
-         <string>NODESI</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_nodesj">
-        <property name="text">
-         <string>NODESJ</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QLabel" name="label_nodesk">
         <property name="text">
          <string>NODESK</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesj"/>
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_nodesj">
+        <property name="text">
+         <string>NODESJ</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesk"/>
+       <widget class="QSpinBox" name="spinbox_keyword_nodesj"/>
       </item>
-      <item row="1" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesi"/>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_nodesi">
+        <property name="text">
+         <string>NODESI</string>
+        </property>
+       </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QSpinBox" name="spinbox_threads"/>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLabel" name="label_cores_detected">
+        <property name="text">
+         <string>You are running with xxx CPU cores</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -210,30 +244,55 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <property name="spacing">
        <number>5</number>
       </property>
-      <item row="0" column="0">
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="lineedit_queue_modules"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinbox_cores_requested">
+        <property name="minimum">
+         <number>16</number>
+        </property>
+        <property name="maximum">
+         <number>65536</number>
+        </property>
+        <property name="singleStep">
+         <number>16</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_queue_modules">
+        <property name="text">
+         <string>Modules</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_cores_requested">
+        <property name="text">
+         <string>Cores</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
        <widget class="QLabel" name="label_queue_name">
         <property name="text">
          <string>Queue</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineedit_job_name">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="combobox_queue_name">
-        <property name="editable">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -244,15 +303,19 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_queue_modules">
-        <property name="text">
-         <string>Modules</string>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="combobox_queue_name">
+        <property name="editable">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="lineedit_queue_modules"/>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="lineedit_job_name">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -294,8 +357,6 @@
   <tabstop>spinbox_keyword_nodesi</tabstop>
   <tabstop>spinbox_keyword_nodesj</tabstop>
   <tabstop>spinbox_keyword_nodesk</tabstop>
-  <tabstop>combobox_queue_name</tabstop>
-  <tabstop>lineedit_job_name</tabstop>
   <tabstop>lineedit_queue_modules</tabstop>
  </tabstops>
  <resources/>

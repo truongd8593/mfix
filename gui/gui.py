@@ -6,6 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 import getopt
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -1489,6 +1490,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
         self.run_dialog.run.connect(self.run_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
+        self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
         self.run_dialog.popup()
 
