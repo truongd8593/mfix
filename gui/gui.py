@@ -156,6 +156,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
             for cls in (Ui_geometry, Ui_mesh, RegionsWidget,
                         Ui_model, Ui_fluid, Ui_solids,
+                        Ui_initial_conditions,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
@@ -177,7 +178,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             assert self is not self.ui
 
             for name in ('geometry', 'mesh', 'regions',
-                         'model', 'fluid', 'solids', 'numerics',
+                         'model', 'fluid', 'solids',
+                         'initial_conditions',
+                         'numerics',
                          'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget()
@@ -1019,7 +1022,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             current_index = 0
             for i in range(self.ui.stackedWidgetTaskPane.count()):
                 widget = self.ui.stackedWidgetTaskPane.widget(i)
-                #print(text, str(widget.objectName()))
                 if text == str(widget.objectName()):
                     current_index = i
                     break
@@ -1029,7 +1031,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 current_index)
 
             if text == 'solids': # Special helper for setting up subpanes,
-                # since params have changed
+                # since params may have changed
                 self.setup_solids_tab(self.solids_current_tab)
 
 
