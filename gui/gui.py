@@ -945,11 +945,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.ui.regions.vtkwidget = self.vtkwidget
             return
 
-        try:
-            from widgets.vtkwidget import VtkWidget
-        except ImportError:
-            print("vtk not available.  Set MFIX_NO_VTK in environment to skip vtk for testing")
-            sys.exit(-1)
+        from widgets.vtkwidget import VtkWidget
         self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 

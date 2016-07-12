@@ -55,6 +55,8 @@ class RunPopup(QDialog):
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
+        self.cancel.connect(self.close)
+
         self.ui.button_local_run.clicked.connect(self.handle_run)
         self.ui.button_queue_submit.clicked.connect(self.handle_submit)
         self.ui.button_local_cancel.clicked.connect(self.handle_abort)
@@ -168,6 +170,7 @@ class RunPopup(QDialog):
         self.persist_selected_exe(self.mfix_exe)
         self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
+        self.close()
 
     def handle_run(self):
         self.finish_with_dialog()
