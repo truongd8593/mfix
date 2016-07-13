@@ -1569,12 +1569,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
 
         run_cmd, port = self.get_run_cmd()
-        self.job_manager.start_command(
-            cmd=run_cmd,
-            cwd=self.get_project_dir(),
-            port=port,
-            submit=submit,
-            env=os.environ)
+        if submit:
+            self.job_manager.submit_command(
+                cmd=run_cmd,
+                port=port)
+        else:
+            self.job_manager.start_command(
+                cmd=run_cmd,
+                cwd=self.get_project_dir(),
+                port=port,
+                env=os.environ)
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""

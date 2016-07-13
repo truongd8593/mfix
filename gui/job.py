@@ -140,14 +140,14 @@ class JobManager(object):
             self.timer = None
         self.pymfix_url = None
 
-    def transform_template(text, cmd):
+    def transform_template(self, text, cmd):
         return text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
-                   .replace("${CORES}", self.parent.run_dialog.spinbox_cores_requested.text()) \
-                   .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.text()) \
+                   .replace("${CORES}", str(self.parent.run_dialog.spinbox_cores_requested.value())) \
+                   .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
                    .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
-                   .replace("${COMMAND}", cmd)
+                   .replace("${COMMAND}", ' '.join(cmd))
 
-    def submit_command(self, cmd, cwd, port, submit, env):
+    def submit_command(self, cmd, port):
         with open(os.path.join(os.path.dirname(__file__), 'run_hpcee')) as qsub_template:
             template_text = qsub_template.read()
 
@@ -155,13 +155,14 @@ class JobManager(object):
         qsub_script.write(self.transform_template(template_text, cmd))
         qsub_script.flush()
 
-        result = subprocess.run('qsub %s' % qsub_script.name)
-        print("result.stdout = ", result.stdout)
-        print("result.stderr = ", result.stderr)
+        os.system('qsub %s' % qsub_script.name)
+
+        if port: # port is not None iff using pymfix
+            self.connect('http://%s:%s' % (socket.gethostname(), port))
 
         qsub_script.close()
 
-    def start_command(self, cmd, cwd, port, submit, env):
+    def start_command(self, cmd, cwd, port, env):
         """Start MFIX in QProcess"""
 
         if self.mfixproc:

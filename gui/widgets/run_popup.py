@@ -53,6 +53,7 @@ class RunPopup(QDialog):
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
 
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
+        ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
         self.cancel.connect(self.close)
@@ -103,12 +104,15 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
+        self.lineedit_job_name.setText(self.parent.project.run_name.value)
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
         select the first item """
         self.ui.combobox_mfix_exe.clear()
+        self.ui.combobox_mfix_exe_2.clear()
         self.ui.combobox_mfix_exe.addItems(self.mfix_exe_list)
+        self.ui.combobox_mfix_exe_2.addItems(self.mfix_exe_list)
 
     def update_dialog_options(self):
         """ Enable or disable options based on self.mfix_exe features,
