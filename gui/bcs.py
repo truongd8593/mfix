@@ -446,364 +446,291 @@ Region orientation (e.g., XZ-Plane)
   Sets keyword BC_VOLFLOW_S(#,#)
   DEFAULT value of 0.0
   Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_S#, (#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define Y-Axial Velocity
-o Sets keyword BC_V_S(#,#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_W_S(#,#)
-o DEFAULT value of 0.0
-o For BC_TYPE='MI' and XY-Plane region
- Select mass inflow specification type:
- Available selections:
- Z-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_W_S(#,#)
-
-Software Requirements Specification for MFIX-
-
-o DEFAULT value of 0.0
+  Sets keyword BC_MASSFLOW_S#, (#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define Y-Axial Velocity
+  Sets keyword BC_V_S(#,#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_W_S(#,#)
+  DEFAULT value of 0.0
+  For BC_TYPE='MI' and XY-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  Z-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_W_S(#,#)
+  DEFAULT value of 0.0
 Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_S(#,#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_S(#,#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define X-Axial Velocity
-o Sets keyword BC_U_S(#,#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_S(#,#)
-o DEFAULT value of 0.0
-o For BC_TYPE='CG_MI' or 'PI'
- Specify all velocity components:
- Define X-Axial Velocity
-o Sets keyword BC_U_S(#,#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_S(#,#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_V_S(#,#)
-o DEFAULT value of 0.0
+  Sets keyword BC_VOLFLOW_S(#,#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_S(#,#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define X-Axial Velocity
+  Sets keyword BC_U_S(#,#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_S(#,#)
+  DEFAULT value of 0.0
+  For BC_TYPE='CG_MI' or 'PI'
+  Specify all velocity components:
+  Define X-Axial Velocity
+  Sets keyword BC_U_S(#,#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_S(#,#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_V_S(#,#)
+  DEFAULT value of 0.0
 Define temperature
-o Specification always available
-o Input required when energy equations are solved
-o Sets keyword BC_T_S(#,#)
-o DEFAULT value of 293.15
+  Specification always available
+  Input required when energy equations are solved
+  Sets keyword BC_T_S(#,#)
+  DEFAULT value of 293.15
 Select species and set mass fractions (table format)
-o Specification always available
-o Input required for species equations
-o Drop down menu of fluid species
-o Sets keyword BC_X_S(#,#,#)
-o DEFAULT - last defined species has mass fraction of 1.0
-o Error check: mass fractions must sum to one
-
-
-
-
-
-
-UI
-
-Page 41
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 42
+  Specification always available
+  Input required for species equations
+  Drop down menu of fluid species
+  Sets keyword BC_X_S(#,#,#)
+  DEFAULT - last defined species has mass fraction of 1.0
+  Error check: mass fractions must sum to one
 
 Mockup of Task pane for specifying the Solids properties for MI, CG_MI, and PI boundary
 condition regions.
 Scalar (tab) - Tab only available if scalar equations are solved
- Define initial scalar value
-o Sets keyword BC_SCALAR(#,#)
-o DEFAULT value of 0.0
+  Define initial scalar value
+  Sets keyword BC_SCALAR(#,#)
+  DEFAULT value of 0.0
 Subtask Pane Tab for PRESSURE OUTFLOW type (PO) Boundary Condition Regions
 Fluid (tab)
- Define pressure
-o Specification always available
-o Input required
-o Sets keyword BC_P_G(#)
-o DEFAULT 101.325d3
+  Define pressure
+  Specification always available
+  Input required
+  Sets keyword BC_P_G(#)
+  DEFAULT 101.325d3
 The remaining inputs are "optional." They do not have default values, because MFIX will calculate
 appropriate values if they are unspecified and 'backflow' occurs at the outlet.
- Define volume fraction
-o Specification always available
-o Sets keyword BC_EP_G(#)
-o No DEFAULT value
-o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
- Define temperature
-o Specification always available
-o NO DEFAULT value
-o Sets keyword BC_T_G(#)
- Select species and set mass fractions (table format)
-o Specification always available
-o NO DEFAULT value
-o Sets keyword BC_X_G(#,#)
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 43
-
-o Error check: if specified, mass fractions must sum to one_
+  Define volume fraction
+  Specification always available
+  Sets keyword BC_EP_G(#)
+  No DEFAULT value
+  Error Check: If any volume fraction for the BC region is specified, then all volume fractions for the BC region must be specified and must sum to one.
+  Define temperature
+  Specification always available
+  NO DEFAULT value
+  Sets keyword BC_T_G(#)
+  Select species and set mass fractions (table format)
+  Specification always available
+  NO DEFAULT value
+  Sets keyword BC_X_G(#,#)
+  Error check: if specified, mass fractions must sum to one_
 Solids-# (tab)
-All inputs are optional. They do not have default values, because MFIX will calculate appropriate
-values if they are unspecified and 'backflow' occurs at the outlet.
- Define volume fraction
-o Specification always available
-o Sets keyword BC_EP_S(#,#)
-o No DEFAULT value
-o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
- Define temperature
-o Specification always available
-o NO DEFAULT value
-o Sets keyword BC_T_S(#,#)
- Select species and set mass fractions (table format)
-o Specification always available
-o NO DEFAULT value
-o Sets keyword BC_X_S(#,#,#)
-o Error check: if specified, mass fractions must sum to one_
+All inputs are optional. They do not have default values, because MFIX will calculate appropriate values if they are unspecified and 'backflow' occurs at the outlet.
+  Define volume fraction
+  Specification always available
+  Sets keyword BC_EP_S(#,#)
+  No DEFAULT value
+  Error Check: If any volume fraction for the BC region is specified, then all volume fractions for the BC region must be specified and must sum to one.
+  Define temperature
+  Specification always available
+  NO DEFAULT value
+  Sets keyword BC_T_S(#,#)
+  Select species and set mass fractions (table format)
+  Specification always available
+  NO DEFAULT value
+  Sets keyword BC_X_S(#,#,#)
+  Error check: if specified, mass fractions must sum to one_
 Scalar (tab) - Tab only available if scalar equations are solved
-All inputs are optional. They do not have default values, because MFIX will calculate appropriate
-values if they are unspecified and 'backflow' occurs at the outlet.
-
+All inputs are optional. They do not have default values, because MFIX will calculate appropriate values if they are unspecified and 'backflow' occurs at the outlet.
+
 
 Define scalar value
-o Sets keyword BC_SCALAR(#,#)
-o NO DEFAULT value
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 44
+  Sets keyword BC_SCALAR(#,#)
+  NO DEFAULT value
 
 Subtask Pane Tab for MASS OUTFLOW type (MO) Boundary Condition Regions
 Fluid (tab)
- Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
-Region orientation (e.g., XZ-Plane)
-o For BC_TYPE='MO' and XZ-Plane region
- Select mass inflow specification type:
- Available selections:
- Y-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_V_G(#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_G(#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_G(#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define X-Axial Velocity
-o Sets keyword BC_U_G(#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_W_G(#)
-o DEFAULT value of 0.0
-o For BC_TYPE='MO' and YZ-Plane region
- Select mass inflow specification type:
- Available selections:
- X-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_U_G(#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_G(#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_G(#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define Y-Axial Velocity
-o Sets keyword BC_V_G(#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_W_G(#)
-o DEFAULT value of 0.0
-o For BC_TYPE='MO' and XY-Plane region
- Select mass inflow specification type:
- Available selections:
- Z-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_W_G(#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_G(#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_G(#)
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 45
-
-o DEFAULT value of 0.0
+  Define inflow properties: Mass inflow specification changes based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
+  For BC_TYPE='MO' and XZ-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  Y-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_V_G(#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_G(#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_G(#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define X-Axial Velocity
+  Sets keyword BC_U_G(#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_W_G(#)
+  DEFAULT value of 0.0
+  For BC_TYPE='MO' and YZ-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  X-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_U_G(#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_G(#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_G(#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define Y-Axial Velocity
+  Sets keyword BC_V_G(#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_W_G(#)
+  DEFAULT value of 0.0
+  For BC_TYPE='MO' and XY-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  Z-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_W_G(#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_G(#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_G(#)
+  DEFAULT value of 0.0
 Define Tangential Velocities:
- Define X-Axial Velocity
-o Sets keyword BC_U_G(#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_G(#)
-o DEFAULT value of 0.0
-o For BC_TYPE='CG_MO'
- Specify all velocity components:
- Define X-Axial Velocity
-o Sets keyword BC_U_G(#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_G(#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_V_G(#)
-o DEFAULT value of 0.0
-
-
-
-
+  Define X-Axial Velocity
+  Sets keyword BC_U_G(#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_G(#)
+  DEFAULT value of 0.0
+  For BC_TYPE='CG_MO'
+  Specify all velocity components:
+  Define X-Axial Velocity
+  Sets keyword BC_U_G(#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_G(#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_V_G(#)
+  DEFAULT value of 0.0
 Define duration to average outflow rate.
-o Specification always available
-o Input required
-o Sets keyword BC_DT_0(#)
-o DEFAULT value of 0.1
-o Error Check: Value should be positive (non-negative)
-o BC_DT_0 specification should persist across the gas and solids tabs. If the user sets
-it in the gas phase tab, but then changes it under a solids tab, a warning messing
-indicating that this value is 'constant' across all phases should be given.
+  Specification always available
+  Input required
+  Sets keyword BC_DT_0(#)
+  DEFAULT value of 0.1
+  Error Check: Value should be positive (non-negative)
+  BC_DT_0 specification should persist across the gas and solids tabs. If the user sets it in the gas phase tab, but then changes it under a solids tab, a warning messing indicating that this value is 'constant' across all phases should be given.
 
-The remaining inputs are only required when either the mass or the volumetric flowrates are
-specified. They are not required if the velocities are given for the outlet.
-
-
-
-
-
+The remaining inputs are only required when either the mass or the volumetric flowrates are specified. They are not required if the velocities are given for the outlet.
 
 Define volume fraction
-o Specification only available with mass or volumetric flowrates.
-o Input required
-o Sets keyword BC_EP_G(#)
-o DEFAULT value 1.0
-o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
+  Specification only available with mass or volumetric flowrates.
+  Input required
+  Sets keyword BC_EP_G(#)
+  DEFAULT value 1.0
+  Error Check: If any volume fraction for the BC region is specified, then all volume fractions for the BC region must be specified and must sum to one.
 Define temperature
-o Specification only available with mass or volumetric flowrates and R_G0 is
+  Specification only available with mass or volumetric flowrates and R_G0 is
 UNDEFINED
-o DEFAULT value 293.15
-o Sets keyword BC_T_G(#)
+  DEFAULT value 293.15
+  Sets keyword BC_T_G(#)
 Select species and set mass fractions (table format)
-o Specification only available with mass or volumetric flowrates and R_G0 is
+  Specification only available with mass or volumetric flowrates and R_G0 is
 UNDEFINED
-o DEFAULT value 1.0 of last defined species
-o Sets keyword BC_X_G(#,#)
-o Error check: if specified, mass fractions must sum to one_
+  DEFAULT value 1.0 of last defined species
+  Sets keyword BC_X_G(#,#)
+  Error check: if specified, mass fractions must sum to one_
 
 Solids-# (tab)
 
-Software Requirements Specification for MFIX-
-
-
-
-UI
-
-Page 46
 
 Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
 Region orientation (e.g., XZ-Plane)
-o For BC_TYPE='MO' and XZ-Plane region
- Select mass inflow specification type:
- Available selections:
- Y-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_V_S(#,#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define X-Axial Velocity
-o Sets keyword BC_U_ S(#,#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_W_ S(#,#)
-o DEFAULT value of 0.0
-o For BC_TYPE='MO' and YZ-Plane region
- Select mass inflow specification type:
- Available selections:
- X-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_U_ S(#,#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define Y-Axial Velocity
-o Sets keyword BC_V_ S(#,#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_W_ S(#,#)
-o DEFAULT value of 0.0
-o For BC_TYPE='MO' and XY-Plane region
- Select mass inflow specification type:
- Available selections:
- Z-Axial Velocity (m/s) [DEFAULT]
-o Sets keyword BC_W_ S(#,#)
-o DEFAULT value of 0.0
- Volumetric Flowrate (m3/s)
-o Sets keyword BC_VOLFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Mass Flowrate (kg/s)
-o Sets keyword BC_MASSFLOW_ S(#,#)
-o DEFAULT value of 0.0
- Define Tangential Velocities:
- Define X-Axial Velocity
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 47
-
-o Sets keyword BC_U_ S(#,#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_ S(#,#)
-o DEFAULT value of 0.0
-o For BC_TYPE='CG_MO'
- Specify all velocity components:
- Define X-Axial Velocity
-o Sets keyword BC_U_ S(#,#)
-o DEFAULT value of 0.0
- Define Y-Axial Velocity
-o Sets keyword BC_V_ S(#,#)
-o DEFAULT value of 0.0
- Define Z-Axial Velocity
-o Sets keyword BC_V_ S(#,#)
-o DEFAULT value of 0.0
-
+  For BC_TYPE='MO' and XZ-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  Y-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_V_S(#,#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define X-Axial Velocity
+  Sets keyword BC_U_ S(#,#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_W_ S(#,#)
+  DEFAULT value of 0.0
+  For BC_TYPE='MO' and YZ-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  X-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_U_ S(#,#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define Y-Axial Velocity
+  Sets keyword BC_V_ S(#,#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_W_ S(#,#)
+  DEFAULT value of 0.0
+  For BC_TYPE='MO' and XY-Plane region
+  Select mass inflow specification type:
+  Available selections:
+  Z-Axial Velocity (m/s) [DEFAULT]
+  Sets keyword BC_W_ S(#,#)
+  DEFAULT value of 0.0
+  Volumetric Flowrate (m3/s)
+  Sets keyword BC_VOLFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Mass Flowrate (kg/s)
+  Sets keyword BC_MASSFLOW_ S(#,#)
+  DEFAULT value of 0.0
+  Define Tangential Velocities:
+  Define X-Axial Velocity
+  Sets keyword BC_U_ S(#,#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_ S(#,#)
+  DEFAULT value of 0.0
+  For BC_TYPE='CG_MO'
+  Specify all velocity components:
+  Define X-Axial Velocity
+  Sets keyword BC_U_ S(#,#)
+  DEFAULT value of 0.0
+  Define Y-Axial Velocity
+  Sets keyword BC_V_ S(#,#)
+  DEFAULT value of 0.0
+  Define Z-Axial Velocity
+  Sets keyword BC_V_ S(#,#)
+  DEFAULT value of 0.0
 
 Define duration to average outflow rate.
-o Specification always available
-o Input required
-o Sets keyword BC_DT_0(#)
-o DEFAULT value of 0.1
-o Error Check: Value should be positive (non-negative)
-BC_DT_0 specification should persist across the gas and solids tabs. If the user sets it in the gas
-phase tab, but then changes it under a solids tab, a warning messing indicating that this value is
-'constant' across all phases should be given.
+  Specification always available
+  Input required
+  Sets keyword BC_DT_0(#)
+  DEFAULT value of 0.1
+  Error Check: Value should be positive (non-negative)
+BC_DT_0 specification should persist across the gas and solids tabs. If the user sets it in the gas phase tab, but then changes it under a solids tab, a warning messing indicating that this value is 'constant' across all phases should be given.
 """
 
 class BCS(object):
