@@ -141,10 +141,13 @@ class JobManager(object):
         self.pymfix_url = None
 
     def transform_template(self, text, cmd):
+        cores = self.parent.run_dialog.spinbox_cores_requested.value()
+        mpirun = 'mpirun -np %d' % cores if self.parent.dmp_enabled() else ''
         return text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
-                   .replace("${CORES}", str(self.parent.run_dialog.spinbox_cores_requested.value())) \
+                   .replace("${CORES}", str(cores)) \
                    .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
                    .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
+                   .replace("${MPIRUN}", mpirun) \
                    .replace("${COMMAND}", ' '.join(cmd))
 
     def submit_command(self, cmd, port):
@@ -155,7 +158,10 @@ class JobManager(object):
         qsub_script.write(self.transform_template(template_text, cmd))
         qsub_script.flush()
 
+        cwd = os.getcwd()
+        os.chdir(self.parent.get_project_dir())
         os.system('qsub %s' % qsub_script.name)
+        os.chdir(cwd)
 
         if port: # port is not None iff using pymfix
             self.connect('http://%s:%s' % (socket.gethostname(), port))

@@ -18,4 +18,4 @@
 #module ${MODULES}
 
 ##Run the parallel job
-mpirun -np ${CORES} ${COMMAND}
+${MPIRUN} ${COMMAND}
