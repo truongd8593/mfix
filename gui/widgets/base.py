@@ -7,8 +7,12 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import re
 import copy
 from collections import OrderedDict
-from qtpy import QtWidgets, QtCore, QtGui
+from qtpy import QtWidgets, QtCore, QtGui, PYQT4, PYQT5
 
+if PYQT5:
+    from qtpy.QtCore import QItemSelectionModel
+elif PYQT4:
+    from qtpy.QtWidgets import QItemSelectionModel
 
 import logging
 log = logging.getLogger(__name__)
@@ -474,7 +478,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
         for selection in self.selection:
             select_model.setCurrentIndex(
                 selection,
-                QtWidgets.QItemSelectionModel.Select)
+                QItemSelectionModel.Select)
         self.block_selection_change_event = False
 
     def set_columns(self, cols):
