@@ -180,7 +180,7 @@ class MfixGuiTests(TestQApplication):
         QTest.qWait(500)
 
         # Press OK in run dialog
-        QTest.mouseClick(self.mfix.run_dialog.ok_button, Qt.LeftButton)
+        QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         QTest.qWait(500)
 
         # Job is running, run button disabled, stop button enabled
@@ -204,7 +204,7 @@ class MfixGuiTests(TestQApplication):
         QTest.qWait(100)
 
         # Press OK in run dialog
-        QTest.mouseClick(self.mfix.run_dialog.ok_button, Qt.LeftButton)
+        QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         QTest.qWait(500)
 
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))

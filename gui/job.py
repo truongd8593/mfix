@@ -1,9 +1,10 @@
 """class to manage external MFIX process"""
 
-import os
-import time
 import json
 import logging
+import os
+import tempfile
+import time
 
 DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
 import socket
@@ -139,6 +140,28 @@ class JobManager(object):
             self.timer = None
         self.pymfix_url = None
 
+    def transform_template(self, text, cmd):
+        return text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
+                   .replace("${CORES}", str(self.parent.run_dialog.spinbox_cores_requested.value())) \
+                   .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
+                   .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
+                   .replace("${COMMAND}", ' '.join(cmd))
+
+    def submit_command(self, cmd, port):
+        with open(os.path.join(os.path.dirname(__file__), 'run_hpcee')) as qsub_template:
+            template_text = qsub_template.read()
+
+        qsub_script = tempfile.NamedTemporaryFile()
+        qsub_script.write(self.transform_template(template_text, cmd))
+        qsub_script.flush()
+
+        os.system('qsub %s' % qsub_script.name)
+
+        if port: # port is not None iff using pymfix
+            self.connect('http://%s:%s' % (socket.gethostname(), port))
+
+        qsub_script.close()
+
     def start_command(self, cmd, cwd, port, env):
         """Start MFIX in QProcess"""
 
@@ -163,9 +186,10 @@ class JobManager(object):
             return
         self.mfixproc.setWorkingDirectory(cwd)
         process_env = QProcessEnvironment()
-        for key,val in env.items():
+        for key, val in env.items():
             process_env.insert(key, val)
         self.mfixproc.setProcessEnvironment(process_env)
+
 
         def slot_start():
             self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
