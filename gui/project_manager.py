@@ -59,7 +59,9 @@ class ProjectManager(Project):
             args = [args]
 
         # Special argument handling!
-        # Currently only "S" = solids phase is defined
+        # "S" : solids phase # (1-based)
+        # "IC": initial condition region
+        # "BC": boundary condition region
         args = list(args) # Copy since we're modifying
         for (i, arg) in enumerate(args):
             if arg == 'S': #selected solid phase
@@ -67,6 +69,16 @@ class ProjectManager(Project):
                 if phase is None:
                     return
                 args[i] = phase
+            elif arg == 'IC':
+                ic = self.gui.ics_current_region
+                if ic is None:
+                    return
+                args[i] = ic
+            elif arg == 'BC':
+                bc = self.gui.bcs_current_region
+                if bc is None:
+                    return
+                args[i] = bc
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):

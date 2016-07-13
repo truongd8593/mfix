@@ -50,6 +50,8 @@ from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 
 from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
+from ics import ICS
+from bcs import BCS
 
 from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
@@ -92,7 +94,7 @@ def find_free_port():
 # --- Main Gui ---
 
 
-class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
+class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     """Main window class handling all gui interactions"""
 
     settings = QSettings('MFIX', 'MFIX')
@@ -240,6 +242,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # after we create ProjectManager, because widgets get registered
         self.init_fluid_handler()
         self.init_solids_handler()
+        self.init_ics()
+        self.init_bcs()
 
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -675,7 +679,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             item.setDisabled(not state)
 
         # Don't stay on a disabled tab!
-        # Do we ever disable "Materials"?
+        # (Do we ever disable "Materials"? - don't think so)
         active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
         if active_tab > 0 and not item_states[solver][active_tab]:
             if solver==SINGLE:
@@ -706,7 +710,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     and self.ui.fluid.checkbox_enable_scalar_eq.isChecked())
 
         # Equiv for solids is done in update_solids_detail_pane
-
 
         # Solids Model selection tied to Solver
         # FIXME XXX What to do about solids that are already defined?
@@ -1037,6 +1040,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if text == 'solids': # Special helper for setting up subpanes,
                 # since params may have changed
                 self.setup_solids_tab(self.solids_current_tab)
+            elif text == 'initial_conditions':
+                self.setup_ics()
+            elif text == 'boundary_conditions':
+                self.setup_bcs()
 
 
     # --- animation methods ---

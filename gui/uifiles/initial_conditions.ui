@@ -146,7 +146,7 @@
         <item>
          <layout class="QHBoxLayout" name="tab_box">
           <item>
-           <widget class="QPushButton" name="tab_0">
+           <widget class="QPushButton" name="tab_fluid">
             <property name="text">
              <string>Fluid</string>
             </property>
@@ -156,7 +156,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="tab_1">
+           <widget class="QPushButton" name="tab_solid_1">
             <property name="text">
              <string>Solid #1</string>
             </property>
@@ -166,7 +166,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="tab_2">
+           <widget class="QPushButton" name="tab_scalar">
             <property name="text">
              <string>Scalar</string>
             </property>
@@ -206,103 +206,116 @@
          </widget>
         </item>
         <item>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0" colspan="2">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Temperature</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="7">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>K</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>U-Velocity</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QLabel" name="label_8">
-            <property name="text">
-             <string>V-Velocity</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>W-Velocity</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Volume fraction</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit_2"/>
-          </item>
-          <item row="0" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit"/>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Pressure</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="7">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Pa</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit_3"/>
-          </item>
-          <item row="3" column="7">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>m/s</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit_4"/>
-          </item>
-          <item row="4" column="7">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>m/s</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit_5"/>
-          </item>
-          <item row="5" column="7">
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>m/s</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2" colspan="5">
-           <widget class="QLineEdit" name="lineEdit_6"/>
-          </item>
-         </layout>
+         <widget class="QStackedWidget" name="stackedwidget">
+          <widget class="QWidget" name="page_fluid" native="true">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="1" column="0" colspan="2">
+             <widget class="QGroupBox" name="groupBox">
+              <property name="title">
+               <string>Parameters</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Volume fraction</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1" colspan="2">
+                <widget class="QLineEdit" name="lineEdit"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_2"/>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>K</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>Pressure</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="lineEdit_3"/>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Pa</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>U-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="lineEdit_4"/>
+               </item>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>V-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="lineEdit_5"/>
+               </item>
+               <item row="4" column="2">
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>W-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLineEdit" name="lineEdit_6"/>
+               </item>
+               <item row="5" column="2">
+                <widget class="QLabel" name="label_11">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
         <item>
          <spacer name="verticalSpacer">
@@ -312,29 +325,14 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>363</height>
+            <height>40</height>
            </size>
           </property>
          </spacer>
         </item>
        </layout>
+       <zorder>stackedwidget</zorder>
        <zorder>line</zorder>
-       <zorder>label_2</zorder>
-       <zorder>label_3</zorder>
-       <zorder>lineEdit_2</zorder>
-       <zorder>label_5</zorder>
-       <zorder>lineEdit_3</zorder>
-       <zorder>label_6</zorder>
-       <zorder>label_4</zorder>
-       <zorder>lineEdit_4</zorder>
-       <zorder>label_7</zorder>
-       <zorder>label_8</zorder>
-       <zorder>lineEdit_5</zorder>
-       <zorder>label_9</zorder>
-       <zorder>label_10</zorder>
-       <zorder>lineEdit_6</zorder>
-       <zorder>label_11</zorder>
-       <zorder>label_11</zorder>
        <zorder>verticalSpacer</zorder>
       </widget>
      </widget>

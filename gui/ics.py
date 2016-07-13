@@ -146,4 +146,8 @@ Scalar (tab) - Tab only available if scalar equations are solved
 """
 
 class ICS(object):
-    pass
+    def init_ics(self):
+        self.ics_current_region = None
+
+    def setup_ics(self):
+        pass
