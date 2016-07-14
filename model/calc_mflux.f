@@ -88,6 +88,7 @@
       USE geometry, only: do_k
       USE geometry, only: ayz, axz, axy
       USE param, only: dimension_3
+      use param1, only: zero
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -110,6 +111,10 @@
 ! Indices
       INTEGER :: IJK, IMJK, IJMK, IJKM
 !---------------------------------------------------------------------//
+
+      Flux_E(:) = Zero
+      Flux_N(:) = Zero
+      Flux_T(:) = Zero
 
 !$omp  parallel do default(none) private( IJK, IMJK, IJMK, IJKM) &
 !$omp              shared(ijkstart3, ijkend3, flux_e, flux_n, flux_t,&
@@ -173,7 +178,7 @@
       USE geometry, only: do_k
       USE geometry, only: ayz, axz, axy
       USE param, only: dimension_3
-      USE param1, only: one
+      USE param1, only: zero, one
       USE physprop, only: cv
       IMPLICIT NONE
 
@@ -203,6 +208,10 @@
 ! Indices
       INTEGER :: IJK, IMJK, IJMK, IJKM
 !---------------------------------------------------------------------//
+
+      Flux_E(:) = Zero
+      Flux_N(:) = Zero
+      Flux_T(:) = Zero
 
 !!!$omp  parallel do private( IJK, IMJK, IJMK, IJKM) &
 !!!$omp&  schedule(static)
