@@ -48,7 +48,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
-        tablewidget._setModel() # Should be in __init__
+        tablewidget._setModel() # FIXME: Should be in __init__
         tablewidget.set_value(OrderedDict())
         tablewidget.set_columns(['visible', 'color', 'type'])
         tablewidget.show_vertical_header(True)
@@ -117,11 +117,8 @@ class RegionsWidget(QtWidgets.QWidget):
         """create a new region"""
 
         data = self.tablewidget_regions.value
-
         name = get_unique_string(name, list(data.keys()))
-
         image = self.get_visibility_image()
-
         data[name] = {'type':            rtype,
                       'from':            extents[0],
                       'to':              extents[1],
@@ -135,9 +132,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
 
         self.vtkwidget.new_region(name, data[name], defer_render=defer_render)
-
         self.tablewidget_regions.set_value(data)
-
         if defer_render:
             return
 
@@ -402,8 +397,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
                     extents = [extents[::2], extents[1::2]]
 
-                    if 'bc_type' in cond and \
-                            str(cond['bc_type']).startswith('cg'):
+                    if ('bc_type' in cond and
+                            str(cond['bc_type']).startswith('cg')):
                         rtype = 'stl'
                     else:
                         rtype = self.get_region_type(extents)
@@ -437,3 +432,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 break
 
         return rtype
+
+    def get_region_dict(self):
+        """ return region dict, for use by clients"""
+        region_dict = self.tablewidget_regions.value
+        return region_dict
