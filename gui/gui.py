@@ -238,7 +238,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
-
+        self.regions_popup = RegionsPopup(QtWidgets.QDialog())
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But

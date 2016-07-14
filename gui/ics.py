@@ -12,19 +12,6 @@ The top of the task pane is where users define/select IC regions
 """
 
 """
-Icons to add/remove/duplicate regions are given at the top
-Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
-the region to apply the initial condition.
- Users cannot select inapplicable regions.
- IC regions must be volumes (not planes, points, or STLs)
- No region can define more than one initial condition.
-"""
-
-"""
-Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
-define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
-get messy, and if so, scrap this idea.
-
 Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
 no input is required from the user.
  Fluid tab - Unavailable if the fluid phase was disabled.
@@ -150,16 +137,45 @@ Scalar (tab) - Tab only available if scalar equations are solved
 
 class ICS(object):
     def init_ics(self):
+        ui = self.ui
+        ics = ui.initial_conditions
         self.ics_current_region = None
 
-    def ics_add_region(self):
-        rp = self
-        ui = self.ui
+        #Icons to add/remove/duplicate regions are given at the top
+        #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+        #the region to apply the initial condition.
+        #Users cannot select inapplicable regions.
+        #IC regions must be volumes (not planes, points, or STLs)
+        #No region can define more than one initial condition.
+        #
+        #Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
+        #define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
+        #get messy, and if so, scrap this idea.
+        ics.toolbutton_add.clicked.connect(self.ics_add_region)
+        ics.toolbutton_delete.clicked.connect(self.ics_delete_region)
 
+        ics.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
+
+    def handle_ics_region_selection(self):
+        ics = self.ui.initial_conditions
+        table = ics.tablewidget_regions
+        row = get_selected_row(table)
+        enabled = (row is not None)
+        ics.toolbutton_fluid_species_delete.setEnabled(enabled)
+
+    def ics_add_region(self):
+        ui = self.ui
+        ics = ui.initial_conditions
+        rp = self.regions_popup
+
+        rp.clear()
         for (k,v) in ui.regions.get_region_dict().items():
-            print(k)
+            rp.add_row(k)
+
+        rp.popup()
+
+    def ics_delete_region(self):
+        pass
 
     def setup_ics(self):
-        ui = self.ui
-        ics = self.ui.initial_conditions
-        ics.toolbutton_add.clicked.connect(self.ics_add_region)
+        pass

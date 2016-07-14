@@ -221,10 +221,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         if row is None:
             self.current_species = None
             self.clear_species_panel()
-            self.pushbutton_delete.setEnabled(False)
+            self.ui.pushbutton_delete.setEnabled(False)
             self.ui.combobox_phase.setEnabled(False)
         else:
-            self.pushbutton_delete.setEnabled(True)
+            self.ui.pushbutton_delete.setEnabled(True)
             self.current_species = table.item(row, 0).data(UserRole)
             self.enable_species_panel()
 

@@ -11,7 +11,6 @@ import pickle
 
 from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
-from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
 
 def set_item_noedit(item):
@@ -35,18 +34,7 @@ class RegionsPopup(QtWidgets.QDialog):
     cancel = QtCore.Signal()
 
     def handle_regions_selection(self):
-        table = self.tablewidget_regions
-        row = get_selected_row(table)
-
-        if row is None:
-            self.current_species = None
-            self.clear_species_panel()
-            self.pushbutton_delete.setEnabled(False)
-            self.ui.combobox_phase.setEnabled(False)
-        else:
-            self.pushbutton_delete.setEnabled(True)
-            self.current_species = table.item(row, 0).data(UserRole)
-            self.enable_species_panel()
+        pass
 
     def reset_signals(self):
         # todo:  fix this so it's not the caller's responsibility
@@ -60,6 +48,8 @@ class RegionsPopup(QtWidgets.QDialog):
     def __init__(self, app, parent=None):
         super(RegionsPopup, self).__init__(parent)
         self.app = app
+        thisdir = os.path.abspath(os.path.dirname(__file__))
+        uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         ui = self.ui = uic.loadUi(os.path.join(uidir, 'regions_popup.ui'), self)
 
         # key=species, val=data dict
@@ -68,6 +58,20 @@ class RegionsPopup(QtWidgets.QDialog):
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
+
+
+    def clear(self):
+        self.ui.table.clear()
+
+    def add_row(self, row):
+        table = self.ui.table
+        row_count = table.rowCount()
+        table.setRowCount(row_count+1)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        table.setItem(row_count, 0, make_item(row))
 
     def popup(self):
         self.show()
