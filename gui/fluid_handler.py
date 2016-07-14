@@ -28,19 +28,20 @@ class FluidHandler(object):
         self.fluid_diffusion_model = AIR
 
     ## Fluid phase methods
-    def enable_fluid_species_eq(self, state):
+    def enable_fluid_species_eq(self, enabled):
         ui = self.ui
-        fluid = ui.fluid
-        for item in (fluid.combobox_diffusion_model,
+        f = ui.fluid
+        for item in (f.combobox_fluid_diffusion_model,
+                     f.label_fluid_diffusion_model,
                      # more ?
                      ):
-            item.setEnabled(state)
+            item.setEnabled(enabled)
         # dif_g0 == diffusion coeff model
-        lineedit = fluid.lineedit_keyword_dif_g0
-        if state:
-            lineedit.setEnabled(self.fluid_diffusion_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
+        items = (f.lineedit_keyword_dif_g0,
+                 f.label_dif_g0_units)
+
+        for item in items:
+            item.setEnabled(enabled and (self.fluid_diffusion_model == CONSTANT))
 
     def enable_fluid_scalar_eq(self, state):
         spinbox = self.ui.fluid.spinbox_nscalar_eq
@@ -75,8 +76,9 @@ class FluidHandler(object):
         # see 'set_fluid_mol_weight_model' below to help understand this
         def make_fluid_model_setter(self, name, key):
             def setter(model):
+                f = self.ui.fluid
                 setattr(self, name, model) # self.fluid_<name>_model = model
-                combobox = getattr(self.ui.fluid, 'combobox_' + name)
+                combobox = getattr(f, 'combobox_' + name)
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
@@ -86,10 +88,12 @@ class FluidHandler(object):
                 # Enable lineedit for constant model
                 key_g0 = 'c_pg0' if key=='c_p' else key + '_g0'
                 key_usr = 'usr_cpg' if key=='c_p' else 'usr_' + key + 'g'
-                lineedit = getattr(self.ui.fluid,
-                                   'lineedit_keyword_%s' % key_g0)
+                lineedit = getattr(f, 'lineedit_keyword_%s' % key_g0)
+                label = getattr(f, 'label_%s_units' % key_g0)
 
-                lineedit.setEnabled(model==CONSTANT)
+                for item in (lineedit, label):
+                    item.setEnabled(model==CONSTANT)
+                    item.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
                     value = lineedit.value # Possibly re-enabled gui item
@@ -172,16 +176,20 @@ class FluidHandler(object):
     # molecular wt model only has 2 choices, and the key names don't
     # follow the same pattern, so create its setter specially
     def set_fluid_mol_weight_model(self, model):
+        ui = self.ui
+        f = self.ui.fluid
         self.fluid_mol_weight_model = model
-        combobox = self.ui.fluid.combobox_fluid_mol_weight_model
+        combobox = f.combobox_fluid_mol_weight_model
         # Make tooltip match setting (for longer names which are truncated)
         combobox.setToolTip(combobox.currentText())
         prev_model = combobox.currentIndex()
         if model != prev_model:
             combobox.setCurrentIndex(model)
         # Enable lineedit for constant mol_weight model
-        lineedit = self.ui.fluid.lineedit_keyword_mw_avg
-        lineedit.setEnabled(model==CONSTANT)
+        lineedit = f.lineedit_keyword_mw_avg
+        label = f.label_mw_avg_units
+        for item in (lineedit, label):
+            item.setEnabled(model==CONSTANT)
         if model == CONSTANT:
             value = lineedit.value # Possibly re-enabled gui item
             if self.project.get_value("mw_avg") != value:

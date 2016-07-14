@@ -83,8 +83,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # avoid repetition in set_solids_*_model methods
         def make_solids_model_setter(self, name, key):
             def setter(model):
+                s = self.ui.solids
                 setattr(self, name, model) # self.solids_<name>_model = model
-                combobox = getattr(self.ui.solids, 'combobox_' + name)
+                combobox = getattr(s, 'combobox_' + name)
                 prev_model = combobox.currentIndex()
                 if model != prev_model:
                     combobox.setCurrentIndex(model)
@@ -96,9 +97,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 # Enable lineedit for constant model
                 key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
                 key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
-                lineedit = getattr(self.ui.solids,
-                                   'lineedit_keyword_%s_args_S' % key_s0)
-                lineedit.setEnabled(model==CONSTANT)
+                lineedit = getattr(s, 'lineedit_keyword_%s_args_S' % key_s0)
+                label = getattr(s, 'label_%s_units' % key_s0)
+                for item in (lineedit, label):
+                    item.setEnabled(model==CONSTANT)
 
                 if phase is None:
                     return
@@ -127,7 +129,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             setattr(self, 'set_'+model_name, make_solids_model_setter(self, model_name, key))
 
             # Set the combobox default value
-            combobox = getattr(self.ui.solids, 'combobox_'+model_name)
+            combobox = getattr(s, 'combobox_'+model_name)
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
@@ -136,7 +138,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                          #'mol_weight' - locked
         ):
             model_name = 'solids_%s_model' % name
-            combobox = getattr(ui.solids, 'combobox_%s' % model_name)
+            combobox = getattr(s, 'combobox_%s' % model_name)
             setter = getattr(self,'set_%s' % model_name)
             combobox.currentIndexChanged.connect(setter)
 
