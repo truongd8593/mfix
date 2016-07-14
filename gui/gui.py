@@ -1569,11 +1569,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             return
 
         if self.smp_enabled():
-            #FIXME obtain this value from run popup dialog
-            NUM_THREADS = '2'
+            # OMP_NUM_THREADS is set in run dialog
             if not "OMP_NUM_THREADS" in os.environ:
-                os.environ["OMP_NUM_THREADS"] = NUM_THREADS
-            log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
+                os.environ["OMP_NUM_THREADS"] = "1"
+            log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
+                        os.environ["OMP_NUM_THREADS"])
 
         run_cmd, port = self.get_run_cmd()
         if submit:
