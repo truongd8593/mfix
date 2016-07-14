@@ -768,7 +768,7 @@ QPushButton:checked {
                 <widget class="LineEdit" name="lineedit_keyword_ro_s0_args_S"/>
                </item>
                <item row="1" column="3">
-                <widget class="QLabel" name="label_42">
+                <widget class="QLabel" name="label_ro_s0_units">
                  <property name="text">
                   <string>kg/m3</string>
                  </property>
@@ -817,7 +817,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="2" column="3">
-                <widget class="QLabel" name="label_44">
+                <widget class="QLabel" name="label_mu_s0_units">
                  <property name="text">
                   <string>Pa</string>
                  </property>
@@ -856,7 +856,10 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="3" column="3">
-                <widget class="QLabel" name="label_46">
+                <widget class="QLabel" name="label_mol_weight_units_disabled">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>kmol/kg</string>
                  </property>
@@ -947,7 +950,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="5" column="3">
-                <widget class="QLabel" name="label_50">
+                <widget class="QLabel" name="label_k_s0_units">
                  <property name="text">
                   <string>W/(m K)</string>
                  </property>
@@ -980,15 +983,15 @@ QPushButton:checked {
               <zorder>label_40</zorder>
               <zorder>combobox_solids_density_model</zorder>
               <zorder>lineedit_keyword_ro_s0_args_S</zorder>
-              <zorder>label_42</zorder>
+              <zorder>label_ro_s0_units</zorder>
               <zorder>label_43</zorder>
               <zorder>combobox_solids_viscosity_model</zorder>
               <zorder>lineedit_keyword_mu_s0_args_S</zorder>
-              <zorder>label_44</zorder>
+              <zorder>label_mu_s0_units</zorder>
               <zorder>label_45</zorder>
               <zorder>combobox_solids_mol_weight_model_locked</zorder>
               <zorder>lineedit_mol_weight_disabled</zorder>
-              <zorder>label_46</zorder>
+              <zorder>label_mol_weight_units_disabled</zorder>
               <zorder>label_47</zorder>
               <zorder>combobox_solids_specific_heat_model</zorder>
               <zorder>lineedit_keyword_c_ps0_args_S</zorder>
@@ -996,7 +999,7 @@ QPushButton:checked {
               <zorder>label_48</zorder>
               <zorder>combobox_solids_conductivity_model</zorder>
               <zorder>lineedit_keyword_k_s0_args_S</zorder>
-              <zorder>label_50</zorder>
+              <zorder>label_k_s0_units</zorder>
               <zorder>label_204</zorder>
               <zorder>label_41</zorder>
              </widget>
@@ -1640,7 +1643,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>433</width>
+            <width>353</width>
             <height>1297</height>
            </rect>
           </property>
@@ -2216,7 +2219,7 @@ background-color:transparent;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
@@ -2254,7 +2257,7 @@ background-color:transparent;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
@@ -3089,20 +3092,6 @@ background-color:transparent;
               </layout>
              </item>
             </layout>
-            <zorder>lineedit_keyword_des_interp_width_2</zorder>
-            <zorder>label_des_interp_width_2</zorder>
-            <zorder>combobox_des_interp_scheme_2</zorder>
-            <zorder>label_des_interp_scheme_2</zorder>
-            <zorder>label_des_interp_width_units_2</zorder>
-            <zorder>label_237</zorder>
-            <zorder>label_coupling_method_2</zorder>
-            <zorder>combobox_des_interp_2</zorder>
-            <zorder>combobox_coupling_method_2</zorder>
-            <zorder>frame_14</zorder>
-            <zorder>horizontalSpacer_24</zorder>
-            <zorder>horizontalSpacer_25</zorder>
-            <zorder>horizontalSpacer_26</zorder>
-            <zorder>horizontalSpacer_27</zorder>
            </widget>
           </item>
          </layout>
