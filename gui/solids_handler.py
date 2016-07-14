@@ -448,7 +448,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Mol. wt is locked to MIXTURE
 
         # Specific heat only available when solving energy eq
-        energy_eq = self.project.get_value('energy_eq', default=False)
+        energy_eq = self.project.get_value('energy_eq', default=True)
         s.combobox_solids_specific_heat_model.setEnabled(energy_eq)
         s.lineedit_keyword_c_ps0_args_S.setEnabled(energy_eq)
 
@@ -632,7 +632,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             enabled = False
         else:
             species_eq = self.project.get_value('species_eq', args=phase, default=False)
-            energy_eq = self.project.get_value('energy_eq', default=False)
+            energy_eq = self.project.get_value('energy_eq', default=True)
             enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
 
         # Is it a good idea to have hidden items?
