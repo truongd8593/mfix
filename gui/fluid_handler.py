@@ -93,7 +93,6 @@ class FluidHandler(object):
 
                 for item in (lineedit, label):
                     item.setEnabled(model==CONSTANT)
-                    item.setEnabled(model==CONSTANT)
 
                 if model == CONSTANT:
                     value = lineedit.value # Possibly re-enabled gui item
