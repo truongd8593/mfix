@@ -94,6 +94,14 @@ def find_free_port():
 
 # --- Main Gui ---
 
+class FakeJobManager(object):
+    """FIXME because JobManager gets used before we have a project open"""
+    def __init__(self, *args, **kwargs):
+        pass
+    def __getattr__(self, *args, **kwargs):
+        return self.whatever
+    def whatever(self, *args, **kwargs):
+        return False
 
 class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     """Main window class handling all gui interactions"""
@@ -330,7 +338,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
 
         # Job manager / monitor
-        self.job_manager = JobManager(parent=self)
+        self.job_manager = FakeJobManager(parent=self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -1507,9 +1515,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
     def open_run_dialog(self):
         """Open run popup dialog"""
-        popup_title = self.ui.run.button_run_mfix.text()
+        if bool(self.monitor.get_res_files()):
+            popup_title = 'Resume'
+            popup_run_action = self.resume_mfix
+        else:
+            popup_title = 'Run'
+            popup_run_action = self.run_mfix
         self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
-        self.run_dialog.run.connect(self.run_mfix)
+        self.run_dialog.run.connect(popup_run_action)
         self.run_dialog.submit.connect(self.submit_mfix)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
@@ -1550,16 +1563,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             # no dmp support
             run_cmd = [self.mfix_exe]
 
-        port = find_free_port()
-        if self.pymfix_enabled():
-            run_cmd += ['-P', str(port)]
 
         project_filename = os.path.basename(self.get_project_file())
         # Warning, not all versions of mfix support '-f' !
         run_cmd += ['-f', project_filename]
         msg = 'Starting %s' % ' '.join(run_cmd)
         self.print_internal(msg, color='blue')
-        return run_cmd, port
+        return run_cmd
 
     def _start_mfix(self, submit):
         """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
@@ -1576,16 +1586,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
                         os.environ["OMP_NUM_THREADS"])
 
-        run_cmd, port = self.get_run_cmd()
+        run_cmd = self.get_run_cmd()
         if submit:
             self.job_manager.submit_command(
-                cmd=run_cmd,
-                port=port)
+                cmd=run_cmd)
         else:
             self.job_manager.start_command(
                 cmd=run_cmd,
                 cwd=self.get_project_dir(),
-                port=port,
                 env=os.environ)
 
     def export_project(self):
@@ -1925,17 +1933,17 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
         name = self.project.get_value('run_name', default='new_file')
         for char in ('.', '"', "'", '/', '\\', ':'):
-            name = name.replace(char, '_')
-        runname_mfx = name + '.mfx'
-        runname_pid = name + '.pid'
+            runname = name.replace(char, '_')
+        runname_mfx = runname + '.mfx'
+        runname_pid = runname + '.pid'
         runname_pid = os.path.join(project_dir, runname_pid)
+
+        self.job_manager = JobManager(runname, parent=self)
+
         if os.path.exists(runname_pid):
-            with open(runname_pid) as pidfile:
-                pid = pidfile.readline().strip()
-                pymfix_url = pidfile.readline().strip()
-                self.job_manager.connect(pymfix_url)
-                self.job_manager.update_status()
-                self.update_run_options()
+            self.job_manager.connect()
+            self.job_manager.update_status()
+            self.update_run_options()
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False

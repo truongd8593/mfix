@@ -1,7 +1,9 @@
 """class to manage external MFIX process"""
+import traceback
 
 import json
 import logging
+from functools import wraps
 import os
 import tempfile
 import time
@@ -15,28 +17,118 @@ log = logging.getLogger(__name__)
 from qtpy.QtCore import QProcess, QProcessEnvironment, QTimer, QUrl
 from qtpy.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
-class JobManager(object):
-    """class for monitoring an MFIX job"""
 
-    def __init__(self, parent):
+SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token']
+
+class PymfixPID(object):
+    """ Class to obtain Pymfix connection details"""
+
+    def __init__(self, job_pid_file):
+
+        job_pid_file = '%s.pid' % job_pid_file
+
+        with open(job_pid_file) as pidfile:
+            log.debug('opened pid file %s' % os.path.basename(job_pid_file))
+            for line in pidfile.read().split('\n'):
+                try:
+                    (k, v) = line.split('=')
+                    if k in SUPPORTED_PYMFIXPID_FIELDS:
+                        log.debug('reading %s from pidfile: %s' % (k, v))
+                        setattr(self, k, v)
+                except ValueError:
+                    continue
+                except:
+                    log.error('error processing %s' % job_name)
+                    traceback.print_exc()
+
+
+class PymfixAPI(QNetworkAccessManager):
+    """ Class to extend QNetworkAccessManager with pymfix connection details
+        set transparently.
+    """
+
+    def __init__(self, job_name, project_dir, ignore_ssl_errors=False):
+
+        super(PymfixAPI, self).__init__()
+        self.connected = False
+        self.pymfix = None
+        self.pymfix_url = None
+        self.job_name = job_name
+        self.project_dir = project_dir
+        self.methods = {'put': super(PymfixAPI, self).put,
+                        'get': super(PymfixAPI, self).get,
+                        'post': super(PymfixAPI, self).post,
+                        'delete': super(PymfixAPI, self).deleteResource}
+
+    def connected(f):
+        @wraps(f)
+        def func(*args, **kwargs):
+            self = args[0]
+            self.connect()
+            return f(*args, **kwargs)
+        return func
+
+    def connect(self):
+        if bool(self.pymfix):
+            return
+        try:
+            log.debug('connecting to API for job %s' % self.job_name)
+            self.pymfix = PymfixPID(os.path.join(self.project_dir, self.job_name))
+            # TODO: verify API is listening -- self.get('status')
+            log.info('API connected: %s' % self.pymfix.url)
+        except:
+            log.warn("API connection to job %s failed" % self.job_name)
+            traceback.print_exc()
+
+    @connected
+    def api_request(self, method, endpoint, data):
+        log.debug("request sent: method=%s endpoint=%s" % (method, endpoint))
+        method = str(method).lower()
+        method = self.methods[method]
+        req = QNetworkRequest(QUrl('%s/%s' % (self.pymfix.url, endpoint)))
+        if self.pymfix.token:
+            (name, value) = self.pymfix.token.split(':')
+            req.setRawHeader(name, value)
+        if data is not None:
+            return method(req, data)
+        else:
+            return method(req)
+
+    def get(self, endpoint, data=None):
+        return self.api_request('get', endpoint, data)
+
+    def put(self, endpoint, data=b""):
+        return self.api_request('put', endpoint, data)
+
+    def post(self, endpoint, data=b""):
+        return self.api_request('post', endpoint, data)
+
+class JobManager(object):
+
+    """class for managing and monitoring an MFIX job"""
+
+    def __init__(self, job_name, parent):
         self.parent = parent
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
         self.status = {}
         self.timer = None
-        self.pymfix_url = None
-        self.control_manager = QNetworkAccessManager()
-        self.status_manager = QNetworkAccessManager()
+        self.job_name = job_name
+        self.project_dir = self.parent.get_project_dir()
+        self.api = PymfixAPI(self.job_name, self.project_dir, ignore_ssl_errors=True)
+        self.pymfix_url = self.api.pymfix_url
 
         def slot_update_status(reply):
             """update self.status when request finishes"""
+            print("slot_update_status")
             response_str = reply.readAll().data().decode('utf-8')
             try:
                 self.status = json.loads(response_str)
                 log.debug("status is %s", self.status)
                 # FIXME: print JSON for now, plot it later
                 import pprint
-                status_str = pprint.PrettyPrinter(indent=4, width=50).pformat(self.status)
+                status_str = pprint.PrettyPrinter(indent=4,
+                                                width=50).pformat(self.status)
                 self.parent.ui.residuals.setText(status_str)
             except ValueError:
                 self.status.clear()
@@ -45,39 +137,53 @@ class JobManager(object):
 
         def slot_control(reply):
             self.parent.update_run_options()
-        self.control_manager.finished.connect(slot_control)
-        self.status_manager.finished.connect(slot_update_status)
+
+        def slot_ssl_error(reply):
+            """ Handler for SSL connection errors. Check self.ignore_ssl_errors
+                and continue as appropriate"""
+            if self.api.ignore_ssl_errors:
+                log.debug('call to %s:%s completed with ignored SSL errors' % \
+                         (self.job_name, self.endpoint))
+                reply.ignoreSsl()
+            else:
+                log.warn('call to %s:%s aborted due to SSL errors' % \
+                         (self.job_name, self.endpoint))
+                raise # find appropriate Qt exception or make this meaningful
+
+        def slot_finished(reply):
+            log.debug('call to %s:%s completed' % (self.job_name,
+                                                   self.api.endpoint))
+            self.api.finished.emit()
+
+        self.api.sslErrors.connect(slot_ssl_error)
+
+        self.api.finished.connect(slot_control)
+        self.api.finished.connect(slot_update_status)
 
     def is_running(self):
         """indicate whether an MFIX/pymfix job is running
         Noted, pymfix will be "running" even if paused"""
-        ret = self.pymfix_url or (self.mfixproc is not None
-                                  and self.mfixproc.state() == QProcess.Running)
+        ret = self.pymfix_url or (self.mfixproc is not None and
+                                  self.mfixproc.state() == QProcess.Running)
         return ret
 
     def is_paused(self):
         """indicate whether pymfix is paused"""
-        if not self.pymfix_url:
-            return False
-        return self.status.get('paused', False)
+        return self.status.get('paused')
 
     def pause(self):
         "pause pymfix job"
         if not self.pymfix_url:
             log.error("pause() called on non-pymfix job")
             return
-        qurl = QUrl('%s/pause' % self.pymfix_url)
-        req = QNetworkRequest(qurl)
-        self.control_manager.put(req, b"")
+        self.api.put('pause')
 
     def unpause(self):
         "unpause pymfix job"
         if not self.pymfix_url:
             log.error("unpause() called on non-pymfix job")
             return
-        qurl = QUrl('%s/unpause' % self.pymfix_url)
-        req = QNetworkRequest(qurl)
-        self.control_manager.put(req, b"")
+        self.api.put('unpause')
 
     def stop_mfix(self):
         """Terminate a locally running instance of mfix"""
@@ -114,9 +220,16 @@ class JobManager(object):
 
         self.mfixproc = None
 
-    def connect(self, pymfix_url):
+    def connect(self, pymfix_url=None):
         """Connect to existing pymfix process"""
 
+        # TODO: refactor instantiation to set whether this is pymfix or mfix
+        if not bool(self.api.pymfix):
+            self.api.connect()
+
+        self.pymfix_url = self.api.pymfix_url
+
+        """
         if not pymfix_url:
             log.warn("Cannot connect to process, invalid URL")
             return
@@ -124,8 +237,7 @@ class JobManager(object):
         if self.pymfix_url:
             log.warn("Cannot connect to process, already connected to mfix process")
             return
-
-        self.pymfix_url = pymfix_url
+        """
 
         self.timer = QTimer()
         self.timer.setInterval(1000)
@@ -168,7 +280,7 @@ class JobManager(object):
 
         qsub_script.close() # deletes tmpfile
 
-    def start_command(self, cmd, cwd, port, env):
+    def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
         if self.mfixproc:
@@ -184,8 +296,7 @@ class JobManager(object):
                 return
 
         cmdline = ' '.join(cmd) # cmd is a list
-        if port: # port is not None iff using pymfix
-            self.connect('http://%s:%s' % (socket.gethostname(), port))
+
         self.mfixproc = QProcess()
         if not self.mfixproc:
             log.warn("QProcess creation failed")
@@ -202,6 +313,7 @@ class JobManager(object):
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
             log.debug("Full MFIX startup parameters: %s", cmdline)
+            QTimer.singleShot(1000, self.connect)
 
         self.mfixproc.started.connect(slot_start)
 
@@ -242,27 +354,22 @@ class JobManager(object):
             self.parent.stderr_signal.emit(msg) # make the message print in red
             self.parent.update_run_options_signal.emit('')
 
-
         self.mfixproc.error.connect(slot_error)
 
         self.mfixproc.start(cmd[0], cmd[1:])
 
     def set_pymfix_output(self, state):
         """toggle Flask messages"""
-        arg = 'enable' if state else 'disable'
-        qurl = QUrl('%s/logging/%s' % (self.pymfix_url, arg))
-        req = QNetworkRequest(qurl)
-        self.control_manager.post(req, b"timeout=1")
+        state = 'enable' if state else 'disable'
+        arg = 'logging/%s' % state
+        self.api.post(arg, data=b"")
 
     def terminate_pymfix(self):
-        """update the status of  the pymfix monitor"""
-
-        qurl = QUrl('%s/exit' % self.pymfix_url)
-        req = QNetworkRequest(qurl)
-        self.control_manager.post(req, b"timeout=1")
+        """ Request clean exit from MFIX """
+        self.api.post('exit', b"timeout=1")
 
     def update_status(self):
         """update the status of  the pymfix monitor"""
-        qurl = QUrl('%s/status' % self.pymfix_url)
-        req = QNetworkRequest(qurl)
-        self.status_manager.get(req)
+        if not self.api.connected:
+            return
+        self.api.get('status')
