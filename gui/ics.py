@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, absolute_import, unicode_literals, division
+from collections import OrderedDict
+
+from widgets.regions_popup import RegionsPopup
 
 """
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
@@ -149,5 +152,14 @@ class ICS(object):
     def init_ics(self):
         self.ics_current_region = None
 
+    def ics_add_region(self):
+        rp = self
+        ui = self.ui
+
+        for (k,v) in ui.regions.get_region_dict().items():
+            print(k)
+
     def setup_ics(self):
-        pass
+        ui = self.ui
+        ics = self.ui.initial_conditions
+        ics.toolbutton_add.clicked.connect(self.ics_add_region)
