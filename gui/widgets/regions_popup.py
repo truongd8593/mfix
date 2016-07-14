@@ -13,13 +13,7 @@ from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 UserRole = QtCore.Qt.UserRole
 
-def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
-
-def get_selected_row(table):
-    # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
-    return None if not rows else rows.pop()
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -59,21 +53,31 @@ class RegionsPopup(QtWidgets.QDialog):
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
 
-
     def clear(self):
-        self.ui.table.clear()
+        self.ui.table.clearContents()
+        self.ui.table.setRowCount(0)
 
     def add_row(self, row):
         table = self.ui.table
-        row_count = table.rowCount()
-        table.setRowCount(row_count+1)
-        def make_item(val):
+        nrows = table.rowCount()
+        table.setRowCount(nrows+1)
+        def make_item(val, enabled):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
+            set_item_enabled(item, enabled)
             return item
-        table.setItem(row_count, 0, make_item(row))
+        (name, shape, available) = row
+        table.setItem(nrows, 0, make_item(name, available))
+        table.setItem(nrows, 1, make_item(shape, available))
+        table.setItem(nrows, 2, make_item('Yes' if available else 'No', available))
 
     def popup(self):
         self.show()
         self.raise_()
         self.activateWindow()
+
+    def get_selection(self):
+        rows = set([i.row() for i in self.ui.table.selectedItems()])
+        rows.sort()
+        names = [self.ui.table.item(r,0).text() for r in rows]
+        return names

@@ -1024,8 +1024,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
         # Force any open popup to close
-        # if dialog is modal we don't need this
+        # (if dialog is modal we don't need this)
         self.species_popup.done(0)
+        self.regions_popup.done(0)
 
         current_selection = self.ui.treewidget_navigation.selectedItems()
 

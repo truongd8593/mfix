@@ -3,7 +3,10 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 
+from qtpy import QtCore, QtWidgets
+
 from widgets.regions_popup import RegionsPopup
+from tools.general import (set_item_noedit, set_item_enabled)
 
 """
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
@@ -169,10 +172,30 @@ class ICS(object):
         rp = self.regions_popup
 
         rp.clear()
-        for (k,v) in ui.regions.get_region_dict().items():
-            rp.add_row(k)
-
+        for (name,data) in ui.regions.get_region_dict().items():
+            shape = data.get('type', '---')
+            available = (shape=='box') # and not in use
+            row = (name, shape, available)
+            rp.add_row(row)
+        rp.reset_signals()
+        rp.save.connect(self.ics_update_regions)
         rp.popup()
+
+    def ics_update_regions(self):
+        ui = self.ui
+        ics = ui.initial_conditions
+        rp = self.regions_popup
+        sel = rp.get_selection()
+        if not sel:
+            return
+        tw = ics.tablewidget_regions
+        nrows = tw.rowCount()
+        tw.setRowCount(nrows+1)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        tw.setItem(nrows, 0, make_item('+'.join(sel)))
 
     def ics_delete_region(self):
         pass

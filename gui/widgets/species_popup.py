@@ -13,13 +13,7 @@ from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
 
-def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
-
-def get_selected_row(table):
-    # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
-    return None if not rows else rows.pop()
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
 
 if PYQT5:
     def resize_column(table, col, flags):
