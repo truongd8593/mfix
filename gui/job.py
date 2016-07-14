@@ -156,7 +156,7 @@ class JobManager(object):
 
         qsub_script = tempfile.NamedTemporaryFile()
         qsub_script.write(self.transform_template(template_text, cmd))
-        qsub_script.flush()
+        qsub_script.flush() # Keep tmpfile open
 
         cwd = os.getcwd()
         os.chdir(self.parent.get_project_dir())
@@ -166,7 +166,7 @@ class JobManager(object):
         if port: # port is not None iff using pymfix
             self.connect('http://%s:%s' % (socket.gethostname(), port))
 
-        qsub_script.close()
+        qsub_script.close() # deletes tmpfile
 
     def start_command(self, cmd, cwd, port, env):
         """Start MFIX in QProcess"""
