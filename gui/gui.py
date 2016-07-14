@@ -752,41 +752,38 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
                         m.checkbox_enable_turbulence.isChecked())
 
 
-    def enable_energy_eq(self, state):
+    def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of several other GUI items
-        self.ui.model.checkbox_keyword_energy_eq.setChecked(state)
+
+        # TODO : move this to fluids_handler, like the way we do for solids
+
+        self.ui.model.checkbox_keyword_energy_eq.setChecked(enabled)
 
         # It might not be necessary to do all this - will the fluid or
         # solid panes get updated before we display them?
         ui = self.ui
-        for item in (ui.fluid.combobox_fluid_specific_heat_model,
-                     ui.fluid.combobox_fluid_conductivity_model,
-                     ui.solids.combobox_solids_specific_heat_model,
+        f = ui.fluid
+        for item in (f.label_fluid_specific_heat_model,
+                     f.combobox_fluid_specific_heat_model,
+                     f.label_fluid_conductivity_model,
+                     f.combobox_fluid_conductivity_model,
                      # more ?
                      ):
-            item.setEnabled(state)
+            item.setEnabled(enabled)
+
         # c_pg0 == specific heat for fluid phase
-        lineedit = ui.fluid.lineedit_keyword_c_pg0
-        if state:
-            lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
-        lineedit = ui.fluid.lineedit_keyword_c_pg0
-        if state:
-            lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
+        lineedit = f.lineedit_keyword_c_pg0
+        label = f.label_c_pg0_units
+        for item in (lineedit, label):
+            item.setEnabled(enabled and (self.fluid_specific_heat_model == CONSTANT))
 
-        # c_ps0 == specific heat for solids phases
-        lineedit = ui.solids.lineedit_keyword_c_ps0_args_S
-        if state:
-            lineedit.setEnabled(self.solids_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
+        # k_g0 == thermal conductivity fluid phase
+        lineedit = f.lineedit_keyword_k_g0
+        label = f.label_k_g0_units
+        for item in (lineedit, label):
+            item.setEnabled(enabled and (self.fluid_conductivity_model == CONSTANT))
 
-        # toggle input of solids species
-        self.update_solids_species_groupbox()
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
