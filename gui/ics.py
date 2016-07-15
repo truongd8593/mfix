@@ -3,10 +3,10 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, PYQT5
 
 from widgets.regions_popup import RegionsPopup
-from tools.general import (set_item_noedit, set_item_enabled)
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
 
 """
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
@@ -164,7 +164,8 @@ class ICS(object):
         table = ics.tablewidget_regions
         row = get_selected_row(table)
         enabled = (row is not None)
-        ics.toolbutton_fluid_species_delete.setEnabled(enabled)
+        ics.toolbutton_delete.setEnabled(enabled)
+        ics.scrollarea.setEnabled(enabled)
 
     def ics_add_region(self):
         ui = self.ui
@@ -172,14 +173,14 @@ class ICS(object):
         rp = self.regions_popup
 
         rp.clear()
-        for (name,data) in ui.regions.get_region_dict().items():
+        for (name,data) in self.region_dict.items():
             shape = data.get('type', '---')
             available = (shape=='box') # and not in use
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
         rp.save.connect(self.ics_update_regions)
-        rp.popup()
+        rp.popup("Select region(s) for initial condition")
 
     def ics_update_regions(self):
         ui = self.ui
@@ -196,9 +197,42 @@ class ICS(object):
             set_item_noedit(item)
             return item
         tw.setItem(nrows, 0, make_item('+'.join(sel)))
+        self.fixup_table(tw)
+
+    def fixup_table(self, tw, stretch_column=0):
+        # fixme, this is getting called excessively
+        # Should we just hide the entire table (including header) if no rows?
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.columnCount()
+        resize(0, hv.Stretch)
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        # trim excess vertical space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+
+        # TODO FIXME scrollbar handling is not right - scrollbar status can change
+        # outside of this function.  We need to call this everytime window geometry changes
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        nrows = tw.rowCount()
+
+        if nrows==0:
+            height = header_height+scrollbar_height
+        else:
+            height =  (header_height+scrollbar_height
+                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
+        tw.updateGeometry() #? needed?
 
     def ics_delete_region(self):
         pass
 
     def setup_ics(self):
-        pass
+        ui = self.ui
+        self.region_dict = ui.regions.get_region_dict()
+        self.fixup_table(ui.initial_conditions.tablewidget_regions)

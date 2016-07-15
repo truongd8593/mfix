@@ -65,9 +65,9 @@ def get_combobox_item(combobox, n):
     return model.item(n, 0)
 
 def get_selected_row(table):
-    """get index of selected row from a QTable"""
+    """get index of selected row from a QTableWidget"""
     # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
+    rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
 def num_to_time(time, unit='s', outunit='time'):

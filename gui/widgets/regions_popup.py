@@ -71,13 +71,15 @@ class RegionsPopup(QtWidgets.QDialog):
         table.setItem(nrows, 1, make_item(shape, available))
         table.setItem(nrows, 2, make_item('Yes' if available else 'No', available))
 
-    def popup(self):
+    def popup(self, text="Select regions"):
+        self.ui.label.setText(text)
         self.show()
         self.raise_()
         self.activateWindow()
 
     def get_selection(self):
         rows = set([i.row() for i in self.ui.table.selectedItems()])
+        rows = list(rows)
         rows.sort()
         names = [self.ui.table.item(r,0).text() for r in rows]
         return names
