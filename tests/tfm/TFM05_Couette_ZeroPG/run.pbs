@@ -1,0 +1,28 @@
+#!/bin/csh
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N test1
+## Number of cores to request
+#$ -pe serial 1 
+##
+#$ -r n
+##
+## Queue Name
+#$ -q serial
+##$ -q 
+
+##Load Modules
+
+module load  intel/2014.1.046 gridengine
+
+
+##Run the parallel job
+ ./mfix >& run.log & 
+
+echo "Job finished"
+
+##echo "Launching new job"
+
+##qsub run1.pbs
