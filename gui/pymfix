@@ -105,7 +105,6 @@ def main():
         try:
             global pidfile
             pidfile = '%s.pid' % RUN.run_name.tobytes().strip().decode('utf-8')
-            pidfile = 'DES_FB1.pid'
             with open(pidfile, 'w') as pid:
                 pid.write('pid=%s\n' % (os.getpid(),))
                 pid.write('url=%s://%s:%s\n' % (
@@ -178,7 +177,7 @@ class Mfix(object):
         self.thread = threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args})
         self.thread.start()
         # wait for the MFIX thread to initialize COMPAR.mype
-        time.sleep(0.1)
+        time.sleep(1.0)
 
     def run_mfix(self, keyword_args=None):
         "Main thread for running MFIX itself"

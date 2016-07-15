@@ -94,15 +94,6 @@ def find_free_port():
 
 # --- Main Gui ---
 
-class FakeJobManager(object):
-    """FIXME because JobManager gets used before we have a project open"""
-    def __init__(self, *args, **kwargs):
-        pass
-    def __getattr__(self, *args, **kwargs):
-        return self.whatever
-    def whatever(self, *args, **kwargs):
-        return False
-
 class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     """Main window class handling all gui interactions"""
 
@@ -338,7 +329,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
 
         # Job manager / monitor
-        self.job_manager = FakeJobManager(parent=self)
+        self.job_manager = None
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -348,7 +339,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         run = ui.run
         run.button_run_mfix.clicked.connect(self.handle_run)
         run.button_pause_mfix.clicked.connect(self.handle_pause)
-        run.button_pause_mfix.setVisible(self.pymfix_enabled())
+        run.button_pause_mfix.setVisible(True)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
@@ -439,7 +430,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
     def confirm_close(self):
         """before closing, ask user whether to end job and save project"""
-        if self.job_manager.is_running():
+        if self.job_manager:
             confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
@@ -502,8 +493,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
         log.debug("rundir changed")
-        # TODO figure out if we really need to do this update
-        self.update_run_options()
+        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
+        if self.get_project_dir():
+            full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
+            if os.path.isfile(full_runname_pid):
+                self.job_manager = JobManager(full_runname_pid, parent=self)
+                self.update_run_options()
+
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
@@ -577,8 +573,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         project_file = os.path.basename(self.get_project_file() or '')
 
         project_open = bool(project_file and self.open_succeeded)
-        paused = self.job_manager.is_paused()
-        running = self.job_manager.is_running() and not paused
+        paused = self.job_manager and self.job_manager.is_paused()
+        running = self.job_manager and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
@@ -591,8 +587,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
-        # Pause only available w/ pymfix
-        pause_visible = bool(self.job_manager.pymfix_url)
+        pause_visible = bool(self.job_manager)
         if running:
             self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
@@ -627,7 +622,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
-        ui.run.checkbox_pymfix_output.setEnabled(self.pymfix_enabled())
+        ui.run.checkbox_pymfix_output.setEnabled(True)
 
 
     def print_welcome(self):
@@ -1417,7 +1412,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     def handle_run(self):
         name = 'Run'
         try:
-            if not self.job_manager.is_running():
+            if not self.job_manager:
                 # open the run dialog for job options
                 self.open_run_dialog()
                 return
@@ -1475,57 +1470,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.clear_unsaved_flag()
         self.update_source_view()
 
-    def run_mfix(self):
-        self.check_save()
-        self._start_mfix(False)
-
-    def submit_mfix(self):
-        self.check_save()
-        self._start_mfix(True)
-
-    def restart_mfix(self):
-        """Restart MFIX. This will remove previous output and start a new run."""
-        output_files = self.monitor.get_outputs()
-        if len(output_files) > 0:
-            message = "Delete all output and resume files?"
-            if not self.remove_output_files(output_files, message):
-                log.debug('output or resume files exist and run was cancelled')
-                return
-        self.update_keyword('run_type', 'new')
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file()) # XXX
-        self.clear_unsaved_flag()
-        self.update_source_view()
-        self._start_mfix()
-
-    def resume_mfix(self):
-        """resume previously stopped mfix run"""
-        if self.ui.run.use_spx_checkbox.isChecked():
-            self.update_keyword('run_type', 'restart_1')
-        else:
-            # TODO: is it correct to remove all but *.RES ?
-            spx_files = self.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
-            if not self.remove_output_files(spx_files):
-                log.debug('SP* files exist and run was cancelled')
-                return
-            self.update_keyword('run_type', 'restart_2')
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file()) # XXX
-        self.clear_unsaved_flag()
-        self.update_source_view()
-        self._start_mfix(False)
-
     def open_run_dialog(self):
         """Open run popup dialog"""
-        if bool(self.monitor.get_res_files()):
-            popup_title = 'Resume'
-            popup_run_action = self.resume_mfix
-        else:
-            popup_title = 'Run'
-            popup_run_action = self.run_mfix
-        self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
-        self.run_dialog.run.connect(popup_run_action)
-        self.run_dialog.submit.connect(self.submit_mfix)
+        self.check_save()
+        self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
@@ -1537,66 +1485,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.settings.setValue('mfix_exe', self.mfix_exe)
         log.debug('exe changed signal recieved: %s' % self.mfix_exe)
         self.update_run_options()
-
-    def dmp_enabled(self):
-        config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        flags = config['flags'] if config else ''
-        return 'dmp' in flags
-
-    def smp_enabled(self):
-        config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        flags = config['flags'] if config else ''
-        return 'smp' in flags
-
-    def pymfix_enabled(self):
-        config = self.mfix_exe_flags.get(self.mfix_exe, None)
-        flags = config['flags'] if config else ''
-        return 'python' in flags
-
-    def get_run_cmd(self):
-
-        if self.dmp_enabled():
-            mpiranks = (self.project.nodesi.value *
-                        self.project.nodesj.value *
-                        self.project.nodesk.value)
-
-            run_cmd = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
-        else:
-            # no dmp support
-            run_cmd = [self.mfix_exe]
-
-
-        project_filename = os.path.basename(self.get_project_file())
-        # Warning, not all versions of mfix support '-f' !
-        run_cmd += ['-f', project_filename]
-        msg = 'Starting %s' % ' '.join(run_cmd)
-        self.print_internal(msg, color='blue')
-        return run_cmd
-
-    def _start_mfix(self, submit):
-        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
-
-        if not self.mfix_exe:
-            self.print_internal("ERROR: MFIX not available")
-            self.update_run_options()
-            return
-
-        if True or self.smp_enabled():
-            # OMP_NUM_THREADS is set in run dialog
-            if not "OMP_NUM_THREADS" in os.environ:
-                os.environ["OMP_NUM_THREADS"] = "1"
-            log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
-                        os.environ["OMP_NUM_THREADS"])
-
-        run_cmd = self.get_run_cmd()
-        if submit:
-            self.job_manager.submit_command(
-                cmd=run_cmd)
-        else:
-            self.job_manager.start_command(
-                cmd=run_cmd,
-                cwd=self.get_project_dir(),
-                env=os.environ)
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
@@ -1748,14 +1636,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         if self.unsaved_flag:
             title += '*'
 
-        if self.job_manager.is_running() and not self.job_manager.is_paused():
-            title += ', RUNNING'
-            if self.job_manager.mfix_pid is not None:
-                title += ', process %s'% self.job_manager.mfix_pid
-        elif self.job_manager.is_paused():
-            title += ', PAUSED'
-        elif self.monitor.get_res_files():
-            title += ', STOPPED, resumable'
+        if self.job_manager:
+            if not self.job_manager.is_paused():
+                title += ', RUNNING'
+                if self.job_manager.mfix_pid is not None:
+                    title += ', process %s'% self.job_manager.mfix_pid
+            elif self.job_manager.is_paused():
+                title += ', PAUSED'
+            elif self.monitor.get_res_files():
+                title += ', STOPPED, resumable'
         else:
             pass
             #title += ', EDITING'
@@ -1887,6 +1776,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     def force_default_settings(self):
         self.update_keyword('chk_batchq_end', True)
 
+
+    def get_runname_mfx_runname_pid(self):
+        name = self.project.get_value('run_name', default='new_file')
+        for char in ('.', '"', "'", '/', '\\', ':'):
+            runname = name.replace(char, '_')
+        runname_mfx = runname + '.mfx'
+        runname_pid = runname + '.pid'
+        return runname_mfx, runname_pid
+
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
 
@@ -1933,21 +1831,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             self.set_no_project()
             return
 
-        name = self.project.get_value('run_name', default='new_file')
-        for char in ('.', '"', "'", '/', '\\', ':'):
-            runname = name.replace(char, '_')
-        runname_mfx = runname + '.mfx'
-        runname_pid = runname + '.pid'
-        runname_pid = os.path.join(project_dir, runname_pid)
-
-        self.job_manager = JobManager(runname, parent=self)
-        self.job_manager.sig_update_parent.connect(self.update_run_options)
-        self.job_manager.sig_update_parent.connect(self.update_residuals)
+        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
 
         if os.path.exists(runname_pid):
-            self.job_manager.connect()
-            self.job_manager.update_status()
-            self.update_run_options()
+            self.job_manager = JobManager(runname_pid, parent=self)
+            self.job_manager.connect(runname_pid)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
