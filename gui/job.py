@@ -14,7 +14,8 @@ socket.setdefaulttimeout(DEFAULT_TIMEOUT)
 
 log = logging.getLogger(__name__)
 
-from qtpy.QtCore import QProcess, QProcessEnvironment, QTimer, QUrl
+from qtpy.QtCore import (QProcess, QProcessEnvironment, QObject,
+                        QTimer, QUrl, Signal)
 from qtpy.QtNetwork import QNetworkRequest, QNetworkAccessManager
 
 
@@ -103,37 +104,28 @@ class PymfixAPI(QNetworkAccessManager):
     def post(self, endpoint, data=b""):
         return self.api_request('post', endpoint, data)
 
-class JobManager(object):
+class JobManager(QObject):
 
     """class for managing and monitoring an MFIX job"""
 
+    sig_update_parent = Signal()
+    sig_job_exit = Signal()
+
     def __init__(self, job_name, parent):
+
+        super(JobManager, self).__init__()
+
         self.parent = parent
         self.mfixproc = None
         self.mfix_pid = None # Keep track of pid separately
-        self.status = {}
         self.timer = None
+        self.status = {}
+        self.cached_status = ''
         self.job_name = job_name
         self.project_dir = self.parent.get_project_dir()
         self.api = PymfixAPI(self.job_name, self.project_dir, ignore_ssl_errors=True)
         self.pymfix_url = self.api.pymfix_url
 
-        def slot_update_status(reply):
-            """update self.status when request finishes"""
-            print("slot_update_status")
-            response_str = reply.readAll().data().decode('utf-8')
-            try:
-                self.status = json.loads(response_str)
-                log.debug("status is %s", self.status)
-                # FIXME: print JSON for now, plot it later
-                import pprint
-                status_str = pprint.PrettyPrinter(indent=4,
-                                                width=50).pformat(self.status)
-                self.parent.ui.residuals.setText(status_str)
-            except ValueError:
-                self.status.clear()
-                log.error("could not decode JSON: %s", response_str)
-            self.parent.update_run_options()
 
         def slot_control(reply):
             self.parent.update_run_options()
@@ -151,14 +143,12 @@ class JobManager(object):
                 raise # find appropriate Qt exception or make this meaningful
 
         def slot_finished(reply):
-            log.debug('call to %s:%s completed' % (self.job_name,
-                                                   self.api.endpoint))
+            log.debug('call to %s:%s completed' % \
+                        (self.job_name, self.api.endpoint))
             self.api.finished.emit()
 
         self.api.sslErrors.connect(slot_ssl_error)
-
         self.api.finished.connect(slot_control)
-        self.api.finished.connect(slot_update_status)
 
     def is_running(self):
         """indicate whether an MFIX/pymfix job is running
@@ -243,6 +233,7 @@ class JobManager(object):
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.update_status)
         self.timer.start()
+        # TODO? handle with signal so this can be managed in gui
         self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
 
     def disconnect(self):
@@ -309,7 +300,8 @@ class JobManager(object):
 
 
         def slot_start():
-            self.mfix_pid = self.mfixproc.pid() # Keep a copy because it gets reset
+            # Keep a copy because it gets reset
+            self.mfix_pid = self.mfixproc.pid()
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.update_run_options_signal.emit(msg)
             log.debug("Full MFIX startup parameters: %s", cmdline)
@@ -329,9 +321,11 @@ class JobManager(object):
 
         def slot_finish(status):
             self.status.clear()
-            msg = "MFIX process %s has stopped"%self.mfix_pid # by now mfixproc.pid() is 0
+            # by now mfixproc.pid() is 0
+            msg = "MFIX process %s has stopped" % self.mfix_pid
             self.mfix_pid = None
-            #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % self.mfixproc.pid())
+            #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % \
+            #    self.mfixproc.pid())
             self.mfixproc = None
             self.disconnect()
             self.parent.update_run_options_signal.emit(msg)
@@ -350,12 +344,14 @@ class JobManager(object):
             else:
                 msg = "Unknown error "+cmdline
             log.warn(msg)
-            self.mfixproc = None
-            self.parent.stderr_signal.emit(msg) # make the message print in red
-            self.parent.update_run_options_signal.emit('')
+            # make the message print in red
+            self.parent.stderr_signal.emit(msg)
+            #self.parent.update_run_options_signal.emit('')
+            self.sig_update_parent.emit()
+            self.sig_job_exit.emit()
+            #self.mfixproc = None
 
         self.mfixproc.error.connect(slot_error)
-
         self.mfixproc.start(cmd[0], cmd[1:])
 
     def set_pymfix_output(self, state):
@@ -369,7 +365,18 @@ class JobManager(object):
         self.api.post('exit', b"timeout=1")
 
     def update_status(self):
-        """update the status of  the pymfix monitor"""
-        if not self.api.connected:
+        if self.api.connected:
+            reply = self.api.get('status')
+        else:
             return
-        self.api.get('status')
+        try:
+            response = reply.readAll().data().decode('utf-8')
+            self.status = json.loads(response)
+            log.debug("status is %s", self.status)
+            self.cached_status = pprint.PrettyPrinter(indent=4,
+                                    width=50).pformat(self.status)
+        except ValueError:
+                self.status.clear()
+                log.error("could not decode JSON: %s", response)
+        finally:
+            self.sig_update_parent.emit()

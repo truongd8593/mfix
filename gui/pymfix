@@ -121,6 +121,7 @@ def main():
         except OSError as e:
             if user_port_specified:
                 log.error('Specified port (%s) is unavailable' % port)
+                os.remove(pidfile)
                 raise e
             if e.errno == errno.EADDRINUSE:
                 os.remove(pidfile)
@@ -128,7 +129,6 @@ def main():
                 _start_flask(host='0.0.0.0',
                              port=random.randint(1025, 65536), debug=DEBUG,
                              use_reloader=False)
-
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:

@@ -551,6 +551,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             self.update_solids_table() # ?
             #self.update_solids_detail_pane()
 
+    def update_residuals(self):
+        """Get job status from JobManager and update residuals pane"""
+        self.ui.residuals.setText(self.job_manager.cached_status)
+
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
     # This function is called a lot, and it does too much work each time
@@ -1509,7 +1513,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.project.writeDatFile(self.get_project_file()) # XXX
         self.clear_unsaved_flag()
         self.update_source_view()
-        self._start_mfix()
+        self._start_mfix(False)
 
     def open_run_dialog(self):
         """Open run popup dialog"""
@@ -1577,7 +1581,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             self.update_run_options()
             return
 
-        if self.smp_enabled():
+        if True or self.smp_enabled():
             # OMP_NUM_THREADS is set in run dialog
             if not "OMP_NUM_THREADS" in os.environ:
                 os.environ["OMP_NUM_THREADS"] = "1"
@@ -1937,6 +1941,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         runname_pid = os.path.join(project_dir, runname_pid)
 
         self.job_manager = JobManager(runname, parent=self)
+        self.job_manager.sig_update_parent.connect(self.update_run_options)
+        self.job_manager.sig_update_parent.connect(self.update_residuals)
 
         if os.path.exists(runname_pid):
             self.job_manager.connect()

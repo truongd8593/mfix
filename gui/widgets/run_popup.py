@@ -356,11 +356,13 @@ class RunPopup(QDialog):
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
+            if err:
+                log.error('MFIX %s' % str(err))
         except:
-            log.debug("could not run %s --print-flags", mfix_exe)
+            log.error("could not run %s --print-flags", mfix_exe)
             return False
 
-        flags = '' if err else str(out.strip())
+        flags = str(out.strip())
         cache[mfix_exe] = {'stat': stat, 'flags': flags}
         return True
 
