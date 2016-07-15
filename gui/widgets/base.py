@@ -9,6 +9,8 @@ import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui, PYQT4, PYQT5
 
+from tools.general import get_selected_row
+
 if PYQT5:
     from qtpy.QtCore import QItemSelectionModel
 elif PYQT4:
@@ -531,7 +533,6 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.verticalHeader().hide()
 
     def set_delegate(self, col, row):
-
         self.delegate = CustomDelegate(column_dict=col,
                                        row_dict=row)
         self.setItemDelegate(self.delegate)
@@ -566,11 +567,11 @@ class Table(QtWidgets.QTableView, BaseWidget):
         self.model().apply_to_column(column, value)
 
     def current_row(self):
-        i = self.selectionModel().selection().indexes()
-        if i:
-            return i[-1].row()
-        else:
-            return -1
+        r = get_selected_row(self)
+        if r >= len(self.value):
+            #https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/99
+            r = None
+        return r
 
     def current_column(self):
         i = self.selectionModel().selection().indexes()

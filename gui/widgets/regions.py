@@ -43,7 +43,9 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.toolbutton_region_add.pressed.connect(self.new_region)
         self.toolbutton_region_delete.pressed.connect(self.delete_region)
+        self.toolbutton_region_delete.setEnabled(False) #Need a selection
         self.toolbutton_region_copy.pressed.connect(self.copy_region)
+        self.toolbutton_region_copy.setEnabled(False) #Need a selection
         self.toolbutton_color.pressed.connect(self.change_color)
 
         tablewidget = self.tablewidget_regions
@@ -137,30 +139,39 @@ class RegionsWidget(QtWidgets.QWidget):
             return
 
         self.tablewidget_regions.fit_to_contents()
+        self.tablewidget_regions.selectRow(len(data)-1) # Select new row
 
     def delete_region(self):
         'remove the currently selected region'
 
         row = self.tablewidget_regions.current_row()
+        if row is None: # Should not happen
+            return
 
-        if row >= 0:
-            data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
-            data.pop(name)
-            self.tablewidget_regions.set_value(data)
-            self.vtkwidget.delete_region(name)
+        data = self.tablewidget_regions.value
+        name = list(data.keys())[row]
+        data.pop(name)
+        self.tablewidget_regions.set_value(data)
+        self.vtkwidget.delete_region(name)
 
-            if data:
-                self.groupbox_region_parameters.setEnabled(True)
-            else:
-                self.groupbox_region_parameters.setEnabled(False)
+        nrows = len(data)
+        if row == nrows: # We deleted the last row,
+            #https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/99
+            if nrows > 0:
+                self.tablewidget_regions.selectRow(nrows-1)
+
+        enabled = (nrows > 0) # Any left?
+        self.groupbox_region_parameters.setEnabled(enabled)
+        self.toolbutton_region_delete.setEnabled(enabled)
+        self.toolbutton_region_copy.setEnabled(enabled)
+        self.update_region_parameters()
+
 
     def copy_region(self):
         'copy the currently selected region'
-
         row = self.tablewidget_regions.current_row()
 
-        if row >= 0:
+        if row is not None:
             data = self.tablewidget_regions.value
             name = list(data.keys())[row]
             new_region = copy.deepcopy(data[name])
@@ -177,64 +188,67 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
-
         row = self.tablewidget_regions.current_row()
+        enabled = row is not None
+        self.toolbutton_region_delete.setEnabled(enabled)
+        self.toolbutton_region_copy.setEnabled(enabled)
+        self.groupbox_region_parameters.setEnabled(enabled)
 
-        if row >= 0:
-            # enable groupbox
-            self.groupbox_region_parameters.setEnabled(True)
 
+        if enabled:
             data = self.tablewidget_regions.value
             name = list(data.keys())[row]
-
+            data = data[name]
             # enable widgets
             self.enable_disable_widgets(name)
-
-            # color
-            self.toolbutton_color.setStyleSheet(
-                "QToolButton{{ background: rgb({},{},{});}}".format(
-                    *data[name]['color'].color_int))
-
-            self.lineedit_regions_name.updateValue(None, name)
-            self.combobox_regions_type.updateValue(
-                None,
-                data[name]['type'])
-
-            for widget, value in zip(self.extent_lineedits[::2],
-                                     data[name]['from']
-                                     ):
-                widget.updateValue(None, value)
-
-            for widget, value in zip(self.extent_lineedits[1::2],
-                                     data[name]['to']
-                                     ):
-                widget.updateValue(None, value)
-
-            # stl
-            self.combobox_stl_shape.updateValue(
-                None,
-                data[name]['stl_shape'])
-
-            self.checkbox_slice_facets.updateValue(
-                None,
-                data[name]['slice'])
-
-            self.lineedit_deviation_angle.updateValue(
-                None,
-                data[name]['deviation_angle'])
-
-            for widget, value in zip([self.lineedit_filter_x,
-                                      self.lineedit_filter_y,
-                                      self.lineedit_filter_z],
-                                     data[name]['filter']
-                                     ):
-                widget.updateValue(None, value)
-
         else:
-            self.groupbox_region_parameters.setEnabled(False)
+            data =  {'filter': [0, 0, 0],
+                     'to': [0, 0, 0],
+                     'deviation_angle': 10,
+                     'slice': True,
+                     'from': [0, 0, 0],
+                     'color': CellColor(),
+                     'stl_shape': 'box',
+                     'type': 'box',
+                     'visibility': True}
+            name = ''
+
+        # color
+        self.toolbutton_color.setStyleSheet(
+            "QToolButton{{ background: rgb({},{},{});}}".format(
+                *data['color'].color_int))
+
+        self.lineedit_regions_name.updateValue(None, name)
+        self.combobox_regions_type.updateValue(None,
+                                               data['type'])
+
+        for widget, value in zip(self.extent_lineedits[::2],
+                                 data['from']):
+            widget.updateValue(None, value)
+
+        for widget, value in zip(self.extent_lineedits[1::2],
+                                 data['to']):
+            widget.updateValue(None, value)
+
+        # stl
+        self.combobox_stl_shape.updateValue(None,
+                                            data['stl_shape'])
+
+        self.checkbox_slice_facets.updateValue(None,
+                                               data['slice'])
+
+        self.lineedit_deviation_angle.updateValue(None,
+                                                  data['deviation_angle'])
+
+        for widget, value in zip([self.lineedit_filter_x,
+                                  self.lineedit_filter_y,
+                                  self.lineedit_filter_z],
+                                 data['filter']):
+            widget.updateValue(None, value)
+
 
     def region_value_changed(self, widget, value, args):
-        'one of the region wigets values changed, update'
+        'one of the region widgets values changed, update'
         row = self.tablewidget_regions.current_row()
         data = self.tablewidget_regions.value
         name = list(data.keys())[row]
@@ -290,7 +304,6 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def enable_disable_widgets(self, name):
-
         data = self.tablewidget_regions.value
         # enable stl widgets
         self.groupbox_stl.setEnabled(data[name]['type'] == 'STL')
