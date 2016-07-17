@@ -111,7 +111,7 @@ DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 
 postmfix$(EXEEXT): $(LIBMFIX).md5
 	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
+	-rm -f $@
 	$(LN_S) $(top_builddir)/$@ $@
 
 ################################################################
@@ -168,10 +168,11 @@ pymfix_src = \
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 pymfix: mfix.so
-	rm -f $@
+	-rm -f $@
 	$(LN_S) $(top_srcdir)/../gui/$@ $@
 
 mfix$(EXEEXT): mfix.so
+	-rm -rf build/mfix
 	$(PYINSTALLER) -F -n=mfix $(top_srcdir)/../gui/pymfix
 	cp dist/mfix $@
 
