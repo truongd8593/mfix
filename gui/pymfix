@@ -75,6 +75,9 @@ def token_required(f):
                   {'Content-Type': 'text/plain; charset=utf-8'}
     return decorated_function
 
+def get_run_name():
+    return RUN.run_name.tobytes().decode('utf-8').replace('\x00', '').strip()
+
 def main():
     """The main function starts MFIX on a separate thread, then
        start the Flask server. """
@@ -104,7 +107,10 @@ def main():
     def _start_flask(host, port, debug, use_reloader):
         try:
             global pidfile
-            pidfile = '%s.pid' % RUN.run_name.tobytes().strip().decode('utf-8')
+            while not get_run_name():
+                # wait for mfix thread to initialize RUN_NAME
+                pass
+            pidfile = '%s.pid' % get_run_name()
             with open(pidfile, 'w') as pid:
                 pid.write('pid=%s\n' % (os.getpid(),))
                 pid.write('url=%s://%s:%s\n' % (
@@ -176,8 +182,6 @@ class Mfix(object):
         " start the MFIX thread"
         self.thread = threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args})
         self.thread.start()
-        # wait for the MFIX thread to initialize COMPAR.mype
-        time.sleep(1.0)
 
     def run_mfix(self, keyword_args=None):
         "Main thread for running MFIX itself"
