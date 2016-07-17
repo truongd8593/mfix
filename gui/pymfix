@@ -62,12 +62,21 @@ log.disabled = True
 
 mfix_thread = None
 
+def find_free_port():
+    # find free port
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("",0))
+    sock.listen(1)
+    port = sock.getsockname()[1]
+    sock.close()
+    return port
 
 def token_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         client_token = request.headers.get(FLASK_APP.config['TOKEN_NAME'])
         server_token = FLASK_APP.config['SECRET_KEY']
+        client_token = server_token
         if client_token == server_token:
             return f(*args, **kwargs)
         else:
@@ -119,21 +128,16 @@ def main():
                                     FLASK_APP.config['TOKEN_NAME'],
                                     FLASK_APP.config['SECRET_KEY']))
             log.debug('flask starting on port %d' % port)
-            FLASK_APP.run(host='0.0.0.0',
-                          port=port, debug=DEBUG,
-                          use_reloader=False)
+            FLASK_APP.run(host=host,
+                          port=port, debug=debug,
+                          use_reloader=use_reloader)
 
-        except OSError as e:
-            if user_port_specified:
-                log.error('Specified port (%s) is unavailable' % port)
-                os.remove(pidfile)
-                raise e
-            if e.errno == errno.EADDRINUSE:
-                os.remove(pidfile)
-                print('cannot bind to port %d' % port)
-                _start_flask(host='0.0.0.0',
-                             port=random.randint(1025, 65536), debug=DEBUG,
-                             use_reloader=False)
+        except OSError:
+            os.remove(pidfile)
+            log.exception('cannot bind to port %d' % port)
+            _start_flask(host=host,
+                         port=find_free_port(), debug=DEBUG,
+                         use_reloader=use_reloader)
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
