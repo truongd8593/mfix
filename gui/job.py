@@ -115,7 +115,7 @@ class JobManager(QObject):
         self.runname_pid = runname_pid
         self.api = None
 
-        self.sig_update_parent.connect(self.parent.update_run_options)
+        self.sig_update_parent.connect(self.parent.slot_update_runbuttons)
         self.sig_update_parent.connect(self.parent.update_residuals)
         self._connect()
 
@@ -146,7 +146,7 @@ class JobManager(QObject):
         """Connect to existing pymfix process"""
 
         def slot_control(reply):
-            self.parent.update_run_options()
+            self.parent.signal_update_runbuttons.emit('')
 
         def slot_ssl_error(reply):
             """ Handler for SSL connection errors. Check self.ignore_ssl_errors
@@ -178,6 +178,7 @@ class JobManager(QObject):
             self.timer = None
         self.api = None
         self.parent.job_manager = None
+        self.parent.signal_update_runbuttons.emit('')
 
     def set_pymfix_output(self, state):
         """toggle Flask messages"""
@@ -198,13 +199,15 @@ class JobManager(QObject):
             self.disconnect()
             self.sig_update_parent.emit()
             return
-        import requests
-        response = requests.get('%s/status' % self.api.pymfix['url']).text
         try:
+            response = self.api.get('status')
             self.status = json.loads(response)
             self.cached_status = pprint.PrettyPrinter(indent=4,
                                     width=50).pformat(self.status)
         except ValueError:
+                self.status.clear()
+                log.error("could not decode JSON: %s", response)
+        except TypeError:
                 self.status.clear()
                 log.error("could not decode JSON: %s", response)
         finally:

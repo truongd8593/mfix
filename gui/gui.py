@@ -23,7 +23,7 @@ log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 log.debug(SCRIPT_DIRECTORY)
 
 # import qt
-from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
+from qtpy import QtCore, QtWidgets, QtGui, PYQT5
 from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 
 # TODO: add pyside? There is an issue to add this to qtpy:
@@ -37,7 +37,7 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
-from job import JobManager
+from job import JobManager, get_dict_from_pidfile
 from monitor import Monitor
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
@@ -101,7 +101,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
     stdout_signal = pyqtSignal(str)
     stderr_signal = pyqtSignal(str)
-    update_run_options_signal = pyqtSignal(str)
+    signal_update_runbuttons = pyqtSignal(str)
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):
@@ -351,7 +351,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         ## Run signals
         self.stdout_signal.connect(self.handle_stdout)
         self.stderr_signal.connect(self.handle_stderr)
-        self.update_run_options_signal.connect(self.update_run_options)
+        self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
@@ -368,7 +368,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.change_pane('model')
 
         # Update run options
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
         # Reset everything to default values
         self.reset() # Clear command_output too?
@@ -498,7 +498,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             if os.path.isfile(full_runname_pid):
                 self.job_manager = JobManager(full_runname_pid, parent=self)
-                self.update_run_options()
+                self.signal_update_runbuttons.emit('')
 
 
     def set_run_button(self, text=None, enabled=None):
@@ -549,6 +549,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
     def update_residuals(self):
         """Get job status from JobManager and update residuals pane"""
+        if not self.job_manager:
+            return
         self.ui.residuals.setText(self.job_manager.cached_status)
 
     # TODO:  separate this into different functions - this is called by
@@ -558,7 +560,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
     # 2) project directory changed
     # 3) process started
     # 4) process stopped
-    def update_run_options(self, message=None):
+    def slot_update_runbuttons(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
         # This is the main state-transition handler
 
@@ -1414,6 +1416,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
                              buttons=['ok'],
                              default=['ok'])
                 break
+        self.signal_update_runbuttons.emit('')
         return True
 
     # Don't make these depend on current state, since (esp for pymfix)
@@ -1431,7 +1434,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         except Exception as e:
             self.print_internal("%s: error %s" % (name, e))
             traceback.print_exception(*sys.exc_info())
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
     def handle_set_pymfix_output(self):
         try:
@@ -1456,32 +1459,23 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             traceback.print_exception(*sys.exc_info())
 
     def check_save(self):
-        output_files = self.monitor.get_outputs()
-        res_files = self.monitor.get_res_files()
-        if output_files:
-            if res_files:
-                return self.resume_mfix()
-            if not self.remove_output_files(output_files):
-                log.info('output files exist and run was cancelled')
-                return
-
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
                                     text="Save current project?",
                                     buttons=['yes', 'no'])
-            if response=='yes': #FIXME need to catch/report errors, writeDatFile is too low-level
-                self.project.writeDatFile(self.get_project_file())
-            else:
-                return
-        self.update_keyword('run_type', 'new')
+            if response != 'yes':
+                return False
+        #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file())
         self.clear_unsaved_flag()
         self.update_source_view()
+        return True
 
     def open_run_dialog(self):
         """Open run popup dialog"""
-        self.check_save()
+        if not self.check_save():
+            return
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
@@ -1493,7 +1487,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.mfix_exe = self.run_dialog.mfix_exe
         self.settings.setValue('mfix_exe', self.mfix_exe)
         log.debug('exe changed signal recieved: %s' % self.mfix_exe)
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
@@ -1843,8 +1837,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
 
         if os.path.exists(runname_pid):
-            self.job_manager = JobManager(runname_pid, parent=self)
-            self.job_manager.connect(runname_pid)
+            pid = get_dict_from_pidfile(runname_pid)['pid']
+            try:
+                os.kill(pid, 0)
+            except OSError:
+                log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
+            else:
+                self.job_manager = JobManager(runname_pid, parent=self)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
@@ -2015,7 +2014,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         #    self.save_project()
 
         self.open_succeeded = True
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
