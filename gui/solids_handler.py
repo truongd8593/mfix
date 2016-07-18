@@ -556,15 +556,17 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
     def solids_delete(self):
         ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
         # hole.  This is going to mess up a lot of things, eg restitution coeffs.
-        self.solids_current_phase = None
-        self.solids_current_phase_name = None
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
+
         if row is None: # No selection
             return
+
+        self.solids_current_phase = None
+        self.solids_current_phase_name = None
         # avoid callbacks to handle_solids_table_selection
         tw.itemSelectionChanged.disconnect() #self.handle_solids_table_selection)
-        tw.clearSelection()
+        tw.clearSelection()  # Why do we still have a selected row after delete? (and should we?)
         name = tw.item(row, 0).text()
         phase = row+1
         for key in ('ro', 'mu', 'c_p', 'k'):
@@ -575,14 +577,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         for key in ('d_p0', 'solids_model', 'species_eq', 'nmax_s'):
             self.unset_keyword(key, args=phase)
-        # TODO FIX SCALAR EQ!
+        # FIXME FIX SCALAR EQ!
         del self.solids[name]
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        # TODO clear out all keywords related to deleted phase!
+        # FIXME clear out all keywords related to deleted phase!
         if self.solids_species.has_key(phase):
             del self.solids_species[phase]
 
