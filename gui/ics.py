@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
+UserRole = QtCore.Qt.UserRole
 
 from widgets.regions_popup import RegionsPopup
 from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
@@ -142,53 +143,49 @@ class ICS(object):
     def init_ics(self):
         ui = self.ui
         ics = ui.initial_conditions
-        self.ics_current_region = None
 
         #Icons to add/remove/duplicate regions are given at the top
         #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
         #the region to apply the initial condition.
-        #Users cannot select inapplicable regions.
-        #IC regions must be volumes (not planes, points, or STLs)
-        #No region can define more than one initial condition.
-        #
         #Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
         #define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
         #get messy, and if so, scrap this idea.
-        ics.toolbutton_add.clicked.connect(self.ics_add_region)
-        ics.toolbutton_delete.clicked.connect(self.ics_delete_region)
+        self.ics_current_indices = [] # List of IC indices
+        self.ics_current_regions = [] # And the names of the regions which define them
+        self.ics_indices = set()
+
+        ics.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
+        ics.toolbutton_delete.clicked.connect(self.ics_delete_regions)
+        ics.toolbutton_delete.setEnabled(False) # Need a selection
 
         ics.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
 
-    def handle_ics_region_selection(self):
-        ics = self.ui.initial_conditions
-        table = ics.tablewidget_regions
-        row = get_selected_row(table)
-        enabled = (row is not None)
-        ics.toolbutton_delete.setEnabled(enabled)
-        ics.scrollarea.setEnabled(enabled)
-
-    def ics_add_region(self):
+    def ics_show_regions_popup(self):
+        #Users cannot select inapplicable regions.
+        #IC regions must be volumes (not planes, points, or STLs)
+        #No region can define more than one initial condition.
         ui = self.ui
         ics = ui.initial_conditions
         rp = self.regions_popup
-
         rp.clear()
         for (name,data) in self.region_dict.items():
             shape = data.get('type', '---')
-            available = (shape=='box') # and not in use
+            available = (shape=='box' and data.get('available', True))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
-        rp.save.connect(self.ics_update_regions)
+        rp.save.connect(self.ics_add_regions)
         rp.popup("Select region(s) for initial condition")
 
-    def ics_update_regions(self):
+    def ics_add_regions(self):
         ui = self.ui
         ics = ui.initial_conditions
         rp = self.regions_popup
-        sel = rp.get_selection()
-        if not sel:
+        selections = rp.get_selection_list()
+        if not selections:
             return
+        for s in selections:
+            self.region_dict[s]['available'] = False # Mark as in-use
         tw = ics.tablewidget_regions
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
@@ -196,8 +193,57 @@ class ICS(object):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-        tw.setItem(nrows, 0, make_item('+'.join(sel)))
+
+        item = make_item('+'.join(selections))
+        indices = [self.ics_find_index() for x in selections]
+        item.setData(UserRole, (indices, selections))
+        self.ics_current_regions = selections
+        self.ics_current_indices = indices
+        tw.setItem(nrows, 0, item)
         self.fixup_table(tw)
+        tw.setCurrentCell(nrows, 0) # Might as well make it selected
+
+    def ics_find_index(self):
+        n = 1
+        while n in self.ics_indices:
+            n += 1
+        self.ics_indices.add(n)
+        return n
+
+    def ics_delete_regions(self):
+        tw = self.ui.initial_conditions.tablewidget_regions
+        row = get_selected_row(tw)
+        if row is None: # No selection
+            return
+
+        for i in self.ics_current_indices:
+            self.ics_indices.remove(i)
+            # TODO: unset all associated keywords
+            # TODO: fix any resulting 'holes' in sequence
+        for r in self.ics_current_regions:
+            if r in self.region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
+                self.region_dict[r]['available'] = True
+        self.ics_current_regions = []
+        self.ics_current_indices = []
+
+        tw.itemSelectionChanged.disconnect() #self.handle_ics_region_selection)
+        tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
+        tw.removeRow(row)
+        tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
+
+    def handle_ics_region_selection(self):
+        ics = self.ui.initial_conditions
+        table = ics.tablewidget_regions
+        row = get_selected_row(table)
+        if row is None:
+            indices = []
+            regions = []
+        else:
+            (indices, regions) = table.item(row,0).data(UserRole)
+        self.ics_current_indices, self.ics_current_regions = indices, regions
+        enabled = (row is not None)
+        ics.toolbutton_delete.setEnabled(enabled)
+        ics.scrollarea.setEnabled(enabled)
 
     def fixup_table(self, tw, stretch_column=0):
         # fixme, this is getting called excessively
@@ -226,11 +272,8 @@ class ICS(object):
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
         tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
-        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
+        tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
-
-    def ics_delete_region(self):
-        pass
 
     def setup_ics(self):
         ui = self.ui

@@ -77,7 +77,8 @@ class RegionsPopup(QtWidgets.QDialog):
         self.raise_()
         self.activateWindow()
 
-    def get_selection(self):
+    def get_selection_list(self):
+        """return list of selected region names"""
         rows = set([i.row() for i in self.ui.table.selectedItems()])
         rows = list(rows)
         rows.sort()

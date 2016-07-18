@@ -449,4 +449,4 @@ class RegionsWidget(QtWidgets.QWidget):
     def get_region_dict(self):
         """ return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
-        return region_dict
+        return copy.deepcopy(region_dict) # Allow clients to modify dict
