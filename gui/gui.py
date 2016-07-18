@@ -1022,34 +1022,43 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
+
+        current_selection = self.ui.treewidget_navigation.selectedItems()
+        if not current_selection:
+            return
+
+        text = str(current_selection[-1].text(0))
+        text = '_'.join(text.lower().split(' '))
+        current_index = 0
+        for i in range(self.ui.stackedWidgetTaskPane.count()):
+            widget = self.ui.stackedWidgetTaskPane.widget(i)
+            if text == str(widget.objectName()):
+                current_index = i
+                break
+        self.animate_stacked_widget(
+            self.ui.stackedWidgetTaskPane,
+            self.ui.stackedWidgetTaskPane.currentIndex(),
+            current_index)
+
+        self.setup_current_tab()
+
+    def setup_current_tab(self):
         # Force any open popup to close
         # (if dialog is modal we don't need this)
         self.species_popup.done(0)
         self.regions_popup.done(0)
-
         current_selection = self.ui.treewidget_navigation.selectedItems()
-
-        if current_selection:
-            text = str(current_selection[-1].text(0))
-            text = '_'.join(text.lower().split(' '))
-            current_index = 0
-            for i in range(self.ui.stackedWidgetTaskPane.count()):
-                widget = self.ui.stackedWidgetTaskPane.widget(i)
-                if text == str(widget.objectName()):
-                    current_index = i
-                    break
-            self.animate_stacked_widget(
-                self.ui.stackedWidgetTaskPane,
-                self.ui.stackedWidgetTaskPane.currentIndex(),
-                current_index)
-
-            if text == 'solids': # Special helper for setting up subpanes,
-                # since params may have changed
-                self.setup_solids_tab(self.solids_current_tab)
-            elif text == 'initial_conditions':
-                self.setup_ics()
-            elif text == 'boundary_conditions':
-                self.setup_bcs()
+        if not current_selection:
+            return
+        text = str(current_selection[-1].text(0))
+        text = '_'.join(text.lower().split(' '))
+        if text == 'solids': # Special helper for setting up subpanes,
+            # since params may have changed
+            self.setup_solids_tab(self.solids_current_tab)
+        elif text == 'initial_conditions':
+            self.setup_ics()
+        elif text == 'boundary_conditions':
+            self.setup_bcs()
 
 
     # --- animation methods ---
@@ -1883,6 +1892,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
         self.set_save_as_action(enabled=True)
+
+        self.setup_current_tab() # update vals in any open tabs
         self.update_source_view()
 
         # set up rundir watcher
