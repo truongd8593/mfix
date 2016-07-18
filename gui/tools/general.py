@@ -48,7 +48,7 @@ def plural(n, word):
     return fmt % (n, word)
 
 def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
 
 def set_item_enabled(item, enabled):
     """Enable/disable items which do not have a setEnabled method, like menu items"""
