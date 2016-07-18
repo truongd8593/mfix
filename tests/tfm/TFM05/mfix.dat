@@ -1,0 +1,119 @@
+#########################################################################
+#                                                                       #
+# Author: Avinash Vaidheeswaran                         Date: July 2016 #
+# Couette flow problem:                                                 #
+#                                                                       #
+#   The south wall is held stationary and the north wall moves          #
+# with a velocity U. Cyclic boundary conditions along x direction with  #
+# favorable pressure gradient                                           #
+#                                                                       #
+#                                                                       #
+#########################################################################
+
+  RUN_NAME      = 'TFM05'
+  DESCRIPTION   = 'Couette flow test cases'
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  UNITS = 'SI'
+  RUN_TYPE = 'NEW'
+
+  TIME =  0.0 ! Steady state solution
+
+  ENERGY_EQ =     .F.
+  SPECIES_EQ(0) = .F.
+
+  GRAVITY = 0.0
+
+  CALL_USR = .T.
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+  MAX_NIT = 1200000
+  TOL_RESID = 1.0E-15
+  DISCRETIZE =  9*2
+
+  NORM_g = 1.0
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  COORDINATES   = 'CARTESIAN'
+
+  XLENGTH = 0.10     IMAX =  5
+  ZLENGTH = 1.00     NO_K = .T.
+  YLENGTH = 0.01   ! JMAX passed as argument
+
+#_______________________________________________________________________
+# GAS-PHASE SECTION
+
+  RO_g0 = 1.00      ! (kg/m3)
+  MU_g0 = 1.57d-5   ! (Pa.s)
+
+#_______________________________________________________________________
+# SOLIDS-PHASE SECTION
+
+  MMAX = 0
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+  IC_X_w(1) =   0.00  ! (m)
+  IC_X_e(1) =   0.10  ! (m)
+  IC_Y_s(1) =   0.00  ! (m)
+  IC_Y_n(1) =   0.01  ! (m)
+
+  IC_EP_g(1) =  1.00
+
+  IC_U_g(1) =   0.00  ! (m/sec)
+  IC_V_g(1) =   0.00  ! (m/sec)
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! The east and west boundareis are cyclic. The specified pressure drop,
+! DELP_X, is passed as a runtime argument.
+!---------------------------------------------------------------------//
+  CYCLIC_X_PD = .TRUE.
+! DELP_X = -passed as argument-
+
+
+! The north was has a constant velocity of 10.0 m/s, and is set using
+! a partial slip wall (PSW):  dU/dn + hw(U-Uw) = 0 where Uw = 10.0 m/s
+! and hw=unsepcified (i.e., no-slip moving wall).
+!---------------------------------------------------------------------//
+  BC_X_w(1) =   0.00  ! (m)
+  BC_X_e(1) =   0.10  ! (m)
+  BC_Y_s(1) =   0.01  ! (m)
+  BC_Y_n(1) =   0.01  ! (m)
+
+  BC_TYPE(1)  = 'PSW'
+
+  BC_Uw_g(1) = 10.00  ! (m/sec)
+  BC_Vw_g(1) =  0.00  ! (m/sec)
+
+
+! The south wal is a stational no-slip wall (NSW).
+!---------------------------------------------------------------------//
+  BC_X_w(2) =   0.00  ! (m)
+  BC_X_e(2) =   0.10  ! (m)
+  BC_Y_s(2) =   0.00  ! (m)
+  BC_Y_n(2) =   0.00  ! (m)
+
+  BC_TYPE(2) =  'NSW'
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  RES_DT      = 1.
+  FULL_LOG    = .T.
+  SPX_DT      = 9*1.
+
+  RESID_STRING  = 'P0' 'U0' 'V0'
+
+#_______________________________________________________________________
+# DMP SETUP
+
+!  NODESI =  2  NODESJ =  2  NODESK =  1  ! set via command line
