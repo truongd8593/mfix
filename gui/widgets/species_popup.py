@@ -84,8 +84,10 @@ class SpeciesPopup(QtWidgets.QDialog):
             comment = self.comments[phase][key]
             item = QTableWidgetItem(key[0])
             item.setToolTip(comment)
+            set_item_noedit(item)
             table.setItem(i, 0, item)
             item = QTableWidgetItem(phase)
+            set_item_noedit(item)
             table.setItem(i, 1, item)
             self.search_results[i] = (key, phase)
         table.model().blockSignals(False);
@@ -352,6 +354,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         #NB making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
+        set_item_noedit(item)
         table.setItem(row, 0, item)
         self.defined_species[self.current_species]['alias'] = val
 
