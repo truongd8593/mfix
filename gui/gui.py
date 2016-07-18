@@ -1839,7 +1839,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
-            save_msg = 'Renaming mfix.dat to %s based on run name' % runname_mfx
+            save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
             response = self.message(title='Info',
                                     icon='question',
                                     text=save_msg,
