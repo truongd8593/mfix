@@ -237,15 +237,18 @@ class SolidsDEM(object):
             des_interp_scheme = 'SQUARE_DPVM'
             self.update_keyword('des_interp_scheme', des_interp_scheme)
             cb.setCurrentIndex(0) # Must be 'None'
+        else:
+            cb.setCurrentIndex(1 if des_interp_scheme=='GARG_2012' else 2)
+
         # per-item enable flags
         enabled = (not interp_enabled, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
             set_item_enabled(get_combobox_item(cb,i), e)
         # Make sure we don't leave the combobox on an invalid item!
         if not enabled[cb.currentIndex()]:
-            index = enabled.index(True) # 2 is always True so this is safe
-            cb.setCurrentIndex(index)
-            des_interp_scheme = des_interp_schemes[index]
+            idx = enabled.index(True) # 2 is always True so this is safe
+            cb.setCurrentIndex(idx)
+            des_interp_scheme = des_interp_schemes[idx]
             self.update_keyword('des_interp_scheme', des_interp_scheme)
 
         #Define interpolation width (DPVM only) (required)
@@ -271,7 +274,6 @@ class SolidsDEM(object):
         for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
                      s.label_des_diffuse_width_units):
             item.setEnabled(enabled)
-
 
         #Specify friction coefficient
         # Specification always required
