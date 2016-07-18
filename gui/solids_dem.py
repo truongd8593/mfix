@@ -387,6 +387,8 @@ class SolidsDEM(object):
                 le.setdtype('d')
                 tw.setCellWidget(row, col, le)
                 val = self.project.get_value(key, args=[arg])
+                if val is not None:
+                    le.updateValue(key, val)
                 self.project.register_widget(le, keys=[key], args=[arg])
                 arg += 1
 
