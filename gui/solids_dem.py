@@ -305,7 +305,7 @@ class SolidsDEM(object):
             item.setEnabled(enabled)
 
         if enabled: # TODO set these defaults at load-time, not when this tab is shown
-            for (key, default) in [('kt_fac', 2.0), ('kt_w_fac', 7.0),
+            for (key, default) in [('kt_fac', '@(2./7.)'), ('kt_w_fac', '@(2./7.)'),
                                    ('des_etat_fac', 0.5), ('des_etat_w_fac', 0.5)]:
                 if self.project.get_value(key) is None:
                     self.update_keyword(key, default)
