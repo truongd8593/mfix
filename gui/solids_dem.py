@@ -229,10 +229,12 @@ class SolidsDEM(object):
         # Sets keyword DES_INTERP_SCHEME='SQUARE_DPM'
 
         cb = s.combobox_des_interp_scheme
+        label = s.label_des_interp_scheme
         des_interp_scheme = self.project.get_value('des_interp_scheme')
         des_explicity_coupled = self.project.get_value('des_explicity_coupled')
         interp_enabled = des_interp_on or des_interp_mean_fields # not no-interp
-        cb.setEnabled(interp_enabled)
+        for item in (cb, label):
+            item.setEnabled(interp_enabled)
         if not interp_enabled:
             des_interp_scheme = 'SQUARE_DPVM'
             self.update_keyword('des_interp_scheme', des_interp_scheme)
