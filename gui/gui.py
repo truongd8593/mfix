@@ -998,6 +998,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def mode_changed(self, mode):
         """change the Modeler, Workflow, Developer tab"""
         current_index = 0
+        self.capture_output(mode=='interpreter')
         for i in range(self.ui.stackedwidget_mode.count()):
             widget = self.ui.stackedwidget_mode.widget(i)
             if mode == str(widget.objectName()):

@@ -11,6 +11,7 @@ from code import InteractiveConsole
 class Interpreter(object):
 
     def init_interpreter(self):
+        import sys
         le = self.ui.lineedit_interpreter_input
         te = self.ui.textedit_interpreter_output
         le.editingFinished.connect(self.handle_interp_line)
@@ -29,12 +30,10 @@ class Interpreter(object):
                 text = text.rstrip()
                 if text:
                     self.textedit.insertPlainText(text)
-                    self.textedit.moveCursor(cursor.End)
-                    self.textedit.ensureCursorVisible()
-
-        import sys
-        sys.stdout = Output() # Will this grab all stdout/stderr?p
-        sys.stderr = Output(err=True)
+                    #self.textedit.moveCursor(cursor.End)
+                    #self.textedit.ensureCursorVisible()
+        self.stdout = Output()
+        self.stderr = Output(err=True)
         self.interpreter = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
         banner += 'MFIX-GUI version %s' % self.get_version() + '\n'
@@ -42,6 +41,15 @@ class Interpreter(object):
         banner += '    from __main__ import gui'
         te.insertPlainText(banner)
         #self.textedit.ensureCursorVisible()
+
+    def capture_output(self, enable):
+        import sys
+        if enable:
+            sys.stdout = self.stdout
+            sys.stderr = self.stderr
+        else:
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
 
     def handle_interp_key(self):
         # Don't allow user to backspace over prompt
