@@ -83,15 +83,6 @@ if PRECOMPILE_UI:
         print("You must compile ui files! (run 'make'")
         sys.exit(1)
 
-def find_free_port():
-    # find free port
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("",0))
-    sock.listen(1)
-    port = sock.getsockname()[1]
-    sock.close()
-    return port
-
 # --- Main Gui ---
 
 class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
