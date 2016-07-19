@@ -54,6 +54,8 @@ from solids_handler import SolidsHandler
 from ics import ICS
 from bcs import BCS
 
+from interpreter import Interpreter
+
 from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
                            format_key_with_args, to_unicode_from_fs)
@@ -85,9 +87,13 @@ if PRECOMPILE_UI:
 
 # --- Main Gui ---
 
-class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
-    """Main window class handling all gui interactions"""
-
+class MfixGui(QtWidgets.QMainWindow,
+              FluidHandler,
+              SolidsHandler,
+              ICS,
+              BCS,
+              Interpreter):
+    """Main window class for MFIX-GUI"""
     settings = QSettings('MFIX', 'MFIX')
 
     stdout_signal = pyqtSignal(str)
@@ -236,10 +242,14 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
         self.init_ics()
         self.init_bcs()
 
+        # In-process REPL (for development, should we enable this for users?)
+        self.init_interpreter()
+
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
                                'workflow':  self.ui.pushButtonWorkflow,
-                               'developer': self.ui.pushButtonDeveloper}
+                               'developer': self.ui.pushButtonDeveloper,
+                               'interpreter': self.ui.pushButtonInterpreter}
         self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
@@ -2018,8 +2028,10 @@ def Usage(name):
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
 
+
 def main(args):
-    """Handle command line options and start the GUI"""
+    global gui
+    args = sys.argv
     name = args[0]
     try:
         opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "new", "log=", "exe="])
@@ -2062,28 +2074,28 @@ def main(args):
         Usage(name)
 
     qapp = QtWidgets.QApplication([])
-    mfix = MfixGui(qapp, project_file=project_file)
-    mfix.show()
+    gui = MfixGui(qapp, project_file=project_file)
+    gui.show()
 
     if mfix_exe_option:
-        print('exe option passed: %s' % mfix_exe_option)
-        mfix.commandline_option_exe = mfix_exe_option
+        #print('exe option passed: %s' % mfix_exe_option)
+        gui.commandline_option_exe = mfix_exe_option
 
     if project_file is None and not new_project:
         # autoload last project
-        project_file = mfix.get_project_file()
+        project_file = gui.get_project_file()
 
     if project_file:
-        mfix.open_project(project_file, auto_rename=(not quit_after_loading))
+        gui.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
-        mfix.set_no_project()
+        gui.set_no_project()
 
     # print number of keywords
-    mfix.print_internal('Registered %d keywords' %
-                        len(mfix.project.registered_keywords))
+    gui.print_internal('Registered %d keywords' %
+                        len(gui.project.registered_keywords))
 
     # have to initialize vtk after the widget is visible!
-    mfix.vtkwidget.vtkiren.Initialize()
+    gui.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)

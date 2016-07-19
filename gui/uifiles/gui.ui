@@ -115,6 +115,7 @@ QPushButton:checked {
          </property>
          <property name="font">
           <font>
+           <family>Arial</family>
            <pointsize>12</pointsize>
           </font>
          </property>
@@ -136,6 +137,7 @@ QPushButton:checked {
         <widget class="QPushButton" name="pushButtonWorkflow">
          <property name="font">
           <font>
+           <family>Arial</family>
            <pointsize>12</pointsize>
           </font>
          </property>
@@ -157,6 +159,7 @@ QPushButton:checked {
         <widget class="QPushButton" name="pushButtonDeveloper">
          <property name="font">
           <font>
+           <family>Arial</family>
            <pointsize>12</pointsize>
           </font>
          </property>
@@ -168,6 +171,22 @@ QPushButton:checked {
          </property>
          <property name="default">
           <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonInterpreter">
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Python</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -525,7 +544,7 @@ QPushButton:checked {
               <enum>QFrame::Plain</enum>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>3</number>
              </property>
              <widget class="QWidget" name="modeler">
               <property name="styleSheet">
@@ -791,6 +810,26 @@ QPushButton:checked {
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="interpreter">
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="1" column="0">
+                <widget class="QLineEdit" name="lineedit_interpreter_input"/>
+               </item>
+               <item row="0" column="0">
+                <widget class="QPlainTextEdit" name="textedit_interpreter_output">
+                 <property name="lineWrapMode">
+                  <enum>QPlainTextEdit::WidgetWidth</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="centerOnScroll">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -804,7 +843,7 @@ QPushButton:checked {
           </property>
           <property name="minimumSize">
            <size>
-            <width>550</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
