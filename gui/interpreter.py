@@ -50,7 +50,7 @@ class Interpreter(object):
         le = self.ui.lineedit_interpreter_input
         te = self.ui.textedit_interpreter_output
         text = le.text().rstrip()
-        if len(text) == 4 and self.interpreter_prompt == self.PS1: # No input
+        if len(text) == 3 and self.interpreter_prompt == self.PS1: # No input
             return
         te.insertPlainText(text+"\n")
         text = text[4:] # Remove prompt
