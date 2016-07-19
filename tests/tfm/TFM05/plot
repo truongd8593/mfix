@@ -52,22 +52,23 @@ set key reverse inside right bottom
 
 set title
 plot 'POST_VEL.dat' index 2 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 0 every  4 using 3:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 1 every  8 using 3:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 2 every 16 using 3:1 w points ls 8 title '512 mesh'
+     'POST_VEL.dat' index 0 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 1 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 2 every 4 using 3:1 w points ls 8 title ' 64 mesh'
  
 
 set xlabel "abs error (m/sec)"
 set logscale x
-set xrange [1.0e-06 : 1.0e+0]
+set xrange [*:*]
+set yrange [*:*]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 0 every  4 using 5:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 1 every  8 using 5:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 2 every 16 using 5:1 w points ls 8 title '512 mesh'
+plot 'POST_VEL.dat' index 0 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 1 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 2 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
 
 unset logscale x
 unset multiplot
@@ -84,27 +85,28 @@ set xlabel "Velocity (m/sec)"
 
 set key reverse inside right bottom
 
-set xrange [* : *]
-set yrange [* : *]
+set xrange [*:*]
+set yrange [*:*]
 
 set title
 plot 'POST_VEL.dat' index 5 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 3 every  4 using 3:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 4 every  8 using 3:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 5 every 16 using 3:1 w points ls 8 title '512 mesh'
+     'POST_VEL.dat' index 3 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 4 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 5 every 4 using 3:1 w points ls 8 title ' 64 mesh'
  
 
 set xlabel "abs error (m/sec)"
 set logscale x
-set xrange [1.0e-06 : 1.0e-1]
+set yrange [*:*]
+set xrange [*:*]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 3 every  4 using 5:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 4 every  8 using 5:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 5 every 16 using 5:1 w points ls 8 title '512 mesh'
+plot 'POST_VEL.dat' index 3 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 4 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 5 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
 
 unset logscale x
 unset multiplot
@@ -120,27 +122,28 @@ set xlabel "Velocity (m/sec)"
 
 set key reverse inside right bottom
 
-set xrange [* : *]
-set yrange [* : *]
+set xrange [*:*]
+set yrange [*:*]
 
 set title
 plot 'POST_VEL.dat' index 7 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 6 every  4 using 3:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 7 every  8 using 3:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 8 every 16 using 3:1 w points ls 8 title '512 mesh'
+     'POST_VEL.dat' index 6 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 7 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 8 every 4 using 3:1 w points ls 8 title ' 64 mesh'
  
 
 set xlabel "abs error (m/sec)"
 set logscale x
-set xrange [1.0e-06 : 1.0e-1]
+set yrange [*:*]
+set xrange [*:*]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 6 every  4 using 5:1 w points ls 4 title '128 mesh', \
-     'POST_VEL.dat' index 7 every  8 using 5:1 w points ls 6 title '256 mesh', \
-     'POST_VEL.dat' index 8 every 16 using 5:1 w points ls 8 title '512 mesh'
+plot 'POST_VEL.dat' index 6 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
+     'POST_VEL.dat' index 7 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
+     'POST_VEL.dat' index 8 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
 
 unset logscale x
 unset multiplot
