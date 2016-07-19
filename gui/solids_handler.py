@@ -25,8 +25,6 @@ from solids_tfm import SolidsTFM
 from solids_dem import SolidsDEM
 from solids_pic import SolidsPIC
 
-# Change from 'currentIndexChanged' to 'activated' ?
-
 class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def init_solids_default_models(self):
@@ -35,11 +33,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_mol_weight_model = MIXTURE
         self.solids_specific_heat_model = CONSTANT
         self.solids_conductivity_model = OTHER
-
-    def handle_solids_density_model(self, model):
-        self.solids_density_model = model
-        self.update_solids_baseline_groupbox(model) # availability
-        self.update_solids_table() # 'density' column changes
 
     def init_solids_handler(self):
         self.solids = OrderedDict()
@@ -66,13 +59,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                              ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw_solids.itemSelectionChanged.connect(self.handle_solids_table_selection)
         cb = s.combobox_solids_model
-        cb.currentIndexChanged.connect(self.handle_combobox_solids_model)
+        cb.activated.connect(self.handle_combobox_solids_model)
         s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
         s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
-
-        s.combobox_solids_density_model.currentIndexChanged.connect(
-            self.handle_solids_density_model)
 
         self.saved_solids_species = None
         self.init_solids_default_models()
@@ -106,16 +96,22 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                     return
 
                 if model == CONSTANT:
-                    # FIXME This is not right we could have a saved value from a different phase
+                    # FIXME: we could have a saved value from a different phase
+                    #  Clear out lineedits on phase change?
                     value = lineedit.value # Possibly re-enabled gui item
                     if self.project.get_value(key_s0, args=phase) != value:
-                        self.set_keyword(key_s0, value, args=phase) # Restore keyword value
+                        self.update_keyword(key_s0, value, args=[phase]) # Restore keyword value
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
                     self.set_keyword(key_usr, True, args=phase)
                 else: # Continuum, mixture, etc
                     self.unset_keyword(key_s0, args=phase)
                     self.unset_keyword(key_usr, args=phase)
+
+                #if name == 'solids_density_model': # Extra handling: Density column changes
+                #    self.update_solids_baseline_groupbox(model) # availability
+                #    self.update_solids_table() # 'density' column changes
+
             return setter
 
 
@@ -140,7 +136,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             model_name = 'solids_%s_model' % name
             combobox = getattr(s, 'combobox_%s' % model_name)
             setter = getattr(self,'set_%s' % model_name)
-            combobox.currentIndexChanged.connect(setter)
+            combobox.activated.connect(setter)
 
         # Solids species
         tb = s.toolbutton_solids_species_add
@@ -196,6 +192,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             self.setup_dem_tab()
         elif tabnum == 3:
             self.setup_pic_tab()
+        else: # Materials
+            self.update_solids_table()
+            #self.update_solids_detail_pane()
 
     # Advanced
     def disable_close_pack(self, val):
@@ -281,7 +280,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def handle_solids_species_eq(self, enabled):
         if not enabled:
-            self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
+            self.set_solids_density_model(CONSTANT)
+            #self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
         self.ui.solids.combobox_solids_density_model.setEnabled(enabled)
         self.update_solids_species_groupbox()
 
@@ -420,7 +420,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
         cb.setChecked(species_eq)
 
-
         # Deal with scalar eq
         nscalar = self.project.get_value('nscalar', 0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
@@ -434,23 +433,50 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         ### Restrictions (see SRS p13)
         # Density model requires species equations
         cb_density =  s.combobox_solids_density_model
+        ro_s0 = self.project.get_value('ro_s0', args=[phase], default=None)
         if species_eq:
             cb_density.setEnabled(True)
+            self.set_solids_density_model(CONSTANT if ro_s0 is not None else VARIABLE)
         else:
-            cb_density.setCurrentIndex(CONSTANT)
             cb_density.setEnabled(False)
-            cb_density.setToolTip("Constant")
+            self.set_solids_density_model(CONSTANT)
+            #cb_density.setCurrentIndex(CONSTANT)
+            #cb_density.setToolTip("Constant")
 
         # Viscosity only available for TFM solids
-        s.combobox_solids_viscosity_model.setEnabled(model=='TFM')
-        s.lineedit_keyword_mu_s0_args_S.setEnabled(model=='TFM')
+        cb_viscosity = s.combobox_solids_viscosity_model
+        mu_s0 = self.project.get_value('mu_s0', args=[phase], default=None)
+        usr_mus = self.project.get_value('usr_mus', args=[phase], default=None)
+        enabled = (model=='TFM')
+        for item in (cb_viscosity,
+                     s.label_solids_viscosity_model,
+                     s.lineedit_keyword_mu_s0_args_S,
+                     s.label_mu_s0_units):
+            item.setEnabled(enabled)
+
+        self.solids_viscosity_model = (CONSTANT if mu_s0 is not None
+                                       else UDF if usr_mus is not None
+                                       else VARIABLE)
+        cb_viscosity.setCurrentIndex(self.solids_viscosity_model)
 
         # Mol. wt is locked to MIXTURE
 
         # Specific heat only available when solving energy eq
+        cb_specific_heat = s.combobox_solids_specific_heat_model
         energy_eq = self.project.get_value('energy_eq', default=True)
-        s.combobox_solids_specific_heat_model.setEnabled(energy_eq)
-        s.lineedit_keyword_c_ps0_args_S.setEnabled(energy_eq)
+        enabled = (energy_eq==True)
+        c_ps0 = self.project.get_value('c_ps0', args=[phase], default=None)
+        usr_cps = self.project.get_value('usr_cps', args=[phase], default=None)
+        for item in (cb_specific_heat,
+                     s.label_solids_specific_heat_model,
+                     s.lineedit_keyword_c_ps0_args_S,
+                     s.label_c_ps0_units):
+            item.setEnabled(enabled)
+
+        self.solids_specific_heat_model = (CONSTANT if c_ps0 is not None
+                                           else UDF if usr_cps is not None
+                                           else VARIABLE)
+        cb_specific_heat.setCurrentIndex(self.solids_specific_heat_model)
 
         # Thermal Conductivity Model:
         # Selection only available for MFIX-TFM solids model
@@ -518,7 +544,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         if nrows == 1: # If there's only 1 let's select it for the user's convenience
             table.setCurrentCell(0,0)
-            self.handle_solids_table_selection()
 
         # trim excess horizontal space - can't figure out how to do this in designer
         header_height = table.horizontalHeader().height()
@@ -851,7 +876,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         for i in range(nmax_s+1, old_nmax_s+1):
             for kw in ('species_s', 'species_alias_s', 'x_s0', 'ro_xs0'):
                 self.unset_keyword(kw, args=[phase,i])
-            #self.unset_keyword('mw_s', args=[phase,i]) # TBD
+            #self.unset_keyword('mw_s', args=[phase,i]) # TBD FIXME
 
         # FIXME, what's the right place for this?
         #self.project.update_thermo_data(self.solids_species[phase])
