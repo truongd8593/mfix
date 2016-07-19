@@ -99,7 +99,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                     # FIXME: we could have a saved value from a different phase
                     #  Clear out lineedits on phase change?
                     value = lineedit.value # Possibly re-enabled gui item
-                    if self.project.get_value(key_s0, args=phase) != value:
+                    if value != '' and self.project.get_value(key_s0, args=phase) != value:
                         self.update_keyword(key_s0, value, args=[phase]) # Restore keyword value
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
@@ -554,7 +554,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             table.setMaximumHeight(header_height+nrows*table.rowHeight(0) + 4)
             # a little extra to avoid horiz scrollbar when not needed
 
-        self.update_solids_detail_pane() # Do we want to do this every time?
+        # Do we want to do this every time (heavyweight)
+        self.update_solids_detail_pane()
 
     def handle_solids_phase_name(self):
         new_name = self.ui.solids.lineedit_solids_phase_name.text()

@@ -96,7 +96,7 @@ class FluidHandler(object):
 
                 if model == CONSTANT:
                     value = lineedit.value # Possibly re-enabled gui item
-                    if self.project.get_value(key_g0) != value:
+                    if value != '' and self.project.get_value(key_g0) != value:
                         self.set_keyword(key_g0, value) # Restore keyword value
                 elif model == UDF:
                     self.unset_keyword(key_g0)
@@ -191,12 +191,11 @@ class FluidHandler(object):
             item.setEnabled(model==CONSTANT)
         if model == CONSTANT:
             value = lineedit.value # Possibly re-enabled gui item
-            if self.project.get_value("mw_avg") != value:
+            if value != '' and self.project.get_value("mw_avg") != value:
                 self.set_keyword("mw_avg", value) # Restore keyword value
         else: # Mixture
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
-
 
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
         value = self.ui.fluid.lineedit_fluid_phase_name.text()
