@@ -24,8 +24,13 @@ class Interpreter(object):
                 self.textedit = te
                 self.err = err
             def write(self, text):
-                self.textedit.insertPlainText(text)
-                #self.textedit.ensureCursorVisible()
+                cursor = self.textedit.textCursor()
+                self.textedit.moveCursor(cursor.End)
+                text = text.rstrip()
+                if text:
+                    self.textedit.insertPlainText(text)
+                    self.textedit.moveCursor(cursor.End)
+                    self.textedit.ensureCursorVisible()
 
         import sys
         sys.stdout = Output() # Will this grab all stdout/stderr?p
@@ -34,7 +39,7 @@ class Interpreter(object):
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
         banner += 'MFIX-GUI version %s' % self.get_version() + '\n'
         banner += 'To access top-level MFIX-GUI object:\n'
-        banner += '    from __main__ import gui\n'
+        banner += '    from __main__ import gui'
         te.insertPlainText(banner)
         #self.textedit.ensureCursorVisible()
 
@@ -52,7 +57,7 @@ class Interpreter(object):
         text = le.text().rstrip()
         if len(text) == 3 and self.interpreter_prompt == self.PS1: # No input
             return
-        te.insertPlainText(text+"\n")
+        te.appendPlainText(text+'\n')
         text = text[4:] # Remove prompt
         result = self.interpreter.push(text)
         self.interpreter_prompt = self.PS2 if result else self.PS1
