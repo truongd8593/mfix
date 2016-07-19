@@ -775,7 +775,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_43">
+                <widget class="QLabel" name="label_solids_viscosity_model">
                  <property name="text">
                   <string>Viscosity</string>
                  </property>
@@ -866,7 +866,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_47">
+                <widget class="QLabel" name="label_solids_specific_heat_model">
                  <property name="text">
                   <string>Spec. heat</string>
                  </property>
@@ -901,7 +901,7 @@ QPushButton:checked {
                 <widget class="LineEdit" name="lineedit_keyword_c_ps0_args_S"/>
                </item>
                <item row="4" column="3">
-                <widget class="QLabel" name="label_49">
+                <widget class="QLabel" name="label_c_ps0_units">
                  <property name="text">
                   <string>kJ/(kg K)</string>
                  </property>
