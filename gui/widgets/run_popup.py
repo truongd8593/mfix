@@ -193,7 +193,7 @@ class RunPopup(QDialog):
                 if not self.parent.remove_output_files(output_files):
                     log.info('output files exist and run was canceled')
                     return False
-        elif self.ui.run.use_spx_checkbox.isChecked():
+        elif self.ui.use_spx_checkbox.isChecked():
             self.parent.update_keyword('run_type', 'restart_1')
         else:
             # TODO: is it correct to remove all but *.RES ?

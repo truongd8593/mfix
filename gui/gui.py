@@ -1431,32 +1431,32 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler, ICS, BCS):
             else:
                 name='unpause'
                 self.job_manager.unpause()
-        except Exception as e:
-            self.print_internal("%s: error %s" % (name, e))
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_run')
+            self.print_internal('problem in handle_run')
         self.signal_update_runbuttons.emit('')
 
     def handle_set_pymfix_output(self):
         try:
             self.job_manager.set_pymfix_output(
               self.ui.run.checkbox_pymfix_output.isChecked())
-        except Exception as e:
-            self.print_internal("%s: error %s" % (name, e))
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_set_pymfix_output')
+            self.print_internal('problem in handle_set_pymfix_output')
 
     def handle_pause(self):
         try:
             self.job_manager.pause()
-        except Exception as e:
-            self.print_internal("Pause: error %s" % e)
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_pause')
+            self.print_internal('problem in handle_pause')
 
     def handle_stop(self):
         try:
             self.job_manager.stop_mfix()
-        except Exception as e:
-            self.print_internal("Stop: error %s" % e)
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_stop')
+            self.print_internal('problem in handle_stop')
 
     def check_save(self):
         if self.unsaved_flag:
