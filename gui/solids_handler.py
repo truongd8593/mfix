@@ -109,10 +109,15 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                     # FIXME: we could have a saved value from a different phase
                     #  (Clear out lineedits on phase change?)
                     value = lineedit.value # Possibly re-enabled gui item
+                    if value=='None':
+                        value = ''
                     if value != '' and self.project.get_value(key_s0, args=phase) != value:
                         self.update_keyword(key_s0, value, args=[phase]) # Restore keyword value
                     if value == '':
                         val_s0 = self.project.get_value(key_s0, args=[phase])
+                        if val_s0 == 'None': # Should not happen, but filter out if found
+                            self.unset_keyword(key_s0, args=[phase])
+                            val_s0 = None
                         if val_s0 is not None:
                             lineedit.setText(str(val_s0))
                 elif model == UDF:
