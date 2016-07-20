@@ -422,13 +422,16 @@ class RunPopup(QDialog):
                         self.project.nodesj.value *
                         self.project.nodesk.value)
 
-            run_cmd = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
+            dmp = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
         else:
-            # no dmp support
-            run_cmd = [self.mfix_exe]
+            dmp = []
 
         if self.smp_enabled():
-            run_cmd = ['env', 'OMP_NUM_THREADS=1'] +  [self.mfix_exe, ]
+            smp = ['env', 'OMP_NUM_THREADS=%s' % str(self.ui.spinbox_threads.value())]
+        else:
+            smp = []
+
+        run_cmd = smp + dmp + [mfix_exe,]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
