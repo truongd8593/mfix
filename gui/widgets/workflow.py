@@ -316,15 +316,17 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         for job_name in data.keys():
             if job_name in self.job_dict:
-                status = 'submitted'
+
                 job = self.job_dict[job_name]
 
-                if job.is_running():
-                    status = 'running'
-                if job.is_paused():
-                    status = 'paused'
+                if data[job_name]['status'] != 'stopped':
+                    status = 'submitted'
+                    if job.is_running():
+                        status = 'running'
+                    if job.is_paused():
+                        status = 'paused'
 
-                data[job_name]['status'] = status
+                    data[job_name]['status'] = status
 
         self.job_status_table.set_value(data)
 
