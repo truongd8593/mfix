@@ -731,14 +731,14 @@ QPushButton:checked {
                 <number>5</number>
                </property>
                <item row="0" column="0">
-                <widget class="QLabel" name="label_39">
+                <widget class="QLabel" name="label_d_p0">
                  <property name="text">
                   <string>Diameter</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label_40">
+                <widget class="QLabel" name="label_solids_density_model">
                  <property name="text">
                   <string>Density</string>
                  </property>
@@ -824,7 +824,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_45">
+                <widget class="QLabel" name="label_solids_mol_weight_model">
                  <property name="text">
                   <string>Mol. weight</string>
                  </property>
@@ -908,7 +908,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="label_48">
+                <widget class="QLabel" name="label_solids_conductivity_model">
                  <property name="text">
                   <string>Therm. cond.</string>
                  </property>
@@ -957,7 +957,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="label_204">
+                <widget class="QLabel" name="label_des_em">
                  <property name="text">
                   <string>Emissivity</string>
                  </property>
@@ -967,7 +967,7 @@ QPushButton:checked {
                 <widget class="LineEdit" name="lineedit_keyword_d_p0_args_S"/>
                </item>
                <item row="0" column="2">
-                <widget class="QLabel" name="label_41">
+                <widget class="QLabel" name="label_d_p0_units">
                  <property name="text">
                   <string>m</string>
                  </property>
@@ -977,31 +977,31 @@ QPushButton:checked {
                 <widget class="LineEdit" name="lineedit_keyword_des_em_args_S"/>
                </item>
               </layout>
+              <zorder>label_solids_viscosity_model</zorder>
+              <zorder>label_solids_specific_heat_model</zorder>
+              <zorder>label_c_ps0_units</zorder>
               <zorder>lineedit_keyword_des_em_args_S</zorder>
-              <zorder>label_39</zorder>
+              <zorder>label_d_p0</zorder>
               <zorder>lineedit_keyword_d_p0_args_S</zorder>
-              <zorder>label_40</zorder>
+              <zorder>label_solids_density_model</zorder>
               <zorder>combobox_solids_density_model</zorder>
               <zorder>lineedit_keyword_ro_s0_args_S</zorder>
               <zorder>label_ro_s0_units</zorder>
-              <zorder>label_43</zorder>
               <zorder>combobox_solids_viscosity_model</zorder>
               <zorder>lineedit_keyword_mu_s0_args_S</zorder>
               <zorder>label_mu_s0_units</zorder>
-              <zorder>label_45</zorder>
+              <zorder>label_solids_mol_weight_model</zorder>
               <zorder>combobox_solids_mol_weight_model_locked</zorder>
               <zorder>lineedit_mol_weight_disabled</zorder>
               <zorder>label_mol_weight_units_disabled</zorder>
-              <zorder>label_47</zorder>
               <zorder>combobox_solids_specific_heat_model</zorder>
               <zorder>lineedit_keyword_c_ps0_args_S</zorder>
-              <zorder>label_49</zorder>
-              <zorder>label_48</zorder>
+              <zorder>label_solids_conductivity_model</zorder>
               <zorder>combobox_solids_conductivity_model</zorder>
               <zorder>lineedit_keyword_k_s0_args_S</zorder>
               <zorder>label_k_s0_units</zorder>
-              <zorder>label_204</zorder>
-              <zorder>label_41</zorder>
+              <zorder>label_des_em</zorder>
+              <zorder>label_d_p0_units</zorder>
              </widget>
             </item>
             <item row="7" column="0" colspan="6">
@@ -1643,8 +1643,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>353</width>
-            <height>1297</height>
+            <width>350</width>
+            <height>800</height>
            </rect>
           </property>
           <property name="autoFillBackground">
