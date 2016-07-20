@@ -152,7 +152,7 @@ class ICS(object):
         #get messy, and if so, scrap this idea.
         self.ics_current_indices = [] # List of IC indices
         self.ics_current_regions = [] # And the names of the regions which define them
-        self.ics_indices = set()
+        self.ics = {} # key: index.  value: data dictionary for initial cond
 
         ics.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
         ics.toolbutton_delete.clicked.connect(self.ics_delete_regions)
@@ -193,10 +193,25 @@ class ICS(object):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-
         item = make_item('+'.join(selections))
-        indices = [self.ics_find_index() for x in selections]
+
+        indices = []
+        for sel in selections:
+            i = self.ics_find_index()
+            indices.append(i)
+            self.ics[i] = {'region': sel}
+            region_data = self.region_dict.get(sel)
+            if region_data is None: # ?
+                self.warn("no data for region %s" % sel)
+                continue
+            for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+                                   region_data['from']+region_data['to']):
+                ic_key = 'ic_' + key
+                self.update_keyword('ic_'+key, val, args=[i])
+                self.ics[i][key] = val
+
         item.setData(UserRole, (indices, selections))
+
         self.ics_current_regions = selections
         self.ics_current_indices = indices
         tw.setItem(nrows, 0, item)
@@ -205,9 +220,8 @@ class ICS(object):
 
     def ics_find_index(self):
         n = 1
-        while n in self.ics_indices:
+        while n in self.ics:
             n += 1
-        self.ics_indices.add(n)
         return n
 
     def ics_delete_regions(self):
@@ -278,4 +292,13 @@ class ICS(object):
     def setup_ics(self):
         ui = self.ui
         self.region_dict = ui.regions.get_region_dict()
+        # Mark regions which are in use (this gets reset each time we get here)
+        for (i, data) in self.ics.items():
+            region = data['region']
+            if region in self.region_dict:
+                self.region_dict[region]['available'] = False
+
         self.fixup_table(ui.initial_conditions.tablewidget_regions)
+
+    def ics_check_region_in_use(self, region):
+        return any(data.get('region')==region for data in self.ics.values())
