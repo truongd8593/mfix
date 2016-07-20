@@ -111,6 +111,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                     value = lineedit.value # Possibly re-enabled gui item
                     if value != '' and self.project.get_value(key_s0, args=phase) != value:
                         self.update_keyword(key_s0, value, args=[phase]) # Restore keyword value
+                    if value == '':
+                        val_s0 = self.project.get_value(key_s0, args=[phase])
+                        lineedit.setText(str(val_s0))
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
                     self.set_keyword(key_usr, True, args=phase)
@@ -472,8 +475,16 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Thermal Conductivity Model:
         # Selection only available for MFIX-TFM solids model
         # Selection only available when solving thermal energy equations
-        self.set_solids_conductivity_model()
-        enabled = (model=='TFM' and energy_eq)
+        cb = s.combobox_solids_conductivity_model
+        if model != 'TFM':
+            self.set_solids_conductivity_model(CONSTANT)
+            for (i,e) in enumerate((True,False,False)):
+                set_item_enabled(get_combobox_item(cb,i), e)
+        else:
+            self.set_solids_conductivity_model()
+            for (i,e) in enumerate((True,True,True)):
+                set_item_enabled(get_combobox_item(cb,i), e)
+        enabled = bool(energy_eq)
         for item in (s.combobox_solids_conductivity_model,
                      s.label_solids_conductivity_model):
             item.setEnabled(enabled)
