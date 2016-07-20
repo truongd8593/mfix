@@ -431,7 +431,7 @@ class RunPopup(QDialog):
         else:
             smp = []
 
-        run_cmd = smp + dmp + [mfix_exe,]
+        run_cmd = smp + dmp + [self.mfix_exe,]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
