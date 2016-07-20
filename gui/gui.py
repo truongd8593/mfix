@@ -1235,10 +1235,16 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def scan_errors(self, lines):
         ### "Error 1000: A keyword pair on line 129"
-        lineno = bad_line = None
-        re_err = re.compile("Error 1000: A keyword pair on line (\d+)")
+        ### "Error 2000: Unable to process line 185"
+        # TODO: capture more of the error text and produce a fuller message
+        # in the popup
+        lineno = bad_line = err = None
+        re_err_1000 = re.compile("Error 1000: A keyword pair on line (\d+)")
+        re_err_2000 = re.compile("Error 2000: Unable to process line (\d+)")
         for (i, line) in enumerate(lines):
-            match = re_err.search(line)
+            for (re_err, err_type) in ((re_err_1000, 'deprecated'),
+                                       (re_err_2000, 'invalid')):
+                match = re_err.search(line)
             if match:
                 lineno = int(match.group(1))
                 bad_line = self.datfile_lines[lineno-1]
@@ -1246,9 +1252,11 @@ class MfixGui(QtWidgets.QMainWindow,
         # TODO:  colorize errors in source view (red)
         if bad_line:
             key = bad_line.split("=", 1)[0].strip()
-            self.deprecated_keyword(key, bad_line)
+            self.report_keyword_error(key, bad_line, err_type)
 
-    def deprecated_keyword(self, key, line):
+
+
+    def report_keyword_error(self, key, line, err_type='deprecated'):
         """Give the user a chance to omit or edit deprecated keys"""
         #  This is a first implementation.  There's a lot more
         #  we could do here - suggest fixes, link to documentation,
@@ -1258,9 +1266,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         message_box = QtWidgets.QMessageBox(self)
         self.message_box = message_box
-        message_box.setWindowTitle("Deprecated keyword")
+        message_box.setWindowTitle("%s keyword" % err_type.title())
         message_box.setIcon(QtWidgets.QMessageBox.Warning)
-        text="'%s' is a deprecated keyword" % key
+        text="'%s' is %s" % (key, err_type)
         message_box.setText(text)
         buttons = ['Drop Key', 'Edit', 'Ignore']
         for b in buttons:
