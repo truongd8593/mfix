@@ -113,7 +113,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                         self.update_keyword(key_s0, value, args=[phase]) # Restore keyword value
                     if value == '':
                         val_s0 = self.project.get_value(key_s0, args=[phase])
-                        lineedit.setText(str(val_s0))
+                        if val_s0 is not None:
+                            lineedit.setText(str(val_s0))
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
                     self.set_keyword(key_usr, True, args=phase)
