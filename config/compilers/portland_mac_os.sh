@@ -5,7 +5,7 @@ mpi_libs=
 misc_libs=
 
 echo "Portland Group Fortran Compiler on Apple MacOS"
-  
+
 
 MODULE_CODE=0
 
@@ -91,7 +91,7 @@ case $OPT in
     FORT_FLAGS="${omp} ${incs} ${common} ${optim} -Mfreeform"
     FORT_FLAGS3="${common} -O2"
     LINK_FLAGS="${omp}";;
-    
+
   *)echo "Unsupported optimization level."
     exit;;
 esac

@@ -523,9 +523,9 @@
 
           end if ! end of if(tec_output_block)
 
-! write tecplot data (point format) for the species mass fraction profile at 
+! write tecplot data (point format) for the species mass fraction profile at
 ! horizontal centerline:
-! - numerical solution for x_g_1 and x_g_2          
+! - numerical solution for x_g_1 and x_g_2
 ! - exact solution for x_g_1 and x_g_2
 ! - error for x_g_1 and x_g_2
 

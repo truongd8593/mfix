@@ -597,7 +597,7 @@
             IF(RUN_TYPE .EQ. 'NEW') THEN
 ! If the run is new and the GT file already exists replace it with a
 ! new file.
-!               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
+!               OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
 ! Prevent overwriting an existing file by exiting if the file exists
 ! and this is a NEW run.
                WRITE(*,1001) FNAME_GT

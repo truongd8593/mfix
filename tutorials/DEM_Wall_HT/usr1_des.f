@@ -17,7 +17,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR1_DES
 
-  
+
       USE constant, only : gravity, gravity_x, gravity_y, Pi
       USE constant, only : c
       USE param1, only : ZERO, ONE, undefined
@@ -30,23 +30,23 @@
       use functions, only: fluid_at
       USE vtk, only : vtk_dt, write_vtk_files
       use cutcell, only : debug_cg
-      
+
 
       IMPLICIT NONE
 
       INCLUDE 'usrnlst.inc'
 
-      DOUBLE PRECISION :: RPM 
+      DOUBLE PRECISION :: RPM
       DOUBLE PRECISION :: ANGLE
       INTEGER :: IJK, M
       LOGICAL :: CHECK_TIME
-      
+
       ! Get RPM from input file - C(1)
       RPM = C(1)
       ! Roate gravity vector for rotating drum
       ANGLE = time * RPM*2.0D0*Pi/60.0D0 !convert RPM to rad/s
       GRAVITY_X = sin(ANGLE)*GRAVITY
-      GRAVITY_Y = -cos(ANGLE)*GRAVITY 
+      GRAVITY_Y = -cos(ANGLE)*GRAVITY
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
 
@@ -62,7 +62,7 @@
 
       ! CHECK TO SEE IF IT IS OUTPUT TIME
       CHECK_TIME = .FALSE.
-      IF(WRITE_VTK_FILES) THEN       
+      IF(WRITE_VTK_FILES) THEN
          IF(DT == UNDEFINED) THEN
             CHECK_TIME = .FALSE.
          ELSE

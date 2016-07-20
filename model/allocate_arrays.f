@@ -1938,6 +1938,9 @@
 ! Particles in a computational fluid cell (for volume fraction)
       if(allocated(   PINC  )) deallocate(    PINC  )
 
+! Ghost Particles in a computational fluid cell (for volume fraction)
+      if(allocated(   GPINC  )) deallocate(    GPINC  )
+
 ! For each particle track its i,j,k location on computational fluid grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
       if(allocated(   PIJK  )) deallocate(    PIJK  )

@@ -26,7 +26,7 @@ class Monitor(object):
         if len(patterns) == 0:
             patterns = [
                 '*.LOG', '*.OUT', '*.RES', '*.SP?', 'MFIX.STOP',
-                '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT']
+                '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT', '*.pid']
         outputs = []
         for pat in patterns:
             outputs.extend(glob.glob(os.path.join(project_dir, pat)))

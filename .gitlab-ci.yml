@@ -13,13 +13,10 @@ stages:
 build_job:
   stage: build
   script:
-    - ./configure_mfix --dmp --python
-    - make mfix pymfix
+    - make -C gui ../mfix
   artifacts:
     paths:
     - mfix
-    - mfix.so
-    - pymfix
   only:
     - branches
   tags:

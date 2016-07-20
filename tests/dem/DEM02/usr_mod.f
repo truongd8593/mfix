@@ -53,7 +53,7 @@
             (h0 - DES_RADIUS(1)) * (DES_EN_WALL_INPUT(1)**(2*k))
       endif
 
-      return 
+      return
       end function MAX_HEIGHT_HS
 
 

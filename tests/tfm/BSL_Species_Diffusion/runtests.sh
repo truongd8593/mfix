@@ -19,7 +19,7 @@ cd $CASE_DIR
 
 # Run case
 echo "******** Running simulation..."
-#mpirun -np 1 $CASE_DIR/mfix.exe nodesi=1 nodesj=1 nodesk=1 
+#mpirun -np 1 $CASE_DIR/mfix.exe nodesi=1 nodesj=1 nodesk=1
 $CASE_DIR/mfix.exe > out.log
 rm -f TFM05.*
 rm -f out.log

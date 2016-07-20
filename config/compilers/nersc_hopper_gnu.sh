@@ -5,7 +5,7 @@ mpi_libs=
 misc_libs=
 
 echo "HOPPER@NERSC :: GNU gfortran Compiler on Cray XE6"
-  
+
 MODDIRPREFIX="-J"
 
 # Add some additinal flags to the object directory
@@ -82,7 +82,7 @@ case $OPT in
     FORT_FLAGS="${omp} ${incs} ${common} ${optim} -ffree-form -ffree-line-length-0"
     FORT_FLAGS3="${common} -O2"
     LINK_FLAGS="${omp}";;
-    
+
   *)echo "Unsupported optimization level."
     exit;;
 esac

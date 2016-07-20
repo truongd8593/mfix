@@ -48,7 +48,7 @@
       DO M = 1, SMAX
          IF (DIF_S0(M) < ZERO) THEN
             WRITE(ERR_MSG, 1001) trim(iVar('Dif_s0',M)), &
-               iVal(Dif_s0(M)) 
+               iVal(Dif_s0(M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO

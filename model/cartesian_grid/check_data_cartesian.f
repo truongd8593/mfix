@@ -2925,7 +2925,7 @@ MODULE CHECK_DATA_CG
 !         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
 !         IF(PRESENT) THEN
 !          WRITE(*,*)'Reading gridmap from grimap.dat...'
-!            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 !            DO IPROC = 0,NumPEs-1
 !                  READ(777,*) jsize_all(IPROC)
 !            ENDDO

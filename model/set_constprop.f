@@ -39,6 +39,7 @@
       USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
       use constant, only: ep_star
 
+      USE run, only: RUN_TYPE
       USE run, only: call_dqmom
       USE run, only: yu_standish, fedors_landel
       USE run, only: kt_type_enum, ia_2005, gd_1999, gtsh_2012
@@ -83,7 +84,10 @@
       DIF_g = ZERO
       F_GS = ZERO
 
-      RO_S = ZERO
+      IF (RUN_TYPE == 'NEW') RO_S = ZERO ! For variable density, RO_S is set
+                                         ! to the baseline density for new runs
+                                         ! further down in this file
+                                         ! and is read from .RES when restarting
       D_P = zero     ! this is done in init_fvars
       MU_s = ZERO
       EPMU_s = ZERO
@@ -182,7 +186,7 @@
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100
-               IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
+               IF (RO_S0(M) /= UNDEFINED.AND.RUN_TYPE == 'NEW') RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0(M) /= UNDEFINED) C_PS(IJK,M) = C_PS0(M)
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
             ENDIF

@@ -6,6 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 import getopt
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -22,7 +23,7 @@ log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 log.debug(SCRIPT_DIRECTORY)
 
 # import qt
-from qtpy import QtCore, QtWidgets, QtGui, PYQT4, PYQT5
+from qtpy import QtCore, QtWidgets, QtGui, PYQT5
 from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
 
 # TODO: add pyside? There is an issue to add this to qtpy:
@@ -36,7 +37,7 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
-from job import JobManager
+from job import JobManager, get_dict_from_pidfile
 from monitor import Monitor
 
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
@@ -44,12 +45,17 @@ from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
 from widgets.regions import RegionsWidget
 from widgets.linear_equation_table import LinearEquationTable
 from widgets.species_popup import SpeciesPopup
+from widgets.regions_popup import RegionsPopup
 from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 from widgets.parameter_dialog import ParameterDialog
 
 from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
+from ics import ICS
+from bcs import BCS
+
+from interpreter import Interpreter
 
 from tools.general import (make_callback, get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
@@ -80,18 +86,20 @@ if PRECOMPILE_UI:
         print("You must compile ui files! (run 'make'")
         sys.exit(1)
 
-
 # --- Main Gui ---
 
-
-class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
-    """Main window class handling all gui interactions"""
-
+class MfixGui(QtWidgets.QMainWindow,
+              FluidHandler,
+              SolidsHandler,
+              ICS,
+              BCS,
+              Interpreter):
+    """Main window class for MFIX-GUI"""
     settings = QSettings('MFIX', 'MFIX')
 
     stdout_signal = pyqtSignal(str)
     stderr_signal = pyqtSignal(str)
-    update_run_options_signal = pyqtSignal(str)
+    signal_update_runbuttons = pyqtSignal(str)
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):
@@ -105,6 +113,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         else:
             self.message("Warning: %s" % msg)
             # Will also print-internal and log
+    warning = warn
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -124,12 +133,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.solver_name = None
         self.fluid_solver_disabled = False
         self.mfix_exe = None
+        self.mfix_exe_flags = {}
         self.commandline_option_exe = None
-        self.mfix_config = None
-        self.smp_enabled = False
-        self.dmp_enabled = False
         self.mfix_available = False
-        self.pymfix_enabled = False
         self.open_succeeded = False
         self.unsaved_flag = False
         self.run_dialog = None
@@ -158,10 +164,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
             for cls in (Ui_geometry, Ui_mesh, RegionsWidget,
                         Ui_model, Ui_fluid, Ui_solids,
+                        Ui_initial_conditions,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
-                    widget = RegionsWidget()
+                    widget = RegionsWidget(parent=self)
                     name = 'regions'
                 else:
                     widget = make_widget(cls)
@@ -179,10 +186,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             assert self is not self.ui
 
             for name in ('geometry', 'mesh', 'regions',
-                         'model', 'fluid', 'solids', 'numerics',
+                         'model', 'fluid', 'solids',
+                         'initial_conditions',
+                         'numerics',
                          'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
-                    widget = RegionsWidget()
+                    widget = RegionsWidget(parent=self)
                 else:
                     widget = QtWidgets.QWidget()
                     try:
@@ -218,7 +227,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
-
+        self.regions_popup = RegionsPopup(QtWidgets.QDialog())
 
         # create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -231,11 +240,17 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # after we create ProjectManager, because widgets get registered
         self.init_fluid_handler()
         self.init_solids_handler()
+        self.init_ics()
+        self.init_bcs()
+
+        # In-process REPL (for development, should we enable this for users?)
+        self.init_interpreter()
 
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
                                'workflow':  self.ui.pushButtonWorkflow,
-                               'developer': self.ui.pushButtonDeveloper}
+                               'developer': self.ui.pushButtonDeveloper,
+                               'interpreter': self.ui.pushButtonInterpreter}
         self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
@@ -319,7 +334,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
 
         # Job manager / monitor
-        self.job_manager = JobManager(parent=self)
+        self.job_manager = None
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -329,7 +344,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run = ui.run
         run.button_run_mfix.clicked.connect(self.handle_run)
         run.button_pause_mfix.clicked.connect(self.handle_pause)
-        run.button_pause_mfix.setVisible(self.pymfix_enabled)
+        run.button_pause_mfix.setVisible(True)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
@@ -341,7 +356,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         ## Run signals
         self.stdout_signal.connect(self.handle_stdout)
         self.stderr_signal.connect(self.handle_stderr)
-        self.update_run_options_signal.connect(self.update_run_options)
+        self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
         # --- setup widgets ---
         self.__setup_simple_keyword_widgets()
@@ -361,7 +376,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.change_pane('model')
 
         # Update run options
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
         # Reset everything to default values
         self.reset() # Clear command_output too?
@@ -372,7 +387,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # These are all fractions, must be btwn 0 and 1, not documented as such
         for key in ('des_em', 'eps_f_min'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
-
+        self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
     def set_no_project(self):
         """setup mode when no project is open"""
@@ -425,14 +440,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
 
     def confirm_close(self):
-        # TODO : option to save
-        msg = None
-        if self.job_manager.is_running():
-            msg = "Stop running job?"
-        elif self.job_manager.is_paused():
-            msg = "Stop paused job?"
-        if msg:
-            confirm = self.message(text=msg,
+        """before closing, ask user whether to end job and save project"""
+        if self.job_manager:
+            confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'yes':
@@ -440,10 +450,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 self.job_manager.stop_mfix()
 
         if self.unsaved_flag:
-            confirm = self.message(text="File not saved, really quit?",
-                                   buttons=['yes', 'no'],
-                                   default='no')
-            return confirm == 'yes'
+            confirm = self.message(text="Save project before quitting?",
+                                   buttons=['yes', 'no', 'cancel'],
+                                   default='Cancel')
+            if confirm == 'yes':
+                self.save_project()
+            return confirm != 'cancel'
         else:
             return True
 
@@ -460,6 +472,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def unset_keyword(self, key, args=None):
         """Undefine keyword.  Report to user, also catch and report any errors"""
+        #  Note - keyword is still registered!  This method does not deregister
+        #   keywords with project manager
         if isinstance(args, int):
             args = [args]
         elif args is None:
@@ -492,8 +506,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
         log.debug("rundir changed")
-        # TODO figure out if we really need to do this update
-        self.update_run_options()
+        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
+        if self.get_project_dir():
+            full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
+            if os.path.isfile(full_runname_pid):
+                self.job_manager = JobManager(full_runname_pid, parent=self)
+                self.signal_update_runbuttons.emit('')
+
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
@@ -541,6 +560,12 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.update_solids_table() # ?
             #self.update_solids_detail_pane()
 
+    def update_residuals(self):
+        """Get job status from JobManager and update residuals pane"""
+        if not self.job_manager:
+            return
+        self.ui.residuals.setText(self.job_manager.cached_status)
+
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
     # This function is called a lot, and it does too much work each time
@@ -548,7 +573,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     # 2) project directory changed
     # 3) process started
     # 4) process stopped
-    def update_run_options(self, message=None):
+    def slot_update_runbuttons(self, message=None):
         """Updates list of of mfix executables and sets run dialog options"""
         # This is the main state-transition handler
 
@@ -563,8 +588,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         project_file = os.path.basename(self.get_project_file() or '')
 
         project_open = bool(project_file and self.open_succeeded)
-        paused = self.job_manager.is_paused()
-        running = self.job_manager.is_running() and not paused
+        paused = self.job_manager and self.job_manager.is_paused()
+        running = self.job_manager and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
@@ -577,8 +602,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
-        # Pause only available w/ pymfix
-        pause_visible = bool(self.job_manager.pymfix_url)
+        pause_visible = bool(self.job_manager)
         if running:
             self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
@@ -613,7 +637,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
-        ui.run.checkbox_pymfix_output.setEnabled(self.pymfix_enabled)
+        ui.run.checkbox_pymfix_output.setEnabled(True)
 
 
     def print_welcome(self):
@@ -678,7 +702,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             item.setDisabled(not state)
 
         # Don't stay on a disabled tab!
-        # Do we ever disable "Materials"?
+        # (Do we ever disable "Materials"? - don't think so)
         active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
         if active_tab > 0 and not item_states[solver][active_tab]:
             if solver==SINGLE:
@@ -709,7 +733,6 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                     and self.ui.fluid.checkbox_enable_scalar_eq.isChecked())
 
         # Equiv for solids is done in update_solids_detail_pane
-
 
         # Solids Model selection tied to Solver
         # FIXME XXX What to do about solids that are already defined?
@@ -743,41 +766,38 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                         m.checkbox_enable_turbulence.isChecked())
 
 
-    def enable_energy_eq(self, state):
+    def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
         # since this has to change availabilty of several other GUI items
-        self.ui.model.checkbox_keyword_energy_eq.setChecked(state)
+
+        # TODO : move this to fluids_handler, like the way we do for solids
+
+        self.ui.model.checkbox_keyword_energy_eq.setChecked(enabled)
 
         # It might not be necessary to do all this - will the fluid or
         # solid panes get updated before we display them?
         ui = self.ui
-        for item in (ui.fluid.combobox_fluid_specific_heat_model,
-                     ui.fluid.combobox_fluid_conductivity_model,
-                     ui.solids.combobox_solids_specific_heat_model,
+        f = ui.fluid
+        for item in (f.label_fluid_specific_heat_model,
+                     f.combobox_fluid_specific_heat_model,
+                     f.label_fluid_conductivity_model,
+                     f.combobox_fluid_conductivity_model,
                      # more ?
                      ):
-            item.setEnabled(state)
+            item.setEnabled(enabled)
+
         # c_pg0 == specific heat for fluid phase
-        lineedit = ui.fluid.lineedit_keyword_c_pg0
-        if state:
-            lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
-        lineedit = ui.fluid.lineedit_keyword_c_pg0
-        if state:
-            lineedit.setEnabled(self.fluid_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
+        lineedit = f.lineedit_keyword_c_pg0
+        label = f.label_c_pg0_units
+        for item in (lineedit, label):
+            item.setEnabled(enabled and (self.fluid_specific_heat_model == CONSTANT))
 
-        # c_ps0 == specific heat for solids phases
-        lineedit = ui.solids.lineedit_keyword_c_ps0_args_S
-        if state:
-            lineedit.setEnabled(self.solids_specific_heat_model == CONSTANT)
-        else:
-            lineedit.setEnabled(False)
+        # k_g0 == thermal conductivity fluid phase
+        lineedit = f.lineedit_keyword_k_g0
+        label = f.label_k_g0_units
+        for item in (lineedit, label):
+            item.setEnabled(enabled and (self.fluid_conductivity_model == CONSTANT))
 
-        # toggle input of solids species
-        self.update_solids_species_groupbox()
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
@@ -886,7 +906,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                 # Look for _args_ following <keyword>
                 if 'args' in name_list:
                     args_idx = name_list.index('args')
-                    args = map(try_int, name_list[args_idx+1:])
+                    args = [try_int(name) for name in name_list[args_idx+1:]]
                     key = '_'.join(name_list[key_idx+1:args_idx])
                 else:
                     key = '_'.join(name_list[key_idx+1:])
@@ -933,6 +953,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
+                    widget.setToolTip('%s<br/>' % doc['description'])
                 else:
                     log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
                     continue
@@ -955,11 +976,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.ui.regions.vtkwidget = self.vtkwidget
             return
 
-        try:
-            from widgets.vtkwidget import VtkWidget
-        except ImportError:
-            print("vtk not available.  Set MFIX_NO_VTK in environment to skip vtk for testing")
-            sys.exit(-1)
+        from widgets.vtkwidget import VtkWidget
         self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
@@ -1001,6 +1018,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def mode_changed(self, mode):
         """change the Modeler, Workflow, Developer tab"""
         current_index = 0
+        self.capture_output(mode=='interpreter')
         for i in range(self.ui.stackedwidget_mode.count()):
             widget = self.ui.stackedwidget_mode.widget(i)
             if mode == str(widget.objectName()):
@@ -1028,26 +1046,44 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
+
         current_selection = self.ui.treewidget_navigation.selectedItems()
+        if not current_selection:
+            return
 
+        text = str(current_selection[-1].text(0))
+        text = '_'.join(text.lower().split(' '))
+        current_index = 0
+        for i in range(self.ui.stackedWidgetTaskPane.count()):
+            widget = self.ui.stackedWidgetTaskPane.widget(i)
+            if text == str(widget.objectName()):
+                current_index = i
+                break
+        self.animate_stacked_widget(
+            self.ui.stackedWidgetTaskPane,
+            self.ui.stackedWidgetTaskPane.currentIndex(),
+            current_index)
+
+        self.setup_current_tab()
+
+    def setup_current_tab(self):
         # Force any open popup to close
-        # if dialog is modal we don't need this
+        # (if dialog is modal we don't need this)
         self.species_popup.done(0)
+        self.regions_popup.done(0)
+        current_selection = self.ui.treewidget_navigation.selectedItems()
+        if not current_selection:
+            return
+        text = str(current_selection[-1].text(0))
+        text = '_'.join(text.lower().split(' '))
+        if text == 'solids': # Special helper for setting up subpanes,
+            # since params may have changed
+            self.setup_solids_tab(self.solids_current_tab)
+        elif text == 'initial_conditions':
+            self.setup_ics()
+        elif text == 'boundary_conditions':
+            self.setup_bcs()
 
-        if current_selection:
-            text = str(current_selection[-1].text(0))
-            text = '_'.join(text.lower().split(' '))
-            current_index = 0
-            for i in range(self.ui.stackedWidgetTaskPane.count()):
-                widget = self.ui.stackedWidgetTaskPane.widget(i)
-                #print(text, str(widget.objectName()))
-                if text == str(widget.objectName()):
-                    current_index = i
-                    break
-            self.animate_stacked_widget(
-                self.ui.stackedWidgetTaskPane,
-                self.ui.stackedWidgetTaskPane.currentIndex(),
-                current_index)
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
@@ -1217,10 +1253,16 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def scan_errors(self, lines):
         ### "Error 1000: A keyword pair on line 129"
-        lineno = bad_line = None
-        re_err = re.compile("Error 1000: A keyword pair on line (\d+)")
+        ### "Error 2000: Unable to process line 185"
+        # TODO: capture more of the error text and produce a fuller message
+        # in the popup
+        lineno = bad_line = err = None
+        re_err_1000 = re.compile("Error 1000: A keyword pair on line (\d+)")
+        re_err_2000 = re.compile("Error 2000: Unable to process line (\d+)")
         for (i, line) in enumerate(lines):
-            match = re_err.search(line)
+            for (re_err, err_type) in ((re_err_1000, 'deprecated'),
+                                       (re_err_2000, 'invalid')):
+                match = re_err.search(line)
             if match:
                 lineno = int(match.group(1))
                 bad_line = self.datfile_lines[lineno-1]
@@ -1228,9 +1270,11 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # TODO:  colorize errors in source view (red)
         if bad_line:
             key = bad_line.split("=", 1)[0].strip()
-            self.deprecated_keyword(key, bad_line)
+            self.report_keyword_error(key, bad_line, err_type)
 
-    def deprecated_keyword(self, key, line):
+
+
+    def report_keyword_error(self, key, line, err_type='deprecated'):
         """Give the user a chance to omit or edit deprecated keys"""
         #  This is a first implementation.  There's a lot more
         #  we could do here - suggest fixes, link to documentation,
@@ -1240,9 +1284,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
         message_box = QtWidgets.QMessageBox(self)
         self.message_box = message_box
-        message_box.setWindowTitle("Deprecated keyword")
+        message_box.setWindowTitle("%s keyword" % err_type.title())
         message_box.setIcon(QtWidgets.QMessageBox.Warning)
-        text="'%s' is a deprecated keyword" % key
+        text="'%s' is %s" % (key, err_type)
         message_box.setText(text)
         buttons = ['Drop Key', 'Edit', 'Ignore']
         for b in buttons:
@@ -1253,7 +1297,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             if '(' in key: # This is a little crude, use parser instead?
                 k, a = key.split('(', 1)
                 a = a.split(')')[0]
-                a = map(int, a.split(','))
+                a = [int(x) for x in a.split(',')]
             else:
                 a = None
             self.unset_keyword(k,a)
@@ -1402,6 +1446,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                              buttons=['ok'],
                              default=['ok'])
                 break
+        self.signal_update_runbuttons.emit('')
         return True
 
     # Don't make these depend on current state, since (esp for pymfix)
@@ -1409,104 +1454,61 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def handle_run(self):
         name = 'Run'
         try:
-            if not self.job_manager.is_running():
+            if not self.job_manager:
                 # open the run dialog for job options
                 self.open_run_dialog()
                 return
             else:
                 name='unpause'
                 self.job_manager.unpause()
-        except Exception as e:
-            self.print_internal("%s: error %s" % (name, e))
-            traceback.print_exception(*sys.exc_info())
-        self.update_run_options()
+        except Exception:
+            log.exception('problem in handle_run')
+            self.print_internal('problem in handle_run')
+        self.signal_update_runbuttons.emit('')
 
     def handle_set_pymfix_output(self):
         try:
             self.job_manager.set_pymfix_output(
               self.ui.run.checkbox_pymfix_output.isChecked())
-        except Exception as e:
-            self.print_internal("%s: error %s" % (name, e))
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_set_pymfix_output')
+            self.print_internal('problem in handle_set_pymfix_output')
 
     def handle_pause(self):
         try:
             self.job_manager.pause()
-        except Exception as e:
-            self.print_internal("Pause: error %s" % e)
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_pause')
+            self.print_internal('problem in handle_pause')
 
     def handle_stop(self):
         try:
             self.job_manager.stop_mfix()
-        except Exception as e:
-            self.print_internal("Stop: error %s" % e)
-            traceback.print_exception(*sys.exc_info())
+        except Exception:
+            log.exception('problem in handle_stop')
+            self.print_internal('problem in handle_stop')
 
-    def run_mfix(self):
-        output_files = self.monitor.get_outputs()
-        res_files = self.monitor.get_res_files()
-        if output_files:
-            if res_files:
-                return self.resume_mfix()
-            if not self.remove_output_files(output_files):
-                log.info('output files exist and run was cancelled')
-                return
-
+    def check_save(self):
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
                                     text="Save current project?",
                                     buttons=['yes', 'no'])
-            if response=='yes': #FIXME need to catch/report errors, writeDatFile is too low-level
-                self.project.writeDatFile(self.get_project_file())
-            else:
-                return
-        self.update_keyword('run_type', 'new')
+            if response != 'yes':
+                return False
+        #FIXME need to catch/report errors, writeDatFile is too low-level
         self.project.writeDatFile(self.get_project_file())
         self.clear_unsaved_flag()
         self.update_source_view()
-        self._start_mfix()
-
-    def restart_mfix(self):
-        """Restart MFIX. This will remove previous output and start a new run."""
-        output_files = self.monitor.get_outputs()
-        if len(output_files) > 0:
-            message = "Delete all output and resume files?"
-            if not self.remove_output_files(output_files, message):
-                log.debug('output or resume files exist and run was cancelled')
-                return
-        self.update_keyword('run_type', 'new')
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file()) # XXX
-        self.clear_unsaved_flag()
-        self.update_source_view()
-        self._start_mfix()
-
-    def resume_mfix(self):
-        """resume previously stopped mfix run"""
-        if self.ui.run.use_spx_checkbox.isChecked():
-            self.update_keyword('run_type', 'restart_1')
-        else:
-            # TODO: is it correct to remove all but *.RES ?
-            spx_files = self.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
-            if not self.remove_output_files(spx_files):
-                log.debug('SP* files exist and run was cancelled')
-                return
-            self.update_keyword('run_type', 'restart_2')
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file()) # XXX
-        self.clear_unsaved_flag()
-        self.update_source_view()
-        self._start_mfix()
+        return True
 
     def open_run_dialog(self, batch=False):
         """Open run popup dialog"""
-        popup_title = self.ui.run.button_run_mfix.text()
-        self.run_dialog = RunPopup(popup_title, self.commandline_option_exe, self)
-        if not batch:
-            self.run_dialog.run.connect(self.run_mfix)
+        if not self.check_save():
+            return
+        self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
+        self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
         if batch:
             self.run_dialog.exec_()  # blocking
@@ -1515,79 +1517,10 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""
-        self.mfix_exe = mfix_exe = self.run_dialog.mfix_exe
-        self.mfix_config = config = \
-                self.run_dialog.mfix_exe_flags.get(mfix_exe, None)
-        log.debug('exe changed signal recieved: %s' % mfix_exe)
-
-        self.settings.setValue('mfix_exe', mfix_exe)
-        self.mfix_config = config
-        self.smp_enabled = 'smp' in config if config else False
-        self.dmp_enabled = 'dmp' in config if config else False
-
-        self.pymfix_enabled = any(mfix_exe.lower().endswith(x)
-                                  for x in ('pymfix', 'pymfix.exe'))
-
-        self.update_run_options()
-
-    def _build_run_cmd(self, project_filename=None):
-        """build the mfix run cmd"""
-        mfix_exe = self.mfix_exe
-
-        if self.dmp_enabled:
-            mpiranks = (self.project.nodesi.value *
-                        self.project.nodesj.value *
-                        self.project.nodesk.value)
-
-            run_cmd = ['mpirun', '-np', str(mpiranks), mfix_exe]
-        else:
-            # no dmp support
-            run_cmd = [mfix_exe]
-
-        port = None
-        if self.pymfix_enabled:
-            # find free port
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind(("",0))
-            sock.listen(1)
-            port = sock.getsockname()[1]
-            sock.close()
-            run_cmd += ['-P', str(port)]
-
-        if self.smp_enabled:
-            #FIXME obtain this value from run popup dialog
-            NUM_THREADS = '2'
-            if not "OMP_NUM_THREADS" in os.environ:
-                os.environ["OMP_NUM_THREADS"] = NUM_THREADS
-            log.info('SMP enabled with OMP_NUM_THREADS=%d', NUM_THREADS)
-
-        if project_filename is None:
-            project_filename = os.path.basename(self.get_project_file())
-        # Warning, not all versions of mfix support '-f' !
-        run_cmd += ['-f', project_filename]
-
-        return run_cmd, port
-
-    def _start_mfix(self):
-        """start a new local MFIX run, using pymfix, mpirun or mfix directly"""
-
-        if not self.mfix_exe:
-            self.print_internal("ERROR: MFIX not available")
-            self.update_run_options()
-            return
-
-        run_cmd, port = self._build_run_cmd()
-
-        msg = 'Starting %s' % ' '.join(run_cmd)
-        #log.info(msg) # print_internal logs
-        self.print_internal(msg, color='blue')
-
-        self.job_manager.start_command(
-            cmd=run_cmd,
-            cwd=self.get_project_dir(),
-            port=port,
-            env=os.environ)
-
+        self.mfix_exe = self.run_dialog.mfix_exe
+        self.settings.setValue('mfix_exe', self.mfix_exe)
+        log.debug('exe changed signal recieved: %s' % self.mfix_exe)
+        self.signal_update_runbuttons.emit('')
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
@@ -1689,15 +1622,9 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
                                 self.get_project_dir(),
                                 self.project.run_name.value + ".mfx"),
                             "*.mfx")
-        # User pressed "cancel"
-        if not filename:
-            return
-        # qt4/qt5 compat hack
-        #if type(filename) == tuple:
         if PYQT5:
-            return filename[0]
-        else:
-            return filename
+            filename = filename[0]
+        return filename
 
 
     def handle_save(self):
@@ -1755,14 +1682,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         if self.unsaved_flag:
             title += '*'
 
-        if self.job_manager.is_running() and not self.job_manager.is_paused():
-            title += ', RUNNING'
-            if self.job_manager.mfix_pid is not None:
-                title += ', process %s'% self.job_manager.mfix_pid
-        elif self.job_manager.is_paused():
-            title += ', PAUSED'
-        elif self.monitor.get_res_files():
-            title += ', STOPPED, resumable'
+        if self.job_manager:
+            if not self.job_manager.is_paused():
+                title += ', RUNNING'
+                if self.job_manager.mfix_pid is not None:
+                    title += ', process %s'% self.job_manager.mfix_pid
+            elif self.job_manager.is_paused():
+                title += ', PAUSED'
+            elif self.monitor.get_res_files():
+                title += ', STOPPED, resumable'
         else:
             pass
             #title += ', EDITING'
@@ -1815,10 +1743,13 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             return False
 
     def new_project(self):
-        project_file = str(
-            QtWidgets.QFileDialog.getSaveFileName(
-                self, 'Create Project File',
-                "", "MFX files (*.mfx)"))
+        # Why not use get_save_filename here?
+        project_file = QtWidgets.QFileDialog.getSaveFileName(
+            self, 'Create Project File',
+            "", "MFX files (*.mfx)")
+
+        if PYQT5:
+            project_file = project_file[0]
         if not project_file:
             return
 
@@ -1827,8 +1758,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         run_name = os.path.splitext(project_filename)[0]
         if not self.check_writable(project_dir):
             self.message(text='Unable to write to %s' % project_dir,
-                         buttons=['Ok'],
-                         default='Ok')
+                         buttons=['ok'],
+                         default='ok')
             return
         # Start with a nice template - note, there's too much set in this file.
         # FIXME, this can clobber files
@@ -1891,6 +1822,15 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
     def force_default_settings(self):
         self.update_keyword('chk_batchq_end', True)
 
+
+    def get_runname_mfx_runname_pid(self):
+        name = self.project.get_value('run_name', default='new_file')
+        for char in ('.', '"', "'", '/', '\\', ':'):
+            runname = name.replace(char, '_')
+        runname_mfx = runname + '.mfx'
+        runname_pid = runname + '.pid'
+        return runname_mfx, runname_pid
+
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
 
@@ -1938,23 +1878,20 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
             self.set_no_project()
             return
 
-        name = self.project.get_value('run_name', default='new_file')
-        for char in ('.', '"', "'", '/', '\\', ':'):
-            name = name.replace(char, '_')
-        runname_mfx = name + '.mfx'
-        runname_pid = name + '.pid'
-        runname_pid = os.path.join(project_dir, runname_pid)
+        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
+
         if os.path.exists(runname_pid):
-            with open(runname_pid) as pidfile:
-                pid = pidfile.readline().strip()
-                pymfix_url = pidfile.readline().strip()
-                self.job_manager.connect(pymfix_url)
-                self.job_manager.update_status()
-                self.update_run_options()
+            pid = get_dict_from_pidfile(runname_pid)['pid']
+            try:
+                os.kill(pid, 0)
+            except OSError:
+                log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
+            else:
+                self.job_manager = JobManager(runname_pid, parent=self)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
-            save_msg = 'Renaming mfix.dat to %s based on run name' % runname_mfx
+            save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
             response = self.message(title='Info',
                                     icon='question',
                                     text=save_msg,
@@ -1998,6 +1935,8 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
         self.set_save_as_action(enabled=True)
+
+        self.setup_current_tab() # update vals in any open tabs
         self.update_source_view()
 
         # set up rundir watcher
@@ -2015,7 +1954,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         # by keyword updates)
         #    .... is there a way to verify that 'energy_eq' is boolean?
         #    should that get set from keyword doc?
-        self.enable_energy_eq(bool(self.project.get_value('energy_eq')))
+        self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
         # cgw - lots more model setup todo here.  Should we do this here or
         #  in ProjectManager.load_project_file (where we do guess/set_solver)
@@ -2126,7 +2065,7 @@ class MfixGui(QtWidgets.QMainWindow, FluidHandler, SolidsHandler):
         #    self.save_project()
 
         self.open_succeeded = True
-        self.update_run_options()
+        self.signal_update_runbuttons.emit('')
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
@@ -2139,8 +2078,10 @@ def Usage(name):
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
 
+
 def main(args):
-    """Handle command line options and start the GUI"""
+    global gui
+    args = sys.argv
     name = args[0]
     try:
         opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "new", "log=", "exe="])
@@ -2183,28 +2124,28 @@ def main(args):
         Usage(name)
 
     qapp = QtWidgets.QApplication([])
-    mfix = MfixGui(qapp, project_file=project_file)
-    mfix.show()
+    gui = MfixGui(qapp, project_file=project_file)
+    gui.show()
 
     if mfix_exe_option:
-        print('exe option passed: %s' % mfix_exe_option)
-        mfix.commandline_option_exe = mfix_exe_option
+        #print('exe option passed: %s' % mfix_exe_option)
+        gui.commandline_option_exe = mfix_exe_option
 
     if project_file is None and not new_project:
         # autoload last project
-        project_file = mfix.get_project_file()
+        project_file = gui.get_project_file()
 
     if project_file:
-        mfix.open_project(project_file, auto_rename=(not quit_after_loading))
+        gui.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
-        mfix.set_no_project()
+        gui.set_no_project()
 
     # print number of keywords
-    mfix.print_internal('Registered %d keywords' %
-                        len(mfix.project.registered_keywords))
+    gui.print_internal('Registered %d keywords' %
+                        len(gui.project.registered_keywords))
 
     # have to initialize vtk after the widget is visible!
-    mfix.vtkwidget.vtkiren.Initialize()
+    gui.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)

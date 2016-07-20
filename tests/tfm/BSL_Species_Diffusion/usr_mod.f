@@ -31,21 +31,21 @@
 ! set .true. for writing out the species mass fraction profile:
         logical                               :: x_g_profile = .true.
 
-! exact solutions      
+! exact solutions
         double precision, allocatable         :: x_g_1_ex(:)
         double precision, allocatable         :: x_g_2_ex(:)
 
-! norms of discretization errors        
+! norms of discretization errors
         double precision, allocatable         :: lnorms_x_g_1(:)
         double precision, allocatable         :: lnorms_x_g_2(:)
 
 ! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh  
+! used to find the node locations in the mesh
         double precision, allocatable         :: xtr(:)
         double precision, allocatable         :: ytr(:)
-        double precision, allocatable         :: ztr(:)     
+        double precision, allocatable         :: ztr(:)
 
-! temporary array for discretization error: de = x_g_1 - x_g_1_ex ; etc.        
+! temporary array for discretization error: de = x_g_1 - x_g_1_ex ; etc.
         double precision, allocatable         :: de_x_g_1(:)
         double precision, allocatable         :: de_x_g_2(:)
 

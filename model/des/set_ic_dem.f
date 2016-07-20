@@ -68,7 +68,7 @@
                NP = PIC(IJK)%P(NINDX)
 
 ! Shift the phase index to the absolute phase index.
-               M = PIJK(NP,5) 
+               M = PIJK(NP,5)
 
 ! Set the initial particle temperature.
                IF(ENERGY_EQ) THEN

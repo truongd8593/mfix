@@ -39,9 +39,9 @@ test-load-all:
 	find .. -name mfix.dat -print0 | DISPLAY=:99 MFIX_NO_VTK=1 xargs -0 -n 1 ./gui.py -lwarn -q &> /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
 	pkill Xvfb
 
-../mfix.so:
+../mfix:
 	cd ..; ./configure_mfix --python --smp
-	make -C .. mfix.so
+	make -C .. mfix
 
-pyinst: all ../mfix.so
+pyinst: all ../mfix
 	pyinstaller gui.spec

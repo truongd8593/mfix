@@ -596,7 +596,7 @@
           end if ! end of if(tec_output_block)
 
 ! write tecplot data (point format) for the x-velocity profile at x=L/2:
-! - numerical solution for u_g          
+! - numerical solution for u_g
 ! - exact solution for u_g
 ! - error for u_g
 

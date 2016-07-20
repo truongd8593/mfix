@@ -415,7 +415,7 @@
        <number>5</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_28">
+       <widget class="QLabel" name="label_fluid_density_model">
         <property name="text">
          <string>Density</string>
         </property>
@@ -475,7 +475,7 @@
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_ro_g0_units">
         <property name="font">
          <font>
           <weight>50</weight>
@@ -489,7 +489,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_29">
+       <widget class="QLabel" name="label_fluid_viscosity_model">
         <property name="text">
          <string>Viscosity</string>
         </property>
@@ -549,7 +549,7 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label_mu_g0_units">
         <property name="font">
          <font>
           <italic>false</italic>
@@ -561,7 +561,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_30">
+       <widget class="QLabel" name="label_mol_weight_model">
         <property name="text">
          <string>Mol. weight</string>
         </property>
@@ -616,7 +616,7 @@
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="label_mw_avg_units">
         <property name="font">
          <font>
           <italic>false</italic>
@@ -628,7 +628,7 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_31">
+       <widget class="QLabel" name="label_fluid_specific_heat_model">
         <property name="text">
          <string>Spec. heat</string>
         </property>
@@ -688,7 +688,7 @@
        </widget>
       </item>
       <item row="3" column="3">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="label_c_pg0_units">
         <property name="font">
          <font>
           <italic>false</italic>
@@ -700,7 +700,7 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_36">
+       <widget class="QLabel" name="label_fluid_conductivity_model">
         <property name="text">
          <string>Therm. cond.</string>
         </property>
@@ -763,7 +763,7 @@
        </widget>
       </item>
       <item row="4" column="3">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="label_k_g0_units">
         <property name="font">
          <font>
           <italic>false</italic>
@@ -775,7 +775,7 @@
        </widget>
       </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="label_37">
+       <widget class="QLabel" name="label_fluid_diffusion_model">
         <property name="text">
          <string>Diffusivity</string>
         </property>
@@ -838,7 +838,7 @@
        </widget>
       </item>
       <item row="5" column="3">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="label_dif_g0_units">
         <property name="font">
          <font>
           <italic>false</italic>

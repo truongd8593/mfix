@@ -389,6 +389,9 @@
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
 
+! Store the number of ghost particles in a computational fluid cell
+      INTEGER, DIMENSION(:), ALLOCATABLE :: GPINC  ! (DIMENSION_3)
+
 ! For each particle track its i, j, k & ijk location on the fluid grid
 ! and solids phase no.:
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M

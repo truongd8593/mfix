@@ -3,7 +3,7 @@
 !  Module name: USR3                                                   !
 !  Purpose: This routine is called after the time loop ends and is     !
 !           user-definable.  The user may insert code in this routine  !
-!           or call appropriate user defined subroutines.              ! 
+!           or call appropriate user defined subroutines.              !
 !           This routine is not called from an IJK loop, hence         !
 !           all indices are undefined.                                 !
 !                                                                      !
@@ -625,7 +625,7 @@
 ! VARLOCATION=CELLCENTERED option, tecplot does inaccurate interpolation
 ! near the boundary cells.  So this is not the traditional
 ! tecplot cell-centered data file.
-          
+
           if(tec_output_point) then
 
             open(unit=newunit(fcc), file="solution_tec_point.dat", &

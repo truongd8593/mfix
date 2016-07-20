@@ -417,7 +417,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -450,7 +450,7 @@
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
       double precision      :: ros
 
 
@@ -568,7 +568,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -601,7 +601,7 @@
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
 
 ! local variables within source functions
       double precision      :: ros, mug, rog, MW, Rg, mus, Cpg, kg, &
@@ -800,7 +800,7 @@
              (-(avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt)) - &
                augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) - &
                avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt) + &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt))) 
+               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)))
       case(4)
       !wgsrc!
         mms_source = -(mug*(2*avgzx**2*Pi**2*vgzx*xt*&

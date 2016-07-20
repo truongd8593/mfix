@@ -62,7 +62,7 @@ def plural(n, word):
 
 
 def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
+    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
 
 def set_item_enabled(item, enabled):
     """Enable/disable items which do not have a setEnabled method, like menu items"""
@@ -79,9 +79,9 @@ def get_combobox_item(combobox, n):
     return model.item(n, 0)
 
 def get_selected_row(table):
-    """get index of selected row from a QTable"""
+    """get index of selected row from a QTableWidget"""
     # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
+    rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
 

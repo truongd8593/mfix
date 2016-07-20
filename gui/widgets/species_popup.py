@@ -13,13 +13,7 @@ from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 UserRole = QtCore.Qt.UserRole
 
-def set_item_noedit(item):
-    item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
-
-def get_selected_row(table):
-    # note, currentRow can return  >0 even when there is no selection
-    rows = set(i.row() for i in table.selectedItems())
-    return None if not rows else rows.pop()
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -90,8 +84,10 @@ class SpeciesPopup(QtWidgets.QDialog):
             comment = self.comments[phase][key]
             item = QTableWidgetItem(key[0])
             item.setToolTip(comment)
+            set_item_noedit(item)
             table.setItem(i, 0, item)
             item = QTableWidgetItem(phase)
+            set_item_noedit(item)
             table.setItem(i, 1, item)
             self.search_results[i] = (key, phase)
         table.model().blockSignals(False);
@@ -221,10 +217,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         if row is None:
             self.current_species = None
             self.clear_species_panel()
-            self.pushbutton_delete.setEnabled(False)
+            self.ui.pushbutton_delete.setEnabled(False)
             self.ui.combobox_phase.setEnabled(False)
         else:
-            self.pushbutton_delete.setEnabled(True)
+            self.ui.pushbutton_delete.setEnabled(True)
             self.current_species = table.item(row, 0).data(UserRole)
             self.enable_species_panel()
 
@@ -358,6 +354,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         #NB making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
+        set_item_noedit(item)
         table.setItem(row, 0, item)
         self.defined_species[self.current_species]['alias'] = val
 

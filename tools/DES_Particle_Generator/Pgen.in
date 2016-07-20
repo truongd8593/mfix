@@ -7,12 +7,12 @@
 15
 0.4
 
-! 
+!
 ! This is a sample input file for the particle generator
 !
 ! The above inputs are as follows:
-! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
-! 	dimension 
+! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+! 	dimension
 ! 	random distribution (if 1) or alligned distribution (if 0)
 ! 	number of particles
 ! 	particle radius

@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import signal
-import time
 import logging
+import os
+import signal
+import sys
+import tempfile
+import time
 from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import PYQT4, PYQT5
-from qtpy.QtCore import Signal
+from qtpy import PYQT5
+from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox
 
 from tools.general import get_mfix_home
@@ -23,24 +24,24 @@ except ImportError:
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
+MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
 
 class RunPopup(QDialog):
 
-    run = Signal()
-    cancel = Signal()
+    signal_run = Signal()
+    signal_submit = Signal()
+    signal_cancel = Signal()
     set_run_mfix_exe = Signal()
 
-    def __init__(self, title, mfix_exe, parent):
+    def __init__(self, mfix_exe, parent):
 
         super(RunPopup, self).__init__(parent)
 
         self.commandline_option_exe = mfix_exe if mfix_exe else None
         self.mfix_available = False
         self.mfix_exe = None
+        self.mfix_exe_cache = {}
         self.mfix_exe_list = []
-        self.mfix_exe_flags = {}
-        self.title = title
         self.parent = parent
         self.project = parent.project
         self.settings = parent.settings
@@ -53,13 +54,22 @@ class RunPopup(QDialog):
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
 
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
+        ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
 
-        self.bbox = self.ui.buttonbox
-        self.ok_button = self.bbox.button(QDialogButtonBox.Ok)
-        self.cancel_button = self.bbox.button(QDialogButtonBox.Cancel)
-        self.ok_button.clicked.connect(self.handle_run)
-        self.cancel_button.clicked.connect(self.handle_abort)
+        if bool(self.parent.monitor.get_res_files()):
+            self.title = 'Resume'
+        else:
+            self.title = 'Run'
+
+        self.signal_run.connect(self.handle_run)
+        self.signal_submit.connect(self.handle_submit)
+        self.signal_cancel.connect(self.close)
+
+        self.ui.button_local_run.clicked.connect(self.handle_run)
+        self.ui.button_queue_submit.clicked.connect(self.handle_submit)
+        self.ui.button_local_cancel.clicked.connect(self.handle_abort)
+        self.ui.button_queue_cancel.clicked.connect(self.handle_abort)
 
         self.initialize_ui()
 
@@ -102,19 +112,23 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
+        self.lineedit_job_name.setText(self.parent.project.run_name.value)
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
         select the first item """
         self.ui.combobox_mfix_exe.clear()
+        self.ui.combobox_mfix_exe_2.clear()
         self.ui.combobox_mfix_exe.addItems(self.mfix_exe_list)
+        self.ui.combobox_mfix_exe_2.addItems(self.mfix_exe_list)
 
     def update_dialog_options(self):
         """ Enable or disable options based on self.mfix_exe features,
         local or remote settings """
 
         self.ui.combobox_mfix_exe.setEnabled(self.mfix_available)
-        self.ok_button.setEnabled(self.mfix_available)
+        self.ui.button_local_run.setEnabled(self.mfix_available)
+        self.ui.button_queue_submit.setEnabled(self.mfix_available)
 
         self.update_no_mfix_warning()
 
@@ -124,19 +138,20 @@ class RunPopup(QDialog):
         self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
         self.ui.groupbox_run_options.setEnabled(self.mfix_available)
-        cfg = self.mfix_exe_flags.get(self.mfix_exe, None)
+        cfg = self.get_exe_flags(self.mfix_exe)
         dmp = 'dmp' in cfg['flags'] if cfg else False
         smp = 'smp' in cfg['flags'] if cfg else False
         self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
         self.ui.spinbox_keyword_nodesj.setEnabled(dmp)
-        self.ui.spinbox_keyword_nodesk.setEnabled(dmp)
+        self.ui.spinbox_keyword_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
         self.ui.spinbox_threads.setEnabled(smp)
 
     def update_no_mfix_warning(self):
         ok = bool(self.mfix_exe)
         self.ui.label_mfix_exe_warning.setVisible(not ok)
         self.ui.combobox_mfix_exe.setEnabled(ok)
-        self.ui.buttonbox.buttons()[0].setEnabled(ok)
+        self.ui.button_local_run.setEnabled(ok)
+        self.ui.button_queue_submit.setEnabled(ok)
         if not ok:
             self.parent.print_internal("Warning: no MFIX executables available")
 
@@ -150,24 +165,71 @@ class RunPopup(QDialog):
     # event handlers
 
     def handle_abort(self):
-        self.cancel.emit()
+        self.signal_cancel.emit()
 
-    def handle_run(self):
+    def finish_with_dialog(self):
         """ persist run options in project file, then emit run signal """
         thread_count = str(self.ui.spinbox_threads.value())
         os.environ['OMP_NUM_THREADS'] = thread_count
+        log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
+                 os.environ["OMP_NUM_THREADS"])
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
+
         if self.NODES_SET:
             self.project.updateKeyword('nodesi',
-                                        self.ui.spinbox_keyword_nodesi.value())
+                                       self.ui.spinbox_keyword_nodesi.value())
             self.project.updateKeyword('nodesj',
-                                        self.ui.spinbox_keyword_nodesj.value())
+                                       self.ui.spinbox_keyword_nodesj.value())
             self.project.updateKeyword('nodesk',
-                                        self.ui.spinbox_keyword_nodesk.value())
+                                       self.ui.spinbox_keyword_nodesk.value())
         self.persist_selected_exe(self.mfix_exe)
-        self.set_run_mfix_exe.emit() # possible dupilication, but needed
+        self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
-        self.run.emit()
+
+        if self.title == 'Run':
+            self.parent.update_keyword('run_type', 'new')
+            output_files = self.parent.monitor.get_outputs()
+            if output_files:
+                if not self.parent.remove_output_files(output_files):
+                    log.info('output files exist and run was canceled')
+                    return False
+        elif self.ui.use_spx_checkbox.isChecked():
+            self.parent.update_keyword('run_type', 'restart_1')
+        else:
+            # TODO: is it correct to remove all but *.RES ?
+            spx_files = self.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
+            if not self.remove_output_files(spx_files):
+                log.debug('SP* files exist and run was canceled')
+                return False
+            self.parent.update_keyword('run_type', 'restart_2')
+
+        self.project.writeDatFile(self.parent.get_project_file())
+        self.parent.update_source_view()
+        self.close()
+        self.parent.signal_update_runbuttons.emit('')
+        return True
+
+    def handle_run(self):
+        if not self.finish_with_dialog():
+            return
+
+        self.start_command(
+            cmd=self.get_run_cmd(),
+            cwd=self.parent.get_project_dir(),
+            env=os.environ)
+
+    def handle_submit(self):
+        if not self.finish_with_dialog():
+            return
+
+        self.submit_command(
+            cmd=self.get_run_cmd())
+
+    def handle_resume(self):
+        """resume previously stopped mfix run"""
+        #FIXME need to catch/report errors, writeDatFile is too low-level
+        self.project.writeDatFile(self.get_project_file()) # XXX
+        self._start_mfix(False)
 
     def handle_exe_change(self):
         """ emit signals when exe combobox changes """
@@ -222,7 +284,7 @@ class RunPopup(QDialog):
 
     def prepend_to_exe_list(self, exe):
         """ Verify exe exists, is executable, and appears only once in list."""
-        if not self.update_exe_flags(exe):
+        if not (os.path.isfile(exe) and self.get_exe_flags(exe)):
             return False
         if exe in self.mfix_exe_list:
             self.mfix_exe_list.pop(self.mfix_exe_list.index(exe))
@@ -242,7 +304,7 @@ class RunPopup(QDialog):
             # TODO? default install location(s)
             # ... where will the default binaries be installed?
             #for location in default_install_dirs:
-            #    for name in ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']:
+            #    for name in ['mfix', 'mfix.exe']:
             #        for exe in glob(os.path.join(self.project_dir, name)):
             #            exe = os.path.abspath(exe)
             #            self.prepend_to_exe_list(exe)
@@ -283,22 +345,13 @@ class RunPopup(QDialog):
         def mfix_build_directories():
             mfix_home = get_mfix_home()
             bin_dir = os.path.join(mfix_home, 'bin')
-            builds_dir = os.path.join(mfix_home, 'build')
-            #if mfix_home:
-            if True:
-                dir_list = set([mfix_home])
-                if os.path.isdir(bin_dir):
-                    dir_list.add(bin_dir)
-                # add mfix_home/build/*/build-aux
-                if os.path.isdir(builds_dir):
-                    for child in os.listdir(builds_dir):
-                        build = os.path.join(builds_dir, child, 'build-aux')
-                        if os.path.isdir(build):
-                            dir_list.add(build)
-                for d in dir_list:
-                    for name in MFIX_EXE_NAMES:
-                        for exe in glob(os.path.join(d, name)):
-                            yield exe
+            dir_list = set([mfix_home])
+            if os.path.isdir(bin_dir):
+                dir_list.add(bin_dir)
+            for d in dir_list:
+                for name in MFIX_EXE_NAMES:
+                    for exe in glob(os.path.join(d, name)):
+                        yield exe
 
         def get_saved_exe():
             last_exe = self.settings.value('mfix_exe')
@@ -327,41 +380,164 @@ class RunPopup(QDialog):
         """ Verify exe exists and is executable """
         return (os.path.isfile(exe) and os.access(exe, os.X_OK))
 
-    def update_exe_flags(self, mfix_exe):
+    def get_exe_flags(self, mfix_exe):
         """ run mfix to get executable features (like dmp/smp support) """
+        now = int(time.time())
+        if (now, mfix_exe) in self.mfix_exe_cache:
+            return self.mfix_exe_cache[(now, mfix_exe)]
         if not self.exe_exists(mfix_exe):
-            return False
-        cache = self.mfix_exe_flags
+            raise ValueError("mfix executable does not exist: %s" % mfix_exe)
         log.debug('Feature testing MFIX %s' % mfix_exe)
-        try: # Possible race, file may have been deleted/renamed since isfile check!
-            stat = os.stat(mfix_exe)
-        except OSError as err:
-            log.debug('Could not stat %s' % mfix_exe)
-            return False
-
-        if any(mfix_exe.lower().endswith(x)
-               for x in ('pymfix', 'pymfix.exe')):
-            cache[mfix_exe] = {'stat': stat, 'flags': 'dmp smp'}
-
-        cached = cache.get(mfix_exe, None)
-        if cached and cached['stat'] == stat:
-            return True
 
         try:
             exe_dir = os.path.dirname(mfix_exe)
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
+            if err:
+                log.error('MFIX %s' % str(err))
         except:
-            log.debug("could not run %s --print-flags", mfix_exe)
-            return False
+            log.error("could not run %s --print-flags", mfix_exe)
+            return None
 
-        flags = '' if err else str(out.strip())
-        cache[mfix_exe] = {'stat': stat, 'flags': flags}
-        return True
+        flags = str(out.strip())
+        mfix_exe_flags = {'flags': flags}
+        self.mfix_exe_cache[(now, mfix_exe)] = mfix_exe_flags
+        return mfix_exe_flags
+
+    def dmp_enabled(self):
+        config = self.get_exe_flags(self.mfix_exe)
+        flags = config['flags'] if config else ''
+        return 'dmp' in flags
+
+    def smp_enabled(self):
+        config = self.get_exe_flags(self.mfix_exe)
+        flags = config['flags'] if config else ''
+        return 'smp' in flags
+
+    def get_run_cmd(self):
+
+        if self.dmp_enabled():
+            mpiranks = (self.project.nodesi.value *
+                        self.project.nodesj.value *
+                        self.project.nodesk.value)
+
+            dmp = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
+        else:
+            dmp = []
+
+        if self.smp_enabled():
+            smp = ['env', 'OMP_NUM_THREADS=%s' % str(self.ui.spinbox_threads.value())]
+        else:
+            smp = []
+
+        run_cmd = smp + dmp + [self.mfix_exe,]
+
+        project_filename = os.path.basename(self.parent.get_project_file())
+        # Warning, not all versions of mfix support '-f' !
+        run_cmd += ['-f', project_filename]
+        msg = 'Starting %s' % ' '.join(run_cmd)
+        self.parent.print_internal(msg, color='blue')
+        return run_cmd
+
+    def transform_template(self, text, cmd):
+        cores = self.parent.run_dialog.spinbox_cores_requested.value()
+        mpirun = 'mpirun -np %d' % cores if self.dmp_enabled() else ''
+        return text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
+                   .replace("${CORES}", str(cores)) \
+                   .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
+                   .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
+                   .replace("${MPIRUN}", mpirun) \
+                   .replace("${COMMAND}", ' '.join(cmd))
+
+    def submit_command(self, cmd):
+
+        with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:
+            template_text = qsub_template.read()
+
+        qsub_script = tempfile.NamedTemporaryFile()
+        qsub_script.write(self.transform_template(template_text, cmd))
+        qsub_script.flush() # Keep tmpfile open
+
+        # FIXME: for testing without qsub installed, use:
+        # Popen('qsub %s' % qsub_script.name, cwd=self.parent.get_project_dir())
+        print('/bin/csh %s &' % qsub_script.name, self.parent.get_project_dir())
+        proc = Popen('qsub %s' % qsub_script.name, shell=True, cwd=self.parent.get_project_dir())
+        proc.wait()
+
+        qsub_script.close() # deletes tmpfile
+
+    def start_command(self, cmd, cwd, env):
+        """Start MFIX in QProcess"""
+
+        mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
+        if os.path.exists(mfix_stop_file):
+            try:
+                os.remove(mfix_stop_file)
+            except OSError:
+                log.error("Cannot remove", mfix_stop_file)
+                return
+
+        cmdline = ' '.join(cmd) # cmd is a list
+
+        self.mfixproc = QProcess()
+        if not self.mfixproc:
+            log.warn("QProcess creation failed")
+            return
+        self.mfixproc.setWorkingDirectory(cwd)
+        process_env = QProcessEnvironment()
+        for key, val in env.items():
+            process_env.insert(key, val)
+        self.mfixproc.setProcessEnvironment(process_env)
 
 
+        def slot_start():
+            # Keep a copy because it gets reset
+            self.mfix_pid = self.mfixproc.pid()
+            msg = "MFIX process %d is running" % self.mfix_pid
+            self.parent.signal_update_runbuttons.emit(msg)
+            log.debug("Full MFIX startup parameters: %s", cmdline)
+            QTimer.singleShot(1000, self.connect)
 
+        self.mfixproc.started.connect(slot_start)
+
+        def slot_read_out():
+            out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
+            self.parent.stdout_signal.emit(out_str)
+        self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
+
+        def slot_read_err():
+            err_str = bytes(self.mfixproc.readAllStandardError()).decode('utf-8')
+            self.parent.stderr_signal.emit(err_str)
+        self.mfixproc.readyReadStandardError.connect(slot_read_err)
+
+        def slot_finish(status):
+            # by now mfixproc.pid() is 0
+            msg = "MFIX process %s has stopped" % self.mfix_pid
+            self.mfix_pid = None
+            #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % \
+            #    self.mfixproc.pid())
+            self.mfixproc = None
+            self.parent.signal_update_runbuttons.emit(msg)
+        self.mfixproc.finished.connect(slot_finish)
+
+        def slot_error(error):
+            if error == QProcess.FailedToStart:
+                msg = "Process failed to start "+cmdline
+            elif error == QProcess.Crashed:
+                msg = "Process exit "+cmdline
+            elif error == QProcess.Timedout:
+                msg = "Process timeout "+cmdline
+            elif error in (QProcess.WriteError, QProcess.ReadError):
+                msg = "Process communication error "+cmdline
+            else:
+                msg = "Unknown error "+cmdline
+            log.warn(msg)
+            # make the message print in red
+            self.parent.stderr_signal.emit(msg)
+
+        self.mfixproc.error.connect(slot_error)
+        self.mfixproc.start(cmd[0], cmd[1:])
 
 if __name__ == '__main__':
 
