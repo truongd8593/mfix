@@ -462,6 +462,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def unset_keyword(self, key, args=None):
         """Undefine keyword.  Report to user, also catch and report any errors"""
+        #  Note - keyword is still registered!  This method does not deregister
+        #   keywords with project manager
         if isinstance(args, int):
             args = [args]
         elif args is None:
