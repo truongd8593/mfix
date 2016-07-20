@@ -24,6 +24,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
+        self.parent = parent
 
         uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                'uifiles')
@@ -273,10 +274,15 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.update_region(name, data[name])
 
         elif 'name' in key and name != value.values()[0]:
+            # Don't allow rename of a region in active use (ICs, etc)
+            if self.check_region_in_use(name):
+                self.parent.message(text="Region %s is in use" % name)
+                widget.update_value(name)
+                return
 
             new_name = get_unique_string(value.values()[0], list(data.keys()))
-            data = OrderedDict([(new_name, v) if k == name else (k, v) for
-                                k, v in data.items()])
+            data = OrderedDict(((new_name, v) if k == name else (k, v) for
+                                (k, v) in data.items()))
 
             self.vtkwidget.change_region_name(name, new_name)
 
@@ -348,6 +354,10 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
+    def check_region_in_use(self, name):
+        # TODO: Check initial conditions, boundary conditions, etc
+        return False
+
     def regions_to_str(self):
         """ convert regions data to a string for saving """
         data = {'order': list(self.tablewidget_regions.value.keys()),
@@ -366,37 +376,24 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
-        loaded_data = json.loads(string)
+        loaded_data = json.loads(string) # Order of dict has been lost
 
         if 'order' not in loaded_data:
             return
 
-        data = OrderedDict()
+        data = OrderedDict() # Rebuild data dict
+
         for region in loaded_data['order']:
-            data[region] = {}
+            # Copy dictionary entry to ordered dict
+            region_data = data[region] = loaded_data['regions'][region]
+            if 'visibility' in region_data:
+                # Create pixmap for 'visible' column
+                region_data['visible'] = self.get_visibility_image(region_data['visibility'])
+            if 'color' in region_data:
+                # Convert to a CellColor object
+                region_data['color'] = CellColor(region_data['color'])
 
-            for key in loaded_data['regions'][region].keys():
-
-                if key == 'visibility':
-                    # create the image
-                    if loaded_data['regions'][region]['visibility']:
-                        image = QtGui.QPixmap(get_image_path('visibility.png'))
-                    else:
-                        image = QtGui.QPixmap(get_image_path(
-                            'visibilityofftransparent.png'))
-                    image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
-                                         QtCore.Qt.SmoothTransformation)
-
-                    data[region]['visible'] = image
-                    data[region][key] = loaded_data['regions'][region][key]
-
-                elif key == 'color':
-                    data[region][key] = CellColor(
-                        loaded_data['regions'][region]['color'])
-                else:
-                    data[region][key] = loaded_data['regions'][region][key]
-
-            self.vtkwidget.new_region(region, data[region])
+            self.vtkwidget.new_region(region, region_data)
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
@@ -444,7 +441,6 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def get_region_type(self, extents):
         """ given the extents, guess the region type """
-
         rtype = 'box'
         if extents[0] == extents[1]:
             rtype = 'point'

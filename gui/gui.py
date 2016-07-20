@@ -167,7 +167,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
-                    widget = RegionsWidget()
+                    widget = RegionsWidget(parent=self)
                     name = 'regions'
                 else:
                     widget = make_widget(cls)
@@ -190,7 +190,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'numerics',
                          'output', 'vtk','monitors', 'run'):
                 if name == 'regions':  # not loaded from .ui file
-                    widget = RegionsWidget()
+                    widget = RegionsWidget(parent=self)
                 else:
                     widget = QtWidgets.QWidget()
                     try:
