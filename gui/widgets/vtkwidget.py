@@ -1670,7 +1670,7 @@ class VtkWidget(QtWidgets.QWidget):
         elif region['stl_shape'] == 'ellipsoid':
             trans = vtk.vtkTransform()
             # for some reason, everything is inverted?
-            trans.Scale([1/l for l in lengths])
+            trans.Scale([1/l if l > 0 else 1 for l in lengths])
             trans.Translate([-c for c in center])
             implicit = vtk.vtkSphere()
             implicit.SetTransform(trans)
