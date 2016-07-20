@@ -443,14 +443,13 @@ class RegionsWidget(QtWidgets.QWidget):
         """ given the extents, guess the region type """
         rtype = 'box'
         if extents[0] == extents[1]:
-            rtype = 'point'
-
-        for r, f, t in zip(['YZ-plane', 'XZ-plane', 'XY-plane'],
-                           extents[0], extents[1]):
-            if f == t:
-                rtype = r
-                break
-
+            rtype = 'point'        
+        else:
+            for r, f, t in zip(['YZ-plane', 'XZ-plane', 'XY-plane'],
+                               extents[0], extents[1]):
+                if f == t:
+                    rtype = r
+                    break
         return rtype
 
     def get_region_dict(self):
