@@ -29,6 +29,17 @@ class RegionsWidget(QtWidgets.QWidget):
                                'uifiles')
         uic.loadUi(os.path.join(uifiles, 'regions.ui'), self)
 
+        def get_visibility_image(visible):
+            image = QtGui.QPixmap(get_image_path(
+                'visibility.png' if visible
+                else 'visibilityofftransparent.png'))
+            return image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
+                                QtCore.Qt.SmoothTransformation)
+
+        # Cache pixmaps
+        self.visibility_image = {True:get_visibility_image(True),
+                                 False:get_visibility_image(False)}
+
         self.extent_lineedits = [self.lineedit_regions_from_x,
                                  self.lineedit_regions_to_x,
                                  self.lineedit_regions_from_y,
@@ -59,6 +70,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.clicked.connect(self.cell_clicked)
         tablewidget.default_value = OrderedDict()
         tablewidget.value_changed.connect(self.table_value_changed)
+        self.inhibit_toggle = True
 
         for widget in widget_iter(self.groupbox_region_parameters):
             if hasattr(widget, 'value_updated'):
@@ -91,18 +103,16 @@ class RegionsWidget(QtWidgets.QWidget):
                     widget.key = 'deviation_angle'
                     widget.dtype = float
 
-    def get_visibility_image(self, visible=True):
-        """create the image based on visibility"""
-        if visible:
-            image = QtGui.QPixmap(get_image_path('visibility.png'))
-        else:
-            image = QtGui.QPixmap(get_image_path('visibilityofftransparent.png'))
 
-        image = image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
-                             QtCore.Qt.SmoothTransformation)
-        return image
+    def get_visibility_image(self, visible=True):
+        return self.visibility_image[visible]
+
 
     def cell_clicked(self, index):
+        if self.inhibit_toggle: # Don't toggle visibility on a row selection event
+            self.inhibit_toggle = False
+            return
+        self.inhibit_toggle = False
         if index.column() == 0:
             data = self.tablewidget_regions.value
             name = list(data.keys())[index.row()]
@@ -189,6 +199,7 @@ class RegionsWidget(QtWidgets.QWidget):
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
         row = self.tablewidget_regions.current_row()
+        self.inhibit_toggle = True
         enabled = row is not None
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
