@@ -25,13 +25,10 @@ class Interpreter(object):
                 self.textedit = te
                 self.err = err
             def write(self, text):
-                cursor = self.textedit.textCursor()
-                self.textedit.moveCursor(cursor.End)
                 text = text.rstrip()
                 if text:
-                    self.textedit.insertPlainText(text)
-                    #self.textedit.moveCursor(cursor.End)
-                    #self.textedit.ensureCursorVisible()
+                    self.textedit.appendPlainText(text)
+
         self.stdout = Output()
         self.stderr = Output(err=True)
         self.interpreter = InteractiveConsole()
@@ -40,7 +37,6 @@ class Interpreter(object):
         banner += 'To access top-level MFIX-GUI object:\n'
         banner += '    from __main__ import gui'
         te.insertPlainText(banner)
-        #self.textedit.ensureCursorVisible()
 
     def capture_output(self, enable):
         import sys
@@ -65,9 +61,8 @@ class Interpreter(object):
         text = le.text().rstrip()
         if len(text) == 3 and self.interpreter_prompt == self.PS1: # No input
             return
-        te.appendPlainText(text+'\n')
+        te.appendPlainText(text)
         text = text[4:] # Remove prompt
         result = self.interpreter.push(text)
         self.interpreter_prompt = self.PS2 if result else self.PS1
         le.setText(self.interpreter_prompt)
-        te.ensureCursorVisible()
