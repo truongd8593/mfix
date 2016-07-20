@@ -53,12 +53,12 @@ class RegionsWidget(QtWidgets.QWidget):
                                              'STL',
                                              ])
 
-        self.toolbutton_region_add.pressed.connect(self.new_region)
-        self.toolbutton_region_delete.pressed.connect(self.delete_region)
+        self.toolbutton_region_add.clicked.connect(self.new_region)
+        self.toolbutton_region_delete.clicked.connect(self.delete_region)
         self.toolbutton_region_delete.setEnabled(False) #Need a selection
-        self.toolbutton_region_copy.pressed.connect(self.copy_region)
+        self.toolbutton_region_copy.clicked.connect(self.copy_region)
         self.toolbutton_region_copy.setEnabled(False) #Need a selection
-        self.toolbutton_color.pressed.connect(self.change_color)
+        self.toolbutton_color.clicked.connect(self.change_color)
 
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
@@ -161,6 +161,9 @@ class RegionsWidget(QtWidgets.QWidget):
 
         data = self.tablewidget_regions.value
         name = list(data.keys())[row]
+        if self.check_region_in_use(name):
+            self.parent.message(text="Region %s is in use" % name)
+            return
         data.pop(name)
         self.tablewidget_regions.set_value(data)
         self.vtkwidget.delete_region(name)
@@ -355,8 +358,10 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def check_region_in_use(self, name):
-        # TODO: Check initial conditions, boundary conditions, etc
-        return False
+        return any(check(name) for check in (self.parent.ics_check_region_in_use,
+                                             self.parent.bcs_check_region_in_use))
+                                             # any more places region can be used?
+
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
