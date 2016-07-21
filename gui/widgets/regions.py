@@ -284,7 +284,7 @@ class RegionsWidget(QtWidgets.QWidget):
             # Don't allow rename of a region in active use (ICs, etc)
             if self.check_region_in_use(name):
                 self.parent.message(text="Region %s is in use" % name)
-                widget.update_value(name)
+                widget.setText(name)
                 return
 
             new_name = get_unique_string(value.values()[0], list(data.keys()))
