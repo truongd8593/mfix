@@ -1793,7 +1793,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def get_runname_mfx_runname_pid(self):
-        name = self.project.get_value('run_name', default='new_file')
+        runname = self.project.get_value('run_name', default='new_file')
         for char in ('.', '"', "'", '/', '\\', ':'):
             runname = name.replace(char, '_')
         runname_mfx = runname + '.mfx'
