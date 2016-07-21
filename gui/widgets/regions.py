@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-# Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
@@ -276,7 +275,10 @@ class RegionsWidget(QtWidgets.QWidget):
             index = ['x', 'y', 'z'].index(item[1])
             data[name][item[0]][index] = value.values()[0]
 
-            self.vtkwidget.update_region(name, data[name])
+            for update in (self.vtkwidget.update_region,
+                           self.parent.ics_update_region,
+                           self.parent.bcs_update_region):
+                update(name, data[name])
 
         elif 'name' in key and name != value.values()[0]:
             # Don't allow rename of a region in active use (ICs, etc)
