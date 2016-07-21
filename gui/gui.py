@@ -1502,7 +1502,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_source_view()
         return True
 
-    def open_run_dialog(self, batch=False):
+    def open_run_dialog(self):
         """Open run popup dialog"""
         if not self.check_save():
             return
@@ -1510,10 +1510,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
-        if batch:
-            self.run_dialog.exec_()  # blocking
-        else:
-            self.run_dialog.popup()
+        self.run_dialog.popup()
 
     def handle_exe_changed(self):
         """callback from run dialog when combobox is changed"""

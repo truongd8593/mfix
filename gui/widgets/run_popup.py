@@ -466,6 +466,9 @@ class RunPopup(QDialog):
         proc.wait()
 
         qsub_script.close() # deletes tmpfile
+        
+    def _connect(self):
+        print('connected')
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
@@ -497,7 +500,7 @@ class RunPopup(QDialog):
             msg = "MFIX process %d is running" % self.mfix_pid
             self.parent.signal_update_runbuttons.emit(msg)
             log.debug("Full MFIX startup parameters: %s", cmdline)
-            QTimer.singleShot(1000, self.connect)
+            QTimer.singleShot(1000, self._connect)
 
         self.mfixproc.started.connect(slot_start)
 

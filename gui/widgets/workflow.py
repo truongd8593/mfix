@@ -7,6 +7,7 @@ This module contains the work flow widget.
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from qtpy import QtCore, QtWidgets
+from qtpy.QtCore import pyqtSignal
 from collections import OrderedDict
 import copy
 import os
@@ -23,9 +24,12 @@ except ImportError:
 
 # local imports
 from widgets.base import Table
+from widgets.run_popup import RunPopup
 from tools.general import make_callback, get_icon
 from constants import PARAMETER_DICT
 from job import JobManager
+from project import Project
+
 
 # --- Custom MFIX GUI Nodes ---
 class TestNode(Node):
@@ -86,6 +90,63 @@ class TestNode(Node):
         self.parent.workflow_widget.run_project(self.proj_file)
 
 
+# --- Mock Parent for job submission ---
+class MockMonitor(object):
+    def noop(self, *args, **kwargs):
+        return False
+    def __getattr__(self, name):
+        return self.noop
+
+
+class MockParent(QtWidgets.QWidget):
+    stdout_signal = pyqtSignal(object)
+    stderr_signal = pyqtSignal(object)
+    signal_update_runbuttons = pyqtSignal(object)
+    project = None
+    project_dir = None
+    project_file = None
+    settings = None
+    monitor = MockMonitor()
+
+    def __init__(self, parent=None, mfix_gui = None):
+        QtWidgets.QWidget.__init__(self, parent)
+        self.mfix_gui = mfix_gui
+
+    def noop(self, *args, **kwargs):
+        return None
+
+    def __getattr__(self, name):
+        return self.noop
+
+    def get_project_dir(self):
+        return self.project_dir
+
+    def get_project_file(self):
+        return self.project_file
+
+    def print_internal(self, text, color=None):
+        if self.mfix_gui is not None:
+            self.mfix_gui.print_internal(text, color)
+
+    def message(self, title='Warning', icon='warning',
+                text='This is a warning.', buttons=['ok'], default='ok',
+                infoText=None, detailedText=None, ):
+        if self.mfix_gui is not None:
+            self.mfix_gui.message(title, icon, text, buttons, default,
+                                  infoText, detailedText)
+
+# --- custom run_pop ---
+class WorkflowRunPopup(RunPopup):
+    def __init__(self, mfix_exe, parent):
+        RunPopup.__init__(self, mfix_exe, parent)
+        
+    # over-rides
+    def handle_run(self):
+        self.finish_with_dialog()
+        
+    def handle_submit(self):
+        self.finish_with_dialog()
+
 # --- Workflow Widget ---
 class WorkflowWidget(QtWidgets.QWidget):
     def __init__(self, project, parent=None):
@@ -95,6 +156,10 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.job_dict = {}
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.update_job_status)
+        self.run_cmd = None
+        self.file_watcher = QtCore.QFileSystemWatcher()
+        self.file_watcher.directoryChanged.connect(self.create_job_manager)
+        self.mock_parents = []
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
@@ -250,6 +315,21 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         return copied_proj
 
+    def run_popup(self, mfx_file):
+
+        proj_dir = os.path.dirname(mfx_file)
+
+        parent = MockParent()
+        parent.mfix_gui = self.mfixgui
+        parent.project_dir = proj_dir
+        parent.project_file = mfx_file
+        parent.project = self.project
+        parent.settings = self.mfixgui.settings
+        run_dialog = WorkflowRunPopup(None, parent)
+        run_dialog.exec_()
+
+        self.run_cmd = run_dialog.get_run_cmd()
+
     def run_project(self, mfx_file):
         """
         Run the mfix project
@@ -257,12 +337,14 @@ class WorkflowWidget(QtWidgets.QWidget):
         :mfx_file: path to mfx project file
         """
 
-        proj_name = os.path.basename(mfx_file)
         proj_dir = os.path.dirname(mfx_file)
         dir_base = os.path.basename(proj_dir)
 
+        if self.run_cmd is None:
+            self.run_popup(mfx_file)
+
         data = self.job_status_table.value
-        data[dir_base] = {'status':'submitted', 'progress':0, 'path':proj_dir}
+        data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir}
         self.job_status_table.set_value(data)
         self.mfixgui.print_internal("Starting: %s" % str(proj_dir), color='green')
 
@@ -270,31 +352,56 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
             return
 
-        run_cmd, port = self.mfixgui._build_run_cmd(project_filename=proj_name)
+        parent = MockParent()
+        parent.mfix_gui = self.mfixgui
+        parent.project_dir = proj_dir
+        parent.project_file = mfx_file
+        parent.project = Project(mfx_file)
+        parent.settings = self.mfixgui.settings
+        parent.stderr_signal.connect(self.job_error)
+        self.mock_parents.append(parent)
+        run_dialog = WorkflowRunPopup(None, parent)
 
+        # Queue
+        if False:
+            msg = 'Submitting to Queue: %s' % ' '.join(self.run_cmd)
+            run_dialog.submit_command(self.run_cmd)
+        # local
+        else:
+            msg = 'Starting %s' % ' '.join(self.run_cmd)
+            run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
-        if run_cmd[0] is None:
-            self.mfixgui.open_run_dialog(batch=True)
-            run_cmd, port = self.mfixgui._build_run_cmd(project_filename=proj_name)
-
-            if run_cmd[0] is None:
-                self.mfixgui.print_internal("Error: A MFIX executable is not selected")
-                return
-
-        job = JobManager(self.mfixgui)
-        msg = 'Starting %s' % ' '.join(run_cmd)
+        self.file_watcher.addPath(proj_dir)
         self.mfixgui.print_internal(msg, color='green')
-
-        job.start_command(
-            cmd=run_cmd,
-            cwd=proj_dir,
-            env=os.environ,
-            port=port)
-
-        self.job_dict[dir_base] = job
 
         if not self.update_timer.isActive():
             self.update_timer.start(1000)
+
+    def create_job_manager(self, proj_dir):
+        print(proj_dir)
+        pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
+        if pid_files:
+            if len(pid_files) > 1:
+                self.mfixgui.print_internal('more than one pid file', color='red')
+
+            dir_base = os.path.basename(proj_dir)
+            mfx_files = glob.glob(os.path.join(proj_dir, '*.mfx'))
+
+            parent = MockParent()
+            parent.mfix_gui = self.mfixgui
+            parent.project_dir = proj_dir
+            parent.project_file = mfx_files[0]
+            parent.project = Project(mfx_files[0])
+            parent.settings = self.mfixgui.settings
+
+            full_runname_pid = os.path.join(proj_dir, pid_files[0])
+            job = JobManager(full_runname_pid, parent)
+
+            self.job_dict[dir_base] = job
+            self.file_watcher.removePath(proj_dir)
+
+    def job_error(self, error):
+        self.mfixgui.print_internal(error, color='red')
 
     def save(self, fname):
         """save a node chart file at the given path"""
