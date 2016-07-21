@@ -152,6 +152,9 @@ endif
 ################################################################
 
 if PYTHON
+
+AM_FCFLAGS += $(patsubst %,-Xlinker -rpath=%, $(subst :, ,$(LD_LIBRARY_PATH)))
+
 pymfix_src = \
 	$(top_srcdir)/../model/param_mod.f \
 	$(top_srcdir)/../model/param1_mod.f \
