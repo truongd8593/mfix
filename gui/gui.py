@@ -496,7 +496,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
         log.debug("rundir changed")
-        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
+        runname = self.get_runname()
+        runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
         if self.get_project_dir():
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             if os.path.isfile(full_runname_pid):
@@ -1792,13 +1793,11 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('chk_batchq_end', True)
 
 
-    def get_runname_mfx_runname_pid(self):
-        runname = self.project.get_value('run_name', default='new_file')
+    def get_runname(self):
+        name = self.project.get_value('run_name', default='new_file')
         for char in ('.', '"', "'", '/', '\\', ':'):
-            runname = name.replace(char, '_')
-        runname_mfx = runname + '.mfx'
-        runname_pid = runname + '.pid'
-        return runname_mfx, runname_pid
+            name = name.replace(char, '_')
+        return name
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
@@ -1846,7 +1845,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
-        runname_mfx, runname_pid = self.get_runname_mfx_runname_pid()
+        runname = self.get_runname()
+        runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
 
         if os.path.exists(runname_pid):
             pid = get_dict_from_pidfile(runname_pid)['pid']
