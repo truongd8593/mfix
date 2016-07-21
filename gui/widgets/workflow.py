@@ -236,7 +236,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         self.job_status_table = Table(
             dtype=OrderedDict,
-            columns=['status', 'progress', 'path'],
+            columns=['status', 'progress', 'dt', 'time remaining', 'path'],
             column_delegate={1: {'widget': 'progressbar'}},
             multi_selection=True
             )
@@ -344,7 +344,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.run_popup(mfx_file)
 
         data = self.job_status_table.value
-        data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir}
+        data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir, 'dt':'None', 'time remaining':'None'}
         self.job_status_table.set_value(data)
         self.mfixgui.print_internal("Starting: %s" % str(proj_dir), color='green')
 
@@ -378,7 +378,6 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.update_timer.start(1000)
 
     def create_job_manager(self, proj_dir):
-        print(proj_dir)
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
         if pid_files:
             if len(pid_files) > 1:
@@ -418,6 +417,42 @@ class WorkflowWidget(QtWidgets.QWidget):
     # --- job update ---
     def update_job_status(self):
         """update the current job status"""
+        
+#        {   u'dt': 0.0001234567901234568,
+#    u'nit': 18,
+#    u'paused': True,
+#    u'profiling': [   [   u'time_step_init',
+#                          0.0012989044189453125],
+#                      [   u'do_iteration',
+#                          18,
+#                          0.01675891876220703],
+#                      [   u'time_step_end',
+#                          1.2874603271484375e-05],
+#                      [   u'des_time_init',
+#                          u'unknown'],
+#                      [   u'des_time_steps',
+#                          0,
+#                          u'unknown'],
+#                      [   u'des_time_end',
+#                          u'unknown']],
+#    u'residuals': [   [u'', u'0.0'],
+#                      [   u'P0  ',
+#                          u'0.000817730624263'],
+#                      [   u'P1  ',
+#                          u'9.72339499832e-06'],
+#                      [   u'U0  ',
+#                          u'3.51669989309e-08'],
+#                      [   u'V0  ',
+#                          u'1.85474211159e-06'],
+#                      [   u'U1  ',
+#                          u'5.18117609376e-08'],
+#                      [   u'V1  ',
+#                          u'1.85322488506e-06'],
+#                      [u'    ', u'0.0']],
+#    u'time': 0.0012666666666666666,
+#    u'tstop': 2.0,
+#    u'walltime_elapsed': 3.575956106185913,
+#    u'walltime_remaining': u'5642.67052735'}
 
         data = self.job_status_table.value
 
@@ -426,23 +461,33 @@ class WorkflowWidget(QtWidgets.QWidget):
 
                 job = self.job_dict[job_name]
                 job.update_status()
-                print(job.status)
 
                 if data[job_name]['status'] != 'stopped':
-                    status = 'submitted'
                     if job.is_paused():
                         status = 'paused'
+                    else:
+                        status = 'running'
 
-                    data[job_name]['status'] = status
+                    if job.status:
+                        data[job_name]['status'] = status
+                        data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
+                        data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
+                        data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
+                        
 
         self.job_status_table.set_value(data)
 
     # --- job managment ---
-    def get_selected_projects(self):
-        """get the currently selected projects"""
+    def get_selected_jobs(self):
+        """get the currently selected jobs"""
         projs = list(self.job_status_table.value.keys())
         return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows()]
-
+        
+    def get_selected_projects(self):
+        """get the currently selected project names"""
+        projs = list(self.job_status_table.value.keys())
+        return [projs[i] for i in self.job_status_table.current_rows()]
+    
     def update_btns(self):
         """enable/diable btns"""
 
@@ -461,26 +506,30 @@ class WorkflowWidget(QtWidgets.QWidget):
 
     def handle_play(self):
         """play the selected job"""
-        projs = self.get_selected_projects()
-        for proj in projs:
+        jobs = self.get_selected_jobs()
+        for job in jobs:
             proj.unpause()
 
     def handle_stop(self):
         """stop the selected job"""
         projs = self.get_selected_projects()
+        data = self.job_status_table.value
         for proj in projs:
-            proj.terminate_pymfix()
+            job = self.job_dict[proj]
+            job.terminate_pymfix()
+            data[proj]['status'] = 'stopped'
+        self.job_status_table.set_value(data)
 
     def handle_pause(self):
         """pause the selected job"""
-        projs = self.get_selected_projects()
-        for proj in projs:
-            proj.pause()
+        jobs = self.get_selected_jobs()
+        for job in jobs:
+            job.pause()
 
     def handle_restart(self):
         """restart the selected job"""
-        projs = self.get_selected_projects()
-        for proj in projs:
+        jobs = self.get_selected_jobs()
+        for job in jobs:
             proj.stop_mfix()
 
     def handle_remove_from_queue(self):
