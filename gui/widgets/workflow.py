@@ -368,7 +368,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             run_dialog.submit_command(self.run_cmd)
         # local
         else:
-            msg = 'Starting %s' % ' '.join(self.run_cmd)
+            msg = 'Run Command: %s' % ' '.join(self.run_cmd)
             run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
         self.file_watcher.addPath(proj_dir)
@@ -425,11 +425,11 @@ class WorkflowWidget(QtWidgets.QWidget):
             if job_name in self.job_dict:
 
                 job = self.job_dict[job_name]
+                job.update_status()
+                print(job.status)
 
                 if data[job_name]['status'] != 'stopped':
                     status = 'submitted'
-                    if job.is_running():
-                        status = 'running'
                     if job.is_paused():
                         status = 'paused'
 
