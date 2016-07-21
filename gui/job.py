@@ -191,6 +191,8 @@ class JobManager(QObject):
         self.api.post('exit', {"timeout":"1"})
 
     def update_status(self):
+        if self.api is None:
+            return
         pid = int(self.api.pymfix['pid'])
         try:
             os.kill(pid, 0)
