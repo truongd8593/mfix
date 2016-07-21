@@ -472,8 +472,10 @@ class WorkflowWidget(QtWidgets.QWidget):
                         data[job_name]['status'] = status
                         data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
                         data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
-                        data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
-                        
+                        try:
+                            data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
+                        except:
+                            pass
 
         self.job_status_table.set_value(data)
 
