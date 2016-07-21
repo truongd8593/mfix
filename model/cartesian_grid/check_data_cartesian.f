@@ -935,8 +935,8 @@ MODULE CHECK_DATA_CG
             WRITE(*,*)' From check_data_cartesian: RE_INDEXING is turned on.'
             WRITE(*,*)' The preconditionner will be turned off for all equations'
             WRITE(*,*)' regardless of the mfix.dat setting.'
-            LEQ_PC = 'NONE'
          ENDIF
+         LEQ_PC = 'NONE'
       ENDIF
 
       RETURN

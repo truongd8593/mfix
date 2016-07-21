@@ -22,6 +22,8 @@
       use geometry, only: IMAX
       use geometry, only: JMAX
       use geometry, only: KMAX
+! Re-indexing
+      use indices, only: BACKGROUND_IJKEND3
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -113,6 +115,8 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
+! Initialize BACKGROUND_IJKEND3 (for re-indexing and dynamic load balance)      
+      BACKGROUND_IJKEND3 = 0 
 
       CALL FINL_ERR_MSG
 

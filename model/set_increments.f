@@ -47,13 +47,14 @@
 ! Index denoting cell class
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster.
-      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+      INTEGER, ALLOCATABLE :: DENOTE_CLASS(:)
 ! Flags for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 ! Used for checking iteration over core cells
       LOGICAL, ALLOCATABLE, DIMENSION(:) :: ALREADY_VISITED
       INTEGER :: interval, j_start(2), j_end(2)
 !......................................................................!
+      ALLOCATE(DENOTE_CLASS(MAX_CLASS))
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_INCREMENTS")
@@ -359,6 +360,7 @@
       ENDDO
 
       CALL FINL_ERR_MSG
+      DEALLOCATE(DENOTE_CLASS)
 
       RETURN
 
@@ -385,6 +387,7 @@
       USE cdist
       USE compar
       USE cutcell
+      USE discretelement, only: DES_MMAX
       USE energy
       USE exit, only: mfix_exit
       USE fldvar
@@ -451,7 +454,7 @@
 ! STORE_INCREMENTS
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster
-      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+      INTEGER, ALLOCATABLE :: DENOTE_CLASS(:)
 
       INTEGER :: I_SIZE,J_SIZE,K_SIZE
 !---------------------------------------------------------------------//
@@ -459,6 +462,15 @@
 
 !   Loop through useful cells and save their index
 !======================================================================
+    
+      IF(ALLOCATED(BACKGROUND_IJK_OF)) DEALLOCATE(BACKGROUND_IJK_OF)
+      IF(ALLOCATED(IJK_OF_BACKGROUND)) DEALLOCATE(IJK_OF_BACKGROUND)
+      IF(ALLOCATED(TEMP_IJK_ARRAY_OF)) DEALLOCATE(TEMP_IJK_ARRAY_OF)
+      IF(ALLOCATED(TEMP_I_OF)) DEALLOCATE(TEMP_I_OF)
+      IF(ALLOCATED(TEMP_J_OF)) DEALLOCATE(TEMP_J_OF)
+      IF(ALLOCATED(TEMP_K_OF)) DEALLOCATE(TEMP_K_OF)
+      IF(ALLOCATED(BACKGROUND_IJKEND3_ALL)) DEALLOCATE(BACKGROUND_IJKEND3_ALL)
+
       allocate(BACKGROUND_IJK_OF(DIMENSION_3))
       allocate(IJK_OF_BACKGROUND(DIMENSION_3))
 
@@ -470,6 +482,7 @@
       allocate(TEMP_K_OF(DIMENSION_3))
 
       allocate(BACKGROUND_IJKEND3_ALL(0:NumPEs-1))
+      ALLOCATE(DENOTE_CLASS(MAX_CLASS))
 
       TEMP_I_OF = I_OF
       TEMP_J_OF = J_OF
@@ -1022,7 +1035,7 @@
       CALL SHIFT_DP_ARRAY(C_pg)
       CALL SHIFT_DP_ARRAY(K_g)
 
-      DO M = 1, MMAX
+      DO M = 1, MMAX+DES_MMAX
          CALL SHIFT_DP_ARRAY(RO_S(:,M))
          CALL SHIFT_DP_ARRAY(RO_SO(:,M))
          CALL SHIFT_DP_ARRAY(ROP_S(:,M))
@@ -1408,7 +1421,7 @@
 
       ENDDO
 
-      new_xsend1(new_nsend1+1)= nj2 + 1
+      new_xsend1(new_nsend1+1)= n_total + 1
 
 
       nsend1 = new_nsend1
@@ -1417,7 +1430,7 @@
       xsend1 => new_xsend1
       sendijk1 => new_sendijk1
 
-      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Send layer 2...'
+      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Minimizing send and receive arrays for Send layer 2...'
 
 ! Layer 2
 
@@ -1480,7 +1493,7 @@
 
       ENDDO
 
-      new_xsend2(new_nsend2+1)= nj2 + 1
+      new_xsend2(new_nsend2+1)= n_total + 1
 
 !      print*, 'MyPE, Laxt value of xsend2=',MyPE,new_nsend2,new_xsend2(new_nsend2+1)
 
@@ -1490,7 +1503,7 @@
       xsend2 => new_xsend2
       sendijk2 => new_sendijk2
 
-      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Receive layer 1...'
+      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Minimizing send and receive arrays for Receive layer 1...'
 
 ! Receive
 
@@ -1557,7 +1570,7 @@
 
       ENDDO
 
-      new_xrecv1(new_nrecv1+1)=nj2 + 1
+      new_xrecv1(new_nrecv1+1) = n_total + 1
 
       nrecv1 = new_nrecv1
       recvtag1 => new_recvtag1
@@ -1566,7 +1579,7 @@
       recvijk1 => new_recvijk1
 
 
-      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Receive layer 2...'
+      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Minimizing send and receive arrays for Receive layer 2...'
 ! Layer 2
 
       nullify(new_xrecv2, new_recvtag2, new_recvproc2, new_recvijk2)
@@ -1625,7 +1638,7 @@
       ENDDO
 
 
-      new_xrecv2(new_nrecv2+1)=nj2 + 1
+      new_xrecv2(new_nrecv2+1) = n_total + 1
 
       nrecv2 = new_nrecv2
       recvtag2 => new_recvtag2
@@ -1635,7 +1648,7 @@
 
 
 
-      ELSE   ! Only update IJK values
+   ELSE   ! Do not minimize send/recv, only update IJK values
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Send layer 1...'
 
@@ -1647,7 +1660,9 @@
 
       nullify(new_sendijk1)
 
-      print *, 'sendijk1=',size(sendijk1)
+!      print *, 'sendijk1=',size(sendijk1)
+
+
       allocate( new_sendijk1( size(sendijk1) ) )
 
 ! Fill in arrays
@@ -1679,7 +1694,7 @@
 ! Layer 2
 
 
-      print *, 'sendijk2=',size(sendijk2)
+!      print *, 'sendijk2=',size(sendijk2)
       nullify(new_sendijk2)
 
 
@@ -1716,7 +1731,7 @@
 
 ! Layer 1
 
-      print *, 'recvijk1=',size(recvijk1)
+!      print *, 'recvijk1=',size(recvijk1)
       nullify(new_recvijk1)
 
 
@@ -1751,7 +1766,7 @@
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Receive layer 2...'
 ! Layer 2
 
-      print *, 'secvijk2=',size(recvijk2)
+!      print *, 'secvijk2=',size(recvijk2)
       nullify(new_recvijk2)
 
 
@@ -1788,7 +1803,7 @@
 #endif
 
 !  INSERT NEW SEND_RECV INIT HERE
-
+ 
    call sendrecv_re_init_after_re_indexing(comm, 0 )
 
    ENDIF ! IS_SERIAL
@@ -1920,6 +1935,7 @@
 
 !      RETURN
 
+      IF(ALLOCATED(NEW_IJKSIZE3_ALL)) DEALLOCATE(NEW_IJKSIZE3_ALL)
       ALLOCATE( NEW_IJKSIZE3_ALL(0:NUMPES-1) )
 
       CALL ALLGATHER_1I (IJKEND3,NEW_IJKSIZE3_ALL,IERR)
@@ -1968,6 +1984,7 @@
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
 #endif
       ENDIF
+      DEALLOCATE(DENOTE_CLASS)
 
 1000  FORMAT(1x,A)
 1060  FORMAT(1X,6(I10,1X),F8.1)
