@@ -70,15 +70,15 @@ class ProjectManager(Project):
                     return
                 args[i] = phase
             elif arg == 'IC':
-                ic = self.gui.ics_current_region
-                if ic is None:
+                ics = self.gui.ics_current_indices
+                if ics is None:
                     return
-                args[i] = ic
+                args[i] = ics
             elif arg == 'BC':
-                bc = self.gui.bcs_current_region
-                if bc is None:
+                bcs = self.gui.bcs_current_regions
+                if bcs is None:
                     return
-                args[i] = bc
+                args[i] = bcs
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):
@@ -96,6 +96,18 @@ class ProjectManager(Project):
 
 
     def _change(self, widget, key, newValue, args=None):
+        # If any element of 'args' is itself a list, iterate over all values
+        if isinstance(args,list) and any(isinstance(arg, list) for arg in args):
+            for (i, arg) in enumerate(args):
+                if isinstance(arg, list):
+                    for a in arg:
+                        args[i] = a
+                        self._change(widget, key, newValue, args)
+                    break
+            return
+
+
+
         key = key.lower()
         updatedValue = None
         assert not isinstance(newValue, Keyword)
