@@ -510,7 +510,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """play the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            proj.unpause()
+            job.unpause()
 
     def handle_stop(self):
         """stop the selected job"""
@@ -532,7 +532,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """restart the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            proj.stop_mfix()
+            job.stop_mfix()
 
     def handle_remove_from_queue(self):
         """remove job from queue"""
