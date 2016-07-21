@@ -209,7 +209,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.groupbox_region_parameters.setEnabled(enabled)
 
-
         if enabled:
             data = self.tablewidget_regions.value
             name = list(data.keys())[row]
@@ -448,7 +447,7 @@ class RegionsWidget(QtWidgets.QWidget):
         """ given the extents, guess the region type """
         rtype = 'box'
         if extents[0] == extents[1]:
-            rtype = 'point'        
+            rtype = 'point'
         else:
             for r, f, t in zip(['YZ-plane', 'XZ-plane', 'XY-plane'],
                                extents[0], extents[1]):
