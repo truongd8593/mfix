@@ -128,7 +128,10 @@ class RegionsWidget(QtWidgets.QWidget):
     def new_region(self, name='new', extents=[[0, 0, 0], [0, 0, 0]],
                    rtype='box', defer_render=False):
         """create a new region"""
-
+        # This is used both as a signal callback and an API function,
+        # so there's some complexity with default args/
+        if name in (True, False): # 'clicked' signal arguments
+            name = 'new'
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
         image = self.get_visibility_image()
