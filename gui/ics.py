@@ -196,19 +196,15 @@ class ICS(object):
         item = make_item('+'.join(selections))
 
         indices = []
-        for sel in selections:
+        for region_name in selections:
             i = self.ics_find_index()
             indices.append(i)
-            self.ics[i] = {'region': sel}
-            region_data = self.region_dict.get(sel)
+            self.ics[i] = {'region': region_name}
+            region_data = self.region_dict.get(region_name)
             if region_data is None: # ?
-                self.warn("no data for region %s" % sel)
+                self.warn("no data for region %s" % region_name)
                 continue
-            for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
-                                   region_data['from']+region_data['to']):
-                ic_key = 'ic_' + key
-                self.update_keyword('ic_'+key, val, args=[i])
-                self.ics[i][key] = val
+            self.ics_set_boundary_keys(region_name, i, region_data)
 
         item.setData(UserRole, (indices, selections))
 
@@ -302,3 +298,15 @@ class ICS(object):
 
     def ics_check_region_in_use(self, region):
         return any(data.get('region')==region for data in self.ics.values())
+
+    def ics_update_region(self, name, data):
+        for (i,ic) in self.ics.items():
+            if ic.get('region') == name:
+                self.ics_set_boundary_keys(name, i, data)
+
+    def ics_set_boundary_keys(self, name, index,  data):
+        for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+                              data['from']+data['to']):
+            key = 'ic_' + key
+            self.update_keyword(key, val, args=[index])
+            self.ics[index][key] = val

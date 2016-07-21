@@ -742,3 +742,6 @@ class BCS(object):
 
     def bcs_check_region_in_use(self, name):
         return False
+
+    def bcs_update_region(self, name, data):
+        pass
