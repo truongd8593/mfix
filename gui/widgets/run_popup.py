@@ -198,7 +198,7 @@ class RunPopup(QDialog):
         else:
             # TODO: is it correct to remove all but *.RES ?
             spx_files = self.parent.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
-            if not self.remove_output_files(spx_files):
+            if not self.parent.remove_output_files(spx_files):
                 log.debug('SP* files exist and run was canceled')
                 return False
             self.parent.update_keyword('run_type', 'restart_2')
