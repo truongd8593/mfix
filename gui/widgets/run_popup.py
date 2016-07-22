@@ -480,46 +480,39 @@ class RunPopup(QDialog):
 
         cmdline = ' '.join(cmd) # cmd is a list
 
-        self.mfixproc = QProcess()
-        if not self.mfixproc:
+        mfixproc = QProcess()
+        if not mfixproc:
             log.warn("QProcess creation failed")
             return
-        self.mfixproc.setWorkingDirectory(cwd)
+        mfixproc.setWorkingDirectory(cwd)
         process_env = QProcessEnvironment()
         for key, val in env.items():
             process_env.insert(key, val)
-        self.mfixproc.setProcessEnvironment(process_env)
+        mfixproc.setProcessEnvironment(process_env)
 
 
         def slot_start():
             # Keep a copy because it gets reset
-            self.mfix_pid = self.mfixproc.pid()
-            msg = "MFIX process %d is running" % self.mfix_pid
+            msg = "MFIX process %d is running" % mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
             log.debug("Full MFIX startup parameters: %s", cmdline)
-            QTimer.singleShot(1000, self.connect)
 
-        self.mfixproc.started.connect(slot_start)
+        mfixproc.started.connect(slot_start)
 
         def slot_read_out():
-            out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
+            out_str = bytes(mfixproc.readAllStandardOutput()).decode('utf-8')
             self.parent.stdout_signal.emit(out_str)
-        self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
+        mfixproc.readyReadStandardOutput.connect(slot_read_out)
 
         def slot_read_err():
-            err_str = bytes(self.mfixproc.readAllStandardError()).decode('utf-8')
+            err_str = bytes(mfixproc.readAllStandardError()).decode('utf-8')
             self.parent.stderr_signal.emit(err_str)
-        self.mfixproc.readyReadStandardError.connect(slot_read_err)
+        mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
-            # by now mfixproc.pid() is 0
-            msg = "MFIX process %s has stopped" % self.mfix_pid
-            self.mfix_pid = None
-            #self.parent.stdout_signal.emit("MFIX (pid %s) has stopped" % \
-            #    self.mfixproc.pid())
-            self.mfixproc = None
+            msg = "MFIX process has stopped"
             self.parent.signal_update_runbuttons.emit(msg)
-        self.mfixproc.finished.connect(slot_finish)
+        mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
             if error == QProcess.FailedToStart:
@@ -536,8 +529,8 @@ class RunPopup(QDialog):
             # make the message print in red
             self.parent.stderr_signal.emit(msg)
 
-        self.mfixproc.error.connect(slot_error)
-        self.mfixproc.start(cmd[0], cmd[1:])
+        mfixproc.error.connect(slot_error)
+        mfixproc.start(cmd[0], cmd[1:])
 
 if __name__ == '__main__':
 
