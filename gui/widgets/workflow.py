@@ -312,6 +312,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # reset parameters
         PARAMETER_DICT.update(param_copy)
+        for key in set(PARAMETER_DICT.keys())-set(param_copy.keys()):
+            PARAMETER_DICT.pop(key)
 
         return copied_proj
 
