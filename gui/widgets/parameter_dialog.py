@@ -4,7 +4,6 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
-import json
 from qtpy import QtWidgets, QtCore
 import copy
 

@@ -24,6 +24,7 @@ except ImportError:
 from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, make_callback,)
 from widgets.base import LineEdit
+from project import Equation
 
 CELL_TYPE_ENUM = {
     0:  'empty_cell',
@@ -135,6 +136,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometry_visible = True
         self.regions_visible = True
         self.region_dict = {}
+        self.parameter_key_map = {}
 
         self.booleanbtndict = {
             'union':        self.ui.geometry.toolbutton_geometry_union,
@@ -215,6 +217,11 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
         self.grid_layout.addWidget(self.vtkWindowWidget, 1, 0)
 
+        # enable parameters
+        for widget in widget_iter(self.ui.geometry.groupBoxGeometryParameters):
+            if isinstance(widget, LineEdit):
+                widget.allow_parameters = True
+
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
         self.vtkrenderer.GradientBackgroundOn()
@@ -292,12 +299,12 @@ class VtkWidget(QtWidgets.QWidget):
             self.color_dict['mesh_edge'].getRgbF()[:3])
 
         self.vtkrenderer.AddActor(self.mesh_actor)
-        
+
         # set types on lineedits
         for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, LineEdit):
                 parameter = str(widget.objectName()).lower().split('_')
-                
+
                 if any([s in parameter for s in ['divisions', 'resolution',
                                                  'nhills', 'iterations']]):
                     widget.dtype = int
@@ -568,8 +575,8 @@ class VtkWidget(QtWidgets.QWidget):
                     if key in name:
                         break
 
-                if isinstance(child, QtWidgets.QLineEdit):
-                    child.setText(str(value))
+                if isinstance(child, LineEdit):
+                    child.updateValue(None, value)
                 elif isinstance(child, QtWidgets.QCheckBox):
                     child.setChecked(value)
 
@@ -684,14 +691,15 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
 
-    def parameter_edited(self, widget):
+    def parameter_edited(self, widget, name=None, value=None, key=None):
         """
         Update the value of edited parameter in the geometrydict
         """
-        current_selection = self.geometrytree.selectedItems()
+        if name is None:
+            current_selection = self.geometrytree.selectedItems()
 
-        if current_selection:
-            name = str(current_selection[-1].text(0)).lower()
+            if current_selection:
+                name = str(current_selection[-1].text(0)).lower()
             value = None
 
             parameters = str(widget.objectName()).lower().split('_')
@@ -707,22 +715,23 @@ class VtkWidget(QtWidgets.QWidget):
             elif isinstance(widget, QtWidgets.QCheckBox):
                 value = widget.isChecked()
 
-            if value is not None:
-                self.geometrydict[name][key] = value
+        if value is not None:
+            self.update_parameter_map(value, name, key)
+            self.geometrydict[name][key] = value
 
-                if self.geometrydict[name]['type'] in \
-                        list(self.primitivedict.keys()):
-                    self.update_primitive(name)
-                elif self.geometrydict[name]['type'] in \
-                        list(self.filterdict.keys()):
-                    self.update_filter(name)
-                elif self.geometrydict[name]['type'] in \
-                        list(self.parametricdict.keys()):
-                    self.update_parametric(name)
+            if self.geometrydict[name]['type'] in \
+                    list(self.primitivedict.keys()):
+                self.update_primitive(name)
+            elif self.geometrydict[name]['type'] in \
+                    list(self.filterdict.keys()):
+                self.update_filter(name)
+            elif self.geometrydict[name]['type'] in \
+                    list(self.parametricdict.keys()):
+                self.update_parametric(name)
 
-                if 'transform' in self.geometrydict[name]:
-                    self.update_transform(name)
-                self.vtkRenderWindow.Render()
+            if 'transform' in self.geometrydict[name]:
+                self.update_transform(name)
+            self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
         """
@@ -1469,6 +1478,47 @@ class VtkWidget(QtWidgets.QWidget):
         # check visibility
         if not self.geometry_visible:
             actor.VisibilityOff()
+
+    # --- parameters ---
+    def update_parameter_map(self, new_value, name, key):
+        """update the mapping of parameters and keywords"""
+
+        data = self.geometrydict
+        name_key = ','.join([name, key])
+
+        # new params
+        new_params = []
+        if isinstance(new_value, Equation):
+            new_params = new_value.get_used_parameters()
+
+        # old params
+        old_value = data[name][key]
+
+        old_params = []
+        if isinstance(old_value, Equation):
+            old_params = old_value.get_used_parameters()
+
+        add = set(new_params)-set(old_params)
+        for param in add:
+            if param not in self.parameter_key_map:
+                self.parameter_key_map[param] = set()
+            self.parameter_key_map[param].add(name_key)
+
+        remove = set(old_params)-set(new_params)
+        for param in remove:
+            self.parameter_key_map[param].remove(name_key)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
+
+    def update_parameters(self, params):
+        """parameters have changed, update regions"""
+        data = self.geometrydict
+        for param in params:
+            if param in self.parameter_key_map:
+                for var in self.parameter_key_map[param]:
+                    name, key = var.split(',')
+                    value = data[name][key]
+                    self.parameter_edited(None, name, value, key)
 
     # --- regions ---
     def update_region_source(self, name):
