@@ -10,6 +10,7 @@
 
 ! does not support Fortran 2008
 #define ERROR_STOP STOP
+#define EXECUTE_COMMAND_LINE SYSTEM
 
 #endif
 

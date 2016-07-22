@@ -284,7 +284,7 @@ class RunPopup(QDialog):
 
     def prepend_to_exe_list(self, exe):
         """ Verify exe exists, is executable, and appears only once in list."""
-        if not (os.path.isfile(exe) and self.get_exe_flags(exe)):
+        if not (self.exe_exists(exe) and self.get_exe_flags(exe)):
             return False
         if exe in self.mfix_exe_list:
             self.mfix_exe_list.pop(self.mfix_exe_list.index(exe))
@@ -374,6 +374,7 @@ class RunPopup(QDialog):
         # look for executables in the order listed in exe_list_order
         for exe_spec in exe_list_order:
             for exe in exe_spec():
+                log.info('evaluating executable %s' % exe)
                 self.prepend_to_exe_list(exe)
 
     def exe_exists(self, exe):
