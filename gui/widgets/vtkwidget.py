@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import copy
 from collections import OrderedDict
+import json
 
 # 3rd party imports
 import numpy as np
@@ -61,7 +62,48 @@ CELL_TYPE_ENUM = {
     35: 'cubic_line',
     36: 'quadratic_polygon',
     }
+    
+DEFAULT_PRIMITIVE_PARAMS = {
+    'centerx':         0.0,
+    'centery':         0.0,
+    'centerz':         0.0,
+    'rotationx':       0.0,
+    'rotationy':       0.0,
+    'rotationz':       0.0,
+    'radius':          1.0,
+    'directionx':      1.0,
+    'directiony':      0.0,
+    'directionz':      0.0,
+    'lengthx':         1.0,
+    'lengthy':         1.0,
+    'lengthz':         1.0,
+    'height':          1.0,
+    'resolution':      10,
+    'thetaresolution': 10,
+    'phiresolution':   10,
+    'visible':         True,
+    'geo_type':        'primitive',
+    'type':            '',
+    }
 
+def clean_geo_dict(d):
+    clean_dict = {}
+    
+    for geo, geo_dict in d.items():
+        clean_dict[geo] = {}
+        geo_type = None
+        if 'geo_type' in geo_dict:
+            geo_type = geo_dict['geo_type']
+        clean_dict[geo]['geo_type'] = geo_type
+        for key, value in geo_dict.items():
+            if key not in ['mapper', 'actor', 'reader', 'transform',
+                           'transformfilter', 'center_filter', 'source',
+                           'trianglefilter']:
+                if geo_type == 'primitive' and value != DEFAULT_PRIMITIVE_PARAMS[key]:
+                    clean_dict[geo][key] = value
+            
+    return clean_dict
+    
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
@@ -525,6 +567,34 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
         self.render()
+        
+    # --- save/load ---
+    def geometry_to_str(self):
+        tree = {}
+        itr = QtWidgets.QTreeWidgetItemIterator(self.geometrytree)
+        
+        while itr.value():
+            item = itr.value()
+            text = item.text(0)
+            if text not in tree:
+                tree[text] = []
+            for i in  range(item.childCount()):
+                tree[text].append(item.child(i).text(0))
+            itr += 1
+        
+        data = {'geometrydict': clean_geo_dict(self.geometrydict),
+                'tree':tree}
+
+        return json.dumps(data)
+        
+    
+    def geometry_from_str(self, string):
+        try:
+            data = json.loads(string)
+        except:
+            self.parent.message('Error loading geometry')
+        
+        print(data)
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):
@@ -848,28 +918,9 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             return
 
-        self.geometrydict[name] = {
-            'centerx':         0.0,
-            'centery':         0.0,
-            'centerz':         0.0,
-            'rotationx':       0.0,
-            'rotationy':       0.0,
-            'rotationz':       0.0,
-            'radius':          1.0,
-            'directionx':      1.0,
-            'directiony':      0.0,
-            'directionz':      0.0,
-            'lengthx':         1.0,
-            'lengthy':         1.0,
-            'lengthz':         1.0,
-            'height':          1.0,
-            'resolution':      10,
-            'thetaresolution': 10,
-            'phiresolution':   10,
-            'type':            primtype,
-            'source':          source,
-            'visible':         True,
-        }
+        self.geometrydict[name] = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
+        self.geometrydict[name]['type'] = primtype
+        self.geometrydict[name]['source'] = source
 
         source = self.update_primitive(name)
 

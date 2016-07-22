@@ -1573,6 +1573,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
@@ -1988,6 +1989,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 solids_phase_names[n] = val
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
+            if key == 'geometry':
+                self.vtkwidget.geometry_from_str(val)
             # Add more here
 
         # hack, copy ordered dict to modify keys w/o losing order
@@ -2048,10 +2051,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
-        self.ui.regions.extract_regions(self.project, defer_render=True)
+        self.ui.regions.extract_regions(self.project)
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
-        self.vtkwidget.render()
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
