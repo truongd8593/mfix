@@ -203,12 +203,8 @@ class RegionsWidget(QtWidgets.QWidget):
         'a new region was selected, update region widgets'
         rows = self.tablewidget_regions.current_rows()
 
-        if rows:
-            # enable groupbox
-            self.groupbox_region_parameters.setEnabled(True)
-        row = self.tablewidget_regions.current_row()
         self.inhibit_toggle = True
-        enabled = row is not None
+        enabled = bool(rows)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
         self.groupbox_region_parameters.setEnabled(enabled)
@@ -216,6 +212,7 @@ class RegionsWidget(QtWidgets.QWidget):
         if enabled:
             data = self.tablewidget_regions.value
             name = list(data.keys())[rows[-1]]
+            data = data[name]
             # enable widgets
             self.enable_disable_widgets(name)
         else:

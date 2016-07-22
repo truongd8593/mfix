@@ -352,9 +352,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             self._updateCompleterPopupItems(None)
 
     def _update_completion_list(self):
-        comp_list = VALID_EXPRESION_NAMES
+        comp_list = copy.deepcopy(VALID_EXPRESION_NAMES)
         for key, value in PARAMETER_DICT.items():
-            if isinstance(value, self.dtype):
+            if self.dtype == str and isinstance(value, str):
+                comp_list.append(key)
+            else:
                 comp_list.append(key)
 
         self._completer_model.setStringList(comp_list)
