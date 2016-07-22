@@ -84,7 +84,9 @@ class PymfixAPI(QNetworkAccessManager):
             self.sig_api_available_public.emit(False)
 
     def api_request(self, method, endpoint, data):
+        log.debug("API request: method=%s endpoint=%s data=%s" % (method, endpoint, data))
         if not self.api_available:
+            log.error('API is unavailable')
             return (None, None)
         request_id = str(uuid.uuid4())
         method = str(method).lower()
@@ -98,7 +100,7 @@ class PymfixAPI(QNetworkAccessManager):
             request_object = method(req, data)
         else:
             request_object = method(req)
-        log.debug("request sent: method=%s endpoint=%s" % (method, endpoint))
+        log.debug("request sent, request_id %s: method=%s endpoint=%s" % (request_id, method, endpoint))
         self.requests.add(request_id)
         return (request_id, request_object)
 
@@ -203,7 +205,7 @@ class JobManager(QObject):
         self.mfix_pid = None
 
         #self.sig_read_status.connect(self.slot_read_status)
-        self.sig_api_available.connect(self.slot_api_available)
+        self.sig_api_available.connect(self.slot_get_job_state)
         self._connect()
 
     def register_request(self, request_id, handler):
@@ -231,7 +233,7 @@ class JobManager(QObject):
 
     def update_job_state(self):
         req_id = self.api.get_job_status()
-        self.register_request(req_id, self.sig_change_job_state)
+        self.register_request(req_id, self.sig_get_job_state)
 
     def handle_update_job_state(self, **kwargs):
         pass
@@ -371,7 +373,7 @@ class JobManager(QObject):
                 raise # find appropriate Qt exception or make this meaningful
 
         self.api = PymfixAPI(self.project_dir, self.project_name, ignore_ssl_errors=True)
-        self.api.sig_api_available_public.connect(self.slot_api_available)
+        self.api.sig_api_available_public.connect(self.slot_get_job_state)
         self.api.sslErrors.connect(slot_ssl_error)
         self.api.finished.connect(slot_control)
 
