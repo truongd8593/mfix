@@ -195,6 +195,7 @@ class JobManager(QObject):
     """class for managing and monitoring an MFIX job"""
 
     sig_change_job_state = Signal()
+    sig_update_run_state = Signal()
 
     def __init__(self, parent):
         super(JobManager, self).__init__()
@@ -212,6 +213,7 @@ class JobManager(QObject):
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
             self.job.sig_update_status.connect(self.parent.slot_update_residuals)
             self.job.sig_update_status.connect(self.parent.slot_update_runbuttons)
+            self.job.sig_update_run_state.connect(self.sig_update_run_state)
 
     def record(self,job_id):
         self.job_id = job_id
@@ -252,6 +254,7 @@ class Job(QObject):
 
     sig_trytohandlestatusfornow = pyqtSignal(str, str)
     sig_update_status = Signal()
+    sig_update_run_state = Signal()
 
     def __init__(self, pidfile):
 
@@ -299,11 +302,8 @@ class Job(QObject):
         req_id = self.api.get_job_status()
         self.register_request(req_id, self.sig_get_job_state)
 
-    def handle_update_job_state(self, **kwargs):
-        pass
-
     def pause(self):
-        req_id = self.api.put('pause')
+        req_id = self.api.put('pause', self.sig_api_response)
         self.register_request(req_id, self.handle_pause)
 
     def handle_pause(self, response_data=None):
@@ -319,13 +319,16 @@ class Job(QObject):
         self.sig_change_job_state.emit()
 
     def update_status(self):
+        log.info('update_status')
         req_id = self.api.get('status', self.sig_trytohandlestatusfornow)
         #self.register_request(req_id, self.handle_status)
 
     def handle_status(self, request_id, response):
+        log.info('handle_status')
         try:
             log.debug('handle_status: %s' % response)
             self.status = json.loads(response)
+            log.debug(json.dumps(self.status, indent=2, sort_keys=True, separators=(',', ': ')))
             self.cached_status = pprint.PrettyPrinter(indent=4,
                                     width=50).pformat(self.status)
         except ValueError:
@@ -345,7 +348,8 @@ class Job(QObject):
 
     def stop_mfix(self):
         """Send stop request"""
-        self.register_request(self.api.put('stop'), self.handle_stop)
+        req_id = self.api.put('stop', self.sig_api_response)
+        self.register_request(req_id, self.handle_stop)
 
     def slot_get_job_state(self, available):
         # TODO? move this into PymfixAPI?
@@ -403,8 +407,7 @@ class Job(QObject):
         # refactor to be more specific
         def slot_control(reply):
             log.info('Job._connect.slot_control')
-            pass
-            #self.parent.signal_update_runbuttons.emit('')
+            self.sig_update_run_state.emit()
 
         # move to API class
         def slot_ssl_error(reply):

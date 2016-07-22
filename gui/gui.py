@@ -431,13 +431,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def confirm_close(self):
         """before closing, ask user whether to end job and save project"""
-        if self.job_manager:
+        if self.job_manager.job:
             confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'yes':
                 log.info("Stopping mfix at application exit")
-                self.job_manager.stop_mfix()
+                self.job_manager.job.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="Save project before quitting?",
@@ -600,7 +600,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
-        pause_visible = bool(self.job_manager)
+        pause_visible = bool(self.job_manager.job)
         if running:
             self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
@@ -1445,13 +1445,13 @@ class MfixGui(QtWidgets.QMainWindow,
     def handle_run(self):
         name = 'Run'
         try:
-            if True or not self.job_manager:
+            if not self.job_manager.job:
                 # open the run dialog for job options
                 self.open_run_dialog()
                 return
             else:
                 name='unpause'
-                self.job_manager.unpause()
+                self.job_manager.job.unpause()
         except Exception:
             log.exception('problem in handle_run')
             self.print_internal('problem in handle_run')
@@ -1459,7 +1459,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def handle_set_pymfix_output(self):
         try:
-            self.job_manager.set_pymfix_output(
+            self.job_manager.job.set_pymfix_output(
               self.ui.run.checkbox_pymfix_output.isChecked())
         except Exception:
             log.exception('problem in handle_set_pymfix_output')
@@ -1467,7 +1467,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def handle_pause(self):
         try:
-            self.job_manager.pause()
+            self.job_manager.job.pause()
         except Exception:
             log.exception('problem in handle_pause')
             self.print_internal('problem in handle_pause')
@@ -1869,7 +1869,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #         self.job_manager = JobManager(runname_pid, parent=self)
 
         # create job manager and connect signals
-        self.job_manager.sig_change_job_state.connect(self.slot_update_runbuttons)
+        self.job_manager.sig_update_run_state.connect(self.slot_update_runbuttons)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
