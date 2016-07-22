@@ -329,7 +329,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         # Job manager / monitor
-        self.job_manager = None
+        self.job_manager = JobManager(self)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -500,11 +500,12 @@ class MfixGui(QtWidgets.QMainWindow,
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
         if self.get_project_dir():
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
-            if os.path.isfile(full_runname_pid):
-                log.info('slot_rundir_changed creating job manager')
-                self.job_manager = JobManager(full_runname_pid, parent=self)
-                log.info(str(self.job_manager))
-                self.signal_update_runbuttons.emit('')
+            self.job_manager.try_to_connect(full_runname_pid)
+
+                # log.info('slot_rundir_changed creating job manager')
+                # self.job_manager = JobManager(full_runname_pid, parent=self)
+                # log.info(str(self.job_manager))
+                # self.signal_update_runbuttons.emit('')
 
 
     def set_run_button(self, text=None, enabled=None):
@@ -558,7 +559,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if not self.job_manager:
             return
         log.info('update_residuals')
-        self.ui.residuals.setText(self.job_manager.cached_status)
+        self.ui.residuals.setText(self.job_manager.job.cached_status)
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
@@ -585,8 +586,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         log.info('job manager object: %s' % self.job_manager)
         project_open = bool(project_file and self.open_succeeded)
-        paused = self.job_manager and self.job_manager.is_paused()
-        running = self.job_manager and not paused
+        paused = self.job_manager.job and self.job_manager.job.is_paused()
+        running = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
@@ -601,7 +602,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #handle buttons in order:  RESET RUN PAUSE STOP
         pause_visible = bool(self.job_manager)
         if running:
-            self.status_message("MFIX running, process %s" % self.job_manager.mfix_pid)
+            self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -610,7 +611,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.change_pane('run')
 
         elif paused:
-            self.status_message("MFIX paused, process %s" % self.job_manager.mfix_pid)
+            self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
@@ -1473,7 +1474,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def handle_stop(self):
         try:
-            self.job_manager.stop_mfix()
+            self.job_manager.job.stop_mfix()
         except Exception:
             log.exception('problem in handle_stop')
             self.print_internal('problem in handle_stop')
@@ -1659,12 +1660,12 @@ class MfixGui(QtWidgets.QMainWindow,
         if self.unsaved_flag:
             title += '*'
 
-        if self.job_manager:
-            if not self.job_manager.is_paused():
+        if self.job_manager.job:
+            if not self.job_manager.job.is_paused():
                 title += ', RUNNING'
-                if self.job_manager.mfix_pid is not None:
-                    title += ', process %s'% self.job_manager.mfix_pid
-            elif self.job_manager.is_paused():
+                if self.job_manager.job.mfix_pid is not None:
+                    title += ', process %s'% self.job_manager.job.mfix_pid
+            elif self.job_manager.job.is_paused():
                 title += ', PAUSED'
             elif self.monitor.get_res_files():
                 title += ', STOPPED, resumable'
@@ -1805,10 +1806,6 @@ class MfixGui(QtWidgets.QMainWindow,
             name = name.replace(char, '_')
         return name
 
-    def slot_teardown_job(self):
-        log.info('Job ended or connection to running job failed')
-        self.job_manager = None
-
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
 
@@ -1860,22 +1857,19 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # FIXME: this only makes sense with local processes
         # FIXME: move this to job manager
-        if os.path.exists(runname_pid):
-            pid = int(get_dict_from_pidfile(runname_pid)['pid'])
-            try:
-                os.kill(pid, 0)
-            except OSError:
-                log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
-            else:
-                self.job_manager = JobManager(runname_pid, parent=self)
+        self.job_manager.try_to_connect(runname_pid)
+
+        # if os.path.exists(runname_pid):
+        #     pid = int(get_dict_from_pidfile(runname_pid)['pid'])
+        #     try:
+        #         os.kill(pid, 0)
+        #     except OSError:
+        #         log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
+        #     else:
+        #         self.job_manager = JobManager(runname_pid, parent=self)
 
         # create job manager and connect signals
-        log.info('open_project creating job_manager')
-        self.job_manager = JobManager(project_dir, runname, parent=self)
-        log.info('job manager %s' % str(self.job_manager))
         self.job_manager.sig_change_job_state.connect(self.slot_update_runbuttons)
-        self.job_manager.sig_update_status.connect(self.slot_update_residuals)
-        self.job_manager.sig_job_exit.connect(self.slot_teardown_job)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False

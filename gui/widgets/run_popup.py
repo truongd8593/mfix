@@ -453,21 +453,7 @@ class RunPopup(QDialog):
                    .replace("${COMMAND}", ' '.join(cmd))
 
     def submit_command(self, cmd):
-
-        with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:
-            template_text = qsub_template.read()
-
-        qsub_script = tempfile.NamedTemporaryFile()
-        qsub_script.write(self.transform_template(template_text, cmd))
-        qsub_script.flush() # Keep tmpfile open
-
-        # FIXME: for testing without qsub installed, use:
-        # Popen('qsub %s' % qsub_script.name, cwd=self.parent.get_project_dir())
-        print('/bin/csh %s &' % qsub_script.name, self.parent.get_project_dir())
-        proc = Popen('qsub %s' % qsub_script.name, shell=True, cwd=self.parent.get_project_dir())
-        proc.wait()
-
-        qsub_script.close() # deletes tmpfile
+        self.parent.job_manager.submit_command(cmd)
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
@@ -480,28 +466,28 @@ class RunPopup(QDialog):
                 log.error("Cannot remove", mfix_stop_file)
                 return
 
-        mfixproc = QProcess()
-        if not mfixproc:
+        self.mfixproc = QProcess()
+        if not self.mfixproc:
             log.warn("QProcess creation failed")
             return
-        mfixproc.setWorkingDirectory(cwd)
+        self.mfixproc.setWorkingDirectory(cwd)
         process_env = QProcessEnvironment()
         for key, val in env.items():
             process_env.insert(key, val)
-        mfixproc.setProcessEnvironment(process_env)
+        self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
             # Keep a copy because it gets reset
-            msg = "MFIX process %d is running" % mfixproc.pid()
+            msg = "MFIX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
             log.debug("Full MFIX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
-            out_str = bytes(mfixproc.readAllStandardOutput()).decode('utf-8')
+            out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
             self.parent.stdout_signal.emit(out_str)
 
         def slot_read_err():
-            err_str = bytes(mfixproc.readAllStandardError()).decode('utf-8')
+            err_str = bytes(self.mfixproc.readAllStandardError()).decode('utf-8')
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
@@ -524,12 +510,12 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(msg)
 
         self.cmdline = ' '.join(cmd) # cmd is a list
-        mfixproc.started.connect(slot_start)
-        mfixproc.readyReadStandardOutput.connect(slot_read_out)
-        mfixproc.readyReadStandardError.connect(slot_read_err)
-        mfixproc.finished.connect(slot_finish)
-        mfixproc.error.connect(slot_error)
-        mfixproc.start(cmd[0], cmd[1:])
+        self.mfixproc.started.connect(slot_start)
+        self.mfixproc.readyReadStandardOutput.connect(slot_read_out)
+        self.mfixproc.readyReadStandardError.connect(slot_read_err)
+        self.mfixproc.finished.connect(slot_finish)
+        self.mfixproc.error.connect(slot_error)
+        self.mfixproc.start(cmd[0], cmd[1:])
 
 if __name__ == '__main__':
 

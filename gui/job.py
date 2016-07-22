@@ -48,16 +48,16 @@ class PymfixAPI(QNetworkAccessManager):
     """
 
     sig_api_available = pyqtSignal(str)
-    sig_api_available_public = pyqtSignal(bool)
-    sig_api_call_finished = pyqtSignal(Signal)
+    # sig_api_available_public = pyqtSignal(bool)
+    # sig_api_call_finished = pyqtSignal(Signal)
 
-    def __init__(self, project_dir, project_name, ignore_ssl_errors=False):
+    def __init__(self, pidfile, ignore_ssl_errors=False):
 
         super(PymfixAPI, self).__init__()
-        self.api_available = False
-        self.project_dir = project_dir
-        self.project_name = project_name
-        self.pidfile = os.path.join(project_dir, project_name + '.pid')
+        # self.project_dir = project_dir
+        # self.project_name = project_name
+        # self.pidfile = os.path.join(project_dir, project_name + '.pid')
+        self.pidfile = pidfile
         self.methods = {'put': super(PymfixAPI, self).put,
                         'get': super(PymfixAPI, self).get,
                         'post': super(PymfixAPI, self).post,
@@ -68,8 +68,8 @@ class PymfixAPI(QNetworkAccessManager):
         # test API calls
         log.info('connecting to API for job %s' % self.pidfile)
         self.sig_api_available.connect(self.slot_api_available)
-        if self.pid_contents.get('url'):
-            self.sig_api_available_public.emit(False)
+        # if self.pid_contents.get('url'):
+        #     self.sig_api_available_public.emit(False)
 
     def slot_api_available(self, response):
         log.info('slot_api_available')
@@ -84,10 +84,7 @@ class PymfixAPI(QNetworkAccessManager):
             self.sig_api_available_public.emit(False)
 
     def api_request(self, method, endpoint, data):
-        log.debug("API request: method=%s endpoint=%s data=%s" % (method, endpoint, data))
-        if not self.api_available:
-            log.error('API is unavailable')
-            return (None, None)
+        log.warning("API request: method=%s endpoint=%s data=%s" % (method, endpoint, data))
         request_id = str(uuid.uuid4())
         method = str(method).lower()
         method = self.methods[method]
@@ -122,28 +119,29 @@ class PymfixAPI(QNetworkAccessManager):
             signal.emit(json_str)
 
         # FIXME handle empty replies or Pymfix methods that don't return JSON
-        try:
+        # try:
+        if True:
             reply = reply_object.readAll()
             response_json = reply.data() if bool(reply.data()) else json.dumps({})
             reply_object.close()
             json.loads(response_json)
         # JSON parsing errors:
-        except (TypeError, ValueError) as e:
-            emit_error('API reponse could not be parsed as JSON')
-            self.parent_api_signal.emit(False)
-            log.exception('API reponse could not be parsed as JSON')
-            response_json = json.dumps('{"raw_api_message": %s"}' % reply.data())
+        # except (TypeError, ValueError) as e:
+        #     emit_error('API reponse could not be parsed as JSON')
+        #     self.parent_api_signal.emit(False)
+        #     log.exception('API reponse could not be parsed as JSON')
+        #     response_json = json.dumps('{"raw_api_message": %s"}' % reply.data())
         # QNetwork* errors: (TODO)
         #except (QNetworkReply.NetworkError) as e:
         #    emit_error('API reponse could not be parsed as JSON')
         #    self.parent_api_signal.emit(False)
 
         # All other errors:
-        except Exception as e:
-            emit_error('API reponse could not be read')
-            self.parent_api_signal.emit(False)
-            traceback.print_exception(*sys.exc_info())
-            return
+        # except Exception as e:
+        #     emit_error('API response could not be read')
+        #     self.parent_api_signal.emit(False)
+        #     traceback.print_exception(*sys.exc_info())
+        #     return
         self.requests.discard(request_id)
         signal.emit(request_id, response_json)
 
@@ -157,26 +155,27 @@ class PymfixAPI(QNetworkAccessManager):
         #       to support grid environment plugins
         pass
 
-    def get(self, endpoint, signal=None):
+    def get(self, endpoint, handler):
         (request_id, request) = self.api_request('get', endpoint, data=None)
-        if signal:
+        if handler:
             request.finished.connect(
-              make_callback(self.slot_read_api_reply,request_id,request,signal))
+              make_callback(self.slot_read_api_reply,request_id,request,handler))
         return request_id
 
-    def put(self, endpoint, data=b"", signal=None):
+    def put(self, endpoint, handler, data=b""):
         (request_id, request) = self.api_request('put', endpoint, data)
-        if signal:
+        if handler:
             request.finished.connect(
-              make_callback(self.slot_read_api_reply,request_id,request,signal))
+              make_callback(self.slot_read_api_reply,request_id,request,handler))
         return request_id
 
-    def post(self, endpoint, data=b"", signal=None):
+    def post(self, endpoint, handler, data=b""):
         (request_id, request) = self.api_request('post', endpoint, data)
-        if signal:
+        if handler:
             request.finished.connect(
-              make_callback(self.slot_read_api_reply,request_id,request,signal))
+              make_callback(self.slot_read_api_reply,request_id,request,handler))
         return request_id
+
 
 
 class JobManager(QObject):
@@ -184,28 +183,79 @@ class JobManager(QObject):
     """class for managing and monitoring an MFIX job"""
 
     sig_change_job_state = Signal()
-    sig_update_status = Signal()
+
+    def __init__(self, parent):
+        super(JobManager, self).__init__()
+        self.job = None
+        self.parent = parent
+        # self.jobs = [] # in Justin's parametric branch?
+
+    def try_to_connect(self, pidfile):
+        if os.path.isfile(pidfile):
+            self.job = Job(pidfile)
+            self.parent.signal_update_runbuttons.emit('')
+            self.job.sig_job_exit.connect(self.slot_teardown_job)
+
+            # TODO? handle with signal so this can be managed in gui
+            self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
+            self.job.sig_update_status.connect(self.parent.slot_update_residuals)
+
+    def record(self,job_id):
+        self.job_id = job_id
+        self.parent.project.saveKeyword('job_id', job_id)
+        self.parent.save_project()
+
+    def slot_teardown_job(self):
+        log.info('Job ended or connection to running job failed')
+        self.job = None
+
+    def submit_command(self, cmd):
+
+        with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:
+            template_text = qsub_template.read()
+
+        qsub_script = tempfile.NamedTemporaryFile()
+        qsub_script.write(self.transform_template(template_text, cmd))
+        qsub_script.flush() # Keep tmpfile open
+
+        # FIXME: for testing without qsub installed, use:
+        # Popen('qsub %s' % qsub_script.name, cwd=self.parent.get_project_dir())
+        print('/bin/csh %s &' % qsub_script.name, self.parent.get_project_dir())
+        proc = Popen('qsub %s' % qsub_script.name, shell=True, cwd=self.parent.get_project_dir())
+        proc.wait()
+        job_id = proc.output().split(' ')[1]
+
+        qsub_script.close() # deletes tmpfile
+        self.parent.job_manager.save_job_id(job_id)
+
+class Job(QObject):
+
+    """class for managing and monitoring an MFIX job"""
+
     sig_job_exit = Signal()
     sig_read_status = pyqtSignal(str, str)
     sig_api_available = pyqtSignal(bool)
     sig_api_response = pyqtSignal(str, str)
 
-    def __init__(self, project_dir, project_name, parent):
+    sig_trytohandlestatusfornow = pyqtSignal(str, str)
+    sig_update_status = Signal()
 
-        super(JobManager, self).__init__()
+    def __init__(self, pidfile):
 
-        self.parent = parent
-        self.api_timer = None
+        super(Job, self).__init__()
+        self.api_timer = QTimer()
+        self.api_timer.setInterval(1000)
+        self.api_timer.timeout.connect(self.update_status)
+        self.api_timer.start()
         self.status = {'paused': False}
         self.cached_status = ''
-        self.project_dir = project_dir
-        self.project_name = project_name
+        self.pidfile = pidfile
         self.requests = {}
         self.api = None
         self.mfix_pid = None
+        self.sig_trytohandlestatusfornow.connect(self.handle_status)
 
         #self.sig_read_status.connect(self.slot_read_status)
-        self.sig_api_available.connect(self.slot_get_job_state)
         self._connect()
 
     def register_request(self, request_id, handler):
@@ -255,7 +305,7 @@ class JobManager(QObject):
         self.sig_change_job_state.emit()
 
     def update_status(self):
-        req_id = self.api.get('status')
+        req_id = self.api.get('status', self.sig_trytohandlestatusfornow)
         self.register_request(req_id, self.handle_status)
 
     def handle_status(self, response):
@@ -282,21 +332,6 @@ class JobManager(QObject):
         """Send stop request"""
         self.register_request(self.api.put('stop'), self.handle_stop)
 
-    def handle_stop_mfix(self, *kwargs):
-        self.update_status()
-        # redundant:
-        self.sig_change_job_state.emit()
-
-    def handle_stop(self, response_data=None):
-        self.update_status()
-        #Harikari
-        log.info('exiting')
-        if self.api_timer:
-            self.api_timer.stop()
-            self.api_timer = None
-        self.api = None
-        self.sig_job_exit.emit()
-
     def slot_get_job_state(self, available):
         # TODO? move this into PymfixAPI?
         #
@@ -305,6 +340,7 @@ class JobManager(QObject):
         # state check -> (
         #
         #   no pid file -> state is new run |
+        #   pid file without valid URL -> pid file is corrupt
         #
         #   pid file exists -> (
         #       contains queue info -> (
@@ -321,7 +357,7 @@ class JobManager(QObject):
         #       ) |
         #       no queue info -> (
         #           contains API url -> (
-        #               API connection works - state is running locally (may be paused) | 
+        #               API connection works - state is running locally (may be paused) |
         #               API connection fails - state is stale pid |
         #           no API url -> should not happen
         #       )
@@ -330,14 +366,10 @@ class JobManager(QObject):
 
         if available:
             self.mfix_pid = self.api.pid
-            log.info('JobManager API available')
+            log.info('Job API available')
             self.sig_change_job_state.emit()
-            self.api_timer = QTimer()
-            self.api_timer.setInterval(1000)
-            self.api_timer.timeout.connect(self.update_status)
-            self.api_timer.start()
         else:
-            log.error('JobManager API unavailable')
+            log.error('Job API unavailable')
             #self.disconnect()
         # (this was in update_status. Refactor to here)
         # only relevant for local jobs
@@ -355,7 +387,7 @@ class JobManager(QObject):
 
         # refactor to be more specific
         def slot_control(reply):
-            log.info('JobManager._connect.slot_control')
+            log.info('Job._connect.slot_control')
             pass
             #self.parent.signal_update_runbuttons.emit('')
 
@@ -372,11 +404,6 @@ class JobManager(QObject):
                          (self.runname_pid, self.endpoint))
                 raise # find appropriate Qt exception or make this meaningful
 
-        self.api = PymfixAPI(self.project_dir, self.project_name, ignore_ssl_errors=True)
-        self.api.sig_api_available_public.connect(self.slot_get_job_state)
+        self.api = PymfixAPI(self.pidfile, ignore_ssl_errors=True)
         self.api.sslErrors.connect(slot_ssl_error)
         self.api.finished.connect(slot_control)
-
-        # TODO? handle with signal so this can be managed in gui
-        self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
-
