@@ -118,7 +118,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if project_file:
             self.set_project_file(project_file)
 
-
+        self.app = app
         LineEdit.value_error = self.popup_value_error
 
         QtWidgets.QMainWindow.__init__(self, parent)
