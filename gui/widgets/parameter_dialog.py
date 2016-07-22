@@ -297,3 +297,17 @@ class ParameterDialog(QtWidgets.QDialog):
                 val.eq = val.eq.replace(old_name, new_name)
             p_map[new_name] = p_map.pop(old_name)
             regions.update_region_parameters()
+            
+        # update geometry
+        geo = self.parent().vtkwidget
+        p_map = geo.parameter_key_map
+        data = geo.geometrydict
+        
+        if old_name in p_map.keys():
+            for keyword in p_map[old_name]:
+                name, key = keyword.split(',')
+                val = data[name][key]
+                
+                val.eq = val.eq.replace(old_name, new_name)
+            p_map[new_name] = p_map.pop(old_name)
+            geo.tree_widget_geometry_changed()
