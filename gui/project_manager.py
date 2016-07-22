@@ -129,9 +129,22 @@ class ProjectManager(Project):
         keytuple_star = tuple([key]+['*'])
         widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
         widgets_S = None
+        widgets_IC = None
+        widgets_BC = None
+
         if args and self.gui.solids_current_phase == args[0]:
             keytuple_S = tuple([key]+['S'])
             widgets_S = self.keyword_and_args_to_widget.get(keytuple_S)
+
+
+        # TODO: factor out common code here
+        if args and args[0] in self.gui.ics_current_indices:
+            keytuple_IC = tuple([key]+['IC'])
+            widgets_IC = self.keyword_and_args_to_widget.get(keytuple_IC)
+
+        if args and args[0] in self.gui.bcs_current_indices:
+            keytuple_BC = tuple([key]+['BC'])
+            widgets_BC = self.keyword_and_args_to_widget.get(keytuple_BC)
 
         if widgets_to_update == None:
             widgets_to_update = []
@@ -139,6 +152,10 @@ class ProjectManager(Project):
             widgets_to_update.extend(widgets_star)
         if widgets_S:
             widgets_to_update.extend(widgets_S)
+        if widgets_IC:
+            widgets_to_update.extend(widgets_IC)
+        if widgets_BC:
+            widgets_to_update.extend(widgets_BC)
 
         for w in widgets_to_update:
             try:
