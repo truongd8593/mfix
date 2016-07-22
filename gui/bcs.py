@@ -735,7 +735,8 @@ BC_DT_0 specification should persist across the gas and solids tabs. If the user
 
 class BCS(object):
     def init_bcs(self):
-        self.bcs_current_region = None
+        self.bcs_current_indices = []
+        self.bcs_current_regions = []
 
     def setup_bcs(self):
         pass
