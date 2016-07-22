@@ -10,11 +10,13 @@ from collections import OrderedDict
 import pickle
 
 from qtpy import QtCore, QtWidgets, PYQT5, uic
-from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
+from qtpy.QtWidgets import QTableWidgetItem, QTableWidget, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
+from qtpy.QtCore import QObject, QEvent
 UserRole = QtCore.Qt.UserRole
 
-from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
+from tools.general import (set_item_noedit, set_item_enabled,
+                           get_selected_row, widget_iter)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -22,6 +24,16 @@ if PYQT5:
 else:
     def resize_column(table, col, flags):
         table.horizontalHeader().setResizeMode(col, flags)
+
+
+class EnterKeyFilter(QObject):
+    def eventFilter(self, obj, event):
+        print("EV", obj.objectName(), event)
+        if event.type() == QEvent.KeyPress:
+            return event.key() != QtCore.Qt.Key_Enter
+        return True
+
+
 
 class SpeciesPopup(QtWidgets.QDialog):
 
@@ -391,7 +403,6 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.default_phase = phases[0] if phases else ''
         self.do_search(self.ui.lineedit_search.text())
 
-
     def __init__(self, app, parent=None, phases='GLCS'):
         super(SpeciesPopup, self).__init__(parent)
         self.app = app
@@ -404,6 +415,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.load_burcat(os.path.join(datadir, 'burcat.pickle'))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         ui = self.ui = uic.loadUi(os.path.join(uidir, 'species_popup.ui'), self)
+
+        # Prevent enter key from dismissing dialog
+        # https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/101
+        #for widget in widget_iter(self.ui):
+        #   if isinstance(widget, (QTableWidget)): #QLineEdit)
+        #       widget.installEventFilter(EnterKeyFilter(widget))
 
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
