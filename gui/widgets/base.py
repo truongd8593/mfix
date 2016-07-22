@@ -336,6 +336,10 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         return textUnderCursor
 
     def keyPressEvent(self, event):
+        if not self.allow_parameters:
+            QtWidgets.QLineEdit.keyPressEvent(self, event)
+            return
+
         if self._completer.popup().isVisible():
             if event.key() in self._keysToIgnore:
                 event.ignore()

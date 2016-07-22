@@ -1654,6 +1654,7 @@ class MfixGui(QtWidgets.QMainWindow,
         """add/change parameters"""
         changed_params = self.parameter_dialog.get_parameters()
         self.set_unsaved_flag()
+        self.ui.regions.update_parameters(changed_params)
         self.project.update_parameters(changed_params)
 
     def handle_compile(self):

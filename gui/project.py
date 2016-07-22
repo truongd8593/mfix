@@ -260,6 +260,14 @@ class Equation(object):
     def dumps(self):
         return '%s #!MFIX-GUI eq{%s}' % (self.dtype(self._eval()), self.eq)
 
+    def __cmp__(self, value):
+        if float(self._eval()) < value:
+            return -1
+        elif float(self._eval()) > value:
+            return 1
+        elif float(self._eval()) == value:
+            return 0
+
     def __add__(self, value):
         return float(self._eval()) + float(value)
 
@@ -269,15 +277,11 @@ class Equation(object):
     def __mul__(self, value):
         return float(self._eval()) * float(value)
 
+    def __div__(self, value):
+        return float(self._eval()) / float(value)
+
     def __pow__(self, value):
         return float(self._eval()) ** float(value)
-
-
-def format_key_with_args(key, args=None):
-    if args:
-        return "%s(%s)" % (key, ','.join(str(a) for a in args))
-    else:
-        return str(key)
 
 
 class Keyword(Comparable):

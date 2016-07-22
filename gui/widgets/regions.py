@@ -18,6 +18,7 @@ from qtpy import uic
 # local imports
 from tools.general import (get_unique_string, widget_iter, CellColor,
                            get_image_path)
+from project import Equation
 
 
 class RegionsWidget(QtWidgets.QWidget):
@@ -25,6 +26,7 @@ class RegionsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.parent = parent
+        self.parameter_key_map = {}
 
         uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                'uifiles')
@@ -38,8 +40,8 @@ class RegionsWidget(QtWidgets.QWidget):
                                 QtCore.Qt.SmoothTransformation)
 
         # Cache pixmaps
-        self.visibility_image = {True:get_visibility_image(True),
-                                 False:get_visibility_image(False)}
+        self.visibility_image = {True: get_visibility_image(True),
+                                 False: get_visibility_image(False)}
 
         self.extent_lineedits = [self.lineedit_regions_from_x,
                                  self.lineedit_regions_to_x,
@@ -47,11 +49,24 @@ class RegionsWidget(QtWidgets.QWidget):
                                  self.lineedit_regions_to_y,
                                  self.lineedit_regions_from_z,
                                  self.lineedit_regions_to_z]
+        for ext in self.extent_lineedits:
+            ext.allow_parameters = True
+            ext.help_text = 'Physical coordinates describing the bounds of the region.'
 
-        self.combobox_regions_type.addItems(['point', 'XY-plane',
-                                             'XZ-plane', 'YZ-plane', 'box',
-                                             'STL',
-                                             ])
+        self.combobox_regions_type.addItems([
+            'point', 'XY-plane', 'XZ-plane', 'YZ-plane', 'box', 'STL', ])
+        self.combobox_regions_type.help_text = 'The type of region.'
+        self.lineedit_regions_name.help_text = 'Name of the region. Used througout the gui to reference the region'
+        self.combobox_stl_shape.help_text = 'Shape to be used to select facets.'
+        self.checkbox_slice_facets.help_text = 'Slice facets if the facet is on the selection boundary.'
+        for wid in [self.lineedit_filter_x, self.lineedit_filter_y, self.lineedit_filter_z]:        
+            wid.allow_parameters = True
+            wid.help_text = 'Vector to filter facets with. If the facet '\
+                            'normal is the same as the vector, then the facet'\
+                            ' will be added to the region, else discarded.'
+        self.lineedit_deviation_angle.allow_parameters = True
+        self.lineedit_deviation_angle.help_text = 'Angle to provide a'\
+            'tolerence to the filtering of facets based on the facet normal.'
 
         self.toolbutton_region_add.pressed.connect(self.new_region)
         self.toolbutton_region_delete.pressed.connect(self.delete_region)
@@ -254,12 +269,17 @@ class RegionsWidget(QtWidgets.QWidget):
                                  data['filter']):
             widget.updateValue(None, value)
 
-    def region_value_changed(self, widget, value, args):
+    def region_value_changed(self, widget, value, args, name=None, 
+                             update_param=True):
         'one of the region wigets values changed, update'
         rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
-        name = list(data.keys())[rows[-1]]
+        if name is None:
+            name = list(data.keys())[rows[-1]]
         key = value.keys()[0]
+
+        if update_param:
+            self.update_parameter_map(value[key], name, key)
 
         if 'to' in key or 'from' in key:
             item = key.split('_')
@@ -451,3 +471,63 @@ class RegionsWidget(QtWidgets.QWidget):
         """ return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
         return copy.deepcopy(region_dict) # Allow clients to modify dict
+
+    def update_parameter_map(self, new_value, name, key):
+        """update the mapping of parameters and keywords"""
+
+        data = self.tablewidget_regions.value
+        name_key = ','.join([name, key])
+        
+        # new params
+        new_params = []
+        if isinstance(new_value, Equation):
+            new_params = new_value.get_used_parameters()            
+
+        # old params
+        if 'to' in key or 'from' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            old_value = data[name][item[0]][index]
+        elif 'filter' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            old_value = data[name][item[0]][index]
+        else:
+            old_value = data[name][key]
+
+        old_params = []
+        if isinstance(old_value, Equation):
+            old_params = old_value.get_used_parameters()
+
+        add = set(new_params)-set(old_params)
+        for param in add:
+            if param not in self.parameter_key_map:
+                self.parameter_key_map[param] = set()
+            self.parameter_key_map[param].add(name_key)
+
+        remove = set(old_params)-set(new_params)
+        for param in remove:
+            self.parameter_key_map[param].remove(name_key)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
+
+    def update_parameters(self, params):
+        """parameters have changed, update regions"""
+        data = self.tablewidget_regions.value
+        for param in params:
+            if param in self.parameter_key_map:
+                for var in self.parameter_key_map[param]:
+                    name, key = var.split(',')
+                    if 'to' in key or 'from' in key:
+                        item = key.split('_')
+                        index = ['x', 'y', 'z'].index(item[1])
+                        val = data[name][item[0]][index]
+                    elif 'filter' in key:
+                        item = key.split('_')
+                        index = ['x', 'y', 'z'].index(item[1])
+                        val = data[name][item[0]][index]
+                    else:
+                        val = data[name][key]
+                    value = {key: val}
+                    self.region_value_changed(None, value, None, name=name,
+                                              update_param=False)
