@@ -260,7 +260,9 @@ class ParameterDialog(QtWidgets.QDialog):
             return name
 
     def change_parameter_name(self, old_name, new_name):
-
+        """a parameter was renamed, update equations"""
+        
+        # update project keywords
         proj = self.parent().project
         p_map = proj.parameter_key_map
 
@@ -273,3 +275,26 @@ class ParameterDialog(QtWidgets.QDialog):
 
             p_map[new_name] = p_map.pop(old_name)
             self.changed_parameters.add(new_name)
+        
+        # update regions
+        regions = self.parent().ui.regions
+        p_map = regions.parameter_key_map
+        data = regions.tablewidget_regions.value
+        
+        if old_name in p_map.keys():
+            for keyword in p_map[old_name]:
+                name, key = keyword.split(',')
+                if 'to' in key or 'from' in key:
+                    item = key.split('_')
+                    index = ['x', 'y', 'z'].index(item[1])
+                    val = data[name][item[0]][index]
+                elif 'filter' in key:
+                    item = key.split('_')
+                    index = ['x', 'y', 'z'].index(item[1])
+                    val = data[name][item[0]][index]
+                else:
+                    val = data[name][key]
+                
+                val.eq = val.eq.replace(old_name, new_name)
+            p_map[new_name] = p_map.pop(old_name)
+            regions.update_region_parameters()
