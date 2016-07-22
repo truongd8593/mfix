@@ -26,15 +26,6 @@ else:
         table.horizontalHeader().setResizeMode(col, flags)
 
 
-class EnterKeyFilter(QObject):
-    def eventFilter(self, obj, event):
-        print("EV", obj.objectName(), event)
-        if event.type() == QEvent.KeyPress:
-            return event.key() != QtCore.Qt.Key_Enter
-        return True
-
-
-
 class SpeciesPopup(QtWidgets.QDialog):
 
     save = QtCore.Signal()
@@ -372,7 +363,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.defined_species[self.current_species]['alias'] = val
 
     def set_save_button(self, state):
-        self.ui.buttonbox.buttons()[0].setEnabled(state)
+        self.ui.pushbutton_save.setEnabled(state)
 
     def handle_combobox_phase(self, index):
         phase = 'GLSC'[index]
@@ -416,12 +407,6 @@ class SpeciesPopup(QtWidgets.QDialog):
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         ui = self.ui = uic.loadUi(os.path.join(uidir, 'species_popup.ui'), self)
 
-        # Prevent enter key from dismissing dialog
-        # https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/101
-        #for widget in widget_iter(self.ui):
-        #   if isinstance(widget, (QTableWidget)): #QLineEdit)
-        #       widget.installEventFilter(EnterKeyFilter(widget))
-
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
         self.extra_aliases = set() # To support enforcing
@@ -448,9 +433,9 @@ class SpeciesPopup(QtWidgets.QDialog):
             button.clicked.connect(self.handle_phase)
 
         ui.combobox_phase.currentIndexChanged.connect(self.handle_combobox_phase)
-        buttons = ui.buttonbox.buttons()
-        buttons[0].clicked.connect(lambda: self.save.emit())
-        buttons[1].clicked.connect(lambda: self.cancel.emit())
+        buttons = (ui.pushbutton_save, ui.pushbutton_cancel)
+        buttons[0].clicked.connect(lambda: (self.save.emit(), self.close()))
+        buttons[1].clicked.connect(lambda: (self.cancel.emit(), self.close()))
 
         class AliasValidator(QValidator):
 
