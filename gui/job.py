@@ -50,6 +50,7 @@ class PymfixAPI(QNetworkAccessManager):
     sig_api_available = pyqtSignal(str)
     # sig_api_available_public = pyqtSignal(bool)
     # sig_api_call_finished = pyqtSignal(Signal)
+    sig_qnetworkrequest_error = pyqtSignal(QNetworkReply.NetworkError)
 
     def __init__(self, pidfile, ignore_ssl_errors=False):
 
@@ -68,8 +69,13 @@ class PymfixAPI(QNetworkAccessManager):
         # test API calls
         log.info('connecting to API for job %s' % self.pidfile)
         self.sig_api_available.connect(self.slot_api_available)
+        self.sig_qnetworkrequest_error.connect(self.debug_qnetwork)
         # if self.pid_contents.get('url'):
         #     self.sig_api_available_public.emit(False)
+
+    def debug_qnetwork(self, qnetworkreply_error):
+        log.error('QNetworkReply::Error!')
+        log.error(qnetworkreply_error.errorString())
 
     def slot_api_available(self, response):
         log.info('slot_api_available')
@@ -83,13 +89,14 @@ class PymfixAPI(QNetworkAccessManager):
             self.api_available = False
             self.sig_api_available_public.emit(False)
 
-    def api_request(self, method, endpoint, data):
+    def api_request(self, method, endpoint, data=None):
         log.warning("API request: method=%s endpoint=%s data=%s" % (method, endpoint, data))
         request_id = str(uuid.uuid4())
         method = str(method).lower()
         method = self.methods[method]
 
-        req = QNetworkRequest(QUrl('http://%s/%s' % (self.pid_contents['url'], endpoint)))
+        req = QNetworkRequest(QUrl('%s/%s' % (self.pid_contents['url'], endpoint)))
+        log.debug('api request object is %s' % type(req))
         if self.pid_contents['token']:
             (name, value) = self.pid_contents['token'].split(':')
             req.setRawHeader(name, value)
@@ -97,7 +104,8 @@ class PymfixAPI(QNetworkAccessManager):
             request_object = method(req, data)
         else:
             request_object = method(req)
-        log.debug("request sent, request_id %s: method=%s endpoint=%s" % (request_id, method, endpoint))
+        request_object.error.connect(self.sig_qnetworkrequest_error)
+        log.debug("request sent, request_id %s: method=%s endpoint=%s data=%s" % (request_id, method, endpoint, data))
         self.requests.add(request_id)
         return (request_id, request_object)
 
@@ -116,21 +124,27 @@ class PymfixAPI(QNetworkAccessManager):
                 obj = str(obj)
                 json_msg['raw_object'] = obj
             json_str = json.dumps(json_msg)
-            signal.emit(json_str)
+            signal.emit(request_id, json_str)
 
         # FIXME handle empty replies or Pymfix methods that don't return JSON
-        # try:
-        if True:
+        try:
+        #if True:
             reply = reply_object.readAll()
-            response_json = reply.data() if bool(reply.data()) else json.dumps({})
+            response_json = reply.data() #if bool(reply.data()) else json.dumps({})
+            log.debug('API response: %s' % response_json)
             reply_object.close()
             json.loads(response_json)
         # JSON parsing errors:
-        # except (TypeError, ValueError) as e:
-        #     emit_error('API reponse could not be parsed as JSON')
-        #     self.parent_api_signal.emit(False)
-        #     log.exception('API reponse could not be parsed as JSON')
-        #     response_json = json.dumps('{"raw_api_message": %s"}' % reply.data())
+        except (TypeError, ValueError) as e:
+            emit_error('API reponse could not be parsed as JSON')
+            #self.parent_api_signal.emit(False)
+            log.debug('would emit siganl to parent_api_signal.emit') 
+            log.exception('API reponse could not be parsed as JSON')
+            response_json = json.dumps({"raw_api_message":  reply.data()})
+            log.debug('API response: %s' % response_json)
+
+        self.requests.discard(request_id)
+        signal.emit(request_id, response_json)
         # QNetwork* errors: (TODO)
         #except (QNetworkReply.NetworkError) as e:
         #    emit_error('API reponse could not be parsed as JSON')
@@ -142,8 +156,6 @@ class PymfixAPI(QNetworkAccessManager):
         #     self.parent_api_signal.emit(False)
         #     traceback.print_exception(*sys.exc_info())
         #     return
-        self.requests.discard(request_id)
-        signal.emit(request_id, response_json)
 
     def get_job_status(self):
         # return (
@@ -199,6 +211,7 @@ class JobManager(QObject):
             # TODO? handle with signal so this can be managed in gui
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
             self.job.sig_update_status.connect(self.parent.slot_update_residuals)
+            self.job.sig_update_status.connect(self.parent.slot_update_runbuttons)
 
     def record(self,job_id):
         self.job_id = job_id
@@ -254,6 +267,7 @@ class Job(QObject):
         self.api = None
         self.mfix_pid = None
         self.sig_trytohandlestatusfornow.connect(self.handle_status)
+        self.sig_api_response.connect(self.slot_api_response)
 
         #self.sig_read_status.connect(self.slot_read_status)
         self._connect()
@@ -297,7 +311,7 @@ class Job(QObject):
         self.sig_change_job_state.emit()
 
     def unpause(self):
-        req_id = self.api.put('unpause')
+        req_id = self.api.put('unpause', self.sig_api_response)
         self.register_request(req_id, self.handle_unpause)
 
     def handle_unpause(self, response_data=None):
@@ -306,10 +320,11 @@ class Job(QObject):
 
     def update_status(self):
         req_id = self.api.get('status', self.sig_trytohandlestatusfornow)
-        self.register_request(req_id, self.handle_status)
+        #self.register_request(req_id, self.handle_status)
 
-    def handle_status(self, response):
+    def handle_status(self, request_id, response):
         try:
+            log.debug('handle_status: %s' % response)
             self.status = json.loads(response)
             self.cached_status = pprint.PrettyPrinter(indent=4,
                                     width=50).pformat(self.status)

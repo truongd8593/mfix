@@ -556,9 +556,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def slot_update_residuals(self):
         """Get job status from JobManager and update residuals pane"""
-        if not self.job_manager:
-            return
-        log.info('update_residuals')
+        #if not self.job_manager:
+        #    return
+        log.debug('update_residuals')
         self.ui.residuals.setText(self.job_manager.job.cached_status)
 
     # TODO:  separate this into different functions - this is called by
@@ -572,8 +572,6 @@ class MfixGui(QtWidgets.QMainWindow,
         """Updates list of of mfix executables and sets run dialog options"""
         # This is the main state-transition handler
 
-        log.info('update_runbuttons')
-
         if message is not None:
             # highlight for visibility, this is an important state chage
             self.print_internal(message, color='blue')
@@ -584,7 +582,9 @@ class MfixGui(QtWidgets.QMainWindow,
         ui = self.ui
         project_file = os.path.basename(self.get_project_file() or '')
 
-        log.info('job manager object: %s' % self.job_manager)
+        log.debug('job_manager object: %s' % self.job_manager)
+        if self.job_manager.job:
+            log.debug('job_manager.job object: %s' % self.job_manager.job)
         project_open = bool(project_file and self.open_succeeded)
         paused = self.job_manager.job and self.job_manager.job.is_paused()
         running = self.job_manager.job and not paused
@@ -636,7 +636,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(True)
-        log.info('done update_runbuttons')
+        log.debug('done update_runbuttons')
 
 
     def print_welcome(self):
