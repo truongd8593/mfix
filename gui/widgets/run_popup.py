@@ -42,6 +42,7 @@ class RunPopup(QDialog):
         self.mfix_exe = None
         self.mfix_exe_cache = {}
         self.mfix_exe_list = []
+        self.cmdline = None
         self.parent = parent
         self.project = parent.project
         self.settings = parent.settings
@@ -478,8 +479,6 @@ class RunPopup(QDialog):
                 log.error("Cannot remove", mfix_stop_file)
                 return
 
-        cmdline = ' '.join(cmd) # cmd is a list
-
         mfixproc = QProcess()
         if not mfixproc:
             log.warn("QProcess creation failed")
@@ -490,45 +489,44 @@ class RunPopup(QDialog):
             process_env.insert(key, val)
         mfixproc.setProcessEnvironment(process_env)
 
-
         def slot_start():
             # Keep a copy because it gets reset
             msg = "MFIX process %d is running" % mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", cmdline)
-
-        mfixproc.started.connect(slot_start)
+            log.debug("Full MFIX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(mfixproc.readAllStandardOutput()).decode('utf-8')
             self.parent.stdout_signal.emit(out_str)
-        mfixproc.readyReadStandardOutput.connect(slot_read_out)
 
         def slot_read_err():
             err_str = bytes(mfixproc.readAllStandardError()).decode('utf-8')
             self.parent.stderr_signal.emit(err_str)
-        mfixproc.readyReadStandardError.connect(slot_read_err)
 
         def slot_finish(status):
             msg = "MFIX process has stopped"
             self.parent.signal_update_runbuttons.emit(msg)
-        mfixproc.finished.connect(slot_finish)
 
         def slot_error(error):
             if error == QProcess.FailedToStart:
-                msg = "Process failed to start "+cmdline
+                msg = "Process failed to start "+self.cmdline
             elif error == QProcess.Crashed:
-                msg = "Process exit "+cmdline
+                msg = "Process exit "+self.cmdline
             elif error == QProcess.Timedout:
-                msg = "Process timeout "+cmdline
+                msg = "Process timeout "+self.cmdline
             elif error in (QProcess.WriteError, QProcess.ReadError):
-                msg = "Process communication error "+cmdline
+                msg = "Process communication error "+self.cmdline
             else:
-                msg = "Unknown error "+cmdline
+                msg = "Unknown error "+self.cmdline
             log.warn(msg)
             # make the message print in red
             self.parent.stderr_signal.emit(msg)
 
+        self.cmdline = ' '.join(cmd) # cmd is a list
+        mfixproc.started.connect(slot_start)
+        mfixproc.readyReadStandardOutput.connect(slot_read_out)
+        mfixproc.readyReadStandardError.connect(slot_read_err)
+        mfixproc.finished.connect(slot_finish)
         mfixproc.error.connect(slot_error)
         mfixproc.start(cmd[0], cmd[1:])
 
