@@ -381,6 +381,11 @@ class MfixGui(QtWidgets.QMainWindow,
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
+        # IC_EP_G should be btwn 0 and 1.
+        self.keyword_doc['ic_ep_g']['validrange'] = {'min':0.0, 'max':1.0}
+
+        # All temperatures > 0 ?
+
     def set_no_project(self):
         """setup mode when no project is open"""
         self.open_succeeded = False
