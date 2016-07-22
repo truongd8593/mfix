@@ -629,6 +629,13 @@ def pause():
     status_code, data = mfix_thread.do_command("PAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
+@FLASK_APP.route('/paused', methods=['GET'])
+@token_required
+def paused():
+    "pauses MFIX if unpaused"
+    status_code, data = (200, mfix_thread.paused)
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 @token_required
@@ -642,7 +649,7 @@ def unpause():
 def get_status():
     "returns current status: paused state, current time, and residuals"
     status_code = 200
-    return str(mfix_thread.status), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+    return mfix_thread.status, status_code, {'Content-Type': 'application/json; charset=utf-8'}
 
 @FLASK_APP.route('/logging/<state>', methods=['POST'])
 @FLASK_APP.route('/logging/<state>/<level>', methods=['POST'])

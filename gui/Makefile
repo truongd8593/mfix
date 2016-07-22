@@ -12,6 +12,7 @@ all: ${PY_UIFILES}
 clean:
 	-rm -rf ${PY_UIFILES} dist __pycache__
 	find . -name \*.pyc -delete
+	make -C .. clean
 
 test2: all
 	(Xvfb :99 &)
