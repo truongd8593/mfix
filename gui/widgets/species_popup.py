@@ -192,9 +192,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         table = ui.tablewidget_params
         table.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
         table.setCellWidget(0, 1, make_item(data['tmax'], key='tmax'))
-        for (i,x) in enumerate(data['a_low'], 1):
+        for (i,x) in enumerate(data['a_low']):
             table.setCellWidget(i, 0, make_item(x, key=('a_low', i)))
-        for (i,x) in enumerate(data['a_high'], 1):
+        for (i,x) in enumerate(data['a_high']):
             table.setCellWidget(i, 1, make_item(x, key=('a_high', i)))
 
 
