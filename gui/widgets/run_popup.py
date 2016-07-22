@@ -6,6 +6,7 @@ import signal
 import sys
 import tempfile
 import time
+
 from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
@@ -442,18 +443,8 @@ class RunPopup(QDialog):
         self.parent.print_internal(msg, color='blue')
         return run_cmd
 
-    def transform_template(self, text, cmd):
-        cores = self.parent.run_dialog.spinbox_cores_requested.value()
-        mpirun = 'mpirun -np %d' % cores if self.dmp_enabled() else ''
-        return text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
-                   .replace("${CORES}", str(cores)) \
-                   .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
-                   .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
-                   .replace("${MPIRUN}", mpirun) \
-                   .replace("${COMMAND}", ' '.join(cmd))
-
     def submit_command(self, cmd):
-        self.parent.job_manager.submit_command(cmd)
+        self.parent.job_manager.submit_command(cmd, self.dmp_enabled(), self.smp_enabled())
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""

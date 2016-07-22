@@ -1,15 +1,18 @@
 """class to manage external MFIX process"""
 
-from functools import wraps
 import json
 import logging
 import os
 import pprint
 import socket
 import sys
+import tempfile
 import time
 import traceback
 import uuid
+
+from functools import wraps
+from subprocess import Popen, PIPE
 
 DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
 socket.setdefaulttimeout(DEFAULT_TIMEOUT)
@@ -20,6 +23,7 @@ from qtpy.QtCore import QObject, QTimer, QUrl, Signal, pyqtSignal
 from qtpy.QtNetwork import  QNetworkAccessManager, QNetworkReply, QNetworkRequest
 
 from tools.general import make_callback
+from tools.general import get_mfix_home
 
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
@@ -225,21 +229,33 @@ class JobManager(QObject):
         log.info('Job ended or connection to running job failed')
         self.job = None
 
-    def submit_command(self, cmd):
+    def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
         with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:
             template_text = qsub_template.read()
 
+        cores = self.parent.run_dialog.spinbox_cores_requested.value()
+        threads = self.parent.run_dialog.spinbox_threads.value()
+        do_smp = 'env OMP_NUM_THREADS=%d' % threads if smp_enabled else ''
+        mpirun = 'mpirun -np %d' % cores if dmp_enabled else ''
+        qscript = template_text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
+                .replace("${CORES}", str(cores)) \
+                .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
+                .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
+                .replace("${MPIRUN}", mpirun) \
+                .replace("${COMMAND}", ' '.join(cmd))
+
         qsub_script = tempfile.NamedTemporaryFile()
-        qsub_script.write(self.transform_template(template_text, cmd))
+        print(qscript)
+        qsub_script.write(qscript)
         qsub_script.flush() # Keep tmpfile open
 
         # FIXME: for testing without qsub installed, use:
         # Popen('qsub %s' % qsub_script.name, cwd=self.parent.get_project_dir())
         print('/bin/csh %s &' % qsub_script.name, self.parent.get_project_dir())
         proc = Popen('qsub %s' % qsub_script.name, shell=True, cwd=self.parent.get_project_dir())
-        proc.wait()
-        job_id = proc.output().split(' ')[1]
+        out, err = proc.communicate()
+        job_id = out.split(' ')[2] # qsub stdout:  You job JOB_ID has been submitted
 
         qsub_script.close() # deletes tmpfile
         self.parent.job_manager.save_job_id(job_id)
