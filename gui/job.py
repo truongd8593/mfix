@@ -146,9 +146,13 @@ class PymfixAPI(QNetworkAccessManager):
         signal.emit(request_id, response_json)
 
     def get_job_status(self):
-        # return [ state=[ running | paused | error ], enqueued(qid, qstate) ] 
+        # return (
+        #       state=([ local | on_queue ], [ running | paused | error ]),
+        #       queue=[(qid, qstate) | None ]
+        #        )
         # use scheduler commands (qstat, etc)
-        # TODO: abstract scheduler interface to better support grid plugins
+        # TODO: abstract scheduler interface into QueueManager or somesuch
+        #       to support grid environment plugins
         pass
 
     def get(self, endpoint, signal=None):
@@ -205,7 +209,6 @@ class JobManager(QObject):
     def register_request(self, request_id, handler):
         """Store bind handler to request_id"""
         registered_requests = self.requests.get(request_id, set([]))
-        print(type(registered_requests))
         registered_requests.add(handler)
         self.requests[request_id] = registered_requests
 
@@ -292,13 +295,37 @@ class JobManager(QObject):
         self.api = None
         self.sig_job_exit.emit()
 
-    def slot_api_available(self, available):
+    def slot_get_job_state(self, available):
+        # TODO? move this into PymfixAPI?
+        #
         # TODO: support these states:
-        #   no pid file, no queue info ( new run )
-        #   pid file exists, connection works ( running job )
-        #   pid file with queue id information, pid connection fails (stale pid)
-        #   pid file without queue id information, pid connection fails (stale pid)
-        #   no pid file, queue id information
+        #
+        # state check -> (
+        #
+        #   no pid file -> state is new run |
+        #
+        #   pid file exists -> (
+        #       contains queue info -> (
+        #           qstat state is running -> (
+        #               API url in pid file -> (
+        #                   API connection works -> state is running remote, may be paused |
+        #                   API connection fails -> state is stale pid, enqueued remote and job error
+        #               ) |
+        #               API url is not in pid file -> state is enqueued, waiting for API
+        #           ) |
+        #           qstat state is error -> state is stale pid, queue error |
+        #           qstat state is job finished -> state is stale pid, job error, mfix didn't write to pid
+        #           ) |
+        #       ) |
+        #       no queue info -> (
+        #           contains API url -> (
+        #               API connection works - state is running locally (may be paused) | 
+        #               API connection fails - state is stale pid |
+        #           no API url -> should not happen
+        #       )
+        #   )
+
+
         if available:
             self.mfix_pid = self.api.pid
             log.info('JobManager API available')
@@ -311,7 +338,7 @@ class JobManager(QObject):
             log.error('JobManager API unavailable')
             #self.disconnect()
         # (this was in update_status. Refactor to here)
-        # FIXME: only relevant for local jobs
+        # only relevant for local jobs
         #pid = int(self.api.pymfix['pid'])
         #try:
         #    os.kill(pid, 0)
