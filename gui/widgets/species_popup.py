@@ -433,6 +433,8 @@ class SpeciesPopup(QtWidgets.QDialog):
             button.clicked.connect(self.handle_phase)
 
         ui.combobox_phase.currentIndexChanged.connect(self.handle_combobox_phase)
+        #http://stackoverflow.com/questions/15845487/how-do-i-prevent-the-enter-key-from-closing-my-qdialog-qt-4-8-1
+        # Do not use buttonbox.  https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/101
         buttons = (ui.pushbutton_save, ui.pushbutton_cancel)
         buttons[0].clicked.connect(lambda: (self.save.emit(), self.close()))
         buttons[1].clicked.connect(lambda: (self.cancel.emit(), self.close()))
