@@ -135,6 +135,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrydict = {}
         self.geometry_visible = True
         self.regions_visible = True
+        self.defer_render = False
         self.region_dict = {}
         self.parameter_key_map = {}
 
@@ -523,7 +524,14 @@ class VtkWidget(QtWidgets.QWidget):
         self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
-        self.vtkRenderWindow.Render()
+        self.render()
+
+    # --- render ---
+    def render(self, force_render=False, defer_render=None):
+        if defer_render is not None:
+            self.defer_render = defer_render
+        if not self.defer_render or force_render:
+            self.vtkRenderWindow.Render()
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
@@ -609,7 +617,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrydict[name]['actor'].VisibilityOff()
             self.geometrydict[name]['visible'] = False
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def add_stl(self, widget, filename=None):
         """
@@ -654,7 +662,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.vtkrenderer.AddActor(actor)
 
             self.vtkrenderer.ResetCamera()
-            self.vtkRenderWindow.Render()
+            self.render()
 
             # find center of mass
             center_filter = vtk.vtkCenterOfMass()
@@ -731,7 +739,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             if 'transform' in self.geometrydict[name]:
                 self.update_transform(name)
-            self.vtkRenderWindow.Render()
+            self.render()
 
     def update_primitive(self, name):
         """
@@ -893,7 +901,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkrenderer.AddActor(actor)
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
         # add to dict
         self.geometrydict[name]['mapper'] = mapper
@@ -1059,7 +1067,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkrenderer.AddActor(actor)
 
         self.vtkrenderer.ResetCamera()
-        self.vtkRenderWindow.Render()
+        self.render()
 
         # add to dict
         self.geometrydict[name]['mapper'] = mapper
@@ -1131,7 +1139,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             self.vtkrenderer.AddActor(actor)
 
-            self.vtkRenderWindow.Render()
+            self.render()
 
             # save references
             self.geometrydict[boolname]['booleanoperation'] = boolean_operation
@@ -1184,7 +1192,7 @@ class VtkWidget(QtWidgets.QWidget):
             geo = self.geometrydict.pop(text)
             self.vtkrenderer.RemoveActor(geo['actor'])
 
-            self.vtkRenderWindow.Render()
+            self.render()
 
     def copy_geometry(self):
         """ duplicate the selected geometry """
@@ -1384,7 +1392,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             # update
             self.vtkrenderer.ResetCamera()
-            self.vtkRenderWindow.Render()
+            self.render()
 
             # save references
             self.geometrydict[name]['actor'] = actor
@@ -1513,12 +1521,14 @@ class VtkWidget(QtWidgets.QWidget):
     def update_parameters(self, params):
         """parameters have changed, update regions"""
         data = self.geometrydict
+        self.defer_render = True
         for param in params:
             if param in self.parameter_key_map:
                 for var in self.parameter_key_map[param]:
                     name, key = var.split(',')
                     value = data[name][key]
                     self.parameter_edited(None, name, value, key)
+        self.render(defer_render=False)
 
     # --- regions ---
     def update_region_source(self, name):
@@ -1578,7 +1588,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         return source
 
-    def new_region(self, name, region, defer_render=False):
+    def new_region(self, name, region):
         self.region_dict[name] = copy.deepcopy(region)
 
         if region['type'] == 'point':
@@ -1606,10 +1616,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.region_dict[name]['mapper'] = mapper
         self.select_facets(name)
 
-        self.change_region_visibility(name,
-                                      self.region_dict[name]['visibility'],
-                                      defer_render=defer_render)
-
+        self.change_region_visibility(
+            name, self.region_dict[name]['visibility'],)
 
     def delete_region(self, name):
         region = self.region_dict.pop(name)
@@ -1621,7 +1629,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.region_dict[name].update(copy.deepcopy(region))
         self.update_region_source(name)
         self.select_facets(name)
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def change_region_color(self, name, color):
         """ change the color of a region """
@@ -1636,7 +1644,7 @@ class VtkWidget(QtWidgets.QWidget):
             actor.GetProperty().SetColor(
                 *self.region_dict[name]['color'].color_float)
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def change_region_type(self, name, region):
         """ change the type of a region """
@@ -1656,7 +1664,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.region_dict[name]['mapper'].SetInputConnection(
             source.GetOutputPort())
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def change_region_name(self, old_name, new_name):
         """ change the name of a region """
@@ -1664,7 +1672,7 @@ class VtkWidget(QtWidgets.QWidget):
         region = self.region_dict.pop(old_name)
         self.region_dict[new_name] = region
 
-    def change_region_visibility(self, name, visible, defer_render=False):
+    def change_region_visibility(self, name, visible):
         """ change the visibility of a region """
 
         if visible and self.regions_visible:
@@ -1677,10 +1685,7 @@ class VtkWidget(QtWidgets.QWidget):
                 self.region_dict[name]['clip_actor'].VisibilityOff()
         self.region_dict[name]['visible'] = visible
 
-        if defer_render:
-            return
-
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def set_region_actor_props(self, actor, name, color=None):
         """ set the geometry properties to the others in the scene """
@@ -1976,7 +1981,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.vtkrenderer.AddActor(actor)
 
         self.vtkrenderer.ResetCamera()
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def vtk_calc_distance_from_geometry(self):
 
@@ -2019,7 +2024,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.mesh_mapper.SetInputData(self.mesh)
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
         self.mesh_stats()
 
@@ -2051,7 +2056,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.mesh_mapper.SetInputData(self.mesh)
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
         self.mesh_stats()
 
@@ -2103,7 +2108,7 @@ class VtkWidget(QtWidgets.QWidget):
             camera.ParallelProjectionOn()
             self.toolbutton_perspective.setIcon(get_icon('parallel.png'))
 
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def set_view(self, view='xy'):
 
@@ -2119,14 +2124,11 @@ class VtkWidget(QtWidgets.QWidget):
             camera.SetPosition(10000000, 0, 0)
             camera.SetViewUp(0, 0, 1)
         self.vtkrenderer.ResetCamera()
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def reset_view(self):
         self.vtkrenderer.ResetCamera()
-        self.vtkRenderWindow.Render()
-
-    def render(self):
-        self.vtkRenderWindow.Render()
+        self.render()
 
     def change_visibility(self, name, toolbutton):
 
@@ -2168,7 +2170,7 @@ class VtkWidget(QtWidgets.QWidget):
                 else:
                     actor.VisibilityOn()
 
-            self.vtkRenderWindow.Render()
+            self.render()
 
     def change_representation(self, name, combobox):
 
@@ -2199,7 +2201,7 @@ class VtkWidget(QtWidgets.QWidget):
                 elif representation == 'points':
                     actor.GetProperty().SetRepresentationToPoints()
 
-            self.vtkRenderWindow.Render()
+            self.render()
 
     def change_color(self, name, button):
 
@@ -2233,7 +2235,7 @@ class VtkWidget(QtWidgets.QWidget):
                     actor.GetProperty().SetEdgeColor(
                      self.color_dict[name_edge].getRgbF()[:3])
 
-                self.vtkRenderWindow.Render()
+                self.render()
 
     def change_opacity(self, name, slider):
 
@@ -2254,4 +2256,4 @@ class VtkWidget(QtWidgets.QWidget):
             for actor in actors:
                 actor.GetProperty().SetOpacity(value)
 
-            self.vtkRenderWindow.Render()
+            self.render()

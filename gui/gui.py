@@ -1834,6 +1834,7 @@ class MfixGui(QtWidgets.QMainWindow,
         """Open MFiX Project"""
 
         self.open_succeeded = False  # set to true on success
+        self.vtkwidget.defer_render = True # defer rendering vtk until load finished
 
         # see also project_manager.load_project_file
 
@@ -2063,6 +2064,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #if self.unsaved_flag: # Settings changed after loading
         #    self.save_project()
 
+        self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
 
