@@ -23,7 +23,7 @@ except ImportError:
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
-                           get_image_path, make_callback,)
+                           get_image_path, make_callback, topological_sort)
 from widgets.base import LineEdit
 from project import Equation
 
@@ -570,9 +570,11 @@ class VtkWidget(QtWidgets.QWidget):
         
     # --- save/load ---
     def geometry_to_str(self):
+        """convert geometry to string"""
+        
+        # save tree
         tree = {}
         itr = QtWidgets.QTreeWidgetItemIterator(self.geometrytree)
-        
         while itr.value():
             item = itr.value()
             text = item.text(0)
@@ -582,19 +584,26 @@ class VtkWidget(QtWidgets.QWidget):
                 tree[text].append(item.child(i).text(0))
             itr += 1
         
-        data = {'geometrydict': clean_geo_dict(self.geometrydict),
+        data = {'geometry_dict': clean_geo_dict(self.geometrydict),
                 'tree':tree}
 
         return json.dumps(data)
-        
     
     def geometry_from_str(self, string):
+        """convert string to geometry"""
         try:
             data = json.loads(string)
+            tree = data['tree']
+            geo_dict = data['geometry_dict']
         except:
             self.parent.message('Error loading geometry')
         
-        print(data)
+        # convert lists to sets
+        for key, value in tree.items():
+            tree[key] = set(tree[key])
+        for node in topological_sort(tree):
+            print(node)
+        
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):

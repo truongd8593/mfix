@@ -13,6 +13,7 @@ import sys
 import locale
 import logging
 import shlex
+import copy
 
 log = logging.getLogger(__name__)
 
@@ -416,6 +417,31 @@ def insert_append_separator(menu, insert=None):
         menu.insertSeparator(insert)
     else:
         menu.addSeparator()
+
+def topological_sort(dependency_dict):
+    '''
+    Sort the dependency tree.
+    Inspired by: http://code.activestate.com/recipes/578272-topological-sort/
+    '''
+    
+    data = copy.deepcopy(dependency_dict)
+
+    # Ignore self dependencies.
+    for k, v in data.items():
+        v.discard(k)
+    # Find all items that don't depend on anything.
+    extra_items_in_deps = reduce(set.union, data.itervalues()) - set(data.iterkeys())
+    # Add empty dependences where needed
+    data.update({item: set() for item in extra_items_in_deps})
+    while True:
+        ordered = set(item for item, dep in data.iteritems() if not dep)
+        if not ordered:
+            break
+        yield ordered
+        data = {item: (dep - ordered)
+                for item, dep in data.iteritems()
+                if item not in ordered}
+    assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
 
 if __name__ == '__main__':
     test_recurse_dict()
