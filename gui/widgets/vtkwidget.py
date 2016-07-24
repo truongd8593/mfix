@@ -595,14 +595,24 @@ class VtkWidget(QtWidgets.QWidget):
             data = json.loads(string)
             tree = data['tree']
             geo_dict = data['geometry_dict']
-        except:
-            self.parent.message('Error loading geometry')
+        except Exception as e:
+            self.parent.message('Error loading geometry: %s' % e)
         
         # convert lists to sets
         for key, value in tree.items():
             tree[key] = set(tree[key])
-        for node in topological_sort(tree):
-            print(node)
+            
+        # build geometry
+        for nodes in topological_sort(tree):
+            for node in nodes:
+                if node in geo_dict and 'geo_type' in geo_dict[node]:
+                    if geo_dict[node]['geo_type'] == 'primitive':
+                        geo_data = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
+                        geo_data.update(geo_dict[node])
+                        self.add_primitive(name=node, data=geo_data)
+                else:
+                    self.parent.message('Error loading geometry: Geometry does not have parameters.')
+                    return
         
 
     # --- render ---
@@ -914,21 +924,27 @@ class VtkWidget(QtWidgets.QWidget):
 
         return transform_filter
 
-    def add_primitive(self, primtype='sphere'):
+    def add_primitive(self, primtype='sphere', name=None, data=None):
         """
         Add the specified primitive
         """
 
-        name = get_unique_string(primtype, list(self.geometrydict.keys()))
+        if name is None:
+            name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
         # create primitive
+        if data is not None:
+            primtype = data['type']
         if primtype in self.primitivedict:
             source = self.primitivedict[primtype]()
         else:
             return
 
-        self.geometrydict[name] = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
-        self.geometrydict[name]['type'] = primtype
+        if data is not None:
+            self.geometrydict[name] = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
+            self.geometrydict[name]['type'] = primtype
+        else:
+            self.geometrydict[name] = data
         self.geometrydict[name]['source'] = source
 
         source = self.update_primitive(name)
