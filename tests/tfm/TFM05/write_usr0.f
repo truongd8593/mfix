@@ -33,7 +33,8 @@
       use param1, only: UNDEFINED
       use geometry, only: JMAX
       use bc, only: DELP_X
-
+      use toleranc, only: tol_resid
+      use iterate, only: max_nit
 
       IMPLICIT NONE
 
@@ -55,6 +56,8 @@
 
       WRITE(fUnit,"('#')")
       WRITE(fUnit,"('#',10x,'Mesh:          ',I13)") JMAX
+      WRITE(fUnit,"('#',10x,'Max Nit:       ',I13)") MAX_NIT
+      WRITE(fUnit,"('#',10x,'Tol Residual:  ',es13.6)") TOL_RESID
       WRITE(fUnit,"('#',10x,'Pressure Grad: ',es13.6)") DELP_X
 
       WRITE(fUNIT, 1200) VAR, VAR
@@ -62,7 +65,7 @@
  1000 FORMAT('#',/'#',/'#',25x,A)
 
  1200 FORMAT('#',/'#',7X,'Height',7x,A,13X,A,'_MFIX',9X,&
-         '%REL DIFF',9x,'ABS DIFF')
+         'ABS DIFF',9x,'REL DIFF')
 
       CLOSE(fUNIT)
       RETURN

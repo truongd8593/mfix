@@ -33,7 +33,7 @@ SUBROUTINE SET_BC0
 
 ! Incompressible cases require that Ppg specified for one cell.
 ! The following attempts to pick an appropriate cell.
-      CALL SET_IJK_P_G
+!      CALL SET_IJK_P_G
 
       IF(USE_MMS) THEN
 ! IJK_P_G is set as UNDEFINED for MMS since current IJK_P_G setting
@@ -805,7 +805,7 @@ SUBROUTINE SET_BC0
       INTEGER :: l2, u2
       INTEGER :: l1, u1
 
-      LOGICAL, parameter :: setDBG = .FALSE.
+      LOGICAL, parameter :: setDBG = .TRUE.
       LOGICAL :: dFlag
       INTEGER :: iErr
 

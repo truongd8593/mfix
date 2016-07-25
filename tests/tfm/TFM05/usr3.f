@@ -46,7 +46,7 @@
          POSITION="APPEND",STATUS='OLD')
 
 ! Calculate temp value and initial height
-      TMPdp = (HALF/MU_g0)*(-delP_x/xLength)
+      TMPdp = (HALF/MU_g0)*(-delP_x/(xLength))
       yt = -HALF*dy(jmin1)
 
 ! generate grid locations for exact solution calculation
@@ -56,12 +56,16 @@
 ! Calculate cell height (assumed uniform spacing)
          yt = yt + dy(j)
 ! Calculate exact solution
-         Ug = (TMPdp*yt + ((Uw(1)/height) - TMPdp*height))*yt
+!         Ug = (TMPdp*yt + ((Uw(1)/height) - TMPdp*height))*yt
+
+         Ug = Uw(1)*(yt/height) + &
+            (HALF/Mu_g0)*(-delP_x/xLength)*(yt**2 - height*yt)
+
 ! Get the MFIX solution
          Ug_MFIX = U_G(funijk(i,j,k))
 
          absErr = abs(Ug - Ug_MFIX)
-         relErr = abs(absErr/max(Ug, SMALL_NUMBER))
+         relErr = abs(absErr/max(abs(Ug), SMALL_NUMBER))
 
          write(fUnit, 1200) yt, Ug, Ug_MFIX, absErr, relErr
 

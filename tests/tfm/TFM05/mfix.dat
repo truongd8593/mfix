@@ -21,6 +21,8 @@
 
   TIME =  0.0 ! Steady state solution
 
+  MOMENTUM_Y_EQ(0) = .F.
+  
   ENERGY_EQ =     .F.
   SPECIES_EQ(0) = .F.
 
@@ -31,18 +33,21 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  MAX_NIT = 1200000
-  TOL_RESID = 1.0E-15
-  DISCRETIZE =  9*2
+  MAX_NIT = 5000000
+  TOL_RESID = 1.0E-12
 
-  NORM_g = 1.0
+  LEQ_PC = 9*'NONE'
+
+  DISCRETIZE = 9*2
+
+#  LEQ_TOL(1) = 1.0E-8
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
 
   COORDINATES   = 'CARTESIAN'
 
-  XLENGTH = 0.10     IMAX =  5
+  XLENGTH = 0.10     IMAX =  3
   ZLENGTH = 1.00     NO_K = .T.
   YLENGTH = 0.01   ! JMAX passed as argument
 
@@ -67,7 +72,9 @@
 
   IC_EP_g(1) =  1.00
 
-  IC_U_g(1) =   0.00  ! (m/sec)
+  IC_P_g(1) = 0.0
+
+  IC_U_g(1) =   5.00  ! (m/sec)
   IC_V_g(1) =   0.00  ! (m/sec)
 
 #_______________________________________________________________________
