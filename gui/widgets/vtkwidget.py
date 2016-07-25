@@ -62,7 +62,7 @@ CELL_TYPE_ENUM = {
     35: 'cubic_line',
     36: 'quadratic_polygon',
     }
-    
+
 DEFAULT_PRIMITIVE_PARAMS = {
     'centerx':         0.0,
     'centery':         0.0,
@@ -86,9 +86,73 @@ DEFAULT_PRIMITIVE_PARAMS = {
     'type':            '',
     }
 
+DEFAULT_PARAMETRIC_PARAMS = {
+    'translationx':       0.0,
+    'translationy':       0.0,
+    'translationz':       0.0,
+    'centerx':            0.0,
+    'centery':            0.0,
+    'centerz':            0.0,
+    'rotationx':          0.0,
+    'rotationy':          0.0,
+    'rotationz':          0.0,
+    'radius':             1.0,
+    'radiusx':            1.0,
+    'radiusy':            1.0,
+    'radiusz':            1.0,
+    'ringradius':         1.0,
+    'crosssectionradius': 0.5,
+    'zscale':             0.125,
+    'ascale':             0.8,
+    'bscale':             0.2,
+    'bfunc':              1.0,
+    'cfunc':              0.1,
+    'nfunc':              2.0,
+    'nhills':             30,
+    'variancex':          2.5,
+    'scalex':             0.3,
+    'variancey':          2.5,
+    'scaley':             0.3,
+    'amplitude':          2.0,
+    'scaleamplitude':     0.3,
+    'allowrandom':        True,
+    'n1':                 1.0,
+    'n2':                 1.0,
+    'visible':            True,
+    'geo_type':           'parametric',
+    'type':               ''}
+
+DEFAULT_FILTER_PARAMS = {
+    'linestopoints':        True,
+    'polystolines':         True,
+    'stripstopolys':        True,
+    'maximumholesize':      1.0,
+    'processvertices':      True,
+    'processlines':         True,
+    'targetreduction':      0.2,
+    'preservetopology':     True,
+    'splitmesh':            True,
+    'deletevertices':       False,
+    'divisionsx':           10,
+    'divisionsy':           10,
+    'divisionsz':           10,
+    'autoadjustdivisions':  True,
+    'visible':              True,
+    'relaxation':           0.01,
+    'iterations':           20,
+    'boundarysmoothing':    True,
+    'featureangle':         45.0,
+    'featureedgesmoothing': False,
+    'edgeangle':            15.0,
+    'passband':             0.1,
+    'manifoldsmoothing':    False,
+    'normalize':            False,
+    'geo_type':             'filter',
+    'type':                 ''}
+
 def clean_geo_dict(d):
     clean_dict = {}
-    
+
     for geo, geo_dict in d.items():
         clean_dict[geo] = {}
         geo_type = None
@@ -96,14 +160,19 @@ def clean_geo_dict(d):
             geo_type = geo_dict['geo_type']
         clean_dict[geo]['geo_type'] = geo_type
         for key, value in geo_dict.items():
+            # filter out vtk objects
             if key not in ['mapper', 'actor', 'reader', 'transform',
                            'transformfilter', 'center_filter', 'source',
-                           'trianglefilter']:
+                           'trianglefilter', 'parametric_object', 'filter']:
                 if geo_type == 'primitive' and value != DEFAULT_PRIMITIVE_PARAMS[key]:
                     clean_dict[geo][key] = value
-            
+                elif geo_type == 'parametric'and value != DEFAULT_PARAMETRIC_PARAMS[key]:
+                    clean_dict[geo][key] = value
+                elif geo_type == 'filter'and value != DEFAULT_FILTER_PARAMS[key]:
+                    clean_dict[geo][key] = value
+
     return clean_dict
-    
+
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
@@ -567,11 +636,11 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
         self.render()
-        
+
     # --- save/load ---
     def geometry_to_str(self):
         """convert geometry to string"""
-        
+
         # save tree
         tree = {}
         itr = QtWidgets.QTreeWidgetItemIterator(self.geometrytree)
@@ -583,12 +652,12 @@ class VtkWidget(QtWidgets.QWidget):
             for i in  range(item.childCount()):
                 tree[text].append(item.child(i).text(0))
             itr += 1
-        
+
         data = {'geometry_dict': clean_geo_dict(self.geometrydict),
                 'tree':tree}
 
         return json.dumps(data)
-    
+
     def geometry_from_str(self, string):
         """convert string to geometry"""
         try:
@@ -596,12 +665,13 @@ class VtkWidget(QtWidgets.QWidget):
             tree = data['tree']
             geo_dict = data['geometry_dict']
         except Exception as e:
-            self.parent.message('Error loading geometry: %s' % e)
-        
+            self.parent.message(text='Error loading geometry: %s' % e)
+            return
+
         # convert lists to sets
         for key, value in tree.items():
             tree[key] = set(tree[key])
-            
+
         # build geometry
         for nodes in topological_sort(tree):
             for node in nodes:
@@ -610,10 +680,18 @@ class VtkWidget(QtWidgets.QWidget):
                         geo_data = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
                         geo_data.update(geo_dict[node])
                         self.add_primitive(name=node, data=geo_data)
+                    elif geo_dict[node]['geo_type'] == 'parametric':
+                        geo_data = copy.deepcopy(DEFAULT_PARAMETRIC_PARAMS)
+                        geo_data.update(geo_dict[node])
+                        self.add_parametric(name=node, data=geo_data)
+                    elif geo_dict[node]['geo_type'] == 'filter':
+                        geo_data = copy.deepcopy(DEFAULT_FILTER_PARAMS)
+                        geo_data.update(geo_dict[node])
+                        self.add_filter(name=node, data=geo_data, child=tree[key].pop())
                 else:
-                    self.parent.message('Error loading geometry: Geometry does not have parameters.')
+                    self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
-        
+
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):
@@ -691,6 +769,15 @@ class VtkWidget(QtWidgets.QWidget):
             current_index,
             'horizontal',
             )
+
+    def get_tree_item(self, name):
+        """return the tree item with name"""
+        itr = QtWidgets.QTreeWidgetItemIterator(self.geometrytree)
+        while itr.value():
+            item = itr.value()
+            if name == item.text(0):
+                return item
+            itr += 1
 
     def geometry_clicked(self, item):
         """
@@ -940,7 +1027,7 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             return
 
-        if data is not None:
+        if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
             self.geometrydict[name]['type'] = primtype
         else:
@@ -1065,52 +1152,28 @@ class VtkWidget(QtWidgets.QWidget):
 
         return source
 
-    def add_parametric(self, name):
+    def add_parametric(self, paramtype=None, name=None, data=None):
         """
         Add the specified parametric object
         """
 
-        parametric_object = self.parametricdict[name]()
+        if paramtype is None:
+            paramtype = data['type']
+
+        if name is None:
+            name = get_unique_string(paramtype, list(self.geometrydict.keys()))
+
+        parametric_object = self.parametricdict[paramtype]()
         source = vtk.vtkParametricFunctionSource()
         source.SetParametricFunction(parametric_object)
 
-        self.geometrydict[name] = {
-            'translationx':       0.0,
-            'translationy':       0.0,
-            'translationz':       0.0,
-            'centerx':            0.0,
-            'centery':            0.0,
-            'centerz':            0.0,
-            'rotationx':          0.0,
-            'rotationy':          0.0,
-            'rotationz':          0.0,
-            'radius':             1.0,
-            'radiusx':            1.0,
-            'radiusy':            1.0,
-            'radiusz':            1.0,
-            'ringradius':         1.0,
-            'crosssectionradius': 0.5,
-            'zscale':             0.125,
-            'ascale':             0.8,
-            'bscale':             0.2,
-            'bfunc':              1.0,
-            'cfunc':              0.1,
-            'nfunc':              2.0,
-            'nhills':             30,
-            'variancex':          2.5,
-            'scalex':             0.3,
-            'variancey':          2.5,
-            'scaley':             0.3,
-            'amplitude':          2.0,
-            'scaleamplitude':     0.3,
-            'allowrandom':        True,
-            'n1':                 1.0,
-            'n2':                 1.0,
-            'type':               name,
-            'parametric_object':  parametric_object,
-            'source':             source,
-            'visible':            True
-        }
+        if data is None:
+            self.geometrydict[name] = copy.deepcopy(DEFAULT_PARAMETRIC_PARAMS)
+            self.geometrydict[name]['type'] = paramtype
+        else:
+            self.geometrydict[name] = data
+        self.geometrydict[name]['parametric_object'] = parametric_object
+        self.geometrydict[name]['source'] = source
 
         source = self.update_parametric(name)
 
@@ -1189,19 +1252,14 @@ class VtkWidget(QtWidgets.QWidget):
                 name = str(selection.text(0)).lower()
                 self.geometrydict[boolname]['children'].append(name)
 
-                if 'trianglefilter' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['trianglefilter']
-                elif 'booleanoperation' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['booleanoperation']
-                elif 'reader' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['transformfilter']
+                geometry = self.get_input_data(name)
+                boolean_operation.SetInputConnection(
+                    i, geometry.GetOutputPort())
 
                 # hide the sources
                 self.geometrydict[name]['actor'].VisibilityOff()
                 self.geometrydict[name]['visible'] = False
 
-                boolean_operation.SetInputConnection(i,
-                                                     geometry.GetOutputPort())
             boolean_operation.Update()
 
             mapper = vtk.vtkPolyDataMapper()
@@ -1396,101 +1454,87 @@ class VtkWidget(QtWidgets.QWidget):
 
         vtkfilter.Update()
 
-    def add_filter(self, filtertype):
+    def add_filter(self, filtertype=None, name=None, data=None, child=None):
         """
         add the selected filter with the input being the currently selected
         toplevel item
         """
 
-        current_selection = self.geometrytree.selectedItems()
-        if current_selection:
-            selection_text = str(current_selection[-1].text(0)).lower()
+        if child is not None:
+            selection_text = child
+            current_selection = [self.get_tree_item(child)]
+        else:
+            current_selection = self.geometrytree.selectedItems()
+            if current_selection:
+                selection_text = str(current_selection[-1].text(0)).lower()
 
-            name = get_unique_string(filtertype,
-                                     list(self.geometrydict.keys()))
+                name = get_unique_string(
+                    filtertype, list(self.geometrydict.keys()))
+            else:
+                return
 
-            vtkfilter = self.filterdict[filtertype]()
+        if data is None:
+            self.geometrydict[name] = copy.deepcopy(DEFAULT_FILTER_PARAMS)
+            self.geometrydict[name]['type'] = filtertype
+        else:
+            self.geometrydict[name] = data
 
-            self.geometrydict[name] = {
-                'type':                 filtertype,
-                'filter':               vtkfilter,
-                'linestopoints':        True,
-                'polystolines':         True,
-                'stripstopolys':        True,
-                'maximumholesize':      1.0,
-                'processvertices':      True,
-                'processlines':         True,
-                'targetreduction':      0.2,
-                'preservetopology':     True,
-                'splitmesh':            True,
-                'deletevertices':       False,
-                'divisionsx':           10,
-                'divisionsy':           10,
-                'divisionsz':           10,
-                'autoadjustdivisions':  True,
-                'visible':              True,
-                'relaxation':           0.01,
-                'iterations':           20,
-                'boundarysmoothing':    True,
-                'featureangle':         45.0,
-                'featureedgesmoothing': False,
-                'edgeangle':            15.0,
-                'passband':             0.1,
-                'manifoldsmoothing':    False,
-                'normalize':            False,
-                }
+        # init filter
+        if data is not None:
+            filtertype = data['type']
+        vtkfilter = self.filterdict[filtertype]()
+        self.geometrydict[name]['filter'] = vtkfilter
 
-            inputdata = self.get_input_data(selection_text)
+        # set input data
+        inputdata = self.get_input_data(selection_text)
+        vtkfilter.SetInputConnection(inputdata.GetOutputPort())
 
-            # set input data
-            vtkfilter.SetInputConnection(inputdata.GetOutputPort())
+        # update filter
+        self.update_filter(name)
 
-            # update filter
-            self.update_filter(name)
+        # hide the source
+        self.geometrydict[selection_text]['actor'].VisibilityOff()
+        self.geometrydict[selection_text]['visible'] = False
 
-            # hide the source
-            self.geometrydict[selection_text]['actor'].VisibilityOff()
-            self.geometrydict[selection_text]['visible'] = False
+        # Create a mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(vtkfilter.GetOutputPort())
+        mapper.ScalarVisibilityOff()
 
-            # Create a mapper
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(vtkfilter.GetOutputPort())
-            mapper.ScalarVisibilityOff()
+        # Create an actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
 
-            # Create an actor
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
+        self.set_geometry_actor_props(actor, name)
 
-            self.set_geometry_actor_props(actor, name)
+        # add actor to render
+        self.vtkrenderer.AddActor(actor)
 
-            # add actor to render
-            self.vtkrenderer.AddActor(actor)
+        # update
+        self.vtkrenderer.ResetCamera()
+        self.render()
 
-            # update
-            self.vtkrenderer.ResetCamera()
-            self.render()
+        # save references
+        self.geometrydict[name]['actor'] = actor
+        self.geometrydict[name]['mapper'] = mapper
 
-            # save references
-            self.geometrydict[name]['actor'] = actor
-            self.geometrydict[name]['mapper'] = mapper
+        # Add to tree
+        toplevel = QtWidgets.QTreeWidgetItem([name])
+        toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
+        toplevel.setCheckState(0, QtCore.Qt.Checked)
 
-            # Add to tree
-            toplevel = QtWidgets.QTreeWidgetItem([name])
-            toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
-            toplevel.setCheckState(0, QtCore.Qt.Checked)
+        # remove children from tree
+        for select in current_selection:
+            toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
+            item = self.geometrytree.takeTopLevelItem(toplevelindex)
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            toplevel.addChild(item)
 
-            # remove children from tree
-            for select in current_selection:
-                toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
-                item = self.geometrytree.takeTopLevelItem(toplevelindex)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
-                toplevel.addChild(item)
-
-            self.geometrytree.addTopLevelItem(toplevel)
-            self.geometrytree.setCurrentItem(toplevel)
+        self.geometrytree.addTopLevelItem(toplevel)
+        self.geometrytree.setCurrentItem(toplevel)
 
     def get_input_data(self, name):
-        """ based on the type of geomtry, return the data """
+        """ based on the type of geometry, return the data """
 
         if 'trianglefilter' in self.geometrydict[name]:
             inputdata = self.geometrydict[name]['trianglefilter']
