@@ -150,6 +150,20 @@ DEFAULT_FILTER_PARAMS = {
     'geo_type':             'filter',
     'type':                 ''}
 
+DEFAULT_BOOLEAN_PARAMS = {
+    'children': [],
+    'visible':  True,
+    'type':     '',
+    'geo_type': 'boolean',
+    }
+
+DEFAULT_PARAMS = {
+    'primitive':   DEFAULT_PRIMITIVE_PARAMS,
+    'parametric':  DEFAULT_PARAMETRIC_PARAMS,
+    'filter':      DEFAULT_FILTER_PARAMS,
+    'boolean':     DEFAULT_BOOLEAN_PARAMS
+}
+
 def clean_geo_dict(d):
     clean_dict = {}
 
@@ -163,12 +177,15 @@ def clean_geo_dict(d):
             # filter out vtk objects
             if key not in ['mapper', 'actor', 'reader', 'transform',
                            'transformfilter', 'center_filter', 'source',
-                           'trianglefilter', 'parametric_object', 'filter']:
+                           'trianglefilter', 'parametric_object', 'filter',
+                           'booleanoperation']:
                 if geo_type == 'primitive' and value != DEFAULT_PRIMITIVE_PARAMS[key]:
                     clean_dict[geo][key] = value
                 elif geo_type == 'parametric'and value != DEFAULT_PARAMETRIC_PARAMS[key]:
                     clean_dict[geo][key] = value
                 elif geo_type == 'filter'and value != DEFAULT_FILTER_PARAMS[key]:
+                    clean_dict[geo][key] = value
+                elif geo_type == 'boolean'and value != DEFAULT_BOOLEAN_PARAMS[key]:
                     clean_dict[geo][key] = value
 
     return clean_dict
@@ -676,18 +693,18 @@ class VtkWidget(QtWidgets.QWidget):
         for nodes in topological_sort(tree):
             for node in nodes:
                 if node in geo_dict and 'geo_type' in geo_dict[node]:
+                    geo_data = copy.deepcopy(DEFAULT_PARAMS[geo_dict[node]['geo_type']])
+                    geo_data.update(geo_dict[node])
                     if geo_dict[node]['geo_type'] == 'primitive':
-                        geo_data = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
-                        geo_data.update(geo_dict[node])
                         self.add_primitive(name=node, data=geo_data)
                     elif geo_dict[node]['geo_type'] == 'parametric':
-                        geo_data = copy.deepcopy(DEFAULT_PARAMETRIC_PARAMS)
-                        geo_data.update(geo_dict[node])
                         self.add_parametric(name=node, data=geo_data)
                     elif geo_dict[node]['geo_type'] == 'filter':
-                        geo_data = copy.deepcopy(DEFAULT_FILTER_PARAMS)
-                        geo_data.update(geo_dict[node])
-                        self.add_filter(name=node, data=geo_data, child=tree[key].pop())
+                        self.add_filter(name=node, data=geo_data,
+                                        child=tree[node].pop())
+                    elif geo_dict[node]['geo_type'] =='boolean':
+                        self.boolean_operation(boolname=node, data=geo_data,
+                                               children=tree[node])
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
@@ -1221,79 +1238,86 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
 
-    def boolean_operation(self, booltype):
+    def boolean_operation(self, booltype=None, boolname=None, data=None, children=None):
         """
         Apply a boolean operation with the currently selected toplevel items.
         """
 
-        current_selection = self.geometrytree.selectedItems()
+        if children is not None:
+            current_selection = []
+            for child in children:
+                current_selection.append(self.get_tree_item(child))
+        else:
+            current_selection = self.geometrytree.selectedItems()
+            if len(current_selection) != 2:
+                return
 
-        if len(current_selection) == 2:
+        if boolname is None:
+            boolname = get_unique_string(booltype, list(self.geometrydict.keys()))
 
-            # Save references
-            boolname = get_unique_string(booltype,
-                                         list(self.geometrydict.keys()))
-            self.geometrydict[boolname] = {
-                'type':     booltype,
-                'children': [],
-                'visible':  True,
-            }
+        # Save references
+        if data is not None:
+            self.geometrydict[boolname] = data
+            booltype = data['type']
+        else:
+            self.geometrydict[boolname] = copy.deepcopy(DEFAULT_BOOLEAN_PARAMS)
+            self.geometrydict[boolname]['type'] = booltype
 
-            boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
+        boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
 
-            if booltype == 'union':
-                boolean_operation.SetOperationToUnion()
-            elif booltype == 'intersection':
-                boolean_operation.SetOperationToIntersection()
-            else:
-                boolean_operation.SetOperationToDifference()
+        if booltype == 'union':
+            boolean_operation.SetOperationToUnion()
+        elif booltype == 'intersection':
+            boolean_operation.SetOperationToIntersection()
+        else:
+            boolean_operation.SetOperationToDifference()
 
-            for i, selection in enumerate(current_selection):
-                name = str(selection.text(0)).lower()
-                self.geometrydict[boolname]['children'].append(name)
+        for i, selection in enumerate(current_selection):
+            name = str(selection.text(0)).lower()
+            self.geometrydict[boolname]['children'].append(name)
 
-                geometry = self.get_input_data(name)
-                boolean_operation.SetInputConnection(
-                    i, geometry.GetOutputPort())
+            geometry = self.get_input_data(name)
+            boolean_operation.SetInputConnection(
+                i, geometry.GetOutputPort())
 
-                # hide the sources
-                self.geometrydict[name]['actor'].VisibilityOff()
-                self.geometrydict[name]['visible'] = False
+            # hide the sources
+            self.geometrydict[name]['actor'].VisibilityOff()
+            self.geometrydict[name]['visible'] = False
 
-            boolean_operation.Update()
+        boolean_operation.Update()
 
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(boolean_operation.GetOutputPort())
-            mapper.ScalarVisibilityOff()
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(boolean_operation.GetOutputPort())
+        mapper.ScalarVisibilityOff()
 
-            actor = vtk.vtkActor()
-            actor.SetMapper(mapper)
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
 
-            self.set_geometry_actor_props(actor, boolname)
+        self.set_geometry_actor_props(actor, boolname)
 
-            self.vtkrenderer.AddActor(actor)
+        self.vtkrenderer.AddActor(actor)
 
-            self.render()
+        self.render()
 
-            # save references
-            self.geometrydict[boolname]['booleanoperation'] = boolean_operation
-            self.geometrydict[boolname]['mapper'] = mapper
-            self.geometrydict[boolname]['actor'] = actor
+        # save references
+        self.geometrydict[boolname]['booleanoperation'] = boolean_operation
+        self.geometrydict[boolname]['mapper'] = mapper
+        self.geometrydict[boolname]['actor'] = actor
 
-            # Add to tree
-            toplevel = QtWidgets.QTreeWidgetItem([boolname])
-            toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
-            toplevel.setCheckState(0, QtCore.Qt.Checked)
+        # Add to tree
+        toplevel = QtWidgets.QTreeWidgetItem([boolname])
+        toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
+        toplevel.setCheckState(0, QtCore.Qt.Checked)
 
-            # remove children from tree
-            for select in current_selection:
-                toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
-                item = self.geometrytree.takeTopLevelItem(toplevelindex)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
-                toplevel.addChild(item)
+        # remove children from tree
+        for select in current_selection:
+            toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
+            item = self.geometrytree.takeTopLevelItem(toplevelindex)
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            toplevel.addChild(item)
 
-            self.geometrytree.addTopLevelItem(toplevel)
-            self.geometrytree.setCurrentItem(toplevel)
+        self.geometrytree.addTopLevelItem(toplevel)
+        self.geometrytree.setCurrentItem(toplevel)
 
     def clear_all_geometry(self):
         """ remove all geometry """
