@@ -1260,14 +1260,22 @@ class MfixGui(QtWidgets.QMainWindow,
                                        (re_err_2000, 'invalid')):
                 match = re_err.search(line)
             if match:
-                lineno = int(match.group(1))
-                bad_line = self.datfile_lines[lineno-1]
+                try:
+                    lineno = int(match.group(1))
+                except ValueError:
+                    return
+                try:
+                    bad_line = self.datfile_lines[lineno-1]
+                except IndexError:
+                    return
                 break
         # TODO:  colorize errors in source view (red)
         if bad_line:
-            key = bad_line.split("=", 1)[0].strip()
-            self.report_keyword_error(key, bad_line, err_type)
-
+            try:
+                key = bad_line.split("=", 1)[0].strip()
+                self.report_keyword_error(key, bad_line, err_type)
+            except:
+                pass # Don't introduce additional errors in error handler
 
 
     def report_keyword_error(self, key, line, err_type='deprecated'):
