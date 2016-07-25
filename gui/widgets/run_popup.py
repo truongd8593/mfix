@@ -425,7 +425,7 @@ class RunPopup(QDialog):
                         self.project.nodesj.value *
                         self.project.nodesk.value)
 
-            dmp = ['mpirun', '-np', str(mpiranks), self.mfix_exe]
+            dmp = ['mpirun', '-np', str(mpiranks)]
         else:
             dmp = []
 
