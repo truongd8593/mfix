@@ -93,13 +93,9 @@ class RunPopup(QDialog):
             ui.spinbox_threads.setValue(int(env_threads))
         else:
             ui.spinbox_threads.setValue(1)
-        try:
-            ui.spinbox_keyword_nodesi.setValue(self.project.get_value('nodesi'))
-            ui.spinbox_keyword_nodesj.setValue(self.project.get_value('nodesj'))
-            ui.spinbox_keyword_nodesk.setValue(self.project.get_value('nodesk'))
-            self.NODES_SET = True
-        except:
-            self.NODES_SET = False
+        ui.spinbox_keyword_nodesi.setValue(self.project.get_value('nodesi', default=1))
+        ui.spinbox_keyword_nodesj.setValue(self.project.get_value('nodesj', default=1))
+        ui.spinbox_keyword_nodesk.setValue(self.project.get_value('nodesk', default=1))
 
         if len(self.mfix_exe_list) > 0:
             self.mfix_available = True
@@ -177,13 +173,12 @@ class RunPopup(QDialog):
                  os.environ["OMP_NUM_THREADS"])
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
 
-        if self.NODES_SET:
-            self.project.updateKeyword('nodesi',
-                                       self.ui.spinbox_keyword_nodesi.value())
-            self.project.updateKeyword('nodesj',
-                                       self.ui.spinbox_keyword_nodesj.value())
-            self.project.updateKeyword('nodesk',
-                                       self.ui.spinbox_keyword_nodesk.value())
+        self.project.updateKeyword('nodesi',
+                                    self.ui.spinbox_keyword_nodesi.value())
+        self.project.updateKeyword('nodesj',
+                                    self.ui.spinbox_keyword_nodesj.value())
+        self.project.updateKeyword('nodesk',
+                                    self.ui.spinbox_keyword_nodesk.value())
         self.persist_selected_exe(self.mfix_exe)
         self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
