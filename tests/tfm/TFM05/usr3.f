@@ -4,7 +4,7 @@
 !  Author: Avinash Vaidheeswaran                      Date: July, 2016 C
 !  Reviewer: J.Musser                                                  C
 !                                                                      C
-!  Purpose: Calculates teh exact solution to the Couette flow case and C
+!  Purpose: Calculates the exact solution to the Couette flow case and C
 !  compares with the MFIX solution.                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
