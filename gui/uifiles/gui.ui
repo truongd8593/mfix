@@ -544,7 +544,7 @@ QPushButton:checked {
               <enum>QFrame::Plain</enum>
              </property>
              <property name="currentIndex">
-              <number>3</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="modeler">
               <property name="styleSheet">
@@ -569,8 +569,8 @@ QPushButton:checked {
                <item>
                 <widget class="QTreeWidget" name="treewidget_navigation">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
+                  <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
@@ -751,8 +751,8 @@ QPushButton:checked {
                <item>
                 <widget class="QStackedWidget" name="stackedWidgetTaskPane">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-                   <horstretch>3</horstretch>
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
