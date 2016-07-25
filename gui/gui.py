@@ -326,7 +326,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # We expect "rootIsDecorated" has been set False in the .ui file
         ui.treewidget_navigation.expandAll()
         ui.treewidget_navigation.setExpandsOnDoubleClick(False)
-
+        ui.treewidget_navigation.setMaximumWidth(ui.treewidget_navigation.sizeHintForColumn(0))
 
         # Job manager / monitor
         self.job_manager = JobManager(self)
