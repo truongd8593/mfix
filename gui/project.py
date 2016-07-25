@@ -44,7 +44,8 @@ import math
 import warnings
 import traceback
 from collections import OrderedDict
-import json
+from json import JSONDecoder, JSONEncoder
+
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -67,6 +68,11 @@ from regexes import *
 from constants import *
 
 NaN = float('NaN')
+
+#TODO: will this work if saved in python2 and opened in python3?
+PYTHON_TYPE_DICT = {}
+for type in [float, int, bool]:
+    PYTHON_TYPE_DICT[str(type)] = type
 
 class FloatExp(float):
     fmt = '4'
@@ -199,6 +205,54 @@ def remove_spaces_from_equations(string):
     return ret
 
 
+# --- json extension ---
+class ExtendedJSON(object):
+    @staticmethod
+    def dumps(obj):
+        return EquationAwareJSONEncoder().encode(obj)
+
+    @staticmethod
+    def loads(string):
+        return EquationAwareJSONDecoder().decode(string)
+
+
+class EquationAwareJSONEncoder(JSONEncoder):
+    """
+    JSONEncoder that handles Equation objects
+    """
+    def default(self, obj):
+        if isinstance(obj, Equation):
+            return {
+                '__type__' : 'equation',
+                'eq' : obj.eq,
+                'type' : str(obj.dtype),
+                }
+        else:
+            return JSONEncoder.default(self, obj)
+
+
+class EquationAwareJSONDecoder(JSONDecoder):
+    """
+    JSONDecoder that handles Equation onjects.
+    """
+
+    def __init__(self):
+            JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+
+    def dict_to_object(self, d):
+        if '__type__' not in d:
+            return d
+
+        type = d.pop('__type__')
+        if type == 'equation':
+            return Equation(d['eq'], PYTHON_TYPE_DICT[d['type']])
+        else:
+            # Oops... better put this back together.
+            d['__type__'] = type
+            return d
+
+
+# --- project base ---
 class Equation(object):
     """represents a simple arithmetic expression, which can be evaluated
     by simple_eval, in a namespace which includes the math constants 'e'
@@ -210,6 +264,9 @@ class Equation(object):
         eq = str(eq)
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
+        if ',<type' in eq:
+            eq, dtype = eq.split(',')
+            dtype = PARAMETER_DICT[dtype]
         self.eq = eq
         self.dtype = dtype
 
@@ -258,7 +315,8 @@ class Equation(object):
         return ''.join(['@(', str(self.eq), ')'])
 
     def dumps(self):
-        return '%s #!MFIX-GUI eq{%s}' % (self.dtype(self._eval()), self.eq)
+        return '%s #!MFIX-GUI eq{%s}' % (
+            self.dtype(self._eval()), ','.join([self.eq, str(self.dtype)]))
 
     def __cmp__(self, value):
         if float(self._eval()) < value:
@@ -1496,7 +1554,7 @@ class Project(object):
 
     def parameters_from_str(self, string):
         """load parameter data from a saved string"""
-        loaded_data = json.loads(string)
+        loaded_data = ExtendedJSON.loads(string)
 
         if 'order' not in loaded_data:
             return
@@ -1514,7 +1572,7 @@ class Project(object):
         data = {'order': list(PARAMETER_DICT.keys()),
                 'parameters': PARAMETER_DICT
                 }
-        return json.dumps(data)
+        return ExtendedJSON.dumps(data)
 
     def update_parameter_map(self, new_value, key, args):
         """update the mapping of parameters and keywords"""

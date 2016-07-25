@@ -4,7 +4,6 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import copy
 from collections import OrderedDict
-import json
 
 # 3rd party imports
 import numpy as np
@@ -25,7 +24,7 @@ except ImportError:
 from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, make_callback, topological_sort)
 from widgets.base import LineEdit
-from project import Equation
+from project import Equation, ExtendedJSON
 
 CELL_TYPE_ENUM = {
     0:  'empty_cell',
@@ -156,12 +155,28 @@ DEFAULT_BOOLEAN_PARAMS = {
     'type':     '',
     'geo_type': 'boolean',
     }
+    
+DEFAULT_STL_PARAMS = {
+    'type':            'stl',
+    'filename':        None,
+    'centerx':         0.0,
+    'centery':         0.0,
+    'centerz':         0.0,
+    'rotationx':       0.0,
+    'rotationy':       0.0,
+    'rotationz':       0.0,
+    'translationx':    0.0,
+    'translationy':    0.0,
+    'translationz':    0.0,
+    'visible':         True,
+    'geo_type':        'stl'}
 
 DEFAULT_PARAMS = {
     'primitive':   DEFAULT_PRIMITIVE_PARAMS,
     'parametric':  DEFAULT_PARAMETRIC_PARAMS,
     'filter':      DEFAULT_FILTER_PARAMS,
-    'boolean':     DEFAULT_BOOLEAN_PARAMS
+    'boolean':     DEFAULT_BOOLEAN_PARAMS,
+    'stl':         DEFAULT_STL_PARAMS,
 }
 
 def clean_geo_dict(d):
@@ -174,20 +189,13 @@ def clean_geo_dict(d):
             geo_type = geo_dict['geo_type']
         clean_dict[geo]['geo_type'] = geo_type
         for key, value in geo_dict.items():
-            # filter out vtk objects
+            # filter out vtk objects/default values
             if key not in ['mapper', 'actor', 'reader', 'transform',
                            'transformfilter', 'center_filter', 'source',
                            'trianglefilter', 'parametric_object', 'filter',
                            'booleanoperation']:
-                if geo_type == 'primitive' and value != DEFAULT_PRIMITIVE_PARAMS[key]:
+                if isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]:
                     clean_dict[geo][key] = value
-                elif geo_type == 'parametric'and value != DEFAULT_PARAMETRIC_PARAMS[key]:
-                    clean_dict[geo][key] = value
-                elif geo_type == 'filter'and value != DEFAULT_FILTER_PARAMS[key]:
-                    clean_dict[geo][key] = value
-                elif geo_type == 'boolean'and value != DEFAULT_BOOLEAN_PARAMS[key]:
-                    clean_dict[geo][key] = value
-
     return clean_dict
 
 
@@ -673,12 +681,12 @@ class VtkWidget(QtWidgets.QWidget):
         data = {'geometry_dict': clean_geo_dict(self.geometrydict),
                 'tree':tree}
 
-        return json.dumps(data)
+        return ExtendedJSON.dumps(data)
 
     def geometry_from_str(self, string):
         """convert string to geometry"""
         try:
-            data = json.loads(string)
+            data = ExtendedJSON.loads(string)
             tree = data['tree']
             geo_dict = data['geometry_dict']
         except Exception as e:
@@ -705,6 +713,9 @@ class VtkWidget(QtWidgets.QWidget):
                     elif geo_dict[node]['geo_type'] =='boolean':
                         self.boolean_operation(boolname=node, data=geo_data,
                                                children=tree[node])
+                    elif geo_dict[node]['geo_type'] =='stl':
+                        self.add_stl(None, filename=geo_dict[node]['filename'],
+                                     name=node, data=geo_data)
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
@@ -812,7 +823,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.render()
 
-    def add_stl(self, widget, filename=None):
+    def add_stl(self, widget, filename=None, name=None, data=None):
         """
         Open browse dialog and load selected stl file
         """
@@ -829,8 +840,15 @@ class VtkWidget(QtWidgets.QWidget):
             filename = str(filename)
 
         if filename:
-            name = os.path.basename(filename).lower()
-            name = get_unique_string(name, list(self.geometrydict.keys()))
+            if name is None:
+                name = os.path.basename(filename).lower()
+                name = get_unique_string(name, list(self.geometrydict.keys()))
+
+            if data is not None:
+                self.geometrydict[name] = data
+            else:
+                self.geometrydict[name] = copy.deepcopy(DEFAULT_STL_PARAMS)
+            self.geometrydict[name]['filename'] = filename
 
             # reader
             reader = vtk.vtkSTLReader()
@@ -865,25 +883,15 @@ class VtkWidget(QtWidgets.QWidget):
             center = center_filter.GetCenter()
 
             # Add to dict
-            self.geometrydict[name] = {
-                'reader':          reader,
-                'transform':       transform,
-                'transformfilter': transform_filter,
-                'center_filter':   center_filter,
-                'mapper':          mapper,
-                'actor':           actor,
-                'type':            'stl',
-                'centerx':         center[0],
-                'centery':         center[1],
-                'centerz':         center[2],
-                'rotationx':       0.0,
-                'rotationy':       0.0,
-                'rotationz':       0.0,
-                'translationx':    0.0,
-                'translationy':    0.0,
-                'translationz':    0.0,
-                'visible':         True,
-                }
+            self.geometrydict[name]['reader'] = reader
+            self.geometrydict[name]['transform'] = transform
+            self.geometrydict[name]['transformfilter'] = transform_filter
+            self.geometrydict[name]['center_filter'] = center_filter
+            self.geometrydict[name]['mapper'] = mapper
+            self.geometrydict[name]['actor'] = actor
+            self.geometrydict[name]['centerx'] = center[0]
+            self.geometrydict[name]['centery'] = center[1]
+            self.geometrydict[name]['centerz'] = center[2]
 
             # Add to tree
             item = QtWidgets.QTreeWidgetItem([name])

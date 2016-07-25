@@ -5,7 +5,6 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
-import json
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtGui, QtCore
@@ -18,7 +17,7 @@ from qtpy import uic
 # local imports
 from tools.general import (get_unique_string, widget_iter, CellColor,
                            get_image_path)
-from project import Equation
+from project import Equation, ExtendedJSON
 
 
 class RegionsWidget(QtWidgets.QWidget):
@@ -387,11 +386,11 @@ class RegionsWidget(QtWidgets.QWidget):
                     data['regions'][region][key] = self.tablewidget_regions.value[region][key].color
                 else:
                     data['regions'][region][key] = self.tablewidget_regions.value[region][key]
-        return json.dumps(data)
+        return ExtendedJSON.dumps(data)
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
-        loaded_data = json.loads(string) # Order of dict has been lost
+        loaded_data = ExtendedJSON.loads(string) # Order of dict has been lost
 
         if 'order' not in loaded_data:
             return

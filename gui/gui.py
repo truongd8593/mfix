@@ -1947,7 +1947,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry_file):
+        if os.path.exists(geometry_file) and not 'geometry' in self.project.mfix_gui_comments:
             self.vtkwidget.add_stl(None, filename=geometry_file)
         # TODO: load more geometry
 
