@@ -69,10 +69,8 @@ from constants import *
 
 NaN = float('NaN')
 
-#TODO: will this work if saved in python2 and opened in python3?
-PYTHON_TYPE_DICT = {}
-for type in [float, int, bool]:
-    PYTHON_TYPE_DICT[str(type)] = type
+PYTHON_TYPE_DICT = {'float':float, 'int':int, 'bool':bool}
+PYTHON_TYPE_DICT_REVERSE = dict([(val, key) for key,val in PYTHON_TYPE_DICT.items()])
 
 class FloatExp(float):
     fmt = '4'
@@ -225,7 +223,7 @@ class EquationAwareJSONEncoder(JSONEncoder):
             return {
                 '__type__' : 'equation',
                 'eq' : obj.eq,
-                'type' : str(obj.dtype),
+                'type' : PYTHON_TYPE_DICT_REVERSE[obj.dtype],
                 }
         else:
             return JSONEncoder.default(self, obj)
@@ -264,9 +262,9 @@ class Equation(object):
         eq = str(eq)
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
-        if ',<type' in eq:
+        if ',' in eq:
             eq, dtype = eq.split(',')
-            dtype = PARAMETER_DICT[dtype]
+            dtype = PYTHON_TYPE_DICT[dtype]
         self.eq = eq
         self.dtype = dtype
 
@@ -316,7 +314,7 @@ class Equation(object):
 
     def dumps(self):
         return '%s #!MFIX-GUI eq{%s}' % (
-            self.dtype(self._eval()), ','.join([self.eq, str(self.dtype)]))
+            self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, value):
         if float(self._eval()) < value:

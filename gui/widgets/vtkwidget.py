@@ -1694,7 +1694,6 @@ class VtkWidget(QtWidgets.QWidget):
             source = self.region_dict[name]['source']
         else:
             source = None
-
         lengths = [abs(float(to) - float(f)) for
                    f, to in zip(props['from'], props['to'])]
         center = [min(f) + l / 2.0 for f, l in
