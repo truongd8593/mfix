@@ -4,10 +4,14 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy.QtWidgets import QLineEdit
+
 UserRole = QtCore.Qt.UserRole
 
 from widgets.regions_popup import RegionsPopup
-from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
+from widgets.base import LineEdit
+
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_row, widget_iter)
 
 """
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
@@ -27,7 +31,8 @@ Group tab inputs by equation type (e.g., momentum, energy, species). Making the 
 inputs a 'collapsible list' may make navigation easier.
 
 Fluid (tab)
- Define volume fraction
+
+Define volume fraction
  Specification always available
  Sets keyword IC_EP_G(#)
  DEFAULT value of 1.0
@@ -256,6 +261,12 @@ class ICS(object):
         enabled = (row is not None)
         ics.toolbutton_delete.setEnabled(enabled)
         ics.scrollarea.setEnabled(enabled)
+        if not enabled:
+            # Clear
+            for widget in widget_iter(ics.scrollarea):
+                if isinstance(widget, QLineEdit):
+                    widget.setText('')
+            return
 
     def fixup_table(self, tw, stretch_column=0):
         hv = QtWidgets.QHeaderView
@@ -296,6 +307,8 @@ class ICS(object):
 
         self.fixup_table(ui.initial_conditions.tablewidget_regions)
         self.handle_ics_region_selection()
+
+
 
     def ics_check_region_in_use(self, region):
         return any(data.get('region')==region for data in self.ics.values())
