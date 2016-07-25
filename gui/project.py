@@ -388,13 +388,6 @@ class Base(object):
         self._keyword_dict = {}
         self.delete = False
 
-    def __getattr__(self, name):
-        if name in self._keyword_dict:
-            return self._keyword_dict[name].value
-        else:
-            # Default behaviour
-            raise AttributeError(name)
-
     def __getitem__(self, name):
         return self._keyword_dict[name]
 
