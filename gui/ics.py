@@ -199,12 +199,12 @@ class ICS(object):
         for region_name in selections:
             i = self.ics_find_index()
             indices.append(i)
-            self.ics[i] = {'region': region_name}
+            self.ics[i] = {'region': region_name, 'keys':{}}
             region_data = self.region_dict.get(region_name)
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
-            self.ics_set_boundary_keys(region_name, i, region_data)
+            self.ics_set_region_keys(region_name, i, region_data)
 
         item.setData(UserRole, (indices, selections))
 
@@ -227,8 +227,10 @@ class ICS(object):
             return
 
         for i in self.ics_current_indices:
-            self.ics_indices.remove(i)
-            # TODO: unset all associated keywords
+            key_dict = self.ics[i].get('keys', {})
+            for (key, args) in key_dict.keys():
+                self.unset_keyword(key, args=args)
+            del self.ics[i]
             # TODO: fix any resulting 'holes' in sequence
         for r in self.ics_current_regions:
             if r in self.region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
@@ -256,8 +258,6 @@ class ICS(object):
         ics.scrollarea.setEnabled(enabled)
 
     def fixup_table(self, tw, stretch_column=0):
-        # fixme, this is getting called excessively
-        # Should we just hide the entire table (including header) if no rows?
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -295,6 +295,7 @@ class ICS(object):
                 self.region_dict[region]['available'] = False
 
         self.fixup_table(ui.initial_conditions.tablewidget_regions)
+        self.handle_ics_region_selection()
 
     def ics_check_region_in_use(self, region):
         return any(data.get('region')==region for data in self.ics.values())
@@ -302,11 +303,12 @@ class ICS(object):
     def ics_update_region(self, name, data):
         for (i,ic) in self.ics.items():
             if ic.get('region') == name:
-                self.ics_set_boundary_keys(name, i, data)
+                self.ics_set_region_keys(name, i, data)
 
-    def ics_set_boundary_keys(self, name, index,  data):
+    def ics_set_region_keys(self, name, index,  data):
+        # Update the keys which define the box-shaped region the IC applies to
         for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[index])
-            self.ics[index][key] = val
+            self.ics[index]['keys'][(key,index)] = val
