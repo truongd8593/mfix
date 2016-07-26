@@ -947,13 +947,13 @@ class MfixGui(QtWidgets.QMainWindow,
                     if description is not None:
                         widget.help_text = description
                         widget.setWhatsThis(description)
+                        widget.setToolTip('%s<br/>' % doc['description'])
 
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
                         widget.allow_parameters = True
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
-                    widget.setToolTip('%s<br/>' % doc['description'])
                 else:
                     log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
                     continue

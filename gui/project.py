@@ -318,12 +318,10 @@ class Equation(object):
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, value):
-        if float(self._eval()) < value:
-            return -1
-        elif float(self._eval()) > value:
-            return 1
-        elif float(self._eval()) == value:
-            return 0
+        eq = float(self._eval())
+        if eq < value: return -1
+        elif eq > value: return 1
+        elif eq == value: return 0
 
     def __add__(self, value):
         return float(self._eval()) + float(value)

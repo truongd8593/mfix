@@ -264,11 +264,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
         # stl
         self.combobox_stl_shape.updateValue(None, data['stl_shape'])
-
         self.checkbox_slice_facets.updateValue(None, data['slice'])
-
         self.lineedit_deviation_angle.updateValue(None, data['deviation_angle'])
-
         for widget, value in zip([self.lineedit_filter_x,
                                   self.lineedit_filter_y,
                                   self.lineedit_filter_z],

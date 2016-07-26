@@ -174,7 +174,7 @@ DEFAULT_FUNCTIONS = {"rand": random, "randint": random_int,
                      "int": int, "float": float,
                      "sin": math.sin, "cos": math.cos, "tan": math.tan,
                      "asin": math.asin, "acos": math.acos, "atan": math.atan,
-                     
+                     "exp": math.exp, "log": math.log, "log10": math.log10,
                      }
 
 DEFAULT_NAMES = {"True": True, "False": False, 'e': math.e, 'pi': math.pi}
