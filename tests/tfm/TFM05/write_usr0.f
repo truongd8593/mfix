@@ -10,12 +10,12 @@
       SUBROUTINE WRITE_USR0
 
       use compar, only: myPE, PE_IO
-
       IMPLICIT NONE
 
       IF(myPE /= PE_IO) RETURN
 
       CALL WRITE_DAT_HEADER('POST_VEL.dat','Vel')
+
 
       RETURN
 

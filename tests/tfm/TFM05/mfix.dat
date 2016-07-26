@@ -19,9 +19,9 @@
   UNITS = 'SI'
   RUN_TYPE = 'NEW'
 
-  TIME =  0.0 ! Steady state solution
+  TIME = 0.0 ! Steady state solution
 
-  MOMENTUM_Y_EQ(0) = .F.
+!  MOMENTUM_Y_EQ(0) = .F.
   
   ENERGY_EQ =     .F.
   SPECIES_EQ(0) = .F.
@@ -33,29 +33,26 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  MAX_NIT = 5000000
-  TOL_RESID = 1.0E-12
+  MAX_NIT = 50000
+  TOL_RESID = 1.0E-10
 
   LEQ_PC = 9*'NONE'
-
-  DISCRETIZE = 9*2
-
-#  LEQ_TOL(1) = 1.0E-8
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
 
   COORDINATES   = 'CARTESIAN'
 
-  XLENGTH = 0.10     IMAX =  3
+  XLENGTH = 1.00     IMAX =  3
   ZLENGTH = 1.00     NO_K = .T.
+
   YLENGTH = 0.01   ! JMAX passed as argument
 
 #_______________________________________________________________________
 # GAS-PHASE SECTION
 
   RO_g0 = 1.00      ! (kg/m3)
-  MU_g0 = 1.57d-5   ! (Pa.s)
+  MU_g0 = 5.00d-6   ! (Pa.s)
 
 #_______________________________________________________________________
 # SOLIDS-PHASE SECTION
@@ -66,25 +63,19 @@
 # INITIAL CONDITIONS SECTION
 
   IC_X_w(1) =   0.00  ! (m)
-  IC_X_e(1) =   0.10  ! (m)
+  IC_X_e(1) =   1.00  ! (m)
   IC_Y_s(1) =   0.00  ! (m)
   IC_Y_n(1) =   0.01  ! (m)
 
   IC_EP_g(1) =  1.00
 
-  IC_P_g(1) = 0.0
+  IC_P_g(1) =   0.00  ! (Pa)
 
-  IC_U_g(1) =   5.00  ! (m/sec)
+  IC_U_g(1) =   0.00  ! (m/sec)
   IC_V_g(1) =   0.00  ! (m/sec)
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
-
-! The east and west boundareis are cyclic. The specified pressure drop,
-! DELP_X, is passed as a runtime argument.
-!---------------------------------------------------------------------//
-  CYCLIC_X_PD = .TRUE.
-! DELP_X = -passed as argument-
 
 
 ! The north was has a constant velocity of 10.0 m/s, and is set using
@@ -92,24 +83,33 @@
 ! and hw=unsepcified (i.e., no-slip moving wall).
 !---------------------------------------------------------------------//
   BC_X_w(1) =   0.00  ! (m)
-  BC_X_e(1) =   0.10  ! (m)
+  BC_X_e(1) =   1.00  ! (m)
   BC_Y_s(1) =   0.01  ! (m)
   BC_Y_n(1) =   0.01  ! (m)
 
   BC_TYPE(1)  = 'PSW'
 
-  BC_Uw_g(1) = 10.00  ! (m/sec)
-  BC_Vw_g(1) =  0.00  ! (m/sec)
+  BC_Uw_g(1) = 10.00   ! (m/sec)
+  BC_Vw_g(1) =  0.00   ! (m/sec)
 
 
 ! The south wal is a stational no-slip wall (NSW).
 !---------------------------------------------------------------------//
   BC_X_w(2) =   0.00  ! (m)
-  BC_X_e(2) =   0.10  ! (m)
+  BC_X_e(2) =   1.00  ! (m)
   BC_Y_s(2) =   0.00  ! (m)
   BC_Y_n(2) =   0.00  ! (m)
 
   BC_TYPE(2) =  'NSW'
+
+
+! The east and west boundareis are set a runtime as cyclic with a
+! specified pressure drop (DELP_X)
+!---------------------------------------------------------------------//
+  CYCLIC_X_PD = .TRUE.
+! DELP_X = [-3.0, 3.0]  -passed as argument-
+
+
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
@@ -123,4 +123,3 @@
 #_______________________________________________________________________
 # DMP SETUP
 
-!  NODESI =  2  NODESJ =  2  NODESK =  1  ! set via command line

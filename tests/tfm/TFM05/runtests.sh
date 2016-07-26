@@ -3,12 +3,13 @@
 RUN_NAME="TFM05"
 rm -f POST_VEL.dat &> /dev/null
 
-for DELP_X in 0.0 1.0 -1.0; do
-  for JMAX in 16 32 64; do
+for DELP_X in -3.0 -2.0 -1.0 0.0 1.0 2.0 3.0; do
+  for JMAX in 8 16 32 64; do
     rm -f ${RUN_NAME}* &> /dev/null
     time -p ./mfix JMAX=${JMAX} DELP_X=${DELP_X}
   done
 done
+
 
 
 

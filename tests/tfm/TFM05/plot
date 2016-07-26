@@ -3,19 +3,25 @@
 reset
 #                     DATA INDEX
 #  > delP_x =  0.0
+#    * jmax =   8
+#    * jmax =  16
+#    * jmax =  32
+#    * jmax =  64
 #    * jmax = 128
-#    * jmax = 256
-#    * jmax = 512
 #                        
 #  > delP_x =  1.0
+#    * jmax =   8
+#    * jmax =  16
+#    * jmax =  32
+#    * jmax =  64
 #    * jmax = 128
-#    * jmax = 256
-#    * jmax = 512
 #                        
 #  > delP_x = -1.0
+#    * jmax =   8
+#    * jmax =  16
+#    * jmax =  32
+#    * jmax =  64
 #    * jmax = 128
-#    * jmax = 256
-#    * jmax = 512
 #                        
 
 #set style line 1 lt 2 lc rgb '#000000' lw 1 # black
@@ -42,74 +48,75 @@ set ylabel "Height (m)"
 #-------------------------------------------------------------------------------------
 
 set terminal wxt 1 size 900,400 enhanced
-#set terminal pngcairo size 900,400 enhanced font 'Verdana, 10'
-#set output "DEM01_Kn01POS.png"
 
-set multiplot layout 1,2 title "Couette Flow: Zero pressure gradient"
+set multiplot layout 1,2 title "Couette Flow: P =-3.0"
 set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside right bottom
 
 set title
-plot 'POST_VEL.dat' index 2 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 0 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 1 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 2 every 4 using 3:1 w points ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index  3 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index  0 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index  1 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index  2 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index  3 every  8 using 3:1 w points ls 10 title ' 64 mesh'
  
-
 set xlabel "abs error (m/sec)"
 set logscale x
 set xrange [*:*]
-set yrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 0 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 1 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 2 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index 0 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 1 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 2 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 3 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
 
 unset logscale x
 unset multiplot
-
-
 
 
 #-------------------------------------------------------------------------------------
 
 set terminal wxt 2 size 900,400 enhanced
 
-set multiplot layout 1,2 title "Couette Flow: Favorable pressure gradient"
+set multiplot layout 1,2 title "Couette Flow: P =-2.0"
 set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside right bottom
 
-set xrange [*:*]
-set yrange [*:*]
-
 set title
-plot 'POST_VEL.dat' index 5 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 3 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 4 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 5 every 4 using 3:1 w points ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index  7 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index  4 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index  5 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index  6 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index  7 every  8 using 3:1 w points ls 10 title ' 64 mesh'
  
-
 set xlabel "abs error (m/sec)"
 set logscale x
-set yrange [*:*]
 set xrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 3 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 4 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 5 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index 4 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 5 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 6 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 7 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
 
 unset logscale x
 unset multiplot
+
+
 
 
 
@@ -117,35 +124,184 @@ unset multiplot
 
 set terminal wxt 3 size 900,400 enhanced
 
-set multiplot layout 1,2 title "Couette Flow: Adverse pressure gradient"
+set multiplot layout 1,2 title "Couette Flow: P =-1.0"
 set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside right bottom
 
-set xrange [*:*]
-set yrange [*:*]
-
 set title
-plot 'POST_VEL.dat' index 7 using 2:1 w lines ls 11 title 'Analytic', \
-     'POST_VEL.dat' index 6 every 1 using 3:1 w points ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 7 every 2 using 3:1 w points ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 8 every 4 using 3:1 w points ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index 11 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index  8 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index  8 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index 10 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index 11 every  8 using 3:1 w points ls 10 title ' 64 mesh'
  
-
 set xlabel "abs error (m/sec)"
 set logscale x
-set yrange [*:*]
 set xrange [*:*]
+set yrange [0.0:0.01]
 
 set key reverse inside left bottom
 
 set title
 
-plot 'POST_VEL.dat' index 6 every 1 using 4:1 w linespoints ls 4 title ' 16 mesh', \
-     'POST_VEL.dat' index 7 every 2 using 4:1 w linespoints ls 6 title ' 32 mesh', \
-     'POST_VEL.dat' index 8 every 4 using 4:1 w linespoints ls 8 title ' 64 mesh'
+plot 'POST_VEL.dat' index  8 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index  9 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 10 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 11 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
 
 unset logscale x
 unset multiplot
 
+
+
+
+#-------------------------------------------------------------------------------------
+
+set terminal wxt 4 size 900,400 enhanced
+
+set multiplot layout 1,2 title "Couette Flow: P = 0.0"
+set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside right bottom
+
+set title
+plot 'POST_VEL.dat' index 15 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index 12 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index 13 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index 14 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index 15 every  8 using 3:1 w points ls 10 title ' 64 mesh'
+ 
+set xlabel "abs error (m/sec)"
+set logscale x
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside left bottom
+
+set title
+
+plot 'POST_VEL.dat' index 12 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 13 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 14 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 15 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
+
+unset logscale x
+unset multiplot
+
+
+
+
+#-------------------------------------------------------------------------------------
+
+set terminal wxt 5 size 900,400 enhanced
+
+set multiplot layout 1,2 title "Couette Flow: P = 1.0"
+set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside right bottom
+
+set title
+plot 'POST_VEL.dat' index 19 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index 16 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index 17 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index 18 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index 19 every  8 using 3:1 w points ls 10 title ' 64 mesh'
+ 
+set xlabel "abs error (m/sec)"
+set logscale x
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside left bottom
+
+set title
+
+plot 'POST_VEL.dat' index 16 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 17 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 18 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 19 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
+
+unset logscale x
+unset multiplot
+
+
+
+#-------------------------------------------------------------------------------------
+
+set terminal wxt 6 size 900,400 enhanced
+
+set multiplot layout 1,2 title "Couette Flow: P = 2.0"
+set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside right bottom
+
+set title
+plot 'POST_VEL.dat' index 23 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index 20 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index 21 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index 22 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index 23 every  8 using 3:1 w points ls 10 title ' 64 mesh'
+ 
+set xlabel "abs error (m/sec)"
+set logscale x
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside left bottom
+
+set title
+
+plot 'POST_VEL.dat' index 20 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 21 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 22 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 23 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
+
+unset logscale x
+unset multiplot
+
+
+
+#-------------------------------------------------------------------------------------
+
+set terminal wxt 7 size 900,400 enhanced
+
+set multiplot layout 1,2 title "Couette Flow: P = 3.0"
+set xlabel "Velocity (m/sec)"
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside right bottom
+
+set title
+plot 'POST_VEL.dat' index 27 using 2:1 w lines ls 11 title 'Analytic', \
+     'POST_VEL.dat' index 24 every  1 using 3:1 w points ls  4 title '  8 mesh',  \
+     'POST_VEL.dat' index 25 every  2 using 3:1 w points ls  6 title ' 16 mesh',  \
+     'POST_VEL.dat' index 26 every  4 using 3:1 w points ls  8 title ' 32 mesh',  \
+     'POST_VEL.dat' index 27 every  8 using 3:1 w points ls 10 title ' 64 mesh'
+ 
+set xlabel "abs error (m/sec)"
+set logscale x
+set xrange [*:*]
+set yrange [0.0:0.01]
+
+set key reverse inside left bottom
+
+set title
+
+plot 'POST_VEL.dat' index 24 every  1 using 4:1 w linespoints ls  4 title '   8 mesh', \
+     'POST_VEL.dat' index 25 every  2 using 4:1 w linespoints ls  6 title '  16 mesh', \
+     'POST_VEL.dat' index 26 every  4 using 4:1 w linespoints ls  8 title '  32 mesh', \
+     'POST_VEL.dat' index 27 every  8 using 4:1 w linespoints ls 10 title '  64 mesh'
+
+unset logscale x
+unset multiplot
 
