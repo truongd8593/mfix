@@ -4,144 +4,20 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QLineEdit, QPushButton
 
 UserRole = QtCore.Qt.UserRole
 
 from widgets.regions_popup import RegionsPopup
 from widgets.base import LineEdit
 
-from tools.general import (set_item_noedit, set_item_enabled, get_selected_row, widget_iter)
+from tools.general import (set_item_noedit, set_item_enabled,
+                           get_selected_row, make_callback,
+                           widget_iter)
 
 """
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
 for the described model. This section relies on regions named in the Regions section.
-The top of the task pane is where users define/select IC regions
-"""
-
-"""
-Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
-no input is required from the user.
- Fluid tab - Unavailable if the fluid phase was disabled.
-
-UI
-
-Each solid phase will have its own tab. The tab name should be the name of the solid
-Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
-inputs a 'collapsible list' may make navigation easier.
-
-Fluid (tab)
-
-Define volume fraction
- Specification always available
- Sets keyword IC_EP_G(#)
- DEFAULT value of 1.0
-
-Define temperature
- Specification always available
- Input required for any of the following
- Fluid density model: Ideal Gas Law
- Fluid viscosity model: Sutherland's Law
- Energy equations are solved
- Sets keyword IC_T_G(#)
- DEFAULT value of 293.15
-
-Define pressure (optional)
- Specification always available
- Sets keyword IC_P_g(#)
- DEFAULT - no inputDefine velocity components (required)
- Specification always available
- Sets keywords IC_U_G(#), IC_V_G(#), IC_W_G(#)
- DEFAULT value of 0.0
-
-Select species and set mass fractions (table format)
- Specification always available
- Input required for species equations
- Drop down menu of fluid species
- DEFAULT - last defined species has mass fraction of 1.0
- Error check: mass fractions must sum to one
-
-Turbulence: Define mixing length model length scale
- Specification only available with Mixing Length turbulence model
- Sets keyword IC_L_SCALE(#)
- DEFAULT value of 1.0
-
-Turbulence: Define k-ε turbulent kinetic energy
- Specification only available with K-Epsilon turbulence model
- Sets keyword IC_K_TURB_G(#)
- DEFAULT value of 0.0
-
-Turbulence: Define k-ε turbulent dissipation
- Specification only available with K-Epsilon turbulence model
- Sets keywords IC_E_TURB_G(#)
- DEFAULT value of 0.0
-
-Advanced: Define radiation coefficient
- Specification only available when solving energy equations
- Sets keyword IC_GAMA_G(#)
- DEFAULT value of 0.0
-Advanced: Define radiation temperature
- Specification only available when solving energy equations
- Sets keyword IC_T_RG(#)
- DEFAULT value of 293.15
-
-
-Solid-# (tab) - Rename tab to user provided solids name.
- Define volume fraction (required)
- Specification always available
- Sets keyword IC_EP_S(#,#)
- DEFAULT value of (0.0, 1 - SUM)
- Define temperature
- Specification always available
- Input required when solving energy equations
- Sets keyword IC_T_S(#,#)
- DEFAULT value of 293.15
- Define velocity components (required)
- Specification always available
- Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
- DEFAULT value of 0.0
- Define pressure (optional)
- Specification only available for SOLIDS_MODEL(#)='TFM'
- Sets keyword IC_P_s(#,#)
- DEFAULT of 0.0
- Define granular temperature
- Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
- formulation viscous stress model (see continuous solids model section) or for
- SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
- Sets keyword IC_THETA_M(#,#)
- DEFAULT value of 0.0
- Define particles per parcel
- Specification only available for SOLIDS_MODEL(#)='PIC'
- Sets keyword IC_PIC_CONST_STATWT(#,#)
- DEFAULT value of 10.0
- Select species and set mass fractions (table format)
- Specification always available
- Input required for species equations
- Drop down menu of solids species
- DEFAULT - last defined species has mass fraction of 1.0
- Error check: mass fractions must sum to one
-Advanced: Option to enable fitting DES particles to region
- Option only available for DEM solids
- Sets keyword: IC_DES_FIT_TO_REGION
- Disabled [DEFAULT]
-Advanced: Define radiation coefficient
- Specification only available when solving energy equations
- Sets keyword IC_GAMA_S(#,#)
- DEFAULT value of 0.0
-Advanced: Define radiation temperature
- Specification only available when solving energy equations
- Sets keyword IC_T_RS(#,#)
- DEFAULT value of 293.15
-
-
-Scalar (tab) - Tab only available if scalar equations are solved
- Define initial scalar value
- Sets keyword IC_SCALAR(#,#)
- DEFAULT value of 0.0
- Note that this tab should only be available if scalar equations are being solved.
- Furthermore, the number of scalars requiring input comes from the number of
- scalar equations specified by the user.
-
 """
 
 class ICS(object):
@@ -149,21 +25,37 @@ class ICS(object):
         ui = self.ui
         ics = ui.initial_conditions
 
+        self.ics = {} # key: index.  value: data dictionary for initial cond
+        self.ics_current_indices = [] # List of IC indices
+        self.ics_current_regions = [] # And the names of the regions which define them
+
+        # The top of the task pane is where users define/select IC regions
+        # (see handle_ics_region_selection)
+        #
         #Icons to add/remove/duplicate regions are given at the top
         #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
         #the region to apply the initial condition.
         #Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
         #define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
         #get messy, and if so, scrap this idea.
-        self.ics_current_indices = [] # List of IC indices
-        self.ics_current_regions = [] # And the names of the regions which define them
-        self.ics = {} # key: index.  value: data dictionary for initial cond
+        # (Note- Suggestion implemented)
 
         ics.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
         ics.toolbutton_delete.clicked.connect(self.ics_delete_regions)
         ics.toolbutton_delete.setEnabled(False) # Need a selection
 
         ics.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
+
+        self.ics_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
+        self.ics_current_solid = None
+        ics.pushbutton_fluid.clicked.connect(lambda: self.ics_change_tab(0,0))
+        ics.pushbutton_scalar.clicked.connect(lambda: self.ics_change_tab(2,0))
+
+        # Trim width of "Fluid" and "Scalar" buttons, like we do for
+        # dynamically-created "Solid #" buttons
+        for b in (ics.pushbutton_fluid, ics.pushbutton_scalar):
+            w = b.fontMetrics().boundingRect(b.text()).width() + 20
+            b.setMaximumWidth(w)
 
     def ics_show_regions_popup(self):
         #Users cannot select inapplicable regions.
@@ -247,6 +139,10 @@ class ICS(object):
         tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
         tw.removeRow(row)
         tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
+        row = get_selected_row(tw)
+        if row is None:
+            self.handle_ics_region_selection() # Hack to force update when removing last row
+
 
     def handle_ics_region_selection(self):
         ics = self.ui.initial_conditions
@@ -260,10 +156,10 @@ class ICS(object):
         self.ics_current_indices, self.ics_current_regions = indices, regions
         enabled = (row is not None)
         ics.toolbutton_delete.setEnabled(enabled)
-        ics.scrollarea.setEnabled(enabled)
+        ics.scrollarea_detail.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ics.scrollarea):
+            for widget in widget_iter(ics.scrollarea_detail):
                 if isinstance(widget, QLineEdit):
                     widget.setText('')
             return
@@ -296,19 +192,19 @@ class ICS(object):
         tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
-    def setup_ics(self):
-        ui = self.ui
-        self.region_dict = ui.regions.get_region_dict()
-        # Mark regions which are in use (this gets reset each time we get here)
-        for (i, data) in self.ics.items():
-            region = data['region']
-            if region in self.region_dict:
-                self.region_dict[region]['available'] = False
 
-        self.fixup_table(ui.initial_conditions.tablewidget_regions)
-        self.handle_ics_region_selection()
+    def ics_change_tab(self, tab, solid):
+        # TODO: use animate_stacked_widget here
+        ics = self.ui.initial_conditions
+        self.ics_current_tab = tab
+        self.ics_current_solid = solid
+        index = (0 if tab==0
+                 else len(self.solids)+1 if tab==2
+                 else solid)
 
-
+        ics.tab_box.removeWidget(ics.tab_underline)
+        ics.tab_box.addWidget(ics.tab_underline, 1, index)
+        # change stackedwidget contents
 
     def ics_check_region_in_use(self, region):
         return any(data.get('region')==region for data in self.ics.values())
@@ -325,3 +221,186 @@ class ICS(object):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[index])
             self.ics[index]['keys'][(key,index)] = val
+
+
+    def setup_ics(self):
+        ui = self.ui
+        ics = ui.initial_conditions
+        self.region_dict = ui.regions.get_region_dict()
+        # Mark regions which are in use (this gets reset each time we get here)
+        for (i, data) in self.ics.items():
+            region = data['region']
+            if region in self.region_dict:
+                self.region_dict[region]['available'] = False
+
+        self.fixup_table(ics.tablewidget_regions)
+        self.handle_ics_region_selection() #?  force setup bottom pane
+
+        #Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
+        #no input is required from the user.
+        #Fluid tab - Unavailable if the fluid phase was disabled.
+
+        ics.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
+        if self.fluid_solver_disabled:
+            if self.ics_current_tab == 0: # Don't stay on disabled tab
+                self.ics_change_tab(*(1, 1) if self.solids else (2,0))
+
+        # Create tabs for each solid phase
+        # (Could do this only on solid name change)
+        n_cols = ics.tab_box.columnCount()
+        # Clear out the old ones
+        # Minimum 2, for fluid & scalar
+        if n_cols > 2:
+            for i in range(n_cols-2, 0, -1):
+                item = ics.tab_box.itemAtPosition(0, i)
+                widget = item.widget()
+                ics.tab_box.removeWidget(widget)
+                widget.setParent(None)
+                widget.deleteLater() # ? Needed
+
+        # And make new ones
+        for (i, solid_name) in enumerate(self.solids.keys()):
+            b = QPushButton(text=solid_name)
+            w = b.fontMetrics().boundingRect(solid_name).width() + 20
+            b.setMaximumWidth(w)
+            b.setFlat(True)
+            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i+1))
+            #ics.tab_box.insertWidget(i+1, b)
+            print("ADDWIDGET", b, i+1)
+            ics.tab_box.addWidget(b, 0, i+1)
+            print("CC", ics.tab_box.columnCount())
+        # Move the 'Scalar' button to the right of all solids
+        b = ics.pushbutton_scalar
+        ics.tab_box.removeWidget(b)
+        ics.tab_box.addWidget(b, 0, 1+len(self.solids))
+        print("ADDWIDGET DONE, COLCOUNT=", ics.tab_box.columnCount())
+
+        #self.ics_move_underline(0 if self.ics_current_tab==0
+        #                        else self.ics_current_solid if ics_current_tab==1
+        #                        else len(self.solids)+1)
+
+
+
+
+"""
+Fluid (tab)
+Define volume fraction
+ Specification always available
+ Sets keyword IC_EP_G(#)
+ DEFAULT value of 1.0
+
+Define temperature
+ Specification always available
+ Input required for any of the following
+ Fluid density model: Ideal Gas Law
+ Fluid viscosity model: Sutherland's Law
+ Energy equations are solved
+ Sets keyword IC_T_G(#)
+ DEFAULT value of 293.15
+
+Define pressure (optional)
+ Specification always available
+ Sets keyword IC_P_g(#)
+ DEFAULT - no inputDefine velocity components (required)
+ Specification always available
+ Sets keywords IC_U_G(#), IC_V_G(#), IC_W_G(#)
+ DEFAULT value of 0.0
+
+Select species and set mass fractions (table format)
+ Specification always available
+ Input required for species equations
+ Drop down menu of fluid species
+ DEFAULT - last defined species has mass fraction of 1.0
+ Error check: mass fractions must sum to one
+
+Turbulence: Define mixing length model length scale
+ Specification only available with Mixing Length turbulence model
+ Sets keyword IC_L_SCALE(#)
+ DEFAULT value of 1.0
+
+Turbulence: Define k-ε turbulent kinetic energy
+ Specification only available with K-Epsilon turbulence model
+ Sets keyword IC_K_TURB_G(#)
+ DEFAULT value of 0.0
+
+Turbulence: Define k-ε turbulent dissipation
+ Specification only available with K-Epsilon turbulence model
+ Sets keywords IC_E_TURB_G(#)
+ DEFAULT value of 0.0
+
+Advanced: Define radiation coefficient
+ Specification only available when solving energy equations
+ Sets keyword IC_GAMA_G(#)
+ DEFAULT value of 0.0
+Advanced: Define radiation temperature
+ Specification only available when solving energy equations
+ Sets keyword IC_T_RG(#)
+ DEFAULT value of 293.15
+
+"""
+
+
+"""
+UI
+
+Each solid phase will have its own tab. The tab name should be the name of the solid
+Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
+inputs a 'collapsible list' may make navigation easier.
+
+Solid-# (tab) - Rename tab to user provided solids name.
+ Define volume fraction (required)
+ Specification always available
+ Sets keyword IC_EP_S(#,#)
+ DEFAULT value of (0.0, 1 - SUM)
+ Define temperature
+ Specification always available
+ Input required when solving energy equations
+ Sets keyword IC_T_S(#,#)
+ DEFAULT value of 293.15
+ Define velocity components (required)
+ Specification always available
+ Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
+ DEFAULT value of 0.0
+ Define pressure (optional)
+ Specification only available for SOLIDS_MODEL(#)='TFM'
+ Sets keyword IC_P_s(#,#)
+ DEFAULT of 0.0
+ Define granular temperature
+ Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
+ formulation viscous stress model (see continuous solids model section) or for
+ SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
+ Sets keyword IC_THETA_M(#,#)
+ DEFAULT value of 0.0
+ Define particles per parcel
+ Specification only available for SOLIDS_MODEL(#)='PIC'
+ Sets keyword IC_PIC_CONST_STATWT(#,#)
+ DEFAULT value of 10.0
+ Select species and set mass fractions (table format)
+ Specification always available
+ Input required for species equations
+ Drop down menu of solids species
+ DEFAULT - last defined species has mass fraction of 1.0
+ Error check: mass fractions must sum to one
+Advanced: Option to enable fitting DES particles to region
+ Option only available for DEM solids
+ Sets keyword: IC_DES_FIT_TO_REGION
+ Disabled [DEFAULT]
+Advanced: Define radiation coefficient
+ Specification only available when solving energy equations
+ Sets keyword IC_GAMA_S(#,#)
+ DEFAULT value of 0.0
+Advanced: Define radiation temperature
+ Specification only available when solving energy equations
+ Sets keyword IC_T_RS(#,#)
+ DEFAULT value of 293.15
+
+
+Scalar (tab) - Tab only available if scalar equations are solved
+ Define initial scalar value
+ Sets keyword IC_SCALAR(#,#)
+ DEFAULT value of 0.0
+ Note that this tab should only be available if scalar equations are being solved.
+ Furthermore, the number of scalars requiring input comes from the number of
+ scalar equations specified by the user.
+
+"""
