@@ -635,6 +635,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
 
         self.set_unsaved_flag()
+        row = get_selected_row(tw)
+        if row is None:
+            self.handle_solids_table_selection()
+            # Hack to force update after deleting last row
 
     def enable_solids_scalar_eq(self, state):
         spinbox = self.ui.solids.spinbox_nscalar_eq
