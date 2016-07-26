@@ -569,8 +569,8 @@ QPushButton:checked {
                <item>
                 <widget class="QTreeWidget" name="treewidget_navigation">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-                   <horstretch>1</horstretch>
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>4</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
@@ -751,7 +751,7 @@ QPushButton:checked {
                <item>
                 <widget class="QStackedWidget" name="stackedWidgetTaskPane">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>1</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
