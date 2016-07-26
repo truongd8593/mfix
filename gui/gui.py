@@ -36,6 +36,7 @@ if not PRECOMPILE_UI:
 
 # local imports
 from project_manager import ProjectManager
+from project import Equation
 from job import JobManager, get_dict_from_pidfile
 from monitor import Monitor
 
@@ -471,7 +472,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-        if self.project.get_value(key, args=args) == value:
+        if not isinstance(value, Equation) and self.project.get_value(key, args=args) == value:
             return
         self.set_keyword(key, value, args=args)
 
@@ -960,7 +961,6 @@ class MfixGui(QtWidgets.QMainWindow,
                     description = doc.get('description')
                     if description is not None:
                         widget.help_text = description
-                        widget.setWhatsThis(description)
                         widget.setToolTip('%s<br/>' % doc['description'])
 
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
