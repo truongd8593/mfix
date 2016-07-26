@@ -270,15 +270,6 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.value_error("Error: value %s" % e)
                     return self.saved_value or ''
-            try:
-                i = int(float(text))
-                self.check_range(i)
-                self.saved_value = i
-                return i
-            except ValueError as e:
-                self.value_error("Error: value %s" % e)
-                return self.saved_value or ''
-
         else:
             raise TypeError(self.dtype)
 

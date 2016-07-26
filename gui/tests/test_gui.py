@@ -12,26 +12,17 @@ import os
 #from xvfbwrapper import Xvfb
 
 from qtpy.QtTest import QTest
-from qtpy import QtCore
 from qtpy.QtCore import Qt, QTimer
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 
 import logging
 import errno
 
 from tools.general import to_unicode_from_fs
 
-from .helper_functions import TestQApplication
+from .helper_functions import TestQApplication, waitFor, waitForWindow
 import gui
 
-# TODO : replace all qWaits with a 'waitFor' function
-# Note, qWaitForWindowShown is deprecated in qt5, which provides a better version,
-#  including a timeout.
-
-if PYQT5:
-    waitForWindow = QTest.qWaitForWindowActive
-else:
-    waitForWindow = QTest.qWaitForWindowShown
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
@@ -40,7 +31,7 @@ class MfixGuiTests(TestQApplication):
     def click_ok(self):
         retry = 0
         while not (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
-            QTest.qWait(10)
+            waitFor(10)
             retry += 1
         self.assertTrue(self.mfix.message_box and self.mfix.message_box.isVisible(), "message box not shown in 1s")
         button = self.mfix.message_box.button(QtWidgets.QMessageBox.Ok)
@@ -50,7 +41,7 @@ class MfixGuiTests(TestQApplication):
 
         retry = 0
         while (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
-            QTest.qWait(10)
+            waitFor(10)
             retry += 1
         self.assertFalse(self.mfix.message_box.isVisible(), 'dialog box not closed within 1s')
 
@@ -139,7 +130,7 @@ class MfixGuiTests(TestQApplication):
         self.mfix.get_save_filename = lambda: newpath
         self.mfix.ui.action_save_as.trigger()
 
-        QTest.qWait(500)
+        waitFor(500)
         self.assertEqual(newname, self.mfix.project.run_name.value)
         self.assertTrue(os.path.exists(newpath))
 
@@ -156,7 +147,7 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when %s is present" % mfix_exe)
 
         self.open_tree_item("run")
-        QTest.qWait(1000)
+        waitFor(1000)
 
         runbuttons = (self.mfix.ui.run.button_run_mfix,
                       self.mfix.ui.toolbutton_run_mfix)
@@ -177,11 +168,11 @@ class MfixGuiTests(TestQApplication):
         # FIXME: This will hang if run dialog doesn't find exe.
         # Need to dismiss the warning message box.
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
-        QTest.qWait(500)
+        waitFor(500)
 
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        QTest.qWait(500)
+        waitFor(500)
 
         # Job is running, run button disabled, stop button enabled
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
@@ -193,7 +184,7 @@ class MfixGuiTests(TestQApplication):
 
         # Stop run, button should say 'Resume'
         QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
-        QTest.qWait(100)
+        waitFor(100)
         self.assertTrue(all (b.isEnabled() for b in runbuttons))
         self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
         self.assertEqual(runbuttons[0].text(), "Resume")
@@ -201,19 +192,19 @@ class MfixGuiTests(TestQApplication):
 
         # Resume
         QTest.mouseClick(runbuttons[0], Qt.LeftButton)
-        QTest.qWait(100)
+        waitFor(100)
 
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        QTest.qWait(500)
+        waitFor(500)
 
         self.assertTrue(all (not b.isEnabled() for b in runbuttons))
         self.assertTrue(all (b.isEnabled() for b in stopbuttons))
-        QTest.qWait(300)
+        waitFor(300)
 
         # Stop mfix, check for log.
         QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
-        QTest.qWait(100)
+        waitFor(100)
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
 

@@ -168,8 +168,8 @@ class JobManager(QObject):
         self.timer.setInterval(1000)
         self.timer.timeout.connect(self.update_status)
         self.timer.start()
-        # TODO? handle with signal so this can be managed in gui
-        #self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
+        # TODO? handle with signal so this can be managed in gui - yes! JMW
+        self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
 
     def disconnect(self):
         """stop pymfix update timer"""
