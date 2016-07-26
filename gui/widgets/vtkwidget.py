@@ -693,6 +693,9 @@ class VtkWidget(QtWidgets.QWidget):
             self.parent.message(text='Error loading geometry: %s' % e)
             return
 
+        if not tree or not data:
+            return
+
         # convert lists to sets
         for key, value in tree.items():
             tree[key] = set(tree[key])
