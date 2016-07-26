@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
+    <width>248</width>
     <height>860</height>
    </rect>
   </property>
@@ -120,8 +120,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>380</width>
-         <height>494</height>
+         <width>226</width>
+         <height>491</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -327,7 +327,6 @@
        </layout>
        <zorder>verticalSpacer</zorder>
        <zorder>stackedwidget</zorder>
-       <zorder>tab_underline</zorder>
        <zorder>horizontalSpacer_2</zorder>
       </widget>
      </widget>
