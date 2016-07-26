@@ -262,6 +262,7 @@ class Equation(object):
         eq = str(eq)
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
+        # TODO: don't use this hack to store dtype in equation string
         if ',' in eq:
             eq, dtype = eq.split(',')
             dtype = PYTHON_TYPE_DICT[dtype]

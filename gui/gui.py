@@ -1947,8 +1947,11 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry_file) and not 'geometry' in self.project.mfix_gui_comments:
+        if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
             self.vtkwidget.add_stl(None, filename=geometry_file)
+            msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
+            self.message(title='Warning', text=msg)
+            
         # TODO: load more geometry
 
         # Additional GUI setup based on loaded projects (not handled
