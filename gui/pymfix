@@ -8,10 +8,13 @@ import json
 import logging
 import numpy.core
 import os
-import packaging
-import packaging.requirements
-import packaging.specifiers
-import packaging.version
+try:
+    import packaging
+    import packaging.requirements
+    import packaging.specifiers
+    import packaging.version
+except ImportError:
+    print("warning: can't import the module packaging")
 import random
 import socket
 import string

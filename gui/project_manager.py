@@ -29,20 +29,19 @@ from constants import *
 
 from widgets.base import LineEdit # a little special handling needed
 
-from tools.general import (format_key_with_args, plural, to_text_string)
+from tools.general import (format_key_with_args, unformat_key_with_args,
+                           plural, to_text_string)
 from tools import read_burcat
 
 
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
-
     def __init__(self, gui=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
         self.gui = gui
         self.keyword_and_args_to_widget = {}
         self.registered_keywords = set()
-        self.solver = SINGLE # default
-
+        self.solver = SINGLE  # default
 
     def submit_change(self, widget, newValueDict, args=None):
 
@@ -538,8 +537,19 @@ class ProjectManager(Project):
             self.thermo_data.update(update_dict)
             self.gui.set_unsaved_flag()
 
+    def update_parameters(self, params):
+        """parameter values have changed, loop through and update"""
+        for p in params:
+            if p in self.parameter_key_map:
+                key_args = self.parameter_key_map[p]
+                for key_arg in key_args:
+                    key, args = unformat_key_with_args(key_arg)
+                    keyword_obj = self.keywordLookup(key, args)
+                    self._change(self, key, keyword_obj.value, args=args)
+
     def objectName(self):
         return 'Project Manager'
+
 
 def format_burcat(species, data):
     """Return a list of lines in BURCAT.THR format"""

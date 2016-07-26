@@ -13,6 +13,7 @@ import sys
 import locale
 import logging
 import shlex
+import copy
 
 log = logging.getLogger(__name__)
 
@@ -37,15 +38,29 @@ def get_mfix_home():
     return os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
+
 def format_key_with_args(key, args=None):
     if args:
         return "%s(%s)" % (key, ','.join(str(a) for a in args))
     else:
         return str(key)
 
+
+def unformat_key_with_args(string):
+    """companion function to "undo" format_key_with_args"""
+    if string.endswith(')'):
+        key, args = string[:-1].split('(')
+        args = [int(arg) for arg in args.split(',')]
+    else:
+        key = string
+        args = []
+    return key, args
+
+
 def plural(n, word):
-    fmt = "%d %s" if n==1 else "%d %ss"
+    fmt = "%d %s" if n == 1 else "%d %ss"
     return fmt % (n, word)
+
 
 def set_item_noedit(item):
     item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
@@ -69,6 +84,7 @@ def get_selected_row(table):
     # note, currentRow can return  >0 even when there is no selection
     rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
+
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
@@ -121,8 +137,8 @@ def get_image_path(name):
 
 def make_callback(func, *args, **kwargs):
     """Helper function to make sure lambda functions are cached and not lost."""
-
     return lambda: func(*args, **kwargs)
+
 
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
@@ -154,6 +170,7 @@ def get_icon(name, default=None, resample=False):
         ret= icon
     icon_cache[(name, default, resample)] = ret
     return ret
+
 
 def get_unique_string(base, listofstrings):
     "uniquify a string"
@@ -386,6 +403,45 @@ class CellColor(object):
 
     def __repr__(self):
         return self.text
+
+
+def insert_append_action(menu, action, insert=None):
+    if insert:
+        menu.insertAction(insert, action)
+    else:
+        menu.addAction(action)
+
+
+def insert_append_separator(menu, insert=None):
+    if insert:
+        menu.insertSeparator(insert)
+    else:
+        menu.addSeparator()
+
+def topological_sort(dependency_dict):
+    '''
+    Sort the dependency tree.
+    Inspired by: http://code.activestate.com/recipes/578272-topological-sort/
+    '''
+    
+    data = copy.deepcopy(dependency_dict)
+
+    # Ignore self dependencies.
+    for k, v in data.items():
+        v.discard(k)
+    # Find all items that don't depend on anything.
+    extra_items_in_deps = reduce(set.union, data.itervalues()) - set(data.iterkeys())
+    # Add empty dependences where needed
+    data.update({item: set() for item in extra_items_in_deps})
+    while True:
+        ordered = set(item for item, dep in data.iteritems() if not dep)
+        if not ordered:
+            break
+        yield ordered
+        data = {item: (dep - ordered)
+                for item, dep in data.iteritems()
+                if item not in ordered}
+    assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
 
 if __name__ == '__main__':
     test_recurse_dict()

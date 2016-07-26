@@ -1,6 +1,13 @@
-
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtTest, PYQT5
 import unittest
+from datetime import datetime as datetime_, timedelta
+
+# Note, qWaitForWindowShown is deprecated in qt5, which provides a better
+# version, including a timeout.
+if PYQT5:
+    waitForWindow = QtTest.QTest.qWaitForWindowActive
+else:
+    waitForWindow = QtTest.QTest.qWaitForWindowShown
 
 # holds a global QApplication instance created in the qapp fixture; keeping
 # this reference alive avoids it being garbage collected too early
@@ -33,3 +40,9 @@ class TestQApplication(unittest.TestCase):
             self.mfix.close()
 #       self.qapp.deleteLater() # JMW - causes segfault inbetween gui tests
         unittest.TestCase.tearDown(self)
+
+
+def waitFor(t):
+    end = datetime_.now() + timedelta(milliseconds=t)
+    while datetime_.now() < end:
+        QtWidgets.QApplication.processEvents()

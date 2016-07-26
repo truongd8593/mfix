@@ -44,6 +44,8 @@ import math
 import warnings
 import traceback
 from collections import OrderedDict
+from json import JSONDecoder, JSONEncoder
+
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -60,13 +62,15 @@ from tools.comparable import Comparable
 from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
                            to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string,
-                           safe_shlex_split)
+                           safe_shlex_split, format_key_with_args)
 
 from regexes import *
-
 from constants import *
 
 NaN = float('NaN')
+
+PYTHON_TYPE_DICT = {'float':float, 'int':int, 'bool':bool}
+PYTHON_TYPE_DICT_REVERSE = dict([(val, key) for key,val in PYTHON_TYPE_DICT.items()])
 
 class FloatExp(float):
     fmt = '4'
@@ -198,6 +202,55 @@ def remove_spaces_from_equations(string):
 
     return ret
 
+
+# --- json extension ---
+class ExtendedJSON(object):
+    @staticmethod
+    def dumps(obj):
+        return EquationAwareJSONEncoder().encode(obj)
+
+    @staticmethod
+    def loads(string):
+        return EquationAwareJSONDecoder().decode(string)
+
+
+class EquationAwareJSONEncoder(JSONEncoder):
+    """
+    JSONEncoder that handles Equation objects
+    """
+    def default(self, obj):
+        if isinstance(obj, Equation):
+            return {
+                '__type__' : 'equation',
+                'eq' : obj.eq,
+                'type' : PYTHON_TYPE_DICT_REVERSE[obj.dtype],
+                }
+        else:
+            return JSONEncoder.default(self, obj)
+
+
+class EquationAwareJSONDecoder(JSONDecoder):
+    """
+    JSONDecoder that handles Equation onjects.
+    """
+
+    def __init__(self):
+            JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+
+    def dict_to_object(self, d):
+        if '__type__' not in d:
+            return d
+
+        type = d.pop('__type__')
+        if type == 'equation':
+            return Equation(d['eq'], PYTHON_TYPE_DICT[d['type']])
+        else:
+            # Oops... better put this back together.
+            d['__type__'] = type
+            return d
+
+
+# --- project base ---
 class Equation(object):
     """represents a simple arithmetic expression, which can be evaluated
     by simple_eval, in a namespace which includes the math constants 'e'
@@ -205,23 +258,42 @@ class Equation(object):
     ValueError on any failures.  Evaluating an empty string returns 0.0,
     while evaluating None returns NaN"""
 
-    def __init__(self, eq):
+    def __init__(self, eq, dtype=float):
         eq = str(eq)
         while eq.startswith("@(") and eq.endswith(")"):
             eq = eq[2:-1]
+        # TODO: don't use this hack to store dtype in equation string
+        if ',' in eq:
+            eq, dtype = eq.split(',')
+            dtype = PYTHON_TYPE_DICT[dtype]
         self.eq = eq
+        self.dtype = dtype
+
+    def get_used_parameters(self):
+        av_params = PARAMETER_DICT.keys()
+        eq = re.split('[\*\/\-\+ \(\)]', self.eq)
+        return [p for p in av_params if p in eq]
+
+    def check_parameters(self):
+        return list(set(self.get_used_parameters())-set(PARAMETER_DICT.keys()))
 
     def _eval(self):
         if len(self.eq) == 0:
             return 0
         elif self.eq is None or self.eq == 'None':
             return NaN
+        elif len(self.check_parameters()) > 0:
+            raise ValueError('invalid parameter(s): {}'.format(','.join(self.check_parameters())))
         else:
+            name_dict = {}
+            for key, value in PARAMETER_DICT.items():
+                try:
+                    name_dict[key] = float(value)
+                except:
+                    pass
             try:
                 return float(simple_eval(self.eq.lower(),
-                                         names={"pi": math.pi,
-                                                "e": math.e,
-                                                "p": 1} # what is p?
+                                         names=name_dict
                                          ))
             except:
                 raise ValueError(self.eq)
@@ -241,6 +313,16 @@ class Equation(object):
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
 
+    def dumps(self):
+        return '%s #!MFIX-GUI eq{%s}' % (
+            self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
+
+    def __cmp__(self, value):
+        eq = float(self._eval())
+        if eq < value: return -1
+        elif eq > value: return 1
+        elif eq == value: return 0
+
     def __add__(self, value):
         return float(self._eval()) + float(value)
 
@@ -250,15 +332,11 @@ class Equation(object):
     def __mul__(self, value):
         return float(self._eval()) * float(value)
 
+    def __div__(self, value):
+        return float(self._eval()) / float(value)
+
     def __pow__(self, value):
         return float(self._eval()) ** float(value)
-
-
-def format_key_with_args(key, args=None):
-    if args:
-        return "%s(%s)" % (key, ','.join(str(a) for a in args))
-    else:
-        return str(key)
 
 
 class Keyword(Comparable):
@@ -341,12 +419,17 @@ class Keyword(Comparable):
             self.dtype = str
 
     def line(self):
+        if self.dtype == Equation:
+            val = self.value.dumps()
+        else:
+            val = to_text_string(self)
+
         if len(self.args) == 0:
-            line = '  {} = {}'.format(self.key, to_text_string(self))
+            line = '  {} = {}'.format(self.key, val)
         else:
             line = '  {}({}) = {}'.format(self.key,
                                           ','.join([to_text_string(x) for x in self.args]),
-                                          to_text_string(self))
+                                          val)
 
         if len(self.comment) > 0:
             line = '    !'.join([line, self.comment])
@@ -762,6 +845,7 @@ class Project(object):
                             # keywords as parsed
         self.thermo_data =  {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
+        self.parameter_key_map = {}  #data structure to hold parameter->keyword mapping
         # See also 'reset'
 
         self.__initDataStructure__()
@@ -860,7 +944,7 @@ class Project(object):
             self._parsemfixdat(StringIO(self.dat_file))
             return
 
-    def parseKeywordLine(self, line):
+    def parseKeywordLine(self, line, equation_str=None):
         if not line.strip():
             yield(None, None, None)
             return
@@ -897,6 +981,10 @@ class Project(object):
                         vals = safe_shlex_split(val_string.strip())
                     except ValueError:
                         vals = []
+
+                # if equation in comment, replace last value
+                if equation_str is not None and vals:
+                    vals[-1] = '@(' + equation_str +')'
 
                 # clean the values converting to python types
                 cleanVals = []
@@ -974,17 +1062,10 @@ class Project(object):
         else:
             yield (None, None, None)
 
-    def _parsemfixdat(self, fobject):
-        """This does the actual parsing."""
-        self.comments.clear()
-        self._keyword_dict.clear()
-        self.__initDataStructure__()
-        self.dat_file_list = []
-        self.thermo_data.clear()
+
+    def parse_mfix_gui_comments(self, fobject):
+        """read through the file looking for #!MFIX-GUI"""
         self.mfix_gui_comments.clear()
-        reactionSection = False
-        thermoSection = False
-        thermo_lines = [] # Temporary holder for thermo_data section
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip()
             if line.startswith("#!MFIX-GUI"):
@@ -996,6 +1077,31 @@ class Project(object):
                     # comments, and an experimental feature.  Don't want to create
                     # tight dependencies on GUI version - treat them like HTML tags,
                     # ignore the ones you can't handle
+                    
+        # look for parameters
+        if 'parameters' in self.mfix_gui_comments:
+            self.parameters_from_str(self.mfix_gui_comments['parameters'])
+
+    def _parsemfixdat(self, fobject):
+        """This does the actual parsing."""
+        self.comments.clear()
+        self._keyword_dict.clear()
+        self.__initDataStructure__()
+        self.dat_file_list = []
+        self.thermo_data.clear()
+        reactionSection = False
+        thermoSection = False
+        thermo_lines = [] # Temporary holder for thermo_data section
+        
+        # parse MFIX-GUI comments first
+        self.parse_mfix_gui_comments(fobject)
+        
+        fobject.seek(0)
+
+        for i, line in enumerate(fobject):
+            line = to_unicode_from_fs(line).strip()
+            if line.startswith("#!MFIX-GUI"):
+                # these should be already parsed
                 continue
 
             if '@(RXNS)' in line:
@@ -1008,6 +1114,7 @@ class Project(object):
             elif thermoSection:
                 thermo_lines.append(line)
             elif not reactionSection and not thermoSection:
+                equation_str = None
                 # remove comments
                 commentedline = ''
                 if line.startswith('#') or line.startswith('!'):
@@ -1015,12 +1122,18 @@ class Project(object):
                     line = ''
                 elif '#' in line or '!' in line:
                     line, keywordComment = re.split('[#!]', line, maxsplit=1)
+
+                    # look for equation
+                    if 'MFIX-GUI' in keywordComment and 'eq{' in keywordComment:
+                        start = keywordComment.find('eq{')
+                        equation_str = keywordComment[start+3:keywordComment.find('}', start)]
+                        keywordComment = '' # clears the comment so that it is not saved again
                 else:
                     keywordComment = ''
 
                 # loop through all keywords in the line
                 try:
-                    for (key, args, value) in self.parseKeywordLine(line):
+                    for (key, args, value) in self.parseKeywordLine(line, equation_str):
                         if key is None:
                             self.dat_file_list.append(line+commentedline)
                         else:
@@ -1066,12 +1179,22 @@ class Project(object):
         # TODO:  refactor
         if args is None:
             args = []
+            
+        key = key.lower()
+
         # check to see if the keyword already exists
         if [key]+args in self:
+            # if previous value is equation, update the parameter dict
+            if isinstance(self[[key]+args].value, Equation) or isinstance(value, Equation):
+                self.update_parameter_map(value, key, args)
             self[[key]+args].updateValue(value)
             if keywordComment:
                 self[[key]+args].comment = keywordComment
             return self[[key]+args]
+
+        # if equation, update the parameter dict
+        if isinstance(value, Equation):
+            self.update_parameter_map(value, key, args)
 
         keywordobject = None
 
@@ -1393,6 +1516,9 @@ class Project(object):
         """ Write the project to specified text file"""
         ### TODO:  format species sections
         # delimit new additions from initial file contents (comment line)
+        
+        # save parameters
+        self.mfix_gui_comments['parameters'] = self.parameters_to_str()
 
         last_line = None
         with open(fname, 'wb') as dat_file:
@@ -1409,12 +1535,64 @@ class Project(object):
         self.comments.clear()
         self.thermo_data.clear()
         self.mfix_gui_comments.clear()
+        self.parameter_key_map = {}
 
         for name in dir(self):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
 
-if  __name__ == '__main__':
+    def parameters_from_str(self, string):
+        """load parameter data from a saved string"""
+        loaded_data = ExtendedJSON.loads(string)
+
+        if 'order' not in loaded_data:
+            return
+
+        data = OrderedDict()
+        for par in loaded_data['order']:
+            data[par] = loaded_data['parameters'][par]
+
+        PARAMETER_DICT.update(data)
+        for key in set(PARAMETER_DICT.keys()) - set(data.keys()):
+            PARAMETER_DICT.pop(key)
+
+    def parameters_to_str(self):
+        """convert parameter data to a string for saving"""
+        data = {'order': list(PARAMETER_DICT.keys()),
+                'parameters': PARAMETER_DICT
+                }
+        return ExtendedJSON.dumps(data)
+
+    def update_parameter_map(self, new_value, key, args):
+        """update the mapping of parameters and keywords"""
+        key_args = format_key_with_args(key, args)
+
+        # new params
+        if isinstance(new_value, Equation):
+            new_params = new_value.get_used_parameters()
+        else:
+            new_params = []
+
+        # old params
+        if [key]+args in self and isinstance(self[[key]+args].value, Equation):
+            old_params = self[[key]+args].value.get_used_parameters()
+        else:
+            old_params = []
+
+        add = set(new_params)-set(old_params)
+        for param in add:
+            if param not in self.parameter_key_map:
+                self.parameter_key_map[param] = set()
+            self.parameter_key_map[param].add(key_args)
+
+        remove = set(old_params)-set(new_params)
+        for param in remove:
+            self.parameter_key_map[param].remove(key_args)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
+
+
+if __name__ == '__main__':
     proj = Project()
     print(list(proj.parseKeywordLine('key = @( 2* 10)')))

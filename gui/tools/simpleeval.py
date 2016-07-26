@@ -78,6 +78,7 @@ well:
 import ast
 import operator as op
 from random import random
+import math
 
 ########################################
 # Module wide 'globals'
@@ -170,9 +171,16 @@ DEFAULT_OPERATORS = {ast.Add: safe_add, ast.Sub: op.sub, ast.Mult: safe_mult,
                      ast.UAdd: op.pos}
 
 DEFAULT_FUNCTIONS = {"rand": random, "randint": random_int,
-                     "int": int, "float": float}
+                     "int": int, "float": float,
+                     "abs": abs, 
+                     "sin": math.sin, "cos": math.cos, "tan": math.tan,
+                     "asin": math.asin, "acos": math.acos, "atan": math.atan,
+                     "exp": math.exp, "log": math.log, "log10": math.log10,
+                     "sqrt": math.sqrt, "pow": math.pow,
+                     "radians": math.radians, "degrees": math.degrees,
+                     }
 
-DEFAULT_NAMES = {"True": True, "False": False}
+DEFAULT_NAMES = {"True": True, "False": False, 'e': math.e, 'pi': math.pi}
 
 ########################################
 # And the actual evaluator:

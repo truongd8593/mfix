@@ -4,19 +4,40 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
-import json
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtGui, QtCore
 
-# TODO: add pyside? There is an issue to add this to qtpy:
-# https://github.com/spyder-ide/qtpy/issues/16
-# TODO: cache ui file to a py file, use the ui file if newer, else py file
 from qtpy import uic
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, CellColor,
                            get_image_path)
+from project import Equation, ExtendedJSON
+
+DEFAULT_REGION_DATA = {
+    'filter': [0, 0, 0],
+    'to': [0, 0, 0],
+    'deviation_angle': 10,
+    'slice': True,
+    'from': [0, 0, 0],
+    'color': CellColor([1, 0, 0]),
+    'stl_shape': 'box',
+    'type': 'box',
+    'visibility': True}
+
+
+def clean_region_dict(region_dict):
+    """remove qt objects and values that are equal to the default"""
+    clean_dict = {}
+    for key, value in region_dict.items():
+        if key in ['visible']:
+            pass
+        elif key == 'color':
+            clean_dict['color'] = region_dict['color'].color
+        elif value != DEFAULT_REGION_DATA[key]:
+            clean_dict[key] = value
+    return clean_dict
 
 
 class RegionsWidget(QtWidgets.QWidget):
@@ -24,6 +45,7 @@ class RegionsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.parent = parent
+        self.parameter_key_map = {}
 
         uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                'uifiles')
@@ -37,8 +59,8 @@ class RegionsWidget(QtWidgets.QWidget):
                                 QtCore.Qt.SmoothTransformation)
 
         # Cache pixmaps
-        self.visibility_image = {True:get_visibility_image(True),
-                                 False:get_visibility_image(False)}
+        self.visibility_image = {True: get_visibility_image(True),
+                                 False: get_visibility_image(False)}
 
         self.extent_lineedits = [self.lineedit_regions_from_x,
                                  self.lineedit_regions_to_x,
@@ -46,11 +68,24 @@ class RegionsWidget(QtWidgets.QWidget):
                                  self.lineedit_regions_to_y,
                                  self.lineedit_regions_from_z,
                                  self.lineedit_regions_to_z]
+        for ext in self.extent_lineedits:
+            ext.allow_parameters = True
+            ext.help_text = 'Physical coordinates describing the bounds of the region.'
 
-        self.combobox_regions_type.addItems(['point', 'XY-plane',
-                                             'XZ-plane', 'YZ-plane', 'box',
-                                             'STL',
-                                             ])
+        self.combobox_regions_type.addItems([
+            'point', 'XY-plane', 'XZ-plane', 'YZ-plane', 'box', 'STL', ])
+        self.combobox_regions_type.help_text = 'The type of region.'
+        self.lineedit_regions_name.help_text = 'Name of the region. Used througout the gui to reference the region'
+        self.combobox_stl_shape.help_text = 'Shape to be used to select facets.'
+        self.checkbox_slice_facets.help_text = 'Slice facets if the facet is on the selection boundary.'
+        for wid in [self.lineedit_filter_x, self.lineedit_filter_y, self.lineedit_filter_z]:
+            wid.allow_parameters = True
+            wid.help_text = 'Vector to filter facets with. If the facet '\
+                            'normal is the same as the vector, then the facet'\
+                            ' will be added to the region, else discarded.'
+        self.lineedit_deviation_angle.allow_parameters = True
+        self.lineedit_deviation_angle.help_text = 'Angle to provide a'\
+            'tolerence to the filtering of facets based on the facet normal.'
 
         self.toolbutton_region_add.clicked.connect(self.new_region)
         self.toolbutton_region_delete.clicked.connect(self.delete_region)
@@ -125,7 +160,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.set_value(data)
 
     def new_region(self, name='new', extents=[[0, 0, 0], [0, 0, 0]],
-                   rtype='box', defer_render=False):
+                   rtype='box', defer_update=False):
         """create a new region"""
         # This is used both as a signal callback and an API function,
         # so there's some complexity with default args/
@@ -134,21 +169,15 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
         image = self.get_visibility_image()
-        data[name] = {'type':            rtype,
-                      'from':            extents[0],
-                      'to':              extents[1],
-                      'color':           CellColor([1, 0, 0]),
-                      'slice':           True,
-                      'filter':          [0, 0, 0],
-                      'stl_shape':       'box',
-                      'deviation_angle': 10,
-                      'visibility':      True,
-                      'visible':         image }
+        data[name] = copy.deepcopy(DEFAULT_REGION_DATA)
+        data[name]['type'] = rtype
+        data[name]['from'] = extents[0]
+        data[name]['to'] = extents[1]
+        data[name]['visible'] = image
 
-
-        self.vtkwidget.new_region(name, data[name], defer_render=defer_render)
+        self.vtkwidget.new_region(name, data[name])
         self.tablewidget_regions.set_value(data)
-        if defer_render:
+        if defer_update:
             return
 
         self.tablewidget_regions.fit_to_contents()
@@ -156,22 +185,22 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def delete_region(self):
         'remove the currently selected region'
+        rows = self.tablewidget_regions.current_rows()
 
-        row = self.tablewidget_regions.current_row()
-        if row is None: # Should not happen
-            return
+        if rows:
+            data = self.tablewidget_regions.value
+            for row in rows:
+                name = list(data.keys())[row]
+                if self.check_region_in_use(name):
+                    self.parent.message(text="Region %s is in use" % name)
+                    return
+                data.pop(name)
+                self.vtkwidget.delete_region(name)
 
-        data = self.tablewidget_regions.value
-        name = list(data.keys())[row]
-        if self.check_region_in_use(name):
-            self.parent.message(text="Region %s is in use" % name)
-            return
-        data.pop(name)
-        self.tablewidget_regions.set_value(data)
-        self.vtkwidget.delete_region(name)
+            self.tablewidget_regions.set_value(data)
 
         nrows = len(data)
-        if row == nrows: # We deleted the last row,
+        if rows[-1] == nrows: # We deleted the last row,
             #https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/99
             if nrows > 0:
                 self.tablewidget_regions.selectRow(nrows-1)
@@ -182,51 +211,44 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
 
-
     def copy_region(self):
         'copy the currently selected region'
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
 
-        if row is not None:
+        if rows:
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
-            new_region = copy.deepcopy(data[name])
 
-            new_name = get_unique_string(name, list(data.keys()))
-            data[new_name] = new_region
-            data[new_name]['visible'] = self.get_visibility_image(
-                data[new_name]['visibility'])
+            for row in rows:
+                name = list(data.keys())[row]
+                new_region = copy.deepcopy(data[name])
+
+                new_name = get_unique_string(name, list(data.keys()))
+                data[new_name] = new_region
+                data[new_name]['visible'] = self.get_visibility_image(
+                    data[new_name]['visibility'])
+                self.vtkwidget.new_region(new_name, data[new_name])
 
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
 
-            self.vtkwidget.new_region(new_name, data[new_name])
-
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
-        row = self.tablewidget_regions.current_row()
+        rows = self.tablewidget_regions.current_rows()
+
         self.inhibit_toggle = True
-        enabled = row is not None
+        enabled = bool(rows)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
         self.groupbox_region_parameters.setEnabled(enabled)
 
         if enabled:
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
+            name = list(data.keys())[rows[-1]]
             data = data[name]
             # enable widgets
             self.enable_disable_widgets(name)
         else:
-            data =  {'filter': [0, 0, 0],
-                     'to': [0, 0, 0],
-                     'deviation_angle': 10,
-                     'slice': True,
-                     'from': [0, 0, 0],
-                     'color': CellColor(),
-                     'stl_shape': 'box',
-                     'type': 'box',
-                     'visibility': True}
+            data = copy.deepcopy(DEFAULT_REGION_DATA)
             name = ''
 
         # color
@@ -235,40 +257,35 @@ class RegionsWidget(QtWidgets.QWidget):
                 *data['color'].color_int))
 
         self.lineedit_regions_name.updateValue(None, name)
-        self.combobox_regions_type.updateValue(None,
-                                               data['type'])
+        self.combobox_regions_type.updateValue(None, data['type'])
 
-        for widget, value in zip(self.extent_lineedits[::2],
-                                 data['from']):
+        for widget, value in zip(self.extent_lineedits[::2], data['from']):
             widget.updateValue(None, value)
 
-        for widget, value in zip(self.extent_lineedits[1::2],
-                                 data['to']):
+        for widget, value in zip(self.extent_lineedits[1::2], data['to']):
             widget.updateValue(None, value)
 
         # stl
-        self.combobox_stl_shape.updateValue(None,
-                                            data['stl_shape'])
-
-        self.checkbox_slice_facets.updateValue(None,
-                                               data['slice'])
-
-        self.lineedit_deviation_angle.updateValue(None,
-                                                  data['deviation_angle'])
-
+        self.combobox_stl_shape.updateValue(None, data['stl_shape'])
+        self.checkbox_slice_facets.updateValue(None, data['slice'])
+        self.lineedit_deviation_angle.updateValue(None, data['deviation_angle'])
         for widget, value in zip([self.lineedit_filter_x,
                                   self.lineedit_filter_y,
                                   self.lineedit_filter_z],
                                  data['filter']):
             widget.updateValue(None, value)
 
-
-    def region_value_changed(self, widget, value, args):
-        'one of the region widgets values changed, update'
-        row = self.tablewidget_regions.current_row()
+    def region_value_changed(self, widget, value, args, name=None,
+                             update_param=True):
+        'one of the region wigets values changed, update'
+        rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
-        name = list(data.keys())[row]
+        if name is None:
+            name = list(data.keys())[rows[-1]]
         key = value.keys()[0]
+
+        if update_param:
+            self.update_parameter_map(value[key], name, key)
 
         if 'to' in key or 'from' in key:
             item = key.split('_')
@@ -349,9 +366,9 @@ class RegionsWidget(QtWidgets.QWidget):
         color = QtWidgets.QColorDialog.getColor()
 
         if color.isValid():
-            row = self.tablewidget_regions.current_row()
+            rows = self.tablewidget_regions.current_rows()
             data = self.tablewidget_regions.value
-            name = list(data.keys())[row]
+            name = list(data.keys())[rows[-1]]
 
             data[name]['color'].color = color.getRgbF()[:-1]
 
@@ -373,19 +390,12 @@ class RegionsWidget(QtWidgets.QWidget):
                 'regions': {}
                 }
         for region in data['order']:
-            data['regions'][region] = {}
-            for key in self.tablewidget_regions.value[region].keys():
-                if key == 'visible':
-                    pass
-                elif key == 'color':
-                    data['regions'][region][key] = self.tablewidget_regions.value[region][key].color
-                else:
-                    data['regions'][region][key] = self.tablewidget_regions.value[region][key]
-        return json.dumps(data)
+            data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
+        return ExtendedJSON.dumps(data)
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
-        loaded_data = json.loads(string) # Order of dict has been lost
+        loaded_data = ExtendedJSON.loads(string) # Order of dict has been lost
 
         if 'order' not in loaded_data:
             return
@@ -394,7 +404,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
         for region in loaded_data['order']:
             # Copy dictionary entry to ordered dict
-            region_data = data[region] = loaded_data['regions'][region]
+            region_data = data[region] = DEFAULT_REGION_DATA
+            region_data.update(loaded_data['regions'][region])
             if 'visibility' in region_data:
                 # Create pixmap for 'visible' column
                 region_data['visible'] = self.get_visibility_image(region_data['visibility'])
@@ -407,7 +418,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
 
-    def extract_regions(self, proj, defer_render=False):
+    def extract_regions(self, proj):
         """ extract regions from IC, BC, PS """
 
         for condtype, conds in [('ic', proj.ics), ('bc', proj.bcs),
@@ -434,7 +445,7 @@ class RegionsWidget(QtWidgets.QWidget):
                         rtype = self.get_region_type(extents)
 
                     name = '{}_{}'.format(condtype.upper(), cond.ind)
-                    self.new_region(name, extents, rtype, defer_render=defer_render)
+                    self.new_region(name, extents, rtype, defer_update=True)
 
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """
@@ -465,3 +476,63 @@ class RegionsWidget(QtWidgets.QWidget):
         """ return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
         return copy.deepcopy(region_dict) # Allow clients to modify dict
+
+    def update_parameter_map(self, new_value, name, key):
+        """update the mapping of parameters and keywords"""
+
+        data = self.tablewidget_regions.value
+        name_key = ','.join([name, key])
+
+        # new params
+        new_params = []
+        if isinstance(new_value, Equation):
+            new_params = new_value.get_used_parameters()
+
+        # old params
+        if 'to' in key or 'from' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            old_value = data[name][item[0]][index]
+        elif 'filter' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            old_value = data[name][item[0]][index]
+        else:
+            old_value = data[name][key]
+
+        old_params = []
+        if isinstance(old_value, Equation):
+            old_params = old_value.get_used_parameters()
+
+        add = set(new_params)-set(old_params)
+        for param in add:
+            if param not in self.parameter_key_map:
+                self.parameter_key_map[param] = set()
+            self.parameter_key_map[param].add(name_key)
+
+        remove = set(old_params)-set(new_params)
+        for param in remove:
+            self.parameter_key_map[param].remove(name_key)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
+
+    def update_parameters(self, params):
+        """parameters have changed, update regions"""
+        data = self.tablewidget_regions.value
+        for param in params:
+            if param in self.parameter_key_map:
+                for var in self.parameter_key_map[param]:
+                    name, key = var.split(',')
+                    if 'to' in key or 'from' in key:
+                        item = key.split('_')
+                        index = ['x', 'y', 'z'].index(item[1])
+                        val = data[name][item[0]][index]
+                    elif 'filter' in key:
+                        item = key.split('_')
+                        index = ['x', 'y', 'z'].index(item[1])
+                        val = data[name][item[0]][index]
+                    else:
+                        val = data[name][key]
+                    value = {key: val}
+                    self.region_value_changed(None, value, None, name=name,
+                                              update_param=False)

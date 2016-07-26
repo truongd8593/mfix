@@ -47,6 +47,7 @@ from widgets.species_popup import SpeciesPopup
 from widgets.regions_popup import RegionsPopup
 from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
+from widgets.parameter_dialog import ParameterDialog
 
 from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
@@ -295,6 +296,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.action_compile_tool = self.ui.menu_more.addAction(
             get_icon('build.png'), 'Compile', self.handle_compile)
         self.ui.menu_more.addSeparator()
+        self.ui.action_compile_tool = self.ui.menu_more.addAction(
+            get_icon('functions.png'), 'Parameters', self.handle_parameters)
+        self.ui.menu_more.addSeparator()
         #self.ui.action_about = self.ui.menu_more.addAction(
         #    get_icon('settings.png'), 'Settings', self.handle_settings)
         self.ui.action_about = self.ui.menu_more.addAction(
@@ -363,6 +367,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # --- workflow setup ---
         self.__setup_workflow_widget()
 
+        # --- parameter dialog
+        self.parameter_dialog = ParameterDialog(self)
+
         # --- default ---
         self.mode_changed('modeler')
         self.change_pane('model')
@@ -428,6 +435,9 @@ class MfixGui(QtWidgets.QMainWindow,
                 w.default()
             else:
                 pass # What to do for rest of widgets?
+
+        # reset parameters
+        PARAMETER_DICT.clear()
 
         self.unsaved_flag = False
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
@@ -947,9 +957,17 @@ class MfixGui(QtWidgets.QMainWindow,
                     if default is not None:
                         widget.default(default)
 
+                    description = doc.get('description')
+                    if description is not None:
+                        widget.help_text = description
+                        widget.setWhatsThis(description)
+                        widget.setToolTip('%s<br/>' % doc['description'])
+
+                    if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
+                        widget.allow_parameters = True
+
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
-                    widget.setToolTip('%s<br/>' % doc['description'])
                 else:
                     log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
                     continue
@@ -1577,6 +1595,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+        self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
@@ -1586,6 +1605,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('run_name', run_name)
         self.print_internal("Info: Saving %s" % project_file)
         self.project.writeDatFile(project_file)
+
+        # save workflow
+        if PYQTNODE_AVAILABLE:
+            self.ui.workflow_widget.save(
+                os.path.abspath(os.path.join(project_dir, 'workflow.nc')))
+
         self.clear_unsaved_flag()
         self.update_source_view()
 
@@ -1648,7 +1673,13 @@ class MfixGui(QtWidgets.QMainWindow,
 #        # TODO: implement
 #        self.unimplemented()
 
-
+    def handle_parameters(self):
+        """add/change parameters"""
+        changed_params = self.parameter_dialog.get_parameters()
+        self.set_unsaved_flag()
+        self.ui.regions.update_parameters(changed_params)
+        self.vtkwidget.update_parameters(changed_params)
+        self.project.update_parameters(changed_params)
 
     def handle_compile(self):
         """compiling tool"""
@@ -1823,6 +1854,7 @@ class MfixGui(QtWidgets.QMainWindow,
         """Open MFiX Project"""
 
         self.open_succeeded = False  # set to true on success
+        self.vtkwidget.defer_render = True # defer rendering vtk until load finished
 
         # see also project_manager.load_project_file
 
@@ -1846,6 +1878,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
+        # --- read the mfix.dat or *.mfx file
         self.reset() # resets gui, keywords, file system watchers, etc
 
         self.print_internal("Loading %s" % project_file, color='blue')
@@ -1941,8 +1974,12 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry_file):
+        if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
             self.vtkwidget.add_stl(None, filename=geometry_file)
+            msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
+            self.message(title='Warning', text=msg)
+            
+        # TODO: load more geometry
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -1982,6 +2019,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 solids_phase_names[n] = val
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
+            if key == 'geometry':
+                self.vtkwidget.geometry_from_str(val)
             # Add more here
 
         # hack, copy ordered dict to modify keys w/o losing order
@@ -2042,16 +2081,22 @@ class MfixGui(QtWidgets.QMainWindow,
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
-        self.ui.regions.extract_regions(self.project, defer_render=True)
+        self.ui.regions.extract_regions(self.project)
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
-        self.vtkwidget.render()
+
+        ### Workflow
+        workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
+        if PYQTNODE_AVAILABLE and os.path.exists(workflow_file):
+            self.ui.workflow_widget.clear()
+            self.ui.workflow_widget.load(workflow_file)
 
         # FIXME: is this a good idea?  it means we can't open a file read-only
         #self.force_default_settings()
         #if self.unsaved_flag: # Settings changed after loading
         #    self.save_project()
 
+        self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
 
