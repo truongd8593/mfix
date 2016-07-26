@@ -13,8 +13,8 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
     <widget class="QFrame" name="frame_add_delete">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -66,7 +66,7 @@
      </layout>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -102,7 +102,7 @@
        </property>
       </column>
      </widget>
-     <widget class="QScrollArea" name="scrollarea">
+     <widget class="QScrollArea" name="scrollarea_detail">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -124,11 +124,14 @@
          <height>494</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <layout class="QHBoxLayout" name="tab_box">
-          <item>
-           <widget class="QPushButton" name="tab_fluid">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="tab_box">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushbutton_fluid">
             <property name="text">
              <string>Fluid</string>
             </property>
@@ -137,18 +140,8 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="tab_solid_1">
-            <property name="text">
-             <string>Solid #1</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tab_scalar">
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushbutton_scalar">
             <property name="text">
              <string>Scalar</string>
             </property>
@@ -157,37 +150,56 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="Line" name="line">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>3</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>100</width>
-            <height>3</height>
-           </size>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QWidget{
+          <item row="1" column="0">
+           <widget class="Line" name="tab_underline">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>3</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>3</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QWidget{
 	background-color: #64B5F6;
 	border-color: #64B5F6;
 }</string>
-          </property>
-          <property name="lineWidth">
-           <number>0</number>
-          </property>
+            </property>
+            <property name="lineWidth">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="1">
+         <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>175</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
-        <item>
+        <item row="1" column="0" colspan="2">
          <widget class="QStackedWidget" name="stackedwidget">
           <widget class="QWidget" name="page_fluid">
            <layout class="QGridLayout" name="gridLayout">
@@ -299,7 +311,7 @@
           </widget>
          </widget>
         </item>
-        <item>
+        <item row="2" column="1">
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -313,9 +325,10 @@
          </spacer>
         </item>
        </layout>
-       <zorder>stackedwidget</zorder>
-       <zorder>line</zorder>
        <zorder>verticalSpacer</zorder>
+       <zorder>stackedwidget</zorder>
+       <zorder>tab_underline</zorder>
+       <zorder>horizontalSpacer_2</zorder>
       </widget>
      </widget>
     </widget>
