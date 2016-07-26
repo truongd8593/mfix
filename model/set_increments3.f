@@ -43,11 +43,12 @@
 ! Index denoting cell class
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster.
-      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+      INTEGER, ALLOCATABLE :: DENOTE_CLASS(:)
 ! Flag for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 !......................................................................!
 
+      ALLOCATE(DENOTE_CLASS(MAX_CLASS))
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_INCREMENTS3")
@@ -179,6 +180,7 @@
       END DO
 
       CALL FINL_ERR_MSG
+      DEALLOCATE(DENOTE_CLASS)
 
       RETURN
       END SUBROUTINE SET_INCREMENTS3

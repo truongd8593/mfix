@@ -47,13 +47,14 @@
 ! Index denoting cell class
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster.
-      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+      INTEGER, ALLOCATABLE :: DENOTE_CLASS(:)
 ! Flags for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 ! Used for checking iteration over core cells
       LOGICAL, ALLOCATABLE, DIMENSION(:) :: ALREADY_VISITED
       INTEGER :: interval, j_start(2), j_end(2)
 !......................................................................!
+      ALLOCATE(DENOTE_CLASS(MAX_CLASS))
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_INCREMENTS")
@@ -359,6 +360,7 @@
       ENDDO
 
       CALL FINL_ERR_MSG
+      DEALLOCATE(DENOTE_CLASS)
 
       RETURN
 
@@ -452,7 +454,7 @@
 ! STORE_INCREMENTS
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster
-      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+      INTEGER, ALLOCATABLE :: DENOTE_CLASS(:)
 
       INTEGER :: I_SIZE,J_SIZE,K_SIZE
 !---------------------------------------------------------------------//
@@ -480,6 +482,7 @@
       allocate(TEMP_K_OF(DIMENSION_3))
 
       allocate(BACKGROUND_IJKEND3_ALL(0:NumPEs-1))
+      ALLOCATE(DENOTE_CLASS(MAX_CLASS))
 
       TEMP_I_OF = I_OF
       TEMP_J_OF = J_OF
@@ -1981,6 +1984,7 @@
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
 #endif
       ENDIF
+      DEALLOCATE(DENOTE_CLASS)
 
 1000  FORMAT(1x,A)
 1060  FORMAT(1X,6(I10,1X),F8.1)
