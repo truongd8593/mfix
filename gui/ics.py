@@ -266,14 +266,11 @@ class ICS(object):
             b.setFlat(True)
             b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i+1))
             #ics.tab_box.insertWidget(i+1, b)
-            print("ADDWIDGET", b, i+1)
             ics.tab_box.addWidget(b, 0, i+1)
-            print("CC", ics.tab_box.columnCount())
         # Move the 'Scalar' button to the right of all solids
         b = ics.pushbutton_scalar
         ics.tab_box.removeWidget(b)
         ics.tab_box.addWidget(b, 0, 1+len(self.solids))
-        print("ADDWIDGET DONE, COLCOUNT=", ics.tab_box.columnCount())
 
         #self.ics_move_underline(0 if self.ics_current_tab==0
         #                        else self.ics_current_solid if ics_current_tab==1
