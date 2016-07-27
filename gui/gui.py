@@ -225,6 +225,22 @@ class MfixGui(QtWidgets.QMainWindow,
                 f.write('\n'.join(keys))
 
 
+        tw = self.ui.treewidget_navigation
+        self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 20
+        #tw.setMaximumWidth(self.max_label_len)
+        self.nav_labels = [("Model Setup", "Model"),
+                           ("Post-Processing", "Post"),
+                           ("Boundary Conditions", "BCs"),
+                           ("Initial Conditions", "ICs"),
+                           ("Point Sources", "Points"),
+                           ("Internal Surfaces", "Surfaces")]
+
+        tw.resizeEvent = (lambda old_method:
+                          (lambda event:
+                           (self._on_resized(event),
+                            old_method(event))[-1]))(tw.resizeEvent)
+
+
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
         self.regions_popup = RegionsPopup(QtWidgets.QDialog())
@@ -329,9 +345,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Make tree fully open & non-closable
         # We expect "rootIsDecorated" has been set False in the .ui file
-        ui.treewidget_navigation.expandAll()
-        ui.treewidget_navigation.setExpandsOnDoubleClick(False)
-        ui.treewidget_navigation.setMaximumWidth(ui.treewidget_navigation.sizeHintForColumn(0))
+        tree = ui.treewidget_navigation
+        tree.expandAll()
+        tree.setExpandsOnDoubleClick(False)
+        tree.setMaximumWidth(tree.fontMetrics().width('Boundary Conditions') + 20)
+        tree.setMinimumWidth(tree.fontMetrics().width('Chemistry') + 20)
+        #ui.treewidget_navigation.setMaximumWidth(200)
+        #ui.treewidget_navigation.setMinimumWidth(75)
 
         # Job manager / monitor
         self.job_manager = JobManager(self)
@@ -495,6 +515,33 @@ class MfixGui(QtWidgets.QMainWindow,
                                                   e.__class__.__name__, e)
             self.print_internal(msg, color='red')
             traceback.print_exception(*sys.exc_info())
+
+    def _on_resized(self, ev):
+        ui = self.ui
+        w = ev.size().width()
+        if w < self.max_label_len:
+            self.short_labels()
+        else:
+            self.long_labels()
+
+        g = ui.treewidget_navigation.geometry()
+
+    def short_labels(self):
+        tree = self.ui.treewidget_navigation
+        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        for (long, short) in self.nav_labels:
+            items = tree.findItems(long, flags, 0)
+            if items:
+                items[0].setText(0, short)
+                items[0].setToolTip(0, long)
+
+    def long_labels(self):
+        tree = self.ui.treewidget_navigation
+        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        for (long, short) in self.nav_labels:
+            items = tree.findItems(short, flags, 0)
+            if items:
+                items[0].setText(0, long)
 
 
     def unimplemented(self):
@@ -1064,9 +1111,17 @@ class MfixGui(QtWidgets.QMainWindow,
         current_selection = self.ui.treewidget_navigation.selectedItems()
         if not current_selection:
             return
-
         text = str(current_selection[-1].text(0))
+        # Translate from short to long name
+        for (long, short) in self.nav_labels:
+            if text==short:
+                text=long
+                break
         text = '_'.join(text.lower().split(' '))
+
+        if text=='model_setup':
+            text='model' # oops, inconsistent
+
         current_index = 0
         for i in range(self.ui.stackedWidgetTaskPane.count()):
             widget = self.ui.stackedWidgetTaskPane.widget(i)
