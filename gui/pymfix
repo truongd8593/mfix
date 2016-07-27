@@ -601,18 +601,15 @@ def backupres():
 def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, data = mfix_thread.do_command("EXIT")
-    time.sleep(int(request.form['timeout'])) # wait for MFIX thread to end
+    # after exit, still need to unpause to get check_requests to return
+    mfix_thread.do_command("UNPAUSE")
+    mfix_thread.thread.join()
     global pidfile
     os.remove(pidfile)
-    os._exit(0)
-    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
-
-
-@FLASK_APP.route('/abort', methods=['POST'])
-@token_required
-def abort():
-    "calls MFIX_EXIT"
-    status_code, data = mfix_thread.do_command("ABORT")
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if shutdown is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    shutdown() # will finish current request, then shutdown
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 
