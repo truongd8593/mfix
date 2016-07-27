@@ -156,7 +156,7 @@
           <item row="1" column="0">
            <widget class="Line" name="tab_underline">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -196,7 +196,7 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>24</width>
+            <width>175</width>
             <height>20</height>
            </size>
           </property>
