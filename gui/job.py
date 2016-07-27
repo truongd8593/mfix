@@ -114,11 +114,17 @@ class PymfixAPI(QNetworkAccessManager):
             response_json = reply.data()
             json.loads(response_json)
         except (TypeError, ValueError) as e:
-            error_desc = 'API reponse could not be parsed as JSON'
+            if reply_object.NetworkError == 1:
+                error_desc = 'Network connection failed'
+                error_code = 1
+            else:
+                error_desc = 'API reponse could not be parsed as JSON'
             #log.exception(error_desc)
             response_json = json.dumps({"pymfix_api_error": {
-                                          "errordesc": error_desc,
+                                          "error_code": error_code,
+                                          "error_desc": error_desc,
                                           "raw_api_message":  reply.data()}})
+            log.debug(response_json)
             log.debug('raw headers: %s' % reply_object.rawHeaderList())
         finally:
             self.requests.discard(request_id)
@@ -286,6 +292,7 @@ class Job(QObject):
                         self.sig_api_response,
                         self.sig_api_error,
                         ignore_ssl_errors=True)
+
         # TODO: more complete API testing at instantiation
         log.debug('testing API %s' % self.api)
         # test API before starting status loop
@@ -357,8 +364,15 @@ class Job(QObject):
             pass
 
     def slot_api_error(self, request_id, response_data):
-        log.error("API error signal in Job, %s exiting" % self)
-        self.sig_job_exit.emit()
+        log.error("API error signal in Job, %s" % self)
+        response_json = json.loads(response_data)
+        error = response_json.get('pymfix_api_error')
+        if error:
+            if error.get('error_code') == 1:
+                log.debug('Network connection error')
+            else:
+                log.debug('Unknown error, calling teardown')
+                self.sig_job_exit.emit()
 
     def is_paused(self):
         """indicate whether pymfix is paused"""
