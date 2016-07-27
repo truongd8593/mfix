@@ -234,7 +234,6 @@ class ICS(object):
             if region in self.region_dict:
                 self.region_dict[region]['available'] = False
 
-        ics.tablewidget_regions.setRowCount(0)
         self.fixup_table(ics.tablewidget_regions)
 
         #Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
@@ -293,8 +292,12 @@ class ICS(object):
             # we shouldn't be on this tab!
             return
 
-        if not self.ics_current_indices:
+        tw = ics.tablewidget_fluid_mass_fraction
+        if not self.fluid_species:
+            tw.hide() #?
+        self.fixup_table(tw)
 
+        if not self.ics_current_indices:
             # Nothing selected.  What can we do? (Clear out all lineedits?)
             return
 
@@ -357,8 +360,7 @@ class ICS(object):
                     self.update_keyword(key, val, args=[IC])
             get_widget(key).updateValue(key, val)
 
-        tw = ui.tablewidget_fluid_mass_fraction
-        self.fixup_table(tw)
+
 
 """
 Select species and set mass fractions (table format)
@@ -468,3 +470,5 @@ Scalar (tab) - Tab only available if scalar equations are solved
  scalar equations specified by the user.
 
 """
+
+# TODO :  write "reset_ics" method
