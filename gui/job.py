@@ -210,7 +210,9 @@ class JobManager(QObject):
 
     def slot_teardown_job(self):
         log.info('Job ended or connection to running job failed %s', self)
+        log.debug('removing %s', self.job.pidfile)
         os.remove(self.job.api.pidfile)
+        # update GUI
         self.job = None
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
@@ -317,13 +319,14 @@ class Job(QObject):
             log.debug('API test timeout exceeded')
             self.api_test_timer.stop()
             self.sig_job_exit.emit()
+            return
         else:
             # increment API test timeout
             self.test_api_timeout += 1
         self.api.test_connection(self.sig_handle_api_test,self.sig_handle_api_test_error)
 
     def slot_handle_api_test_error(self, request_id, response_object):
-        log.debug('API Network ERROR in API return')
+        log.debug('API network error')
         log.debug(response_object)
         #self.sig_job_exit.emit()
 
@@ -337,14 +340,14 @@ class Job(QObject):
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
-                log.error("API error: %s", json.dumps(response_json))
                 log.debug('slot_handle_api_test response content error')
-                self.sig_job_exit.emit()
+                log.error("API error: %s" % json.dumps(response_json))
+                #self.sig_job_exit.emit()
         except:
             # response was not parsable, API is not functional
             log.debug('slot_handle_api_test response format error')
-            self.api_test_timer.stop()
             #self.sig_job_exit.emit()
+            return
 
         # API is available, stop test timer and start status timer
         log.debug("API test complete, stopping test timer")
@@ -379,20 +382,15 @@ class Job(QObject):
     def slot_api_error(self, request_id, response_object):
         log.error("API error signal in Job, %s" % self)
         try:
-            data = response_object.readAll().data()
-            response_json = json.loads(data)
-            error = response_json.get('pymfix_api_error')
-            if error:
-                if error.get('error_code') == 1:
-                    log.debug('Network connection error')
-                else:
-                    log.debug('Unknown error, calling teardown')
-                    self.sig_job_exit.emit()
+            response_error_code = response_object.NetworkError
+            if response_error_code == 1:
+                log.debug('API network connection error')
             else:
-                log.debug('API error signal job exit')
-                self.sig_job_exit.emit()
+                log.debug('Unknown network error, calling teardown')
         except:
-            log.debug('unhandled API error')
+            log.exception('unhandled API error')
+        finally:
+            # unconditionally exit; TODO: retry logic
             self.sig_job_exit.emit()
 
     def is_paused(self):
