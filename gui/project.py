@@ -896,12 +896,20 @@ class Project(object):
 
     def get_value(self, key, default=None, args=None):
         # move to gui.py since it's just a convenience func?
+        key = key[:]
+
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
         if args:
             if isinstance(args, int):
                 args = [args]
             key += list(args)
+
+        # Hack to accomodate multi-vector keys (ICs)
+        for (i, k) in enumerate(key):
+            if isinstance(k, list):
+                key[i] = k[0] # TODO: ensure values are equal across list
+                break
         try:
             r =  get_from_dict(self._keyword_dict, key)
         except KeyError:
