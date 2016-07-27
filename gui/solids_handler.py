@@ -292,7 +292,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             #self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
         set_item_enabled(get_combobox_item(self.ui.solids.combobox_solids_density_model,
                                                 VARIABLE), enabled)
-        self.update_solids_species_groupbox()
+        self.update_solids_species_groupbox() # availability
 
 
     def setup_combobox_solids_model(self):
