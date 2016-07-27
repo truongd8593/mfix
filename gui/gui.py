@@ -663,6 +663,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(True)
         log.debug('done update_runbuttons')
+        log.debug('\n\n\n\n')
 
 
     def print_welcome(self):
@@ -1942,6 +1943,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(runname_pid):
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
+            self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
         # complete job state determinination needed
         """
             if job_manager.job:
