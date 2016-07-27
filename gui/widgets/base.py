@@ -52,7 +52,7 @@ from constants import *
 from tools.general import (to_text_string, get_icon, insert_append_action,
                            insert_append_separator, get_unique_string)
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
-VALID_EXPRESION_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys())
+VALID_EXPRESION_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys()) + SPECIAL_PARAMETERS
 
 
 def rreplace(s, old, new, occurrence):

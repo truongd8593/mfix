@@ -470,7 +470,9 @@ class MfixGui(QtWidgets.QMainWindow,
                 pass # What to do for rest of widgets?
 
         # reset parameters
+        base_parameters = OrderedDict([(key, 0.0) for key in SPECIAL_PARAMETERS])
         PARAMETER_DICT.clear()
+        PARAMETER_DICT.update(base_parameters)
 
         self.unsaved_flag = False
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
@@ -1748,6 +1750,10 @@ class MfixGui(QtWidgets.QMainWindow,
         """add/change parameters"""
         changed_params = self.parameter_dialog.get_parameters()
         self.set_unsaved_flag()
+        self.update_parameters(changed_params)
+
+    def update_parameters(self, changed_params):
+        """update the changed parameters"""
         self.ui.regions.update_parameters(changed_params)
         self.vtkwidget.update_parameters(changed_params)
         self.project.update_parameters(changed_params)
@@ -2167,6 +2173,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #if self.unsaved_flag: # Settings changed after loading
         #    self.save_project()
 
+        self.vtkwidget.reset_view()
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')

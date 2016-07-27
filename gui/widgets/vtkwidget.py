@@ -155,7 +155,7 @@ DEFAULT_BOOLEAN_PARAMS = {
     'type':     '',
     'geo_type': 'boolean',
     }
-    
+
 DEFAULT_STL_PARAMS = {
     'type':            'stl',
     'filename':        None,
@@ -328,7 +328,7 @@ class VtkWidget(QtWidgets.QWidget):
         for color in list(self.color_dict.keys()):
             self.color_dict['_'.join([color, 'edge'])] = \
                 self.color_dict[color].darker()
-                
+
         self.cell_spacing_widgets = [
             self.parent.ui.mesh.lineedit_mesh_cells_size_x,
             self.parent.ui.mesh.lineedit_mesh_cells_size_y,
@@ -389,8 +389,6 @@ class VtkWidget(QtWidgets.QWidget):
         self.orientation_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
         self.orientation_widget.SetEnabled(1)
         self.orientation_widget.InteractiveOff()
-
-        self.vtkrenderer.ResetCamera()
 
         # --- balloon widget ---
         # there seems to be issues with this widget, text doesn't show and the
@@ -857,7 +855,6 @@ class VtkWidget(QtWidgets.QWidget):
 
             self.vtkrenderer.AddActor(actor)
 
-            self.vtkrenderer.ResetCamera()
             self.render()
 
             # find center of mass
@@ -884,7 +881,7 @@ class VtkWidget(QtWidgets.QWidget):
             item.setCheckState(0, QtCore.Qt.Checked)
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
-            
+
             self.parent.set_unsaved_flag()
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
@@ -1090,7 +1087,7 @@ class VtkWidget(QtWidgets.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
-        
+
         self.parent.set_unsaved_flag()
 
     def update_parametric(self, name):
@@ -1163,7 +1160,7 @@ class VtkWidget(QtWidgets.QWidget):
             para_object.SetN2(float(self.geometrydict[name]['n2']))
 
         source.Update()
-        
+
         self.parent.set_unsaved_flag()
 
         return source
@@ -1221,7 +1218,6 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.vtkrenderer.AddActor(actor)
 
-        self.vtkrenderer.ResetCamera()
         self.render()
 
         # add to dict
@@ -1317,7 +1313,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
-        
+
         self.parent.set_unsaved_flag()
 
     def clear_all_geometry(self):
@@ -1536,7 +1532,6 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkrenderer.AddActor(actor)
 
         # update
-        self.vtkrenderer.ResetCamera()
         self.render()
 
         # save references
@@ -1557,7 +1552,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
-        
+
         self.parent.set_unsaved_flag()
 
     def get_input_data(self, name):
@@ -1689,6 +1684,7 @@ class VtkWidget(QtWidgets.QWidget):
             source = self.region_dict[name]['source']
         else:
             source = None
+
         lengths = [abs(float(to) - float(f)) for
                    f, to in zip(props['from'], props['to'])]
         center = [min(f) + l / 2.0 for f, l in
@@ -2045,7 +2041,7 @@ class VtkWidget(QtWidgets.QWidget):
                 cells.append(int(self.project[key])+1)
             else:
                 cells.append(1)
-                
+
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
             wid.setText('{0:.2e}'.format((t-f)/c))
@@ -2271,7 +2267,7 @@ class VtkWidget(QtWidgets.QWidget):
         elif view == 'xz':
             camera.SetPosition(10000000, 0, 0)
             camera.SetViewUp(0, 0, 1)
-        self.vtkrenderer.ResetCamera()
+#        self.vtkrenderer.ResetCamera()
         self.render()
 
     def reset_view(self):

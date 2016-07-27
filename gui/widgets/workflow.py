@@ -139,11 +139,11 @@ class MockParent(QtWidgets.QWidget):
 class WorkflowRunPopup(RunPopup):
     def __init__(self, mfix_exe, parent):
         RunPopup.__init__(self, mfix_exe, parent)
-        
+
     # over-rides
     def handle_run(self):
         self.finish_with_dialog()
-        
+
     def handle_submit(self):
         self.finish_with_dialog()
 
@@ -419,7 +419,7 @@ class WorkflowWidget(QtWidgets.QWidget):
     # --- job update ---
     def update_job_status(self):
         """update the current job status"""
-        
+
 #        {   u'dt': 0.0001234567901234568,
 #    u'nit': 18,
 #    u'paused': True,
@@ -486,12 +486,12 @@ class WorkflowWidget(QtWidgets.QWidget):
         """get the currently selected jobs"""
         projs = list(self.job_status_table.value.keys())
         return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows()]
-        
+
     def get_selected_projects(self):
         """get the currently selected project names"""
         projs = list(self.job_status_table.value.keys())
         return [projs[i] for i in self.job_status_table.current_rows()]
-    
+
     def update_btns(self):
         """enable/diable btns"""
 

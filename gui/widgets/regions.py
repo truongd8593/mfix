@@ -35,6 +35,8 @@ def clean_region_dict(region_dict):
             pass
         elif key == 'color':
             clean_dict['color'] = region_dict['color'].color
+        elif isinstance(value, list) and any([isinstance(v, Equation) for v in value]):
+            clean_dict[key] = value
         elif value != DEFAULT_REGION_DATA[key]:
             clean_dict[key] = value
     return clean_dict
@@ -70,6 +72,7 @@ class RegionsWidget(QtWidgets.QWidget):
                                  self.lineedit_regions_to_z]
         for ext in self.extent_lineedits:
             ext.allow_parameters = True
+            ext.dtype = float
             ext.help_text = 'Physical coordinates describing the bounds of the region.'
 
         self.combobox_regions_type.addItems([
@@ -198,6 +201,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.vtkwidget.delete_region(name)
 
             self.tablewidget_regions.set_value(data)
+            self.vtkwidget.render()
 
         nrows = len(data)
         if rows[-1] == nrows: # We deleted the last row,
@@ -284,13 +288,19 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[rows[-1]]
         key = value.keys()[0]
 
-        if update_param:
-            self.update_parameter_map(value[key], name, key)
-
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
-            data[name][item[0]][index] = value.values()[0]
+            val = value.values()[0]
+            if isinstance(val, Equation):
+                used = val.get_used_parameters()
+                if 'min' in used or 'max' in used:
+                    val.eq = val.eq.replace('min', item[1]+'min').replace('max', item[1]+'max')
+                    widget.updateValue(None, val)
+            if update_param:
+                self.update_parameter_map(value[key], name, key)
+
+            data[name][item[0]][index] = val
 
             for update in (self.vtkwidget.update_region,
                            self.parent.ics_update_region,
@@ -330,9 +340,15 @@ class RegionsWidget(QtWidgets.QWidget):
             data[name][item[0]][index] = value.values()[0]
             self.vtkwidget.update_region(name, data[name])
 
+            if update_param:
+                self.update_parameter_map(value[key], name, key)
+
         elif 'deviation_angle' in key:
             data[name]['deviation_angle'] = value.values()[0]
             self.vtkwidget.update_region(name, data[name])
+
+            if update_param:
+                self.update_parameter_map(value[key], name, key)
 
         self.tablewidget_regions.set_value(data)
 
@@ -413,6 +429,14 @@ class RegionsWidget(QtWidgets.QWidget):
                 # Convert to a CellColor object
                 region_data['color'] = CellColor(region_data['color'])
 
+            #build parameter map
+            for key, value in region_data.items():
+                if isinstance(value, list):
+                    for v, k in zip(value, ['x', 'y', 'z']):
+                        self.update_parameter_map(v, region, '_'.join([key,k]))
+                else:
+                    self.update_parameter_map(value, region, key)
+
             self.vtkwidget.new_region(region, region_data)
 
         self.tablewidget_regions.set_value(data)
@@ -479,7 +503,6 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
-
         data = self.tablewidget_regions.value
         name_key = ','.join([name, key])
 
@@ -489,16 +512,18 @@ class RegionsWidget(QtWidgets.QWidget):
             new_params = new_value.get_used_parameters()
 
         # old params
-        if 'to' in key or 'from' in key:
-            item = key.split('_')
-            index = ['x', 'y', 'z'].index(item[1])
-            old_value = data[name][item[0]][index]
-        elif 'filter' in key:
-            item = key.split('_')
-            index = ['x', 'y', 'z'].index(item[1])
-            old_value = data[name][item[0]][index]
-        else:
-            old_value = data[name][key]
+        old_value = None
+        if data:
+            if 'to' in key or 'from' in key:
+                item = key.split('_')
+                index = ['x', 'y', 'z'].index(item[1])
+                old_value = data[name][item[0]][index]
+            elif 'filter' in key:
+                item = key.split('_')
+                index = ['x', 'y', 'z'].index(item[1])
+                old_value = data[name][item[0]][index]
+            else:
+                old_value = data[name][key]
 
         old_params = []
         if isinstance(old_value, Equation):

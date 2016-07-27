@@ -93,7 +93,6 @@ class ProjectManager(Project):
 
         self._cleanDeletedItems()
 
-
     def _change(self, widget, key, newValue, args=None):
         # If any element of 'args' is itself a list, iterate over all values
         if isinstance(args,list) and any(isinstance(arg, list) for arg in args):
@@ -104,8 +103,6 @@ class ProjectManager(Project):
                         self._change(widget, key, newValue, args)
                     break
             return
-
-
 
         key = key.lower()
         updatedValue = None
@@ -158,6 +155,8 @@ class ProjectManager(Project):
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace")
 
+        if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
+            self.gui.update_parameters([key.replace('length', 'max')])
 
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
@@ -180,7 +179,6 @@ class ProjectManager(Project):
         #log.warn(msg)
         #default
         return SINGLE
-
 
     def load_project_file(self, project_file):
         """Load an MFiX project file."""
@@ -496,7 +494,6 @@ class ProjectManager(Project):
         for (k,v) in self.keyword_and_args_to_widget.items():
             if widget in v:
                 v.remove(widget)
-
 
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.

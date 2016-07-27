@@ -1077,7 +1077,7 @@ class Project(object):
                     # comments, and an experimental feature.  Don't want to create
                     # tight dependencies on GUI version - treat them like HTML tags,
                     # ignore the ones you can't handle
-                    
+
         # look for parameters
         if 'parameters' in self.mfix_gui_comments:
             self.parameters_from_str(self.mfix_gui_comments['parameters'])
@@ -1092,10 +1092,10 @@ class Project(object):
         reactionSection = False
         thermoSection = False
         thermo_lines = [] # Temporary holder for thermo_data section
-        
+
         # parse MFIX-GUI comments first
         self.parse_mfix_gui_comments(fobject)
-        
+
         fobject.seek(0)
 
         for i, line in enumerate(fobject):
@@ -1179,8 +1179,13 @@ class Project(object):
         # TODO:  refactor
         if args is None:
             args = []
-            
+
         key = key.lower()
+
+        # special handleing of xmin, xlength, ymin, ylength, zmin, zlength
+        if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
+            par_key = key.replace('length', 'max')
+            PARAMETER_DICT[par_key] = value
 
         # check to see if the keyword already exists
         if [key]+args in self:
@@ -1516,7 +1521,7 @@ class Project(object):
         """ Write the project to specified text file"""
         ### TODO:  format species sections
         # delimit new additions from initial file contents (comment line)
-        
+
         # save parameters
         self.mfix_gui_comments['parameters'] = self.parameters_to_str()
 
@@ -1554,7 +1559,7 @@ class Project(object):
             data[par] = loaded_data['parameters'][par]
 
         PARAMETER_DICT.update(data)
-        for key in set(PARAMETER_DICT.keys()) - set(data.keys()):
+        for key in set(PARAMETER_DICT.keys()) - set(list(data.keys()) + SPECIAL_PARAMETERS):
             PARAMETER_DICT.pop(key)
 
     def parameters_to_str(self):
