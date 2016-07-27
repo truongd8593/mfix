@@ -6,14 +6,28 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 import copy
 from collections import OrderedDict
-from qtpy import QtWidgets, QtCore, QtGui, PYQT4, PYQT5
+from qtpy import QtWidgets, QtCore, QtGui
+
+
+# Note - some items moved from 'Widgets' to 'Core'
+# depending on version of both qtpy and Qt.
+# This cannot be determined just using the PYQT4
+# and PYQT5 constants, hence this try/except, for
+# portability.  With newer versions of qtpy this
+# can be removed (symbols are in QtCore)
+
+try:
+    from qtpy.QtWidgets import QStringListModel
+except ImportError:
+    from qtpy.QtCore import QStringListModel
+
+try:
+    from qtpy.QtWidgets import QItemSelectionModel
+except ImportError:
+    from qtpy.QtCore import QItemSelectionModel
+
 
 from tools.general import get_selected_row
-
-if PYQT5:
-    from qtpy.QtCore import QItemSelectionModel
-elif PYQT4:
-    from qtpy.QtWidgets import QItemSelectionModel
 
 import logging
 log = logging.getLogger(__name__)
@@ -172,7 +186,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.context_menu = self.createStandardContextMenu
 
         self._separators = ['*', '**', '/', '-', '+', ' ']
-        self._completer_model = QtWidgets.QStringListModel(PARAMETER_DICT.keys())
+        self._completer_model = QStringListModel(PARAMETER_DICT.keys())
         self._completer = QtWidgets.QCompleter()
         self._completer.setModel(self._completer_model)
         self._completer.setWidget(self)
