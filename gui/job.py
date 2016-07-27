@@ -49,7 +49,6 @@ class PymfixAPI(QNetworkAccessManager):
         set transparently.
     """
 
-    #sig_api_available = pyqtSignal(str)
 
     def __init__(self, pidfile, response_handler, error_handler, ignore_ssl_errors=False):
 
@@ -63,28 +62,15 @@ class PymfixAPI(QNetworkAccessManager):
         self.requests = set()
         self.default_response_handler = response_handler
         self.default_error_handler = error_handler
+        self.api_available = False
 
         log.info('API connection for job %s' % self.pidfile)
         log.debug(self)
-        #self.sig_api_available.connect(self.slot_api_available)
 
     def test_connection(self, signal):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
         self.get('status', handlers={'response':signal})
-
-    # TODO: need to test API upon instantiation.
-    def slot_api_available(self, response):
-        log.info('slot_api_available')
-        try:
-            response = json.loads(response)
-            log.info('API available: %s' % self.pid_contents['url'])
-            self.sig_api_available_public.emit(True)
-            self.api_available = True
-        except Exception:
-            log.exception('API connection failed: %s' % self.pid_contents['url'])
-            self.api_available = False
-            self.sig_api_available_public.emit(False)
 
     def api_request(self, method, endpoint, data=None, handlers={}):
         req = QNetworkRequest(QUrl('%s/%s' % (self.pid_contents['url'], endpoint)))
@@ -271,7 +257,6 @@ class Job(QObject):
 
     sig_job_exit = Signal()
     sig_read_status = pyqtSignal(str, str)
-    #sig_api_available = pyqtSignal(bool)
     sig_api_response = pyqtSignal(str, str)
     sig_api_error = pyqtSignal(str, QObject)
     sig_handle_api_test = pyqtSignal(str, QObject)

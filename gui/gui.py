@@ -605,15 +605,15 @@ class MfixGui(QtWidgets.QMainWindow,
         pending = self.job_manager.is_job_pending()
         paused = self.job_manager.job and self.job_manager.job.is_paused()
         unpaused = self.job_manager.job and not paused
-        resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
-        ready = project_open and not (running or paused or resumable)
+        resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
+        editable = project_open and not (pending or paused or unpaused or resumable)
 
-        log.info("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s",
-                  running, paused, resumable)
+        # log.info("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s",
+        #           running, paused, resumable)
 
         self.update_window_title() # put run state in window titlebar
 
-        self.enable_input(ready)
+        self.enable_input(editable)
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
