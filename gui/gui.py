@@ -230,7 +230,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 20
 
         self.nav_labels = [("Model Setup", "Model"),
-                           ("Post-Processing", "Post"),
+                           ("Post-processing", "Post"),
                            ("Boundary Conditions", "BCs"),
                            ("Initial Conditions", "ICs"),
                            ("Point Sources", "Points"), ### Only under "Model Setup", not "Monitors"
@@ -405,7 +405,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # --- default ---
         self.mode_changed('modeler')
-        self.change_pane('model')
+        self.change_pane('model setup')
 
         # Update run options
         log.info('init update_runbuttons')
@@ -1113,13 +1113,26 @@ class MfixGui(QtWidgets.QMainWindow,
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
-        """set current pane to the one matching 'name'"""
-        clist = self.ui.treewidget_navigation.findItems(
+        """set current pane to the one matching 'name'.  Must be the long
+        (non-abbreviated) navigation label"""
+
+        items = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
-        assert len(clist) == 1
-        item = clist[0]
-        self.ui.treewidget_navigation.setCurrentItem(item)
+
+        if not items: # Nav menu may be in abbreviated mode.  Might be better
+            # to identify navigation items by something other than text, since
+            # that can change (long/short) and is possibly non-unique (eg "points")
+            for (long, short) in self.nav_labels:
+                if name == long:
+                    items = self.ui.treewidget_navigation.findItems(
+                        short,
+                        Qt.MatchFixedString | Qt.MatchRecursive, 0)
+                    if items:
+                        break
+
+        assert len(items) == 1
+        self.ui.treewidget_navigation.setCurrentItem(items[0])
         self.navigation_changed()
 
     def navigation_changed(self):

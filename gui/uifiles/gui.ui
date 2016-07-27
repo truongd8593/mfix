@@ -653,7 +653,7 @@ QPushButton:checked {
                  </item>
                  <item>
                   <property name="text">
-                   <string>Model</string>
+                   <string>Model Setup</string>
                   </property>
                   <item>
                    <property name="text">
@@ -733,7 +733,7 @@ QPushButton:checked {
                  </item>
                  <item>
                   <property name="text">
-                   <string>Post</string>
+                   <string>Post-processing</string>
                   </property>
                   <item>
                    <property name="text">
