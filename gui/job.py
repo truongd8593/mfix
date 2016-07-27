@@ -63,6 +63,7 @@ class PymfixAPI(QNetworkAccessManager):
         self.requests = set()
         self.default_response_handler = response_handler
         self.default_error_handler = error_handler
+        self.api_available = False
 
         log.info('API connection for job %s' % self.pidfile)
         log.debug(self)
@@ -218,9 +219,6 @@ class JobManager(QObject):
         self.job = None
         self.sig_change_job_state.emit()
         self.sig_update_run_state.emit()
-
-    def is_job_pending(self):
-        return self.job and not self.job.api.api_available
 
     def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
