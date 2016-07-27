@@ -67,11 +67,11 @@ class PymfixAPI(QNetworkAccessManager):
         log.info('API connection for job %s' % self.pidfile)
         log.debug(self)
 
-    def test_connection(self, signal):
+    def test_connection(self, response, error):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
         log.debug('test_connection called %s', self)
-        self.get('status', handlers={'response': signal})
+        self.get('status', handlers={'response': response, 'error': error})
 
     def api_request(self, method, endpoint, data=None, handlers={}):
         req = QNetworkRequest(QUrl('%s/%s' % (self.pid_contents['url'], endpoint)))
@@ -114,11 +114,15 @@ class PymfixAPI(QNetworkAccessManager):
             response_json = reply.data()
             json.loads(response_json)
         except (TypeError, ValueError) as e:
-            if reply_object.NetworkError == 1:
-                error_desc = 'Network connection failed'
-                error_code = 1
-            else:
-                error_desc = 'API reponse could not be parsed as JSON'
+            
+            try:
+                if reply_object.NetworkError == 1:
+                    error_desc = 'Network connection failed'
+                    error_code = 1
+                else:
+                    error_desc = 'API reponse could not be parsed as JSON'
+            except:
+                log.exception("reply_object.Network error test")
             #log.exception(error_desc)
             response_json = json.dumps({"pymfix_api_error": {
                                           "error_code": error_code,
@@ -132,6 +136,7 @@ class PymfixAPI(QNetworkAccessManager):
             reply_object.close()
 
     def slot_protocol_error(self, request_id, reply_object, handler):
+        log.debug('API protocol error')
         handler.emit(request_id, reply_object)
 
     def slot_api_error(self, request_id, reply_object):
@@ -266,7 +271,9 @@ class Job(QObject):
     sig_read_status = pyqtSignal(str, str)
     sig_api_response = pyqtSignal(str, str)
     sig_api_error = pyqtSignal(str, QObject)
-    sig_handle_api_test = pyqtSignal(str, QObject)
+    
+    sig_handle_api_test = pyqtSignal(str, str)
+    sig_handle_api_test_error = pyqtSignal(str, QObject)
 
     sig_update_job_status = Signal()
     sig_change_run_state = Signal()
@@ -287,6 +294,7 @@ class Job(QObject):
         self.sig_api_error.connect(self.slot_api_error)
 
         self.sig_handle_api_test.connect(self.slot_handle_api_test)
+        self.sig_handle_api_test_error.connect(self.slot_handle_api_test_error)
 
         self.api = PymfixAPI(self.pidfile,
                         self.sig_api_response,
@@ -312,14 +320,19 @@ class Job(QObject):
         else:
             # increment API test timeout
             self.test_api_timeout += 1
-        self.api.test_connection(self.sig_handle_api_test)
+        self.api.test_connection(self.sig_handle_api_test,self.sig_handle_api_test_error)
+
+    def slot_handle_api_test_error(self, request_id, response_object):
+        log.debug('API Network ERROR in API return') 
+        log.debug(reponse_object)
+        self.sig_job_exit.emit()
 
     def slot_handle_api_test(self, request_id, response_data):
         """Parse response data from API test call.
         If API works, stop API test timer, start API status timer.
         If API response includes a permenant failure or is not well formed,
         stop test timer and signal job exit."""
-        log.debug('slot_handle_api_test called %s', self)
+        log.debug('RETURN FROM API - slot_handle_api_test called %s', self)
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
@@ -335,6 +348,7 @@ class Job(QObject):
             return
 
         # API is available, stop test timer and start status timer
+        log.debug("API test successful, stopping test timer")
         self.api_test_timer.stop()
         self.api_available = True
         self.sig_update_job_status.emit()
@@ -379,6 +393,7 @@ class Job(QObject):
         return self.status.get('paused')
 
     def update_job_status(self):
+        log.debug('Job:update_job_status()')
         req_id = self.api.get_job_status()
         self.register_request(req_id, self.sig_get_job_state)
 
