@@ -161,7 +161,7 @@ class PymfixAPI(QNetworkAccessManager):
         return request_id
 
     def post(self, endpoint, data=b'', handlers={}):
-        request_id = self.api_request('put', endpoint, data=data, handlers=handlers)
+        request_id = self.api_request('post', endpoint, data=data, handlers=handlers)
         return request_id
 
     def get_job_status(self):
