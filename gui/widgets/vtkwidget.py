@@ -328,6 +328,12 @@ class VtkWidget(QtWidgets.QWidget):
         for color in list(self.color_dict.keys()):
             self.color_dict['_'.join([color, 'edge'])] = \
                 self.color_dict[color].darker()
+                
+        self.cell_spacing_widgets = [
+            self.parent.ui.mesh.lineedit_mesh_cells_size_x,
+            self.parent.ui.mesh.lineedit_mesh_cells_size_y,
+            self.parent.ui.mesh.lineedit_mesh_cells_size_z
+            ]
 
         # --- layout ---
         self.grid_layout = QtWidgets.QGridLayout(self)
@@ -364,19 +370,18 @@ class VtkWidget(QtWidgets.QWidget):
 
         # Orientation Arrows Marker Widget
         self.axes = vtk.vtkAxesActor()
-#        self.axes.AxisLabelsOn()
-#        self.axes.SetXAxisLabelText("X")
-#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1, 0, 0)
-#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-#        self.axes.SetYAxisLabelText("Y")
-#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 1, 0)
-#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-#        self.axes.SetZAxisLabelText("Z")
-#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 0, 1)
-#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        self.axes.AxisLabelsOn()
+        self.axes.SetXAxisLabelText("X")
+        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1, 0, 0)
+        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        self.axes.SetYAxisLabelText("Y")
+        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 1, 0)
+        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        self.axes.SetZAxisLabelText("Z")
+        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 0, 1)
+        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
 
-        # Orientation Cube Marker Widget
-
+        # Orientation Marker Widget
         self.orientation_widget = vtk.vtkOrientationMarkerWidget()
         self.orientation_widget.SetOutlineColor(0.9300, 0.5700, 0.1300)
         self.orientation_widget.SetOrientationMarker(self.axes)
@@ -879,6 +884,8 @@ class VtkWidget(QtWidgets.QWidget):
             item.setCheckState(0, QtCore.Qt.Checked)
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
+            
+            self.parent.set_unsaved_flag()
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
         """
@@ -1083,6 +1090,8 @@ class VtkWidget(QtWidgets.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
+        
+        self.parent.set_unsaved_flag()
 
     def update_parametric(self, name):
         """
@@ -1154,6 +1163,8 @@ class VtkWidget(QtWidgets.QWidget):
             para_object.SetN2(float(self.geometrydict[name]['n2']))
 
         source.Update()
+        
+        self.parent.set_unsaved_flag()
 
         return source
 
@@ -1306,6 +1317,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
+        
+        self.parent.set_unsaved_flag()
 
     def clear_all_geometry(self):
         """ remove all geometry """
@@ -1544,6 +1557,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
+        
+        self.parent.set_unsaved_flag()
 
     def get_input_data(self, name):
         """ based on the type of geometry, return the data """
@@ -2030,7 +2045,10 @@ class VtkWidget(QtWidgets.QWidget):
                 cells.append(int(self.project[key])+1)
             else:
                 cells.append(1)
-
+                
+        # average cell width
+        for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
+            wid.setText('{0:.2e}'.format((t-f)/c))
         self.rectilinear_grid.SetDimensions(*cells)
 
         # determine cell spacing
@@ -2111,7 +2129,6 @@ class VtkWidget(QtWidgets.QWidget):
 
             self.vtkrenderer.AddActor(actor)
 
-        self.vtkrenderer.ResetCamera()
         self.render()
 
     def vtk_calc_distance_from_geometry(self):
