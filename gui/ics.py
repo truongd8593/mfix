@@ -96,7 +96,7 @@ class ICS(object):
         for region_name in selections:
             i = self.ics_find_index()
             indices.append(i)
-            self.ics[i] = {'region': region_name, 'keys':{}}
+            self.ics[i] = {'region': region_name}
             region_data = self.region_dict.get(region_name)
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
@@ -108,7 +108,7 @@ class ICS(object):
         self.ics_current_regions = selections
         self.ics_current_indices = indices
         tw.setItem(nrows, 0, item)
-        self.fixup_table(tw)
+        self.fixup_ics_table(tw)
         tw.setCurrentCell(nrows, 0) # Might as well make it selected
 
     def ics_find_index(self):
@@ -123,15 +123,20 @@ class ICS(object):
         if row is None: # No selection
             return
 
-        for i in self.ics_current_indices:
-            key_dict = self.ics[i].get('keys', {})
-            for (key, args) in key_dict.keys():
+        kwlist = list(self.project.keywordItems())[:]
+        for kw in kwlist:
+            key, args = kw.key, kw.args
+            if key.startswith('ic_') and args and args[0] in self.ics_current_indices:
                 self.unset_keyword(key, args=args)
-            del self.ics[i]
-            # TODO: fix any resulting 'holes' in sequence
+            # TODO: fix any resulting holes in index sequence
+
         for r in self.ics_current_regions:
             if r in self.region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
                 self.region_dict[r]['available'] = True
+
+        for i in self.ics_current_indices:
+            del self.ics[i]
+
         self.ics_current_regions = []
         self.ics_current_indices = []
 
@@ -139,9 +144,11 @@ class ICS(object):
         tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
         tw.removeRow(row)
         tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
+
+        # Hack to force update when removing last row
         row = get_selected_row(tw)
         if row is None:
-            self.handle_ics_region_selection() # Hack to force update when removing last row
+            self.handle_ics_region_selection()
 
 
     def handle_ics_region_selection(self):
@@ -166,7 +173,7 @@ class ICS(object):
 
         self.setup_ics()
 
-    def fixup_table(self, tw, stretch_column=0):
+    def fixup_ics_table(self, tw, stretch_column=0):
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -221,7 +228,6 @@ class ICS(object):
                               data['from']+data['to']):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[index])
-            self.ics[index]['keys'][(key,index)] = val
 
 
     def setup_ics(self):
@@ -234,7 +240,10 @@ class ICS(object):
             if region in self.region_dict:
                 self.region_dict[region]['available'] = False
 
-        self.fixup_table(ics.tablewidget_regions)
+        row = get_selected_row(ics.tablewidget_regions)
+        enabled = (row is not None)
+        ics.toolbutton_delete.setEnabled(enabled)
+        ics.scrollarea_detail.setEnabled(enabled)
 
         #Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
         #no input is required from the user.
@@ -280,9 +289,63 @@ class ICS(object):
 
         self.setup_ics_fluid_tab() # Only tab we have for now
 
-    def __get_widget(self, key):
+    def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
         ics = self.ui.initial_conditions
+        key = 'ic_x_g'
+        val = value_dict[key]
+        table = ics.tablewidget_fluid_mass_fraction
+        widget.updateValue(key, val)
+        if val == '':
+            self.unset_keyword(key, args=args)
+        else:
+            self.update_keyword(key, val, args=args)
+        self.update_ics_fluid_mass_fraction_total()
 
+    def update_ics_fluid_mass_fraction_total(self):
+        if not self.ics_current_indices:
+            return
+        IC0 = self.ics_current_indices[0]
+        ics = self.ui.initial_conditions
+        key = 'ic_x_g'
+        table = ics.tablewidget_fluid_mass_fraction
+        total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,i]))
+                    for i in range(1,len(self.fluid_species)+1))
+        table.item(table.rowCount()-1, 1).setText(str(total))
+
+    def update_ics_fluid_mass_fraction_table(self):
+        ics = self.ui.initial_conditions
+        table = ics.tablewidget_fluid_mass_fraction
+        table.clearContents()
+        if not (self.fluid_species and self.ics_current_indices):
+            table.hide()
+            return
+        IC0 = self.ics_current_indices[0]
+        nrows = len(self.fluid_species) + 1 # TOTAL row at end
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        for (row, (species,data)) in enumerate(self.fluid_species.items()):
+            alias = data.get('alias', species) # default to species if no alias
+            table.setItem(row, 0, make_item(alias))
+            # mass fraction
+            le = LineEdit()
+            le.setdtype('dp')
+            le.setValInfo(min=0.0, max=1.0)
+            key = 'ic_x_g'
+            le.key = key
+            le.args = [self.ics_current_indices, row+1]
+            val = self.project.get_value(key, args=[IC0, row+1], default=None)
+            if val is not None:
+                le.updateValue(key, val)
+            le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
+            table.setCellWidget(row, 1, le)
+
+        table.setItem(nrows-1, 0, make_item("TOTAL"))
+        table.setItem(nrows-1, 1, make_item(''))
+        self.update_ics_fluid_mass_fraction_total()
+        self.fixup_ics_table(table)
 
     def setup_ics_fluid_tab(self):
         #Fluid (tab)
@@ -295,13 +358,15 @@ class ICS(object):
         tw = ics.tablewidget_fluid_mass_fraction
         if not self.fluid_species:
             tw.hide() #?
-        self.fixup_table(tw)
+        else:
+            tw.show()
+        self.fixup_ics_table(tw)
 
         if not self.ics_current_indices:
             # Nothing selected.  What can we do? (Clear out all lineedits?)
             return
 
-        # Dream: If we can make this code generic enough perhaps someday it can
+        #  If we can make this code generic enough perhaps someday it can
         # be autogenerated from SRS doc
         def get_widget(key):
             return getattr(ics, 'lineedit_keyword_%s_args_IC' % key)
@@ -360,15 +425,18 @@ class ICS(object):
                     self.update_keyword(key, val, args=[IC])
             get_widget(key).updateValue(key, val)
 
+        #Select species and set mass fractions (table format)
+        # Specification always available
+        # Input required for species equations TODO: implement 'required'
+        # Drop down menu of fluid species
+        # DEFAULT - last defined species has mass fraction of 1.0
+        # Error check: mass fractions must sum to one
+        self.update_ics_fluid_mass_fraction_table()
+
+
 
 
 """
-Select species and set mass fractions (table format)
- Specification always available
- Input required for species equations
- Drop down menu of fluid species
- DEFAULT - last defined species has mass fraction of 1.0
- Error check: mass fractions must sum to one
 
 Turbulence: Define mixing length model length scale
  Specification only available with Mixing Length turbulence model
