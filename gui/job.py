@@ -241,7 +241,7 @@ class JobManager(QObject):
 
     def stop_mfix(self):
         """Send stop request"""
-        req_id = self.job.api.put('stop')
+        req_id = self.job.api.put('abort')
         open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
         def force_stop():
             pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
