@@ -325,7 +325,7 @@ class Job(QObject):
 
     def slot_handle_api_test_error(self, request_id, response_object):
         log.debug('API Network ERROR in API return') 
-        log.debug(reponse_object)
+        log.debug(response_object)
         #self.sig_job_exit.emit()
 
     def slot_handle_api_test(self, request_id, response_data):
@@ -350,7 +350,7 @@ class Job(QObject):
 
         # API is available, stop test timer and start status timer
         log.debug("API test complete, stopping test timer")
-        self.api_test_timer.stop()
+        #self.api_test_timer.stop()
         self.api_available = True
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
