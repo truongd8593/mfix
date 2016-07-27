@@ -158,13 +158,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         tb = s.toolbutton_solids_species_delete
         tb.setEnabled(False)
         tb.clicked.connect(self.solids_species_delete)
-
         tw_solids_species.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
         # Advanced
         s.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
         s.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
-
 
         # connect solid tab buttons
         for i, btn in enumerate((s.pushbutton_solids_materials,
@@ -294,6 +292,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             #self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
         set_item_enabled(get_combobox_item(self.ui.solids.combobox_solids_density_model,
                                                 VARIABLE), enabled)
+        self.update_solids_species_groupbox()
+
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
@@ -685,9 +685,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # Is it a good idea to have hidden items?
         #s.groupbox_species.setVisible(enabled)
-
         s.groupbox_species.setEnabled(enabled)
-        s.frame_add_delete_copy_species.setVisible(enabled)# Buttons seem to take up a lot of space when table is shrunk
+        # Buttons seem to take up a lot of space when table is shrunk
+        s.frame_add_delete_copy_species.setVisible(enabled)
+
 
         #tw = s.tablewidget_solids_species
         #if not enabled: # Hide species?  shrink input area?
