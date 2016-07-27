@@ -9,8 +9,7 @@ import socket
 import tempfile
 import uuid
 
-from functools import wraps
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
 socket.setdefaulttimeout(DEFAULT_TIMEOUT)
@@ -40,7 +39,7 @@ def get_dict_from_pidfile(pid_filename):
                 continue
         return pid_dict
     except: # TODO: make specific - file not found
-        log.debug('PID file not found: %s' % pid_filename)
+        log.debug('PID file not found: %s', pid_filename)
         return {}
 
 
@@ -64,7 +63,7 @@ class PymfixAPI(QNetworkAccessManager):
         self.default_error_handler = error_handler
         self.api_available = False
 
-        log.info('API connection for job %s' % self.pidfile)
+        log.info('API connection for job %s', self.pidfile)
         log.debug(self)
 
     def test_connection(self, response, error):
@@ -114,7 +113,7 @@ class PymfixAPI(QNetworkAccessManager):
             response_json = reply.data()
             json.loads(response_json)
         except (TypeError, ValueError) as e:
-            
+
             try:
                 if reply_object.NetworkError == 1:
                     error_desc = 'Network connection failed'
@@ -212,7 +211,7 @@ class JobManager(QObject):
     def slot_teardown_job(self):
         log.info('Job ended or connection to running job failed %s', self)
         log.debug('removing %s', self.job.pidfile)
-        os.remove(self.job.pidfile)
+        os.remove(self.job.api.pidfile)
         # update GUI
         self.job = None
         self.sig_update_job_status.emit()
@@ -254,9 +253,11 @@ class JobManager(QObject):
 
     def stop_mfix(self):
         """Send stop request"""
-        req_id = self.job.api.post('abort')
+        log.debug('stop_mfix')
+        req_id = self.job.stop_mfix()
         open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
         def force_stop():
+            log.debug('force stop')
             pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
             job_id = get_dict_from_pidfile(self.job.pidfile).get('qjobid', None)
             if pid and not job_id:
@@ -317,7 +318,7 @@ class Job(QObject):
         count and signal job exit if timeout has been exceeded."""
         log.debug('api_test_connection called: %s', self)
         if self.test_api_timeout > self.API_TIMEOUT:
-            log.debug('API test timeout exceeded')
+            log.debug('API test timeout exceeded (test_api_connection)')
             self.api_test_timer.stop()
             self.sig_job_exit.emit()
             return
@@ -327,7 +328,9 @@ class Job(QObject):
         self.api.test_connection(self.sig_handle_api_test,self.sig_handle_api_test_error)
 
     def slot_handle_api_test_error(self, request_id, response_object):
-        log.debug('API network error')
+        # this can be hit multiple times: until self.api_test_timeout is reached
+        # (incremented in self.test_api_connection)
+        log.debug('API network error (slot_handle_api_test_error)')
         log.debug(response_object)
         #self.sig_job_exit.emit()
 
@@ -337,21 +340,24 @@ class Job(QObject):
         If API response includes a permenant failure or is not well formed,
         stop test timer and signal job exit."""
 
-        log.debug('RETURN FROM API - slot_handle_api_test called %s', self)
+        # this can be hit multiple times: until self.api_test_timeout is reached
+        # (incremented in self.test_api_connection)
+
+        log.debug('RETURN FROM API (slot_handle_api_test)')
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
-                log.debug('slot_handle_api_test response content error')
-                log.error("API error: %s" % json.dumps(response_json))
+                log.debug('API response error (slot_handle_api_test):')
+                log.debug("API error: %s" % json.dumps(response_json))
                 #self.sig_job_exit.emit()
         except:
             # response was not parsable, API is not functional
-            log.debug('slot_handle_api_test response format error')
+            log.debug('API response format error (slot_handle_api_test)')
             #self.sig_job_exit.emit()
             return
 
         # API is available, stop test timer and start status timer
-        log.debug("API test complete, stopping test timer")
+        log.debug("API test complete, stopping test timer (slot_handle_api_test)")
         #self.api_test_timer.stop()
         self.api_available = True
         self.sig_update_job_status.emit()
@@ -385,11 +391,11 @@ class Job(QObject):
         try:
             response_error_code = response_object.NetworkError
             if response_error_code == 1:
-                log.debug('API network connection error')
+                log.debug('API network connection error (slot_api_error)')
             else:
-                log.debug('Unknown network error, calling teardown')
+                log.debug('Unknown network error, calling teardown (slot_api_error)')
         except:
-            log.exception('unhandled API error')
+            log.exception('unhandled API error (slot_api_error)')
         finally:
             # unconditionally exit; TODO: retry logic
             self.sig_job_exit.emit()
