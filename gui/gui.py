@@ -232,7 +232,7 @@ class MfixGui(QtWidgets.QMainWindow,
                            ("Post-Processing", "Post"),
                            ("Boundary Conditions", "BCs"),
                            ("Initial Conditions", "ICs"),
-                           ("Point Sources", "Points"),
+                           ("Point Sources", "Points"), # Only under "Model Setup", not "Monitors"
                            ("Internal Surfaces", "Surfaces")]
 
         tw.resizeEvent = (lambda old_method:
@@ -1148,9 +1148,10 @@ class MfixGui(QtWidgets.QMainWindow,
         if text == 'solids': # Special helper for setting up subpanes,
             # since params may have changed
             self.setup_solids_tab(self.solids_current_tab)
-        elif text == 'initial_conditions':
+        # TODO: improve handling of long/short names
+        elif text in ('initial_conditions', 'ics'):
             self.setup_ics()
-        elif text == 'boundary_conditions':
+        elif text in ('boundary_conditions', 'bcs'):
             self.setup_bcs()
 
 
@@ -2033,7 +2034,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.vtkwidget.add_stl(None, filename=geometry_file)
             msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
             self.message(title='Warning', text=msg)
-            
+
         # TODO: load more geometry
 
         # Additional GUI setup based on loaded projects (not handled
