@@ -1902,6 +1902,33 @@ class MfixGui(QtWidgets.QMainWindow,
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
 
         # create job manager and connect signals
+        # support these states:
+        #
+        # state check -> (
+        #
+        #   no pid file -> state is new run |
+        #   pid file without valid URL -> pid file is corrupt
+        #
+        #   pid file exists -> (
+        #       contains queue info -> (
+        #           qstat state is running -> (
+        #               API url in pid file -> (
+        #                   API connection works -> state is running remote, may be paused |
+        #                   API connection fails -> state is stale pid, enqueued remote and job error
+        #               ) |
+        #               API url is not in pid file -> state is enqueued, waiting for API
+        #           ) |
+        #           qstat state is error -> state is stale pid, queue error |
+        #           qstat state is job finished -> state is stale pid, job error, mfix didn't write to pid
+        #           ) |
+        #       ) |
+        #       no queue info -> (
+        #           contains API url -> (
+        #               API connection works - state is running locally (may be paused) |
+        #               API connection fails - state is stale pid |
+        #           no API url -> should not happen
+        #       )
+        #   )
         if os.path.exists(runname_pid):
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
