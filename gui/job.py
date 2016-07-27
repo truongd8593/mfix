@@ -70,7 +70,8 @@ class PymfixAPI(QNetworkAccessManager):
     def test_connection(self, signal):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
-        self.get('status', handlers={'response':signal})
+        log.debug('test_connection called %s', self)
+        self.get('status', handlers={'response': signal})
 
     def api_request(self, method, endpoint, data=None, handlers={}):
         req = QNetworkRequest(QUrl('%s/%s' % (self.pid_contents['url'], endpoint)))
@@ -200,7 +201,7 @@ class JobManager(QObject):
         self.parent.save_project()
 
     def slot_teardown_job(self):
-        log.info('Job ended or connection to running job failed')
+        log.info('Job ended or connection to running job failed %s', self)
         self.job = None
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
@@ -298,6 +299,7 @@ class Job(QObject):
         """Test API connection.
         Start API test timer if it is not already running. Check current test
         count and signal job exit if timeout has been exceeded."""
+        log.debug('api_test_connection called: %s', self)
         if self.test_api_timeout > self.API_TIMEOUT:
             self.sig_job_exit.emit()
         else:
@@ -310,15 +312,18 @@ class Job(QObject):
         If API works, stop API test timer, start API status timer.
         If API response includes a permenant failure or is not well formed,
         stop test timer and signal job exit."""
+        log.debug('slot_handle_api_test called %s', self)
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
                 log.error("API error: %s" % json.dumps(response_json))
+                log.debug('slot_handle_api_test response content error')
                 self.sig_job_exit.emit()
             return
         except:
             # response was not parsable, API is not functional
             self.api_test_timer.stop()
+            log.debug('slot_handle_api_test response format error')
             self.sig_job_exit.emit()
             return
 
