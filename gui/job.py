@@ -121,6 +121,7 @@ class PymfixAPI(QNetworkAccessManager):
                     error_code = 1
                 else:
                     error_desc = 'API reponse could not be parsed as JSON'
+                    error_code = None
             except:
                 log.exception("reply_object.Network error test")
             #log.exception(error_desc)
@@ -271,7 +272,7 @@ class Job(QObject):
     sig_read_status = pyqtSignal(str, str)
     sig_api_response = pyqtSignal(str, str)
     sig_api_error = pyqtSignal(str, QObject)
-    
+
     sig_handle_api_test = pyqtSignal(str, str)
     sig_handle_api_test_error = pyqtSignal(str, QObject)
 
