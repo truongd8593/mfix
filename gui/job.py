@@ -219,6 +219,9 @@ class JobManager(QObject):
         self.sig_change_job_state.emit()
         self.sig_update_run_state.emit()
 
+    def is_job_pending(self):
+        return self.job and not self.job.api.api_available
+
     def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
         with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:

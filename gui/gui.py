@@ -602,8 +602,9 @@ class MfixGui(QtWidgets.QMainWindow,
         if self.job_manager.job:
             log.debug('job_manager.job object: %s' % self.job_manager.job)
         project_open = bool(project_file and self.open_succeeded)
+        pending = self.job_manager.is_job_pending()
         paused = self.job_manager.job and self.job_manager.job.is_paused()
-        running = self.job_manager.job and not paused
+        unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) # overlaps with running & paused
         ready = project_open and not (running or paused or resumable)
 
@@ -617,7 +618,16 @@ class MfixGui(QtWidgets.QMainWindow,
 
         #handle buttons in order:  RESET RUN PAUSE STOP
         pause_visible = bool(self.job_manager.job)
-        if running:
+        if pending:
+            self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
+            # also disable spinboxes for dt, tstop unless interactive
+            self.set_reset_button(enabled=False)
+            self.set_run_button(enabled=False)
+            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_stop_button(enabled=True)
+            self.change_pane('run')
+
+        elif unpaused:
             self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
