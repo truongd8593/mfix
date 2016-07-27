@@ -244,17 +244,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         return
 
 
-class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
-
-    def __init__(self, parent=None):
-        self.RemoveAllObservers()
-        self.AddObserver("OnLeftButtonPressEvent",
-                         self.left_button_press_event)
-
-    def left_button_press_event(self, obj, event):
-        print('pressed')
-
-
 class VtkWidget(QtWidgets.QWidget):
     value_updated = QtCore.Signal(object, object, object)
 
@@ -374,39 +363,27 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkiren.SetInteractorStyle(self.style)
 
         # Orientation Arrows Marker Widget
-#        self.axes = vtk.vtkAxesActor()
+        self.axes = vtk.vtkAxesActor()
 #        self.axes.AxisLabelsOn()
-#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-#            1, 0, 0)
+#        self.axes.SetXAxisLabelText("X")
+#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1, 0, 0)
 #        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-#            0, 1, 0)
+#        self.axes.SetYAxisLabelText("Y")
+#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 1, 0)
 #        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-#            0, 0, 1)
+#        self.axes.SetZAxisLabelText("Z")
+#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0, 0, 1)
 #        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
 
         # Orientation Cube Marker Widget
-        self.axes = vtk.vtkAnnotatedCubeActor()
-        self.axes.SetXPlusFaceText('E')
-        self.axes.SetXMinusFaceText('W')
-        self.axes.SetYMinusFaceText('S')
-        self.axes.SetYPlusFaceText('N')
-        self.axes.SetZMinusFaceText('T')
-        self.axes.SetZPlusFaceText('B')
-        self.axes.GetTextEdgesProperty().SetColor(1, 1, 1)
-        self.axes.GetTextEdgesProperty().SetLineWidth(2)
-        self.axes.GetCubeProperty().SetColor(.39, .71, .965)
-        self.axes.PickableOn()
 
-        self.orientation_widget = CustomOrientationMarkerWidget()
+        self.orientation_widget = vtk.vtkOrientationMarkerWidget()
         self.orientation_widget.SetOutlineColor(0.9300, 0.5700, 0.1300)
         self.orientation_widget.SetOrientationMarker(self.axes)
         self.orientation_widget.SetInteractor(self.vtkiren)
         self.orientation_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
         self.orientation_widget.SetEnabled(1)
         self.orientation_widget.InteractiveOff()
-        self.orientation_widget.PickingManagedOn()
 
         self.vtkrenderer.ResetCamera()
 
