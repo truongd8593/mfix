@@ -506,8 +506,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-        if not isinstance(value, Equation) and self.project.get_value(key, args=args) == value:
-            return
+        if not isinstance(value, Equation):  # Always update equations
+            if self.project.get_value(key, args=args) == value:
+                return
         self.set_keyword(key, value, args=args)
 
     def unset_keyword(self, key, args=None):
