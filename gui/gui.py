@@ -1505,7 +1505,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def handle_stop(self):
         try:
-            self.job_manager.job.stop_mfix()
+            self.job_manager.stop_mfix()
         except Exception:
             log.exception('problem in handle_stop')
             self.print_internal('problem in handle_stop')

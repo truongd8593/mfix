@@ -4,11 +4,9 @@ import json
 import logging
 import os
 import pprint
+import signal
 import socket
-import sys
 import tempfile
-import time
-import traceback
 import uuid
 
 from functools import wraps
@@ -135,7 +133,7 @@ class PymfixAPI(QNetworkAccessManager):
         try:
             reply = reply_object.readAll()
             response_json = reply.data()
-            log.debug('API response: %s' % response_json)
+            log.debug('API response: %s', response_json)
             reply_object.close()
             json.loads(response_json)
         except (TypeError, ValueError) as e:
@@ -260,6 +258,18 @@ class JobManager(QObject):
         qsub_script.close() # deletes tmpfile
         self.parent.job_manager.save_job_id(job_id)
 
+    def stop_mfix(self):
+        """Send stop request"""
+        req_id = self.job.api.put('stop')
+        open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
+        def force_stop():
+            pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
+            job_id = get_dict_from_pidfile(self.job.pidfile).get('qjobid', None)
+            if pid and not job_id:
+                os.kill(int(pid), signal.SIGKILL)
+        QTimer.singleShot(1000, force_stop)
+        #self.register_request(req_id, self.handle_stop)
+
 class Job(QObject):
 
     """class for managing and monitoring an MFIX job"""
@@ -371,11 +381,6 @@ class Job(QObject):
         state = 'enable' if state else 'disable'
         arg = 'logging/%s' % state
         self.register_request(self.api.post(arg, data=b''), self.handle_output)
-
-    def stop_mfix(self):
-        """Send stop request"""
-        req_id = self.api.put('stop')
-        #self.register_request(req_id, self.handle_stop)
 
     def slot_get_job_state(self, available):
         # TODO? move this into PymfixAPI?
