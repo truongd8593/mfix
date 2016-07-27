@@ -1942,6 +1942,8 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(runname_pid):
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
+        # complete job state determinination needed
+        """
             if job_manager.job:
                 self.job_manager.sig_update_run_state.connect(self.slot_update_runbuttons)
             else:
@@ -1953,6 +1955,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
                     # FIXME: needs more care, tests for additional run states (queued, etc):
                     os.remove(runname_pid)
+        """
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
