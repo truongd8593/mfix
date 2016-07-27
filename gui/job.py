@@ -49,7 +49,7 @@ class PymfixAPI(QNetworkAccessManager):
         set transparently.
     """
 
-    sig_api_available = pyqtSignal(str)
+    #sig_api_available = pyqtSignal(str)
 
     def __init__(self, pidfile, response_handler, error_handler, ignore_ssl_errors=False):
 
@@ -66,9 +66,9 @@ class PymfixAPI(QNetworkAccessManager):
 
         log.info('API connection for job %s' % self.pidfile)
         log.debug(self)
-        self.sig_api_available.connect(self.slot_api_available)
+        #self.sig_api_available.connect(self.slot_api_available)
 
-    def api_test_connection(self, signal):
+    def test_connection(self, signal):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
         self.get('status', handlers={'response':signal})
@@ -184,8 +184,8 @@ class JobManager(QObject):
 
     """class for managing and monitoring an MFIX job"""
 
-    sig_change_job_state = Signal()
-    sig_update_run_state = Signal()
+    sig_update_job_status = Signal()
+    sig_change_run_state = Signal()
 
     def __init__(self, parent):
         super(JobManager, self).__init__()
@@ -205,7 +205,7 @@ class JobManager(QObject):
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
             self.job.sig_update_job_status.connect(self.parent.slot_update_residuals)
             self.job.sig_update_job_status.connect(self.parent.slot_update_runbuttons)
-            self.job.sig_update_run_state.connect(self.sig_update_run_state)
+            self.job.sig_change_run_state.connect(self.sig_change_run_state)
         return bool(self.job)
 
     def record(self,job_id):
@@ -216,11 +216,11 @@ class JobManager(QObject):
     def slot_teardown_job(self):
         log.info('Job ended or connection to running job failed')
         self.job = None
-        self.sig_change_job_state.emit()
-        self.sig_update_run_state.emit()
+        self.sig_update_job_status.emit()
+        self.sig_change_run_state.emit()
 
     def is_job_pending(self):
-        return self.job and not self.job.api.api_available
+        return self.job and not self.job.api_available
 
     def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
@@ -271,13 +271,13 @@ class Job(QObject):
 
     sig_job_exit = Signal()
     sig_read_status = pyqtSignal(str, str)
-    sig_api_available = pyqtSignal(bool)
+    #sig_api_available = pyqtSignal(bool)
     sig_api_response = pyqtSignal(str, str)
     sig_api_error = pyqtSignal(str, QObject)
-    sig_api_test = pyqtSignal(str, QObject)
+    sig_handle_api_test = pyqtSignal(str, QObject)
 
     sig_update_job_status = Signal()
-    sig_update_run_state = Signal()
+    sig_change_run_state = Signal()
     API_TIMEOUT = 3 # seconds, based on API timer interval
 
     def __init__(self, pidfile):
@@ -288,11 +288,13 @@ class Job(QObject):
         self.pidfile = pidfile
         self.requests = {}
         self.api = None
+        self.api_available = False
+        self.test_api_timeout = 0
         self.mfix_pid = None
         self.sig_api_response.connect(self.slot_api_response)
         self.sig_api_error.connect(self.slot_api_error)
 
-        self.sig_api_test.connect(self.slot_handle_api_test)
+        self.sig_handle_api_test.connect(self.slot_handle_api_test)
 
         self.api = PymfixAPI(self.pidfile,
                         self.sig_api_response,
@@ -301,25 +303,22 @@ class Job(QObject):
         # TODO: more complete API testing at instantiation
         log.debug('testing API %s' % self.api)
         # test API before starting status loop
+        self.test_api_timer = QTimer()
+        self.test_api_timer.setInterval(1000)
+        # sig_handle_api_test will fire slot_handle_api_test - API liveness check
+        # Timer will be stopped by slot_handle_api_test
         self.test_api_connection()
 
     def test_api_connection(self):
         """Test API connection.
         Start API test timer if it is not already running. Check current test
         count and signal job exit if timeout has been exceeded."""
-        if self.test_api_timeout > API_TIMEOUT:
+        if self.test_api_timeout > self.API_TIMEOUT:
             self.sig_job_exit.emit()
-            return
-
-        # increment API test timeout
-        self.test_api_timeout += 1
-
-        # this is the first test, create the test timer
-        if not self.test_api_timer:
-            self.test_api_timer = QTimer()
-            self.test_api_timer.setInterval(1000)
-            # sig_api_test will fire slot_handle_api_test - API liveness check
-            self.api.test_connection(self.sig_api_test)
+        else:
+            # increment API test timeout
+            self.test_api_timeout += 1
+        self.api.test_connection(self.sig_handle_api_test)
 
     def slot_handle_api_test(self, request_id, response_data):
         """Parse response data from API test call.
@@ -334,11 +333,15 @@ class Job(QObject):
             return
         except:
             # response was not parsable, API is not functional
+            self.api_test_timer.stop()
             self.sig_job_exit.emit()
             return
 
         # API is available, stop test timer and start status timer
         self.api_test_timer.stop()
+        self.api_available = True
+        self.sig_update_job_status.emit()
+        self.sig_change_run_state.emit()
         self.api_timer = QTimer()
         self.api_timer.setInterval(1000)
         self.api_timer.timeout.connect(self.update_job_status)
@@ -371,7 +374,7 @@ class Job(QObject):
         """indicate whether pymfix is paused"""
         return self.status.get('paused')
 
-    def update_job_state(self):
+    def update_job_status(self):
         req_id = self.api.get_job_status()
         self.register_request(req_id, self.sig_get_job_state)
 
@@ -381,7 +384,7 @@ class Job(QObject):
 
     def handle_pause(self, response_data=None):
         self.update_job_status()
-        self.sig_update_run_state.emit()
+        self.sig_change_run_state.emit()
 
     def unpause(self):
         req_id = self.api.put('unpause')
@@ -389,7 +392,7 @@ class Job(QObject):
 
     def handle_unpause(self, response_data=None):
         self.update_job_status()
-        self.sig_update_run_state.emit()
+        self.sig_change_run_state.emit()
 
     def update_job_status(self):
         req_id = self.api.get('status')
@@ -422,7 +425,7 @@ class Job(QObject):
         if available:
             self.mfix_pid = self.api.pid
             log.info('Job API available')
-            self.sig_update_run_state.emit()
+            self.sig_change_run_state.emit()
         else:
             log.error('Job API unavailable')
         # (this was in update_job_status. Refactor to here)
@@ -433,5 +436,5 @@ class Job(QObject):
         #except OSError:
         #    log.info("job with pid %d is no longer running", pid)
         #    self.disconnect()
-        #    self.sig_update_run_state.emit()
+        #    self.sig_change_run_state.emit()
         #    return
