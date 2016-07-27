@@ -500,7 +500,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
-        log.debug("rundir changed")
+        log.debug("SLOT_RUNDIR_CHANGED was called")
         runname = self.get_runname()
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
         if self.get_project_dir():
@@ -1860,21 +1860,21 @@ class MfixGui(QtWidgets.QMainWindow,
         runname = self.get_runname()
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
 
-        # FIXME: this only makes sense with local processes
-        # FIXME: move this to job manager
-        self.job_manager.try_to_connect(runname_pid)
-
-        # if os.path.exists(runname_pid):
-        #     pid = int(get_dict_from_pidfile(runname_pid)['pid'])
-        #     try:
-        #         os.kill(pid, 0)
-        #     except OSError:
-        #         log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
-        #     else:
-        #         self.job_manager = JobManager(runname_pid, parent=self)
-
         # create job manager and connect signals
-        self.job_manager.sig_update_run_state.connect(self.slot_update_runbuttons)
+        if os.path.exists(runname_pid):
+            log.debug('attempting to connect to running job %s' % runname_pid)
+            self.job_manager.try_to_connect(runname_pid)
+            if job_manager.job:
+                self.job_manager.sig_update_run_state.connect(self.slot_update_runbuttons)
+            else:
+                pid = int(get_dict_from_pidfile(runname_pid)['pid'])
+                try:
+                    # does process exist?
+                    os.kill(pid, 0)
+                except OSError:
+                    log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
+                    # FIXME: needs more care, tests for additional run states (queued, etc):
+                    os.remove(runname_pid)
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
