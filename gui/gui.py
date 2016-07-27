@@ -24,6 +24,7 @@ log.debug(SCRIPT_DIRECTORY)
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT5
 from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
+UserRole = QtCore.Qt.UserRole
 
 # TODO: add pyside? There is an issue to add this to qtpy:
 # https://github.com/spyder-ide/qtpy/issues/16
@@ -227,13 +228,24 @@ class MfixGui(QtWidgets.QMainWindow,
 
         tw = self.ui.treewidget_navigation
         self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 20
-        #tw.setMaximumWidth(self.max_label_len)
+
         self.nav_labels = [("Model Setup", "Model"),
                            ("Post-Processing", "Post"),
                            ("Boundary Conditions", "BCs"),
                            ("Initial Conditions", "ICs"),
-                           ("Point Sources", "Points"), # Only under "Model Setup", not "Monitors"
+                           ("Point Sources", "Points"), ### Only under "Model Setup", not "Monitors"
                            ("Internal Surfaces", "Surfaces")]
+
+        root = tw.invisibleRootItem()
+
+        for i in range(root.childCount()):
+            item = root.child(i)
+            item.setToolTip(0, item.text(0))
+            for j in range(item.childCount()):
+                subitem = item.child(j)
+                if subitem.text(0) == 'Points':
+                    subitem.setData(UserRole, 0, 'Points')
+                subitem.setToolTip(0, subitem.text(0))
 
         tw.resizeEvent = (lambda old_method:
                           (lambda event:
@@ -531,17 +543,20 @@ class MfixGui(QtWidgets.QMainWindow,
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         for (long, short) in self.nav_labels:
             items = tree.findItems(long, flags, 0)
-            if items:
-                items[0].setText(0, short)
-                items[0].setToolTip(0, long)
+            for item in items:
+                if item.data(UserRole, 0) == 'Points': # Avoid toggling Model Setup / Points
+                    continue
+                item.setText(0, short)
 
     def long_labels(self):
         tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         for (long, short) in self.nav_labels:
             items = tree.findItems(short, flags, 0)
-            if items:
-                items[0].setText(0, long)
+            for item in items:
+                if item.data(UserRole,0) == 'Points': # Avoid toggling Model Setup / Points
+                    continue
+                item.setText(0, long)
 
 
     def unimplemented(self):
