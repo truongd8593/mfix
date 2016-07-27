@@ -214,6 +214,7 @@ class JobManager(QObject):
 
     def slot_teardown_job(self):
         log.info('Job ended or connection to running job failed %s', self)
+        os.remove(pidfile)
         self.job = None
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
@@ -317,6 +318,8 @@ class Job(QObject):
         count and signal job exit if timeout has been exceeded."""
         log.debug('api_test_connection called: %s', self)
         if self.test_api_timeout > self.API_TIMEOUT:
+            log.debug('API test timeout exceeded')
+            self.api_test_timer.stop()
             self.sig_job_exit.emit()
         else:
             # increment API test timeout
@@ -333,20 +336,19 @@ class Job(QObject):
         If API works, stop API test timer, start API status timer.
         If API response includes a permenant failure or is not well formed,
         stop test timer and signal job exit."""
+
         log.debug('RETURN FROM API - slot_handle_api_test called %s', self)
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
                 log.error("API error: %s" % json.dumps(response_json))
                 log.debug('slot_handle_api_test response content error')
-                #self.sig_job_exit.emit()
-                #return
+                self.sig_job_exit.emit()
         except:
             # response was not parsable, API is not functional
-            self.api_test_timer.stop()
             log.debug('slot_handle_api_test response format error')
+            self.api_test_timer.stop()
             #self.sig_job_exit.emit()
-            #return
 
         # API is available, stop test timer and start status timer
         log.debug("API test complete, stopping test timer")
@@ -378,16 +380,24 @@ class Job(QObject):
             # do we care?
             pass
 
-    def slot_api_error(self, request_id, response_data):
+    def slot_api_error(self, request_id, response_object):
         log.error("API error signal in Job, %s" % self)
-        response_json = json.loads(response_data)
-        error = response_json.get('pymfix_api_error')
-        if error:
-            if error.get('error_code') == 1:
-                log.debug('Network connection error')
+        try:
+            data = response_object.readAll().data()
+            response_json = json.loads(data)
+            error = response_json.get('pymfix_api_error')
+            if error:
+                if error.get('error_code') == 1:
+                    log.debug('Network connection error')
+                else:
+                    log.debug('Unknown error, calling teardown')
+                    self.sig_job_exit.emit()
             else:
-                log.debug('Unknown error, calling teardown')
+                log.debug('API error signal job exit')
                 self.sig_job_exit.emit()
+        except:
+            log.debug('unhandled API error')
+            self.sig_job_exit.emit()
 
     def is_paused(self):
         """indicate whether pymfix is paused"""

@@ -608,8 +608,8 @@ class MfixGui(QtWidgets.QMainWindow,
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
         editable = project_open and not (pending or paused or unpaused or resumable)
 
-        # log.info("UPDATE RUN OPTIONS: running=%s paused=%s resumable=%s",
-        #           running, paused, resumable)
+        log.debug("UPDATE RUN OPTIONS: pending=%s paused=%s resumable=%s",
+                   pending, paused, resumable)
 
         self.update_window_title() # put run state in window titlebar
 
