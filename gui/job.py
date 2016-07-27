@@ -9,8 +9,7 @@ import socket
 import tempfile
 import uuid
 
-from functools import wraps
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 DEFAULT_TIMEOUT = 2 # seconds, for all socket ops
 socket.setdefaulttimeout(DEFAULT_TIMEOUT)
@@ -40,7 +39,7 @@ def get_dict_from_pidfile(pid_filename):
                 continue
         return pid_dict
     except: # TODO: make specific - file not found
-        log.debug('PID file not found: %s' % pid_filename)
+        log.debug('PID file not found: %s', pid_filename)
         return {}
 
 
@@ -64,7 +63,7 @@ class PymfixAPI(QNetworkAccessManager):
         self.default_error_handler = error_handler
         self.api_available = False
 
-        log.info('API connection for job %s' % self.pidfile)
+        log.info('API connection for job %s', self.pidfile)
         log.debug(self)
 
     def test_connection(self, response, error):
@@ -114,7 +113,7 @@ class PymfixAPI(QNetworkAccessManager):
             response_json = reply.data()
             json.loads(response_json)
         except (TypeError, ValueError) as e:
-            
+
             try:
                 if reply_object.NetworkError == 1:
                     error_desc = 'Network connection failed'
@@ -139,9 +138,6 @@ class PymfixAPI(QNetworkAccessManager):
     def slot_protocol_error(self, request_id, reply_object, handler):
         log.debug('API protocol error')
         handler.emit(request_id, reply_object)
-
-    def slot_api_error(self, request_id, reply_object):
-        log.warning("API error signal in PymfixAPI")
 
     def slot_ssl_error(self, reply):
         """ Handler for SSL connection errors. Check self.ignore_ssl_errors
@@ -214,7 +210,7 @@ class JobManager(QObject):
 
     def slot_teardown_job(self):
         log.info('Job ended or connection to running job failed %s', self)
-        os.remove(pidfile)
+        os.remove(self.job.api.pidfile)
         self.job = None
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
@@ -327,7 +323,7 @@ class Job(QObject):
         self.api.test_connection(self.sig_handle_api_test,self.sig_handle_api_test_error)
 
     def slot_handle_api_test_error(self, request_id, response_object):
-        log.debug('API Network ERROR in API return') 
+        log.debug('API Network ERROR in API return')
         log.debug(response_object)
         #self.sig_job_exit.emit()
 
@@ -341,7 +337,7 @@ class Job(QObject):
         try:
             response_json = json.loads(response_data)
             if response_json.get('pymfix_api_error'):
-                log.error("API error: %s" % json.dumps(response_json))
+                log.error("API error: %s", json.dumps(response_json))
                 log.debug('slot_handle_api_test response content error')
                 self.sig_job_exit.emit()
         except:
