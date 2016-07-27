@@ -326,7 +326,7 @@ class Job(QObject):
     def slot_handle_api_test_error(self, request_id, response_object):
         log.debug('API Network ERROR in API return') 
         log.debug(reponse_object)
-        self.sig_job_exit.emit()
+        #self.sig_job_exit.emit()
 
     def slot_handle_api_test(self, request_id, response_data):
         """Parse response data from API test call.
@@ -339,17 +339,17 @@ class Job(QObject):
             if response_json.get('pymfix_api_error'):
                 log.error("API error: %s" % json.dumps(response_json))
                 log.debug('slot_handle_api_test response content error')
-                self.sig_job_exit.emit()
-            return
+                #self.sig_job_exit.emit()
+                #return
         except:
             # response was not parsable, API is not functional
             self.api_test_timer.stop()
             log.debug('slot_handle_api_test response format error')
-            self.sig_job_exit.emit()
-            return
+            #self.sig_job_exit.emit()
+            #return
 
         # API is available, stop test timer and start status timer
-        log.debug("API test successful, stopping test timer")
+        log.debug("API test complete, stopping test timer")
         self.api_test_timer.stop()
         self.api_available = True
         self.sig_update_job_status.emit()
