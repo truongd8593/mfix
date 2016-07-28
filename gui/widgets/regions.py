@@ -163,8 +163,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
-    def new_region(self, name='new', extents=[[0, 0, 0], [0, 0, 0]],
-                   rtype='box', defer_update=False):
+    def new_region(self, name='new', extents=None, rtype=None, defer_update=False):
         """create a new region"""
         # This is used both as a signal callback and an API function,
         # so there's some complexity with default args/
@@ -172,12 +171,13 @@ class RegionsWidget(QtWidgets.QWidget):
             name = 'new'
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
-        image = self.get_visibility_image()
+
         data[name] = copy.deepcopy(DEFAULT_REGION_DATA)
-        data[name]['type'] = rtype
-        data[name]['from'] = extents[0]
-        data[name]['to'] = extents[1]
-        data[name]['visible'] = image
+        if rtype is not None and extents is not None:
+            data[name]['type'] = rtype
+            data[name]['from'] = extents[0]
+            data[name]['to'] = extents[1]
+        data[name]['visible'] = self.get_visibility_image()
 
         self.vtkwidget.new_region(name, data[name])
         self.tablewidget_regions.set_value(data)
