@@ -192,7 +192,8 @@ class JobManager(QObject):
             self.job = Job(pidfile)
             log.debug('try_to_connect created %s', self.job)
             self.parent.signal_update_runbuttons.emit('')
-            self.job.sig_job_exit.connect(self.sig_teardown_job)
+            self.job.sig_job_exit.connect(self.slot_teardown_job)
+            self.sig_teardown_job.connect(self.slot_teardown_job)
 
             # TODO? handle with signal so this can be managed in gui
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
@@ -208,6 +209,7 @@ class JobManager(QObject):
 
     def slot_teardown_job(self):
         """Job ended or exited. Destory Job object and remove pidfile"""
+        log.debug('slot_teardown_job')
         if not self.job:
             return
         log.info('Job ended or connection to running job failed %s', self)
@@ -222,6 +224,7 @@ class JobManager(QObject):
         if self.job.api_status_timer and self.job.api_status_timer.isActive():
             self.job.api_status_timer.stop()
         self.job = None
+        log.debug(self.job)
         self.sig_update_job_status.emit()
         self.sig_change_run_state.emit()
 
@@ -264,6 +267,7 @@ class JobManager(QObject):
         log.debug('stop_mfix')
         if not self.job:
             log.debug('Job is not running')
+        self.job.stop_mfix()
         log.debug(self.job)
         open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
         pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
