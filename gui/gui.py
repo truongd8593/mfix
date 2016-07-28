@@ -606,6 +606,7 @@ class MfixGui(QtWidgets.QMainWindow,
             log.debug('accessing job_manager.job object: %s (slot_update_runbuttons)', self.job_manager.job)
         project_open = bool(project_file and self.open_succeeded)
         pending = self.job_manager.is_job_pending()
+        # why both paused and unpaused states?
         paused = self.job_manager.job and self.job_manager.job.is_paused()
         unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
@@ -1487,6 +1488,7 @@ class MfixGui(QtWidgets.QMainWindow,
     # Don't make these depend on current state, since (esp for pymfix)
     # the state variables are cached and potentially outdated
     def handle_run(self):
+        # name?
         name = 'Run'
         try:
             if not self.job_manager.job:
@@ -1494,7 +1496,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.open_run_dialog()
                 return
             else:
-                name='unpause'
+                name='unpause' #?
                 self.job_manager.job.unpause()
         except Exception:
             log.exception('problem in handle_run')

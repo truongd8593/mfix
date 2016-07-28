@@ -121,10 +121,11 @@ class PymfixAPI(QNetworkAccessManager):
             error_code = None
             error_desc = "API response could not be parsed"
             response_json = json.dumps(
-                                {"pymfix_api_error": {
-                                  "error_code": error_code,
-                                  "error_desc": error_desc,
-                                  "raw_api_message":  reply.data()}})
+                              {"response": {},
+                               "pymfix_api_error": {
+                                 "error_code": error_code,
+                                 "error_desc": error_desc,
+                                 "raw_api_message":  reply.data()}})
         finally:
             self.requests.discard(request_id)
             signal.emit(request_id, response_json)
@@ -183,13 +184,15 @@ class JobManager(QObject):
         super(JobManager, self).__init__()
         self.job = None
         self.parent = parent
+        self.job_cleanup_state = False
         # self.jobs = [] # in Justin's parametric branch?
 
     def try_to_connect(self, pidfile):
-        if self.job:
+        if self.job and not self.job_cleanup_state:
             log.debug('try_to_connect reusing %s', self.job)
         elif os.path.isfile(pidfile):
             self.job = Job(pidfile)
+            self.job_cleanup_state = False
             log.debug('try_to_connect created %s', self.job)
             self.parent.signal_update_runbuttons.emit('')
             self.job.sig_job_exit.connect(self.slot_teardown_job)
@@ -206,27 +209,6 @@ class JobManager(QObject):
         self.job_id = job_id
         self.parent.project.saveKeyword('job_id', job_id)
         self.parent.save_project()
-
-    def slot_teardown_job(self):
-        """Job ended or exited. Destory Job object and remove pidfile"""
-        log.debug('slot_teardown_job')
-        if not self.job:
-            return
-        log.info('Job ended or connection to running job failed %s', self)
-        try:
-            log.debug('removing %s', self.job.pidfile)
-            os.remove(self.job.pidfile)
-        except OSError:
-            log.debug("could not remove %s", self.job.pidfile)
-        # update GUI
-        if self.job.api_test_timer and self.job.api_test_timer.isActive():
-            self.job.api_test_timer.stop()
-        if self.job.api_status_timer and self.job.api_status_timer.isActive():
-            self.job.api_status_timer.stop()
-        self.job = None
-        log.debug(self.job)
-        self.sig_update_job_status.emit()
-        self.sig_change_run_state.emit()
 
     def is_job_pending(self):
         return self.job and not self.job.api_available
@@ -262,26 +244,49 @@ class JobManager(QObject):
         qsub_script.close() # deletes tmpfile
         self.parent.job_manager.save_job_id(job_id)
 
+
     def stop_mfix(self):
-        """Send stop request"""
-        log.debug('stop_mfix')
+        self.job.stop_mfix()
+
+    def slot_teardown_job(self):
+        """Job ended or exited. Destory Job object and remove pidfile"""
+        log.debug('slot_teardown_job')
         if not self.job:
             log.debug('Job is not running')
-        self.job.stop_mfix()
-        log.debug(self.job)
-        open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
         pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
         job_id = get_dict_from_pidfile(self.job.pidfile).get('qjobid', None)
-        # destroy Job object (stop timers, signal GUI to update)
-        self.sig_teardown_job.emit()
+
+        self.job_cleanup_state = True
+
+        # needed?
+        #open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
+
+        log.info('Job ended or connection to running job failed %s', self)
+        # update GUI
+        if self.job.api_test_timer and self.job.api_test_timer.isActive():
+            self.job.api_test_timer.stop()
+        if self.job.api_status_timer and self.job.api_status_timer.isActive():
+            self.job.api_status_timer.stop()
+        self.job = None
+        self.sig_update_job_status.emit()
+        self.sig_change_run_state.emit()
+
         def force_stop():
-            log.debug('force stop')
+            # if mfix exited cleanly, there should be no pidfile
             if pid and not job_id:
                 try:
-                    os.kill(int(pid), signal.SIGKILL)
+                    os.kill(int(pid), 0)
                 except:
                     log.debug("MFIX process %s does not exist", pid)
-        QTimer.singleShot(1000, force_stop)
+                    return
+                try:
+                    log.debug('MFIX process %s is running after exit request', pid)
+                    os.kill(int(pid), signal.SIGKILL)
+                    log.debug('removing %s', self.job.pidfile)
+                    os.remove(self.job.pidfile)
+                except OSError:
+                     log.debug("could not remove %s", self.job.pidfile)
+        QTimer.singleShot(3000, force_stop)
 
 
 class Job(QObject):
@@ -445,8 +450,7 @@ class Job(QObject):
         self.register_request(req_id, self.handle_pause)
 
     def handle_pause(self, response_data=None):
-        self.handle_status(response_data)
-        #self.update_job_status()
+        self.update_job_status()
         self.sig_change_run_state.emit()
 
     def unpause(self):
@@ -454,8 +458,7 @@ class Job(QObject):
         self.register_request(req_id, self.handle_unpause)
 
     def handle_unpause(self, response_data=None):
-        self.handle_status(response_data)
-        #self.update_job_status()
+        self.update_job_status()
         self.sig_change_run_state.emit()
 
     def update_job_status(self):
@@ -489,4 +492,6 @@ class Job(QObject):
     def stop_mfix(self):
         """Send stop request"""
         self.api.post('exit')
-        # job cleanup deferred to JobManager
+
+    def handle_stop_mfix(self, response_data=None):
+        self.sig_job_exit.emit()
