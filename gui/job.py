@@ -177,7 +177,6 @@ class JobManager(QObject):
 
     sig_update_job_status = Signal()
     sig_change_run_state = Signal()
-    sig_teardown_job = Signal()
 
     def __init__(self, parent):
         log.debug('New JobManager %s', self)
@@ -196,7 +195,6 @@ class JobManager(QObject):
             log.debug('try_to_connect created %s', self.job)
             self.parent.signal_update_runbuttons.emit('')
             self.job.sig_job_exit.connect(self.slot_teardown_job)
-            self.sig_teardown_job.connect(self.slot_teardown_job)
 
             # TODO? handle with signal so this can be managed in gui
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(self.parent.ui.plot)
@@ -343,6 +341,7 @@ class Job(QObject):
         self.test_api_connection()
 
     def cleanup_and_exit(self):
+        log.debug('cleanup_and_exit')
         if self.api_test_timer and self.api_test_timer.isActive():
             self.api_test_timer.stop()
         if self.api_status_timer and self.api_status_timer.isActive():
@@ -428,7 +427,7 @@ class Job(QObject):
             pass
 
     def slot_api_error(self, request_id, response_object):
-        log.error("API error signal %s" % self)
+        log.error("API error from request %s %s", (request_id,  self))
         self.api_error_count += 1
         try:
             response_error_code = response_object.NetworkError
@@ -443,7 +442,7 @@ class Job(QObject):
 
     def is_paused(self):
         """indicate whether pymfix is paused"""
-        return self.status.get('paused')
+        return self.status.get('paused', False)
 
     def pause(self):
         req_id = self.api.put('pause')
@@ -491,7 +490,16 @@ class Job(QObject):
 
     def stop_mfix(self):
         """Send stop request"""
-        self.api.post('exit')
+        req_id = self.api.post('exit')
+        self.register_request(req_id, self.handle_stop_mfix)
 
     def handle_stop_mfix(self, response_data=None):
-        self.sig_job_exit.emit()
+        log.debug('handle_stop_mfix')
+        log.debug(response_data)
+        self.handle_status(response_data)
+        self.status['paused'] = False
+        self.api_available = False
+        self.api_status_timer.stop()
+        self.sig_update_job_status.emit()
+        self.sig_change_run_state.emit()
+        self.cleanup_and_exit()

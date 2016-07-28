@@ -603,7 +603,7 @@ def exit_mfix():
     if shutdown is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     shutdown() # will finish current request, then shutdown
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    return jsonify(response=mfix_thread.status), status_code, {'Content-Type': 'application/json; charset=utf-8'}
 
 
 @FLASK_APP.route('/step', methods=['POST'])
