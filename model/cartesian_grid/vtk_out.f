@@ -2038,7 +2038,8 @@
       ENDDO
 
 ! Allocate, initialize and gather arrays
-      IF(.NOT.GLOBAL_VAR_ALLOCATED) THEN
+      IF(.TRUE.) THEN
+!      IF(.NOT.GLOBAL_VAR_ALLOCATED) THEN
 
          IF (myPE == PE_IO) THEN
             allocate (GLOBAL_I_OF(ijkmax3))

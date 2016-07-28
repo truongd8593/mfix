@@ -11,6 +11,7 @@
 
       PUBLIC :: INIT_DES_COLLECT_gDATA, DES_COLLECT_gDATA
       PUBLIC :: DES_SETNODEINDICES, DES_EXCHANGENODE
+      PUBLIC :: deallocate_des_nodes_pointers
 
       interface DES_COLLECT_gDATA
         module procedure DES_COLLECT_gDATA_db1
@@ -832,5 +833,18 @@
  1000 FORMAT(3x,A,': (',I3,',',I3,',',I3,') :: ',I7)
 
       end subroutine des_dbgnodesr
+
+
+      subroutine deallocate_des_nodes_pointers()
+
+
+      DEALLOCATE(isendnodes)
+!      DEALLOCATE(irecvnodes)
+      DEALLOCATE(dsendnodebuf)
+      DEALLOCATE(drecvnodebuf)
+      DEALLOCATE(isendreqnode)
+      DEALLOCATE(irecvreqnode)
+
+      end subroutine deallocate_des_nodes_pointers
 
       end module
