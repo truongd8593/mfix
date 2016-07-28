@@ -226,6 +226,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 f.write('\n'.join(keys))
 
 
+        # Setup the navigation tree widget
         tw = self.ui.treewidget_navigation
         self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 20
 
@@ -248,12 +249,28 @@ class MfixGui(QtWidgets.QMainWindow,
                 if item.text(0)=='Monitors' and subitem.text(0) == 'Points':
                     subitem.setData(UserRole, 0, True) # Mark this item
 
+        # Intercept the resize event
         tw.resizeEvent = (lambda old_method:
                           (lambda event:
                            (self._on_resized(event),
                             old_method(event))[-1]))(tw.resizeEvent)
 
+        # Disable items that are not yet implemented
+        for name in ('Boundary Conditions',
+                     'Point Sources',
+                     'Internal Surfaces',
+                     'Chemistry',
+                     'Monitors',
+                     'Points',
+                     'Planes',
+                     'Volumes',
+                     'Post-processing',
+                     'Export',
+                     'Plugins'):
+            self.find_navigation_tree_item(name).setDisabled(True)
 
+
+        # initialize popup dialogs
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
         self.regions_popup = RegionsPopup(QtWidgets.QDialog())
