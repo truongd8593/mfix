@@ -208,9 +208,14 @@ class JobManager(QObject):
 
     def slot_teardown_job(self):
         """Job ended or exited. Destory Job object and remove pidfile"""
+        if not self.job:
+            return
         log.info('Job ended or connection to running job failed %s', self)
-        log.debug('removing %s', self.job.pidfile)
-        os.remove(self.job.pidfile)
+        try:
+            log.debug('removing %s', self.job.pidfile)
+            os.remove(self.job.pidfile)
+        except OSError:
+            log.debug("could not remove %s", self.job.pidfile)
         # update GUI
         if self.job.api_test_timer and self.job.api_test_timer.isActive():
             self.job.api_test_timer.stop()
@@ -257,19 +262,21 @@ class JobManager(QObject):
     def stop_mfix(self):
         """Send stop request"""
         log.debug('stop_mfix')
-        req_id = self.job.stop_mfix()
+        if not self.job:
+            log.debug('Job is not running')
+        log.debug(self.job)
         open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
         pid = get_dict_from_pidfile(self.job.pidfile).get('pid', None)
         job_id = get_dict_from_pidfile(self.job.pidfile).get('qjobid', None)
-        # destroy Job object
+        # destroy Job object (stop timers, signal GUI to update)
         self.sig_teardown_job.emit()
         def force_stop():
             log.debug('force stop')
             if pid and not job_id:
-                if not os.kill(int(pid), 0):
-                    log.debug("MFIX process %s does not exist")
-                    return
-                os.kill(int(pid), signal.SIGKILL)
+                try:
+                    os.kill(int(pid), signal.SIGKILL)
+                except:
+                    log.debug("MFIX process %s does not exist", pid)
         QTimer.singleShot(1000, force_stop)
 
 
@@ -456,7 +463,7 @@ class Job(QObject):
         response_json = json.loads(response_data)
         if response_json.get('pymfix_api_error'):
             log.error("API error: %s" % json.dumps(response_json))
-            self.increment_api_error()
+            self.increment_error_count()
             self.status.clear()
             return
         status = json.loads(response_json.get('response', {}))
