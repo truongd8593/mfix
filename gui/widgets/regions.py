@@ -100,6 +100,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
         tablewidget._setModel() # FIXME: Should be in __init__
+        tablewidget.set_selection_model()
         tablewidget.set_value(OrderedDict())
         tablewidget.set_columns(['visible', 'color', 'type'])
         tablewidget.show_vertical_header(True)
