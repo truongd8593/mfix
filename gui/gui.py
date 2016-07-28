@@ -574,8 +574,11 @@ class MfixGui(QtWidgets.QMainWindow,
         """Get job status from JobManager and update residuals pane"""
         #if not self.job_manager:
         #    return
-        log.debug('update_residuals')
-        self.ui.residuals.setText(self.job_manager.job.cached_status)
+        if self.job_manager and self.job_manager.job:
+            log.debug('update_residuals')
+            self.ui.residuals.setText(self.job_manager.job.cached_status)
+        else:
+            log.debug('no Job object (update_residuals)')
 
     # TODO:  separate this into different functions - this is called by
     # several different signals for different reasons
@@ -598,9 +601,9 @@ class MfixGui(QtWidgets.QMainWindow,
         ui = self.ui
         project_file = os.path.basename(self.get_project_file() or '')
 
-        log.debug('job_manager object: %s' % self.job_manager)
+        log.debug('accessing job_manager object: %s (slot_update_runbuttons)', self.job_manager)
         if self.job_manager.job:
-            log.debug('job_manager.job object: %s' % self.job_manager.job)
+            log.debug('accessing job_manager.job object: %s (slot_update_runbuttons)', self.job_manager.job)
         project_open = bool(project_file and self.open_succeeded)
         pending = self.job_manager.is_job_pending()
         paused = self.job_manager.job and self.job_manager.job.is_paused()
@@ -662,8 +665,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(True)
-        log.debug('done update_runbuttons')
-        log.debug('\n\n\n\n')
+        log.debug('done update_runbuttons\n\n\n\n')
 
 
     def print_welcome(self):
