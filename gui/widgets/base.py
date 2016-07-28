@@ -51,8 +51,8 @@ from regexes import *
 from constants import *
 from tools.general import (to_text_string, get_icon, insert_append_action,
                            insert_append_separator, get_unique_string)
-from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
-VALID_EXPRESION_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys()) + SPECIAL_PARAMETERS
+from tools.simpleeval import VALID_EXPRESION_NAMES
+VALID_EXP_NAMES = VALID_EXPRESION_NAMES + SPECIAL_PARAMETERS
 
 
 def rreplace(s, old, new, occurrence):
@@ -226,6 +226,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     @property
     def value(self):
         text = self.text().strip()
+        parameters = VALID_EXP_NAMES + list(PARAMETER_DICT.keys())
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:
@@ -249,7 +250,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.value_error(e)
                     return self.saved_value or ''
-            elif re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
+            elif re_math.search(text) or any([par in text for par in parameters]):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
                         text = text[2:-1]
@@ -265,7 +266,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 return self.saved_value or ''
 
         elif self.dtype is int:
-            if re_math.search(text) or any([par in text for par in PARAMETER_DICT.keys()]):
+            if re_math.search(text) or any([par in text for par in parameters]):
                 try:
                     eq = Equation(text, dtype=int)
                     i = int(eq)
@@ -361,7 +362,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             self._updateCompleterPopupItems(None)
 
     def _update_completion_list(self):
-        comp_list = copy.deepcopy(VALID_EXPRESION_NAMES)
+        comp_list = copy.deepcopy(VALID_EXP_NAMES)
         for key, value in PARAMETER_DICT.items():
             if self.dtype == str and isinstance(value, str):
                 comp_list.append(key)

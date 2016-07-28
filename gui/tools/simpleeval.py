@@ -182,6 +182,8 @@ DEFAULT_FUNCTIONS = {"rand": random, "randint": random_int,
 
 DEFAULT_NAMES = {"True": True, "False": False, 'e': math.e, 'pi': math.pi}
 
+VALID_EXPRESION_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys())
+
 ########################################
 # And the actual evaluator:
 
@@ -193,20 +195,15 @@ class SimpleEval(object): # pylint: disable=too-few-public-methods
         '''
     expr = ""
 
-    def __init__(self, operators=None, functions=None, names=None):
+    def __init__(self, names={}):
         '''
             Create the evaluator instance.  Set up valid operators (+,-, etc)
             functions (add, random, get_val, whatever) and names. '''
 
-        if not operators:
-            operators = DEFAULT_OPERATORS
-        if not functions:
-            functions = DEFAULT_FUNCTIONS
-        if not names:
-            names = DEFAULT_NAMES
+        names.update(DEFAULT_NAMES)
 
-        self.operators = operators
-        self.functions = functions
+        self.operators = DEFAULT_OPERATORS
+        self.functions = DEFAULT_FUNCTIONS
         self.names = names
 
     def eval(self, expr):
@@ -286,9 +283,7 @@ class SimpleEval(object): # pylint: disable=too-few-public-methods
             raise FeatureNotAvailable("Sorry, {0} is not available in this "
                                       "evaluator".format(type(node).__name__ ))
 
-def simple_eval(expr, operators=None, functions=None, names=None):
+def simple_eval(expr, names={}):
     ''' Simply evaluate an expresssion '''
-    s = SimpleEval(operators=operators,
-                   functions=functions,
-                   names=names)
+    s = SimpleEval(names=names)
     return s.eval(expr)

@@ -9,6 +9,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from qtpy.QtTest import QTest
 from qtpy import QtCore
+import math
 
 from .helper_functions import TestQApplication, waitFor, waitForWindow
 from widgets import base
@@ -55,6 +56,17 @@ class BaseWidgetTests(TestQApplication):
         waitFor(10)
         self.assertIsInstance(self.widget.value, Equation)
         self.assertEqual(self.widget.value.eq, '10.0*4')
+        
+    def test_lineedit_float_eq_pi(self):
+        self.widget = base.LineEdit()
+        self.widget.setdtype('dp')
+        self.widget.show()
+        waitForWindow(self.widget)
+        QTest.keyClicks(self.widget, 'pi')
+        waitFor(10)
+        self.assertIsInstance(self.widget.value, Equation)
+        self.assertEqual(self.widget.value.eq, 'pi')
+        self.assertEqual(float(self.widget.value), math.pi)
 
     def test_lineedit_float_eq_param(self):
         self.widget = base.LineEdit()
