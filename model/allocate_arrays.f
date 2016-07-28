@@ -708,6 +708,7 @@
       CALL DEALLOCATE_ARRAYS_INCREMENTS
       CALL DEALLOCATE_ARRAYS_PARALLEL
       CALL DEALLOCATE_CUT_CELL_ARRAYS
+      CALL DEALLOCATE_VTU_ARRAYS
       CALL DEALLOCATE_DEM_MI
       CALL DEALLOCATE_PIC_MIO
       CALL DES_DEALLOCATE_ARRAYS
@@ -1139,6 +1140,10 @@
       use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
       use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
 
+      use geometry, only: icbc_flag
+
+      use gridmap, only : IJK_ARRAY_OF, FUNIJK_MAP_C, DEAD_CELL_AT
+
 ! Module procedures
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -1195,7 +1200,18 @@
       if(allocated(  FLAG_T  )) deallocate(  FLAG_T  )
 
 ! Text flags for scalar grid.
-!      if(allocated(  ICBC_FLAG  )) deallocate(  ICBC_FLAG  )
+     if(associated(  ICBC_FLAG  )) nullify(  ICBC_FLAG  )
+!     deallocate(  ICBC_FLAG  )
+
+     if(associated(  ICBC_FLAG  )) then
+        deallocate(  ICBC_FLAG  )
+        nullify(  ICBC_FLAG  )
+     endif
+
+!gridmap
+     if(allocated(IJK_ARRAY_OF)) deallocate(IJK_ARRAY_OF)
+     if(allocated(FUNIJK_MAP_C)) deallocate(FUNIJK_MAP_C)
+     if(allocated(DEAD_CELL_AT)) deallocate(DEAD_CELL_AT)
 
 ! Volume and face-areas of scalar grid.
       if(allocated(  VOL  )) deallocate(  VOL  )
@@ -1343,8 +1359,12 @@
       use desgrid
       use derived_types, only: dg_pic
       use desmpi
+      use sendrecv
 
       IMPLICIT NONE
+
+      INTEGER ::lijk,lpic
+      INTEGER :: Dstatus,Astatus
 
 ! gridmap_mod
 
@@ -1390,11 +1410,22 @@
       if(allocated(dg_c2_all)) deallocate(dg_c2_all)
       if(allocated(dg_c3_all)) deallocate(dg_c3_all)
 
-      if(allocated(dg_pic)) deallocate(dg_pic)
+      do lijk = 1,size(dg_pic)
+         if(associated(dg_pic(lijk)%p)) then
+            deallocate(dg_pic(lijk)%p)
+            nullify(dg_pic(lijk)%p)
+         endif
+      end do
+      if(allocated(dg_pic)) deallocate(dg_pic,STAT=Dstatus)
 
 
 ! des/mpi_init_des_mod.f
-      if(allocated(dsendbuf)) deallocate(dsendbuf)
+      if(allocated(dsendbuf)) then
+         do lijk=1,size(dsendbuf)
+            if(allocated(dsendbuf(lijk)%facebuf)) deallocate(dsendbuf(lijk)%facebuf)
+         enddo 
+         deallocate(dsendbuf)
+      endif
       if(allocated(drecvbuf)) deallocate(drecvbuf)
       if(allocated(isendindices)) deallocate(isendindices)
       if(allocated(irecvindices)) deallocate(irecvindices)
@@ -1408,6 +1439,89 @@
       if(allocated(igathercnts)) deallocate(igathercnts)
       if(allocated(idispls)) deallocate(idispls)
 
+
+!      if(allocated(recvproc1)) deallocate(recvproc1)
+!      if(allocated(recvtag1)) deallocate(recvtag1)
+!      if(allocated(xrecv1)) deallocate(xrecv1)
+!      if(allocated(recvijk1)) deallocate(recvijk1)
+
+!      if(allocated(sendproc1)) deallocate(sendproc1)
+!      if(allocated(sendtag1)) deallocate(sendtag1)
+!      if(allocated(xsend1)) deallocate(xsend1)
+!      if(allocated(sendijk1)) deallocate(sendijk1)
+
+!      if(allocated(recvproc2)) deallocate(recvproc2)
+!      if(allocated(recvtag2)) deallocate(recvtag2)
+!      if(allocated(xrecv2)) deallocate(xrecv2)
+!      if(allocated(recvijk2)) deallocate(recvijk2)
+
+!      if(allocated(sendproc2)) deallocate(sendproc2)
+!      if(allocated(sendtag2)) deallocate(sendtag2)
+!      if(allocated(xsend2)) deallocate(xsend2)
+!      if(allocated(sendijk2)) deallocate(sendijk2)
+
+!      if(allocated(send_persistent_request)) deallocate(send_persistent_request)
+!      if(allocated(recv_persistent_request)) deallocate(recv_persistent_request)
+!      if(allocated(send_persistent_request1)) deallocate(send_persistent_request1)
+!      if(allocated(recv_persistent_request1)) deallocate(recv_persistent_request1)
+!      if(allocated(send_persistent_request2)) deallocate(send_persistent_request2)
+!      if(allocated(recv_persistent_request2)) deallocate(recv_persistent_request2)
+
+!       if(allocated(dsendbuffer)) deallocate(dsendbuffer)
+
+       deallocate(xsend)
+       deallocate(xrecv)
+       deallocate(dsendbuffer)
+       deallocate(drecvbuffer)
+       deallocate(sendijk)
+       deallocate(recvijk)
+
+
+       deallocate(recvproc1)
+       deallocate(recvtag1)
+       deallocate(xrecv1)
+       deallocate(recvijk1)
+
+       deallocate(sendproc1)
+       deallocate(sendtag1)
+       deallocate(xsend1)
+       deallocate(sendijk1)
+
+       deallocate(recvproc2)
+       deallocate(recvtag2)
+!       deallocate(xrecv2)
+!       deallocate(recvijk2)
+
+       deallocate(sendproc2)
+       deallocate(sendtag2)
+!       deallocate(xsend2)
+!       deallocate(sendijk2)
+
+       deallocate(send_persistent_request)
+       deallocate(recv_persistent_request)
+       deallocate(send_persistent_request1)
+       deallocate(recv_persistent_request1)
+!       deallocate(send_persistent_request2)
+!       deallocate(recv_persistent_request2)
+
+!      if(allocated(drecvbuffer)) deallocate(drecvbuffer)
+!      if(allocated(isendbuffer)) deallocate(isendbuffer)
+!      if(allocated(irecvbuffer)) deallocate(irecvbuffer)
+!      if(allocated(csendbuffer)) deallocate(csendbuffer)
+!      if(allocated(crecvbuffer)) deallocate(crecvbuffer)
+
+!      if(allocated(recvrequest)) deallocate(recvrequest)
+!      if(allocated(sendrequest)) deallocate(sendrequest)
+
+!      if(allocated(xrecv)) deallocate(xrecv)
+!      if(allocated(recvproc)) deallocate(recvproc)
+!      if(allocated(recvijk)) deallocate(recvijk)
+!      if(allocated(recvtag)) deallocate(recvtag)
+
+!      if(allocated(xsend)) deallocate(xsend)
+!      if(allocated(sendproc)) deallocate(sendproc)
+!      if(allocated(sendijk)) deallocate(sendijk)
+!      if(allocated(sendtag)) deallocate(sendtag)
 
       RETURN
       END SUBROUTINE DEALLOCATE_ARRAYS_PARALLEL
@@ -1725,17 +1839,52 @@
       RETURN
       END SUBROUTINE DEALLOCATE_CUT_CELL_ARRAYS
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DEALLOCATE_VTU_ARRAYS                                   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE DEALLOCATE_VTU_ARRAYS
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE vtk
+      IMPLICIT NONE
+!-----------------------------------------------
+
+      
+      if(allocated(CLEANED_CONNECTIVITY)) Deallocate(CLEANED_CONNECTIVITY)
+      if(allocated(COORDS_OF_POINTS)) Deallocate(COORDS_OF_POINTS)
+      if(allocated(GLOBAL_I_OF)) Deallocate(GLOBAL_I_OF)
+      if(allocated(GLOBAL_J_OF)) Deallocate(GLOBAL_J_OF)
+      if(allocated(GLOBAL_K_OF)) Deallocate(GLOBAL_K_OF)
+      if(allocated(GLOBAL_CONNECTIVITY)) Deallocate(GLOBAL_CONNECTIVITY)
+      if(allocated(GLOBAL_CLEANED_CONNECTIVITY)) Deallocate(GLOBAL_CLEANED_CONNECTIVITY)
+      if(allocated(GLOBAL_NUMBER_OF_NODES)) Deallocate(GLOBAL_NUMBER_OF_NODES)
+      if(allocated(GLOBAL_COORDS_OF_POINTS)) Deallocate(GLOBAL_COORDS_OF_POINTS)
+      if(allocated(GLOBAL_INTERIOR_CELL_AT)) Deallocate(GLOBAL_INTERIOR_CELL_AT)
+      if(allocated(GLOBAL_BLOCKED_CELL_AT)) Deallocate(GLOBAL_BLOCKED_CELL_AT)
+      if(allocated(GLOBAL_STANDARD_CELL_AT)) Deallocate(GLOBAL_STANDARD_CELL_AT)
+      if(allocated(GLOBAL_CUT_CELL_AT)) Deallocate(GLOBAL_CUT_CELL_AT)
+      if(allocated(GLOBAL_SNAP)) Deallocate(GLOBAL_SNAP)
+      if(allocated(GLOBAL_F_AT)) Deallocate(GLOBAL_F_AT)
+      if(allocated(GLOBAL_X_NEW_POINT)) Deallocate(GLOBAL_X_NEW_POINT)
+      if(allocated(GLOBAL_Y_NEW_POINT)) Deallocate(GLOBAL_Y_NEW_POINT)
+      if(allocated(GLOBAL_Z_NEW_POINT)) Deallocate(GLOBAL_Z_NEW_POINT)
+
+      if(allocated(BELONGS_TO_VTK_SUBDOMAIN)) Deallocate(BELONGS_TO_VTK_SUBDOMAIN)
+
+
+
+      RETURN
+      END SUBROUTINE DEALLOCATE_VTU_ARRAYS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DEALLOCATE_DEM_MIO                                        !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date: 17-Aug-09  !
-!                                                                      !
-!  Comments:                                                           !
+!  Subroutine: DEALLOCATE_DEM_MIO                                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
@@ -1781,12 +1930,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DEALLOCATE_PIC_MIO                                        !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: R. Garg                                    Date: 11-Jun-14  !
-!                                                                      !
+!  Subroutine: DEALLOCATE_PIC_MIO                                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEALLOCATE_PIC_MIO
@@ -1853,11 +1997,15 @@
       USE particle_filter, only: FILTER_WEIGHT
       use des_bc, only: DEM_BCMO_IJKSTART, DEM_BCMO_IJKEND
       use stl, only: FACETS_AT_DG
+
+      use desgrid
+      use sendrecvnode
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       USE error_manager
 
       IMPLICIT NONE
+      INTEGER:: lijk
 
       CALL INIT_ERR_MSG("DES_DEALLOCATE_ARRAYS")
 
@@ -1933,6 +2081,12 @@
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
+      do lijk = 1,size(pic)
+         if(associated(pic(lijk)%p)) then
+            deallocate(pic(lijk)%p)
+            nullify(pic(lijk)%p)
+         endif
+      enddo
       if(allocated( PIC )) deallocate(  PIC )
 
 ! Particles in a computational fluid cell (for volume fraction)
@@ -2066,11 +2220,39 @@
       if(allocated(PARTICLE_STATE)) deallocate(PARTICLE_STATE)
       if(allocated(iglobal_id)) deallocate(iglobal_id)
 
+      if(allocated(DEM_BCMO_IJK)) deallocate(DEM_BCMO_IJK)
       if(allocated(DEM_BCMO_IJKSTART)) deallocate(DEM_BCMO_IJKSTART)
       if(allocated(DEM_BCMO_IJKEND)) deallocate(DEM_BCMO_IJKEND)
 
 ! stl
       if(allocated(FACETS_AT_DG)) deallocate(FACETS_AT_DG)
+
+      if(allocated(GSTENCIL)) deallocate(GSTENCIL)
+      if(allocated(VSTENCIL)) deallocate(VSTENCIL)
+      if(allocated(PGRADSTENCIL)) deallocate(PGRADSTENCIL)
+      if(allocated(PSGRADSTENCIL)) deallocate(PSGRADSTENCIL)
+      if(allocated(VEL_SOL_STENCIL)) deallocate(VEL_SOL_STENCIL)
+      if(allocated(SSTENCIL)) deallocate(SSTENCIL)
+
+      if(allocated(dg_xe)) deallocate(dg_xe)
+      if(allocated(dg_yn)) deallocate(dg_yn)
+      if(allocated(dg_zt)) deallocate(dg_zt)
+
+      if(allocated(xe)) deallocate(xe)
+      if(allocated(yn)) deallocate(yn)
+      if(allocated(zt)) deallocate(zt)
+
+!      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
+!      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
+!      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
+!      DEALLOCATE(isendnodes)
+!      DEALLOCATE(irecvnodes)
+!      DEALLOCATE(dsendnodebuf)
+!      DEALLOCATE(drecvnodebuf)
+!      DEALLOCATE(isendreqnode)
+!      DEALLOCATE(irecvreqnode)
+
+       call deallocate_des_nodes_pointers()
 
       CALL FINL_ERR_MSG
 
