@@ -421,7 +421,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         for region in loaded_data['order']:
             # Copy dictionary entry to ordered dict
-            region_data = data[region] = DEFAULT_REGION_DATA
+            region_data = data[region] = copy.deepcopy(DEFAULT_REGION_DATA)
             region_data.update(loaded_data['regions'][region])
             if 'visibility' in region_data:
                 # Create pixmap for 'visible' column
