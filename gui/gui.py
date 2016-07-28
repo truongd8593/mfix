@@ -335,6 +335,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Job manager / monitor
         self.job_manager = JobManager(self)
+        self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
+        self.job_manager.sig_update_job_status.connect(self.slot_update_residuals)
         self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
         self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
 
@@ -518,12 +520,6 @@ class MfixGui(QtWidgets.QMainWindow,
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             self.job_manager.try_to_connect(full_runname_pid)
 
-                # log.info('slot_rundir_changed creating job manager')
-                # self.job_manager = JobManager(full_runname_pid, parent=self)
-                # log.info(str(self.job_manager))
-                # self.signal_update_runbuttons.emit('')
-
-
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
             self.ui.run.button_run_mfix.setText(text)
@@ -666,7 +662,6 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(True)
-        log.debug('done update_runbuttons\n\n\n\n')
 
 
     def print_welcome(self):
@@ -1947,21 +1942,6 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(runname_pid):
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
-            self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
-        # complete job state determinination needed
-        """
-            if job_manager.job:
-                self.job_manager.sig_update_run_state.connect(self.slot_update_runbuttons)
-            else:
-                pid = int(get_dict_from_pidfile(runname_pid)['pid'])
-                try:
-                    # does process exist?
-                    os.kill(pid, 0)
-                except OSError:
-                    log.exception('unable to find process with pid %s in %s' % (pid, runname_pid))
-                    # FIXME: needs more care, tests for additional run states (queued, etc):
-                    os.remove(runname_pid)
-        """
 
         if auto_rename and not project_path.endswith(runname_mfx):
             ok_to_write = False
