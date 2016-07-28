@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>405</width>
+    <width>397</width>
     <height>748</height>
    </rect>
   </property>
@@ -92,34 +92,53 @@
      <property name="flat">
       <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>5</number>
-      </property>
-      <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_disable_fluid_solver">
         <property name="text">
          <string>Disable Fluid Solver (Pure Granular Flow)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="2">
        <widget class="CheckBox" name="checkbox_keyword_energy_eq">
         <property name="text">
          <string>Enable Energy Equations</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="4" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_mu_gmax">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Maximum viscosity</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="LineEdit" name="lineedit_keyword_mu_gmax">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_mu_gmax_units">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Pa.s</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_enable_turbulence">
         <property name="text">
          <string>Enable Fluid Phase Turbulence</string>
@@ -127,6 +146,16 @@
        </widget>
       </item>
       <item row="3" column="0">
+       <widget class="QLabel" name="label_turbulence_model">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Turbulence model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="ComboBox" name="combobox_turbulence_model">
         <property name="enabled">
          <bool>false</bool>

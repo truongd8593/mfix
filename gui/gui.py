@@ -889,9 +889,15 @@ class MfixGui(QtWidgets.QMainWindow,
         m = self.ui.model
         if enabled != m.checkbox_enable_turbulence.isChecked():
             m.checkbox_enable_turbulence.setChecked(enabled)
-        m.combobox_turbulence_model.setEnabled(enabled)
+        for item in (m.label_turbulence_model,
+                     m.combobox_turbulence_model,
+                     m.label_mu_gmax,
+                     m.lineedit_keyword_mu_gmax,
+                     m.label_mu_gmax_units):
+            item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('turbulence_model')
+            self.unset_keyword('mu_gmax')
         else:
             self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
 
@@ -903,6 +909,10 @@ class MfixGui(QtWidgets.QMainWindow,
             return
         self.update_keyword('turbulence_model',
                             ['MIXING_LENGTH', 'K_EPSILON'][val])
+        val = m.lineedit_keyword_mu_gmax.value
+        if val=='' or val is None:
+            val = '1.e+03'
+        self.update_keyword('mu_gmax', val)
 
 
     def update_scalar_equations(self, prev_nscalar):
