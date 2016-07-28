@@ -796,7 +796,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             widget.setLayout(layout);
             table.setCellWidget(row, 2, widget)
 
-        table.setItem(nrows-1, 0, make_item("TOTAL"))
+        table.setItem(nrows-1, 0, make_item("TOTAL")) # bold?
         table.setItem(nrows-1, 1, make_item(''))
         self.update_solids_mass_fraction_total()
 
