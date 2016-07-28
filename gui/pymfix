@@ -365,13 +365,8 @@ class Mfix(object):
     def exit(self, _):
         " run_mfix thread should exit cleanly "
         self.stopped = True
+        self.paused = False
         return 200, 'EXITING MFIX\n'
-
-    def abort(self, _):
-        " exit abruptly"
-        MAIN.do_abort()
-        # should never get here
-        return 200, 'ABORTING MFIX\n'
 
     def step(self, args):
         " take one or more timesteps "
@@ -601,8 +596,6 @@ def backupres():
 def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, data = mfix_thread.do_command("EXIT")
-    # after exit, still need to unpause to get check_requests to return
-    mfix_thread.do_command("UNPAUSE")
     mfix_thread.thread.join()
     global pidfile
     os.remove(pidfile)
@@ -628,14 +621,6 @@ def pause():
     "pauses MFIX if unpaused"
     status_code, data = mfix_thread.do_command("PAUSE")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
-
-@FLASK_APP.route('/paused', methods=['GET'])
-@token_required
-def paused():
-    "pauses MFIX if unpaused"
-    status_code, data = (200, mfix_thread.paused)
-    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
-
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 @token_required
