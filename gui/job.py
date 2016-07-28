@@ -301,7 +301,7 @@ class Job(QObject):
         log.debug('New JobManager.Job %s', self)
         super(Job, self).__init__()
         self.status = {}
-        self.cached_status = {}
+        self.pretty_status = ""
         self.pidfile = pidfile
         self.requests = {}
         self.api = None
@@ -471,7 +471,7 @@ class Job(QObject):
             width=50).pformat(status)
         log.debug(pretty_status)
         self.status = status
-        self.cached_status = pretty_status
+        self.pretty_status = pretty_status
         self.sig_update_job_status.emit()
         # reset error count
         self.api_error_count = 0
@@ -486,4 +486,3 @@ class Job(QObject):
         """Send stop request"""
         self.api.post('exit')
         # job cleanup deferred to JobManager
-

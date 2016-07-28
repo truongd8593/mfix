@@ -576,7 +576,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #    return
         if self.job_manager and self.job_manager.job:
             log.debug('update_residuals')
-            self.ui.residuals.setText(self.job_manager.job.cached_status)
+            self.ui.residuals.setText(self.job_manager.job.pretty_status)
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -2022,7 +2022,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.vtkwidget.add_stl(None, filename=geometry_file)
             msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
             self.message(title='Warning', text=msg)
-            
+
         # TODO: load more geometry
 
         # Additional GUI setup based on loaded projects (not handled
