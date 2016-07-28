@@ -236,16 +236,17 @@ class MfixGui(QtWidgets.QMainWindow,
                            ("Point Sources", "Points"), ### Only under "Model Setup", not "Monitors"
                            ("Internal Surfaces", "Surfaces")]
 
+        # Set tooltips for nav tree & set a data property on
+        # Model Setup / Points to distinguish it form
         root = tw.invisibleRootItem()
-
         for i in range(root.childCount()):
             item = root.child(i)
             item.setToolTip(0, item.text(0))
             for j in range(item.childCount()):
                 subitem = item.child(j)
-                if subitem.text(0) == 'Points':
-                    subitem.setData(UserRole, 0, 'Points')
                 subitem.setToolTip(0, subitem.text(0))
+                if item.text(0)=='Monitors' and subitem.text(0) == 'Points':
+                    subitem.setData(UserRole, 0, True) # Mark this item
 
         tw.resizeEvent = (lambda old_method:
                           (lambda event:
@@ -547,7 +548,7 @@ class MfixGui(QtWidgets.QMainWindow,
         for (long, short) in self.nav_labels:
             items = tree.findItems(long, flags, 0)
             for item in items:
-                if item.data(UserRole, 0) == 'Points': # Avoid toggling Model Setup / Points
+                if item.data(UserRole, 0): # Avoid toggling
                     continue
                 item.setText(0, short)
 
@@ -557,7 +558,7 @@ class MfixGui(QtWidgets.QMainWindow,
         for (long, short) in self.nav_labels:
             items = tree.findItems(short, flags, 0)
             for item in items:
-                if item.data(UserRole,0) == 'Points': # Avoid toggling Model Setup / Points
+                if item.data(UserRole,0): # Avoid toggling
                     continue
                 item.setText(0, long)
 
