@@ -137,8 +137,6 @@ class MfixGuiTests(TestQApplication):
 
     def test_run_mfix(self):
 
-        self.skipTest("Currently broken")
-
         #  FIXME:  The run dialog will get the exe from the ~/.config/MFIX file,
         #   need to control the QSettings for running tests
         mfix_exe = os.path.join(self.mfix_home, "mfix")
@@ -173,11 +171,13 @@ class MfixGuiTests(TestQApplication):
 
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        waitFor(500)
+        waitFor(5000)
 
         # Job is running, run button disabled, stop button enabled
-        self.assertTrue(all (not b.isEnabled() for b in runbuttons))
-        self.assertTrue(all (b.isEnabled() for b in stopbuttons))
+        self.assertFalse(self.mfix.ui.run.button_run_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
 
         # No test for pause, which requires pymfix FIXME
         #self.assertEqual(runbuttons[0].text(), "Pause")
@@ -185,9 +185,13 @@ class MfixGuiTests(TestQApplication):
 
         # Stop run, button should say 'Resume'
         QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
-        waitFor(100)
-        self.assertTrue(all (b.isEnabled() for b in runbuttons))
-        self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
+        waitFor(2000)
+
+        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
+
         self.assertEqual(runbuttons[0].text(), "Resume")
         self.assertEqual(runbuttons[1].toolTip(), "Resume previous MFIX run")
 
@@ -197,10 +201,12 @@ class MfixGuiTests(TestQApplication):
 
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        waitFor(500)
+        waitFor(5000)
 
-        self.assertTrue(all (not b.isEnabled() for b in runbuttons))
-        self.assertTrue(all (b.isEnabled() for b in stopbuttons))
+        self.assertFalse(self.mfix.ui.run.button_run_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
         waitFor(300)
 
         # Stop mfix, check for log.
