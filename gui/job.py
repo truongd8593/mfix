@@ -249,7 +249,9 @@ class JobManager(QObject):
             self.job.sig_api_error.connect(self.increment_api_error_count)
             self.job.sig_api_success.connect(self.reset_api_error_count)
 
-    def mfix_process_is_alive(self):
+    def mfix_proc_is_alive(self):
+        """Handles process existence checks"""
+        # TODO: handle queued job polling
         pid_contents = get_dict_from_pidfile(self.job.pidfile)
         # if local process
         pid = pid_contents.get('pid')
@@ -269,17 +271,18 @@ class JobManager(QObject):
         """Increment API error count and signal job exit if limit
         has been exceeded"""
         self.api_error_count += 1
-        if self.api_error_count >= self.API_ERROR_SOFT_LIMIT:
-            log.debug('API error count incremented: %s', self.api_error_count)
-            # check that mfix process is still running
-            if (not self.mfix_process_is_alive() \
-                or self.api_error_count >= self.API_ERROR_HARD_LIMIT):
-                    log.error('MFIX process has died or retry timeout reached')
-                    self.teardown_job()
-                    return
-            log.error('MFIX process is unresponsive, retry %s (of %s)' %\
-                ( self.api_error_count - self.API_ERROR_SOFT_LIMIT,
-                  self.API_ERROR_HARD_LIMIT - self.API_ERROR_SOFT_LIMIT))
+        count = self.api_error_count
+        log.debug('API error count incremented: %s', self.api_error_count)
+        if count >= self.API_ERROR_SOFT_LIMIT:
+            # check that the mfix process is still running
+            if self.mfix_proc_is_alive() and count < self.API_ERROR_HARD_LIMIT:
+                log.error('MFIX process is unresponsive, retry %s (of %s)' %\
+                    ( self.api_error_count - self.API_ERROR_SOFT_LIMIT,
+                      self.API_ERROR_HARD_LIMIT - self.API_ERROR_SOFT_LIMIT))
+                return
+            else:
+                log.error('MFIX process has died or retry timeout reached')
+                self.teardown_job()
 
     def record(self,job_id):
         self.job_id = job_id
@@ -327,11 +330,12 @@ class JobManager(QObject):
         """Job ended or exited. Destory Job object and remove pidfile"""
         log.debug('teardown_job')
         if not self.job:
-            log.debug('Job is not running')
+            log.error('Job is not running')
+            return
         pidfile = self.job.pidfile
         pid_contents = get_dict_from_pidfile(pidfile)
-        pid = pid_contents .get('pid', None)
-        job_id = pid_contents .get('qjobid', None)
+        pid = pid_contents.get('pid', None)
+        job_id = pid_contents.get('qjobid', None)
         # needed?
         #open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
 
