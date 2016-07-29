@@ -26,7 +26,7 @@ import traceback
 
 from timeit import default_timer as timer
 from functools import wraps
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
 pidfile = None
@@ -73,19 +73,6 @@ def find_free_port():
     port = sock.getsockname()[1]
     sock.close()
     return port
-
-def token_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        client_token = request.headers.get(FLASK_APP.config['TOKEN_NAME'])
-        server_token = FLASK_APP.config['SECRET_KEY']
-        client_token = server_token
-        if client_token == server_token:
-            return f(*args, **kwargs)
-        else:
-            return "Authentication required", 401, \
-                  {'Content-Type': 'text/plain; charset=utf-8'}
-    return decorated_function
 
 def get_run_name():
     return RUN.run_name.tobytes().decode('utf-8').replace('\x00', '').strip()
@@ -495,6 +482,28 @@ class Mfix(object):
         return resp
 
 
+# Flask request routing
+
+def token_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        client_token = request.headers.get(FLASK_APP.config['TOKEN_NAME'])
+        server_token = FLASK_APP.config['SECRET_KEY']
+        client_token = server_token
+        if client_token == server_token:
+            return f(*args, **kwargs)
+        else:
+            return "Authentication required", 401, \
+                  {'Content-Type': 'text/plain; charset=utf-8'}
+    return decorated_function
+
+def api_response(status_code, command_output):
+    return make_response(
+      jsonify(mfix_status=mfix_thread.status,
+              command_output=command_output),
+      status_code,
+      {'Content-Type': 'application/json; charset=utf-8'})
+
 # Route that will process the file upload
 @FLASK_APP.route('/upload', methods=['POST'])
 @token_required
@@ -516,11 +525,11 @@ def upload():
 
     tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
     request.files['file'].save(tmp)
-    status_code, data = mfix_thread.do_command("REINIT", args={'filename':tmp.name})
+    status_code, command_output = mfix_thread.do_command("REINIT", args={'filename':tmp.name})
     os.unlink(tmp.name)
 
     if status_code != 200:
-        return data
+        return command_output
 
     return redirect(url_for('index'))
 
@@ -539,8 +548,8 @@ def set_variable(modname, varname):
     args = dict(request.form)
     args['modname'] = modname
     args['varname'] = varname
-    status_code, data = mfix_thread.do_command("SET", args=args)
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("SET", args=args)
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/set/<modname>/<varname>/<elem>', methods=['POST'])
 @token_required
@@ -550,8 +559,8 @@ def set_variable_array(modname, varname, elem):
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
-    status_code, data = mfix_thread.do_command("SET", args=args)
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("SET", args=args)
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/get/<modname>/<varname>', methods=['GET'])
 @token_required
@@ -560,8 +569,8 @@ def get_variable(modname, varname):
     args = dict(request.args)
     args['modname'] = modname
     args['varname'] = varname
-    status_code, data = mfix_thread.do_command("GET", args=args)
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("GET", args=args)
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/get/<modname>/<varname>/<elem>', methods=['GET'])
 @token_required
@@ -571,31 +580,31 @@ def get_variable_array(modname, varname, elem):
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
-    status_code, data = mfix_thread.do_command("GET", args=args)
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("GET", args=args)
+    return api_response(status_code, command_output)
 
 
 @FLASK_APP.route('/write_dbg_vt', methods=['POST'])
 @token_required
 def write_dbg_vt():
     "calls WRITE_DBG_VTU_AND_VTP_FILES"
-    status_code, data = mfix_thread.do_command("WRITE_DBG_VT")
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("WRITE_DBG_VT")
+    return api_response(status_code, command_output)
 
 
 @FLASK_APP.route('/backupres', methods=['POST'])
 @token_required
 def backupres():
     "calls BACKUP_RES"
-    status_code, data = mfix_thread.do_command("BACKUPRES")
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("BACKUPRES")
+    return api_response(status_code, command_output)
 
 
 @FLASK_APP.route('/exit', methods=['POST'])
 @token_required
 def exit_mfix():
     "exits the main loop in run_mfix"
-    status_code, data = mfix_thread.do_command("EXIT")
+    status_code, command_output = mfix_thread.do_command("EXIT")
     mfix_thread.thread.join()
     global pidfile
     os.remove(pidfile)
@@ -603,7 +612,7 @@ def exit_mfix():
     if shutdown is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     shutdown() # will finish current request, then shutdown
-    return jsonify(response=mfix_thread.status), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    return api_response(status_code, command_output)
 
 
 @FLASK_APP.route('/step', methods=['POST'])
@@ -611,30 +620,30 @@ def exit_mfix():
 def step():
     "runs mfix for one timestep, regardless of TIME and TSTOP"
     args = dict(request.form)
-    status_code, data = mfix_thread.do_command("STEP", args=args)
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("STEP", args=args)
+    return api_response(status_code, command_output)
 
 
 @FLASK_APP.route('/pause', methods=['PUT'])
 @token_required
 def pause():
     "pauses MFIX if unpaused"
-    status_code, data = mfix_thread.do_command("PAUSE")
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("PAUSE")
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 @token_required
 def unpause():
     "unpause MFIX if paused"
-    status_code, data = mfix_thread.do_command("UNPAUSE")
-    return jsonify(response=data), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    status_code, command_output = mfix_thread.do_command("UNPAUSE")
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/status', methods=['GET'])
 @token_required
 def get_status():
     "returns current status: paused state, current time, and residuals"
-    status_code = 200
-    return jsonify(response=mfix_thread.status), status_code, {'Content-Type': 'application/json; charset=utf-8'}
+    # status is included in api_response
+    return api_response(200, '')
 
 @FLASK_APP.route('/logging/<state>', methods=['POST'])
 @FLASK_APP.route('/logging/<state>/<level>', methods=['POST'])
@@ -646,7 +655,7 @@ def set_logging(state=None, level=None):
     if state == 'disable':
         log.disabled = True
     # maybe handle loglevel someday
-    return jsonify(response='OK'), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return api_response(200, 'OK')
 
 
 def parse_command_line_arguments():
