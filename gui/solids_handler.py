@@ -606,8 +606,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         self.solids_current_phase = None
         self.solids_current_phase_name = None
-        # avoid callbacks to handle_solids_table_selection
-        tw.itemSelectionChanged.disconnect() #self.handle_solids_table_selection)
+        # avoid callbacks to handle_solids_table_selection (why?)
+        tw.itemSelectionChanged.disconnect() # TODO: is this really needed?
         tw.clearSelection()  # Why do we still have a selected row after delete? (and should we?)
         name = tw.item(row, 0).text()
         phase = row+1
