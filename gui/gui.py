@@ -106,6 +106,11 @@ class MfixGui(QtWidgets.QMainWindow,
     def popup_value_error(self, exc):
         self.message(title='Error', text=str(exc))
 
+    def error(self, msg, popup=False):
+        """Convenience function to show the user a warning & log it"""
+        self.print_internal('Error: %s' % msg)
+        # No popup
+
     def warn(self, msg, popup=False):
         """Convenience function to show the user a warning & log it"""
         if not popup:
@@ -1718,9 +1723,8 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
 
         # save IC regions
-        data = self.ics_to_str()
-        if data:
-            self.project.mfix_gui_comments['ic_regions'] = data
+        if self.ics:
+            self.project.mfix_gui_comments['ic_regions'] = self.ics_to_str()
         else:
             self.project.mfix_gui_comments.pop('ic_regions', None)
 

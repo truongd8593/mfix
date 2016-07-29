@@ -174,17 +174,13 @@ class ICS(object):
                 self.unset_keyword(key, args=args)
         # TODO: fix any resulting holes in index sequence!
 
-        print("CURRENT", self.ics_current_regions, self.ics_current_indices)
         for r in self.ics_current_regions:
-            print("R=", r)
             if r in self.ics_region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
                 self.ics_region_dict[r]['available'] = True
 
 
         for i in self.ics_current_indices:
             del self.ics[i]
-        print("ICS", self.ics)
-        print("\n\n\n")
 
         self.ics_current_regions = []
         self.ics_current_indices = []
@@ -204,7 +200,6 @@ class ICS(object):
         ics = self.ui.initial_conditions
         table = ics.tablewidget_regions
         row = get_selected_row(table)
-        print("\n HANDLE", row, "\n")
         if row is None:
             indices = []
             regions = []
@@ -306,9 +301,7 @@ class ICS(object):
         self.ics_region_dict = ui.regions.get_region_dict()
 
         # Mark regions which are in use (this gets reset each time we get here)
-        print("\n\n\n")
         for (i, data) in self.ics.items():
-            print("HERE", i, data)
             region = data['region']
             if region in self.ics_region_dict:
                 self.ics_region_dict[region]['available'] = False
@@ -337,11 +330,11 @@ class ICS(object):
             for i in range(n_cols-2, 0, -1):
                 item = ics.tab_box.itemAtPosition(0, i)
                 if not item:
-                    log.error('no item found at position %s' % i)
+                    self.error('no item found at position %s' % i)
                     continue
                 widget = item.widget()
                 if not widget:
-                    log.error('item  not a widget at position %s' % i)
+                    self.error('item not a widget at position %s' % i)
                     continue
                 ics.tab_box.removeWidget(widget)
                 widget.setParent(None)
@@ -350,6 +343,7 @@ class ICS(object):
         # And make new ones
         for (i, solid_name) in enumerate(self.solids.keys()):
             b = QPushButton(text=solid_name)
+            b.setEnabled(False)
             w = b.fontMetrics().boundingRect(solid_name).width() + 20
             b.setMaximumWidth(w)
             b.setFlat(True)
@@ -358,6 +352,7 @@ class ICS(object):
 
         # Move the 'Scalar' button to the right of all solids
         b = ics.pushbutton_scalar
+        b.setEnabled(False)
         ics.tab_box.removeWidget(b)
         ics.tab_box.addWidget(b, 0, 1+len(self.solids))
 
@@ -443,7 +438,40 @@ class ICS(object):
 
 
     def ics_extract_regions(self):
-        pass
+        if self.ics:
+            # We assume that ic regions have been initialized correctly
+            # from mfix_gui_comments.
+            # TODO: verify that there is an IC region for each IC
+            return
+
+        if self.ics_region_dict is None:
+            self.ics_region_dict = self.ui.regions.get_region_dict()
+
+        # TODO: if we wanted to be fancy, we could find regions where
+        # IC values matched, and merge into a new IC region.  That
+        # is only needed for projects created outside the GUI (otherwise
+        # we have already stored the IC regions).  Also woule be nice
+        # to offer a way to split compound regions.
+        for ic in self.project.ics:
+
+            d = ic._keyword_dict
+            extent = [d.get(k,None) for k in ('ic_x_w', 'ic_y_s', 'ic_z_b',
+                                              'ic_x_e', 'ic_y_n', 'ic_z_t')]
+            extent = [None if x is None else x.value for x in extent]
+            if any (x is None for x in extent):
+                self.warn("initial condition %s: invalid extents %s" %
+                           (ic.ind, extent))
+                continue
+            for (region_name, data) in self.ics_region_dict.items():
+                ext2 = data.get('from',[]) + data.get('to',[])
+                if data.get('from',[]) + data.get('to',[]) == extent:
+                    if data.get('available', True):
+                        self.ics_add_regions_1([region_name], [ic.ind])
+                        break
+            else:
+                self.warn("initial condition %s: could not match defined region %s" %
+                          (ic.ind, extent))
+
 
 
     def setup_ics_fluid_tab(self):
