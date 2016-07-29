@@ -95,12 +95,16 @@ class ProjectManager(Project):
 
     def _change(self, widget, key, newValue, args=None):
         # If any element of 'args' is itself a list, iterate over all values
-        if isinstance(args,list) and any(isinstance(arg, list) for arg in args):
+        if isinstance(args,list) and any(isinstance(arg, (list,tuple)) for arg in args):
             for (i, arg) in enumerate(args):
-                if isinstance(arg, list):
-                    for a in arg:
-                        args[i] = a
-                        self._change(widget, key, newValue, args)
+                if isinstance(arg, (list,tuple)):
+                    saved_arg = args[i]
+                    try:
+                        for a in arg:
+                            args[i] = a
+                            self._change(widget, key, newValue, args)
+                    finally:
+                        args[i] = saved_arg
                     break
             return
 

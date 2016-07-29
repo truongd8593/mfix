@@ -907,6 +907,8 @@ class Project(object):
 
         # Hack to accomodate multi-vector keys (ICs)
         for (i, k) in enumerate(key):
+            if isinstance(k, tuple):
+                k = list(k)
             if isinstance(k, list):
                 key[i] = k[0] # TODO: ensure values are equal across list
                 break
