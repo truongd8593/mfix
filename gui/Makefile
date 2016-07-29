@@ -41,7 +41,7 @@ test-load-all:
 	pkill Xvfb
 
 ../mfix:
-	cd ..; ./configure_mfix --python
+	cd ..; ./configure_mfix --python --smp
 	make -C .. mfix
 
 pyinst: all ../mfix

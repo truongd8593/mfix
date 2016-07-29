@@ -663,7 +663,6 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(True)
 
-
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
                             color='blue')
