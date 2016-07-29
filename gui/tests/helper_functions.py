@@ -38,7 +38,8 @@ class TestQApplication(unittest.TestCase):
         '''Deletes the reference owned by self'''
         if hasattr(self, 'mfix'):
             mfix = getattr(self, 'mfix')
-            mfix.run_dialog.mfixproc.kill()
+            if hasattr(mfix.run_dialog, 'mfixproc'):
+                mfix.run_dialog.mfixproc.kill()
             if hasattr(mfix.job_manager, 'job'):
                 mfix.job_manager.job = None
             mfix.close()
