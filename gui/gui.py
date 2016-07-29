@@ -238,7 +238,7 @@ class MfixGui(QtWidgets.QMainWindow,
                            ("Internal Surfaces", "Surfaces")]
 
         # Set tooltips for nav tree & set a data property on
-        # Model Setup / Points to distinguish it form
+        # Monitors / Points to distinguish it
         root = tw.invisibleRootItem()
         for i in range(root.childCount()):
             item = root.child(i)
@@ -270,12 +270,12 @@ class MfixGui(QtWidgets.QMainWindow,
             self.find_navigation_tree_item(name).setDisabled(True)
 
 
-        # initialize popup dialogs
+        # Initialize popup dialogs
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
         #self.species_popup.setModal(True) # ?
         self.regions_popup = RegionsPopup(QtWidgets.QDialog())
 
-        # create project manager
+        # Create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
         # ProjectManager is a subclass of Project.  Please
         # do not "fix" the code by renaming self.project to
@@ -477,6 +477,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.reset_fluids()
         self.reset_solids()
+        self.reset_ics()
+        self.reset_bcs()
 
         # Set all custom widgets to default
         for w in widget_iter(self):
@@ -1715,6 +1717,13 @@ class MfixGui(QtWidgets.QMainWindow,
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
 
+        # save IC regions
+        data = self.ics_to_str()
+        if data:
+            self.project.mfix_gui_comments['ic_regions'] = data
+        else:
+            self.project.mfix_gui_comments.pop('ic_regions', None)
+
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
         self.update_keyword('run_name', run_name)
@@ -2129,6 +2138,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         #  Non-keyword params stored as !#MFIX_GUI comments
+        # TODO: add exception handling here
         solids_phase_names = {}
         for (key, val) in self.project.mfix_gui_comments.items():
             if key == 'fluid_phase_name':
@@ -2140,6 +2150,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.ui.regions.regions_from_str(val)
             if key == 'geometry':
                 self.vtkwidget.geometry_from_str(val)
+            if key == 'ic_regions':
+                self.setup_ics_from_str(val)
             # Add more here
 
         # hack, copy ordered dict to modify keys w/o losing order
@@ -2201,6 +2213,8 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
+        self.ics_extract_regions()
+
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
 

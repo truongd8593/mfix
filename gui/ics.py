@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+"""
+Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
+for the described model. This section relies on regions named in the Regions section.
+"""
+
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 
@@ -15,10 +20,8 @@ from tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, make_callback,
                            widget_iter)
 
-"""
-Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
-for the described model. This section relies on regions named in the Regions section.
-"""
+# We don't need extended JSON here
+from json import JSONDecoder, JSONEncoder
 
 class ICS(object):
     def init_ics(self):
@@ -28,6 +31,7 @@ class ICS(object):
         self.ics = {} # key: index.  value: data dictionary for initial cond
         self.ics_current_indices = [] # List of IC indices
         self.ics_current_regions = [] # And the names of the regions which define them
+        self.ics_region_dict = None
 
         # The top of the task pane is where users define/select IC regions
         # (see handle_ics_region_selection)
@@ -65,24 +69,55 @@ class ICS(object):
         ics = ui.initial_conditions
         rp = self.regions_popup
         rp.clear()
-        for (name,data) in self.region_dict.items():
+        for (name,data) in self.ics_region_dict.items():
             shape = data.get('type', '---')
+            # Assume available if unmarked
             available = (shape=='box' and data.get('available', True))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
         rp.save.connect(self.ics_add_regions)
+        rp.cancel.connect(self.ics_cancel_add)
+        for item in (ics.tablewidget_regions,
+                     ics.scrollarea_detail,
+                     ics.toolbutton_add,
+                     ics.toolbutton_delete):
+            item.setEnabled(False)
         rp.popup("Select region(s) for initial condition")
 
+
+    def ics_cancel_add(self):
+        ui = self.ui
+        ics = ui.initial_conditions
+
+        for item in (ics.toolbutton_add,
+                     ics.tablewidget_regions):
+            item.setEnabled(True)
+
+        if get_selected_row(ics.tablewidget_regions) is not None:
+            for item in (ics.scrollarea_detail,
+                         ics.toolbutton_delete):
+                item.setEnabled(True)
+
+
     def ics_add_regions(self):
+        # Interactively add regions to define ICs
         ui = self.ui
         ics = ui.initial_conditions
         rp = self.regions_popup
+        self.ics_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
         if not selections:
             return
-        for s in selections:
-            self.region_dict[s]['available'] = False # Mark as in-use
+        self.ics_add_regions_1(selections) # Indices will be assigned
+
+    def ics_add_regions_1(self, selections, indices=None):
+        # Used by both interactive and load-time add-region handlers
+        ui = self.ui
+        if self.ics_region_dict is None:
+            self.ics_region_dict = ui.regions.get_region_dict()
+
+        ics = ui.initial_conditions
         tw = ics.tablewidget_regions
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
@@ -92,18 +127,26 @@ class ICS(object):
             return item
         item = make_item('+'.join(selections))
 
-        indices = []
-        for region_name in selections:
-            i = self.ics_find_index()
-            indices.append(i)
-            self.ics[i] = {'region': region_name}
-            region_data = self.region_dict.get(region_name)
+        if indices is None:
+            indices = [None] * len(selections)
+        else:
+            assert len(selections) == len(indices)
+
+        for (i, region_name) in enumerate(selections):
+            idx = indices[i]
+            if idx is None:
+                idx = self.ics_find_index()
+                indices[i] = idx
+            self.ics[idx] = {'region': region_name}
+            region_data = self.ics_region_dict.get(region_name)
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
-            self.ics_set_region_keys(region_name, i, region_data)
+            self.ics_set_region_keys(region_name, idx, region_data)
 
-        item.setData(UserRole, (indices, selections))
+            self.ics_region_dict[region_name]['available'] = False # Mark as in-use
+
+        item.setData(UserRole, (tuple(indices), tuple(selections)))
 
         self.ics_current_regions = selections
         self.ics_current_indices = indices
@@ -131,31 +174,37 @@ class ICS(object):
                 self.unset_keyword(key, args=args)
         # TODO: fix any resulting holes in index sequence!
 
+        print("CURRENT", self.ics_current_regions, self.ics_current_indices)
         for r in self.ics_current_regions:
-            if r in self.region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
-                self.region_dict[r]['available'] = True
+            print("R=", r)
+            if r in self.ics_region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
+                self.ics_region_dict[r]['available'] = True
+
 
         for i in self.ics_current_indices:
             del self.ics[i]
+        print("ICS", self.ics)
+        print("\n\n\n")
 
         self.ics_current_regions = []
         self.ics_current_indices = []
 
-        tw.itemSelectionChanged.disconnect() #self.handle_ics_region_selection)
-        tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
+        #tw.itemSelectionChanged.disconnect() #self.handle_ics_region_selection)
+        #tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
         tw.removeRow(row)
-        tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
+        #tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
 
         # Hack to force update when removing last row
-        row = get_selected_row(tw)
-        if row is None:
-            self.handle_ics_region_selection()
+        #row = get_selected_row(tw)
+        #if row is None:
+        #    self.handle_ics_region_selection()
 
 
     def handle_ics_region_selection(self):
         ics = self.ui.initial_conditions
         table = ics.tablewidget_regions
         row = get_selected_row(table)
+        print("\n HANDLE", row, "\n")
         if row is None:
             indices = []
             regions = []
@@ -230,16 +279,39 @@ class ICS(object):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[index])
 
+    def reset_ics(self):
+        pass
+        # TODO implement
+        # Clear regions table, remove solids tabs, disable all inputs
+
+    def ics_to_str(self):
+        ics = self.ui.initial_conditions
+        tw = ics.tablewidget_regions
+        data = [tw.item(i,0).data(UserRole)
+                for i in range(tw.rowCount())]
+        return JSONEncoder().encode(data)
+
+    def setup_ics_from_str(self, s):
+        if not s:
+            return
+        data = JSONDecoder().decode(s)
+        for (indices, regions) in data:
+            self.ics_add_regions_1(regions, indices)
+
 
     def setup_ics(self):
         ui = self.ui
         ics = ui.initial_conditions
-        self.region_dict = ui.regions.get_region_dict()
+        # Grab a fresh copy, may have been updated
+        self.ics_region_dict = ui.regions.get_region_dict()
+
         # Mark regions which are in use (this gets reset each time we get here)
+        print("\n\n\n")
         for (i, data) in self.ics.items():
+            print("HERE", i, data)
             region = data['region']
-            if region in self.region_dict:
-                self.region_dict[region]['available'] = False
+            if region in self.ics_region_dict:
+                self.ics_region_dict[region]['available'] = False
 
         self.fixup_ics_table(ics.tablewidget_regions)
         row = get_selected_row(ics.tablewidget_regions)
@@ -308,6 +380,8 @@ class ICS(object):
     def update_ics_fluid_mass_fraction_total(self):
         if not self.ics_current_indices:
             return
+        if not self.fluid_species:
+            return
         IC0 = self.ics_current_indices[0]
         ics = self.ui.initial_conditions
         key = 'ic_x_g'
@@ -330,11 +404,17 @@ class ICS(object):
         ics = self.ui.initial_conditions
         table = ics.tablewidget_fluid_mass_fraction
         table.clearContents()
+        table.setRowCount(0)
         if not (self.fluid_species and self.ics_current_indices):
-            table.hide()
+            self.fixup_ics_table(table)
+            table.setEnabled(False)
             return
+        table.setEnabled(True)
         IC0 = self.ics_current_indices[0]
-        nrows = len(self.fluid_species) + 1 # TOTAL row at end
+        if self.fluid_species:
+            nrows = len(self.fluid_species) + 1 # TOTAL row at end
+        else:
+            nrows = 0
         table.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
@@ -355,11 +435,16 @@ class ICS(object):
                 le.updateValue(key, val)
             le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
             table.setCellWidget(row, 1, le)
-
-        table.setItem(nrows-1, 0, make_item("TOTAL")) # bold?
-        table.setItem(nrows-1, 1, make_item(''))
-        self.update_ics_fluid_mass_fraction_total()
+        if self.fluid_species:
+            table.setItem(nrows-1, 0, make_item("TOTAL")) # bold?
+            table.setItem(nrows-1, 1, make_item(''))
+            self.update_ics_fluid_mass_fraction_total()
         self.fixup_ics_table(table)
+
+
+    def ics_extract_regions(self):
+        pass
+
 
     def setup_ics_fluid_tab(self):
         #Fluid (tab)
@@ -370,11 +455,12 @@ class ICS(object):
             return
 
         tw = ics.tablewidget_fluid_mass_fraction
-        if not self.fluid_species:
-            tw.hide() #?
-        else:
-            tw.show()
+        enabled = (self.fluid_species is not None)
+        if not enabled:
+            tw.clearContents()
+            tw.setRowCount(0)
         self.fixup_ics_table(tw)
+        tw.setEnabled(enabled)
 
         if not self.ics_current_indices:
             # Nothing selected.  What can we do? (Clear out all lineedits?)
@@ -578,5 +664,3 @@ Scalar (tab) - Tab only available if scalar equations are solved
  scalar equations specified by the user.
 
 """
-
-# TODO :  write "reset_ics" method
