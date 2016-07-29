@@ -31,6 +31,7 @@ def get_dict_from_pidfile(pid_filename):
                 key, value = line.strip().split('=')
                 if key in SUPPORTED_PYMFIXPID_FIELDS:
                     pid_dict[key] = value
+                    log.debug('PIDFILE %s = %s' % (key, value))
             except ValueError:
                 continue
         return pid_dict
@@ -56,6 +57,8 @@ class PymfixAPI(QNetworkAccessManager):
                         'post': super(PymfixAPI, self).post,
                         'delete': super(PymfixAPI, self).deleteResource}
         self.pid_contents = get_dict_from_pidfile(self.pidfile)
+        for k, v in self.pid_contents.iteritems():
+            setattr(self, k, v)
         self.requests = set()
         self.default_response_handler = response_handler
         self.api_available = False
@@ -71,29 +74,33 @@ class PymfixAPI(QNetworkAccessManager):
         self.get('status', handlers={'response': response, 'error': error})
 
     def api_request(self, method, endpoint, data=None, handlers={}):
-        req = QNetworkRequest(QUrl('%s/%s' % (self.pid_contents['url'], endpoint)))
+        url = self.pid_contents.get('url')
+        token = self.pid_contents.get('token')
+        req = QNetworkRequest(QUrl('%s/%s' % (url, endpoint)))
         method = str(method).lower()
         method = self.methods[method]
         request_id = str(uuid.uuid4())
         self.requests.add(request_id)
-        log.debug("API request: method=%s endpoint=%s data=%s id=%s; %s" % \
-          (method, endpoint, data, request_id, req))
+        for param in (('url', url),
+                      ('endpoint', endpoint),
+                      ('token', token),
+                      ('data', data),
+                      ('method', method)):
+            log.debug("API request %s: %s=%s" % \
+              (request_id, param[0], param[1]))
         # authentication header
-        if self.pid_contents['token']:
-            (name, value) = self.pid_contents['token'].split(':')
+        if token:
+            (name, value) = token.split(':')
             req.setRawHeader(name, value)
-        if data is not None:
-            request_object = method(req, data)
-        else:
-            request_object = method(req)
+        request_object = method(req) if data == None else method(req, data)
         # connect response and error handlers
         response_handler = handlers.get('response', self.default_response_handler)
         request_object.finished.connect(
-            make_callback(
-              self.slot_api_response, request_id, request_object, response_handler))
+          make_callback(
+            self.slot_api_response, request_id, request_object, response_handler))
         request_object.error.connect(
-            make_callback(
-              self.slot_protocol_error, request_id, request_object))
+          make_callback(
+            self.slot_protocol_error, request_id, request_object))
         return request_id
 
     def slot_api_response(self, request_id, response_object, signal):
@@ -115,9 +122,7 @@ class PymfixAPI(QNetworkAccessManager):
             json.loads(response_json)
         except (TypeError, ValueError) as e:
             log.debug("API response parsing error")
-            log.debug('raw headers: %s' % response_object.rawHeaderList())
-            log.debug(response_json)
-            error_code = None
+            log.debug('response headers: %s' % response_object.rawHeaderList())
             error_code = response_object.error()
             error_desc = "API response could not be parsed"
             response_json = json.dumps(
@@ -127,6 +132,7 @@ class PymfixAPI(QNetworkAccessManager):
                                  "error_code": error_code,
                                  "error_desc": error_desc,
                                  "raw_api_message":  response.data()}})
+            log.debug("processed response:\n%s", json.loads(response_json))
         finally:
             self.requests.discard(request_id)
             response_object.close()
@@ -229,11 +235,11 @@ class JobManager(QObject):
 
     def try_to_connect(self, pidfile):
         if self.job:
-            log.debug('try_to_connect reusing %s', self.job)
+            log.debug('JobManager reusing %s', self.job)
         elif os.path.isfile(pidfile):
             self.reset_api_error_count()
             self.job = Job(pidfile)
-            log.debug('try_to_connect created %s', self.job)
+            log.debug('JobManager created %s', self.job)
             self.job.sig_job_exit.connect(self.teardown_job)
 
             # TODO? handle with signal so this can be managed in gui
@@ -535,7 +541,7 @@ class Job(QObject):
             self.status = {}
         self.pretty_status = pprint.PrettyPrinter(indent=4,
             width=50).pformat(self.status)
-        log.debug(self.pretty_status)
+        log.debug('status:\n%s' % self.pretty_status)
         self.sig_update_job_status.emit()
         # remove once state handlers process API response directly:
         self.sig_change_run_state.emit()
