@@ -746,3 +746,6 @@ class BCS(object):
 
     def bcs_update_region(self, name, data):
         pass
+
+    def reset_bcs(self):
+        pass
