@@ -845,7 +845,7 @@ MODULE output_man
       ilistsize=SUM(rcount)
 
       allocate( ALL_LIST_I(ilistsize))
-      allocate( GLOBAL_NP_I(IMIN1:ilistsize))
+      allocate( GLOBAL_NP_I(IMIN1:ilistsize+1))
       allocate( ALL_NP_I(ilistsize))
 
 ! Gather list of I and NP, each processor has its own list
@@ -896,7 +896,7 @@ MODULE output_man
       jlistsize=SUM(rcount)
 
       allocate( ALL_LIST_J(jlistsize))
-      allocate( GLOBAL_NP_J(JMIN1:jlistsize))
+      allocate( GLOBAL_NP_J(JMIN1:jlistsize+1))
       allocate( ALL_NP_J(jlistsize))
 
 ! Gather list of J and NP, each processor has its own list
@@ -951,7 +951,7 @@ MODULE output_man
       Klistsize=SUM(rcount)
 
       allocate( ALL_LIST_K(Klistsize))
-      allocate( GLOBAL_NP_K(KMIN1:Klistsize))
+      allocate( GLOBAL_NP_K(KMIN1:Klistsize+1))
       allocate( ALL_NP_K(Klistsize))
 
 ! Gather list of K and NP, each processor has its own list
@@ -1118,7 +1118,10 @@ MODULE output_man
 
 
 ! Now save the new partition to gridmap.dat before restarting
-         IF(ADJUST_PARTITION) THEN
+!         IF(ADJUST_PARTITION) THEN
+! JFD: Temporarily disabling DLB for debuging purposes
+         ADJUST_PARTITION = .TRUE.
+         IF(.FALSE.) THEN
             OPEN(UNIT=777, FILE='gridmap.dat')
             WRITE (777, 1005) DLB_NODESI(BEST_PARTITION), &
                               DLB_NODESJ(BEST_PARTITION), &

@@ -9,7 +9,7 @@ MODULE REINIT
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REINITIALIZE(filename)
+      SUBROUTINE REINITIALIZE(filename, IER)
 
       use run, only: REINITIALIZING
 
@@ -19,7 +19,7 @@ MODULE REINIT
 
       CHARACTER(LEN=*), intent(in) :: filename
 
-      INTEGER :: IER
+      INTEGER, INTENT(OUT) :: IER
 
       IER = 0
       REINITIALIZING = .TRUE.
@@ -33,18 +33,6 @@ MODULE REINIT
       CALL REINITIALIZE0(IER)
 
       REINITIALIZING = .FALSE.
-
-      IF(IER /=0) THEN
-         WRITE(ERR_MSG, 2000)
-      ELSE
-         WRITE(ERR_MSG, 2100)
-      ENDIF
-
- 2000 FORMAT(2/70('*'),/'Reinitialization failed!',/'Correct all ',    &
-         'reported errors and reinitialize again.',/70('*'))
-
- 2100 FORMAT(2/,70('*'),/'Successfully reinitialized!'/70('*'))
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
       END SUBROUTINE REINITIALIZE

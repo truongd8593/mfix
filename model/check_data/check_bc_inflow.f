@@ -460,17 +460,26 @@
 ! will complain and cause MFIX to exit.
       IF(BC_U_G(BCV) == UNDEFINED) THEN
          BC_U_G(BCV) = ZERO
-         IF(.NOT.NO_I) WRITE(ERR_MSG, 1300) trim(iVar('BC_U_g',BCV))
+         IF(.NOT.NO_I) THEN
+            WRITE(ERR_MSG, 1300) trim(iVar('BC_U_g',BCV))
+            CALL FLUSH_ERR_MSG
+         ENDIF
       ENDIF
 
       IF(BC_V_G(BCV) == UNDEFINED) THEN
          BC_V_G(BCV) = ZERO
-         IF(.NOT.NO_J) WRITE(ERR_MSG, 1300) trim(iVar('BC_V_g',BCV))
+         IF(.NOT.NO_J) THEN
+            WRITE(ERR_MSG, 1300) trim(iVar('BC_V_g',BCV))
+            CALL FLUSH_ERR_MSG
+         ENDIF
       ENDIF
 
       IF(BC_W_G(BCV) == UNDEFINED) THEN
          BC_W_G(BCV) = ZERO
-         IF(.NOT.NO_K) WRITE(ERR_MSG, 1300) trim(iVar('BC_W_g',BCV))
+         IF(.NOT.NO_K) THEN
+            WRITE(ERR_MSG, 1300) trim(iVar('BC_W_g',BCV))
+            CALL FLUSH_ERR_MSG
+         ENDIF
       ENDIF
 
       DO M = 1, M_TOT
@@ -481,20 +490,26 @@
          ELSE
             IF(BC_U_S(BCV,M) == UNDEFINED) THEN
                BC_U_S(BCV,M) = ZERO
-               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_I) &
+               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_I) THEN
                   WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M))
+                  CALL FLUSH_ERR_MSG
+               ENDIF
             ENDIF
 
             IF(BC_V_S(BCV,M) == UNDEFINED) THEN
                BC_V_S(BCV,M) = ZERO
-               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_J) &
+               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_J) THEN
                   WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M))
+                  CALL FLUSH_ERR_MSG
+               ENDIF
             ENDIF
 
             IF(BC_W_S(BCV,M) == UNDEFINED) THEN
                BC_W_S(BCV,M) = ZERO
-               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_K) &
+               IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_K) THEN
                   WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M))
+                  CALL FLUSH_ERR_MSG
+               ENDIF
             ENDIF
          ENDIF
       ENDDO

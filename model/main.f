@@ -768,12 +768,13 @@
       call backup_res
    end subroutine do_backupres
 
-   subroutine do_reinit(filename)
+   subroutine do_reinit(filename, ier)
       use reinit, only: reinitialize
       implicit none
       ! filename of uploaded mfix.dat file
       character(len=*), intent(in) :: filename
-      call reinitialize(filename)
+      integer, intent(out) :: ier
+      call reinitialize(filename, ier)
    end subroutine do_reinit
 
    subroutine do_abort

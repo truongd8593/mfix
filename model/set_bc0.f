@@ -805,7 +805,7 @@ SUBROUTINE SET_BC0
       INTEGER :: l2, u2
       INTEGER :: l1, u1
 
-      LOGICAL, parameter :: setDBG = .FALSE.
+      LOGICAL, parameter :: setDBG = .TRUE.
       LOGICAL :: dFlag
       INTEGER :: iErr
 
