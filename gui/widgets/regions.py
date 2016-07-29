@@ -77,6 +77,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.combobox_regions_type.addItems([
             'point', 'XY-plane', 'XZ-plane', 'YZ-plane', 'box', 'STL', ])
+
+        # Where is 'help_text' used?
         self.combobox_regions_type.help_text = 'The type of region.'
         self.lineedit_regions_name.help_text = 'Name of the region. Used througout the gui to reference the region'
         self.combobox_stl_shape.help_text = 'Shape to be used to select facets.'
@@ -264,6 +266,11 @@ class RegionsWidget(QtWidgets.QWidget):
         self.lineedit_regions_name.updateValue(None, name)
         self.combobox_regions_type.updateValue(None, data['type'])
 
+        # Don't change type of in-use region
+        #self.combobox_regions_type.setEnabled(not self.check_region_in_use(name))
+        # TODO (Should we just disable deletion and renaming too, rather than
+        #  intercept and warn?)
+
         for widget, value in zip(self.extent_lineedits[::2], data['from']):
             widget.updateValue(None, value)
 
@@ -289,6 +296,13 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[rows[-1]]
         key = value.keys()[0]
 
+        if self.check_region_in_use(name):
+            if key == 'type':
+                # Should we just disable the combobox?
+                self.parent.message(text="Region %s is in use" % name)
+                widget.setCurrentText('box') # TODO: might not be a box!
+                return
+
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
@@ -310,6 +324,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         elif 'name' in key and name != value.values()[0]:
             # Don't allow rename of a region in active use (ICs, etc)
+            # Should we just disable the lineedit?
             if self.check_region_in_use(name):
                 self.parent.message(text="Region %s is in use" % name)
                 widget.setText(name)
