@@ -13,6 +13,8 @@ stages:
 build_job:
   stage: build
   script:
+    - pip install packaging
+    - git clean -fdx
     - make -C gui ../mfix
   artifacts:
     paths:

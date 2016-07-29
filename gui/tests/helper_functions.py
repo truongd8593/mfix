@@ -37,7 +37,12 @@ class TestQApplication(unittest.TestCase):
     def tearDown(self):
         '''Deletes the reference owned by self'''
         if hasattr(self, 'mfix'):
-            self.mfix.close()
+            mfix = getattr(self, 'mfix')
+            if hasattr(mfix.run_dialog, 'mfixproc'):
+                mfix.run_dialog.mfixproc.kill()
+            if hasattr(mfix.job_manager, 'job'):
+                mfix.job_manager.job = None
+            mfix.close()
 #       self.qapp.deleteLater() # JMW - causes segfault inbetween gui tests
         unittest.TestCase.tearDown(self)
 
