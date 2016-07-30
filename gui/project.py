@@ -1268,7 +1268,7 @@ class Project(object):
                     # TODO - is there more to do here?
                     keywordobject = Keyword(key, value, args=args,
                                             comment=keywordComment)
-                    log.debug("Created keyword object for",
+                    log.debug("Created keyword object for %s" %
                               format_key_with_args(key, args))
             # Solid Species
             elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
