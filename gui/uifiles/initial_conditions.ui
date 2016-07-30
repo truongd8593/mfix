@@ -153,6 +153,12 @@
           </property>
           <item row="0" column="0">
            <widget class="QPushButton" name="pushbutton_fluid">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Fluid</string>
             </property>
@@ -209,17 +215,32 @@
         </item>
         <item row="1" column="0" colspan="2">
          <widget class="QStackedWidget" name="stackedwidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
           <widget class="QWidget" name="page_fluid">
            <layout class="QVBoxLayout" name="verticalLayout_4">
             <item>
              <widget class="QGroupBox" name="groupbox_parameters">
               <property name="title">
-               <string>Parameters</string>
+               <string/>
               </property>
               <property name="flat">
                <bool>true</bool>
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_ic_v_g">
                  <property name="text">
@@ -366,7 +387,7 @@
                 <number>0</number>
                </property>
                <property name="bottomMargin">
-                <number>0</number>
+                <number>5</number>
                </property>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -496,6 +517,24 @@
                </item>
               </layout>
              </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_solid"/>
+          <widget class="QWidget" name="page_scalar">
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <spacer name="spacer_scalar">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
