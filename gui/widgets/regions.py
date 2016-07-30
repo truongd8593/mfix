@@ -171,6 +171,8 @@ class RegionsWidget(QtWidgets.QWidget):
         # so there's some complexity with default args/
         if name in (None, True, False): # 'clicked' signal arguments
             name =  'R_1' # shorter than 'region', better than 'new'
+        # Would be nice to name a box 'box', plane 'plane', etc but
+        #  they all start as 'box' and then are changed to new type
 
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))

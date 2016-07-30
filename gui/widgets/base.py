@@ -195,7 +195,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self._keysToIgnore = [QtCore.Qt.Key_Enter,
                               QtCore.Qt.Key_Return,
                               QtCore.Qt.Key_Escape,
-                              QtCore.Qt.Key_Tab]
+                              QtCore.Qt.Key_Tab] # shouldn't TAB take us to next field?
 
     @classmethod
     def value_error(self, text):
