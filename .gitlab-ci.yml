@@ -10,32 +10,32 @@ stages:
   - build
   - test
 
-build_job:
-  stage: build
-  script:
-    - pip install packaging
-    - git clean -fdx
-    - make -C gui ../mfix
-  artifacts:
-    paths:
-    - mfix
-  only:
-    - branches
-  tags:
-    - docker
-    - anaconda
-    - python2
+# build_job:
+#   stage: build
+#   script:
+#     - pip install packaging
+#     - git clean -fdx
+#     - make -C gui ../mfix
+#   artifacts:
+#     paths:
+#     - mfix
+#   only:
+#     - branches
+#   tags:
+#     - docker
+#     - anaconda
+#     - python2
 
-test_job:
-  stage: test
-  script:
-    - make -C gui test
-  only:
-    - branches
-  tags:
-    - docker
-    - anaconda
-    - python2
+# test_job:
+#   stage: test
+#   script:
+#     - make -C gui test
+#   only:
+#     - branches
+#   tags:
+#     - docker
+#     - anaconda
+#     - python2
 
 build_job3:
   stage: build
