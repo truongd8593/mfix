@@ -13,8 +13,6 @@ It is important that widgets emit the 'value_updated" signal only on user
 interaction, not a programmatic setValue/setText/setChecked/etc, otherwise
 a notification loop is possible """
 
-
-# Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from collections import OrderedDict
@@ -39,7 +37,7 @@ class ProjectManager(Project):
     def __init__(self, gui=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
         self.gui = gui
-        self.keyword_and_args_to_widget = {}
+        self.keyword_and_args_to_widget = {} # rename
         self.registered_keywords = set()
         self.solver = SINGLE  # default
 
@@ -462,8 +460,9 @@ class ProjectManager(Project):
         args=['*'], widget recieves updates regardless of args.
 
         Special args:  'S' will be substituted with the currently selected
-                        solids phase (the one the user is editing)  """
-
+                        solids phase (the one the user is editing)
+                       '*' : described above
+                       'IC' : current initial condition index """
 
         if args is None:
             args = []
