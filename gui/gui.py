@@ -772,8 +772,14 @@ class MfixGui(QtWidgets.QMainWindow,
         tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
-        assert len(items) == 1
-        return items[0]
+        if len(items) == 1:
+            return items[0]
+        else:
+            for (long,short) in self.nav_labels:
+                if (item_name == long):
+                    items = tree.findItems(short, flags, 0)
+                    if len(items) == 1:
+                        return items[0]
 
 
     # Top-level "Model"
@@ -878,6 +884,7 @@ class MfixGui(QtWidgets.QMainWindow,
         m.combobox_turbulence_model.setEnabled(enabled and
                         m.checkbox_enable_turbulence.isChecked())
 
+        self.ics_update_enabled()
 
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
@@ -969,6 +976,9 @@ class MfixGui(QtWidgets.QMainWindow,
         while i <= prev_nscalar:
             self.unset_keyword("phase4scalar", i)
             i += 1
+
+        # ICs enabled/disabled depends on nscalar
+        self.ics_update_enabled()
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
@@ -2152,10 +2162,10 @@ class MfixGui(QtWidgets.QMainWindow,
             if key == 'geometry':
                 self.vtkwidget.geometry_from_str(val)
             if key == 'ic_regions':
-                self.setup_ics_from_str(val)
+                self.ics_regions_from_str(val)
             # Add more here
 
-        # hack, copy ordered dict to modify keys w/o losing order
+        # Copy ordered dict to modify keys w/o losing order
         if solids_phase_names:
             s = OrderedDict()
             for (i, (k, v)) in enumerate(self.solids.items(), 1):
