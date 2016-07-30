@@ -57,7 +57,7 @@ class PymfixAPI(QNetworkAccessManager):
                         'post': super(PymfixAPI, self).post,
                         'delete': super(PymfixAPI, self).deleteResource}
         self.pid_contents = get_dict_from_pidfile(self.pidfile)
-        for k, v in self.pid_contents.iteritems():
+        for k, v in self.pid_contents.items():
             setattr(self, k, v)
         self.requests = set()
         self.default_response_handler = response_handler
@@ -91,16 +91,14 @@ class PymfixAPI(QNetworkAccessManager):
         # authentication header
         if token:
             (name, value) = token.split(':')
-            req.setRawHeader(name, value)
+            req.setRawHeader(bytearray(name, 'utf-8'), bytearray(value, 'utf-8'))
         request_object = method(req) if data == None else method(req, data)
         # connect response and error handlers
         response_handler = handlers.get('response', self.default_response_handler)
         request_object.finished.connect(
-          make_callback(
-            self.slot_api_response, request_id, request_object, response_handler))
+            lambda slot=self.slot_api_response, request_id=request_id, request_object=request_object, response_handler=response_handler: slot(request_id, request_object, response_handler))
         request_object.error.connect(
-          make_callback(
-            self.slot_protocol_error, request_id, request_object))
+            lambda slot=self.slot_protocol_error, request_id=request_id, request_object=request_object: slot(request_id, request_object))
         return request_id
 
     def slot_api_response(self, request_id, response_object, signal):
@@ -118,7 +116,7 @@ class PymfixAPI(QNetworkAccessManager):
             return
         try:
             response = response_object.readAll()
-            response_json = response.data()
+            response_json = response.data().decode('utf-8')
             json.loads(response_json)
         except (TypeError, ValueError) as e:
             log.debug("API response parsing error")
@@ -572,4 +570,3 @@ class Job(QObject):
         self.handle_status(request_id, response_string)
         self.sig_change_run_state.emit()
         self.cleanup_and_exit()
-
