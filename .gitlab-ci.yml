@@ -36,3 +36,24 @@ test_job:
     - docker
     - anaconda
     - python2
+
+build_job3:
+  stage: build
+  script:
+    - make -C gui ../mfix
+  artifacts:
+    paths:
+    - mfix
+  only:
+    - branches
+  tags:
+    - python3
+
+test_job3:
+  stage: test
+  script:
+    - make -C gui test
+  only:
+    - branches
+  tags:
+    - python3
