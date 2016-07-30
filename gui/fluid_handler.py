@@ -69,7 +69,7 @@ class FluidHandler(object):
         ui = self.ui
         f = ui.fluid
 
-        f.lineedit_fluid_phase_name.default_value = "Fluid"
+        f.lineedit_fluid_phase_name.default_value = self.fluid_phase_name = "Fluid"
         self.saved_fluid_species = None
         self.init_fluid_default_models()
         # Handle a number of cases which are essentially the same
@@ -202,6 +202,7 @@ class FluidHandler(object):
         self.set_fluid_phase_name(value)
 
     def set_fluid_phase_name(self, value):
+        self.fluid_phase_name = value
         if value != self.ui.fluid.lineedit_fluid_phase_name.text():
             self.ui.fluid.lineedit_fluid_phase_name.setText(value)
         self.project.mfix_gui_comments['fluid_phase_name'] = value
@@ -346,6 +347,7 @@ class FluidHandler(object):
 
     def reset_fluids(self):
         # Set all fluid-related state back to default
+        self.fluid_phase_name = 'Fluid'
         self.saved_fluid_species = None
         self.fluid_species.clear()
         self.init_fluid_default_models()
