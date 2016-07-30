@@ -374,6 +374,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
+        # ICs enabled/disabled depends on number of solids
+        self.ics_update_enabled()
+
     def handle_solids_table_selection(self):
         s = self.ui.solids
         tw = s.tablewidget_solids
@@ -639,6 +642,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if row is None:
             self.handle_solids_table_selection()
             # Hack to force update after deleting last row
+            # FIXME this is not working
+
+        # ICs enabled/disabled depends on nscalar
+        self.ics_update_enabled()
 
     def enable_solids_scalar_eq(self, state):
         spinbox = self.ui.solids.spinbox_nscalar_eq

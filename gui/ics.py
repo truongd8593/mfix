@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-
-"""
-Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
-for the described model. This section relies on regions named in the Regions section.
-"""
-
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLineEdit, QPushButton
+from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
 
 UserRole = QtCore.Qt.UserRole
 
@@ -24,6 +18,9 @@ from tools.general import (set_item_noedit, set_item_enabled,
 from json import JSONDecoder, JSONEncoder
 
 class ICS(object):
+    # Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
+    # for the described model. This section relies on regions named in the Regions section.
+
     def init_ics(self):
         ui = self.ui
         ics = ui.initial_conditions
@@ -212,11 +209,12 @@ class ICS(object):
         if not enabled:
             # Clear
             for widget in widget_iter(ics.scrollarea_detail):
-                if isinstance(widget, QLineEdit):
+                if isinstance(widget, QLineEdit): # Does this work for LineEdit?
                     widget.setText('')
             return
 
-        self.setup_ics()
+        self.setup_ics() # This will reinitialize all widgets in current tab
+
 
     def fixup_ics_table(self, tw, stretch_column=0):
         hv = QtWidgets.QHeaderView
@@ -246,18 +244,40 @@ class ICS(object):
         tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
+    def ics_update_enabled(self):
+        # If there are no solids, no scalar equations, and the fluid solver is disabled,
+        # then we have no input tabs on the ICs pane, so disable it completely
+        disabled = (self.fluid_solver_disabled
+                    and self.project.get_value('nscalar',0)==0
+                    and len(self.solids) == 0)
+
+        self.find_navigation_tree_item("Initial Conditions").setDisabled(disabled)
+
+
     def ics_change_tab(self, tab, solid):
-        # TODO: use animate_stacked_widget here
         ics = self.ui.initial_conditions
         self.ics_current_tab = tab
         self.ics_current_solid = solid
         index = (0 if tab==0
                  else len(self.solids)+1 if tab==2
                  else solid)
-
         ics.tab_box.removeWidget(ics.tab_underline)
         ics.tab_box.addWidget(ics.tab_underline, 1, index)
+
+        # TODO Boldface the selected button and normal-face the others
+
+        #update tab contents
+        if tab==0:
+            self.setup_ics_fluid_tab()
+        elif tab==1:
+            self.setup_ics_solid_tab(self.ics_current_solid)
+        elif tab==2:
+            self.setup_ics_scalar_tab()
+
         # change stackedwidget contents
+        # TODO: use animate_stacked_widget here
+        ics.stackedwidget.setCurrentIndex(tab)
+
 
     def ics_check_region_in_use(self, region):
         return any(data.get('region')==region for data in self.ics.values())
@@ -286,7 +306,7 @@ class ICS(object):
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
 
-    def setup_ics_from_str(self, s):
+    def ics_regions_from_str(self, s):
         if not s:
             return
         data = JSONDecoder().decode(s)
@@ -316,17 +336,17 @@ class ICS(object):
         #no input is required from the user.
         #Fluid tab - Unavailable if the fluid phase was disabled.
 
+        ics.pushbutton_fluid.setText(self.fluid_phase_name)
         ics.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.ics_current_tab == 0: # Don't stay on disabled tab
                 self.ics_change_tab(*(1, 1) if self.solids else (2,0))
 
-        # Create tabs for each solid phase
+        #Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
         n_cols = ics.tab_box.columnCount()
         # Clear out the old ones
-        # Minimum 2, for fluid & scalar
-        if n_cols > 2:
+        if n_cols > 2:   # minimum 2, for fluid & scalar
             for i in range(n_cols-2, 0, -1):
                 item = ics.tab_box.itemAtPosition(0, i)
                 if not item:
@@ -338,8 +358,7 @@ class ICS(object):
                     continue
                 ics.tab_box.removeWidget(widget)
                 widget.setParent(None)
-                widget.deleteLater() # ? Needed
-
+                widget.deleteLater()
         # And make new ones
         for (i, solid_name) in enumerate(self.solids.keys()):
             b = QPushButton(text=solid_name)
@@ -349,15 +368,30 @@ class ICS(object):
             b.setFlat(True)
             b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i+1))
             ics.tab_box.addWidget(b, 0, i+1)
+        # Don't stay on disabled tab TODO
+        # if self.ics_current_tab == 1 and ...
 
-        # Move the 'Scalar' button to the right of all solids
+
+        #Scalar (tab) - Tab only available if scalar equations are solved
+        # Move the 'Scalar' button to the right of all solids, if needed
         b = ics.pushbutton_scalar
-        b.setEnabled(False)
-        ics.tab_box.removeWidget(b)
-        ics.tab_box.addWidget(b, 0, 1+len(self.solids))
+        nscalar = self.project.get_value('nscalar', 0)
+        enabled = (nscalar > 0)
+        b.setEnabled(enabled)
+        if len(self.solids) > 0:
+            ics.tab_box.removeWidget(b)
+            ics.tab_box.addWidget(b, 0, 1+len(self.solids))
+        # Don't stay on a disabled tab TODO
+        # if self.ics_current_tab == 2 and nscalar == 0:
+        #
 
+        # Set up the current tab
         if self.ics_current_tab == 0:
             self.setup_ics_fluid_tab()
+        elif self.ics_current_tab == 1:
+            self.setup_ics_solid_tab(self.ics_current_solid)
+        elif self.ics_current_tab == 2:
+            self.setup_ics_scalar_tab()
 
 
     def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
@@ -471,7 +505,6 @@ class ICS(object):
             else:
                 self.warn("initial condition %s: could not match defined region %s" %
                           (ic.ind, extent))
-
 
 
     def setup_ics_fluid_tab(self):
@@ -610,6 +643,7 @@ class ICS(object):
         # DEFAULT value of 0.0
         key = 'ic_gama_rg'
         default = 0.0
+        enabled = bool(energy_eq)
         setup_key_widget(key, default, enabled)
 
         #Advanced: Define radiation temperature
@@ -618,77 +652,128 @@ class ICS(object):
         # DEFAULT value of 293.15
         key = 'ic_t_rg'
         default =  293.15
+        enabled = bool(energy_eq)
         setup_key_widget(key, default, enabled)
 
-"""
-UI
+    def setup_ics_solid_tab(self, solid):
+        # Solid-# (tab) - Rename tab to user provided solids name.
 
-Each solid phase will have its own tab. The tab name should be the name of the solid
-Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
-inputs a 'collapsible list' may make navigation easier.
+        #Group tab inputs by equation type (e.g., momentum, energy, species).
+        # Making the grouped inputs a 'collapsible list' may make navigation easier.
 
-Solid-# (tab) - Rename tab to user provided solids name.
- Define volume fraction (required)
-  Specification always available
-  Sets keyword IC_EP_S(#,#)
-  DEFAULT value of (0.0, 1 - SUM)
+        #Define volume fraction (required)
+        # Specification always available
+        # Sets keyword IC_EP_S(#,#)
+        # DEFAULT value of (0.0, 1 - SUM)
 
- Define temperature
-  Specification always available
-  Input required when solving energy equations
-  Sets keyword IC_T_S(#,#)
-  DEFAULT value of 293.15
+        #Define temperature
+        # Specification always available
+        # Input required when solving energy equations
+        # Sets keyword IC_T_S(#,#)
+        # DEFAULT value of 293.15
 
- Define velocity components (required)
-  Specification always available
-  Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
-  DEFAULT value of 0.0
+        #Define velocity components (required)
+        # Specification always available
+        # Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
+        # DEFAULT value of 0.0
 
- Define pressure (optional)
-  Specification only available for SOLIDS_MODEL(#)='TFM'
-  Sets keyword IC_P_s(#,#)
-  DEFAULT of 0.0
+        #Define pressure (optional)
+        # Specification only available for SOLIDS_MODEL(#)='TFM'
+        # Sets keyword IC_P_s(#,#)
+        # DEFAULT of 0.0
 
- Define granular temperature
-  Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
-  formulation viscous stress model (see continuous solids model section) or for
-  SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
-  Sets keyword IC_THETA_M(#,#)
-  DEFAULT value of 0.0
+        #Define granular temperature
+        # Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
+        # formulation viscous stress model (see continuous solids model section) or for
+        # SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
+        # Sets keyword IC_THETA_M(#,#)
+        # DEFAULT value of 0.0
 
- Define particles per parcel
-  Specification only available for SOLIDS_MODEL(#)='PIC'
-  Sets keyword IC_PIC_CONST_STATWT(#,#)
-  DEFAULT value of 10.0
+        #Define particles per parcel
+        # Specification only available for SOLIDS_MODEL(#)='PIC'
+        # Sets keyword IC_PIC_CONST_STATWT(#,#)
+        # DEFAULT value of 10.0
 
- Select species and set mass fractions (table format)
- Specification always available
- Input required for species equations
- Drop down menu of solids species
- DEFAULT - last defined species has mass fraction of 1.0
- Error check: mass fractions must sum to one
+        #Select species and set mass fractions (table format)
+        # Specification always available
+        # Input required for species equations
+        # Drop down menu of solids species
+        # DEFAULT - last defined species has mass fraction of 1.0
+        # Error check: mass fractions must sum to one
 
-Advanced: Option to enable fitting DES particles to region
- Option only available for DEM solids
- Sets keyword: IC_DES_FIT_TO_REGION
- Disabled [DEFAULT]
+        #Advanced: Option to enable fitting DES particles to region
+        # Option only available for DEM solids
+        # Sets keyword: IC_DES_FIT_TO_REGION
+        # Disabled [DEFAULT]
 
-Advanced: Define radiation coefficient
- Specification only available when solving energy equations
- Sets keyword IC_GAMA_S(#,#)
- DEFAULT value of 0.0
+        #Advanced: Define radiation coefficient
+        # Specification only available when solving energy equations
+        # Sets keyword IC_GAMA_S(#,#)
+        # DEFAULT value of 0.0
 
-Advanced: Define radiation temperature
- Specification only available when solving energy equations
- Sets keyword IC_T_RS(#,#)
- DEFAULT value of 293.15
+        #Advanced: Define radiation temperature
+        # Specification only available when solving energy equations
+        # Sets keyword IC_T_RS(#,#)
+        # DEFAULT value of 293.15
 
-Scalar (tab) - Tab only available if scalar equations are solved
- Define initial scalar value
- Sets keyword IC_SCALAR(#,#)
- DEFAULT value of 0.0
- Note that this tab should only be available if scalar equations are being solved.
- Furthermore, the number of scalars requiring input comes from the number of
- scalar equations specified by the user.
+        pass
 
-"""
+
+
+    def setup_ics_scalar_tab(self):
+        #Note that this tab should only be available if scalar equations are being solved.
+        #Furthermore, the number of scalars requiring input comes from the number of
+        #scalar equations specified by the user.
+
+        if not self.ics_current_indices:
+            return # No selection
+        IC0 = self.ics_current_indices[0]
+
+        ics = self.ui.initial_conditions
+        nscalar = self.project.get_value('nscalar', 0)
+
+        page =  ics.page_scalar
+        layout = page.layout()
+
+        spacer = None
+        for i in range(layout.rowCount()-1, -1, -1):
+            for j in (1,0):
+                item = layout.itemAtPosition(i,j)
+                if not item:
+                    continue
+                widget = item.widget()
+                if not widget:
+                    spacer = item
+                    continue
+                if widget.objectName().startswith('lineedit_keyword'):
+                    self.project.unregister_widget(widget)
+                widget.setParent(None)
+                widget.deleteLater()
+
+        if spacer:
+            layout.removeItem(spacer)
+
+        #Define initial scalar value
+        #Sets keyword IC_SCALAR(#,#)
+        #DEFAULT value of 0.0
+        key = 'ic_scalar'
+        for i in range(nscalar):
+            print("i=", i)
+            label = QLabel('Scalar %s' % (i+1))
+            layout.addWidget(label, i, 0)
+            le = LineEdit()
+            le.key = key
+            le.setdtype('dp')
+            le.default_value = 0.0
+
+            self.project.register_widget(le, [key], ['IC', (i+1)])
+            val = self.project.get_value(key, args=[IC0, (i+1)])
+            if val is None:
+                val = 0.0
+                for ic in self.ics_current_indices:
+                    self.update_keyword(key, val, args=[ic, (i+1)])
+
+            layout.addWidget(le, i, 1)
+
+        if spacer:
+            layout.addItem(spacer, i+1, 0)
