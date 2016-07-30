@@ -186,7 +186,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.context_menu = self.createStandardContextMenu
 
         self._separators = ['*', '**', '/', '-', '+', ' ']
-        self._completer_model = QStringListModel(PARAMETER_DICT.keys())
+        self._completer_model = QStringListModel(list(PARAMETER_DICT.keys()))
         self._completer = QtWidgets.QCompleter()
         self._completer.setModel(self._completer_model)
         self._completer.setWidget(self)
