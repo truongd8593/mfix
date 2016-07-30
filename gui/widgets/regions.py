@@ -165,12 +165,13 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
-    def new_region(self, name='new', extents=None, rtype=None, defer_update=False):
+    def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
         # This is used both as a signal callback and an API function,
         # so there's some complexity with default args/
-        if name in (True, False): # 'clicked' signal arguments
-            name = 'new'
+        if name in (None, True, False): # 'clicked' signal arguments
+            name =  'R_1' # shorter than 'region', better than 'new'
+
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
 
