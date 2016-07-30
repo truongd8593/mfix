@@ -264,7 +264,12 @@ class ICS(object):
         ics.tab_box.removeWidget(ics.tab_underline)
         ics.tab_box.addWidget(ics.tab_underline, 1, index)
 
-        # TODO Boldface the selected button and normal-face the others
+        for i in range(ics.tab_box.columnCount()):
+            item = ics.tab_box.itemAtPosition(0, i)
+            widget = item.widget()
+            font = widget.font()
+            font.setBold(i==index)
+            widget.setFont(font)
 
         #update tab contents
         if tab==0:
@@ -350,11 +355,9 @@ class ICS(object):
             for i in range(n_cols-2, 0, -1):
                 item = ics.tab_box.itemAtPosition(0, i)
                 if not item:
-                    self.error('no item found at position %s' % i)
                     continue
                 widget = item.widget()
                 if not widget:
-                    self.error('item not a widget at position %s' % i)
                     continue
                 ics.tab_box.removeWidget(widget)
                 widget.setParent(None)
