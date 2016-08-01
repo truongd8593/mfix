@@ -144,12 +144,6 @@ class ProjectManager(Project):
             keytuple_BC = tuple([key]+['BC'])
             widgets_BC = self.keyword_and_args_to_widget.get(keytuple_BC)
 
-        # widgets_S
-        # IC
-        # IC_
-        # IC_
-        #
-
         if widgets_to_update == None:
             widgets_to_update = []
         if widgets_star:
