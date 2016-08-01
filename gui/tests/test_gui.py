@@ -166,6 +166,10 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
         waitFor(500)
 
+        rr = range(self.mfix.run_dialog.combobox_mfix_exe.count())
+        self.assertTrue([self.mfix.run_dialog.combobox_mfix_exe.itemText(i) for i in rr])
+        self.mfix.run_dialog.combobox_mfix_exe.setEditText(mfix_exe)
+
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
