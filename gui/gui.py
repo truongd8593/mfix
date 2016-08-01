@@ -979,6 +979,10 @@ class MfixGui(QtWidgets.QMainWindow,
                 i += 1
         while i <= prev_nscalar:
             self.unset_keyword("phase4scalar", i)
+            # TODO implement a way to unset keys with wildcard
+            for ic in range(1, 1+len(self.ics)):
+                self.unset_keyword('ic_scalar', args=[ic, i])
+
             i += 1
 
         # ICs enabled/disabled depends on nscalar
