@@ -749,7 +749,7 @@ class ICS(object):
                 if not widget:
                     spacer = item
                     continue
-                if widget.objectName().startswith('lineedit_keyword'):
+                if isinstance(widget, LineEdit):
                     self.project.unregister_widget(widget)
                 widget.setParent(None)
                 widget.deleteLater()

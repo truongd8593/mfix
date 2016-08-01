@@ -159,7 +159,6 @@ class ProjectManager(Project):
 
 
     def _args_match(self, args, target):
-        print("MATCH", args, "   ", target)
         for (a,b) in zip(args, target):
             if a=='*':
                 continue # matches everything
@@ -514,13 +513,13 @@ class ProjectManager(Project):
 
         updates = self.registered_widgets.get(widgets.key,[])
         updates = [(a,w) for (a,w) in updates if w != widget]
+
         if updates:
             self.registered_widgets[key] = updates
         else:
             del self.registered_widgets[key]
             if key in self.registered_keywords:
                 self.registered_keywords.remove(key)
-
 
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.
