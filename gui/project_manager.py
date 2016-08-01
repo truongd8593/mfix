@@ -160,24 +160,32 @@ class ProjectManager(Project):
 
     def _args_match(self, args, target):
         for (a,b) in zip(args, target):
+
             if a=='*':
                 continue # matches everything
-            if a=='S' and b != self.gui.solids_current_phase:
+
+            elif a=='S':
+                if b != self.gui.solids_current_phase:
+                    return False
+
+            elif a=='P':
+                if b != self.ics_current_solid:
+                    return False
+
+            elif a=='IC':
+                if  b not in self.gui.ics_current_indices:
+                    return False
+
+            elif a != b:
                 return False
-            else:
-                continue
-            if a=='IC' and b not in self.gui.ics_current_indices:
-                return False
-            else:
-                continue
-            if a != b:
-                return False
+
         return True
 
     def _expand_args(self, args_in):
         return [(self.solids_current_phase if a == 'S'
-                else self.ics_current_indices if a == 'IC'
-                else a)
+                 else self.ics_current_solid if a == 'P'
+                 else self.ics_current_indices if a == 'IC'
+                 else a)
                 for a in args_in]
 
 
@@ -511,7 +519,7 @@ class ProjectManager(Project):
         key = widget.key
         widget.disconnect()
 
-        updates = self.registered_widgets.get(widgets.key,[])
+        updates = self.registered_widgets.get(widget.key,[])
         updates = [(a,w) for (a,w) in updates if w != widget]
 
         if updates:

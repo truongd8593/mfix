@@ -762,7 +762,6 @@ class ICS(object):
         #DEFAULT value of 0.0
         key = 'ic_scalar'
         for i in range(nscalar):
-            print("i=", i)
             label = QLabel('Scalar %s' % (i+1))
             layout.addWidget(label, i, 0)
             le = LineEdit()
@@ -777,7 +776,7 @@ class ICS(object):
                 val = 0.0
                 for ic in self.ics_current_indices:
                     self.update_keyword(key, val, args=[ic, (i+1)])
-
+            le.setText(str(val))
             layout.addWidget(le, i, 1)
 
         if spacer:
