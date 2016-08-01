@@ -2181,12 +2181,11 @@ class MfixGui(QtWidgets.QMainWindow,
         # fluid momentum and species eq. handled by _keyword_ widget
         # fluid scalar eq
         nscalar = self.project.get_value('nscalar', default=0)
-
         self.fluid_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) == 0)
         self.solids_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
-
+        self.ui.fluid.spinbox_nscalar_eq.setValue(self.fluid_nscalar_eq)
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
 

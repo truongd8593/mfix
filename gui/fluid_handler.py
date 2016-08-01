@@ -44,6 +44,7 @@ class FluidHandler(object):
             item.setEnabled(enabled and (self.fluid_diffusion_model == CONSTANT))
 
     def enable_fluid_scalar_eq(self, state):
+        self.ui.fluid.checkbox_enable_scalar_eq.setChecked(state)
         spinbox = self.ui.fluid.spinbox_nscalar_eq
         spinbox.setEnabled(state)
         if state:
