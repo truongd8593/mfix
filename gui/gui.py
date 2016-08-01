@@ -466,9 +466,12 @@ class MfixGui(QtWidgets.QMainWindow,
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
         self.status_message("No project - open existing MFIX project or create a new one")
+        self.change_pane("model setup")
 
     def reset(self):
         """Reset all widgets to default values and set GUI to blank-slate"""
+
+        self.change_pane("model setup") # Default pane
 
         # ---- parameters which do not map neatly to keywords
         self.fluid_nscalar_eq = 0
@@ -502,6 +505,7 @@ class MfixGui(QtWidgets.QMainWindow,
         PARAMETER_DICT.update(base_parameters)
 
         self.unsaved_flag = False
+
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
         #self.set_project_file(None)  - do we want to do this?
 
