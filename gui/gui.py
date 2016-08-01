@@ -1174,25 +1174,19 @@ class MfixGui(QtWidgets.QMainWindow,
         """set current pane to the one matching 'name'.  Must be the long
         (non-abbreviated) navigation label.  Case-insensitive"""
 
-        log.debug('change_pane(%s)' % name)
         items = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
-        log.debug('change_pane found %d items' % len(items))
         if not items: # Nav menu may be in abbreviated mode.  Might be better
             # to identify navigation items by something other than text, since
             # that can change (long/short) and is possibly non-unique (eg "points")
             for (long, short) in self.nav_labels:
-                if name == long:
-                    log.debug("change_pane trying short name %s" % short)
+                if name.lower() == long.lower():
                     items = self.ui.treewidget_navigation.findItems(
                         short,
                         Qt.MatchFixedString | Qt.MatchRecursive, 0)
-                    log.debug('change_pane found %d items' % len(items))
                     if items:
                         break
-        for item in items:
-            log.debug('change_pane got %s' % item.text(0))
         assert len(items) == 1
         self.ui.treewidget_navigation.setCurrentItem(items[0])
         self.navigation_changed()
