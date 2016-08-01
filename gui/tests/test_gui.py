@@ -170,7 +170,7 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
             waitFor(100)
-        # print("PAUSED")
+        print("PAUSED")
 
         # Job is running/paused:
         #   run button disabled
@@ -189,7 +189,7 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
         while self.mfix.ui.run.button_run_mfix.isEnabled():
             waitFor(100)
-        # print("UNPAUSED")
+        print("UNPAUSED")
 
         # Job is running/UNpaused:
         #   run button disabled
@@ -211,7 +211,7 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
         while self.mfix.ui.run.button_run_mfix.text() != "Resume":
             waitFor(100)
-        # print("STOPPED")
+        print("STOPPED")
 
         # Job is stopped/resumable:
         #   run button enabled with text 'Resume'
@@ -242,7 +242,7 @@ class MfixGuiTests(TestQApplication):
 
         while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
             waitFor(100)
-        # print("RESUMED")
+        print("RESUMED")
 
         self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
         self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
