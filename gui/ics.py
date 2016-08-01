@@ -465,6 +465,7 @@ class ICS(object):
             val = self.project.get_value(key, args=[IC0, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
+            # register_widget ? TODO FIXME
             le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
             table.setCellWidget(row, 1, le)
         if self.fluid_species:

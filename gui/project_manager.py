@@ -37,7 +37,9 @@ class ProjectManager(Project):
     def __init__(self, gui=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
         self.gui = gui
-        self.keyword_and_args_to_widget = {} # rename
+
+        self.registered_widgets = {} # Map: key: keyword,  val:  list of [(args,widget),...]
+
         self.registered_keywords = set()
         self.solver = SINGLE  # default
 
@@ -122,42 +124,12 @@ class ProjectManager(Project):
             traceback.print_exception(*sys.exc_info())
             return
 
-        keytuple = tuple([key]+args)
-        widgets_to_update = self.keyword_and_args_to_widget.get(keytuple)
-        keytuple_star = tuple([key]+['*'])
-        widgets_star = self.keyword_and_args_to_widget.get(keytuple_star)
-        widgets_S = None
-        widgets_IC = None
-        widgets_BC = None
-
-        if args and self.gui.solids_current_phase == args[0]:
-            keytuple_S = tuple([key]+['S'])
-            widgets_S = self.keyword_and_args_to_widget.get(keytuple_S)
-
-
-        # TODO: factor out common code here
-        if args and args[0] in self.gui.ics_current_indices:
-            keytuple_IC = tuple([key]+['IC'])
-            widgets_IC = self.keyword_and_args_to_widget.get(keytuple_IC)
-
-        if args and args[0] in self.gui.bcs_current_indices:
-            keytuple_BC = tuple([key]+['BC'])
-            widgets_BC = self.keyword_and_args_to_widget.get(keytuple_BC)
-
-        if widgets_to_update == None:
-            widgets_to_update = []
-        if widgets_star:
-            widgets_to_update.extend(widgets_star)
-        if widgets_S:
-            widgets_to_update.extend(widgets_S)
-        if widgets_IC:
-            widgets_to_update.extend(widgets_IC)
-        if widgets_BC:
-            widgets_to_update.extend(widgets_BC)
-
-        for w in widgets_to_update:
+        updates = self.registered_widgets.get(key,[])
+        for (a, w) in updates:
+            if not self._args_match(a, args):
+                continue
             try:
-                w.updateValue(key, updatedValue, args)
+                w.updateValue(key, updatedValue, self._expand_args(args))
                 if isinstance(w, LineEdit):
                     w.text_changed_flag = False # Needed?
             except Exception as e:
@@ -180,9 +152,35 @@ class ProjectManager(Project):
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace")
 
-        # 'Paramaters' are user-defined variables
+        # 'Parameters' are user-defined variables
+        # TODO: methods to handle these ('is_param', etc)
         if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
             self.gui.update_parameters([key.replace('length', 'max')])
+
+
+    def _args_match(self, args, target):
+        print("MATCH", args, "   ", target)
+        for (a,b) in zip(args, target):
+            if a=='*':
+                continue # matches everything
+            if a=='S' and b != self.gui.solids_current_phase:
+                return False
+            else:
+                continue
+            if a=='IC' and b not in self.gui.ics_current_indices:
+                return False
+            else:
+                continue
+            if a != b:
+                return False
+        return True
+
+    def _expand_args(self, args_in):
+        return [(self.solids_current_phase if a == 'S'
+                else self.ics_current_indices if a == 'IC'
+                else a)
+                for a in args_in]
+
 
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
@@ -498,12 +496,11 @@ class ProjectManager(Project):
             keys, args))
 
         # add widget to dictionary of widgets to update
-        d = self.keyword_and_args_to_widget
+        d = self.registered_widgets
         for key in keys:
-            keytuple = tuple([key]+args)
-            if keytuple not in d:
-                d[keytuple] = []
-            d[keytuple].append(widget)
+            if key not in d:
+                d[key] = []
+            d[key].append((args, widget))
 
         if hasattr(widget, 'value_updated'):
             widget.value_updated.connect(self.submit_change)
@@ -512,15 +509,18 @@ class ProjectManager(Project):
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
     def unregister_widget(self, widget):
+        key = widget.key
         widget.disconnect()
 
-        #for key in widget.keys:
-        #    self.registered_keywords.discard(key) #possibly overzealous
+        updates = self.registered_widgets.get(widgets.key,[])
+        updates = [(a,w) for (a,w) in updates if w != widget]
+        if updates:
+            self.registered_widgets[key] = updates
+        else:
+            del self.registered_widgets[key]
+            if key in self.registered_keywords:
+                self.registered_keywords.remove(key)
 
-        # This is inefficient
-        for (k,v) in self.keyword_and_args_to_widget.items():
-            if widget in v:
-                v.remove(widget)
 
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.
