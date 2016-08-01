@@ -137,8 +137,6 @@ class MfixGuiTests(TestQApplication):
 
     def test_run_mfix(self):
 
-        self.skipTest('this disturbs test_save_as ?? - also this test is broken')
-
         #  FIXME:  The run dialog will get the exe from the ~/.config/MFIX file,
         #   need to control the QSettings for running tests
         mfix_exe = os.path.join(self.mfix_home, "mfix")
@@ -150,25 +148,22 @@ class MfixGuiTests(TestQApplication):
         self.open_tree_item("run")
         waitFor(1000)
 
-        runbuttons = (self.mfix.ui.run.button_run_mfix,
-                      self.mfix.ui.toolbutton_run_mfix)
-        stopbuttons = (self.mfix.ui.run.button_stop_mfix,
-                       self.mfix.ui.toolbutton_stop_mfix)
-
         # For thoroughness, we could loop over stobutton[0] and stopbutton[1].
         #  But we trust that they are connected to the same slot
 
         # Before running, button says 'Run'
         #self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
-        self.assertTrue(all (b.isEnabled() for b in runbuttons))
-        self.assertTrue(all (not b.isEnabled() for b in stopbuttons))
-        self.assertEqual(runbuttons[0].text(), "Run")
-        self.assertEqual(runbuttons[1].toolTip(), "Run MFIX")
+        self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Run")
+        self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Run MFIX")
+        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
+        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
+        self.assertTrue(self.mfix.ui.run.button_run_mfix.isVisible())
+        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
 
         # Open run dialog
         # FIXME: This will hang if run dialog doesn't find exe.
         # Need to dismiss the warning message box.
-        QTest.mouseClick(runbuttons[0], Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
         waitFor(500)
 
         # Press OK in run dialog
@@ -189,7 +184,7 @@ class MfixGuiTests(TestQApplication):
         self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
 
         # Unpause
-        QTest.mouseClick(runbuttons[0], Qt.LeftButton)
+        QTest.mouseClick(self.mfix.run_dialog.run.button_run_mfix, Qt.LeftButton)
         waitFor(500)
 
         # Job is running/UNpaused:
@@ -205,11 +200,11 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(self.mfix.ui.run.button_run_mfix.isVisible())
         self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
 
-        #self.assertEqual(runbuttons[0].text(), "Pause")
-        #self.assertEqual(runbuttons[1].toolTip(), "Stop MFIX")
+        #self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Pause")
+        #self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Stop MFIX")
 
         # Stop run, button should say 'Resume'
-        QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
         waitFor(2000)
 
         # Job is stopped/resumable:
@@ -223,12 +218,12 @@ class MfixGuiTests(TestQApplication):
         self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
 
-        self.assertEqual(runbuttons[0].text(), "Resume")
-        self.assertEqual(runbuttons[1].toolTip(), "Resume previous MFIX run")
+        self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Resume")
+        self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Resume previous MFIX run")
 
         # Resume
         # FIXME: isn't this the same ui state as running/paused?
-        QTest.mouseClick(runbuttons[0], Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
         waitFor(100)
 
         # Press OK in run dialog
@@ -242,7 +237,7 @@ class MfixGuiTests(TestQApplication):
         waitFor(300)
 
         # Stop mfix, check for log.
-        QTest.mouseClick(stopbuttons[0], Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
         waitFor(100)
         logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
         self.assertTrue(os.path.exists(logfile))
