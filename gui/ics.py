@@ -766,10 +766,11 @@ class ICS(object):
             layout.addWidget(label, i, 0)
             le = LineEdit()
             le.key = key
-            le.setdtype('dp')
+            le.args = ['IC', (i+1)]
+            self.project.register_widget(le, [key], ['IC', (i+1)])
+            le.setdtype('d')
             le.default_value = 0.0
 
-            self.project.register_widget(le, [key], ['IC', (i+1)])
             val = self.project.get_value(key, args=[IC0, (i+1)])
             if val is None:
                 val = 0.0
