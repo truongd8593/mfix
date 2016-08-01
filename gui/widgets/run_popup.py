@@ -200,7 +200,7 @@ class RunPopup(QDialog):
                 return False
             self.parent.update_keyword('run_type', 'restart_2')
 
-        self.project.writeDatFile(self.parent.get_project_file())
+        self.parent.save_project()
         self.parent.update_source_view()
         self.close()
         self.parent.signal_update_runbuttons.emit('')

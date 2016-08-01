@@ -35,7 +35,7 @@ def get_dict_from_pidfile(pid_filename):
                 except ValueError:
                     continue
             return pid_dict
-    except (IOError, OSError):
+    except (FileNotFoundError, IOError, OSError):
         log.exception('PID could not be opened: %s', pid_filename)
     return {}
 
@@ -127,7 +127,7 @@ class PymfixAPI(QNetworkAccessManager):
                                "internal_api_error": {
                                  "error_code": error_code,
                                  "error_desc": error_desc,
-                                 "raw_api_message":  response.data()}})
+                                 "raw_api_message":  str(response.data())}})
             log.debug("processed response:\n%s", json.loads(response_json))
         finally:
             self.requests.discard(request_id)
