@@ -851,9 +851,9 @@ class MfixGui(QtWidgets.QMainWindow,
         model.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
-        ui.fluid.checkbox_enable_scalar_eq.setEnabled(enabled)
-        ui.fluid.spinbox_nscalar_eq.setEnabled(enabled
-                    and self.ui.fluid.checkbox_enable_scalar_eq.isChecked())
+        enabled = (self.fluid_nscalar_eq > 0)
+        ui.fluid.checkbox_enable_scalar_eq.setChecked(self.fluid_nscalar_eq>0)
+        ui.fluid.spinbox_nscalar_eq.setEnabled(enabled)
 
         # Equiv for solids is done in update_solids_detail_pane
 
