@@ -24,21 +24,19 @@ def get_dict_from_pidfile(pid_filename):
 
     try:
         pid_dict = {}
-        pidfile = open(pid_filename)
-        log.debug('opened pid file %s', os.path.basename(pid_filename))
-        for line in pidfile.readlines():
-            try:
-                key, value = line.strip().split('=')
-                if key in SUPPORTED_PYMFIXPID_FIELDS:
-                    pid_dict[key] = value
-                    log.debug('PIDFILE %s = %s' % (key, value))
-            except ValueError:
-                continue
-        return pid_dict
+        with open(pid_filename) as pidfile:
+            log.debug('opened pid file %s', os.path.basename(pid_filename))
+            for line in pidfile.readlines():
+                try:
+                    key, value = line.strip().split('=')
+                    if key in SUPPORTED_PYMFIXPID_FIELDS:
+                        pid_dict[key] = value
+                        log.debug('PIDFILE %s = %s' % (key, value))
+                except ValueError:
+                    continue
+            return pid_dict
     except (IOError, OSError):
-        log.debug('PID could not be opened: %s', pid_filename)
-    except Exception:
-        log.exception('Unhandled exception while opening pid file')
+        log.exception('PID could not be opened: %s', pid_filename)
     return {}
 
 
