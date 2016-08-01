@@ -2328,6 +2328,7 @@ def main(args):
     gui.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
+    # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     if not quit_after_loading:
