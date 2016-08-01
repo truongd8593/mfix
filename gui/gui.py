@@ -1547,7 +1547,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if lower.startswith("error:"):
             log.error(logmsg[6:])
         elif lower.startswith("warning:"):
-            log.warn(logmsg[8:])
+            log.warning(logmsg[8:])
         elif lower.startswith("info:"):
             log.info(logmsg[5:])
             color='blue'
