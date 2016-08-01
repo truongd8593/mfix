@@ -144,6 +144,12 @@ class ProjectManager(Project):
             keytuple_BC = tuple([key]+['BC'])
             widgets_BC = self.keyword_and_args_to_widget.get(keytuple_BC)
 
+        # widgets_S
+        # IC
+        # IC_
+        # IC_
+        #
+
         if widgets_to_update == None:
             widgets_to_update = []
         if widgets_star:
@@ -180,6 +186,7 @@ class ProjectManager(Project):
             self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
                                     font="Monospace")
 
+        # 'Paramaters' are user-defined variables
         if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
             self.gui.update_parameters([key.replace('length', 'max')])
 
