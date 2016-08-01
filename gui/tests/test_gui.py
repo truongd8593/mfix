@@ -146,14 +146,12 @@ class MfixGuiTests(TestQApplication):
             self.skipTest("Only valid when %s is present" % mfix_exe)
 
         self.open_tree_item("run")
-        waitFor(1000)
-
-        # For thoroughness, we could loop over stobutton[0] and stopbutton[1].
-        #  But we trust that they are connected to the same slot
+        while self.mfix.ui.run.button_run_mfix.text() != "Run":
+            waitFor(100)
+        print("NOT RUNNING")
 
         # Before running, button says 'Run'
         #self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
-        self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Run")
         self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Run MFIX")
         self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
         self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
@@ -167,8 +165,10 @@ class MfixGuiTests(TestQApplication):
         waitFor(500)
 
         rr = range(self.mfix.run_dialog.combobox_mfix_exe.count())
-        self.assertTrue([self.mfix.run_dialog.combobox_mfix_exe.itemText(i) for i in rr])
+        self.assertTrue(mfix_exe in [self.mfix.run_dialog.combobox_mfix_exe.itemText(i) for i in rr])
         self.mfix.run_dialog.combobox_mfix_exe.setEditText(mfix_exe)
+        self.mfix.run_dialog.handle_exe_change()
+        self.mfix.run_dialog.mfix_exe = mfix_exe
 
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
