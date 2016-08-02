@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
+    <width>392</width>
     <height>748</height>
    </rect>
   </property>
@@ -72,19 +72,6 @@
     </layout>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>46</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBox_options">
      <property name="title">
       <string>Options</string>
@@ -93,6 +80,18 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_disable_fluid_solver">
         <property name="text">
@@ -100,43 +99,12 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="1" column="0">
        <widget class="CheckBox" name="checkbox_keyword_energy_eq">
         <property name="text">
          <string>Enable Energy Equations</string>
         </property>
        </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label_mu_gmax">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Maximum viscosity</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="LineEdit" name="lineedit_keyword_mu_gmax">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_mu_gmax_units">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Pa.s</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
       <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_enable_turbulence">
@@ -172,21 +140,39 @@
         </item>
        </widget>
       </item>
+      <item row="4" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_mu_gmax">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Maximum viscosity</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="LineEdit" name="lineedit_keyword_mu_gmax">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_mu_gmax_units">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Pa.s</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_9">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item>
     <widget class="QGroupBox" name="groupbox_interphase">
@@ -197,6 +183,18 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_drag_model">
         <property name="text">
@@ -233,19 +231,6 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_10">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QGroupBox" name="groupBox_advanced">
      <property name="title">
       <string>Advanced</string>
@@ -254,6 +239,18 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_26">
         <property name="layoutDirection">
@@ -321,6 +318,18 @@
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -365,17 +374,14 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_3">
+    <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>120</height>
+       <height>40</height>
       </size>
      </property>
     </spacer>
