@@ -90,19 +90,12 @@
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_disable_fluid_solver">
         <property name="text">
          <string>Disable Fluid Solver (Pure Granular Flow)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="CheckBox" name="checkbox_keyword_energy_eq">
-        <property name="text">
-         <string>Enable Energy Equations</string>
         </property>
        </widget>
       </item>
@@ -171,6 +164,13 @@
         </item>
        </layout>
       </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="CheckBox" name="checkbox_keyword_energy_eq">
+        <property name="text">
+         <string>Enable Energy Equations</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -193,7 +193,7 @@
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_drag_model">
@@ -249,7 +249,7 @@
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_26">
@@ -328,7 +328,7 @@
           <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>5</number>
          </property>
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
@@ -394,11 +394,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ComboBox</class>
-   <extends>QComboBox</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
    <header>widgets/base</header>
@@ -406,6 +401,11 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>

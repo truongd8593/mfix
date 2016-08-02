@@ -169,7 +169,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 return Widget()
 
             for cls in (Ui_geometry, Ui_mesh, RegionsWidget,
-                        Ui_model, Ui_fluid, Ui_solids,
+                        Ui_model_setup, Ui_fluid, Ui_solids,
                         Ui_initial_conditions,
                         Ui_numerics, Ui_output, Ui_vtk,
                         Ui_monitors, Ui_post_processing, Ui_run):
@@ -179,7 +179,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 else:
                     widget = make_widget(cls)
                     name = cls.__name__.split('_',1)[1] # part after "Ui_"
-                # assign 'self.ui.model', etc
+                # assign 'self.ui.model_setup', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
                 self.ui.panes.append(widget)
@@ -192,7 +192,7 @@ class MfixGui(QtWidgets.QMainWindow,
             assert self is not self.ui
 
             for name in ('geometry', 'mesh', 'regions',
-                         'model', 'fluid', 'solids',
+                         'model_setup', 'fluid', 'solids',
                          'initial_conditions',
                          'numerics',
                          'output', 'vtk','monitors', 'run'):
@@ -795,8 +795,8 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         ui = self.ui
-        model = ui.model
-        cb = model.combobox_solver
+        m = ui.model_setup
+        cb = m.combobox_solver
         if cb.currentIndex != solver:
             cb.setCurrentIndex(solver)
 
@@ -841,15 +841,15 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
-        interphase = model.groupbox_interphase
+        interphase = m.groupbox_interphase
         interphase.setEnabled(enabled)
 
         # TFM only
         # use a groupbox here, instead of accessing combobox + label?
         enabled = (solver == TFM)
-        model.combobox_subgrid_model.setEnabled(enabled)
-        model.label_subgrid_model.setEnabled(enabled)
-        model.groupbox_subgrid_params.setEnabled(enabled and
+        m.combobox_subgrid_model.setEnabled(enabled)
+        m.label_subgrid_model.setEnabled(enabled)
+        m.groupbox_subgrid_params.setEnabled(enabled and
                                                        self.subgrid_model > 0)
 
         enabled = (self.fluid_nscalar_eq > 0)
@@ -879,7 +879,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def disable_fluid_solver(self, disabled):
         self.fluid_solver_disabled = disabled
-        m = self.ui.model
+        m = self.ui.model_setup
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
         item.setDisabled(disabled)
@@ -897,7 +897,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # TODO : move this to fluids_handler, like the way we do for solids
 
-        self.ui.model.checkbox_keyword_energy_eq.setChecked(enabled)
+        self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(enabled)
 
         # It might not be necessary to do all this - will the fluid or
         # solid panes get updated before we display them?
@@ -926,11 +926,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_subgrid_model(self, index):
         self.subgrid_model = index
-        groupbox_subgrid_params = self.ui.model.groupbox_subgrid_params
+        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
     def enable_turbulence(self, enabled):
-        m = self.ui.model
+        m = self.ui.model_setup
         if enabled != m.checkbox_enable_turbulence.isChecked():
             m.checkbox_enable_turbulence.setChecked(enabled)
         for item in (m.label_turbulence_model,
@@ -946,7 +946,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
 
     def set_turbulence_model(self, val):
-        m = self.ui.model
+        m = self.ui.model_setup
         cb = m.combobox_turbulence_model
         if cb.currentIndex() != val:
             cb.setCurrentIndex(val)
@@ -993,7 +993,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def __setup_other_widgets(self): # rename/refactor
         """setup widgets which are not tied to a simple keyword"""
         ui = self.ui
-        model = ui.model
+        model = ui.model_setup
         combobox = model.combobox_solver
         # activated: Only on user action, avoid recursive calls in set_solver
         combobox.activated.connect(self.set_solver)
@@ -1209,9 +1209,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 text=long
                 break
         text = '_'.join(text.lower().split(' '))
-
-        if text=='model_setup':
-            text='model' # oops, inconsistent
 
         current_index = 0
         for i in range(self.ui.stackedWidgetTaskPane.count()):
