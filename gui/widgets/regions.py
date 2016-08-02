@@ -297,7 +297,7 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         if name is None:
             name = list(data.keys())[rows[-1]]
-        key = value.keys()[0]
+        key = list(value.keys())[0]
 
         if self.check_region_in_use(name):
             if key == 'type':
