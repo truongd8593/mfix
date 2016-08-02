@@ -34,3 +34,5 @@ dist
 gui/uifiles/*.py
 install-sh
 tmp.*
+*.swp
+*.nfs*
