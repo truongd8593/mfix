@@ -266,7 +266,11 @@ class ICS(object):
 
         for i in range(ics.tab_box.columnCount()):
             item = ics.tab_box.itemAtPosition(0, i)
+            if not item:
+                continue
             widget = item.widget()
+            if not widget:
+                continue
             font = widget.font()
             font.setBold(i==index)
             widget.setFont(font)
@@ -337,47 +341,56 @@ class ICS(object):
         ics.toolbutton_delete.setEnabled(enabled)
         ics.scrollarea_detail.setEnabled(enabled)
 
-        #Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
-        #no input is required from the user.
-        #Fluid tab - Unavailable if the fluid phase was disabled.
+        #Tabs group initial condition parameters for phases and additional equations.
+        # Tabs are unavailable if no input is required from the user.
 
-        ics.pushbutton_fluid.setText(self.fluid_phase_name)
-        ics.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
+        #Fluid tab - Unavailable if the fluid phase was disabled.
+        b = ics.pushbutton_fluid
+        b.setText(self.fluid_phase_name)
+        b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.ics_current_tab == 0: # Don't stay on disabled tab
                 self.ics_change_tab(*(1, 1) if self.solids else (2,0))
+        font = b.font()
+        font.setBold(self.ics_current_tab == 0)
+        b.setFont(font)
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
         n_cols = ics.tab_box.columnCount()
         # Clear out the old ones
-        if n_cols > 2:   # minimum 2, for fluid & scalar
-            for i in range(n_cols-2, 0, -1):
-                item = ics.tab_box.itemAtPosition(0, i)
-                if not item:
-                    continue
-                widget = item.widget()
-                if not widget:
-                    continue
-                ics.tab_box.removeWidget(widget)
-                widget.setParent(None)
-                widget.deleteLater()
+        for i in range(n_cols-1, 0, -1):
+            item = ics.tab_box.itemAtPosition(0, i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                continue
+            if widget in (ics.pushbutton_fluid, ics.pushbutton_scalar):
+                continue
+            ics.tab_box.removeWidget(widget)
+            widget.setParent(None)
+            widget.deleteLater()
         # And make new ones
-        for (i, solid_name) in enumerate(self.solids.keys()):
+        for (i, solid_name) in enumerate(self.solids.keys(),1):
             b = QPushButton(text=solid_name)
-            b.setEnabled(False)
             w = b.fontMetrics().boundingRect(solid_name).width() + 20
             b.setMaximumWidth(w)
             b.setFlat(True)
-            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i+1))
-            ics.tab_box.addWidget(b, 0, i+1)
+            font = b.font()
+            font.setBold(self.ics_current_tab==1 and i==self.ics_current_solid)
+            b.setFont(font)
+            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i))
+            ics.tab_box.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...
-
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
         b = ics.pushbutton_scalar
+        font = b.font()
+        font.setBold(self.ics_current_tab==2)
+        b.setFont(font)
         nscalar = self.project.get_value('nscalar', 0)
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
@@ -396,6 +409,55 @@ class ICS(object):
         elif self.ics_current_tab == 2:
             self.setup_ics_scalar_tab()
 
+
+    def update_ics_fluid_mass_fraction_table(self):
+        ics = self.ui.initial_conditions
+        table = ics.tablewidget_fluid_mass_fraction
+        table.clearContents()
+        table.setRowCount(0)
+        if not (self.fluid_species and self.ics_current_indices):
+            self.fixup_ics_table(table)
+            table.setEnabled(False)
+            return
+        table.setEnabled(True)
+        IC0 = self.ics_current_indices[0]
+        species = self.fluid_species
+        if species:
+            nrows = len(species) + 1 # 'Total' row at end
+        else:
+            nrows = 0
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        for (row, (species,data)) in enumerate(species.items()):
+            alias = data.get('alias', species) # default to species if no alias
+            table.setItem(row, 0, make_item(alias))
+            # mass fraction
+            le = LineEdit()
+            le.setdtype('dp')
+            le.setValInfo(min=0.0, max=1.0)
+            key = 'ic_x_g'
+            le.key = key
+            le.args = [self.ics_current_indices, row+1]
+            val = self.project.get_value(key, args=[IC0, row+1], default=None)
+            if val is not None:
+                le.updateValue(key, val)
+            # register_widget ? TODO FIXME
+            le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
+            table.setCellWidget(row, 1, le)
+        if self.fluid_species:
+            table.setItem(nrows-1, 0, make_item("Total"))
+            table.setItem(nrows-1, 1, make_item(''))
+            for x in (0,1):
+                item = table.item(nrows-1,x)
+                font = item.font()
+                font.setBold(True)
+                item.setFont(font)
+
+            self.update_ics_fluid_mass_fraction_total()
+        self.fixup_ics_table(table)
 
     def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
         ics = self.ui.initial_conditions
@@ -420,7 +482,11 @@ class ICS(object):
         table = ics.tablewidget_fluid_mass_fraction
         total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,i]))
                     for i in range(1,len(self.fluid_species)+1))
-        table.item(table.rowCount()-1, 1).setText(str(total))
+        item =  table.item(table.rowCount()-1, 1)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
+        item.setText(str(total))
 
         # DEFAULT - last defined species has mass fraction of 1.0
         # (only enforce this if no mass fractions are set)
@@ -432,19 +498,22 @@ class ICS(object):
                 self.update_keyword('ic_x_g', 1.0, args=[IC, len(self.fluid_species)]) # Last defined species
             self.update_ics_fluid_mass_fraction_table()
 
-    def update_ics_fluid_mass_fraction_table(self):
+    # TODO DRY out fluid/solids code
+    def update_ics_solids_mass_fraction_table(self):
         ics = self.ui.initial_conditions
-        table = ics.tablewidget_fluid_mass_fraction
+        table = ics.tablewidget_solids_mass_fraction
         table.clearContents()
         table.setRowCount(0)
-        if not (self.fluid_species and self.ics_current_indices):
+        P = self.ics_current_solid
+        if not (P and self.solids_species.get(P) and self.ics_current_indices):
             self.fixup_ics_table(table)
             table.setEnabled(False)
             return
         table.setEnabled(True)
         IC0 = self.ics_current_indices[0]
-        if self.fluid_species:
-            nrows = len(self.fluid_species) + 1 # TOTAL row at end
+        species = self.solids_species[P]
+        if species:
+            nrows = len(species) + 1 # 'Total' row at end
         else:
             nrows = 0
         table.setRowCount(nrows)
@@ -452,27 +521,76 @@ class ICS(object):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-        for (row, (species,data)) in enumerate(self.fluid_species.items()):
+        for (row, (species,data)) in enumerate(species.items()):
             alias = data.get('alias', species) # default to species if no alias
             table.setItem(row, 0, make_item(alias))
             # mass fraction
             le = LineEdit()
             le.setdtype('dp')
             le.setValInfo(min=0.0, max=1.0)
-            key = 'ic_x_g'
+            key = 'ic_x_s'
             le.key = key
-            le.args = [self.ics_current_indices, row+1]
-            val = self.project.get_value(key, args=[IC0, row+1], default=None)
+            le.args = [self.ics_current_indices, P, row+1]
+            val = self.project.get_value(key, args=[IC0, P, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
             # register_widget ? TODO FIXME
-            le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
+            le.value_updated.connect(self.handle_ics_solids_mass_fraction)
             table.setCellWidget(row, 1, le)
-        if self.fluid_species:
-            table.setItem(nrows-1, 0, make_item("TOTAL")) # bold?
+        if species:
+            table.setItem(nrows-1, 0, make_item("Total"))
             table.setItem(nrows-1, 1, make_item(''))
-            self.update_ics_fluid_mass_fraction_total()
+            for x in (0,1):
+                item = table.item(nrows-1, x)
+                font = item.font()
+                font.setBold(True)
+                item.setFont(font)
+            self.update_ics_solids_mass_fraction_total()
         self.fixup_ics_table(table)
+
+    def handle_ics_solids_mass_fraction(self, widget, value_dict, args):
+        ics = self.ui.initial_conditions
+        key = 'ic_x_s'
+        val = value_dict[key]
+        table = ics.tablewidget_fluid_mass_fraction
+        widget.updateValue(key, val)
+        if val == '':
+            self.unset_keyword(key, args=args)
+        else:
+            self.update_keyword(key, val, args=args)
+        self.update_ics_solids_mass_fraction_total()
+
+    def update_ics_solids_mass_fraction_total(self):
+        if not self.ics_current_indices:
+            return
+        IC0 = self.ics_current_indices[0]
+        P = self.ics_current_solid
+        if P is None:
+            return
+        species = self.solids_species.get(P)
+        if not P:
+            return
+        ics = self.ui.initial_conditions
+        key = 'ic_x_s'
+        table = ics.tablewidget_solids_mass_fraction
+        total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,P,i]))
+                    for i in range(1,len(species)+1))
+        item = table.item(table.rowCount()-1, 1)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
+        item.setText(str(total))
+
+        # DEFAULT - last defined species has mass fraction of 1.0
+        # (only enforce this if no mass fractions are set)
+
+        if total == 0.0 and species:
+            for IC in self.ics_current_indices:
+                for i in range(1, len(species)):
+                    self.update_keyword('ic_x_s', 0.0, args=[IC, P, i])
+                self.update_keyword('ic_x_s', 1.0, args=[IC, P, len(species)]) # Last defined species
+            self.update_ics_solids_mass_fraction_table()
+
 
 
     def ics_extract_regions(self):
@@ -581,7 +699,7 @@ class ICS(object):
         default = 293.15
         setup_key_widget(key, default)
 
-        #Define pressure (optional)
+        #Define pressure (optional)  TODO "optional" in label?
         # Specification always available
         # Sets keyword IC_P_g(#)
         # DEFAULT - no input
@@ -639,7 +757,7 @@ class ICS(object):
 
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = bool(energy_eq)
-        ics.groupbox_advanced.setEnabled(enabled)
+        ics.groupbox_fluid_advanced.setEnabled(enabled)
 
         #Advanced: Define radiation coefficient
         # Specification only available when solving energy equations
@@ -659,32 +777,98 @@ class ICS(object):
         enabled = bool(energy_eq)
         setup_key_widget(key, default, enabled)
 
-    def setup_ics_solid_tab(self, solid):
+    def setup_ics_solid_tab(self, P):
         # Solid-# (tab) - Rename tab to user provided solids name.
+
+        # Note, solids phases are numbered 1-N
+
+        self.ics_current_solid = P
+        if P is None: # Nothing to do
+            return
+
+        if not self.ics_current_indices: # No region selected
+            # TODO clear all widgets
+            return
+
+        ics = self.ui.initial_conditions
+        IC0 = self.ics_current_indices[0]
+
+        # Generic!
+        def get_widget(key):
+            # Should we try different 'args' patterns or does IC_P cover all cases?
+            return getattr(ics, 'lineedit_keyword_%s_args_IC_P' % key, None)
+
+        def setup_key_widget(key, default, enabled=True):
+            for name in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_IC_P'):
+                item = getattr(ics, name%key, None)
+                if item:
+                    item.setEnabled(enabled)
+            if not enabled:
+                get_widget(key).setText('')
+                return
+
+            val = self.project.get_value(key, args=[IC0,P])
+            if val is None:
+                val = default
+            if val is not None:
+                for IC in self.ics_current_indices:
+                    self.update_keyword(key, val, args=[IC, P])
+                get_widget(key).updateValue(key, val, args=[IC0,P])
+
 
         #Group tab inputs by equation type (e.g., momentum, energy, species).
         # Making the grouped inputs a 'collapsible list' may make navigation easier.
+        #  (Note - collaspsing not implemented)
 
         #Define volume fraction (required)
         # Specification always available
         # Sets keyword IC_EP_S(#,#)
         # DEFAULT value of (0.0, 1 - SUM)
+        # TODO why do we need 'float' here?
+        key = 'ic_ep_s'
+        if P == len(self.solids): # last one, 1-based index
+            default = 1.0 - sum(float(self.project.get_value(key, default=0, args=[IC0, s]))
+                              for s in range(1, len(self.solids)))
+        else:
+            default = 0.0
+        setup_key_widget(key, default)
+        # TODO make sure these sum to <= 1.  We need to do this
+        #  when the user sets the value, not in setup_tab
+        # Why do we need 'float' ?
+        s = sum(float(self.project.get_value(key, default=0, args=[IC0, s]))
+                for s in range(1, len(self.solids)+1))
+        if s > 1.0:
+            self.warn("volume fractions sum to %s, must be <= 1.0" % s)
 
         #Define temperature
         # Specification always available
         # Input required when solving energy equations
         # Sets keyword IC_T_S(#,#)
         # DEFAULT value of 293.15
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        key = 'ic_t_s'
+        default = 293.15
+        enabled = bool(energy_eq)
+        setup_key_widget(key, default, enabled)
 
         #Define velocity components (required)
         # Specification always available
         # Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
         # DEFAULT value of 0.0
+        for key in 'ic_u_s', 'ic_v_s', 'ic_w_s':
+            setup_key_widget(key, default=0.0)
 
-        #Define pressure (optional)
+        #Define pressure (optional) # TODO 'optional' in label?
         # Specification only available for SOLIDS_MODEL(#)='TFM'
         # Sets keyword IC_P_s(#,#)
         # DEFAULT of 0.0
+        #solids_model = self.project.get_value('solids_model', args=[P])
+        #enabled = (solids_model=='TFM')
+        enabled = False # TODO skipping b/c spec is unclear
+        key = 'ic_p_star'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
 
         #Define granular temperature
         # Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
@@ -692,11 +876,23 @@ class ICS(object):
         # SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
         # Sets keyword IC_THETA_M(#,#)
         # DEFAULT value of 0.0
+        solids_model = self.project.get_value('solids_model', args=[P])
+        kt_type = self.project.get_value('kt_type')
+        enabled = ( (solids_model=='TFM' and kt_type != 'ALGEBRAIC')
+                    or solids_model=='DEM'
+                    or solids_model=='PIC')
+        key = 'ic_theta_m'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
 
         #Define particles per parcel
         # Specification only available for SOLIDS_MODEL(#)='PIC'
         # Sets keyword IC_PIC_CONST_STATWT(#,#)
         # DEFAULT value of 10.0
+        enabled = (solids_model=='PIC')
+        key = 'ic_pic_const_statwt'
+        default = 10.0
+        setup_key_widget(key, default, enabled)
 
         #Select species and set mass fractions (table format)
         # Specification always available
@@ -704,6 +900,7 @@ class ICS(object):
         # Drop down menu of solids species
         # DEFAULT - last defined species has mass fraction of 1.0
         # Error check: mass fractions must sum to one
+        self.update_ics_solids_mass_fraction_table()
 
         #Advanced: Option to enable fitting DES particles to region
         # Option only available for DEM solids
@@ -720,14 +917,14 @@ class ICS(object):
         # Sets keyword IC_T_RS(#,#)
         # DEFAULT value of 293.15
 
-        pass
-
-
 
     def setup_ics_scalar_tab(self):
         #Note that this tab should only be available if scalar equations are being solved.
         #Furthermore, the number of scalars requiring input comes from the number of
         #scalar equations specified by the user.
+
+        # Note - there's a bunch of widget registration/unregistration/creation/deletion
+        # here that could be avoided - we really only need to do this when nscalar changes
 
         if not self.ics_current_indices:
             return # No selection
