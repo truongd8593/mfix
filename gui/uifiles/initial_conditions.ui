@@ -584,6 +584,9 @@
                <property name="bottomMargin">
                 <number>0</number>
                </property>
+               <item row="7" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_npc_args_IC_P"/>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_ic_ep_s">
                  <property name="text">
@@ -591,18 +594,12 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_ep_s_args_IC_P"/>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_ic_t_s">
                  <property name="text">
                   <string>Temperature</string>
                  </property>
                 </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_IC_P"/>
                </item>
                <item row="1" column="2">
                 <widget class="QLabel" name="label_ic_t_s_units">
@@ -618,9 +615,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_IC_P"/>
-               </item>
                <item row="2" column="2">
                 <widget class="QLabel" name="label_ic_u_s_units">
                  <property name="text">
@@ -635,42 +629,12 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_IC_P"/>
-               </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="label_ic_v_s_units">
-                 <property name="text">
-                  <string>m/s</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="label_ic_w_s">
-                 <property name="text">
-                  <string>W-Velocity</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_IC_P"/>
-               </item>
-               <item row="4" column="2">
-                <widget class="QLabel" name="label_ic_w_s_units">
-                 <property name="text">
-                  <string>m/s</string>
-                 </property>
-                </widget>
-               </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="label_ic_p_star">
                  <property name="text">
                   <string>Pressure (optional)</string>
                  </property>
                 </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_IC_P"/>
                </item>
                <item row="5" column="2">
                 <widget class="QLabel" name="label_ic_p_star_units">
@@ -686,18 +650,54 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_IC_P"/>
-               </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="label_ic_pic_const_statwt">
+                <widget class="QLabel" name="label_ic_pic_const_npc">
                  <property name="text">
                   <string>Particles per parcel</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_IC_P"/>
+               <item row="6" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_IC_P"/>
+               </item>
+               <item row="4" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_IC_P"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_IC_P"/>
+               </item>
+               <item row="5" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_IC_P"/>
+               </item>
+               <item row="0" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_ep_s_args_IC_P"/>
+               </item>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_ic_v_s_units">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_IC_P"/>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_ic_w_s">
+                 <property name="text">
+                  <string>W-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="2">
+                <widget class="QLabel" name="label_ic_w_s_units">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_IC_P"/>
                </item>
               </layout>
              </widget>
@@ -763,7 +763,7 @@
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineeedit_keyword_ic_gama_rs_args_IC_P"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rs_args_IC_P"/>
                  </item>
                  <item row="0" column="2">
                   <widget class="QLabel" name="label_ic_gama_rs_units">

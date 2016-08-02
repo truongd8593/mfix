@@ -444,19 +444,17 @@ class ICS(object):
             val = self.project.get_value(key, args=[IC0, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
-            # register_widget ? TODO FIXME
             le.value_updated.connect(self.handle_ics_fluid_mass_fraction)
             table.setCellWidget(row, 1, le)
-        if self.fluid_species:
+        if species:
             table.setItem(nrows-1, 0, make_item("Total"))
             table.setItem(nrows-1, 1, make_item(''))
-            for x in (0,1):
-                item = table.item(nrows-1,x)
-                font = item.font()
-                font.setBold(True)
-                item.setFont(font)
-
+            item = table.item(nrows-1, 0)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
             self.update_ics_fluid_mass_fraction_total()
+
         self.fixup_ics_table(table)
 
     def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
@@ -540,12 +538,12 @@ class ICS(object):
         if species:
             table.setItem(nrows-1, 0, make_item("Total"))
             table.setItem(nrows-1, 1, make_item(''))
-            for x in (0,1):
-                item = table.item(nrows-1, x)
-                font = item.font()
-                font.setBold(True)
-                item.setFont(font)
+            item = table.item(nrows-1, 0)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
             self.update_ics_solids_mass_fraction_total()
+
         self.fixup_ics_table(table)
 
     def handle_ics_solids_mass_fraction(self, widget, value_dict, args):
@@ -796,11 +794,16 @@ class ICS(object):
         # Generic!
         def get_widget(key):
             # Should we try different 'args' patterns or does IC_P cover all cases?
-            return getattr(ics, 'lineedit_keyword_%s_args_IC_P' % key, None)
+            widget = getattr(ics, 'lineedit_keyword_%s_args_IC_P' % key, None)
+            if widget:
+                return widget
+            widget = getattr(ics, 'lineedit_keyword_%s_args_IC' % key, None)
+            return widget
 
         def setup_key_widget(key, default, enabled=True):
             for name in ('label_%s', 'label_%s_units',
-                         'lineedit_keyword_%s_args_IC_P'):
+                         'lineedit_keyword_%s_args_IC_P',
+                         'lineedit_keyword_%s_args_IC'):
                 item = getattr(ics, name%key, None)
                 if item:
                     item.setEnabled(enabled)
@@ -808,13 +811,16 @@ class ICS(object):
                 get_widget(key).setText('')
                 return
 
-            val = self.project.get_value(key, args=[IC0,P])
+            no_p_keys =  ('ic_p_star',)
+            args = [IC0] if key in no_p_keys else [IC0,P]
+            val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             if val is not None:
                 for IC in self.ics_current_indices:
-                    self.update_keyword(key, val, args=[IC, P])
-                get_widget(key).updateValue(key, val, args=[IC0,P])
+                    self.update_keyword(key, val, args=[IC] if key in no_p_keys
+                                        else [IC,P])
+                get_widget(key).updateValue(key, val, args=args)
 
 
         #Group tab inputs by equation type (e.g., momentum, energy, species).
@@ -861,11 +867,13 @@ class ICS(object):
 
         #Define pressure (optional) # TODO 'optional' in label?
         # Specification only available for SOLIDS_MODEL(#)='TFM'
-        # Sets keyword IC_P_s(#,#)
+        # Sets keyword IC_P_STAR(#)
         # DEFAULT of 0.0
-        #solids_model = self.project.get_value('solids_model', args=[P])
-        #enabled = (solids_model=='TFM')
-        enabled = False # TODO skipping b/c spec is unclear
+        # TODO: If a value is entered, then if you edit it on another solids tab,
+        # you get a warning that it applies to all solids in the IC region.
+
+        solids_model = self.project.get_value('solids_model', args=[P])
+        enabled = (solids_model=='TFM')
         key = 'ic_p_star'
         default = 0.0
         setup_key_widget(key, default, enabled)
@@ -887,10 +895,11 @@ class ICS(object):
 
         #Define particles per parcel
         # Specification only available for SOLIDS_MODEL(#)='PIC'
-        # Sets keyword IC_PIC_CONST_STATWT(#,#)
+        # Sets keyword IC_PIC_CONST_STATWT(#,#)  ?????
+        #Shouldn't that be IC_PIC_CONST_NPC?
         # DEFAULT value of 10.0
         enabled = (solids_model=='PIC')
-        key = 'ic_pic_const_statwt'
+        key = 'ic_pic_const_npc'
         default = 10.0
         setup_key_widget(key, default, enabled)
 
@@ -902,20 +911,45 @@ class ICS(object):
         # Error check: mass fractions must sum to one
         self.update_ics_solids_mass_fraction_table()
 
+
+        enabled = (solids_model=='DEM' or bool(energy_eq))
+        ics.groupbox_solids_advanced.setEnabled(enabled)
+
         #Advanced: Option to enable fitting DES particles to region
         # Option only available for DEM solids
         # Sets keyword: IC_DES_FIT_TO_REGION
         # Disabled [DEFAULT]
+        enabled = (solids_model=='DEM')
+        item = ics.checkbox_keyword_ic_des_fit_to_region_args_IC
+        item.setEnabled(enabled)
+        key = 'ic_des_fit_to_region'
+        default = False
+        val = self.project.get_value(key, args=[IC0])
+        if val is None:
+            val = default
+            if enabled:
+                for ic in self.ics_current_indices:
+                    self.update_keyword(key, val, args=ic)
+        item.setChecked(val)
+        # TODO: popup dialog to warn that this apples to all phases
 
         #Advanced: Define radiation coefficient
         # Specification only available when solving energy equations
-        # Sets keyword IC_GAMA_S(#,#)
+        # Sets keyword IC_GAMA_S(#,#)   # emended to IC_GAMA_RS
         # DEFAULT value of 0.0
+        enabled = bool(energy_eq)
+        key = 'ic_gama_rs'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
 
         #Advanced: Define radiation temperature
         # Specification only available when solving energy equations
         # Sets keyword IC_T_RS(#,#)
         # DEFAULT value of 293.15
+        enabled = bool(energy_eq)
+        key = 'ic_t_rs'
+        default = 293.15
+        setup_key_widget(key, default, enabled)
 
 
     def setup_ics_scalar_tab(self):
