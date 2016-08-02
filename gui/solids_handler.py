@@ -803,8 +803,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             widget.setLayout(layout);
             table.setCellWidget(row, 2, widget)
 
-        table.setItem(nrows-1, 0, make_item("TOTAL")) # bold?
+        table.setItem(nrows-1, 0, make_item("Total"))
         table.setItem(nrows-1, 1, make_item(''))
+        for x in (0,1):
+            item = table.item(nrows-1,x)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
+
         self.update_solids_mass_fraction_total()
 
         self.fixup_solids_table(table)
@@ -930,6 +936,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
+        # Workaround for deleted phase
+        if phase not in self.solids_species:
+            self.solids_species[phase] = OrderedDict()
         sp = self.species_popup
         sp.set_phases('SC')
         sp.do_search('')
