@@ -58,26 +58,7 @@ class ProjectManager(Project):
             args = [args]
 
         # Special argument handling!
-        # "S" : solids phase # (1-based)
-        # "IC": initial condition region
-        # "BC": boundary condition region
-        args = list(args) # Copy since we're modifying
-        for (i, arg) in enumerate(args):
-            if arg == 'S': #selected solid phase
-                phase = self.gui.solids_current_phase
-                if phase is None:
-                    return
-                args[i] = phase
-            elif arg == 'IC':
-                ics = self.gui.ics_current_indices
-                if ics is None:
-                    return
-                args[i] = ics
-            elif arg == 'BC':
-                bcs = self.gui.bcs_current_regions
-                if bcs is None:
-                    return
-                args[i] = bcs
+        args = self._expand_args(args)
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):
@@ -169,7 +150,7 @@ class ProjectManager(Project):
                     return False
 
             elif a=='P':
-                if b != self.ics_current_solid:
+                if b != self.gui.ics_current_solid:
                     return False
 
             elif a=='IC':
@@ -182,9 +163,10 @@ class ProjectManager(Project):
         return True
 
     def _expand_args(self, args_in):
-        return [(self.solids_current_phase if a == 'S'
-                 else self.ics_current_solid if a == 'P'
-                 else self.ics_current_indices if a == 'IC'
+        return [(self.gui.solids_current_phase if a == 'S'
+                 else self.gui.ics_current_solid if a == 'P'
+                 else self.gui.ics_current_indices if a == 'IC'
+                 else self.gui.bcs_current_indices if a == 'BC'
                  else a)
                 for a in args_in]
 
