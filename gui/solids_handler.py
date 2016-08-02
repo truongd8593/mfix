@@ -765,7 +765,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if phase is None:
             return
         table.clearContents()
-        nrows = len(self.solids_species[phase])+1
+        if self.solids_species[phase]:
+            nrows = len(self.solids_species[phase])+1
+        else:
+            nrows = 0
         table.setRowCount(nrows) # "Total" row at end
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
@@ -807,10 +810,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             widget.setLayout(layout);
             table.setCellWidget(row, 2, widget)
 
-        table.setItem(nrows-1, 0, make_item("Total"))
-        table.setItem(nrows-1, 1, make_item(''))
-        for x in (0,1):
-            item = table.item(nrows-1,x)
+        if nrows > 0:
+            table.setItem(nrows-1, 0, make_item("Total"))
+            item = table.item(nrows-1, 0)
             font = item.font()
             font.setBold(True)
             item.setFont(font)
