@@ -449,6 +449,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # IC_EP_G should be btwn 0 and 1.
         self.keyword_doc['ic_ep_g']['validrange'] = {'min':0.0, 'max':1.0}
+        self.keyword_doc['ic_ep_s']['validrange'] = {'min':0.0, 'max':1.0}
 
         # All temperatures > 0 ?
 
