@@ -309,7 +309,7 @@ class RegionsWidget(QtWidgets.QWidget):
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
-            val = value.values()[0]
+            val = list(value.values())[0]
             if isinstance(val, Equation):
                 used = val.get_used_parameters()
                 if 'min' in used or 'max' in used:
