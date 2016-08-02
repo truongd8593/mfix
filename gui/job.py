@@ -94,7 +94,7 @@ class PymfixAPI(QNetworkAccessManager):
         # connect response and error handlers
         response_handler = handlers.get('response', self.default_response_handler)
         request_object.finished.connect(
-            lambda slot=self.slot_api_response, request_id=request_id, request_object=request_object, response_handler=response_handler: slot(request_id, request_object, response_handler))
+            lambda slot=self.slot_api_response, ri=request_id, ro=request_object, rh=response_handler: slot(ri, ro, rh))
         request_object.error.connect(lambda network_error: log.error("network error: %s" % network_error))
         return request_id
 
