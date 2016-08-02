@@ -739,7 +739,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         table = self.ui.solids.tablewidget_solids_baseline
         total = sum(float(self.project.get_value(key, default=0.0, args=[phase,i]))
                     for i in range(1,len(self.solids_species[phase])+1))
-        table.item(table.rowCount()-1, 1).setText(str(total))
+        item = table.item(table.rowCount()-1, 1)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
+        item.setText(str(total))
 
     def handle_solids_inert_species(self, species_index, val):
         phase = self.solids_current_phase
@@ -762,7 +766,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             return
         table.clearContents()
         nrows = len(self.solids_species[phase])+1
-        table.setRowCount(nrows) # TOTAL row at end
+        table.setRowCount(nrows) # "Total" row at end
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
