@@ -1924,6 +1924,9 @@ class MfixGui(QtWidgets.QMainWindow,
         if not project_file:
             return
 
+        if not project_file.endswith(".mfx"):
+            project_file = project_file + ".mfx"
+
         project_filename = os.path.basename(project_file)
         project_dir = os.path.dirname(project_file)
         run_name = os.path.splitext(project_filename)[0]
