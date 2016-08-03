@@ -56,7 +56,7 @@ class BaseWidgetTests(TestQApplication):
         waitFor(10)
         self.assertIsInstance(self.widget.value, Equation)
         self.assertEqual(self.widget.value.eq, '10.0*4')
-        
+
     def test_lineedit_float_eq_pi(self):
         self.widget = base.LineEdit()
         self.widget.setdtype('dp')
