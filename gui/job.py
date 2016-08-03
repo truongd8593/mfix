@@ -112,13 +112,6 @@ class PymfixAPI(QNetworkAccessManager):
         :arg signal: Signal to emit
         :type signal: QtCore.pyqtSignal
         """
-        if response_object.error() != 0:
-            log.debug('API request error, processing stopped %s', req_id)
-            log.debug('error: %s' % response_object.error())
-            # .deleteLater() ?
-            response_object.close()
-            self.requests.discard(req_id)
-            #return
         try:
             response = response_object.readAll()
             response_json = response.data().decode('utf-8')
@@ -221,8 +214,8 @@ class JobManager(QObject):
         self.job = None
         self.parent = parent
         self.api_error_count = 0
-        self.API_ERROR_SOFT_LIMIT = 5 # API request failures before pid check
-        self.API_ERROR_HARD_LIMIT = 8 # trigger pid check
+        self.API_ERROR_SOFT_LIMIT = 3 # API request failures before pid check
+        self.API_ERROR_HARD_LIMIT = 6 # trigger pid check
 
     def try_to_connect(self, pidfile):
         if self.job:
@@ -269,15 +262,16 @@ class JobManager(QObject):
         count = self.api_error_count
         log.debug('API error count incremented: %s', self.api_error_count)
         if count >= self.API_ERROR_SOFT_LIMIT:
-            # check that the mfix process is still running
-            if self.mfix_proc_is_alive() and count < self.API_ERROR_HARD_LIMIT:
+            if count == self.API_ERROR_SOFT_LIMIT:
+                log.error("Soft error limit reached")
+            if count < self.API_ERROR_HARD_LIMIT:
                 log.error('MFIX process is unresponsive, retry %s (of %s)' %\
-                    ( self.api_error_count - self.API_ERROR_SOFT_LIMIT,
-                      self.API_ERROR_HARD_LIMIT - self.API_ERROR_SOFT_LIMIT))
+                    (self.api_error_count, self.API_ERROR_HARD_LIMIT))
                 return
-            else:
-                log.error('MFIX process has died or retry timeout reached')
-                self.teardown_job()
+            if self.mfix_proc_is_alive():
+               log.error("MFIX process is running and unresponsive. Giving up.")
+            log.error('MFIX process has died or retry timeout reached')
+            self.teardown_job()
 
     def record(self,job_id):
         self.job_id = job_id
@@ -323,6 +317,7 @@ class JobManager(QObject):
 
     def teardown_job(self):
         """Job ended or exited. Destory Job object and remove pidfile"""
+        # TODO: this handles local only, not queued jobs
         log.debug('teardown_job')
         if not self.job:
             log.error('Job is not running')
