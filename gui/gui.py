@@ -1924,6 +1924,9 @@ class MfixGui(QtWidgets.QMainWindow,
         if not project_file:
             return
 
+        if not project_file.endswith(".mfx"):
+            project_file = project_file + ".mfx"
+
         project_filename = os.path.basename(project_file)
         project_dir = os.path.dirname(project_file)
         run_name = os.path.splitext(project_filename)[0]
@@ -1991,6 +1994,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.mfix_dat_source.setPlainText(src)
 
     def force_default_settings(self):
+        # Should these just be in the template file? TODO
         self.update_keyword('chk_batchq_end', True)
 
     def get_runname(self):
@@ -2123,6 +2127,11 @@ class MfixGui(QtWidgets.QMainWindow,
         # by keyword updates)
         #    .... is there a way to verify that 'energy_eq' is boolean?
         #    should that get set from keyword doc?
+
+        # Note that energy_eq is TRUE by default according to MFIX but
+        # FALSE by default according to SRS document.  We have to respect
+        # MFIX.  The GUI defaults are enforced in the template file used
+        # to create new projects.
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
         # cgw - lots more model setup todo here.  Should we do this here or
@@ -2242,6 +2251,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
+        self.clear_unsaved_flag()
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
@@ -2311,7 +2321,7 @@ def main(args):
         # autoload last project
         project_file = gui.get_project_file()
 
-    if project_file:
+    if project_file and os.path.isfile(project_file):
         gui.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
         gui.set_no_project()

@@ -93,6 +93,9 @@
           <property name="suffix">
            <string/>
           </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
          </widget>
         </item>
         <item>
@@ -568,6 +571,9 @@
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_mol_weight_model">
+        <property name="toolTip">
+         <string>Molecular weight</string>
+        </property>
         <property name="text">
          <string>Mol. weight</string>
         </property>
@@ -635,6 +641,9 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_fluid_specific_heat_model">
+        <property name="toolTip">
+         <string>Specific heat</string>
+        </property>
         <property name="text">
          <string>Spec. heat</string>
         </property>
@@ -707,6 +716,9 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_fluid_conductivity_model">
+        <property name="toolTip">
+         <string>Thermal conductivity</string>
+        </property>
         <property name="text">
          <string>Therm. cond.</string>
         </property>
