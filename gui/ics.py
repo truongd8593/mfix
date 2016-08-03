@@ -478,6 +478,8 @@ class ICS(object):
         ics = self.ui.initial_conditions
         key = 'ic_x_g'
         table = ics.tablewidget_fluid_mass_fraction
+        if table.rowCount() == 0:
+            return
         total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,i]))
                     for i in range(1,len(self.fluid_species)+1))
         item =  table.item(table.rowCount()-1, 1)
@@ -571,6 +573,8 @@ class ICS(object):
         ics = self.ui.initial_conditions
         key = 'ic_x_s'
         table = ics.tablewidget_solids_mass_fraction
+        if table.rowCount() == 0:
+            return
         total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,P,i]))
                     for i in range(1,len(species)+1))
         item = table.item(table.rowCount()-1, 1)

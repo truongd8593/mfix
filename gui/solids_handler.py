@@ -737,6 +737,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if phase is None:
             return
         table = self.ui.solids.tablewidget_solids_baseline
+        if table.rowCount() == 0:
+            return
         total = sum(float(self.project.get_value(key, default=0.0, args=[phase,i]))
                     for i in range(1,len(self.solids_species[phase])+1))
         item = table.item(table.rowCount()-1, 1)
@@ -816,8 +818,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             font = item.font()
             font.setBold(True)
             item.setFont(font)
-
-        self.update_solids_mass_fraction_total()
+            self.update_solids_mass_fraction_total()
 
         self.fixup_solids_table(table)
 
