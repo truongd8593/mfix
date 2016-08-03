@@ -137,7 +137,6 @@ class MfixGuiTests(TestQApplication):
 
     def test_run_mfix(self):
 
-        self.skipTest('skip')
         #  FIXME:  The run dialog will get the exe from the ~/.config/MFIX file,
         #   need to control the QSettings for running tests
         mfix_exe = os.path.join(self.mfix_home, "mfix")
