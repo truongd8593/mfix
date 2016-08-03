@@ -35,7 +35,7 @@ def get_dict_from_pidfile(pid_filename):
                 except ValueError:
                     continue
             return pid_dict
-    except (FileNotFoundError, IOError, OSError):
+    except OSError:
         log.exception('PID could not be opened: %s', pid_filename)
     return {}
 
