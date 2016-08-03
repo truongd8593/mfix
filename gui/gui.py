@@ -2320,7 +2320,7 @@ def main(args):
         # autoload last project
         project_file = gui.get_project_file()
 
-    if project_file and os.isfile(project_file):
+    if project_file and os.path.isfile(project_file):
         gui.open_project(project_file, auto_rename=(not quit_after_loading))
     else:
         gui.set_no_project()
