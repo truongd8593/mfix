@@ -36,3 +36,4 @@ install-sh
 tmp.*
 *.swp
 *.nfs*
+TAGS
