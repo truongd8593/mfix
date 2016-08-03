@@ -189,10 +189,9 @@ class RegionsWidget(QtWidgets.QWidget):
         if defer_update:
             return
 
-        self.parent.set_unsaved_flag()
-
         self.tablewidget_regions.fit_to_contents()
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
+        self.parent.set_unsaved_flag()
 
     def delete_region(self):
         'remove the currently selected region'
@@ -205,14 +204,12 @@ class RegionsWidget(QtWidgets.QWidget):
                 if self.check_region_in_use(name):
                     self.parent.message(text="Region %s is in use" % name)
                     return
-
-                self.parent.set_unsaved_flag()
-
                 data.pop(name)
                 self.vtkwidget.delete_region(name)
 
             self.tablewidget_regions.set_value(data)
             self.vtkwidget.render()
+            self.parent.set_unsaved_flag()
 
         nrows = len(data)
         if rows[-1] == nrows: # We deleted the last row,
@@ -231,9 +228,6 @@ class RegionsWidget(QtWidgets.QWidget):
         rows = self.tablewidget_regions.current_rows()
 
         if rows:
-
-            self.parent.set_unsaved_flag()
-
             data = self.tablewidget_regions.value
 
             for row in rows:
@@ -248,6 +242,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
+            self.parent.set_unsaved_flag()
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -300,7 +295,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def region_value_changed(self, widget, value, args, name=None,
                              update_param=True):
-        'one of the region wigets values changed, update'
+        'one of the region widgets values changed, update'
+        print("RVC", widget, value, args, name, update_param)
         rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
         if name is None:
@@ -308,8 +304,8 @@ class RegionsWidget(QtWidgets.QWidget):
         key = list(value.keys())[0]
 
         if self.check_region_in_use(name):
-            if key == 'type':
-                # Should we just disable the combobox?
+            if key in ('type', 'name'):
+                # Should we just disable the widgets for in-use regions?
                 self.parent.message(text="Region %s is in use" % name)
                 widget.setCurrentText('box') # TODO: might not be a box!
                 return
@@ -336,13 +332,6 @@ class RegionsWidget(QtWidgets.QWidget):
                 update(name, data[name])
 
         elif 'name' in key and name != value.values()[0]:
-            # Don't allow rename of a region in active use (ICs, etc)
-            # Should we just disable the lineedit?
-            if self.check_region_in_use(name):
-                self.parent.message(text="Region %s is in use" % name)
-                widget.setText(name)
-                return
-
             new_name = get_unique_string(value.values()[0], list(data.keys()))
             data = OrderedDict(((new_name, v) if k == name else (k, v) for
                                 (k, v) in data.items()))
@@ -382,12 +371,13 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.set_value(data)
 
     def table_value_changed(self, name, key, value):
+        # When is this called?
         data = self.tablewidget_regions.value
-
         if key == 'type':
             self.vtkwidget.change_region_type(name, data[name])
         elif key == 'color':
             self.vtkwidget.change_region_color(name, data[name]['color'])
+        self.parent.set_unsaved_flag()
 
     def enable_disable_widgets(self, name):
         data = self.tablewidget_regions.value
@@ -417,10 +407,12 @@ class RegionsWidget(QtWidgets.QWidget):
 
             data[name]['color'].color = color.getRgbF()[:-1]
 
+
             self.toolbutton_color.setStyleSheet(
                 "QToolButton{{ background: rgb({},{},{});}}".format(
                     *data[name]['color'].color_int))
 
+            self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def check_region_in_use(self, name):
