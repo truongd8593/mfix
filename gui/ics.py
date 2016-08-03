@@ -223,7 +223,6 @@ class ICS(object):
         else:
             resize = tw.horizontalHeader().setResizeMode
         ncols = tw.columnCount()
-        resize(0, hv.Stretch)
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
 
