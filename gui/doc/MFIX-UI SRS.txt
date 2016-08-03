@@ -9,7 +9,7 @@ Prepared by J.Musser, J.Weber, W. Rogers, M. Meredith
 National Energy Technology Laboratory
 Research and Innovation Center
 
-July, 2016
+August, 2016
 
 Software Requirements Specification for MFIX-
 
@@ -389,19 +389,22 @@ o Available selections:
  Selection enables ‘Discrete Element Model’ task pane menu
  Option to disable the fluid phase
 o Disables the ‘Fluid’ task pane menu
+o Sets keyword RO_G0 to 0.0
  Option to enable thermal energy equations
+o This keyword should always be specified in the input deck
+o Sets keyword ENERGY_EQ
+o DEFAULT value of .FALSE.
  Option to enable turbulence
 o Selection available if fluid phase is enabled
-o Available selections:
- None; [DEFAULT]
- Mixing Length:
- Selection always available
 
 Page 9
 
 Software Requirements Specification for MFIX-
 
 
+
+
+
 
 
 
@@ -410,6 +413,10 @@ UI
 
 Page 10
 
+o Available selections:
+ None; [DEFAULT]
+ Mixing Length:
+ Selection always available
  Sets keyword TURBULENCE_MODEL to MIXING_LENGTH
  Requires IC_L_SCALE for all IC regions
  K-Epsilon
@@ -419,14 +426,66 @@ Page 10
  Requires IC_E_TURB_G for all IC regions
  Requires BC_K_TURB_G for inflow (MI and PI) BC regions
  Requires BC_E_TURB_G for inflow (MI and PI) BC regions
-Specify drag model (requires TFM, DEM, or PIC solver)
-o Provide access to model parameters as needed:
-o Syam-OBrien model parameters: DRAG_C1, DRAG_D1
+Specify maximum fluid viscosity (not shown in mockup)
+o Selection available if TURBULENCE_MODEL =/ 'NONE'
+o Sets keyword MU_GMAX
+o DEFAULT value of 1.0e3 (Pa.s)
+Specify drag model
+o Selection requires TFM, DEM, or PIC solver
+o Sets keyword DRAG_TYPE
+o Available selections:
+ SYAM_OBRIEN (DEFAULT)
+ Specify model parameter: DRAG_C1
+o DEFAULT value of 0.8
+ Specify model parameter: DRAG_D1
+o DEFAULT value of 2.65
+ BVK
+ GIDASPOW
+ GIDASPOW_BLEND
+ GIDASPOW_PCF
+ GIDASPOW_BLEND_PCF
+ HYS
+ Specify model parameter LAM_HYS
+o DEFAULT value of 1.0e-6 (meters)
+ KOCH_HILL
+ KOCH_HILL_PCF
+ WEN_YU
+ WEN_YU_PCF
+ USER_DRAG
 Specify heat transfer correlation (requires TFM, DEM, or PIC solver)
 *This option may be premature as MFIX is limited in heat HTCs.
 Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishi
-Select sub-grid model : None, Milioli,
-o Requires TFM solver
+Select sub-grid model:
+o Selection requirements:
+ Only available with MFIX-TFM solver
+ DRAG_TYPE="WEN_YU"
+ KT_TYPE="ALGEBRAIC"
+ TURBULENCE_MODEL /= K_EPSILON
+ BLENDING_STRESS = NONE
+ FRICTION_MODEL /= SRIVASTAVA
+ (There are more restrictions…)
+o Sets keyword SUBGRID_TYPE
+o Available selections
+ NONE (DEFAULT)
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+UI
+
+ IGCI
+ MILIO
+Specify sub-grid model filter size ratio:
+o Specification requires SUBGRID_TYPE =/ NONE
+o Sets keyword FILTER_SIZE_RATIO
+o DEFAULT value of 2.0
+Enable sub-grid wall correction model:
+o Specification requires SUBGRID_TYPE =/ NONE
+o Sets keyword SUBGRID_WALL
+o DEFAULT value of FALSE
 
 Mockup of Task pane for defining the Model Setup.
 
@@ -442,6 +501,15 @@ o Value sums into keyword NSCALAR
 o Sets keyword PHASE4SCALAR(*)=0 for total listed scalars
  Select Density Model:
 o Selection always available
+o Available selections:
+ Constant: [DEFAULT]
+ Selection always available
+ Specify constant gas density, RO_G0
+ Ideal gas law:
+ Selection always available
+ Keyword RO_G0 must be undefined
+
+Page 11
 
 Software Requirements Specification for MFIX-
 
@@ -455,13 +523,6 @@ o Selection always available
 
 UI
 
-o Available selections:
- Constant: [DEFAULT]
- Selection always available
- Specify constant gas density, RO_G0
- Ideal gas law:
- Selection always available
- Keyword RO_G0 must be undefined
  Requires a fluid phase molecular weight
  Requires temperature field for full domain
  UDF
@@ -509,8 +570,15 @@ Select Thermal Conductivity Model:
 o Selection only available when solving thermal energy equations
 o Available selections:
  Constant
+ Selection always available
+ Specify constant thermal conductivity, K_G0
+ Temperature dependent (air); [DEFAULT]
+ Selection always available
+ Keyword K_G0 must be undefined
+ UDF
+ Selection always available
 
-Page 11
+Page 12
 
 Software Requirements Specification for MFIX-
 
@@ -520,15 +588,8 @@ Page 11
 
 UI
 
-Page 12
+Page 13
 
- Selection always available
- Specify constant thermal conductivity, K_G0
- Temperature dependent (air); [DEFAULT]
- Selection always available
- Keyword K_G0 must be undefined
- UDF
- Selection always available
  Set keyword USR_KG
  MFIX runtime check verifies UDF was provided
 Select Diffusion Coefficient Model:
@@ -566,7 +627,7 @@ thermochemical data.
 
 UI
 
-Page 13
+Page 14
 
 Left: Mockup of Task pane for defining the fluid phase. Model options toggle between available and
 unavailable given selections. Right: Popup material database window for specifying fluid phase
@@ -598,27 +659,13 @@ o Moment equations enabled [DEFAULT]
 o Sets keyword: SPECIES_EQ(#)
 o Species Equations disabled [DEFAULT]
  Option to enable scalar equations
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-
-UI
-
 o Selection only available for MFIX-TFM solids model
 o Define the number of scalar equations
 o Value sums into keyword NSCALAR
 o Sets keyword PHASE4SCALAR(*)=# for total listed scalars
-Specify Diameter (required)
+ Specify Diameter (required)
 o Sets keyword: D_p0(#)
-Select Solids Density model
+ Select Solids Density model
 o Selection requires species equations
 o Available selections:
  Constant; [DEFAULT]
@@ -630,8 +677,23 @@ o Available selections:
  Requires material densities for all solids species
  Requires base composition be specified
  Requires an inert species be identified
-Select Solids Viscosity Model:
+ Select Solids Viscosity Model:
 o Selection only available for MFIX-TFM solids model
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+
+
+UI
+
 o Available selections:
  Continuum Solids Stress Theory [DEFAULT]
  Selection always available
@@ -666,21 +728,6 @@ o Available selections:
  UDF
  Selection always available
  Sets keyword USR_CPS(#)
-
-Page 14
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-UI
-
  MFIX runtime check verifies UDF was provided
 Select Thermal Conductivity Model:
 o Selection only available for MFIX-TFM solids model
@@ -701,6 +748,17 @@ o Selection only available for MFIX-DEM solids model
 o Specification only available when solving energy equations
 o Sets keyword DES_EM(#)
 Solids phase species selection:
+
+Page 15
+
+Software Requirements Specification for MFIX-
+
+
+
+UI
+
+Page 16
+
 o Species data required under any of the following conditions:
  Solving species equations
  Energy equations are solved with mixture specific heat model
@@ -717,8 +775,6 @@ List the following options under an ‘Advanced’ section header.
 
 
 
-Page 15
-
 Option to disable close packing
 o Selection only available for MFIX-TFM solids model
 o Sets keyword CLOSE_PACKED(#) = .FALSE.
@@ -728,19 +784,9 @@ o Selection only available for MFIX-TFM solids model
 o Sets keyword ADDED_MASS and M_AM=#
 o Note: Only one phase can have added mass force
 
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 16
-
 Mockup of Task pane for adding non-reacting TFM solids. Clicking the ‘Save’ button creates the
 solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
 are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane.
-
-Mockup of Task pane for adding non-reacting DEM solids. Clicking the ‘Save’ button creates the
-solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
-are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
 
 Software Requirements Specification for MFIX-
 
@@ -748,17 +794,23 @@ UI
 
 Page 17
 
+Mockup of Task pane for adding non-reacting DEM solids. Clicking the ‘Save’ button creates the
+solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
+are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
+
 Mockup of Task pane for adding non-reacting PIC solids. Clicking the ‘Save’ button creates the
 solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
 are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
 
-Mockup of Task pane for adding reacting TFM solids. Note that reactions are consistent across all
-solids models. Left: Bottom of the task pane showing the species information and baseline solids
-composition. Right: Popup material database window for specifying solids phase species.
-
 Software Requirements Specification for MFIX-
 
 UI
+
+Page 18
+
+Mockup of Task pane for adding reacting TFM solids. Note that reactions are consistent across all
+solids models. Left: Bottom of the task pane showing the species information and baseline solids
+composition. Right: Popup material database window for specifying solids phase species.
 
 Continuum Solids Model Task Pane Window: (requires TFM solver)
  Specify void fraction at close pack (required)
@@ -786,6 +838,21 @@ o Available selections:
  Sets keyword KT_TYPE to AHMADI
  Garzo and Dufty, 1999
  Selection only available with MMAX=1 (monodisperse)
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+
+
+UI
+
  Sets keyword KT_TYPE to GD_99
  Requires particle-particle restitution coefficient, C_E
  Garzo, Tenneti, Subramaniam, Hrenya, 2012
@@ -798,7 +865,7 @@ o Available selections:
  Sets keyword KT_TYPE to GHD
  Requires WEN_YU or HYS drag model
  Specify coefficient of restitution; R_p (optional)
- Select Frictional Stress Model
+Select Frictional Stress Model
 o Selection is unavailable for constant solids viscosity (MU_S0 defined)
 o Available selections
  Schaeffer
@@ -813,21 +880,6 @@ o Available selections
  None
  Selection always available
  Sets keyword FRICTION_MODEL to NONE
-
-Page 18
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-UI
-
 Specify solids volume fraction at onset of friction
 o Only available with FRICTION_MODEL=SRIVASTAVA
 o Default value of 0.5
@@ -856,20 +908,40 @@ o Available selections:
  Carnahan-Starling
  Only available for MMAX==1
  Sets keyword RDF_TYPE to LEBOWITZ (this is correct)
- Lebowitz
- Only available for MMAX >1
- Sets keyword RDF_TYPE to LEBOWITZ
- Mansoori
- Only available for MMAX>1
- Sets keyword RDF_TYPE to MANSOORI
- Modified Lebowitz
- Only available for MMAX >1
- Sets keyword RDF_TYPE to MODIFIED_LEBOWITZ
- Modified Mansoori
- Only available for MMAX>1
- Sets keyword RDF_TYPE to MODIFIED_MANSOORI
+
+Page 19
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
 
 
+
+
+
+
+
+
+
+UI
+
+Page 20
+
+Lebowitz
+ Only available for MMAX >1
+ Sets keyword RDF_TYPE to LEBOWITZ
+Mansoori
+ Only available for MMAX>1
+ Sets keyword RDF_TYPE to MANSOORI
+Modified Lebowitz
+ Only available for MMAX >1
+ Sets keyword RDF_TYPE to MODIFIED_LEBOWITZ
+Modified Mansoori
+ Only available for MMAX>1
+ Sets keyword RDF_TYPE to MODIFIED_MANSOORI
 
 Select stress blending model
 o Selection only available with FRICTION_MODEL=SCHAEFFER
@@ -884,21 +956,6 @@ o Available selections:
  Selection always available
  Sets keyword BLENDING_FUNCTION to SIGM_BLEND
 Specify the segregation slope coefficient
-
-
-
-Page 19
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-UI
-
-Page 20
-
 o Only available for MMAX > 1 in conjunction with the following viscous stress
 models: algebraic formulation; Lun. 1984; Simonin, 1996; Ahmadi, 1995
 o Unavailable with (+other requirements)
@@ -922,6 +979,12 @@ Specify excluded volume in Boyle-Massoudi stress (optional)
 o Only available with algebraic formulation of viscous stress model
 o Sets keyword V_EX
 
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 21
+
 Mockup of Task pane for specifying the continuum solids model parameters.
 Discrete Element Model Task Pane Window: (requires DEM solver)
  Enable automatic particle generation
@@ -932,31 +995,13 @@ o Disabled enables the user to specify number of entries in particle input file
  Select numerical integration method
 o Selection always available
 o Available selections
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-
-
-
-UI
-
-Page 21
-
-Euler [DEFAULT]
+ Euler [DEFAULT]
  Selection always available
  Sets keyword DES_INTG_METHOD to ‘EULER’
  Adams-Bashforth
  Selection always available
  Sets keyword DES_INTG_METHOD to ‘ADAMS_BASHFORTH’
-Selection collision model
+ Selection collision model
 o Selection always available
 o Available selections
  Linear Spring-Dashpot [DEFAULT]
@@ -965,13 +1010,32 @@ o Available selections
  Hertzian
  Selection always available
  Sets keyword DES_COLL_MODEL to ‘HERTZIAN’
-Select gas-solids coupling scheme:
+ Select gas-solids coupling scheme:
 o Selection unavailable if fluid model is disabled
 o Available selections:
  One-way Coupled
  Selection always available
  Sets keyword DES_ONEWAY_COUPLED true
  Fully Coupled [DEFAULT]
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UI
+
  Selection always available
  Sets keyword DES_ONEWAY_COUPLED false
 Optional to enable explicitly coupled simulation
@@ -1004,34 +1068,6 @@ o Available selections:
  Selection always available
  Requires an interpolation width, DES_INTERP_WIDTH
  Sets keyword DES_INTERP_SCHEME=’SQUARE_DPVM’
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-UI
-
-Page 22
-
 Define interpolation width (DPVM only) (required)
 o Specification only available with SQUARE_DPVM interpolation scheme
 o Sets keyword DES_INTERP_WIDTH
@@ -1054,6 +1090,26 @@ Specify tangential damping coefficient factor
 o Only available for LSD collision model
 o Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
 o Default values of 0.5
+
+Page 22
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UI
+
 Specify Young’s modulus
 o Only available for Hertzian collision model
 o Sets keyword E_YOUNG (EW_YOUNG)
@@ -1086,13 +1142,6 @@ Specify outer cutoff;
 o Specification only available for Van der Waals cohesion model
 o Sets keyword VDW_OUTER_CUTOFF (WALL_OUTER_CUTOFF)
 Specify inner cutoff
-
-Software Requirements Specification for MFIX-
-
-
-
-UI
-
 o Specification only available for Van der Waals cohesion model
 o Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
 Specify asperities
@@ -1104,13 +1153,8 @@ List the following options under an ‘Advanced’ section header.
 
 
 
-
-
 
-
-
-
-
+Page 23
 
 Select Neighbor Search Method
 o Selection always available
@@ -1126,6 +1170,19 @@ o Specification always available
 o Sets keyword NEIGHBOR_SEARCH_N
 Specify factor defining particle neighborhood
 o Specification always available
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+UI
+
 o Sets keyword FACTOR_RLM
 Specify neighborhood search radius ratio
 o Specification always available
@@ -1145,22 +1202,12 @@ o Unavailable if not solving energy equations
 Define fluid lens proportion constant (optional)
 o Unavailable if not solving energy equations
 
-Page 23
-
-Software Requirements Specification for MFIX-
-
-UI
-
 Mockup of Task pane for specifying the discrete element model parameters.
 Particle in Cell Model Task Pane Window: (requires PIC solver)
 
 
 
 
-
-
-
-
 
 
 Specify void fraction at close pack (required)
@@ -1175,6 +1222,25 @@ o Available selection
  Selection always available
  Sets keyword MPPIC_SOLID_STRESS_SNIDER=.T.
 Option to enable implicit treatment of drag force
+
+Page 24
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+
+
+
+
+
+
+UI
+
 o Sets keyword: MPPIC_PDRAG_IMPLICIT
 o Disabled [DEFAULT]
 Define particle-particle momentum retention
@@ -1193,22 +1259,6 @@ o Available selections:
  Selection always available
  Sets keyword DES_ONEWAY_COUPLED true
  Fully Coupled
-
-Page 24
-
-Software Requirements Specification for MFIX-
-
-
-
-
-
-
-
-
-
-
-UI
-
  Selection always available
  Sets keyword DES_ONEWAY_COUPLED false
 Select interpolation framework:
@@ -1245,20 +1295,24 @@ o Sets keyword DES_INTERP_WIDTH
 Define solids stress model parameter: pressure constant
 o Sets keyword PSFAC_FRIC_PIC
 o DEFAULT value of 10.0
+
+Page 25
+
+Software Requirements Specification for MFIX-
+
+
+
+
+UI
+
+Page 26
+
 Define solids stress model parameter: volume fraction exponent
 o Sets keyword FRIC_EXP_PIC
 o DEFAULT value of 3.0
 Define solids stress model parameter: non-singularity factor
 o Sets keyword FRIC_NON_SING_FAC
 o DEFAULT value of 1.0E-8
-
-Page 25
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 26
 
 Mockup of Task pane for specifying the particle in cell model parameters.
 Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
@@ -1278,47 +1332,25 @@ Implementation Idea: Allow the user to select multiple regions in the popup wind
 define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
 get messy, and if so, scrap this idea.
 
-Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
-no input is required from the user.
- Fluid tab - Unavailable if the fluid phase was disabled.
-
 Software Requirements Specification for MFIX-
-
-
-
 
 UI
 
-Each solid phase will have its own tab. The tab name should be the name of the solid
-Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
-inputs a 'collapsible list' may make navigation easier.
-
-Fluid (tab)
- Define volume fraction
-o Specification always available
-o Sets keyword IC_EP_G(#)
-o DEFAULT value of 1.0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Page 27
 
-Define temperature
+Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
+no input is required from the user.
+ Fluid tab - Unavailable if the fluid phase was disabled.
+ Each solid phase will have its own tab. The tab name should be the name of the solid
+ Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
+inputs a 'collapsible list' may make navigation easier.
+Fluid (tab)
+ Define volume fraction
+o Specification never available
+o Sets keyword IC_EP_G(#)
+o CALCULATED from 1.0 - sum(IC_EP_s(#,#)
+o GUI should show the result of the calculation.
+ Define temperature
 o Specification always available
 o Input required for any of the following
  Fluid density model: Ideal Gas Law
@@ -1326,24 +1358,36 @@ o Input required for any of the following
  Energy equations are solved
 o Sets keyword IC_T_G(#)
 o DEFAULT value of 293.15
-Define pressure (optional)
+ Define pressure (optional)
 o Specification always available
 o Sets keyword IC_P_g(#)
-o DEFAULT - no inputDefine velocity components (required)
+o DEFAULT - no input Define velocity components (required)
 o Specification always available
 o Sets keywords IC_U_G(#), IC_V_G(#), IC_W_G(#)
 o DEFAULT value of 0.0
-Select species and set mass fractions (table format)
+ Select species and set mass fractions (table format)
 o Specification always available
+o Sets keyword IC_X_G
 o Input required for species equations
 o Drop down menu of fluid species
 o DEFAULT - last defined species has mass fraction of 1.0
 o Error check: mass fractions must sum to one
-Turbulence: Define mixing length model length scale
+ Turbulence: Define mixing length model length scale
 o Specification only available with Mixing Length turbulence model
 o Sets keyword IC_L_SCALE(#)
 o DEFAULT value of 1.0
-Turbulence: Define k-ε turbulent kinetic energy
+ Turbulence: Define k-ε turbulent kinetic energy
+
+Software Requirements Specification for MFIX-
+
+
+
+
+
+
+
+UI
+
 o Specification only available with K-Epsilon turbulence model
 o Sets keyword IC_K_TURB_G(#)
 o DEFAULT value of 0.0
@@ -1353,18 +1397,11 @@ o Sets keywords IC_E_TURB_G(#)
 o DEFAULT value of 0.0
 Advanced: Define radiation coefficient
 o Specification only available when solving energy equations
-o Sets keyword IC_GAMA_G(#)
+o Sets keyword IC_GAMA_RG(#)
 o DEFAULT value of 0.0
 Advanced: Define radiation temperature
 o Specification only available when solving energy equations
 o Sets keyword IC_T_RG(#)
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 28
-
 o DEFAULT value of 293.15
 
 Mockup of Task pane for specifying the fluid properties for initial conditions parameters.
@@ -1372,7 +1409,7 @@ Solid-# (tab) - Rename tab to user provided solids name.
  Define volume fraction (required)
 o Specification always available
 o Sets keyword IC_EP_S(#,#)
-o DEFAULT value of (0.0, 1 - SUM)
+o DEFAULT value of 0.0
  Define temperature
 o Specification always available
 o Input required when solving energy equations
@@ -1384,21 +1421,9 @@ o Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
 o DEFAULT value of 0.0
  Define pressure (optional)
 o Specification only available for SOLIDS_MODEL(#)='TFM'
-o Sets keyword IC_P_s(#,#)
-o DEFAULT of 0.0
- Define granular temperature
-o Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
-formulation viscous stress model (see continuous solids model section) or for
-SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
-o Sets keyword IC_THETA_M(#,#)
-o DEFAULT value of 0.0
- Define particles per parcel
-o Specification only available for SOLIDS_MODEL(#)='PIC'
-o Sets keyword IC_PIC_CONST_STATWT(#,#)
-o DEFAULT value of 10.0
- Select species and set mass fractions (table format)
-o Specification always available
-o Input required for species equations
+o Sets keyword IC_P_STAR(#)
+
+Page 28
 
 Software Requirements Specification for MFIX-
 
@@ -1408,9 +1433,33 @@ o Input required for species equations
 
 
 
+
+
+
+
+
+
 UI
 
+Page 29
+
+o DEFAULT of 0.0
+o Common to all phases - Warn user if changed.
+Define granular temperature
+o Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
+formulation viscous stress model (see continuous solids model section) or for
+SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
+o Sets keyword IC_THETA_M(#,#)
+o DEFAULT value of 0.0
+Define particles per parcel
+o Specification only available for SOLIDS_MODEL(#)='PIC'
+o Sets keyword IC_PIC_CONST_STATWT(#,#)
+o DEFAULT value of 10.0
+Select species and set mass fractions (table format)
+o Specification always available
+o Input required for species equations
 o Drop down menu of solids species
+o Sets keyword IC_X_S(#,#,#)
 o DEFAULT - last defined species has mass fraction of 1.0
 o Error check: mass fractions must sum to one
 Advanced: Option to enable fitting DES particles to region
@@ -1429,16 +1478,15 @@ o DEFAULT value of 293.15
 Mockup of Task pane for specifying solids-# initial condition parameters.
 Scalar (tab) - Tab only available if scalar equations are solved
  Define initial scalar value
-o Sets keyword IC_SCALAR(#,#)
-o DEFAULT value of 0.0
-
-Page 29
 
 Software Requirements Specification for MFIX-
 
 UI
 
 Page 30
+
+o Sets keyword IC_SCALAR(#,#)
+o DEFAULT value of 0.0
 
 Mockup of Task pane for specifying the Scalar properties for initial condition regions. Note that
 this tab should only be available if scalar equations are being solved. Furthermore, the number of
@@ -1473,8 +1521,6 @@ o Available selections:
  Plane regions set keyword BC_TYPE(#) to 'FSW'
  STL regions set keyword BC_TYPE(#) to 'CG_FSW'
  Partial Slip Wall
- Plane regions set keyword BC_TYPE(#) to 'PSW'
- STL regions set keyword BC_TYPE(#) to 'CG_PSW'
 
 Software Requirements Specification for MFIX-
 
@@ -1485,6 +1531,8 @@ UI
 
 Page 31
 
+ Plane regions set keyword BC_TYPE(#) to 'PSW'
+ STL regions set keyword BC_TYPE(#) to 'CG_PSW'
 Pressure Inflow
  Plane regions set keyword BC_TYPE(#) to 'PI'
  Not available for STL regions
@@ -1521,8 +1569,6 @@ o DEFAULT value of 0.0
 o Specification only available with PSW
 o Sets keyword BC_WW_G(#)
 o DEFAULT value of 0.0
- Select energy equation boundary type:
-o Selection only available when solving energy equations
 
 Software Requirements Specification for MFIX-
 
@@ -1540,6 +1586,8 @@ o Selection only available when solving energy equations
 
 UI
 
+Select energy equation boundary type:
+o Selection only available when solving energy equations
 o Available selections:
  No-Flux (adiabatic) [DEFAULT]
  Sets keyword BC_HW_T_G(#) to 0.0
@@ -1592,8 +1640,6 @@ o Available selections:
  Requires BC_HW_X_G(#)
  Sets keyword BC_C_X_G(#) to 0.0
  Requires BC_XW_G(#)
-Define wall mass fraction
-o Specification only available with 'Specified Mass Fraction' BC type
 
 Page 32
 
@@ -1605,10 +1651,14 @@ Page 32
 
 
 
+
+
 UI
 
 Page 33
 
+Define wall mass fraction
+o Specification only available with 'Specified Mass Fraction' BC type
 o Sets keyword BC_XW_G(#)
 o DEFAULT value of 0.0
 Define constant flux
@@ -1639,12 +1689,8 @@ o Available selections:
  Sets keyword BC_JJ_M to .FALSE.
  Sets keyword JENKINS to .FALSE.
  Variable specularity coefficient
- Sets keyword BC_JJ_M to .TRUE.
- Sets keyword JENKINS to .FALSE.
 
 Software Requirements Specification for MFIX-
-
-
 
 
 
@@ -1666,7 +1712,9 @@ o Available selections:
 
 UI
 
-Jenkins small frictional boundary
+ Sets keyword BC_JJ_M to .TRUE.
+ Sets keyword JENKINS to .FALSE.
+ Jenkins small frictional boundary
  Sets keyword BC_JJ_M to .FALSE.
  Sets keyword JENKINS to .TRUE.
 Define restitution coefficient
@@ -1717,34 +1765,32 @@ o Available selections:
  Requires BC_TW_S(#,#)
  Specified Flux
  Sets keyword BC_HW_T_S(#,#) to 0.0
- Requires BC_C_T_S(#)
- Sets keyword BC_TW_S(#,#) to UNDEFINED
 
 Page 34
 
 Software Requirements Specification for MFIX-
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 UI
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Page 35
 
-Convective Flux
+ Requires BC_C_T_S(#)
+ Sets keyword BC_TW_S(#,#) to UNDEFINED
+ Convective Flux
  Requires BC_HW_T_S(#,#)
  Sets keyword BC_C_T_S(#,#) to 0.0
  Requires BC_TW_S(#,#)
@@ -2122,7 +2168,7 @@ o Specification always available
 o Sets keyword BC_EP_G(#)
 o No DEFAULT value
 o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
+fractions for the BC region must be specified and must sum to one.
  Define temperature
 o Specification always available
 o NO DEFAULT value
@@ -2147,7 +2193,7 @@ o Specification always available
 o Sets keyword BC_EP_S(#,#)
 o No DEFAULT value
 o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
+fractions for the BC region must be specified and must sum to one.
  Define temperature
 o Specification always available
 o NO DEFAULT value
@@ -2279,7 +2325,7 @@ o Input required
 o Sets keyword BC_EP_G(#)
 o DEFAULT value 1.0
 o Error Check: If any volume fraction for the BC region is specified, then all volume
-factions for the BC region must be specified and must sum to one.
+fractions for the BC region must be specified and must sum to one.
 Define temperature
 o Specification only available with mass or volumetric flowrates and R_G0 is
 UNDEFINED
