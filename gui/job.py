@@ -327,26 +327,30 @@ class JobManager(QObject):
         if not self.job:
             log.error('Job is not running')
             return
-        pidfile = self.job.pidfile
-        pid_contents = get_dict_from_pidfile(pidfile)
-        pid = pid_contents.get('pid', None)
-        job_id = pid_contents.get('qjobid', None)
-        # needed?
-        #open(os.path.join(self.parent.get_project_dir(), 'MFIX.STOP'), 'w').close()
-
         log.info('Job ended or connection to running job failed %s', self)
-        # update GUI
-        if self.job.api_test_timer and self.job.api_test_timer.isActive():
-            self.job.api_test_timer.stop()
-        if self.job.api_status_timer and self.job.api_status_timer.isActive():
-            self.job.api_status_timer.stop()
-        self.job = None
-        self.sig_update_job_status.emit()
-        self.sig_change_run_state.emit()
+        pidfile = self.job.pidfile
+        try:
+            pid_contents = get_dict_from_pidfile(pidfile)
+            pid = pid_contents.get('pid', None)
+            job_id = pid_contents.get('qjobid', None)
+        except:
+            log.error('Could not clean up job %s', pidfile)
+        finally:
+            # update GUI
+            if self.job.api_test_timer and self.job.api_test_timer.isActive():
+                self.job.api_test_timer.stop()
+            if self.job.api_status_timer and self.job.api_status_timer.isActive():
+                self.job.api_status_timer.stop()
+            self.job = None
+            self.sig_update_job_status.emit()
+            self.sig_change_run_state.emit()
 
         def force_stop():
             log.debug('force stop')
             # if mfix exited cleanly, there should be no pidfile
+            if not os.path.isfile(pidfile):
+                log.debug('pidfile was already removed, no pid available')
+                return
             if pid and not job_id:
                 try:
                     os.kill(int(pid), 0)
