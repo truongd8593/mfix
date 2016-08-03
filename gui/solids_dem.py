@@ -306,6 +306,7 @@ class SolidsDEM(object):
                      s.lineedit_keyword_des_etat_w_fac):
             item.setEnabled(enabled)
 
+
         if enabled: # TODO set these defaults at load-time, not when this tab is shown
             for (key, default) in [('kt_fac', '@(2./7.)'), ('kt_w_fac', '@(2./7.)'),
                                    ('des_etat_fac', 0.5), ('des_etat_w_fac', 0.5)]:
@@ -336,6 +337,11 @@ class SolidsDEM(object):
         mmax = self.project.get_value('mmax', 1)
         tw = s.tablewidget_des_en_input
         # Table size changed
+        def make_item(str):
+            item = QtWidgets.QTableWidgetItem(str)
+            set_item_noedit(item)
+            set_item_enabled(item, False)
+            return item
         if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
             # Clear out old lineedit widgets
             for row in range(tw.rowCount()):
@@ -355,11 +361,7 @@ class SolidsDEM(object):
             tw.setHorizontalHeaderLabels(names)
             tw.setVerticalHeaderLabels(names + ['Wall'])
 
-            def make_item(str):
-                item = QtWidgets.QTableWidgetItem(str)
-                set_item_noedit(item)
-                set_item_enabled(item, False)
-                return item
+
             arg = 1 # One-based
             key = 'des_en_input'
             for row in range(mmax):
@@ -469,7 +471,7 @@ class SolidsDEM(object):
                         le.updateValue(key, val)
                     self.project.register_widget(le, keys=[key], args=[arg])
                     arg += 1
-            self.fixup_solids_table(tw, stretch_column=mmax-1)
+        self.fixup_solids_table(tw, stretch_column=mmax-1)
 
         #Select cohesion model
         # Selection always available
