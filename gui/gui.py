@@ -2126,6 +2126,11 @@ class MfixGui(QtWidgets.QMainWindow,
         # by keyword updates)
         #    .... is there a way to verify that 'energy_eq' is boolean?
         #    should that get set from keyword doc?
+
+        # Note that energy_eq is TRUE by default according to MFIX but
+        # FALSE by default according to SRS document.  We have to respect
+        # MFIX.  The GUI defaults are enforced in the template file used
+        # to create new projects.
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
         # cgw - lots more model setup todo here.  Should we do this here or

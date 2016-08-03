@@ -432,7 +432,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # Set species eq checkbox to correct value
         key = 'species_eq'
-        species_eq = self.project.get_value(key, default=False, args=[phase])
+        species_eq = self.project.get_value(key, default=True, args=[phase])
         cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
         cb.setChecked(species_eq)
 
@@ -686,7 +686,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if phase is None:
             enabled = False
         else:
-            species_eq = self.project.get_value('species_eq', args=phase, default=False)
+            species_eq = self.project.get_value('species_eq', args=phase, default=True)
             energy_eq = self.project.get_value('energy_eq', default=True)
             enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
 
