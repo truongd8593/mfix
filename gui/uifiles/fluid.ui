@@ -93,6 +93,9 @@
           <property name="suffix">
            <string/>
           </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
          </widget>
         </item>
         <item>
