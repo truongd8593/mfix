@@ -264,7 +264,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_description_ascii(self):
         self.open_tree_item('run')
-        cb = self.mfix.ui.model.combobox_keyword_description
+        cb = self.mfix.ui.model_setup.combobox_keyword_description
         description = cb.value
         cb.setFocus()
         QTest.keyClick(cb, Qt.Key_Right)
@@ -287,7 +287,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_description_unicode(self):
         self.open_tree_item('run')
-        cb = self.mfix.ui.model.combobox_keyword_description
+        cb = self.mfix.ui.model_setup.combobox_keyword_description
         description = cb.value
         cb.setFocus()
         QTest.keyClick(cb, Qt.Key_Right)
