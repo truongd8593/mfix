@@ -2244,6 +2244,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
+        self.clear_unsaved_flag()
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
