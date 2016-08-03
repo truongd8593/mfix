@@ -1994,6 +1994,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.mfix_dat_source.setPlainText(src)
 
     def force_default_settings(self):
+        # Should these just be in the template file? TODO
         self.update_keyword('chk_batchq_end', True)
 
     def get_runname(self):

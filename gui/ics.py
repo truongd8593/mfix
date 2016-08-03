@@ -585,7 +585,7 @@ class ICS(object):
 
         # DEFAULT - last defined species has mass fraction of 1.0
         # (only enforce this if no mass fractions are set)
-
+        # TODO set ic_x_g = 1 - sum(ic_x_s)
         if total == 0.0 and species:
             for IC in self.ics_current_indices:
                 for i in range(1, len(species)):
