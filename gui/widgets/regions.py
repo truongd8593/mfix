@@ -296,7 +296,6 @@ class RegionsWidget(QtWidgets.QWidget):
     def region_value_changed(self, widget, value, args, name=None,
                              update_param=True):
         'one of the region widgets values changed, update'
-        print("RVC", widget, value, args, name, update_param)
         rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
         if name is None:
