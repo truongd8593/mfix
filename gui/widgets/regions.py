@@ -189,6 +189,8 @@ class RegionsWidget(QtWidgets.QWidget):
         if defer_update:
             return
 
+        self.parent.set_unsaved_flag()
+
         self.tablewidget_regions.fit_to_contents()
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
 
@@ -203,6 +205,9 @@ class RegionsWidget(QtWidgets.QWidget):
                 if self.check_region_in_use(name):
                     self.parent.message(text="Region %s is in use" % name)
                     return
+
+                self.parent.set_unsaved_flag()
+
                 data.pop(name)
                 self.vtkwidget.delete_region(name)
 
@@ -226,6 +231,9 @@ class RegionsWidget(QtWidgets.QWidget):
         rows = self.tablewidget_regions.current_rows()
 
         if rows:
+
+            self.parent.set_unsaved_flag()
+
             data = self.tablewidget_regions.value
 
             for row in rows:
@@ -305,6 +313,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.parent.message(text="Region %s is in use" % name)
                 widget.setCurrentText('box') # TODO: might not be a box!
                 return
+
+        self.parent.set_unsaved_flag()
 
         if 'to' in key or 'from' in key:
             item = key.split('_')
