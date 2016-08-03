@@ -38,7 +38,7 @@ def get_dict_from_pidfile(pid_filename):
                     continue
             return pid_dict
     except Exception:
-        log.exception('PID could not be opened: %s', pid_filename)
+        log.debug('PID could not be opened: %s', pid_filename)
     return {}
 
 
@@ -139,9 +139,9 @@ class PymfixAPI(QNetworkAccessManager):
         try:
             response_error_code = response_object.error()
             if response_error_code == 1:
-                log.error('API network connection error %s', self)
+                log.warning('API network connection error %s', self)
             else:
-                log.debug('Unknown network error %s', self)
+                log.warning('Unknown network error %s', self)
         except:
             log.exception('unhandled API error %s', self)
         finally:
@@ -235,7 +235,7 @@ class JobManager(QObject):
             self.parent.ui.tabWidgetGraphics.setCurrentWidget(
               self.parent.ui.plot)
         else:
-            log.error("pidfile is not available, can't start new job")
+            log.debug("pidfile is not available, can't start new job")
 
     def mfix_proc_is_alive(self):
         """Handles process existence checks"""
@@ -263,7 +263,7 @@ class JobManager(QObject):
         log.debug('API error count incremented: %s', self.api_error_count)
         if count >= self.API_ERROR_SOFT_LIMIT:
             if count == self.API_ERROR_SOFT_LIMIT:
-                log.error("Soft error limit reached")
+                log.warning("Soft error limit reached")
             if count < self.API_ERROR_HARD_LIMIT:
                 log.error('MFIX process is unresponsive, retry %s (of %s)' %\
                     (self.api_error_count, self.API_ERROR_HARD_LIMIT))
@@ -489,11 +489,11 @@ class Job(QObject):
         try:
             response_json = json.loads(response_string)
         except:
-            log.error("API format error")
+            log.warning("API response parsing error")
             self.sig_api_error.emit()
             return
         if response_json.get('internal_api_error'):
-            log.error("API format error")
+            log.warning("API format error")
             log.debug("API response data: %s" % \
               json.dumps(response_json))
             self.sig_api_error.emit()
