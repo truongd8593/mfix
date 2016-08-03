@@ -1886,18 +1886,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_window_title()
         self.set_save_button(enabled=True)
 
-
     def clear_unsaved_flag(self):
         if self.unsaved_flag:
             log.info("Project is saved")
         self.unsaved_flag = False
         self.update_window_title()
         self.set_save_button(enabled=False)
-
-        # This should only happen when we're not already running
-        # or paused
-        runnable = bool(self.get_project_file()) and self.mfix_available
-        self.set_run_button(enabled=runnable)
 
     def check_writable(self, directory):
         """check whether directory is writable """
