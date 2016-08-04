@@ -8,7 +8,7 @@ from tools.general import get_combobox_item, set_item_enabled
 # In-line comments from MFIX-UI SRS as of 2016-07-01
 #  Please update comments along with SRS/code changes!
 
-des_interp_schemes = ['SQUARE_DPVM', 'GARG_2012', 'SQUARE_DPVM']
+des_interp_schemes = ['NONE', 'GARG_2012', 'SQUARE_DPVM']
 
 class SolidsPIC(object):
     def init_solids_pic(self):
@@ -133,7 +133,7 @@ class SolidsPIC(object):
         # Available selections:
         # None [locked default for no-interpolation framework]
         # Selection not available
-        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        # Sets keyword DES_INTERP_SCHEME='NONE'
         # Garg 2012
         # Selection not available with explicit coupling enabled
         # Sets keyword DES_INTERP_SCHEME='GARG_2012'
@@ -147,9 +147,12 @@ class SolidsPIC(object):
         interp_enabled = des_interp_on or des_interp_mean_fields # not no-interp
         cb.setEnabled(interp_enabled)
         if not interp_enabled:
-            des_interp_scheme = 'SQUARE_DPVM'
+            des_interp_scheme = 'NONE'
             self.update_keyword('des_interp_scheme', des_interp_scheme)
             cb.setCurrentIndex(0) # Must be 'None'
+        else:
+            cb.setCurrentIndex(1 if des_interp_scheme=='GARG_2012' else 2)
+
         # per-item enable flags
         enabled = (not interp_enabled, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
