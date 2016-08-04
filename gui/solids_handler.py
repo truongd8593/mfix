@@ -669,15 +669,33 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # TODO FIXME FIX SCALAR EQ!
         del self.solids[name]
+        tw.removeRow(row)
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        if self.solids_species.has_key(phase):
-            del self.solids_species[phase]
+        # Fix "hole"
+        del self.solids_species[phase]
+        for n in range(phase, len(self.solids)):
+            self.solids_species[n] = self.solids_species[n+1]
+        if len(self.solids) > phase + 1:
+            del self.solids_species[len(self.solids)+1]
+        # TODO need to update keywords not just internal data
+        nscalar = self.project.get_value('nscalar', 0)
+        for i in range(1, nscalar+1):
+            if self.project.get_value('phase4scalar', args=i) == phase:
+                self.unset_keyword('phase4scalar', args=i)
+                nscalar -= 1
+        for i in range(1, nscalar+1):
+            phase4scalar = self.project.get_value('phase4scalar', args=i)
+            if phase4scalar > phase:
+                self.update_value('phase4scalar', args=phase4scalar-1)
+        #  TODO fix initial conditions for scalars
 
-        tw.removeRow(row)
+        self.update_keyword('nscalar', nscalar)
+
+
         self.update_solids_table()
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
 
