@@ -14,7 +14,7 @@ from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
 
 des_intg_methods = ['EULER', 'ADAMS_BASHFORTH']
 des_coll_models = ['LSD', 'HERTZIAN']
-des_interp_schemes = ['SQUARE_DPVM', 'GARG_2012', 'SQUARE_DPVM']
+des_interp_schemes = ['NONE', 'GARG_2012', 'SQUARE_DPVM']
 
 
 class SolidsDEM(object):
@@ -30,7 +30,7 @@ class SolidsDEM(object):
         s.combobox_coupling_method.activated.connect(self.set_coupling_method)
         s.checkbox_keyword_des_explicitly_coupled.clicked.connect(self.setup_dem_tab)
         s.combobox_des_interp.activated.connect(self.set_des_interp)
-        s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
+        s.combobox_des_interp_scheme.currentIndexChanged.connect(self.set_des_interp_scheme)
         s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
         s.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
         s.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
@@ -238,7 +238,7 @@ class SolidsDEM(object):
         for item in (cb, label):
             item.setEnabled(interp_enabled)
         if not interp_enabled:
-            des_interp_scheme = 'SQUARE_DPVM'
+            des_interp_scheme = 'NONE'
             self.update_keyword('des_interp_scheme', des_interp_scheme)
             cb.setCurrentIndex(0) # Must be 'None'
         else:
