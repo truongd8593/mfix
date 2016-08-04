@@ -17,7 +17,10 @@ UserRole = QtCore.Qt.UserRole
 from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
                            widget_iter, make_callback,
+                           format_key_with_args,
                            get_combobox_item, set_item_enabled)
+
+from tools import keyword_args
 
 from widgets.base import LineEdit
 
@@ -643,29 +646,33 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if row is None: # No selection
             return
 
+        phase = row+1
+        phase_name = tw.item(row,0).text()
+
+        key = self.solids_phase_in_use(phase)
+        if key:
+            self.message(text="%s is referenced by %s" %
+                         (phase_name, key))
+            return
+
         self.solids_current_phase = None
         self.solids_current_phase_name = None
         # avoid callbacks to handle_solids_table_selection (why?)
         tw.itemSelectionChanged.disconnect() # TODO: is this really needed?
         tw.clearSelection()  # Why do we still have a selected row after delete? (and should we?)
         name = tw.item(row, 0).text()
-        phase = row+1
-        for key in ('ro', 'mu', 'c_p', 'k'):
-            key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
-            key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
-            self.unset_keyword(key_s0, args=phase)
-            self.unset_keyword(key_usr, args=phase)
 
-        for key in ('d_p0', 'solids_model', 'species_eq', 'nmax_s'):
-            self.unset_keyword(key, args=phase)
-        # FIXME FIX SCALAR EQ!
+
+        # Clear out all keywords related to deleted phase
+        self.solids_delete_keys(phase)
+
+        # TODO FIXME FIX SCALAR EQ!
         del self.solids[name]
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        # FIXME clear out all keywords related to deleted phase!
         if self.solids_species.has_key(phase):
             del self.solids_species[phase]
 
@@ -853,6 +860,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         if nrows > 0:
             table.setItem(nrows-1, 0, make_item("Total"))
+            table.setItem(nrows-1, 1, make_item(''))
             item = table.item(nrows-1, 0)
             font = item.font()
             font.setBold(True)
@@ -1066,6 +1074,26 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         sp.enable_density(True)
         sp.popup()
 
+    def solids_phase_in_use(self, phase):
+        for k in keyword_args.keys_by_type['phase']:
+            args = keyword_args.keyword_args[k]
+            if args == ['phase']:
+                # Single reference is OK.  We will
+                # delete these keys along with the phase
+                continue
+            if args == ['ic', 'phase']:
+                for ic in range(1,10): #?
+                    if self.project.get_value(k, args=[ic,phase]) is not None:
+                        return format_key_with_args(k,[ic, phase])
+
+        return None # Ok to delete phase, no refs
+
+    def solids_delete_keys(self, phase):
+        for k in keyword_args.keys_by_type['phase']:
+            args = keyword_args.keyword_args[k]
+            if args == ['phase']:
+                self.unset_keyword(k, args=phase)
+
     def reset_solids(self):
         # Set all solid-related state back to default
         self.solids_current_phase = None
@@ -1075,3 +1103,4 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_species.clear()
         self.update_solids_table()
         self.update_solids_detail_pane()
+        # TODO (?)  reset THERMO_DATA ?
