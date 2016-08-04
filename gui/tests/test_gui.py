@@ -23,10 +23,8 @@ from tools.general import to_unicode_from_fs
 from .helper_functions import TestQApplication, waitFor, waitForWindow
 import gui
 
-
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
-
 
     def click_ok(self):
         retry = 0
@@ -91,7 +89,7 @@ class MfixGuiTests(TestQApplication):
         # We will get a confirmer for auto-rename
 
 
-        self.assertEqual(self.runname, self.mfix.project.run_name.value)
+        self.assertEqual(self.runname, self.mfix.project.get_value('run_name'))
         mfxfile = os.path.join(self.rundir, '%s.mfx' % self.runname)
         self.assertTrue(os.path.exists(mfxfile))
 
@@ -130,8 +128,8 @@ class MfixGuiTests(TestQApplication):
         self.mfix.get_save_filename = lambda: newpath
         self.mfix.ui.action_save_as.trigger()
 
-        waitFor(500)
-        self.assertEqual(newname, self.mfix.project.run_name.value)
+        waitFor(500) # FIXME wait for a transition, not a hardcoded delay time
+        self.assertEqual(newname, self.mfix.project.get_value('run_name'))
         self.assertTrue(os.path.exists(newpath))
 
 
