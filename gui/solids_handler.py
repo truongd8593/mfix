@@ -181,6 +181,40 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.init_solids_dem()
         self.init_solids_pic()
 
+    def solids_update_tabs(self):
+        s = self.ui.solids
+        solver = self.project.solver
+        if solver == SINGLE: # We shouldn't be here
+            return
+
+        items = (s.pushbutton_solids_tfm,
+                 s.pushbutton_solids_dem,
+                 s.pushbutton_solids_pic)
+
+        enable_dict = {TFM: (True, False, False),
+                       DEM: (False, True, False),
+                       PIC: (False, False, True),
+                       HYBRID: (True, True, False)}
+
+        enabled = enable_dict[solver] if self.solids else (False, False, False)
+
+        for (item, e) in zip(items, enabled):
+            item.setDisabled(not e)
+
+        # Don't stay on a disabled tab!
+        # (Do we ever disable "Materials"? - don't think so)
+        active_tab = s.stackedwidget_solids.currentIndex()
+        if active_tab > 0 and not enabled[active_tab-1]:
+            if solver==SINGLE:
+                i, p = 0, s.pushbutton_solids_materials
+            elif solver in (TFM, HYBRID):
+                i, p = 1, s.pushbutton_solids_tfm
+            elif solver==DEM:
+                i, p = 2, s.pushbutton_solids_dem
+            elif solver==PIC:
+                i, p = 3, s.pushbutton_solids_pic
+            self.solids_change_tab(i, p)
+
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, btn):
         self.solids_current_tab = tabnum
@@ -375,6 +409,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # ICs enabled/disabled depends on number of solids
         self.ics_update_enabled()
+        # Tabs enable/disable depending on number of solids
+        self.solids_update_tabs()
+
 
     def handle_solids_table_selection(self):
         s = self.ui.solids
@@ -645,6 +682,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # ICs enabled/disabled depends on nscalar
         self.ics_update_enabled()
+        # Tabs enable/disable depending on number of solids
+        self.solids_update_tabs()
+
 
     def enable_solids_scalar_eq(self, state):
         spinbox = self.ui.solids.spinbox_nscalar_eq

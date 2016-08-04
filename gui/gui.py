@@ -809,35 +809,10 @@ class MfixGui(QtWidgets.QMainWindow,
         self.print_internal("Solver: %s" % solver_name)
         self.solver_name = solver_name
 
-        item_names =  ("Material", "TFM", "DEM", "PIC")
-
-        item_states = {SINGLE: (False, False, False, False),
-                       TFM: (True, True, False, False),
-                       DEM: (True, False, True, False),
-                       PIC: (True, False, False, True),
-                       HYBRID: (True, True, True, False)}
-
-        items = (self.find_navigation_tree_item("Solids"),
-                 self.ui.solids.pushbutton_solids_tfm,
-                 self.ui.solids.pushbutton_solids_dem,
-                 self.ui.solids.pushbutton_solids_pic)
-
-        for (item, state) in zip(items, item_states[solver]):
-            item.setDisabled(not state)
-
-        # Don't stay on a disabled tab!
-        # (Do we ever disable "Materials"? - don't think so)
-        active_tab = self.ui.solids.stackedwidget_solids.currentIndex()
-        if active_tab > 0 and not item_states[solver][active_tab]:
-            if solver==SINGLE:
-                i, p = 0, self.ui.solids.pushbutton_solids_materials  # This one should be open (?)
-            elif solver in (TFM, HYBRID):
-                i, p = 1, self.ui.solids.pushbutton_solids_tfm
-            elif solver==DEM:
-                i, p = 2, self.ui.solids.pushbutton_solids_dem
-            elif solver==PIC:
-                i, p = 3, self.ui.solids.pushbutton_solids_pic
-            self.solids_change_tab(i, p)
+        enabled = (solver != SINGLE)
+        self.find_navigation_tree_item("Solids").setDisabled(not enabled)
+        if enabled:
+            self.solids_update_tabs()
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
