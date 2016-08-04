@@ -188,17 +188,19 @@ class SolidsDEM(object):
         # Selection always available
         # Available selections:
         # Field-to-Particle and Particle-to-Field [DEFAULT]
-        # Sets keyword DES_INTERP_ON to true
-        # Sets keyword DES_INTERP_MEAN_FIELDS to true
+        #  Sets keyword DES_INTERP_ON to true
+        #  Sets keyword DES_INTERP_MEAN_FIELDS to true
         # Field-to-Particle only
-        # Sets keyword DES_INTERP_ON to true
-        # Sets keyword DES_INTERP_MEAN_FIELDS to false
+        #  Sets keyword DES_INTERP_ON to true
+        #  Sets keyword DES_INTERP_MEAN_FIELDS to false
         # Particle-to-Field only
-        # Sets keyword DES_INTERP_ON to false
-        # Sets keyword DES_INTERP_MEAN_FIELDS to true
+        #  Sets keyword DES_INTERP_ON to false
+        #  Sets keyword DES_INTERP_MEAN_FIELDS to true
         # No Interpolation
-        # Sets keyword DES_INTERP_ON to false
-        # Sets keyword DES_INTERP_MEAN_FIELDS to false
+        #  Sets keyword DES_INTERP_ON to false
+        #  Sets keyword DES_INTERP_MEAN_FIELDS to false
+        #
+        # issues/116 must also set DES_INTERP_SCHEME to None
         des_interp_on = self.project.get_value('des_interp_on', True)
         if des_interp_on not in (True, False):
             self.warn("Invalid des_interp_on %s" % des_interp_on)
