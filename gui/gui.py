@@ -233,7 +233,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Setup the navigation tree widget
         tw = self.ui.treewidget_navigation
-        self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 20
+        self.max_label_len = tw.fontMetrics().width('Boundary Conditions') + 10
 
         self.nav_labels = [("Model Setup", "Model"),
                            ("Post-processing", "Post"),
@@ -383,10 +383,8 @@ class MfixGui(QtWidgets.QMainWindow,
         tree = ui.treewidget_navigation
         tree.expandAll()
         tree.setExpandsOnDoubleClick(False)
-        tree.setMaximumWidth(tree.fontMetrics().width('Boundary Conditions') + 20)
-        tree.setMinimumWidth(tree.fontMetrics().width('Chemistry') + 20)
-        #ui.treewidget_navigation.setMaximumWidth(200)
-        #ui.treewidget_navigation.setMinimumWidth(75)
+        tree.setMaximumWidth(tree.fontMetrics().width('Boundary Conditions') + 10)
+        tree.setMinimumWidth(tree.fontMetrics().width('Chemistry') + 10)
 
         # Job manager / monitor
         self.job_manager = JobManager(self)

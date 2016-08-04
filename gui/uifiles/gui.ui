@@ -638,6 +638,11 @@ QPushButton:checked {
                  </column>
                  <item>
                   <property name="text">
+                   <string>Model Setup</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
                    <string>Geometry</string>
                   </property>
                  </item>
@@ -653,43 +658,38 @@ QPushButton:checked {
                  </item>
                  <item>
                   <property name="text">
-                   <string>Model Setup</string>
+                   <string>Fluid</string>
                   </property>
-                  <item>
-                   <property name="text">
-                    <string>Fluid</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Solids</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Initial Conditions</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Boundary Conditions</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Point Sources</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Internal Surfaces</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Chemistry</string>
-                   </property>
-                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Solids</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Initial Conditions</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Boundary Conditions</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Point Sources</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Internal Surfaces</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Chemistry</string>
+                  </property>
                  </item>
                  <item>
                   <property name="text">
