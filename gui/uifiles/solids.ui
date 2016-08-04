@@ -2340,12 +2340,15 @@ background-color:transparent;
            <item>
             <widget class="QGroupBox" name="groupbox_cohesion_parameters">
              <property name="title">
-              <string>Parameters</string>
+              <string/>
              </property>
              <property name="flat">
               <bool>true</bool>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
+              <property name="topMargin">
+               <number>0</number>
+              </property>
               <item row="0" column="0">
                <layout class="QGridLayout" name="gridLayout_17">
                 <item row="0" column="1">
