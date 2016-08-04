@@ -412,6 +412,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # ICs enabled/disabled depends on number of solids
         self.ics_update_enabled()
+        self.update_nav_tree()
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
 
@@ -687,8 +688,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             # Hack to force update after deleting last row
             # FIXME this is not working
 
-        # ICs enabled/disabled depends on nscalar
+        # ICs enabled/disabled depends on nscalar & number of solids
         self.ics_update_enabled()
+        self.update_nav_tree()
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
 

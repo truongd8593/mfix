@@ -192,6 +192,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.fit_to_contents()
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
+        self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
 
     def delete_region(self):
         'remove the currently selected region'
@@ -210,6 +211,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.set_value(data)
             self.vtkwidget.render()
             self.parent.set_unsaved_flag()
+            self.parent.update_nav_tree()
 
         nrows = len(data)
         if rows[-1] == nrows: # We deleted the last row,
@@ -243,6 +245,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
             self.parent.set_unsaved_flag()
+            self.parent.update_nav_tree()
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'

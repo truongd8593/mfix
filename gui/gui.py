@@ -507,6 +507,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.unsaved_flag = False
 
+        self.update_nav_tree()
         #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
         #self.set_project_file(None)  - do we want to do this?
 
@@ -597,6 +598,16 @@ class MfixGui(QtWidgets.QMainWindow,
     def unimplemented(self):
         self.message(title='Unimplemented',
                      text='Feature not implemented')
+
+    def update_nav_tree(self):
+        n_regions = len(self.ui.regions.get_region_dict()) # causes an extra copy
+        enabled = (n_regions > 0) and (self.fluid_nscalar_eq > 0
+                                       or self.solids_nscalar_eq > 0
+                                       or len(self.solids) > 0
+                                       or not(self.fluid_solver_disabled) )
+        for name in ("Initial Conditions",): # "Boundary Conditions"):
+            item = self.find_navigation_tree_item(name)
+            item.setDisabled(not enabled)
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
@@ -865,6 +876,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         m.checkbox_enable_turbulence.isChecked())
 
         self.ics_update_enabled()
+        self.update_nav_tree()
 
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
@@ -963,6 +975,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # ICs enabled/disabled depends on nscalar
         self.ics_update_enabled()
+        self.update_nav_tree()
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
