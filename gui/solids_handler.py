@@ -730,7 +730,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         solid['enable_scalar_eq'] = state
         if state:
-            value = solid.get('saved_nscalar_eq', 0)
+            value = solid.get('saved_nscalar_eq', 1)
             self.set_solids_nscalar_eq(value)
         else:
             # Don't call set_solids_nscalar_eq(0) b/c that will clobber spinbox
