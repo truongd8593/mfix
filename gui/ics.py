@@ -167,12 +167,14 @@ class ICS(object):
         kwlist = list(self.project.keywordItems())[:]
         for kw in kwlist:
             key, args = kw.key, kw.args
+            # TODO use keyword_args here instead of startswith
             if key.startswith('ic_') and args and args[0] in self.ics_current_indices:
                 self.unset_keyword(key, args=args)
+
         # TODO: fix any resulting holes in index sequence!
 
         for r in self.ics_current_regions:
-            if r in self.ics_region_dict: # Might have been renamed or deleted in 'regions'! FIXMhE
+            if r in self.ics_region_dict:
                 self.ics_region_dict[r]['available'] = True
 
 
