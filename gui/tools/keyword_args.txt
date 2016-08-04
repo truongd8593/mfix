@@ -94,7 +94,6 @@ CLIP_ZMIN(Quadric ID)
 CLOSE_PACKED(Phase)
 C_PS0(Phase)
 DES_EM(Phase)
-DES_RATES(Evap) = Sa * H2O_xfr * Cmg_H2O
 DIL_FACTOR_VSD(Phase)
 DIL_INERT_X_VSD(Phase)
 DISCRETIZE(Equation ID Number)
@@ -149,10 +148,6 @@ IC_Y_N(IC)
 IC_Y_S(IC)
 IC_Z_B(IC)
 IC_Z_T(IC)
-IF(CH4_Combustion <= NRR) &
-IF(Cmg_H2O > ZERO) THEN
-IF(Evap <= NRR) ReactionRates(Evap) = &
-IF(.NOT.COMPARE(EP_g(IJK),ONE)) THEN
 INERT_SPECIES(Phase, Species)
 IS_I_E(IS)
 IS_I_W(IS)
@@ -173,8 +168,6 @@ K_S0(Phase)
 LAMBDA_X(Quadric ID)
 LAMBDA_Y(Quadric ID)
 LAMBDA_Z(Quadric ID)
-LEQ_IT(1), to ensure mass balance
-LEQ_IT(2), to ensure mass balance.
 LEQ_IT(Equation ID Number)
 LEQ_METHOD(Equation ID Number)
 LEQ_PC(Equation ID Number)
