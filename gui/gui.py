@@ -877,6 +877,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.ics_update_enabled()
         self.update_nav_tree()
+        # TODO update nscalar
 
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
