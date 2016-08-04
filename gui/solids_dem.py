@@ -221,7 +221,7 @@ class SolidsDEM(object):
         # Available selections:
         # None [locked default for no-interpolation framework]
         # Selection not available
-        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        # Sets keyword DES_INTERP_SCHEME='NONE' # Todo, update SRS
         # Garg 2012
         # Selection not available with explicit coupling enabled
         # Sets keyword DES_INTERP_SCHEME='GARG_2012'
