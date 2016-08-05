@@ -1,4 +1,4 @@
-#!/bin/bash -lex
+#!/bin/bash -ex
 
 if [ -f runtests.sh ]; then
     exec ./runtests.sh
