@@ -1288,35 +1288,45 @@ class MfixGui(QtWidgets.QMainWindow,
             offsetx = -width
             offsety = 0
         else:
-            return
-
-        # move to widget and show
-        # set the geometry of the next widget
-        to_widget.setGeometry(0 + offsetx, 0 + offsety, width, height)
-        to_widget.show()
-        to_widget.raise_()
-        #to_widget.activateWindow() ? needed?
+            offsetx = 0
+            offsety = 0
 
         self.stack_animation = QtCore.QParallelAnimationGroup()
-        # animate
-        # from widget
-        self.animation_setup(from_widget, 0, 0, -offsetx, -offsety)
 
-        # to widget
-        self.animation_setup(to_widget, offsetx, offsety, 0, 0)
+        if (from_ != to):
+            # move to widget and show
+            # set the geometry of the next widget
+            to_widget.setGeometry(0 + offsetx, 0 + offsety, width, height)
+            to_widget.show()
+            to_widget.raise_()
+            #to_widget.activateWindow() ? needed?
+
+
+            # animate
+            # from widget
+            self.animation_setup(from_widget, 0, 0, -offsetx, -offsety)
+
+            # to widget
+            self.animation_setup(to_widget, offsetx, offsety, 0, 0)
 
         # line
+        line_to = None
         if line is not None and to_btn is not None:
             self.animation_setup(line, line.geometry().x(), line.geometry().y(), to_btn.geometry().x(), line.geometry().y())
+            if btn_layout is not None:
+                for i in range(0, btn_layout.columnCount()):
+                    if btn_layout.itemAtPosition(0,i) == to_btn:
+                        line_to = i
+                        break
 
-        # animation group
+        # animation group FIXME why 2 callbacks?
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, line)
-            )
+                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+
         self.stack_animation.stateChanged.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, line))
+                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
         self.animating = True
         self.stack_animation.start()
@@ -1331,19 +1341,19 @@ class MfixGui(QtWidgets.QMainWindow,
         self.stack_animation.addAnimation(animation)
 
     def animate_stacked_widget_finished(self, widget, from_, to,
-                                        btn_layout=None, line=None):
+                                        btn_layout=None, to_btn=None, line=None, line_to=None):
         """cleanup after animation"""
         try:
             if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
                 widget.setCurrentIndex(to)
-                from_widget = widget.widget(from_)
-                from_widget.hide()
-                from_widget.move(0, 0)
-
+                if (from_ != to):
+                    from_widget = widget.widget(from_)
+                    from_widget.hide()
+                    from_widget.move(0, 0) #why?
                 if btn_layout is not None and line is not None:
                     btn_layout.addItem(btn_layout.takeAt(
-                        btn_layout.indexOf(line)), 1, to)
-        except AttributeError: # Happends during shutdown. TODO: remove this hack
+                        btn_layout.indexOf(line)), 1, line_to or to)
+        except AttributeError: # Happens during shutdown. TODO: remove this hack
             pass
         finally:
             self.animating = False

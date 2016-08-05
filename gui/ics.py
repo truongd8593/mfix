@@ -263,8 +263,8 @@ class ICS(object):
         index = (0 if tab==0
                  else len(self.solids)+1 if tab==2
                  else solid)
-        ics.tab_box.removeWidget(ics.tab_underline)
-        ics.tab_box.addWidget(ics.tab_underline, 1, index)
+        #ics.tab_box.removeWidget(ics.tab_underline)
+        #ics.tab_box.addWidget(ics.tab_underline, 1, index)
 
         for i in range(ics.tab_box.columnCount()):
             item = ics.tab_box.itemAtPosition(0, i)
@@ -287,7 +287,16 @@ class ICS(object):
 
         # change stackedwidget contents
         # TODO: use animate_stacked_widget here
-        ics.stackedwidget.setCurrentIndex(tab)
+        self.animate_stacked_widget(
+            ics.stackedwidget,
+            ics.stackedwidget.currentIndex(),
+            tab,
+            direction='horizontal',
+            line = ics.tab_underline,
+            to_btn = ics.tab_box.itemAtPosition(0, index),
+            btn_layout = ics.tab_box)
+
+        #ics.stackedwidget.setCurrentIndex(tab)
 
 
     def ics_check_region_in_use(self, region):
