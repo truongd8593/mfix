@@ -146,6 +146,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.unsaved_flag = False
         self.run_dialog = None
 
+        # Hack -remove these once better 'restore value' framework exists
+        self.saved_ro_g0 = None
+
         # load ui file
         self.customWidgets = {'LineEdit':      LineEdit,
                               'CheckBox':      CheckBox,
@@ -504,6 +507,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Defaults - see __init__
         self.solver_name = None
         self.fluid_solver_disabled = False  # TODO: infer at load time
+        self.saved_ro_g0 = None # Hack
 
         self.project.reset() # Clears all keywords & collections
 
@@ -897,6 +901,16 @@ class MfixGui(QtWidgets.QMainWindow,
         item.setDisabled(disabled)
         if disabled:
             self.enable_turbulence(False)
+            self.saved_ro_g0 = self.project.get_value('ro_g0')
+            self.update_keyword('ro_g0', 0) # issues/124
+            # TODO restore widget text ?
+            if self.saved_ro_g0 is not None:
+                self.ui.fluid.lineedit_keyword_ro_g0.setText(str(self.saved_ro_g0))
+        else:
+            # would be nice to restore turbulence vals
+            val = self.saved_ro_g0 if self.fluid_density_model == CONSTANT else None
+            self.update_keyword('ro_g0', val)
+
         m.checkbox_enable_turbulence.setEnabled(enabled)
         m.combobox_turbulence_model.setEnabled(enabled and
                         m.checkbox_enable_turbulence.isChecked())
