@@ -186,7 +186,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self.context_menu = self.createStandardContextMenu
 
         self._separators = ['*', '**', '/', '-', '+', ' ']
-        self._completer_model = QStringListModel(list(PARAMETER_DICT.keys()))
+        self._completer_model = QStringListModel(sorted(list(PARAMETER_DICT.keys())))
         self._completer = QtWidgets.QCompleter()
         self._completer.setModel(self._completer_model)
         self._completer.setWidget(self)
@@ -234,7 +234,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     def find_value(self, text):
         """finds the value corresponding the to string text, raises ValueError if that string is invalid for this widget"""
 
-        parameters = VALID_EXP_NAMES + list(PARAMETER_DICT.keys())
+        parameters = VALID_EXP_NAMES + sorted(list(PARAMETER_DICT.keys()))
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:
@@ -339,19 +339,22 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         completionPrefix = self.textUnderCursor()
         if completionPrefix != self._completer.completionPrefix():
             self._updateCompleterPopupItems(completionPrefix)
-        if len(event.text()) > 0 and len(completionPrefix) > 0:
+        if event.text() and completionPrefix:
             self._completer.complete()
-        if len(completionPrefix) == 0:
+        if not completionPrefix:
+            self._update_completion_list(allow_blank=True)
             self._updateCompleterPopupItems(None)
 
-    def _update_completion_list(self):
+    def _update_completion_list(self, allow_blank=False):
         comp_list = copy.deepcopy(VALID_EXP_NAMES)
+        if allow_blank:
+            comp_list.insert(0, '')
         for key, value in PARAMETER_DICT.items():
             if self.dtype == str and isinstance(value, str):
                 comp_list.append(key)
             else:
                 comp_list.append(key)
-
+        comp_list.sort()
         self._completer_model.setStringList(comp_list)
         self._completer.setModel(self._completer_model)
 
