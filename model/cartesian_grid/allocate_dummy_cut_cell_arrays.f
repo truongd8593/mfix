@@ -21,24 +21,24 @@
 
       IMPLICIT NONE
 
-      Allocate(  CUT_TREATMENT_AT (DIMENSION_3) )
-      Allocate(  CUT_U_TREATMENT_AT (DIMENSION_3) )
-      Allocate(  CUT_V_TREATMENT_AT (DIMENSION_3) )
-      Allocate(  CUT_W_TREATMENT_AT (DIMENSION_3) )
+      if (allocated(  CUT_TREATMENT_AT )) deallocate(  CUT_TREATMENT_AT ); Allocate(  CUT_TREATMENT_AT (DIMENSION_3) )
+      if (allocated(  CUT_U_TREATMENT_AT )) deallocate(  CUT_U_TREATMENT_AT ); Allocate(  CUT_U_TREATMENT_AT (DIMENSION_3) )
+      if (allocated(  CUT_V_TREATMENT_AT )) deallocate(  CUT_V_TREATMENT_AT ); Allocate(  CUT_V_TREATMENT_AT (DIMENSION_3) )
+      if (allocated(  CUT_W_TREATMENT_AT )) deallocate(  CUT_W_TREATMENT_AT ); Allocate(  CUT_W_TREATMENT_AT (DIMENSION_3) )
 
-      Allocate(  CUT_CELL_AT (DIMENSION_3) )
-      Allocate(  CUT_U_CELL_AT (DIMENSION_3) )
-      Allocate(  CUT_V_CELL_AT (DIMENSION_3) )
-      Allocate(  CUT_W_CELL_AT (DIMENSION_3) )
+      if (allocated(  CUT_CELL_AT )) deallocate(  CUT_CELL_AT ); Allocate(  CUT_CELL_AT (DIMENSION_3) )
+      if (allocated(  CUT_U_CELL_AT )) deallocate(  CUT_U_CELL_AT ); Allocate(  CUT_U_CELL_AT (DIMENSION_3) )
+      if (allocated(  CUT_V_CELL_AT )) deallocate(  CUT_V_CELL_AT ); Allocate(  CUT_V_CELL_AT (DIMENSION_3) )
+      if (allocated(  CUT_W_CELL_AT )) deallocate(  CUT_W_CELL_AT ); Allocate(  CUT_W_CELL_AT (DIMENSION_3) )
 
-      Allocate(  BC_ID (DIMENSION_3) )
-      Allocate(  BC_U_ID (DIMENSION_3) )
-      Allocate(  BC_V_ID (DIMENSION_3) )
-      Allocate(  BC_W_ID (DIMENSION_3) )
+      if (allocated(  BC_ID )) deallocate(  BC_ID ); Allocate(  BC_ID (DIMENSION_3) )
+      if (allocated(  BC_U_ID )) deallocate(  BC_U_ID ); Allocate(  BC_U_ID (DIMENSION_3) )
+      if (allocated(  BC_V_ID )) deallocate(  BC_V_ID ); Allocate(  BC_V_ID (DIMENSION_3) )
+      if (allocated(  BC_W_ID )) deallocate(  BC_W_ID ); Allocate(  BC_W_ID (DIMENSION_3) )
 
-      Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )
-      Allocate(  BLOCKED_V_CELL_AT (DIMENSION_3) )
-      Allocate(  BLOCKED_W_CELL_AT (DIMENSION_3) )
+      if (allocated(  BLOCKED_U_CELL_AT )) deallocate(  BLOCKED_U_CELL_AT ); Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )
+      if (allocated(  BLOCKED_V_CELL_AT )) deallocate(  BLOCKED_V_CELL_AT ); Allocate(  BLOCKED_V_CELL_AT (DIMENSION_3) )
+      if (allocated(  BLOCKED_W_CELL_AT )) deallocate(  BLOCKED_W_CELL_AT ); Allocate(  BLOCKED_W_CELL_AT (DIMENSION_3) )
 
       CUT_TREATMENT_AT = .FALSE.
       CUT_U_TREATMENT_AT = .FALSE.
@@ -63,5 +63,3 @@
 
       RETURN
       END SUBROUTINE ALLOCATE_DUMMY_CUT_CELL_ARRAYS
-
-

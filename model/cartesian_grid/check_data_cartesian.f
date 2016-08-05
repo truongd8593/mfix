@@ -3438,9 +3438,9 @@ MODULE CHECK_DATA_CG
 !      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
       IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
 
-      IF(.not.allocated(ISIZE_ALL)) allocate( ISIZE_ALL(0:NODESI-1))
-      IF(.not.allocated(JSIZE_ALL)) allocate( JSIZE_ALL(0:NODESJ-1))
-      IF(.not.allocated(KSIZE_ALL)) allocate( KSIZE_ALL(0:NODESK-1))
+      IF(allocated(ISIZE_ALL)) deallocate(ISIZE_ALL); allocate( ISIZE_ALL(0:NODESI-1))
+      IF(allocated(JSIZE_ALL)) deallocate(JSIZE_ALL); allocate( JSIZE_ALL(0:NODESJ-1))
+      IF(allocated(KSIZE_ALL)) deallocate(KSIZE_ALL); allocate( KSIZE_ALL(0:NODESK-1))
 
       ISIZE_ALL(0:NODESI-1) = imax1-imin1+1  ! Assign default sizes in I, J and K-direction
       JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1

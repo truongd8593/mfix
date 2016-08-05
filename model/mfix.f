@@ -68,6 +68,7 @@
       USE COMPAR, only:ADJUST_PARTITION
       USE DES_TIME_MARCH, ONLY: DES_TIME_INIT, DES_TIME_STEP, DES_TIME_END, FACTOR, EXIT_LOOP
       USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
+      USE ERROR_MANAGER, ONLY: INIT_ERROR_MANAGER
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
@@ -75,8 +76,9 @@
       USE MAIN, ONLY: GET_DATA, CHECK_DATA, INITIALIZE, FINALIZE
       USE MAIN, ONLY: EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
       USE MPI_UTILITY
-      USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
+      USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP, RUN_NAME, RUN_TYPE
       USE STEP, ONLY: CHECK_LOW_DT, CHEM_MASS, TIME_STEP_INIT, TIME_STEP_END
+      USE param1, only: n_spx
       USE parallel_mpi, only: parallel_init
       IMPLICIT NONE
 
@@ -130,6 +132,18 @@
 ! Read input data, check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
       CALL GET_DATA
+
+! Initialize the error manager. This call occurs after the mfix.dat
+! is read so that message verbosity can be set and the .LOG file
+! can be opened.
+      CALL INIT_ERROR_MANAGER
+
+! Write header in the .LOG file and to screen.
+! Not sure if the values are correct or useful
+      CALL WRITE_HEADER
+
+! Open files
+      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
 
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.

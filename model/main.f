@@ -437,18 +437,6 @@
          ! shift DX, DY and DZ values
          LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
-! Initialize the error manager. This call occurs after the mfix.dat
-! is read so that message verbosity can be set and the .LOG file
-! can be opened.
-      CALL INIT_ERROR_MANAGER
-
-! Write header in the .LOG file and to screen.
-! Not sure if the values are correct or useful
-      CALL WRITE_HEADER
-
-! Open files
-      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
-
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.
       CALL CHECK_GEOMETRY_PREREQS

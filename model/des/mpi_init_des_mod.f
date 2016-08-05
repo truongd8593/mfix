@@ -122,28 +122,28 @@
          F6.0,1X,'Neighbor Pairs/MB')
 
 
-      allocate (dsendbuf(2));
-      allocate (drecvbuf(2));
+      if (allocated(dsendbuf)) deallocate(dsendbuf); allocate (dsendbuf(2));
+      if (allocated(drecvbuf)) deallocate(drecvbuf); allocate (drecvbuf(2));
       do ii=1, size(dsendbuf)
-         allocate (dsendbuf(ii)%facebuf(imaxbuf));
-         allocate (drecvbuf(ii)%facebuf(imaxbuf));
+         if (allocated(dsendbuf)) deallocate(dsendbuf); allocate (dsendbuf(ii)%facebuf(imaxbuf));
+         if (allocated(drecvbuf)) deallocate(drecvbuf); allocate (drecvbuf(ii)%facebuf(imaxbuf));
       end do
 
-      allocate (isendindices(lmaxarea,lfaces)); isendindices=0
-      allocate (irecvindices(lmaxarea,lfaces)); irecvindices=0
+      if (allocated(isendindices)) deallocate(isendindices); allocate (isendindices(lmaxarea,lfaces)); isendindices=0
+      if (allocated(irecvindices)) deallocate(irecvindices); allocate (irecvindices(lmaxarea,lfaces)); irecvindices=0
 
-      allocate (isendreq(lfaces)); isendreq=0
-      allocate (irecvreq(lfaces)); irecvreq=0
-      allocate (isendcnt(lfaces)); isendcnt=0
+      if (allocated(isendreq)) deallocate(isendreq); allocate (isendreq(lfaces)); isendreq=0
+      if (allocated(irecvreq)) deallocate(irecvreq); allocate (irecvreq(lfaces)); irecvreq=0
+      if (allocated(isendcnt)) deallocate(isendcnt); allocate (isendcnt(lfaces)); isendcnt=0
 
-      allocate (dcycl_offset(lfaces,dimn)); dcycl_offset=0.0
-      allocate (ineighproc(lfaces)); ineighproc=0
-      allocate (iexchflag(lfaces)); iexchflag=.FALSE.
+      if (allocated(dcycl_offset)) deallocate(dcycl_offset); allocate (dcycl_offset(lfaces,dimn)); dcycl_offset=0.0
+      if (allocated(ineighproc)) deallocate(ineighproc); allocate (ineighproc(lfaces)); ineighproc=0
+      if (allocated(iexchflag)) deallocate(iexchflag); allocate (iexchflag(lfaces)); iexchflag=.FALSE.
 
 ! allocate variables related to scattergather
-      allocate(iscattercnts(0:numpes-1)); iscattercnts=0
-      allocate(igathercnts(0:numpes-1));  igathercnts=0
-      allocate(idispls(0:numpes-1)); idispls=0
+      if (allocated(iscattercnts)) deallocate(iscattercnts); allocate(iscattercnts(0:numpes-1)); iscattercnts=0
+      if (allocated(igathercnts)) deallocate(igathercnts); allocate(igathercnts(0:numpes-1));  igathercnts=0
+      if (allocated(idispls)) deallocate(idispls); allocate(idispls(0:numpes-1)); idispls=0
 
 ! set the communication flags
       CALL DESMPI_SETCOMM
