@@ -13,3 +13,7 @@ Date (MM/DD/YYYY) | Description                           | Severity |  Modified
   06/01/2016      | Fixed DEM pvd file update after on    |          | model/des/vtp_mod.f
                   | restart. (removed trace xml tags).    |   Minor  |
 ==================================================================================================
+  08/05/2016      | Fixed Bugs for calculating gradients  |          | model/des/calc_grad_des.f
+                  | with blocked regions and converting   |   Minor  | model/des/stl_preproc_des_mod.f
+                  | default walls to STL in 2D            |          |
+==================================================================================================

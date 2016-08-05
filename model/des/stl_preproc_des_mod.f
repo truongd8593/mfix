@@ -610,7 +610,7 @@
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(1,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
       ENDIF
 
@@ -625,7 +625,7 @@
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
-         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
       ENDIF
 
