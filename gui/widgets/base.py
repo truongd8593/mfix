@@ -147,14 +147,14 @@ class BaseWidget(QtCore.QObject):
         self.value_updated.emit(self, {self.key: self.value}, self.args)
 
     def setdtype(self, dtype=None):
-        dtype = to_text_string(dtype).lower().strip()
-        if dtype in ('i', 'int'):
+        dtype = to_text_string(dtype).strip().lower()
+        if dtype == 'i' or 'int' in dtype:
             self.dtype = int
-        elif dtype in ('d', 'dp', 'float'):
+        elif dtype in ('d', 'dp') or 'float' in dtype:
             self.dtype = float
-        elif dtype in ('l', 'bool'):
+        elif dtype == 'l' or  'bool' in dtype:
             self.dtype = bool
-        elif dtype in ('c', 'str'):
+        elif dtype in ('c', 's') or 'str' in dtype:
             self.dtype = str
         else:
             raise TypeError(self.objectName(), dtype)
