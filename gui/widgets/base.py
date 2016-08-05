@@ -148,14 +148,16 @@ class BaseWidget(QtCore.QObject):
 
     def setdtype(self, dtype=None):
         dtype = to_text_string(dtype).lower().strip()
-        if dtype == to_text_string('i'):
+        if dtype in ('i', 'int'):
             self.dtype = int
-        elif dtype == to_text_string('dp'):
+        elif dtype in ('d', 'dp', 'float'):
             self.dtype = float
-        elif dtype == to_text_string('bool'):
+        elif dtype in ('l', 'bool'):
             self.dtype = bool
-        else:
+        elif dtype in ('c', 'str'):
             self.dtype = str
+        else:
+            raise TypeError(self.objectName(), dtype)
 
     def setValInfo(self, max=None, min=None, required=None):
         if max is not None:
