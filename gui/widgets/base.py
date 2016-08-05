@@ -260,7 +260,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.report_value_error(e)
                     return self.updateValue(None, self.saved_value)
-            elif re_math.search(text) or any([par in text for par in parameters]):
+            elif re_math.search(text) or any(par in text for par in parameters):
                 if text.startswith('@(') and text.endswith(')'):
                     text = text[2:-1]
                 try:
@@ -284,7 +284,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 return self.updateValue(None, self.saved_value)
 
         elif self.dtype is int:
-            if re_math.search(text) or any([par in text for par in parameters]):
+            if re_math.search(text) or any(par in text for par in parameters):
                 # integer equations?  do we use this?
                 try:
                     eq = Equation(text, dtype=int)
