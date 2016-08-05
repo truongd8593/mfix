@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from qtpy import QtWidgets
 
 from widgets.base import LineEdit
+from project import Equation
 from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
 
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
@@ -310,7 +311,7 @@ class SolidsDEM(object):
 
 
         if enabled: # TODO set these defaults at load-time, not when this tab is shown
-            for (key, default) in [('kt_fac', '@(2./7.)'), ('kt_w_fac', '@(2./7.)'),
+            for (key, default) in [('kt_fac', Equation('2/7')), ('kt_w_fac', Equation('2/7')),
                                    ('des_etat_fac', 0.5), ('des_etat_w_fac', 0.5)]:
                 if self.project.get_value(key) is None:
                     self.update_keyword(key, default)
