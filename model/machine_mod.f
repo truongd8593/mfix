@@ -1,17 +1,18 @@
       MODULE machine
 
-!              record length used in open statement for unformatted,
-!              direct access file, with 512 bytes per record
-      INTEGER  OPEN_N1
-!
-!              number of DOUBLE PRECISION words in 512 bytes
-      INTEGER  NWORDS_DP
-!
-!              number of REAL words in 512 bytes
-      INTEGER  NWORDS_R
-!
-!              number of INTEGER words in 512 bytes
-      INTEGER  NWORDS_I
+! Record length used in open statement for unformatted, direct access
+! file, with 512 bytes per record
+      integer, parameter :: OPEN_N1   = 512
+
+! Number of DOUBLE PRECISION words in 512 bytes
+      integer, parameter :: NWORDS_DP =  64
+
+! Number of REAL words in 512 bytes
+      integer, parameter  :: NWORDS_R = 128
+
+! Number of INTEGER words in 512 bytes
+      integer, parameter :: NWORDS_I = 128
+
 !
       LOGICAL :: JUST_FLUSH = .TRUE.
 
@@ -28,40 +29,6 @@
 
     CONTAINS
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: MACHINE_CONS                                           C
-!  Purpose: set the machine constants    ( SGI ONLY )                  C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 28-JAN-92  C
-!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: OPEN_N1, NWORDS_DP, NWORDS_R, N_WORDS_I         C
-!                                                                      C
-!  Local variables: None                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE MACHINE_CONS
-
-      IMPLICIT NONE
-
-      OPEN_N1   = 512
-      NWORDS_DP =  64
-      NWORDS_R  = 128
-      NWORDS_I  = 128
-      JUST_FLUSH = .TRUE.
-
-      RETURN
-      END SUBROUTINE MACHINE_CONS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_RUN_ID                                             C

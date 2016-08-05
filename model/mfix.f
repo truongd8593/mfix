@@ -71,10 +71,13 @@
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
-      USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD, INITIALIZE, FINALIZE, EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
+      USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD
+      USE MAIN, ONLY: GET_DATA, CHECK_DATA, INITIALIZE, FINALIZE
+      USE MAIN, ONLY: EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
       USE MPI_UTILITY
       USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
       USE STEP, ONLY: CHECK_LOW_DT, CHEM_MASS, TIME_STEP_INIT, TIME_STEP_END
+      USE parallel_mpi, only: parallel_init
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -97,11 +100,15 @@
          ENDIF
 
          IF (tmp=='-h'.or.tmp=='--help') THEN
-            print *, "Usage: mfix [-h,--help] [-p,--print-flags] [-f,--file <filename>] [<KEYWORD>=<VALUE> ...]"
+            print *, "Usage: mfix [-h,--help] [-p,--print-flags] &
+               &[-f,--file <filename>] [<KEYWORD>=<VALUE> ...]"
             print *, "       -h,--help: display this help message"
-            print *, "       -p,--print-flags: print flags MFIX was built with (if any): dmp mkl netcdf python smp"
-            print *, "       -f,--file <filename>: specify filename of input file (Default: mfix.dat)"
-            print *, "       <KEYWORD>=<VALUE>: specify keyword on command line, overrides values in mfix.dat"
+            print *, "       -p,--print-flags: print flags MFIX was &
+               &built with (if any): dmp mkl netcdf python smp"
+            print *, "       -f,--file <filename>: &
+               &specify filename of input file (Default: mfix.dat)"
+            print *, "       <KEYWORD>=<VALUE>: specify keyword on &
+               &command line, overrides values in mfix.dat"
             STOP
          ELSE IF (tmp=='-p'.or.tmp=='--print-flags') THEN
             CALL PRINT_FLAGS
@@ -114,8 +121,19 @@
          ENDIF
       ENDDO
 
+! Invoke MPI/SMP initialization and get rank info.
+     CALL PARALLEL_INIT
+
 ! Dynamic load balance loop
       DO
+
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL GET_DATA
+
+! Check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL CHECK_DATA
 
 ! Initialize the simulation
       CALL INITIALIZE
