@@ -481,10 +481,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
         saved_nscalar_eq = solid.get('saved_nscalar_eq', 0)
-        s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
-        enabled = solid.get('enable_scalar_eq', False) # (nscalar_phase > 0)
+        if s.spinbox_nscalar_eq.value() != saved_nscalar_eq:
+            s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
+        enabled = (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
         s.spinbox_nscalar_eq.setEnabled(enabled)
+        if enabled:
+            s.spinbox_nscalar_eq.setValue(nscalar_phase)
         #self.enable_solids_scalar_eq(enabled)
 
         ### Restrictions (see SRS p13)
@@ -722,19 +725,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
-
-        current_state = solid.get('enable_scalar_eq')
-
-        if state == current_state: # avoid clobbering saved values
-            return
-
-        solid['enable_scalar_eq'] = state
         if state:
             value = solid.get('saved_nscalar_eq', 1)
             self.set_solids_nscalar_eq(value)
         else:
             # Don't call set_solids_nscalar_eq(0) b/c that will clobber spinbox
-            prev_nscalar = self.solids_nscalar_eq + self.solids_nscalar_eq
+            prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
             solid['saved_nscalar_eq'] = solid.get('nscalar_eq', 0)
             solid['nscalar_eq'] = 0
             self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
@@ -898,7 +894,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         solid = self.solids[name]
 
         nscalar = self.project.get_value('nscalar', 0)
-        prev_nscalar = self.solids_nscalar_eq + self.solids_nscalar_eq
+        prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
 
         solid['nscalar_eq'] = value
         solid['saved_nscalar_eq'] = value

@@ -107,6 +107,7 @@ class ICS(object):
         if not selections:
             return
         self.ics_add_regions_1(selections) # Indices will be assigned
+        self.ics_setup_current_tab() # Update the widgets
 
     def ics_add_regions_1(self, selections, indices=None):
         # Used by both interactive and load-time add-region handlers
@@ -193,7 +194,7 @@ class ICS(object):
         #row = get_selected_row(tw)
         #if row is None:
         #    self.handle_ics_region_selection()
-
+        self.ics_setup_current_tab()
 
     def handle_ics_region_selection(self):
         ics = self.ui.initial_conditions
@@ -215,7 +216,7 @@ class ICS(object):
                     widget.setText('')
             return
 
-        self.setup_ics() # This will reinitialize all widgets in current tab
+        self.ics_setup_current_tab() # reinitialize all widgets in current tab
 
 
     def fixup_ics_table(self, tw, stretch_column=0):
@@ -401,8 +402,10 @@ class ICS(object):
         # Don't stay on a disabled tab TODO
         # if self.ics_current_tab == 2 and nscalar == 0:
         #
+        self.ics_setup_current_tab()
 
-        # Set up the current tab
+
+    def ics_setup_current_tab(self):
         if self.ics_current_tab == 0:
             self.setup_ics_fluid_tab()
         elif self.ics_current_tab == 1:
