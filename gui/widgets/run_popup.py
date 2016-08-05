@@ -371,7 +371,6 @@ class RunPopup(QDialog):
         # look for executables in the order listed in exe_list_order
         for exe_spec in exe_list_order:
             for exe in exe_spec():
-                log.info('evaluating executable %s' % exe)
                 self.prepend_to_exe_list(exe)
 
     def exe_exists(self, exe):
@@ -379,15 +378,22 @@ class RunPopup(QDialog):
         return (os.path.isfile(exe) and os.access(exe, os.X_OK))
 
     def get_exe_flags(self, mfix_exe):
-        """ run mfix to get executable features (like dmp/smp support) """
-        now = int(time.time())
-        if (now, mfix_exe) in self.mfix_exe_cache:
-            return self.mfix_exe_cache[(now, mfix_exe)]
+        """ get and cache (and update) executable features """
         if not self.exe_exists(mfix_exe):
-            raise ValueError("mfix executable does not exist: %s" % mfix_exe)
-        log.debug('Feature testing MFIX %s' % mfix_exe)
-
+            raise ValueError(
+                "File does not exist or is not executable: %s" % mfix_exe)
         try:
+            stat = os.stat(mfix_exe)
+        except OSError as err:
+            log.debug('Could not stat %s' % mfix_exe)
+            return None
+
+        # stat will have changed if the exe has been modified since last check
+        if (stat, mfix_exe) in self.mfix_exe_cache:
+            _, flags = self.mfix_exe_cache[(stat, mfix_exe)]
+            return flags
+        try:
+            log.debug('Feature testing MFIX %s' % mfix_exe)
             exe_dir = os.path.dirname(mfix_exe)
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
@@ -400,7 +406,7 @@ class RunPopup(QDialog):
 
         flags = str(out.strip())
         mfix_exe_flags = {'flags': flags}
-        self.mfix_exe_cache[(now, mfix_exe)] = mfix_exe_flags
+        self.mfix_exe_cache[(stat, mfix_exe)] = stat, mfix_exe_flags
         return mfix_exe_flags
 
     def dmp_enabled(self):
