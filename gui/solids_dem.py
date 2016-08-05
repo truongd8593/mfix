@@ -15,8 +15,8 @@ from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
 
 des_intg_methods = ['EULER', 'ADAMS_BASHFORTH']
 des_coll_models = ['LSD', 'HERTZIAN']
-des_interp_schemes = ['NONE', 'GARG_2012', 'SQUARE_DPVM']
-
+des_interp_schemes = ['NONE', 'SQUARE_DPVM', 'GARG_2012']
+NONE, SQUARE_DPVM, GARG_2012 = (0,1,2)
 
 class SolidsDEM(object):
     # After any item in this tab is edited, we call setup_dem_tab again to make
@@ -31,11 +31,12 @@ class SolidsDEM(object):
         s.combobox_coupling_method.activated.connect(self.set_coupling_method)
         s.checkbox_keyword_des_explicitly_coupled.clicked.connect(self.setup_dem_tab)
         s.combobox_des_interp.activated.connect(self.set_des_interp)
-        s.combobox_des_interp_scheme.currentIndexChanged.connect(self.set_des_interp_scheme)
+        s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
         s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
         s.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
         s.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
         s.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
+        s.lineedit_keyword_des_diffuse_width.setdtype('dp')
 
     def set_gener_part_config(self, val):
         s = self.ui.solids
@@ -43,7 +44,9 @@ class SolidsDEM(object):
         if val:
             self.unset_keyword("particles")
         else:
-            self.update_keyword("particles", s.lineedit_particles.text()) # Restore prev. value
+            self.update_keyword("particles", s.lineedit_particles.value)
+
+
         enabled = not val
         for item in (s.label_particles, s.lineedit_particles):
             item.setEnabled(enabled)
@@ -72,6 +75,7 @@ class SolidsDEM(object):
         self.update_keyword('des_interp_scheme', des_interp_scheme)
         self.setup_dem_tab()
 
+
     def enable_des_diffuse_width(self, val):
         s = self.ui.solids
         enabled = val
@@ -82,7 +86,7 @@ class SolidsDEM(object):
             self.unset_keyword('des_diffuse_width')
         else: #Restore value
             self.update_keyword('des_diffuse_width',
-                                s.lineedit_keyword_des_diffuse_width.text())
+                                s.lineedit_keyword_des_diffuse_width.value)
 
 
     def set_cohesion_model(self, val):
@@ -96,7 +100,7 @@ class SolidsDEM(object):
             self.unset_keyword('des_usr_var_size')
         else:
             self.update_keyword('des_usr_var_size',
-                                s.lineedit_keyword_des_usr_var_size.text())
+                                s.lineedit_keyword_des_usr_var_size.value)
         self.setup_dem_tab()
 
     def set_des_neighbor_search(self, val):
@@ -108,7 +112,7 @@ class SolidsDEM(object):
         # called by each 'set_' function, so don't call those here
         s = self.ui.solids
         # Inline comments from MFIX-UI SRS as of 2016-07-01
-        #  Pleas update as needed!
+        #  Please update as needed!
 
         #MFIX-UI SRS
         #Enable automatic particle generation
@@ -201,7 +205,7 @@ class SolidsDEM(object):
         #  Sets keyword DES_INTERP_ON to false
         #  Sets keyword DES_INTERP_MEAN_FIELDS to false
         #
-        # issues/116 must also set DES_INTERP_SCHEME to None
+        # issues/116 must also set DES_INTERP_SCHEME to None when no-interpolation
         des_interp_on = self.project.get_value('des_interp_on', True)
         if des_interp_on not in (True, False):
             self.warn("Invalid des_interp_on %s" % des_interp_on)
@@ -229,8 +233,8 @@ class SolidsDEM(object):
         # Square DPVM
         # Selection always available
         # Requires an interpolation width, DES_INTERP_WIDTH
-        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPM'
-
+        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        #
         cb = s.combobox_des_interp_scheme
         label = s.label_des_interp_scheme
         des_interp_scheme = self.project.get_value('des_interp_scheme')
@@ -239,12 +243,11 @@ class SolidsDEM(object):
         for item in (cb, label):
             item.setEnabled(interp_enabled)
         if not interp_enabled:
+            cb.setCurrentIndex(NONE)
             des_interp_scheme = 'NONE'
-            self.update_keyword('des_interp_scheme', des_interp_scheme)
-            cb.setCurrentIndex(0) # Must be 'None'
         else:
-            cb.setCurrentIndex(1 if des_interp_scheme=='GARG_2012' else 2)
-
+            des_interp_scheme = des_interp_schemes[cb.currentIndex()]
+        #
         # per-item enable flags
         enabled = (not interp_enabled, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
@@ -254,31 +257,43 @@ class SolidsDEM(object):
             idx = enabled.index(True) # 2 is always True so this is safe
             cb.setCurrentIndex(idx)
             des_interp_scheme = des_interp_schemes[idx]
-            self.update_keyword('des_interp_scheme', des_interp_scheme)
+        # Value of des_interp_scheme may have changed
+        self.update_keyword('des_interp_scheme', des_interp_scheme)
 
         #Define interpolation width (DPVM only) (required)
         # Specification only available with SQUARE_DPVM interpolation scheme
         # Sets keyword DES_INTERP_WIDTH
+        # TODO default?
+        key = 'des_interp_width'
         enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
         for item in (s.label_des_interp_width, s.lineedit_keyword_des_interp_width,
                      s.label_des_interp_width_units):
             item.setEnabled(enabled)
+        if des_interp_scheme != 'SQUARE_DPVM':
+            self.unset_keyword(key)
+        else:
+            self.update_keyword(key, s.lineedit_keyword_des_interp_width.value)
+
 
         #Option to enable diffusion of particle data
         # Selection unavailable with GARG_2012 interpolation scheme
         # No keyword is set by this option
         # Enables the user to specify a diffusion width
         # Sets keyword DES_DIFFUSE_WIDTH
-        enabled = (des_interp_scheme!='GARG_2012') # and interp_enabled #?
+        key = 'des_diffuse_width'
+        enabled = (des_interp_scheme!='GARG_2012')
         s.checkbox_enable_des_diffuse_width.setEnabled(enabled)
         if not enabled:
             s.checkbox_enable_des_diffuse_width.setChecked(False)
-            self.unset_keyword('des_diffuse_width')
+            self.unset_keyword(key)
             s.lineedit_keyword_des_diffuse_width.clear() # ??? FIXME
         enabled = s.checkbox_enable_des_diffuse_width.isChecked()
         for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
                      s.label_des_diffuse_width_units):
             item.setEnabled(enabled)
+            if enabled:
+                self.update_keyword(key, s.lineedit_keyword_des_diffuse_width.value)
+
 
         #Specify friction coefficient
         # Specification always required

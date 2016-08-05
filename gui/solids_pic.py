@@ -8,7 +8,8 @@ from tools.general import get_combobox_item, set_item_enabled
 # In-line comments from MFIX-UI SRS as of 2016-07-01
 #  Please update comments along with SRS/code changes!
 
-des_interp_schemes = ['NONE', 'GARG_2012', 'SQUARE_DPVM']
+des_interp_schemes = ['NONE', 'SQUARE_DPVM',  'GARG_2012']
+NONE, SQUARE_DPVM, GARG_2012 = (0,1,2)
 
 class SolidsPIC(object):
     def init_solids_pic(self):
@@ -128,12 +129,13 @@ class SolidsPIC(object):
         index = 2*(1-des_interp_on) + (1-des_interp_mean_fields)
         s.combobox_des_interp_2.setCurrentIndex(index)
 
+
         #Select interpolation scheme:
         # Selection available except when no-interpolation framework is selected
         # Available selections:
         # None [locked default for no-interpolation framework]
         # Selection not available
-        # Sets keyword DES_INTERP_SCHEME='NONE'
+        # Sets keyword DES_INTERP_SCHEME='NONE' # Todo, update SRS
         # Garg 2012
         # Selection not available with explicit coupling enabled
         # Sets keyword DES_INTERP_SCHEME='GARG_2012'
@@ -141,36 +143,46 @@ class SolidsPIC(object):
         # Selection always available
         # Requires an interpolation width, DES_INTERP_WIDTH
         # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        #
         cb = s.combobox_des_interp_scheme_2
+        label = s.label_des_interp_scheme_2
         des_interp_scheme = self.project.get_value('des_interp_scheme')
         des_explicity_coupled = self.project.get_value('des_explicity_coupled')
         interp_enabled = des_interp_on or des_interp_mean_fields # not no-interp
-        cb.setEnabled(interp_enabled)
+        for item in (cb, label):
+            item.setEnabled(interp_enabled)
         if not interp_enabled:
+            cb.setCurrentIndex(NONE)
             des_interp_scheme = 'NONE'
-            self.update_keyword('des_interp_scheme', des_interp_scheme)
-            cb.setCurrentIndex(0) # Must be 'None'
         else:
-            cb.setCurrentIndex(1 if des_interp_scheme=='GARG_2012' else 2)
-
+            des_interp_scheme = des_interp_schemes[cb.currentIndex()]
+        #
         # per-item enable flags
         enabled = (not interp_enabled, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
             set_item_enabled(get_combobox_item(cb,i), e)
         # Make sure we don't leave the combobox on an invalid item!
         if not enabled[cb.currentIndex()]:
-            index = enabled.index(True) # 2 is always True so this is safe
-            cb.setCurrentIndex(index)
-            des_interp_scheme = des_interp_schemes[index]
-            self.update_keyword('des_interp_scheme', des_interp_scheme)
+            idx = enabled.index(True) # 2 is always True so this is safe
+            cb.setCurrentIndex(idx)
+            des_interp_scheme = des_interp_schemes[idx]
+        # Value of des_interp_scheme may have changed
+        self.update_keyword('des_interp_scheme', des_interp_scheme)
 
         #Define interpolation width (DPVM only) (required)
         # Specification only available with SQUARE_DPVM interpolation scheme
         # Sets keyword DES_INTERP_WIDTH
+        # TODO default?
+        key = 'des_interp_width'
         enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
         for item in (s.label_des_interp_width_2, s.lineedit_keyword_des_interp_width_2,
                      s.label_des_interp_width_units_2):
             item.setEnabled(enabled)
+        if des_interp_scheme != 'SQUARE_DPVM':
+            self.unset_keyword(key)
+        else:
+            self.update_keyword('des_interp_width', s.lineedit_keyword_des_interp_width_2.value)
+
 
         #Define solids stress model parameter: pressure constant
         # Sets keyword PSFAC_FRIC_PIC
