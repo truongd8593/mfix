@@ -296,7 +296,7 @@ class Equation(object):
                                          names=name_dict
                                          ))
             except:
-                raise ValueError(self.eq)
+                raise ValueError(self.eq) # TODO make an EquationError class
 
     def __nonzero__(self):  # Python 2
         return not math.isnan(self._eval())
@@ -318,10 +318,10 @@ class Equation(object):
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, value):
-        eq = float(self._eval())
-        if eq < value: return -1
-        elif eq > value: return 1
-        elif eq == value: return 0
+        f = float(self._eval())
+        if f < value: return -1
+        elif f > value: return 1
+        elif f == value: return 0
 
     def __add__(self, value):
         return float(self._eval()) + float(value)

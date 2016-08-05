@@ -127,7 +127,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_project_file(project_file)
 
         self.app = app
-        LineEdit.value_error = self.popup_value_error
+        LineEdit.report_value_error = self.popup_value_error
 
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(get_icon('mfix.png'))

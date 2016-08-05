@@ -59,6 +59,8 @@ def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
+class RangeError(ValueError):
+    pass
 
 class BaseWidget(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
@@ -198,14 +200,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                               QtCore.Qt.Key_Tab] # shouldn't TAB take us to next field?
 
     @classmethod
-    def value_error(self, text):
+    def report_value_error(self, text):
         print(text)
 
     def mark_changed(self):
         self.text_changed_flag = True
-
-    def setText(self, text):
-        QtWidgets.QLineEdit.setText(self, text)
 
     def emitUpdatedValue(self):
         need_to_signal = self.text_changed_flag
@@ -216,11 +215,12 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 self.value_updated.emit(self, {self.key: value}, self.args)
 
     def check_range(self, val):
-
+        # Should this just be a function? would  make it easier to
+        # distinguish range errors from other errors
         if self.min is not None and val < self.min:
-            raise ValueError("%s < %s" % (val, self.min))
+            raise RangeError("out of allowed range:\n %s < %s" % (val, self.min))
         if self.max is not None and val > self.max:
-            raise ValueError("%s > %s" % (val, self.max))
+            raise RangeError("out of allowed range:\n %s > %s" % (val, self.max))
 
     @property
     def value(self):
@@ -235,56 +235,85 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             if re_float.match(text) or re_int.match(text):
                 try:
                     f = float(text)
+                except ValueError as e: # Should not really happen, unless our regexes are bad
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     self.check_range(f)
                     self.saved_value = f
                     return f
                 except ValueError as e:
-                    self.value_error(e)
-                    return self.saved_value or ''
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
             elif re_float_exp.match(text):
                 try:
                     f = make_FloatExp(text)
+                except ValueError as e:
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     self.check_range(f)
                     self.saved_value = f
                     return f
                 except ValueError as e:
-                    self.value_error(e)
-                    return self.saved_value or ''
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
             elif re_math.search(text) or any([par in text for par in parameters]):
+                if text.startswith('@(') and text.endswith(')'):
+                    text = text[2:-1]
                 try:
-                    if text.startswith('@(') and text.endswith(')'):
-                        text = text[2:-1]
                     eq = Equation(text, dtype=float)
+                except ValueError as e:
+                    self.report_value_error("Invalid equation: %s" % e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     f = float(eq)
+                except ValueError as e:
+                    self.report_value_error("Invalid equation: %s" % e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     self.check_range(f)
                     self.saved_value = eq
                     return eq
                 except ValueError as e:
-                    self.value_error("Equation Error: value %s" % e)
-                    return self.saved_value or ''
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
             else:
-                return self.saved_value or ''
+                return self.updateValue(None, self.saved_value)
 
         elif self.dtype is int:
             if re_math.search(text) or any([par in text for par in parameters]):
+                # integer equations?  do we use this?
                 try:
                     eq = Equation(text, dtype=int)
+                except ValueError as e:
+                    self.report_value_error("Invalid equation: %s" % e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     i = int(eq)
+                except ValueError as e:
+                    self.report_value_error("Invalid equation: %s" % e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     self.check_range(i)
                     self.saved_value = eq
                     return eq
                 except ValueError as e:
-                    self.value_error("Equation Error: value %s" % e)
-                    return self.saved_value or ''
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
             else:
                 try:
                     i = int(float(text))
+                except ValueError as e:
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
+                try:
                     self.check_range(i)
                     self.saved_value = i
                     return i
                 except ValueError as e:
-                    self.value_error("Error: value %s" % e)
-                    return self.saved_value or ''
+                    self.report_value_error(e)
+                    return self.updateValue(None, self.saved_value)
         else:
             raise TypeError(self.dtype)
 
@@ -304,6 +333,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             sval = sval[2:-1]
 
         self.setText(sval)
+        return new_value
 
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
@@ -317,6 +347,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         This is the event handler for the QCompleter.activated(QString) signal,
         it is called when the user selects an item in the completer popup.
         """
+        # TODO FIXME this auto-completes an empty string
         text_under = self.textUnderCursor()
         cur_text = self.text()
         i = self.cursorPosition()
