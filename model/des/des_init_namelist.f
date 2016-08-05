@@ -435,7 +435,7 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_FAC = 3.5d0
+      KT_FAC = 0.28571428571429
 !</keyword>
 
 
@@ -457,7 +457,7 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_W_FAC = 3.5d0
+      KT_W_FAC = 0.28571428571429
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false" dem="true"
