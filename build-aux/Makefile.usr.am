@@ -167,7 +167,7 @@ AM_LDFLAGS += $(FC_DEFINE)MPI
 F2PY_FLAGS += $(FC_DEFINE)MPI
 
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
-	MPICMD=$(MPICMD) ${top_srcdir}/runtests.sh
+	MPICMD="$(MPICMD)" ${top_srcdir}/runtests.sh
 else
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
 	${top_srcdir}/runtests.sh
