@@ -2250,6 +2250,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         ### Solids
         self.update_solids_table()
+        self.solids_update_tabs()
         #self.update_solids_detail_pane()
 
         ### Regions
