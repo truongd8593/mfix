@@ -125,8 +125,8 @@
       if (allocated(dsendbuf)) deallocate(dsendbuf); allocate (dsendbuf(2));
       if (allocated(drecvbuf)) deallocate(drecvbuf); allocate (drecvbuf(2));
       do ii=1, size(dsendbuf)
-         if (allocated(dsendbuf)) deallocate(dsendbuf); allocate (dsendbuf(ii)%facebuf(imaxbuf));
-         if (allocated(drecvbuf)) deallocate(drecvbuf); allocate (drecvbuf(ii)%facebuf(imaxbuf));
+         if (allocated(dsendbuf(ii)%facebuf)) deallocate(dsendbuf(ii)%facebuf); allocate (dsendbuf(ii)%facebuf(imaxbuf));
+         if (allocated(drecvbuf(ii)%facebuf)) deallocate(drecvbuf(ii)%facebuf); allocate (drecvbuf(ii)%facebuf(imaxbuf));
       end do
 
       if (allocated(isendindices)) deallocate(isendindices); allocate (isendindices(lmaxarea,lfaces)); isendindices=0

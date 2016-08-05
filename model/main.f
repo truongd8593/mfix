@@ -49,20 +49,23 @@
       USE compar, only: mype, pe_io
       USE cont, only: do_cont
       USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
+      USE dashboard, ONLY: dtmax, dtmin, init_time, n_dashboard, nit_max, nit_min, smmax, smmin
       USE dbg, only: debug_write_layout, write_parallel_info
+      USE des_allocate, only: des_allocate_arrays
       USE discretelement, only: discrete_element
       USE drag, only: f_gs
       USE error_manager, only: err_msg, flush_err_msg
       USE error_manager, only: init_err_msg, finl_err_msg
       USE fldvar, only: rop_g, rop_s
       USE funits, only: dmp_log, unit_log, unit_res
+      USE iterate, ONLY: max_nit
       USE machine, only: start_log, end_log
       USE machine, only: wall_time, start_log, end_log
       USE mfix_netcdf, only: mfix_usingnetcdf
       USE output, only: dbgprn_layout
       USE output_man, only: init_output_vars, output_manager
       USE parallel_mpi, only: parallel_init, parallel_fin
-      USE param1, only: n_spx, undefined, zero
+      USE param1, only: n_spx, undefined, zero, large_number
       USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
       USE physprop, only: mmax
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
@@ -85,6 +88,32 @@
 
      INTEGER :: LL, MM
 
+
+     !--------------------------  ARRAY ALLOCATION -----------------------!
+
+     ! Allocate array storage.
+     CALL ALLOCATE_ARRAYS
+     IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
+     IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
+
+     ! Initialize arrays.
+     CALL INIT_FVARS
+     IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
+
+     !======================================================================
+     ! Data initialization for Dashboard
+     !======================================================================
+     INIT_TIME = TIME
+     SMMIN =  LARGE_NUMBER
+     SMMAX = -LARGE_NUMBER
+
+     DTMIN =  LARGE_NUMBER
+     DTMAX = -LARGE_NUMBER
+
+     NIT_MIN = MAX_NIT
+     NIT_MAX = 0
+
+     N_DASHBOARD = 0
 
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates. timestep at the beginning of execution
@@ -418,7 +447,6 @@
          USE cut_cell_preproc, only: cut_cell_preprocessing
          USE cutcell, ONLY: cartesian_grid
          USE dashboard, ONLY: dtmax, dtmin, init_time, n_dashboard, nit_max, nit_min, smmax, smmin
-         USE des_allocate
          USE desgrid, only: DESGRID_INIT
          USE discretelement, ONLY: discrete_element
          USE error_manager
@@ -514,33 +542,6 @@
          CALL DESMPI_INIT
          CALL DES_STL_PREPROCESSING
       ENDIF
-
-!--------------------------  ARRAY ALLOCATION -----------------------!
-
-! Allocate array storage.
-      CALL ALLOCATE_ARRAYS
-      IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
-      IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
-
-! Initialize arrays.
-      CALL INIT_FVARS
-      IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
-
-!======================================================================
-! Data initialization for Dashboard
-!======================================================================
-      INIT_TIME = TIME
-      SMMIN =  LARGE_NUMBER
-      SMMAX = -LARGE_NUMBER
-
-      DTMIN =  LARGE_NUMBER
-      DTMAX = -LARGE_NUMBER
-
-      NIT_MIN = MAX_NIT
-      NIT_MAX = 0
-
-      N_DASHBOARD = 0
-
 
       END SUBROUTINE CHECK_DATA
 
