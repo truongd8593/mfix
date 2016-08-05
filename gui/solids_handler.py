@@ -693,12 +693,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         for i in range(1, nscalar+1):
             phase4scalar = self.project.get_value('phase4scalar', args=i)
             if phase4scalar > phase:
-                self.update_value('phase4scalar', args=phase4scalar-1)
+                self.update_keyword('phase4scalar', args=phase4scalar-1)
         #  TODO fix initial conditions for scalars
 
         self.update_keyword('nscalar', nscalar)
-
-
         self.update_solids_table()
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
 
