@@ -427,7 +427,7 @@ class StlParser(object):
         center = [sum(axis)/2.0 for axis in [x, y, z]]
         axes = [max(axis)-c for axis, c in zip([x, y, z], center)]
 
-        if any([axis==0 for axis in axes]):
+        if any(axis==0 for axis in axes):
             return False
         if sum([((p-offset)/axis)**2 for p, axis, offset in zip(point, axes, center)])<=1:
             return True

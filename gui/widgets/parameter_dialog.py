@@ -182,7 +182,7 @@ class ParameterDialog(QtWidgets.QDialog):
         param_names = [val['parameter'] for val in data.values()]
         for key, value in data.items():
             par_value = str(value['value'])
-            if value['type'] in ['float', 'integer'] and (re_math.search(par_value) or any([par in par_value for par in param_names])):
+            if value['type'] in ['float', 'integer'] and (re_math.search(par_value) or any(par in par_value for par in param_names)):
                 par_value = Equation(par_value)
             elif value['type'] == 'float':
                 par_value = float(value['value'])

@@ -35,7 +35,7 @@ def clean_region_dict(region_dict):
             pass
         elif key == 'color':
             clean_dict['color'] = region_dict['color'].color
-        elif isinstance(value, list) and any([isinstance(v, Equation) for v in value]):
+        elif isinstance(value, list) and any(isinstance(v, Equation) for v in value):
             clean_dict[key] = value
         elif value != DEFAULT_REGION_DATA[key]:
             clean_dict[key] = value
@@ -408,7 +408,6 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[rows[-1]]
 
             data[name]['color'].color = color.getRgbF()[:-1]
-
 
             self.toolbutton_color.setStyleSheet(
                 "QToolButton{{ background: rgb({},{},{});}}".format(
