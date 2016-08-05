@@ -1687,7 +1687,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         lengths = [abs(float(to) - float(f)) for
                    f, to in zip(props['from'], props['to'])]
-        center = [min(f) + l / 2.0 for f, l in
+        center = [min(map(float, ft)) + l / 2.0 for ft, l in
                   zip(zip(props['from'], props['to']),
                       lengths)]
 

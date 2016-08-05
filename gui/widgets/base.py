@@ -206,7 +206,6 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
     def setText(self, text):
         QtWidgets.QLineEdit.setText(self, text)
-        self.saved_value = text
 
     def emitUpdatedValue(self):
         need_to_signal = self.text_changed_flag
