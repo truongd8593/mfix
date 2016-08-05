@@ -227,9 +227,9 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         text = self.text().strip()
         try:
             self.saved_value = self.find_value(text)
+            return self.saved_value
         except ValueError as e:
-            self.value_error("error in expression: %s" % e)
-        return self.saved_value
+            return self.find_value(str(self.saved_value))
 
     def find_value(self, text):
         """finds the value corresponding the to string text, raises ValueError if that string is invalid for this widget"""
@@ -241,33 +241,53 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             return text
         elif self.dtype is float:
             if re_float.match(text) or re_int.match(text):
-                f = float(text)
-                self.check_range(f)
-                return f
+                try:
+                    f = float(text)
+                    self.check_range(f)
+                    return f
+                except ValueError as e:
+                    self.value_error(e)
+                    raise e
             elif re_float_exp.match(text):
-                f = make_FloatExp(text)
-                self.check_range(f)
-                return f
+                try:
+                    f = make_FloatExp(text)
+                    self.check_range(f)
+                    return f
+                except ValueError as e:
+                    self.value_error(e)
+                    raise e
             elif re_math.search(text) or any([par in text for par in parameters]):
-                if text.startswith('@(') and text.endswith(')'):
-                    text = text[2:-1]
-                eq = Equation(text, dtype=float)
-                f = float(eq)
-                self.check_range(f)
-                return eq
+                try:
+                    if text.startswith('@(') and text.endswith(')'):
+                        text = text[2:-1]
+                    eq = Equation(text, dtype=float)
+                    f = float(eq)
+                    self.check_range(f)
+                    return eq
+                except ValueError as e:
+                    self.value_error("Equation Error: value %s" % e)
+                    raise e
             else:
                 raise ValueError("invalid float literal or equation")
 
         elif self.dtype is int:
             if re_math.search(text) or any([par in text for par in parameters]):
-                eq = Equation(text, dtype=int)
-                i = int(eq)
-                self.check_range(i)
-                return eq
+                try:
+                    eq = Equation(text, dtype=int)
+                    i = int(eq)
+                    self.check_range(i)
+                    return eq
+                except ValueError as e:
+                    self.value_error("Equation Error: value %s" % e)
+                    raise e
             else:
-                i = int(float(text))
-                self.check_range(i)
-                return i
+                try:
+                    i = int(float(text))
+                    self.check_range(i)
+                    return i
+                except ValueError as e:
+                    self.value_error("Error: value %s" % e)
+                    raise e
         else:
             raise TypeError(self.dtype)
 
