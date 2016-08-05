@@ -1019,7 +1019,7 @@ class ICS(object):
             le.key = key
             le.args = ['IC', (i+1)]
             self.project.register_widget(le, [key], ['IC', (i+1)])
-            le.setdtype('d')
+            le.setdtype('dp')
             le.default_value = 0.0
 
             val = self.project.get_value(key, args=[IC0, (i+1)])

@@ -435,7 +435,7 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_FAC = 2.d0/7.d0
+      KT_FAC = 3.5d0
 !</keyword>
 
 
@@ -457,7 +457,7 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_W_FAC = 2.d0/7.d0
+      KT_W_FAC = 3.5d0
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false" dem="true"
@@ -715,7 +715,7 @@
 !    the fluid lens that surrounds a particle. This parameter is used
 !    in the particle-fluid-particle conduction model.
 !  </description>
-      FLPC = 1.0d0/5.0d0
+      FLPC = 0.2d0
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false">

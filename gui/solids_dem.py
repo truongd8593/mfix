@@ -375,7 +375,7 @@ class SolidsDEM(object):
                         le.setMaximumWidth(150)
                         le.key = key
                         le.args = [arg]
-                        le.setdtype('d')
+                        le.setdtype('dp')
                         tw.setCellWidget(row, col, le)
                         val = self.project.get_value(key, args=[arg])
                         if val is not None:
@@ -390,7 +390,7 @@ class SolidsDEM(object):
                 le.setMaximumWidth(150)
                 le.key = key
                 le.args = [arg]
-                le.setdtype('d')
+                le.setdtype('dp')
                 tw.setCellWidget(row, col, le)
                 val = self.project.get_value(key, args=[arg])
                 if val is not None:
@@ -451,7 +451,7 @@ class SolidsDEM(object):
                             le.setMaximumWidth(150)
                             le.key = key
                             le.args = [arg]
-                            le.setdtype('d')
+                            le.setdtype('dp')
                             tw.setCellWidget(row, col, le)
                             val = self.project.get_value(key, args=[arg])
                             if val is not None:
@@ -466,7 +466,7 @@ class SolidsDEM(object):
                     le.setMaximumWidth(150)
                     le.key = key
                     le.args = [arg]
-                    le.setdtype('d')
+                    le.setdtype('dp')
                     tw.setCellWidget(row, col, le)
                     val = self.project.get_value(key, args=[arg])
                     if val is not None:
