@@ -877,6 +877,9 @@ class Project(object):
         # variablegrid
         self.variablegrid = VariableGridCollection()
 
+    def __getattr__(self, name):
+        return self._keyword_dict[name]
+
     def __getitem__(self, key):
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
