@@ -4,6 +4,8 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import copy
 from collections import OrderedDict
+import logging
+log = logging.getLogger(__name__)
 
 # 3rd party imports
 import numpy as np
@@ -1685,11 +1687,15 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             source = None
 
-        lengths = [abs(float(to) - float(f)) for
-                   f, to in zip(props['from'], props['to'])]
-        center = [min(map(float, ft)) + l / 2.0 for ft, l in
-                  zip(zip(props['from'], props['to']),
-                      lengths)]
+        try:
+            lengths = [abs(float(to) - float(from_)) for
+                       from_, to in zip(props['from'], props['to'])]
+            center = [min(map(float, ft)) + l / 2.0 for ft, l in
+                      zip(zip(props['from'], props['to']),
+                          lengths)]
+        except ValueError as e:
+            log.error("update_region_source: %s" % e)
+            return
 
         # update source
         if primtype == 'sphere':
