@@ -168,11 +168,23 @@ class MfixGui(QtWidgets.QMainWindow,
                         self.setupUi(self)
                 return Widget()
 
-            for cls in (Ui_geometry, Ui_mesh, RegionsWidget,
-                        Ui_model_setup, Ui_fluid, Ui_solids,
+            for cls in (Ui_model_setup,
+                        Ui_geometry,
+                        Ui_mesh,
+                        RegionsWidget,
+                        Ui_Fluid,
+                        Ui_Solids,
                         Ui_initial_conditions,
-                        Ui_numerics, Ui_output, Ui_vtk,
-                        Ui_monitors, Ui_post_processing, Ui_run):
+                        # Ui_boundary_conditions,
+                        # Ui_point_sources,
+                        # Ui_internal_surfaces,
+                        # Ui_chemistry,
+                        Ui_numerics,
+                        Ui_output,
+                        Ui_vtk,
+                        Ui_monitors,
+                        Ui_post_processing,
+                        Ui_run):
                 if cls == RegionsWidget: # not loaded from ui file
                     widget = RegionsWidget(parent=self)
                     name = 'regions'
@@ -191,11 +203,24 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setCentralWidget(self.ui)
             assert self is not self.ui
 
-            for name in ('geometry', 'mesh', 'regions',
-                         'model_setup', 'fluid', 'solids',
+            for name in ('model_setup',
+                         'geometry',
+                         'mesh',
+                         'regions',
+                         'fluid',
+                         'solids',
                          'initial_conditions',
+                         #'boundary_conditions',
+                         #'point_sources',
+                         #'internal_surfaces',
+                         #'chemistry',
                          'numerics',
-                         'output', 'vtk','monitors', 'run'):
+                         'output',
+                         'vtk',
+                         'monitors',
+                         'run',
+                         #'post-processing'
+                         ):
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget(parent=self)
                 else:
