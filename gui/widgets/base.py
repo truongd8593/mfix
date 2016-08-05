@@ -225,16 +225,8 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     @property
     def value(self):
         text = self.text().strip()
-        try:
-            self.saved_value = self.find_value(text)
-            return self.saved_value
-        except ValueError as e:
-            return self.find_value(str(self.saved_value))
-
-    def find_value(self, text):
-        """finds the value corresponding the to string text, raises ValueError if that string is invalid for this widget"""
-
         parameters = VALID_EXP_NAMES + sorted(list(PARAMETER_DICT.keys()))
+
         if len(text) == 0:   # should we return None?
             return ''
         if self.dtype is str:
@@ -244,18 +236,20 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 try:
                     f = float(text)
                     self.check_range(f)
+                    self.saved_value = f
                     return f
                 except ValueError as e:
                     self.value_error(e)
-                    raise e
+                    return self.saved_value or ''
             elif re_float_exp.match(text):
                 try:
                     f = make_FloatExp(text)
                     self.check_range(f)
+                    self.saved_value = f
                     return f
                 except ValueError as e:
                     self.value_error(e)
-                    raise e
+                    return self.saved_value or ''
             elif re_math.search(text) or any([par in text for par in parameters]):
                 try:
                     if text.startswith('@(') and text.endswith(')'):
@@ -263,12 +257,13 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     eq = Equation(text, dtype=float)
                     f = float(eq)
                     self.check_range(f)
+                    self.saved_value = eq
                     return eq
                 except ValueError as e:
                     self.value_error("Equation Error: value %s" % e)
-                    raise e
+                    return self.saved_value or ''
             else:
-                raise ValueError("invalid float literal or equation")
+                return self.saved_value or ''
 
         elif self.dtype is int:
             if re_math.search(text) or any([par in text for par in parameters]):
@@ -276,18 +271,20 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                     eq = Equation(text, dtype=int)
                     i = int(eq)
                     self.check_range(i)
+                    self.saved_value = eq
                     return eq
                 except ValueError as e:
                     self.value_error("Equation Error: value %s" % e)
-                    raise e
+                    return self.saved_value or ''
             else:
                 try:
                     i = int(float(text))
                     self.check_range(i)
+                    self.saved_value = i
                     return i
                 except ValueError as e:
                     self.value_error("Error: value %s" % e)
-                    raise e
+                    return self.saved_value or ''
         else:
             raise TypeError(self.dtype)
 

@@ -322,7 +322,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 used = val.get_used_parameters()
                 if 'min' in used or 'max' in used:
                     val.eq = val.eq.replace('min', item[1]+'min').replace('max', item[1]+'max')
-            widget.updateValue(None, val)
+                    widget.updateValue(None, val)
             if update_param:
                 self.update_parameter_map(value[key], name, key)
 
