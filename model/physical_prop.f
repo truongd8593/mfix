@@ -184,13 +184,13 @@
             MW = SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
             MW = ONE/MAX(MW,OMW_MAX)
             MW_MIX_G(IJK) = MW
-! Calculate the fluid density and bulk density
-            RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
-            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
          ELSE
-            RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
-            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+            MW = MW_AVG
          ENDIF
+
+! Calculate the fluid density and bulk density
+         RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
+         ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
 
          IF(RO_G(IJK) < ZERO .or. mfix_isnan(RO_G(IJK))) THEN
             Err_l(myPE) = 100
