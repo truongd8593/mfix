@@ -2308,7 +2308,7 @@ def Usage(name):
     -h, --help: display this help message
     -e, --exe:  specify MFIX executable (full path)
     -l, --log=LEVEL: set logging level (error,warning,info,debug)
-    -n, --new:  open new project (do not autoload previous)
+    -n, --noload:  do not autoload previous project
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
 
@@ -2318,7 +2318,7 @@ def main(args):
     args = sys.argv
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "new", "log=", "exe="])
+        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "noload", "log=", "exe="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
