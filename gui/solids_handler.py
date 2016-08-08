@@ -392,7 +392,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
     def solids_add(self):
         tw = self.ui.solids.tablewidget_solids
         nrows = tw.rowCount()
-        n = nrows + 1
+        n = nrows + 1 # index of new solid
         tw.setRowCount(n)
         name = self.make_solids_name(n)
         if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
@@ -407,6 +407,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
+        self.update_keyword('nmax_s', 0, args=[n])
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
@@ -695,7 +696,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             if phase4scalar > phase:
                 self.update_keyword('phase4scalar', args=phase4scalar-1)
         #  TODO fix initial conditions for scalars
-
+        # TODO fix restitution coeffs
         self.update_keyword('nscalar', nscalar)
         self.update_solids_table()
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
@@ -750,12 +751,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             energy_eq = self.project.get_value('energy_eq', default=True)
             enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
 
-        # Is it a good idea to have hidden items?
+        # Is it a good idea to have hidden items? No.
         #s.groupbox_species.setVisible(enabled)
         s.groupbox_species.setEnabled(enabled)
         # Buttons seem to take up a lot of space when table is shrunk
         s.frame_add_delete_copy_species.setVisible(enabled)
-
 
         #tw = s.tablewidget_solids_species
         #if not enabled: # Hide species?  shrink input area?
@@ -948,12 +948,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
-        old_nmax_s = self.project.get_value('nmax_s', args=phase)
+        old_nmax_s = self.project.get_value('nmax_s', default=0, args=phase)
         nmax_s = len(self.solids_species[phase])
-        if nmax_s > 0:
-            self.update_keyword('nmax_s', nmax_s, args=phase)
-        else:
-            self.unset_keyword('nmax_s', args=phase)
+        self.update_keyword('nmax_s', nmax_s, args=phase)
+
         for (row, (species,data)) in enumerate(self.solids_species[phase].items()):
             # order must match table headers
             args = [phase,row+1]
@@ -973,9 +971,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 # We're avoiding mw_s in favor of the settings in THERMO DATA
                 #self.update_keyword('mw_s', data['mol_weight'], args=row+1)#
 
-        # Clear any keywords with indices above nmax_s
-        if old_nmax_s is None:
-            old_nmax_s = 0
+        # Clear any keywords with indices above nmax_s NEEDED?
+        # TODO use keyword_args here
         for i in range(nmax_s+1, old_nmax_s+1):
             for kw in ('species_s', 'species_alias_s', 'x_s0', 'ro_xs0'):
                 self.unset_keyword(kw, args=[phase,i])
@@ -1033,7 +1030,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return aliases
 
     def solids_species_delete(self):
-        # XXX FIXME this is potentially a big problem since
+        # XXX FIXME TODO this is potentially a big problem since
         # it results in species being renumbered, or a hole in
         # the sequence - either way is trouble.  Have to warn
         # user, if species is referenced elsewhere.
