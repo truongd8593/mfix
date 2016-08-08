@@ -461,8 +461,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Inialize all the line edit widgets
         def as_str(x):
             return '' if x is None else str(x)
-        s.lineedit_keyword_d_p0_args_S.setText(as_str(solid['diameter']))
-        s.lineedit_keyword_ro_s0_args_S.setText(as_str(solid['density']))
+        # Why not get these from keywords?
+        def get_widget(key):
+            return getattr(s, 'lineedit_keyword_%s_args_S' % key)
+        for key in ('d_p0', 'ro_s0', 'des_em'):
+            get_widget(key).setText(as_str(self.project.get_value(key, args=phase)))
+
         # And the checkboxes
         for key in ('momentum_x_eq', 'momentum_y_eq', 'momentum_z_eq'):
             cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
