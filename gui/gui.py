@@ -562,10 +562,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-        if value in (None, ''):
+        if value is None or (isinstance(value, (str, unicode)) and value.strip()==''):
             self.unset_keyword(key, args)
             return
         if not isinstance(value, Equation):  # Always update equations
+            # Note, not all keyword updates use this function (should they?)
             if self.project.get_value(key, args=args) == value:
                 return
         self.set_keyword(key, value, args=args)
