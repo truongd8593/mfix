@@ -798,7 +798,15 @@
       end if
 
 ! allocate the desgridsearch related variables
-      if(allocated(dg_pic)) deallocate(dg_pic)
+      if(allocated(dg_pic)) then
+         do lijk = 1,size(dg_pic)
+            if(associated(dg_pic(lijk)%p)) then
+               deallocate(dg_pic(lijk)%p)
+               nullify(dg_pic(lijk)%p)
+            endif
+         end do
+         deallocate(dg_pic)
+      endif   
       allocate(dg_pic(dg_ijksize2))
       dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2

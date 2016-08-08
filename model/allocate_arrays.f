@@ -1399,9 +1399,9 @@
       if(allocated(dg_kend2_all)) deallocate(dg_kend2_all)
       if(allocated(dg_ksize_all)) deallocate(dg_ksize_all)
 
-!      if(allocated(dg_dx_all)) deallocate(dg_dx_all)
-!      if(allocated(dg_dy_all)) deallocate(dg_dy_all)
-!      if(allocated(dg_dz_all)) deallocate(dg_dz_all)
+      if(allocated(dg_dx_all)) deallocate(dg_dx_all)
+      if(allocated(dg_dy_all)) deallocate(dg_dy_all)
+      if(allocated(dg_dz_all)) deallocate(dg_dz_all)
 
       if(allocated(dg_cycoffset)) deallocate(dg_cycoffset)
       if(allocated(icycoffset)) deallocate(icycoffset)
@@ -1410,13 +1410,16 @@
       if(allocated(dg_c2_all)) deallocate(dg_c2_all)
       if(allocated(dg_c3_all)) deallocate(dg_c3_all)
 
-      do lijk = 1,size(dg_pic)
-         if(associated(dg_pic(lijk)%p)) then
-            deallocate(dg_pic(lijk)%p)
-            nullify(dg_pic(lijk)%p)
-         endif
-      end do
-      if(allocated(dg_pic)) deallocate(dg_pic,STAT=Dstatus)
+     if(allocated(dg_pic)) then
+
+         do lijk = 1,size(dg_pic)
+            if(associated(dg_pic(lijk)%p)) then
+               deallocate(dg_pic(lijk)%p,STAT=Dstatus)
+               nullify(dg_pic(lijk)%p)
+            endif
+         end do
+         deallocate(dg_pic,STAT=Dstatus)
+      endif
 
 
 ! des/mpi_init_des_mod.f
@@ -1424,9 +1427,16 @@
          do lijk=1,size(dsendbuf)
             if(allocated(dsendbuf(lijk)%facebuf)) deallocate(dsendbuf(lijk)%facebuf)
          enddo 
-         deallocate(dsendbuf)
+         deallocate(dsendbuf,STAT=Dstatus)
       endif
-      if(allocated(drecvbuf)) deallocate(drecvbuf)
+
+      if(allocated(drecvbuf)) then
+         do lijk=1,size(drecvbuf)
+            if(allocated(drecvbuf(lijk)%facebuf)) deallocate(drecvbuf(lijk)%facebuf)
+         enddo 
+         deallocate(drecvbuf,STAT=Dstatus)
+      endif
+
       if(allocated(isendindices)) deallocate(isendindices)
       if(allocated(irecvindices)) deallocate(irecvindices)
       if(allocated(isendreq)) deallocate(isendreq)
@@ -1440,88 +1450,56 @@
       if(allocated(idispls)) deallocate(idispls)
 
 
-!      if(allocated(recvproc1)) deallocate(recvproc1)
-!      if(allocated(recvtag1)) deallocate(recvtag1)
-!      if(allocated(xrecv1)) deallocate(xrecv1)
-!      if(allocated(recvijk1)) deallocate(recvijk1)
+! JFD: commented line below because deallocate statement fails
+      ! deallocate(sendproc,STAT=Dstatus)
+      ! deallocate(sendtag,STAT=Dstatus)
+       deallocate(xsend,STAT=Dstatus)
+       deallocate(sendijk,STAT=Dstatus)
 
-!      if(allocated(sendproc1)) deallocate(sendproc1)
-!      if(allocated(sendtag1)) deallocate(sendtag1)
-!      if(allocated(xsend1)) deallocate(xsend1)
-!      if(allocated(sendijk1)) deallocate(sendijk1)
+      ! deallocate(recvproc,STAT=Dstatus)
+      ! deallocate(recvtag,STAT=Dstatus)
+       deallocate(xrecv,STAT=Dstatus)
+       deallocate(recvijk,STAT=Dstatus)
 
-!      if(allocated(recvproc2)) deallocate(recvproc2)
-!      if(allocated(recvtag2)) deallocate(recvtag2)
-!      if(allocated(xrecv2)) deallocate(xrecv2)
-!      if(allocated(recvijk2)) deallocate(recvijk2)
+       deallocate(sendproc1,STAT=Dstatus)
+       deallocate(sendtag1,STAT=Dstatus)
+       deallocate(xsend1,STAT=Dstatus)
+       deallocate(sendijk1,STAT=Dstatus)
 
-!      if(allocated(sendproc2)) deallocate(sendproc2)
-!      if(allocated(sendtag2)) deallocate(sendtag2)
-!      if(allocated(xsend2)) deallocate(xsend2)
-!      if(allocated(sendijk2)) deallocate(sendijk2)
+       deallocate(recvproc1,STAT=Dstatus)
+       deallocate(recvtag1,STAT=Dstatus)
+       deallocate(xrecv1,STAT=Dstatus)
+       deallocate(recvijk1,STAT=Dstatus)
 
-!      if(allocated(send_persistent_request)) deallocate(send_persistent_request)
-!      if(allocated(recv_persistent_request)) deallocate(recv_persistent_request)
-!      if(allocated(send_persistent_request1)) deallocate(send_persistent_request1)
-!      if(allocated(recv_persistent_request1)) deallocate(recv_persistent_request1)
-!      if(allocated(send_persistent_request2)) deallocate(send_persistent_request2)
-!      if(allocated(recv_persistent_request2)) deallocate(recv_persistent_request2)
+       deallocate(sendproc2,STAT=Dstatus)
+       deallocate(sendtag2,STAT=Dstatus)
+      !  deallocate(xsend2,STAT=Dstatus)
+      !  deallocate(sendijk2,STAT=Dstatus)
 
-!       if(allocated(dsendbuffer)) deallocate(dsendbuffer)
+       deallocate(recvproc2,STAT=Dstatus)
+       deallocate(recvtag2,STAT=Dstatus)
+!       deallocate(xrecv2,STAT=Dstatus)
+!       deallocate(recvijk2,STAT=Dstatus)
 
-       deallocate(xsend)
-       deallocate(xrecv)
-       deallocate(dsendbuffer)
-       deallocate(drecvbuffer)
-       deallocate(sendijk)
-       deallocate(recvijk)
+       deallocate(send_persistent_request,STAT=Dstatus)
+       deallocate(recv_persistent_request,STAT=Dstatus)
+       ! deallocate(send_persistent_request1,STAT=Dstatus)
+       ! deallocate(recv_persistent_request1,STAT=Dstatus)
+       ! deallocate(send_persistent_request2,STAT=Dstatus)
+       ! deallocate(recv_persistent_request2,STAT=Dstatus)
+
+       deallocate(dsendbuffer,STAT=Dstatus)
+       deallocate(isendbuffer,STAT=Dstatus)
+       deallocate(csendbuffer,STAT=Dstatus)
+
+       deallocate(drecvbuffer,STAT=Dstatus)
+       deallocate(irecvbuffer,STAT=Dstatus)
+       deallocate(crecvbuffer,STAT=Dstatus)
+
+      deallocate(sendrequest,STAT=Dstatus)
+      deallocate(recvrequest,STAT=Dstatus)
 
 
-       deallocate(recvproc1)
-       deallocate(recvtag1)
-       deallocate(xrecv1)
-       deallocate(recvijk1)
-
-       deallocate(sendproc1)
-       deallocate(sendtag1)
-       deallocate(xsend1)
-       deallocate(sendijk1)
-
-       deallocate(recvproc2)
-       deallocate(recvtag2)
-!       deallocate(xrecv2)
-!       deallocate(recvijk2)
-
-       deallocate(sendproc2)
-       deallocate(sendtag2)
-!       deallocate(xsend2)
-!       deallocate(sendijk2)
-
-       deallocate(send_persistent_request)
-       deallocate(recv_persistent_request)
-       deallocate(send_persistent_request1)
-       deallocate(recv_persistent_request1)
-!       deallocate(send_persistent_request2)
-!       deallocate(recv_persistent_request2)
-
-!      if(allocated(drecvbuffer)) deallocate(drecvbuffer)
-!      if(allocated(isendbuffer)) deallocate(isendbuffer)
-!      if(allocated(irecvbuffer)) deallocate(irecvbuffer)
-!      if(allocated(csendbuffer)) deallocate(csendbuffer)
-!      if(allocated(crecvbuffer)) deallocate(crecvbuffer)
-
-!      if(allocated(recvrequest)) deallocate(recvrequest)
-!      if(allocated(sendrequest)) deallocate(sendrequest)
-
-!      if(allocated(xrecv)) deallocate(xrecv)
-!      if(allocated(recvproc)) deallocate(recvproc)
-!      if(allocated(recvijk)) deallocate(recvijk)
-!      if(allocated(recvtag)) deallocate(recvtag)
-
-!      if(allocated(xsend)) deallocate(xsend)
-!      if(allocated(sendproc)) deallocate(sendproc)
-!      if(allocated(sendijk)) deallocate(sendijk)
-!      if(allocated(sendtag)) deallocate(sendtag)
 
       RETURN
       END SUBROUTINE DEALLOCATE_ARRAYS_PARALLEL
@@ -1835,6 +1813,9 @@
 
       if(allocated(DWALL)) Deallocate(  DWALL )
 
+     IF(ALLOCATED(SCALAR_NODE_XYZ)) DEALLOCATE(SCALAR_NODE_XYZ)
+     IF(ALLOCATED(Ovol_around_node)) DEALLOCATE(Ovol_around_node)
+     IF(ALLOCATED(SCALAR_NODE_ATWALL)) DEALLOCATE(SCALAR_NODE_ATWALL)
 
       RETURN
       END SUBROUTINE DEALLOCATE_CUT_CELL_ARRAYS
@@ -1919,10 +1900,6 @@
 
 
 
-! Boundary classification
-!         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
-! Character precision arrays
-!         PARTICLE_PLCMNT(:) = UNDEFINED_C
 
       RETURN
       END SUBROUTINE DEALLOCATE_DEM_MI
@@ -2006,6 +1983,7 @@
 
       IMPLICIT NONE
       INTEGER:: lijk
+      INTEGER:: Dstatus
 
       CALL INIT_ERR_MSG("DES_DEALLOCATE_ARRAYS")
 
@@ -2081,13 +2059,15 @@
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
-      do lijk = 1,size(pic)
-         if(associated(pic(lijk)%p)) then
-            deallocate(pic(lijk)%p)
-            nullify(pic(lijk)%p)
-         endif
-      enddo
-      if(allocated( PIC )) deallocate(  PIC )
+      if(allocated( PIC )) then
+         do lijk = 1,size(pic)
+            if(associated(pic(lijk)%p)) then
+               deallocate(pic(lijk)%p,STAT=Dstatus)
+               nullify(pic(lijk)%p)
+            endif
+         enddo
+         deallocate(  PIC )
+      endif
 
 ! Particles in a computational fluid cell (for volume fraction)
       if(allocated(   PINC  )) deallocate(    PINC  )
@@ -2225,7 +2205,16 @@
       if(allocated(DEM_BCMO_IJKEND)) deallocate(DEM_BCMO_IJKEND)
 
 ! stl
-      if(allocated(FACETS_AT_DG)) deallocate(FACETS_AT_DG)
+      if(allocated(FACETS_AT_DG)) THEN
+         do lijk = 1,size(FACETS_AT_DG)
+            if (allocated(FACETS_AT_DG(lijk)%ID)) deallocate(FACETS_AT_DG(lijk)%ID)
+            if (allocated(FACETS_AT_DG(lijk)%DIR)) deallocate(FACETS_AT_DG(lijk)%DIR)
+            if (allocated(FACETS_AT_DG(lijk)%MIN)) deallocate(FACETS_AT_DG(lijk)%MIN)
+            if (allocated(FACETS_AT_DG(lijk)%MAX)) deallocate(FACETS_AT_DG(lijk)%MAX)
+         enddo
+         deallocate(FACETS_AT_DG)
+      endif
+
 
       if(allocated(GSTENCIL)) deallocate(GSTENCIL)
       if(allocated(VSTENCIL)) deallocate(VSTENCIL)
@@ -2241,16 +2230,6 @@
       if(allocated(xe)) deallocate(xe)
       if(allocated(yn)) deallocate(yn)
       if(allocated(zt)) deallocate(zt)
-
-!      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
-!      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
-!      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
-!      DEALLOCATE(isendnodes)
-!      DEALLOCATE(irecvnodes)
-!      DEALLOCATE(dsendnodebuf)
-!      DEALLOCATE(drecvnodebuf)
-!      DEALLOCATE(isendreqnode)
-!      DEALLOCATE(irecvreqnode)
 
        call deallocate_des_nodes_pointers()
 

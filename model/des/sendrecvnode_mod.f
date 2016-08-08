@@ -837,13 +837,17 @@
 
       subroutine deallocate_des_nodes_pointers()
 
+      IMPLICIT NONE
+      INTEGER :: IERR
 
-      DEALLOCATE(isendnodes)
-!      DEALLOCATE(irecvnodes)
-      DEALLOCATE(dsendnodebuf)
-      DEALLOCATE(drecvnodebuf)
-      DEALLOCATE(isendreqnode)
-      DEALLOCATE(irecvreqnode)
+      DEALLOCATE(isendnodes,STAT=IERR)
+      DEALLOCATE(irecvnodes,STAT=IERR)
+      DEALLOCATE(dsendnodebuf,STAT=IERR)
+      DEALLOCATE(drecvnodebuf,STAT=IERR)
+      DEALLOCATE(isendreqnode,STAT=IERR)
+      DEALLOCATE(irecvreqnode,STAT=IERR)
+
+      RETURN
 
       end subroutine deallocate_des_nodes_pointers
 
