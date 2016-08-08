@@ -91,7 +91,7 @@ class TestNode(Node):
 
 
 # --- Mock Parent for job submission ---
-class MockMonitor(object):
+class Mock(object):
     def noop(self, *args, **kwargs):
         return False
     def __getattr__(self, name):
@@ -99,14 +99,16 @@ class MockMonitor(object):
 
 
 class MockParent(QtWidgets.QWidget):
-    stdout_signal = pyqtSignal(object)
     stderr_signal = pyqtSignal(object)
+    stdout_signal = pyqtSignal(object)
     signal_update_runbuttons = pyqtSignal(object)
     project = None
     project_dir = None
     project_file = None
     settings = None
-    monitor = MockMonitor()
+    monitor = Mock()
+    ui = Mock()
+    ui.tabWidgetGraphics = Mock()
 
     def __init__(self, parent=None, mfix_gui = None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -396,7 +398,8 @@ class WorkflowWidget(QtWidgets.QWidget):
             parent.settings = self.mfixgui.settings
 
             full_runname_pid = os.path.join(proj_dir, pid_files[0])
-            job = JobManager(full_runname_pid, parent)
+            job = JobManager(parent)
+            job.try_to_connect(full_runname_pid)
 
             self.job_dict[dir_base] = job
             self.file_watcher.removePath(proj_dir)
@@ -461,8 +464,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         for job_name in data.keys():
             if job_name in self.job_dict:
 
-                job = self.job_dict[job_name]
-                job.update_status()
+                job = self.job_dict[job_name].job
 
                 if data[job_name]['status'] != 'stopped':
                     if job.is_paused():
@@ -512,7 +514,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """play the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            job.unpause()
+            job.job.unpause()
 
     def handle_stop(self):
         """stop the selected job"""
@@ -520,7 +522,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         data = self.job_status_table.value
         for proj in projs:
             job = self.job_dict[proj]
-            job.terminate_pymfix()
+            job.stop_mfix()
             data[proj]['status'] = 'stopped'
         self.job_status_table.set_value(data)
 
@@ -528,7 +530,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """pause the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            job.pause()
+            job.job.pause()
 
     def handle_restart(self):
         """restart the selected job"""
