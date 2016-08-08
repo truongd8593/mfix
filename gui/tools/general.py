@@ -217,16 +217,6 @@ def recurse_dict(d, path=()):
         else:
             yield (subpath, v)
 
-def test_recurse_dict():
-    d = {1: {2:3,
-             3: {},
-             4: {5:6},
-             5: {6:{}, 7:8}},
-         2: {}}
-
-    l = list(recurse_dict(d))
-    l.sort()
-    assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
 
 
 def recurse_dict_empty(d, path=()):
@@ -250,17 +240,6 @@ def recurse_dict_empty(d, path=()):
                     yield r
         else:
             yield (subpath, v)
-
-def test_recurse_dict_empty():
-    d = {1: {2:3,
-             3: {},
-             4: {5:6},
-             5: {6:{}, 7:8}},
-         2: {}}
-
-    l = list(recurse_dict_empty(d))
-    l.sort()
-    assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
 
 #http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
 #see also notes at https://pypi.python.org/pypi/ushlex/
@@ -423,7 +402,7 @@ def topological_sort(dependency_dict):
     Sort the dependency tree.
     Inspired by: http://code.activestate.com/recipes/578272-topological-sort/
     '''
-    
+
     data = copy.deepcopy(dependency_dict)
 
     # Ignore self dependencies.
@@ -443,6 +422,85 @@ def topological_sort(dependency_dict):
                 if item not in ordered}
     assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
 
+def drop_row_column_triangular(a, n, r):
+    # Inputs:
+    #  a :  upper-triangular n by n matrix represented as a list (n)(n+1)/2
+    #  n :  size of input
+    #  r :  index of row/column to drop, 1-based
+    # Return:
+    #  list representing matrix "a" with row/column "r" removed
+    ret = []
+    i = j = 1
+    for x in a:
+        if i != r and j != r:
+            ret.append(x)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    return ret
+
+def append_row_column_triangular(a, n, fill_value = None):
+    # Append a row and column to an upper-triangular rank-n matrix
+    ret = []
+    i = j = 1
+    for x in a:
+        ret.append(x)
+        if j == n:
+            ret.append(fill_value)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    ret.append(fill_value)
+    return ret
+
+
 if __name__ == '__main__':
+    def test_recurse_dict():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
+
     test_recurse_dict()
+
+    def test_recurse_dict_empty():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict_empty(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
+
+
     test_recurse_dict_empty()
+
+    def test_drop_add_triangular():
+        a = [ 1, 2, 3, 4,
+                 5, 6, 7,
+                    8, 9,
+                       10]
+        b = drop_row_column_triangular(a, 4, 2)
+        assert b == [1, 3, 4,
+                        8, 9,
+                           10]
+
+        c = drop_row_column_triangular(b, 3, 3)
+        assert c == [1, 3,
+                        8]
+
+        d = append_row_column_triangular(c, 2, 999)
+        assert d == [1, 3, 999,
+                        8, 999,
+                           999]
+
+    test_drop_add_triangular()
