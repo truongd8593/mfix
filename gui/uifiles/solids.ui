@@ -1659,8 +1659,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>353</width>
-            <height>1297</height>
+            <width>433</width>
+            <height>1288</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -2235,7 +2235,7 @@ background-color:transparent;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
@@ -2273,7 +2273,7 @@ background-color:transparent;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
+              <bool>true</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
