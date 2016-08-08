@@ -57,7 +57,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 return "proxy"
             def updateValue(*args):
                 self.update_solids_table()
-
+        # TODO the solids_table should just be directly editable
         self.project.register_widget(TableWidgetProxy(),
                              ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw_solids.itemSelectionChanged.connect(self.handle_solids_table_selection)
@@ -366,6 +366,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             cb.setCurrentIndex(i)
             cb.setToolTip(cb.currentText())
 
+
     def handle_combobox_solids_model(self, index):
         ## NB:  Solids model is not the same as solver!
         # Solver values are enumerated in constants.py.  Solids models are strings, 'TFM', 'DEM', 'PIC'
@@ -430,7 +431,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_solids_detail_pane()
 
     def update_solids_detail_pane(self):
-        # Note, this is being called excessively
         """update the solids detail pane for currently selected solids phase.
         if no solid phase # selected, pane is cleared and disabled"""
         s = self.ui.solids
