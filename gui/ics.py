@@ -17,6 +17,12 @@ from tools.general import (set_item_noedit, set_item_enabled,
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
 
+def safe_float(val):
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
+
 class ICS(object):
     # Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
     # for the described model. This section relies on regions named in the Regions section.
@@ -57,6 +63,49 @@ class ICS(object):
         for b in (ics.pushbutton_fluid, ics.pushbutton_scalar):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
+
+
+    def ics_set_volume_fraction_limit(self):
+        # Set ic_ep_g from ic_ep_s (issues/121)
+        if not self.ics_current_indices:
+            return
+        if not self.ics_current_solid:
+            return
+        IC0 = self.ics_current_indices[0]
+        P = self.ics_current_solid
+        key = 'ic_ep_s'
+        widget = self.ui.initial_conditions.lineedit_keyword_ic_ep_s_args_IC_P
+
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
+                for s in range(1, len(self.solids)+1) if s != P)
+
+        lim = max(0, 1.0 - s)
+        lim = round(lim, 10) # avoid problem with 1 - 0.9 != 0.1
+
+        widget.min = 0.0
+        widget.max = lim
+
+    def handle_ics_volume_fraction(self, widget, val, args):
+        # We may have been called before submit_change
+        if widget is None:
+            return
+        self.project.submit_change(widget, val, args)
+        if not self.ics_current_indices:
+            return
+        IC0 = self.ics_current_indices[0]
+        if not self.ics_current_solid:
+            return
+        P = self.ics_current_solid
+        s = sum(safe_float(self.project.get_value('ic_ep_s', default=0, args=[IC0, s]))
+                for s in range(1, len(self.solids)+1))
+        if s > 1.0:
+            self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
+                         popup=True)
+            return # ?
+        val = round(1.0 - s, 10)
+        for IC in self.ics_current_indices:
+            self.update_keyword('ic_ep_g', val, args=[IC])
+
 
     def ics_show_regions_popup(self):
         #Users cannot select inapplicable regions.
@@ -193,7 +242,7 @@ class ICS(object):
         # Hack to force update when removing last row
         #row = get_selected_row(tw)
         #if row is None:
-        #    self.handle_ics_region_selection()
+        #    self.handle_region_selection()
         self.ics_setup_current_tab()
 
     def handle_ics_region_selection(self):
@@ -700,6 +749,7 @@ class ICS(object):
         key = 'ic_ep_g'
         default = 1.0
         setup_key_widget(key, default)
+        # Issues/121 ; make non-editable  - set in .ui file
 
         #Define temperature
         # Specification always available
@@ -796,7 +846,6 @@ class ICS(object):
         # Solid-# (tab) - Rename tab to user provided solids name.
 
         # Note, solids phases are numbered 1-N
-
         self.ics_current_solid = P
         if P is None: # Nothing to do
             return
@@ -808,9 +857,15 @@ class ICS(object):
         ics = self.ui.initial_conditions
         IC0 = self.ics_current_indices[0]
 
+        # issues/121
+        self.ics_set_volume_fraction_limit()
+        widget = ics.lineedit_keyword_ic_ep_s_args_IC_P
+        # Have to do this after project manager has registered widgets
+        widget.value_updated.disconnect()
+        widget.value_updated.connect(self.handle_ics_volume_fraction)
+
         # Generic!
         def get_widget(key):
-            # Should we try different 'args' patterns or does IC_P cover all cases?
             widget = getattr(ics, 'lineedit_keyword_%s_args_IC_P' % key, None)
             if widget:
                 return widget
@@ -848,21 +903,10 @@ class ICS(object):
         # Specification always available
         # Sets keyword IC_EP_S(#,#)
         # DEFAULT value of (0.0, 1 - SUM)
-        # TODO why do we need 'float' here?
+        # - spec changed - default 0, set ip_ep_g to 1-sum
         key = 'ic_ep_s'
-        if P == len(self.solids): # last one, 1-based index
-            default = 1.0 - sum(float(self.project.get_value(key, default=0, args=[IC0, s]))
-                              for s in range(1, len(self.solids)))
-        else:
-            default = 0.0
+        default = 0.0
         setup_key_widget(key, default)
-        # TODO make sure these sum to <= 1.  We need to do this
-        #  when the user sets the value, not in setup_tab
-        # Why do we need 'float' ?
-        s = sum(float(self.project.get_value(key, default=0, args=[IC0, s]))
-                for s in range(1, len(self.solids)+1))
-        if s > 1.0:
-            self.warn("volume fractions sum to %s, must be <= 1.0" % s)
 
         #Define temperature
         # Specification always available
