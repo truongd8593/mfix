@@ -468,7 +468,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Why not get these from keywords?
         def get_widget(key):
             return getattr(s, 'lineedit_keyword_%s_args_S' % key)
-        for key in ('d_p0', 'ro_s0', 'des_em'):
+        for key in ('d_p0', 'ro_s0', 'des_em'): # use a widget iterator?
             get_widget(key).setText(as_str(self.project.get_value(key, args=phase)))
 
         # And the checkboxes
@@ -661,8 +661,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return True
 
     def solids_delete(self):
-        ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
-        # hole.  This is going to mess up a lot of things, eg restitution coeffs.
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
 
@@ -761,7 +759,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
         if state:
-            value = solid.get('saved_nscalar_eq', 1)
+            value = spinbox.value()
             self.set_solids_nscalar_eq(value)
         else:
             # Don't call set_solids_nscalar_eq(0) b/c that will clobber spinbox
@@ -924,6 +922,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
+
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
@@ -1137,11 +1136,24 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         return None # Ok to delete phase, no refs
 
-    def solids_delete_keys(self, phase):
-        for k in keyword_args.keys_by_type['phase']:
-            args = keyword_args.keyword_args[k]
+    def solids_delete_phase_keys(self, phase):
+        prev_size = len(self.solids) + 1 # Size before row deleted
+        for key in keyword_args.keys_by_type['phase']:
+            args = keyword_args.keyword_args[key]
             if args == ['phase']:
-                self.unset_keyword(k, args=phase)
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                if any(v is not None for v in vals):
+                    new_vals = vals[:]
+                    del new_vals[phase-1] # 1-based
+                    for (i, val) in enumerate(new_vals, 1):
+                        self.update_keyword(key, val, args=i)
+                    self.unset_keyword(key, args=prev_size)
+
+
+            else:
+                self.print_internal("*** %s %s" % (key, args))
+
 
     def reset_solids(self):
         # Set all solid-related state back to default
