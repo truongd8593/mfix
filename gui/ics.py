@@ -234,15 +234,7 @@ class ICS(object):
         self.ics_current_regions = []
         self.ics_current_indices = []
 
-        #tw.itemSelectionChanged.disconnect() #self.handle_ics_region_selection)
-        #tw.clearSelection() # Why do we still have a selected row after delete? (and should we?)
         tw.removeRow(row)
-        #tw.itemSelectionChanged.connect(self.handle_ics_region_selection)
-
-        # Hack to force update when removing last row
-        #row = get_selected_row(tw)
-        #if row is None:
-        #    self.handle_region_selection()
         self.ics_setup_current_tab()
 
     def handle_ics_region_selection(self):
