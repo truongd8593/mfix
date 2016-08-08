@@ -52,6 +52,8 @@ class RegionsPopup(QtWidgets.QDialog):
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
+        self.ui.table.doubleClicked.connect(lambda: self.save.emit())
+        self.ui.table.doubleClicked.connect(lambda: self.accept())
         self.rejected.connect(lambda: self.cancel.emit())
 
     def clear(self):
