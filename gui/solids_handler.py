@@ -446,7 +446,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
                     item.setChecked(False)
-                # Clear out all values?
+                if isinstance(item, QtWidgets.QLineEdit):
+                    item.setText('')
             return
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
