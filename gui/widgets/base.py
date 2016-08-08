@@ -933,7 +933,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
     ----------
     columns (list):
         a list of column names (used as dict index), suggested but not
-        required. if not provided, defualts to keys of the dictionary
+        required. if not provided, defaults to keys of the dictionary
         (default [])
     rows (list)
         a list of row names (used as dict index), suggested but not required.
