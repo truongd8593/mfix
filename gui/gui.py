@@ -2229,15 +2229,13 @@ class MfixGui(QtWidgets.QMainWindow,
         self.solids_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
 
-
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
-        # need to initialize per-solid 'nscalar_eq' and 'saved_nscalar_eq' so
+        # need to initialize per-solid 'nscalar_eq' so
         # that update_scalar_equations will do the right thing
         for (i, (k,v)) in enumerate(self.solids.items(), 1):
             v['nscalar_eq'] = sum(1 for j in range(1, nscalar+1)
                                   if self.project.get_value('phase4scalar', args=j) == i)
 
-            v['saved_nscalar_eq'] = v['nscalar_eq']
 
         # setValue will trigger update_scalar_equations (ok)
         self.ui.fluid.spinbox_nscalar_eq.setValue(self.fluid_nscalar_eq)

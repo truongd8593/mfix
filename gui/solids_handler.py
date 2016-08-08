@@ -489,17 +489,24 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         cb.setChecked(species_eq)
 
         # Deal with scalar eq
+        sb = s.spinbox_nscalar_eq
         nscalar = self.project.get_value('nscalar', 0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
-        saved_nscalar_eq = solid.get('saved_nscalar_eq', 0)
-        if s.spinbox_nscalar_eq.value() != saved_nscalar_eq:
-            s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
+        saved_nscalar_eq = solid.get('saved_nscalar_eq', 1)
+
+        if sb.value() != saved_nscalar_eq:
+            # set value without triggering callback
+            # Maybe this is too much trouble to go through,
+            # just to save/restore per-phase nscalar
+            sb.valueChanged.disconnect()
+            sb.setValue(saved_nscalar_eq)
+            sb.valueChanged.connect(self.set_solids_nscalar_eq)
         enabled = (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
-        s.spinbox_nscalar_eq.setEnabled(enabled)
+        sb.setEnabled(enabled)
         if enabled:
-            s.spinbox_nscalar_eq.setValue(nscalar_phase)
+            sb.setValue(nscalar_phase)
         #self.enable_solids_scalar_eq(enabled)
 
         ### Restrictions (see SRS p13)
@@ -673,39 +680,35 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         self.solids_current_phase = None
         self.solids_current_phase_name = None
-        # avoid callbacks to handle_solids_table_selection (why?)
-        tw.itemSelectionChanged.disconnect() # TODO: is this really needed?
-        tw.clearSelection()  # Why do we still have a selected row after delete? (and should we?)
+
+        tw.itemSelectionChanged.disconnect() # Avoid selection callbacks during delete
         name = tw.item(row, 0).text()
 
-
+        del self.solids[name] # This is an ordered dict, keyed by name - no 'hole' problem
         # Clear out all keywords related to deleted phase
-        self.solids_delete_keys(phase)
+        self.solids_delete_phase_keys(phase)
 
-        # TODO FIXME FIX SCALAR EQ!
-        del self.solids[name]
         tw.removeRow(row)
         self.update_keyword('mmax', len(self.solids))
         key = 'solids_phase_name(%s)' % phase
         if key in self.project.mfix_gui_comments:
             del self.project.mfix_gui_comments[key]
 
-        # Fix "hole"
-        del self.solids_species[phase]
-        for n in range(phase, len(self.solids)):
+        # Fix holes
+        # species dictionary (also need to remap keys)
+        for n in range(phase, len(self.solids)+1):
             self.solids_species[n] = self.solids_species[n+1]
-        if len(self.solids) > phase + 1:
-            del self.solids_species[len(self.solids)+1]
-        # TODO need to update keywords not just internal data
+        del self.solids_species[len(self.solids_species)]
+
+        # fix nscalar
         nscalar = self.project.get_value('nscalar', 0)
-        for i in range(1, nscalar+1):
-            if self.project.get_value('phase4scalar', args=i) == phase:
-                self.unset_keyword('phase4scalar', args=i)
-                nscalar -= 1
-        for i in range(1, nscalar+1):
-            phase4scalar = self.project.get_value('phase4scalar', args=i)
-            if phase4scalar > phase:
-                self.update_keyword('phase4scalar', args=phase4scalar-1)
+        key = 'phase4scalar'
+        vals = [self.project.get_value(key, default=0, args=i) for i in range(1, nscalar+1)]
+        new_vals = [v if v<phase else v-1 for v in vals if v != phase]
+        for (i, val) in enumerate(new_vals, 1):
+            self.update_keyword(key, val, args=i)
+        for i in range(len(new_vals)+1, nscalar+1):
+            self.unset_keyword(key, args=i)
         self.update_keyword('nscalar', nscalar)
         #  TODO fix initial conditions for scalars
 
@@ -933,7 +936,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         spinbox = self.ui.solids.spinbox_nscalar_eq
         if value != spinbox.value():
+            spinbox.valueChanged.disconnect()
             spinbox.setValue(value)
+            spinbox.valueChanged.connect(self.set_solids_nscalar_eq)
             return
         self.update_scalar_equations(prev_nscalar)
 
