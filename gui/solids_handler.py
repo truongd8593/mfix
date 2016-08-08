@@ -18,7 +18,9 @@ from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
                            widget_iter, make_callback,
                            format_key_with_args,
-                           get_combobox_item, set_item_enabled)
+                           get_combobox_item, set_item_enabled,
+                           drop_row_column_triangular, append_row_column_triangular )
+
 
 from tools import keyword_args
 
@@ -695,18 +697,40 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             phase4scalar = self.project.get_value('phase4scalar', args=i)
             if phase4scalar > phase:
                 self.update_keyword('phase4scalar', args=phase4scalar-1)
-        #  TODO fix initial conditions for scalars
-        # TODO fix restitution coeffs
         self.update_keyword('nscalar', nscalar)
+        #  TODO fix initial conditions for scalars
+
+        # Fix hole restitution coeffs
+        n = len(self.solids)
+        for key in  ('des_et_input', 'des_en_input'):
+            prev_size = ((n+1)*(n+2))//2 # Size before row deleted
+            vals = [self.project.get_value(key, args=i)
+                    for i in range(1, 1+prev_size)]
+            if any(v is not None for v in vals):
+                new_vals = drop_row_column_triangular(vals, n+1, phase)
+                for (i, val) in enumerate(new_vals, 1):
+                    self.update_keyword(key, val, args=i)
+                for i in range(len(new_vals)+1,  len(vals)+1):
+                    self.unset_keyword(key, args=i)
+        for key in ('des_et_wall_input', 'des_en_wall_input'):
+            prev_size = n+1
+            vals = [self.project.get_value(key, args=i)
+                    for i in range(1, 1+prev_size)]
+            if any(v is not None for v in vals):
+                new_vals = vals[:]
+                del new_vals[phase-1] # 1-based
+                for (i, val) in enumerate(new_vals, 1):
+                    self.update_keyword(key, val, args=i)
+                for i in range(len(new_vals)+1,  len(vals)+1):
+                    self.unset_keyword(key, args=i)
+
         self.update_solids_table()
+
+        # selection callbacks were disabled
         tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+        self.handle_solids_table_selection()
 
         self.set_unsaved_flag()
-        row = get_selected_row(tw)
-        if row is None:
-            self.handle_solids_table_selection()
-            # Hack to force update after deleting last row
-            # FIXME this is not working
 
         # ICs enabled/disabled depends on nscalar & number of solids
         self.ics_update_enabled()
