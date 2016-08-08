@@ -411,6 +411,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
         self.update_keyword('nmax_s', 0, args=[n])
+        self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
