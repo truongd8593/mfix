@@ -2033,8 +2033,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # Should these just be in the template file? TODO
         self.update_keyword('chk_batchq_end', True)
 
-    def get_runname(self):
-        name = self.project.get_value('run_name', default='new_file')
+    def get_runname(self, default='new_file'):
+        name = self.project.get_value('run_name', default=default)
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         return name
@@ -2087,7 +2087,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
-        runname = self.get_runname()
+        default_runname = os.path.splitext(os.path.basename(project_file))[0]
+        runname = self.get_runname(default=default_runname)
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
 
         if os.path.exists(runname_pid):
