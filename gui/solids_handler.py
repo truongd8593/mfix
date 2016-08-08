@@ -447,7 +447,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 if isinstance(item, QtWidgets.QCheckBox):
                     item.setChecked(False)
                 if isinstance(item, QtWidgets.QLineEdit):
-                    item.setText('')
+                    # Surprise, a spinbox includes a lineedit!
+                    if 'spinbox' in item.objectName(): # 'qt_spinbox_lineedit':
+                        item.setText('1')
+                    else:
+                        item.setText('')
             return
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
