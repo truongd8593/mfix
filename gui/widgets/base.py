@@ -217,12 +217,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 self.value_updated.emit(self, {self.key: value}, self.args)
 
     def check_range(self, val):
-        # Should this just be a function? would  make it easier to
-        # distinguish range errors from other errors
+        # TODO instead of raising an exception, make this a boolean function
         if self.min is not None and val < self.min:
-            raise RangeError("out of allowed range:\n %s < %s" % (val, self.min))
+            raise RangeError("Value below allowed range:\n %s < %s" % (val, self.min))
         if self.max is not None and val > self.max:
-            raise RangeError("out of allowed range:\n %s > %s" % (val, self.max))
+            raise RangeError("Value above allowed range:\n %s > %s" % (val, self.max))
 
     @property
     def value(self):
