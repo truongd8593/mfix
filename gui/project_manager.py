@@ -119,7 +119,7 @@ class ProjectManager(Project):
                 raise ValueError(msg)
 
 
-        if updatedValue is None:
+        if updatedValue is None or updatedValue=='':
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = to_text_string(updatedValue) # Just used for log message
