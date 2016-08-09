@@ -58,7 +58,7 @@ from bcs import BCS
 
 from interpreter import Interpreter
 
-from tools.general import (make_callback, get_icon, get_mfix_home,
+from tools.general import (get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
                            format_key_with_args, to_unicode_from_fs)
 
@@ -400,7 +400,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.clicked.connect(make_callback(self.mode_changed, mode))
+            btn.clicked.connect(lambda m=mode: self.mode_changed(m))
 
         # navigation tree
         ui.treewidget_navigation.itemSelectionChanged.connect(
@@ -1334,12 +1334,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # animation group FIXME why 2 callbacks?
         self.stack_animation.finished.connect(
-            make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, lt=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
 
         self.stack_animation.stateChanged.connect(
-            make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, lt=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
 
         self.animating = True
         self.stack_animation.start()

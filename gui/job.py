@@ -17,7 +17,6 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkReply,
                              QNetworkRequest)
 
-from tools.general import make_callback
 from tools.general import get_mfix_home
 
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
