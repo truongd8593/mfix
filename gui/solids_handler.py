@@ -127,7 +127,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                             lineedit.setText(str(val_s0))
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
-                    self.set_keyword(key_usr, True, args=phase)
+                    self.update_keyword(key_usr, True, args=phase)
                 else: # Continuum, mixture, etc
                     self.unset_keyword(key_s0, args=phase)
                     self.unset_keyword(key_usr, args=phase)
@@ -410,7 +410,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
-        self.update_keyword('nmax_s', 0, args=[n])
+        #self.update_keyword('nmax_s', 0, args=[n])
         self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
@@ -772,13 +772,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def update_solids_species_groupbox(self):
         """enable/disable species tables based on state"""
-        # Species data required under any of the following condvitions:
+        # Species data required under any of the following conditions:
         #  Solving species equations
         #  Energy equations are solved with mixture specific heat model
         phase = self.solids_current_phase
         ui = self.ui
         s = ui.solids
-
         if phase is None:
             enabled = False
         else:
