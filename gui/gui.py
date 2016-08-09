@@ -2167,7 +2167,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Note that energy_eq is TRUE by default according to MFIX but
         # FALSE by default according to SRS document.  We have to respect
-        # MFIX.  The GUI defaults are enforced in the template file used
+        # MFIX.  This default is enforced in the template file used
         # to create new projects.
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
