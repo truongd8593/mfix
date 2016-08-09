@@ -550,7 +550,8 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="page_solid">
+          <widget class="QWidget" name="page_dummy_solids_L"/>
+          <widget class="QWidget" name="page_solids">
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <property name="spacing">
              <number>6</number>
@@ -800,6 +801,7 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="page_dummy_solids_R"/>
           <widget class="QWidget" name="page_scalar">
            <layout class="QGridLayout" name="gridLayout">
             <property name="leftMargin">

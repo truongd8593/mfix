@@ -23,6 +23,12 @@ def safe_float(val):
     except ValueError:
         return 0.0
 
+FLUID_TAB = 0
+SOLIDS_TAB_DUMMY_L = 1
+SOLIDS_TAB = 2
+SOLIDS_TAB_DUMMY_R = 3
+SCALAR_TAB = 4
+
 class ICS(object):
     # Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
     # for the described model. This section relies on regions named in the Regions section.
@@ -55,8 +61,8 @@ class ICS(object):
 
         self.ics_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
         self.ics_current_solid = None
-        ics.pushbutton_fluid.clicked.connect(lambda: self.ics_change_tab(0,0))
-        ics.pushbutton_scalar.clicked.connect(lambda: self.ics_change_tab(2,0))
+        ics.pushbutton_fluid.clicked.connect(lambda: self.ics_change_tab(FLUID_TAB,0))
+        ics.pushbutton_scalar.clicked.connect(lambda: self.ics_change_tab(SCALAR_TAB,0))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -299,13 +305,9 @@ class ICS(object):
 
     def ics_change_tab(self, tab, solid):
         ics = self.ui.initial_conditions
-        self.ics_current_tab = tab
-        self.ics_current_solid = solid
-        index = (0 if tab==0
-                 else len(self.solids)+1 if tab==2
+        index = (0 if tab==FLUID_TAB
+                 else len(self.solids)+1 if tab==SCALAR_TAB
                  else solid)
-        #ics.tab_box.removeWidget(ics.tab_underline)
-        #ics.tab_box.addWidget(ics.tab_underline, 1, index)
 
         for i in range(ics.tab_box.columnCount()):
             item = ics.tab_box.itemAtPosition(0, i)
@@ -318,16 +320,32 @@ class ICS(object):
             font.setBold(i==index)
             widget.setFont(font)
 
+        current_index = ics.stackedwidget.currentIndex()
+        # If we're switching from solid m to solid n, we need some
+        # special fakery
+
+        if tab == current_index == SOLIDS_TAB:
+            if solid == self.ics_current_solid:
+                return # Really nothing to do
+            if solid > self.ics_current_solid:
+                ics.page_solids.render(ics.page_dummy_solids_L)
+                ics.stackedwidget.setCurrentIndex(SOLIDS_TAB_DUMMY_L)
+            elif solid <  self.ics_current_solid:
+                ics.page_solids.render(ics.page_dummy_solids_R)
+                ics.stackedwidget.setCurrentIndex(SOLIDS_TAB_DUMMY_R)
+
+        self.ics_current_tab = tab
+        self.ics_current_solid = solid
+
         #update tab contents
-        if tab==0:
+        if tab==FLUID_TAB:
             self.setup_ics_fluid_tab()
-        elif tab==1:
-            self.setup_ics_solid_tab(self.ics_current_solid)
-        elif tab==2:
+        elif tab==SOLIDS_TAB:
+            self.setup_ics_solids_tab(self.ics_current_solid)
+        elif tab==SCALAR_TAB:
             self.setup_ics_scalar_tab()
 
         # change stackedwidget contents
-        # TODO: use animate_stacked_widget here
         self.animate_stacked_widget(
             ics.stackedwidget,
             ics.stackedwidget.currentIndex(),
@@ -337,7 +355,6 @@ class ICS(object):
             to_btn = ics.tab_box.itemAtPosition(0, index),
             btn_layout = ics.tab_box)
 
-        #ics.stackedwidget.setCurrentIndex(tab)
 
 
     def ics_check_region_in_use(self, region):
@@ -402,7 +419,7 @@ class ICS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.ics_current_tab == 0: # Don't stay on disabled tab
-                self.ics_change_tab(*(1, 1) if self.solids else (2,0))
+                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,0))
         font = b.font()
         font.setBold(self.ics_current_tab == 0)
         b.setFont(font)
@@ -432,7 +449,7 @@ class ICS(object):
             font = b.font()
             font.setBold(self.ics_current_tab==1 and i==self.ics_current_solid)
             b.setFont(font)
-            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(1, i))
+            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(SOLIDS_TAB, i))
             ics.tab_box.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...
@@ -441,7 +458,7 @@ class ICS(object):
         # Move the 'Scalar' button to the right of all solids, if needed
         b = ics.pushbutton_scalar
         font = b.font()
-        font.setBold(self.ics_current_tab==2)
+        font.setBold(self.ics_current_tab==SCALAR_TAB)
         b.setFont(font)
         nscalar = self.project.get_value('nscalar', 0)
         enabled = (nscalar > 0)
@@ -456,11 +473,11 @@ class ICS(object):
 
 
     def ics_setup_current_tab(self):
-        if self.ics_current_tab == 0:
+        if self.ics_current_tab == FLUID_TAB:
             self.setup_ics_fluid_tab()
-        elif self.ics_current_tab == 1:
-            self.setup_ics_solid_tab(self.ics_current_solid)
-        elif self.ics_current_tab == 2:
+        elif self.ics_current_tab == SOLIDS_TAB:
+            self.setup_ics_solids_tab(self.ics_current_solid)
+        elif self.ics_current_tab == SCALAR_TAB:
             self.setup_ics_scalar_tab()
 
 
@@ -834,7 +851,7 @@ class ICS(object):
         enabled = bool(energy_eq)
         setup_key_widget(key, default, enabled)
 
-    def setup_ics_solid_tab(self, P):
+    def setup_ics_solids_tab(self, P):
         # Solid-# (tab) - Rename tab to user provided solids name.
 
         # Note, solids phases are numbered 1-N

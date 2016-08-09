@@ -1302,6 +1302,7 @@ class MfixGui(QtWidgets.QMainWindow,
             offsetx = -width
             offsety = 0
         else:
+            return #?
             offsetx = 0
             offsety = 0
 
@@ -2156,7 +2157,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
             self.vtkwidget.add_stl(None, filename=geometry_file)
             msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
-            self.message(title='Warning', text=msg)
+            #self.message(title='Warning', text=msg)
 
         # TODO: load more geometry
 
