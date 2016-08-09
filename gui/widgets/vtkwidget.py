@@ -2272,7 +2272,7 @@ class VtkWidget(QtWidgets.QWidget):
         elif view == 'xz':
             camera.SetPosition(10000000, 0, 0)
             camera.SetViewUp(0, 0, 1)
-#        self.vtkrenderer.ResetCamera()
+        self.vtkrenderer.ResetCamera()
         self.render()
 
     def reset_view(self):
