@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
+from qtpy.QtGui import QPicture
 
 UserRole = QtCore.Qt.UserRole
 
@@ -322,17 +323,24 @@ class ICS(object):
 
         current_index = ics.stackedwidget.currentIndex()
         # If we're switching from solid m to solid n, we need some
-        # special fakery
-
+        # special handling, because both tabs are really the same
+        # widget.  We make a picture of the current tab, display that
+        # in a dummy pane, then slide back to the solids tab
         if tab == current_index == SOLIDS_TAB:
             if solid == self.ics_current_solid:
                 return # Really nothing to do
+
             if solid > self.ics_current_solid:
-                ics.page_solids.render(ics.page_dummy_solids_L)
-                ics.stackedwidget.setCurrentIndex(SOLIDS_TAB_DUMMY_L)
-            elif solid <  self.ics_current_solid:
-                ics.page_solids.render(ics.page_dummy_solids_R)
-                ics.stackedwidget.setCurrentIndex(SOLIDS_TAB_DUMMY_R)
+                dummy_label = ics.label_dummy_solids_L
+                dummy_tab = SOLIDS_TAB_DUMMY_L
+            else:
+                dummy_label = ics.label_dummy_solids_R
+                dummy_tab = SOLIDS_TAB_DUMMY_R
+
+            picture = QPicture() #ics.page_solids.size())
+            ics.page_solids.render(picture)
+            dummy_label.setPicture(picture)
+            ics.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.ics_current_tab = tab
         self.ics_current_solid = solid
