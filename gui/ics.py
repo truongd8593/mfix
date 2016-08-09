@@ -298,6 +298,7 @@ class ICS(object):
     def ics_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
         # then we have no input tabs on the ICs pane, so disable it completely
+        # TODO also disable when no regions.
         disabled = (self.fluid_solver_disabled
                     and self.project.get_value('nscalar',0)==0
                     and len(self.solids) == 0)
