@@ -88,6 +88,40 @@ class TestNode(Node):
 
     def run_project(self):
         self.parent.workflow_widget.run_project(self.proj_file)
+        
+        
+class ExportNode(Node):
+    name = 'Export'
+
+    def __init__(self):
+        self.terminalOpts = OrderedDict([
+            ('path', {'widget': 'browse',
+                      'in': True,
+                      'out': True,
+                      'showlabel': True,
+                      'dtype': str,
+                      }),
+            ('parameters', {'widget': None,
+                        'in': True,
+                        'out': False,
+                        'showlabel': True,
+                        'dtype': dict,
+                        'default':{}
+                        }),
+             ])
+
+        Node.__init__(self)
+
+    def process(self):
+
+        exp_path = self.terminals['path'].value
+        if not os.path.exists(exp_path):
+            os.mkdir(exp_path)
+
+        self.proj_file = self.parent.workflow_widget.export_project(
+            exp_path, # export path
+            self.terminals['parameters'].value, # parameters
+            )
 
 
 # --- Mock Parent for job submission ---
@@ -195,7 +229,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
 
         # Add custom Nodes
-        for node in [TestNode]:
+        for node in [TestNode, ExportNode]:
             self.nodeChart.nodeLibrary.addNode(node, ['MFIX', ])
 
         # --- initialize job status table ---
