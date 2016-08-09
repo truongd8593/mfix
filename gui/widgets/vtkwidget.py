@@ -5,6 +5,7 @@ import os
 import copy
 from collections import OrderedDict
 import logging
+from functools import partial
 log = logging.getLogger(__name__)
 
 # 3rd party imports
@@ -474,7 +475,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         for geo in self.primitivedict.keys():
             action = QtWidgets.QAction(geo, self.add_geometry_menu)
-            action.triggered.connect(lambda g=geo: self.add_primitive(g))
+            action.triggered.connect(partial(self.add_primitive, primtype=geo))
             self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
@@ -482,7 +483,7 @@ class VtkWidget(QtWidgets.QWidget):
         for geo in self.parametricdict.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '),
                                        self.add_geometry_menu)
-            action.triggered.connect(lambda g=geo: self.add_parametric(g))
+            action.triggered.connect(partial(self.add_parametric, paramtype=geo))
             self.add_geometry_menu.addAction(action)
 
         # --- filter button ---
@@ -492,7 +493,7 @@ class VtkWidget(QtWidgets.QWidget):
         for geo in self.filterdict.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '),
                                        self.add_filter_menu)
-            action.triggered.connect(lambda g=geo: self.add_parametric(g))
+            action.triggered.connect(partial(self.add_filter, filtertype=geo))
             self.add_filter_menu.addAction(action)
 
         # setup signals
@@ -503,23 +504,22 @@ class VtkWidget(QtWidgets.QWidget):
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
-            btn.pressed.connect(
-                lambda k=key: self.boolean_operation(k))
+            btn.pressed.connect(partial(self.boolean_operation, booltype=key))
 
         # connect parameter widgets
         for widget in widget_iter(
                 self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtWidgets.QLineEdit):
-                widget.editingFinished.connect(lambda w=widget: self.parameter_edited(w))
+                widget.editingFinished.connect(partial(self.parameter_edited, widget))
             elif isinstance(widget, QtWidgets.QCheckBox):
-                widget.stateChanged.connect(lambda w=widget: self.parameter_edited(w))
+                widget.stateChanged.connect(partial(self.parameter_edited, widget))
 
         # --- mesh ---
         # connect mesh tab btns
         for i, btn in enumerate([self.ui.mesh.pushbutton_mesh_uniform,
                                  self.ui.mesh.pushbutton_mesh_controlpoints,
                                  self.ui.mesh.pushbutton_mesh_mesher]):
-            btn.pressed.connect(lambda index=i, b=btn: self.change_mesh_tab(index, btn))
+            btn.pressed.connect(partial(self.change_mesh_tab, i, btn))
 
         self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
@@ -572,7 +572,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             # tool button
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.pressed.connect(lambda l=geo.lower(), t=toolbutton: self.change_visibility(l, t))
+            toolbutton.pressed.connect(partial(self.change_visibility, geo.lower(), toolbutton))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
@@ -582,12 +582,12 @@ class VtkWidget(QtWidgets.QWidget):
             # style
             combobox = QtWidgets.QComboBox()
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
-            combobox.currentIndexChanged.connect(lambda l=geo.lower(), c=combobox: self.change_representation(l, c))
+            combobox.currentIndexChanged.connect(partial(self.change_representation, geo.lower(), combobox))
             layout.addWidget(combobox, i, 1)
 
             # color
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.pressed.connect(lambda l=geo.lower(), t=toolbutton: self.change_color(l, t))
+            toolbutton.pressed.connect(partial(self.change_color, geo.lower(), toolbutton))
             toolbutton.setAutoRaise(True)
             toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(
                 self.color_dict[
@@ -603,7 +603,7 @@ class VtkWidget(QtWidgets.QWidget):
             else:
                 slider.setValue(100)
             slider.setFixedWidth(40)
-            slider.valueChanged.connect(lambda l=geo.lower(), s=slider: self.change_opacity(l, s))
+            slider.valueChanged.connect(partial(self.change_opacity, geo.lower(), slider))
             layout.addWidget(slider, i, 3)
 
             # label
@@ -1027,6 +1027,7 @@ class VtkWidget(QtWidgets.QWidget):
         """
         Add the specified primitive
         """
+        print(primtype)
 
         if name is None:
             name = get_unique_string(primtype, list(self.geometrydict.keys()))
