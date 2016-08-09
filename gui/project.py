@@ -1485,24 +1485,6 @@ class Project(object):
         return keywordobject
 
 
-    def changekeywordvalue(self, key, value, args=None):
-        """Change a value of a keyword.
-
-        Parameters
-        ----------
-        key (str):
-            keyword to change
-        value (int, float, bool, str):
-            the value to set the keyword to
-        args (list or None):
-            a list of arguments for that keyword"""
-
-        if args is None:
-            args = []
-        keywordobject = self.keywordLookup(key, args)
-        keywordobject.updateValue(value)
-        return keywordobject
-
     def convertToString(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
