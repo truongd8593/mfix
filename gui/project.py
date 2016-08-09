@@ -1463,7 +1463,9 @@ class Project(object):
         """Search the project for a key and return the Keyword object
         If not found, raise KeyError if warn, else return None"""
 
-        if args is None:
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
             args = []
 
         key = key.lower()
@@ -1474,14 +1476,9 @@ class Project(object):
         # because all lookups iterate through the whole dictionary
         for (k, v) in recurse_dict(self._keyword_dict):
             if k[0] == key:
-                if args and args == v.args:
+                if args == v.args:
                     keywordobject = v
                     break
-                elif not args: #? sloppy matching - why needed?
-                    keywordobject = v
-                    break
-                else:
-                    continue
 
         if warn and keywordobject is None:
             raise KeyError(key)
