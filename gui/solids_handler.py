@@ -16,7 +16,7 @@ UserRole = QtCore.Qt.UserRole
 #local imports
 from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
-                           widget_iter, make_callback,
+                           widget_iter,
                            format_key_with_args,
                            get_combobox_item, set_item_enabled)
 
@@ -173,7 +173,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                                  s.pushbutton_solids_dem,
                                  s.pushbutton_solids_pic)):
             btn.pressed.connect(
-                make_callback(self.solids_change_tab, i, btn))
+                lambda: self.solids_change_tab( i, btn))
 
 
         for tw in (s.tablewidget_solids, s.tablewidget_solids_species,

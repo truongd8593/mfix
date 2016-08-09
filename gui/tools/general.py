@@ -134,12 +134,6 @@ def get_image_path(name):
 
     return path
 
-
-def make_callback(func, *args, **kwargs):
-    """Helper function to make sure lambda functions are cached and not lost."""
-    return lambda: func(*args, **kwargs)
-
-
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
@@ -423,7 +417,7 @@ def topological_sort(dependency_dict):
     Sort the dependency tree.
     Inspired by: http://code.activestate.com/recipes/578272-topological-sort/
     '''
-    
+
     data = copy.deepcopy(dependency_dict)
 
     # Ignore self dependencies.

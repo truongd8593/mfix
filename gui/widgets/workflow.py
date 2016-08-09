@@ -25,7 +25,7 @@ except ImportError:
 # local imports
 from widgets.base import Table
 from widgets.run_popup import RunPopup
-from tools.general import make_callback, get_icon
+from tools.general import get_icon
 from constants import PARAMETER_DICT
 from job import JobManager
 from project import Project
