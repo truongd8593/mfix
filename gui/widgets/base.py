@@ -399,11 +399,14 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         if allow_blank:
             comp_list.insert(0, '')
         for key, value in PARAMETER_DICT.items():
-            if self.dtype == str and isinstance(value, str):
+            if key in comp_list:
+                continue
+            elif self.dtype == str and isinstance(value, str):
                 comp_list.append(key)
-            else:
+            elif self.dtype in [int, float]:
                 comp_list.append(key)
         comp_list.sort()
+
         self._completer_model.setStringList(comp_list)
         self._completer.setModel(self._completer_model)
 
