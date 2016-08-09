@@ -582,7 +582,7 @@ class VtkWidget(QtWidgets.QWidget):
             # style
             combobox = QtWidgets.QComboBox()
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
-            combobox.currentIndexChanged.connect(lambda l=geo.lower(), c=combobox: self.change_representation(l, t))
+            combobox.currentIndexChanged.connect(lambda l=geo.lower(), c=combobox: self.change_representation(l, c))
             layout.addWidget(combobox, i, 1)
 
             # color
