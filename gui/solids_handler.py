@@ -711,7 +711,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_keyword('nscalar', nscalar)
         #  TODO fix initial conditions for scalars
 
-        # Fix hole restitution coeffs
+        # Fix hole in restitution coeffs
         n = len(self.solids)
         for key in  ('des_et_input', 'des_en_input'):
             prev_size = ((n+1)*(n+2))//2 # Size before row deleted
