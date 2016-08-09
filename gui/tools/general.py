@@ -85,6 +85,11 @@ def get_selected_row(table):
     rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
+def get_selected_rows(table):
+    """get index of selected row from a QTableWidget"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedIndexes())
+    return sorted(list(rows))
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
