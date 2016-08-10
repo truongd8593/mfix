@@ -200,54 +200,6 @@ def widget_iter(widget):
                 yield child2
         yield child
 
-
-def get_from_dict(data_dict, map_list):
-    return reduce(lambda d, k: d[k], map_list, data_dict)
-
-
-def set_in_dict(data_dict, map_list, value):
-    get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
-def recurse_dict(d, path=()):
-    """Depth-first iterator though nested dictionaries,
-    Yields (path, value), eg if d['a']['b']['c]=3,
-    one of the yielded values will be (('a','b','c'), 3).
-    See test_recurse_dict for an example"""
-
-    # Not quite depth-first b/c order of dictionary key is arbitrary
-    for (k,v) in d.items():
-        subpath = path + (k,)
-        if isinstance(v, dict):
-            for r in recurse_dict(v, subpath):
-                yield r
-        else:
-            yield (subpath, v)
-
-
-
-def recurse_dict_empty(d, path=()):
-    """Depth-first iterator though nested dictionaries
-    Yields (keytuple, value), eg if d['a']['b']['c]=3,
-    one of the yielded values will be (('a','b','c'), 3)
-    Differs from recurse_dict in that an empty dictionary
-    encountered as a value will be yielded, eg
-    if d[1][2]={}, then ((1,2), {}) will be one of the
-    yielded values.
-    See test_recurse_dict_empty for an example"""
-
-    # Not quite depth-first b/c order of dictionary key is arbitrary
-    for (k,v) in d.items():
-        subpath = path + (k,)
-        if isinstance(v, dict):
-            if v == {}:
-                yield(subpath, v)
-            else:
-                for r in recurse_dict_empty(v, subpath):
-                    yield r
-        else:
-            yield (subpath, v)
-
 #http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
 #see also notes at https://pypi.python.org/pypi/ushlex/
 def safe_shlex_split(string):
