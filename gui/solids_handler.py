@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from copy import deepcopy
 from collections import OrderedDict
+from functools import partial
 import logging
 log = logging.getLogger(__name__)
 
@@ -172,9 +173,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                                  s.pushbutton_solids_tfm,
                                  s.pushbutton_solids_dem,
                                  s.pushbutton_solids_pic)):
-            btn.pressed.connect(
-                lambda: self.solids_change_tab( i, btn))
-
+            btn.pressed.connect(partial(self.solids_change_tab, i, btn))
 
         for tw in (s.tablewidget_solids, s.tablewidget_solids_species,
                    s.tablewidget_solids_baseline):

@@ -2173,6 +2173,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.mesh = clipper.GetOutput()
 
         self.mesh_mapper.SetInputData(self.mesh)
+        self.mesh_mapper.Update()
 
         self.render()
 
