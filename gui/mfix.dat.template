@@ -44,6 +44,7 @@
 
 ! Gas Section
 !---------------------------------------------------------------------//
+  MU_g0 = 1.8d-5  ! (kg/m.s)
   MW_AVG = 29.0
 
 
@@ -51,7 +52,27 @@
 !---------------------------------------------------------------------//
   MMAX = 0
 
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
 
+! Backgroud - full domain initialize
+!---------------------------------------------------------------------//
+  IC_X_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  IC_Y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  IC_Z_b(1) = 0.0 #!MFIX-GUI eq{zmin,float}
+  IC_X_e(1) = 1.0 #!MFIX-GUI eq{xmax,float}
+  IC_Y_n(1) = 1.0 #!MFIX-GUI eq{ymax,float}
+  IC_Z_t(1) = 1.0 #!MFIX-GUI eq{zmax,float}
+
+  IC_EP_g(1) = 1.0
+
+  IC_T_g(1) = 293.15
+
+  IC_U_g(1) = 0.0
+  IC_V_g(1) = 0.0
+  IC_W_g(1) = 0.0
+
+#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1, 0, 0], "to": [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin", "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
