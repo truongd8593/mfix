@@ -27,7 +27,7 @@ from constants import *
 
 from widgets.base import LineEdit # a little special handling needed
 
-from tools.general import (format_key_with_args, unformat_key_with_args,
+from tools.general import (format_key_with_args, parse_key_with_args,
                            plural, to_text_string)
 from tools import read_burcat
 
