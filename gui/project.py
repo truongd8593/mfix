@@ -20,7 +20,6 @@ There are three paths to the Keyword objects in the Project:
  dict for programmatically changing keywords
  collections for user interaction with the keywords
 
-
 History
 -------
 
@@ -899,18 +898,16 @@ class Project(object):
         self.keyword_dict[key][tuple(args)] = keyword
         self.dat_file_list.append(keyword) # placement?
 
-    def get_value(self, key, **kwargs):
+    def get_value(self, key, default=None, args=None):
         """get_value(key, default=None, args=None): return value of keyword
-        object, else default.  'default' and 'args' must be keyword args"""
-        # Make sure this is only called with keyword args, to avoid
-        # getting 'args' and 'default' in the wrong positional order
-        default = kwargs.get('default', None)
-        args = kwargs.get('args', None)
-        for k in kwargs:
-            if k not in ('default', 'args'):
-                raise TypeError('%s is an invalid keyword argument for this function' % k)
+        object, else default.  'default' and 'args' should be keyword args"""
         r = self.get(key, args)
         return default if r is None else r.value
+
+    def get_key_indices(self, key):
+        """return an iterator over the set of indices (args) for which
+        the key is defined"""
+        return self.keyword_dict.get(key, {}).keys()
 
     def removeKeyword(self, key, args=None, warn=True):
         """Remove a keyword from the project. (keyword_dict and dat_file_list)
@@ -946,6 +943,7 @@ class Project(object):
         self.dat_file_list = [k for k in self.dat_file_list
                               if not (isinstance(k, Keyword)
                                       and k.key==key and k.args==args)]
+        return True
 
 
     def parsemfixdat(self, fname=None):
@@ -1461,32 +1459,27 @@ class Project(object):
         return ExtendedJSON.dumps(data)
 
     def update_parameter_map(self, new_value, key, args):
-        """update the mapping of parameters and keywords"""
-        return
+        """update the dependency graph of parameters and keywords"""
+
         key_args = format_key_with_args(key, args)
 
         # new params
-        if isinstance(new_value, Equation):
-            new_params = new_value.get_used_parameters()
-        else:
-            new_params = []
+        new_params = new_value.get_used_parameters() if isinstance(new_value, Equation) else []
 
         # old params
-        if [key]+args in self and isinstance(self[[key]+args].value, Equation):
-            old_params = self[[key]+args].value.get_used_parameters()
-        else:
-            old_params = []
+        old_value = self.get_value(key, args=args)
+        old_params = old_value.get_used_parameters() if isinstance(old_value, Equation) else []
 
-        add = set(new_params)-set(old_params)
-        for param in add:
+        to_add = set(new_params)-set(old_params)
+        for param in to_add:
             if param not in self.parameter_key_map:
                 self.parameter_key_map[param] = set()
             self.parameter_key_map[param].add(key_args)
 
-        remove = set(old_params)-set(new_params)
-        for param in remove:
+        to_remove = set(old_params)-set(new_params)
+        for param in to_remove:
             self.parameter_key_map[param].remove(key_args)
-            if len(self.parameter_key_map[param]) == 0:
+            if not self.parameter_key_map[param]:
                 self.parameter_key_map.pop(param)
 
 

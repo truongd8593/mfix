@@ -680,74 +680,79 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_current_phase = None
         self.solids_current_phase_name = None
 
-        tw.itemSelectionChanged.disconnect() # Avoid selection callbacks during delete
-        name = tw.item(row, 0).text()
+        tw.itemSelectionChanged.disconnect() # Avoid selection callbacks during delete.  Reenabled below
+        try:
+            name = tw.item(row, 0).text()
+            tw.removeRow(row)
+            del self.solids[name] # This is an ordered dict, keyed by name - no 'hole' problem
 
-        del self.solids[name] # This is an ordered dict, keyed by name - no 'hole' problem
-        # Clear out all keywords related to deleted phase
-        self.solids_delete_phase_keys(phase)
+            self.update_keyword('mmax', len(self.solids))
 
-        tw.removeRow(row)
-        self.update_keyword('mmax', len(self.solids))
-        key = 'solids_phase_name(%s)' % phase
-        if key in self.project.mfix_gui_comments:
-            del self.project.mfix_gui_comments[key]
+            # Clear out all keywords related to deleted phase
+            self.solids_delete_phase_keys(phase)
 
-        # Fix holes
-        # species dictionary (also need to remap keys)
-        for n in range(phase, len(self.solids)+1):
-            self.solids_species[n] = self.solids_species[n+1]
-        del self.solids_species[len(self.solids_species)]
+            # Fix holes
+            # Fixup phase names in mfix_gui_comments
+            # TODO make some util functions to manage mfix_gui_comments in a less ad-hoc manner
+            for (k,v) in list(self.project.mfix_gui_comments.items()):
+                if k.startswith('solids_phase_name('):
+                    del self.project.mfix_gui_comments[k]
+            for (i,name) in enumerate(self.solids.keys(), 1):
+                self.project.mfix_gui_comments['solids_phase_name(%s)'%i] = name
 
-        # fix nscalar
-        nscalar = self.project.get_value('nscalar', default=0)
-        key = 'phase4scalar'
-        vals = [self.project.get_value(key, default=0, args=i) for i in range(1, nscalar+1)]
-        new_vals = [v if v<phase else v-1 for v in vals if v != phase]
-        for (i, val) in enumerate(new_vals, 1):
-            self.update_keyword(key, val, args=i)
-        for i in range(len(new_vals)+1, nscalar+1):
-            self.unset_keyword(key, args=i)
-        self.update_keyword('nscalar', nscalar)
-        #  TODO fix initial conditions for scalars
+            # species dictionary (also need to remap keys)
+            for n in range(phase, len(self.solids)+1):
+                self.solids_species[n] = self.solids_species[n+1]
+            del self.solids_species[len(self.solids_species)]
 
-        # Fix hole in restitution coeffs
-        n = len(self.solids)
-        for key in  ('des_et_input', 'des_en_input'):
-            prev_size = ((n+1)*(n+2))//2 # Size before row deleted
-            vals = [self.project.get_value(key, args=i)
-                    for i in range(1, 1+prev_size)]
-            if any(v is not None for v in vals):
-                new_vals = drop_row_column_triangular(vals, n+1, phase)
-                for (i, val) in enumerate(new_vals, 1):
-                    self.update_keyword(key, val, args=i)
-                for i in range(len(new_vals)+1,  len(vals)+1):
-                    self.unset_keyword(key, args=i)
-        for key in ('des_et_wall_input', 'des_en_wall_input'):
-            prev_size = n+1
-            vals = [self.project.get_value(key, args=i)
-                    for i in range(1, 1+prev_size)]
-            if any(v is not None for v in vals):
-                new_vals = vals[:]
-                del new_vals[phase-1] # 1-based
-                for (i, val) in enumerate(new_vals, 1):
-                    self.update_keyword(key, val, args=i)
-                for i in range(len(new_vals)+1,  len(vals)+1):
-                    self.unset_keyword(key, args=i)
+            # fix nscalar
+            nscalar = self.project.get_value('nscalar', default=0)
+            key = 'phase4scalar'
+            vals = [self.project.get_value(key, default=0, args=i) for i in range(1, nscalar+1)]
+            new_vals = [v if v<phase else v-1 for v in vals if v != phase]
+            for (i, val) in enumerate(new_vals, 1):
+                self.update_keyword(key, val, args=i)
+            for i in range(len(new_vals)+1, nscalar+1):
+                self.unset_keyword(key, args=i)
+            self.update_keyword('nscalar', nscalar)
+            #  TODO fix initial conditions for scalars
 
-        self.update_solids_table()
+            # Fix hole in restitution coeffs
+            n = len(self.solids)
+            for key in  ('des_et_input', 'des_en_input'):
+                prev_size = ((n+1)*(n+2))//2 # Size before row deleted
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                if any(v is not None for v in vals):
+                    new_vals = drop_row_column_triangular(vals, n+1, phase)
+                    for (i, val) in enumerate(new_vals, 1):
+                        self.update_keyword(key, val, args=i)
+                    for i in range(len(new_vals)+1,  len(vals)+1):
+                        self.unset_keyword(key, args=i)
+            for key in ('des_et_wall_input', 'des_en_wall_input'):
+                prev_size = n+1
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                if any(v is not None for v in vals):
+                    new_vals = vals[:]
+                    del new_vals[phase-1] # 1-based
+                    for (i, val) in enumerate(new_vals, 1):
+                        self.update_keyword(key, val, args=i)
+                    for i in range(len(new_vals)+1,  len(vals)+1):
+                        self.unset_keyword(key, args=i)
 
-        # selection callbacks were disabled
-        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        self.handle_solids_table_selection()
+            self.update_solids_table()
+            # ICs enabled/disabled depends on nscalar & number of solids
+            self.ics_update_enabled()
+            self.update_nav_tree()
+            # Tabs enable/disable depending on number of solids
+            self.solids_update_tabs()
+        finally:
+            # selection callbacks were disabled
+            tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+            self.handle_solids_table_selection()
+            self.set_unsaved_flag()
 
-        self.set_unsaved_flag()
-
-        # ICs enabled/disabled depends on nscalar & number of solids
-        self.ics_update_enabled()
-        self.update_nav_tree()
-        # Tabs enable/disable depending on number of solids
-        self.solids_update_tabs()
 
 
     def enable_solids_scalar_eq(self, state):
@@ -1124,35 +1129,63 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def solids_phase_in_use(self, phase):
         for k in keyword_args.keys_by_type['phase']:
-            args = keyword_args.keyword_args[k]
-            if args == ['phase']:
-                # Single reference is OK.  We will
-                # delete these keys along with the phase
+            indices = self.project.get_key_indices(k)
+            if not indices:
                 continue
-            if args == ['ic', 'phase']:
-                for ic in range(1,10): #?
-                    if self.project.get_value(k, args=[ic,phase]) is not None:
-                        return format_key_with_args(k,[ic, phase])
+            arg_types = keyword_args.keyword_args[k]
+
+            if arg_types == ['phase']:
+                # Single reference is OK.  We will
+                # delete these keys along with the phase in solids_delete_phase_keys
+                continue
+            if arg_types == ['ic', 'phase']:
+                for args in indices:
+                    if args[1] != phase:
+                        continue
+                    if self.project.get_value(k, args=args) is not None:
+                        return format_key_with_args(k,args)
 
         return None # Ok to delete phase, no refs
 
     def solids_delete_phase_keys(self, phase):
         prev_size = len(self.solids) + 1 # Size before row deleted
         for key in keyword_args.keys_by_type['phase']:
-            args = keyword_args.keyword_args[key]
-            if args == ['phase']:
+            arg_types = keyword_args.keyword_args[key]
+            indices = self.project.get_key_indices(key)
+            if not indices:
+                continue
+
+            if arg_types == ['phase']:
+                # Copy/slide/trim
                 vals = [self.project.get_value(key, args=i)
                         for i in range(1, 1+prev_size)]
-                if any(v is not None for v in vals):
-                    new_vals = vals[:]
-                    del new_vals[phase-1] # 1-based
-                    for (i, val) in enumerate(new_vals, 1):
-                        self.update_keyword(key, val, args=i)
-                    self.unset_keyword(key, args=prev_size)
+                del vals[phase-1] # Slide (1-based)
+                for (i, val) in enumerate(vals, 1):
+                    self.update_keyword(key, val, args=i)
+                self.unset_keyword(key, args=prev_size) #Trim off the end
 
+            # the only phase-phase keyword is R_P,  this code doesn't handle that yet
+            elif arg_types == ['phase', 'phase']: # FIXME
+                raise TypeError(key, arg_types)
 
             else:
-                self.print_internal("*** %s %s" % (key, args))
+                # Multidimensional copy-and-slide, using dict instead of list
+                phase_pos = arg_types.index('phase')
+                new_vals = {}
+                for args in indices:
+                    args_phase = args[phase_pos]
+                    if args_phase == phase:
+                        continue # skip the phase we're deleting
+                    new_args = list(args)
+                    if args_phase > phase:
+                        new_args[phase_pos] -= 1 #Slide along 'phase_pos' axis
+                    new_vals[tuple(new_args)] = self.project.get_value(key, args=args)
+                for (args, val) in new_vals.items():
+                    self.update_keyword(key, val, args=args)
+                for args in indices: # Trim
+                    key_phase = args[phase_pos]
+                    if key_phase == prev_size:
+                        self.unset_keyword(key, args)
 
 
     def reset_solids(self):

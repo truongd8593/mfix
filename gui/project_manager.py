@@ -69,7 +69,6 @@ class ProjectManager(Project):
         elif args is None:
             args = []
 
-
         # If any element of 'args' is itself a list, iterate over all values
         if any(isinstance(arg, (list,tuple)) for arg in args):
             copy_args = list(args)
@@ -81,7 +80,6 @@ class ProjectManager(Project):
                     break
             return
 
-
         updatedValue = None
         assert not isinstance(newValue, Keyword)
 
@@ -89,6 +87,7 @@ class ProjectManager(Project):
         try:
             updatedKeyword = self.updateKeyword(key, newValue, args)
             updatedValue = updatedKeyword.value
+            print("UDV", updatedValue)
         except Exception as e:
             self.gui.print_internal("Warning: %s: %s" %
                                        (format_key_with_args(key, args), e),
@@ -115,6 +114,7 @@ class ProjectManager(Project):
 
 
         if updatedValue is None or updatedValue=='':
+            print("UNSET", key, args)
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = to_text_string(updatedValue) # Just used for log message
@@ -526,8 +526,8 @@ class ProjectManager(Project):
                 key_args = self.parameter_key_map[p]
                 for key_arg in key_args:
                     key, args = parse_key_with_args(key_arg)
-                    keyword_obj = self.keywordLookup(key, args)
-                    self.change(self, key, keyword_obj.value, args=args)
+                    value = self.get_value(key, args=args)
+                    self.change(self, key, value, args=args)
 
     def objectName(self):
         return 'Project Manager'
