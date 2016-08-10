@@ -762,11 +762,13 @@ class ICS(object):
         # Specification always available
         # Sets keyword IC_EP_G(#)
         # DEFAULT value of 1.0
-        # TODO:  is ic_ep_g volume fraction or void fraction?
+        # (terminology:  is ic_ep_g volume fraction or void fraction?)
         key = 'ic_ep_g'
         default = 1.0
         setup_key_widget(key, default)
-        # Issues/121 ; make non-editable  - set in .ui file
+        get_widget(key).setReadOnly(True)
+        get_widget(key).setEnabled(False)
+        # Issues/121 ; make non-editable
 
         #Define temperature
         # Specification always available
