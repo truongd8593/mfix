@@ -172,7 +172,6 @@ class ProjectManager(Project):
             return SINGLE
         solids_models = set(self.get_value('solids_model', args=n, default='TFM').upper()
                            for n in range(1, mmax+1))
-        print(solids_models)
         if solids_models == set(["TFM"]):
             return TFM
         elif solids_models == set(["DEM"]):
