@@ -300,7 +300,7 @@ class ICS(object):
         disabled = (len(self.ui.regions)==0
                     or (self.fluid_solver_disabled
                         and self.project.get_value('nscalar',default=0)==0
-                        and len(self.solids)==0)
+                        and len(self.solids)==0))
 
         self.find_navigation_tree_item("Initial Conditions").setDisabled(disabled)
 
@@ -692,7 +692,7 @@ class ICS(object):
         # to offer a way to split compound regions.
         for ic in self.project.ics:
 
-            d = ic._keyword_dict
+            d = ic.keyword_dict
             extent = [d.get(k,None) for k in ('ic_x_w', 'ic_y_s', 'ic_z_b',
                                               'ic_x_e', 'ic_y_n', 'ic_z_t')]
             extent = [None if x is None else x.value for x in extent]

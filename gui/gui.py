@@ -565,9 +565,10 @@ class MfixGui(QtWidgets.QMainWindow,
         if value is None or value=='':
             self.unset_keyword(key, args)
             return
-        if not isinstance(value, Equation):  # Always update equations
+        if not isinstance(value, Equation):  # Always update equations (why?)
             # Note, not all keyword updates use this function (should they?)
-            if self.project.get_value(key, args=args) == value:
+            v = self.project.get_value(key, args=args)
+            if v==value:
                 return
         self.set_keyword(key, value, args=args)
 
@@ -577,8 +578,6 @@ class MfixGui(QtWidgets.QMainWindow,
         #   keywords with project manager
         if isinstance(args, int):
             args = [args]
-        elif args is None:
-            args = []
         try:
             success = self.project.removeKeyword(key, args, warn=False)
             if success:
@@ -2127,8 +2126,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.project.writeDatFile(project_file) #XX
                     #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
-                except Exception as ex:
-                    msg = 'Failed to save %s: %s: %s' % (project_file, ex.__class__.__name__, ex)
+                except Exception as e:
+                    msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
                     self.print_internal("Error: %s" % msg, color='red')
                     self.message(title='Error',
                                  icon='error',

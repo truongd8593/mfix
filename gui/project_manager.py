@@ -44,54 +44,48 @@ class ProjectManager(Project):
         self.solver = SINGLE  # default
 
     def submit_change(self, widget, newValueDict, args=None):
-
-        """Submit a value change, for example
-        submitChange(lineEdit, {'run_name':'new run name'}, args)"""
-
         # Note, this may be a callback from Qt (in which case 'widget' is
         # the widget that the user activated), or from the initial mfix
         # loading (in which case widget == None)
-
-        if args is None:
-            args = []
         if isinstance(args, int):
             args = [args]
-
+        elif args is None:
+            args = []
         # Special argument handling!
-        args = self._expand_args(args)
+        args = self.expand_args(args)
 
         for (key, newValue) in newValueDict.items():
             if isinstance(newValue, dict):
-                if args:
-                    for ind, value in newValue.items():
-                        self._change(widget, key, value, args=args+[ind])
-
-                else:
-                    for ind, value in newValue.items():
-                        self._change(widget, key, value, args=[ind])
+                for ind, value in newValue.items(): # Where is this getting used?
+                    self.change(widget, key, value, args=args+[ind])
             else:
-                self._change(widget, key, newValue, args=args)
+                self.change(widget, key, newValue, args=args)
 
-        self._cleanDeletedItems()
 
-    def _change(self, widget, key, newValue, args=None):
+    def change(self, widget, key, newValue, args=None):
+        key = key.lower()
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+
+
         # If any element of 'args' is itself a list, iterate over all values
-        if isinstance(args,(list,tuple)) and any(isinstance(arg, (list,tuple)) for arg in args):
+        if any(isinstance(arg, (list,tuple)) for arg in args):
             copy_args = list(args)
             for (i, arg) in enumerate(args):
                 if isinstance(arg, (list,tuple)):
                     for a in arg:
                         copy_args[i] = a
-                        self._change(widget, key, newValue, copy_args)
+                        self.change(widget, key, newValue, copy_args)
                     break
             return
 
-        key = key.lower()
+
         updatedValue = None
         assert not isinstance(newValue, Keyword)
-        if args is None:
-            args = []
 
+        previousValue = self.get_value(key, args=args)
         try:
             updatedKeyword = self.updateKeyword(key, newValue, args)
             updatedValue = updatedKeyword.value
@@ -104,17 +98,18 @@ class ProjectManager(Project):
 
         updates = self.registered_widgets.get(key,[])
         for (a, w) in updates:
-            if not self._args_match(a, args):
+            if w == widget:
+                continue
+            if not self.args_match(a, args):
                 continue
             try:
-                w.updateValue(key, updatedValue, self._expand_args(args))
+                w.updateValue(key, updatedValue, self.expand_args(args))
                 if isinstance(w, LineEdit):
                     w.text_changed_flag = False # Needed?
             except Exception as e:
                 ka = format_key_with_args(key, args)
-                #log.warn("%s: %s" % (e, ka))
                 msg = "Cannot set %s = %s: %s" % (ka, updatedValue, e)
-                self.gui.print_internal(msg, color='red')
+                self.gui.warn(msg)
                 traceback.print_exception(*sys.exc_info())
                 raise ValueError(msg)
 
@@ -125,9 +120,10 @@ class ProjectManager(Project):
             val_str = to_text_string(updatedValue) # Just used for log message
             #if isinstance(updatedValue, bool):
             #    val_str = '.%s.' % val_str
-            self.gui.set_unsaved_flag()
-            self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
-                                    font="Monospace")
+            if updatedValue != previousValue:
+                self.gui.set_unsaved_flag()
+                self.gui.print_internal("%s = %s" % (format_key_with_args(key, args), val_str),
+                                        font="Monospace")
 
         # 'Parameters' are user-defined variables
         # TODO: methods to handle these ('is_param', etc)
@@ -135,7 +131,9 @@ class ProjectManager(Project):
             self.gui.update_parameters([key.replace('length', 'max')])
 
 
-    def _args_match(self, args, target):
+    def args_match(self, args, target):
+        if len(args) != len(target):
+            return False
         for (a,b) in zip(args, target):
 
             if a=='*':
@@ -158,7 +156,7 @@ class ProjectManager(Project):
 
         return True
 
-    def _expand_args(self, args_in):
+    def expand_args(self, args_in):
         return [(self.gui.solids_current_phase if a == 'S'
                  else self.gui.ics_current_solid if a == 'P'
                  else self.gui.ics_current_indices if a == 'IC'
@@ -169,11 +167,12 @@ class ProjectManager(Project):
 
     def guess_solver(self):
         """ Attempt to derive solver type, after reading mfix file"""
-        mmax = self.get_value('mmax', default=1)
+        mmax = self.get_value('mmax', default=len(self.solids))
         if mmax == 0:
             return SINGLE
-        solids_models = set(self.get_value(['solids_model', n], default='TFM').upper()
+        solids_models = set(self.get_value('solids_model', args=n, default='TFM').upper()
                            for n in range(1, mmax+1))
+        print(solids_models)
         if solids_models == set(["TFM"]):
             return TFM
         elif solids_models == set(["DEM"]):
@@ -217,7 +216,7 @@ class ProjectManager(Project):
             self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
             self.solids.sort(key=lambda a:a.ind)
 
-            # TODO: integrate project.gasSpecies with gui.fluid_species
+            # TODO: integrate project.gasSpecies with gui.fluid_species (deprecate the former)
             db = self.gui.species_popup.db
 
             # Note that parsemfixdat does not modify the THERMO DATA section into
@@ -471,25 +470,23 @@ class ProjectManager(Project):
                        '*' : described above
                        'IC' : current initial condition index """
 
-        if args is None:
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
             args = []
-        else:
-            args = list(args)
-
-        log.debug('ProjectManager: Registering {} with keys {}, args {}'.format(
-            widget.objectName(),
-            keys, args))
 
         # add widget to dictionary of widgets to update
         d = self.registered_widgets
         for key in keys:
+            key = key.lower()
             if key not in d:
                 d[key] = []
             d[key].append((args, widget))
 
         if hasattr(widget, 'value_updated'):
             widget.value_updated.connect(self.submit_change)
-            #widget.value_updated.connect(self.gui.set_unsaved_flag)
+            #widget.value_updated.connect(self.gui.set_unsaved_flag) # ?
+            # we are setting unsaved_flag based on keyword changes, not widgets
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
@@ -529,9 +526,9 @@ class ProjectManager(Project):
             if p in self.parameter_key_map:
                 key_args = self.parameter_key_map[p]
                 for key_arg in key_args:
-                    key, args = unformat_key_with_args(key_arg)
+                    key, args = parse_key_with_args(key_arg)
                     keyword_obj = self.keywordLookup(key, args)
-                    self._change(self, key, keyword_obj.value, args=args)
+                    self.change(self, key, keyword_obj.value, args=args)
 
     def objectName(self):
         return 'Project Manager'
