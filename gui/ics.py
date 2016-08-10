@@ -468,7 +468,7 @@ class ICS(object):
         font = b.font()
         font.setBold(self.ics_current_tab==SCALAR_TAB)
         b.setFont(font)
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
         if len(self.solids) > 0:
@@ -1046,7 +1046,7 @@ class ICS(object):
         IC0 = self.ics_current_indices[0]
 
         ics = self.ui.initial_conditions
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
 
         page =  ics.page_scalar
         layout = page.layout()

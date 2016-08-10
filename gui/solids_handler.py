@@ -491,7 +491,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # Deal with scalar eq
         sb = s.spinbox_nscalar_eq
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
         saved_nscalar_eq = solid.get('saved_nscalar_eq', 1)
@@ -700,7 +700,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         del self.solids_species[len(self.solids_species)]
 
         # fix nscalar
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
         key = 'phase4scalar'
         vals = [self.project.get_value(key, default=0, args=i) for i in range(1, nscalar+1)]
         new_vals = [v if v<phase else v-1 for v in vals if v != phase]
@@ -926,7 +926,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
         prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
 
         solid['nscalar_eq'] = value
