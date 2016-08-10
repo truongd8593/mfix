@@ -2281,10 +2281,12 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
-        self.ics_extract_regions()
-
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
+
+        self.ics_extract_regions()
+        self.ics_update_enabled()
+
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
