@@ -979,11 +979,10 @@ class ICS(object):
 
         #Define particles per parcel
         # Specification only available for SOLIDS_MODEL(#)='PIC'
-        # Sets keyword IC_PIC_CONST_STATWT(#,#)  ?????
-        #Shouldn't that be IC_PIC_CONST_NPC?
+        # Sets keyword IC_PIC_CONST_STATWT(#,#)
         # DEFAULT value of 10.0
         enabled = (solids_model=='PIC')
-        key = 'ic_pic_const_npc'
+        key = 'ic_pic_const_statwt'
         default = 10.0
         setup_key_widget(key, default, enabled)
 
@@ -994,7 +993,6 @@ class ICS(object):
         # DEFAULT - last defined species has mass fraction of 1.0
         # Error check: mass fractions must sum to one
         self.update_ics_solids_mass_fraction_table()
-
 
         enabled = (solids_model=='DEM' or bool(energy_eq))
         ics.groupbox_solids_advanced.setEnabled(enabled)
