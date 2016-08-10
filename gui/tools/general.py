@@ -40,14 +40,16 @@ def get_mfix_home():
 
 
 def format_key_with_args(key, args=None):
-    if args:
+    if args is not None:
+        if isinstance(args, int):
+            args = [args]
         return "%s(%s)" % (key, ','.join(str(a) for a in args))
     else:
         return str(key)
 
 
-def unformat_key_with_args(string):
-    """companion function to "undo" format_key_with_args"""
+def parse_key_with_args(string):
+    # inverse of format_key_with_args
     if string.endswith(')'):
         key, args = string[:-1].split('(')
         args = [int(arg) for arg in args.split(',')]
