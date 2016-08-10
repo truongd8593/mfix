@@ -1,4 +1,5 @@
-# Import from the future for Python 2 and 3 compatability!
+# VTK widget
+
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
@@ -191,6 +192,16 @@ def safe_float(x):
         else:
             log.error(str(e))
         return 0.0
+
+def safe_int(x):
+    try:
+        return int(x)
+    except ValueError as e:
+        if gui:
+            gui.error(str(e))
+        else:
+            log.error(e)
+        return 0
 
 
 def clean_geo_dict(d):
@@ -956,9 +967,9 @@ class VtkWidget(QtWidgets.QWidget):
         # update source
         if primtype == 'sphere':
             source.SetRadius(safe_float(self.geometrydict[name]['radius']))
-            source.SetThetaResolution(int(
+            source.SetThetaResolution(safe_int(
                 self.geometrydict[name]['thetaresolution']))
-            source.SetPhiResolution(int(
+            source.SetPhiResolution(safe_int(
                 self.geometrydict[name]['phiresolution']))
 
         elif primtype == 'box':
@@ -972,13 +983,13 @@ class VtkWidget(QtWidgets.QWidget):
             source.SetDirection(safe_float(self.geometrydict[name]['directionx']),
                                 safe_float(self.geometrydict[name]['directiony']),
                                 safe_float(self.geometrydict[name]['directionz']))
-            source.SetResolution(int(self.geometrydict[name]['resolution']))
+            source.SetResolution(safe_int(self.geometrydict[name]['resolution']))
             source.CappingOn()
 
         elif primtype == 'cylinder':
             source.SetRadius(safe_float(self.geometrydict[name]['radius']))
             source.SetHeight(safe_float(self.geometrydict[name]['height']))
-            source.SetResolution(int(self.geometrydict[name]['resolution']))
+            source.SetResolution(safe_int(self.geometrydict[name]['resolution']))
 
         elif primtype == 'stl':
             pass
@@ -1150,7 +1161,7 @@ class VtkWidget(QtWidgets.QWidget):
                 self.geometrydict[name]['amplitude']))
             para_object.SetAmplitudeScaleFactor(safe_float(
                 self.geometrydict[name]['scaleamplitude']))
-            para_object.SetNumberOfHills(int(
+            para_object.SetNumberOfHills(safe_int(
                 self.geometrydict[name]['nhills']))
             if self.geometrydict[name]['allowrandom']:
                 para_object.AllowRandomGenerationOn()
@@ -2046,19 +2057,12 @@ class VtkWidget(QtWidgets.QWidget):
 
         extents = []
         for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            try:
-                extents.append(safe_float(self.project[key]))
-            except TypeError:
-                extents.append(0.0)
-            except KeyError:
-                extents.append(0.0)
+            extents.append(safe_float(self.project.get_value(key, default=0.0)))
 
         cells = []
         for key in ['imax', 'jmax', 'kmax']:
-            if key in self.project:
-                cells.append(int(self.project[key])+1)
-            else:
-                cells.append(1)
+            cells.append(safe_int(self.project.get_value(key, default=0)) +1)
+
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
