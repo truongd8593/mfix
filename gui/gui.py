@@ -1775,6 +1775,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
+        self.project.mfix_gui_comments['visual_props'] = self.vtkwidget.visual_props_to_str()
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
@@ -2202,7 +2203,12 @@ class MfixGui(QtWidgets.QMainWindow,
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
             if key == 'geometry':
+                # load props first
+                if 'visual_props' in self.project.mfix_gui_comments:
+                    self.vtkwidget.visual_props_from_str(
+                        self.project.mfix_gui_comments['visual_props'])
                 self.vtkwidget.geometry_from_str(val)
+            
             if key == 'ic_regions':
                 self.ics_regions_from_str(val)
             # Add more here
