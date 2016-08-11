@@ -178,7 +178,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_Fluid,
                         Ui_Solids,
                         Ui_initial_conditions,
-                        # Ui_boundary_conditions,
+                        Ui_boundary_conditions,
                         # Ui_point_sources,
                         # Ui_internal_surfaces,
                         # Ui_chemistry,
@@ -213,7 +213,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'fluid',
                          'solids',
                          'initial_conditions',
-                         #'boundary_conditions',
+                         'boundary_conditions',
                          #'point_sources',
                          #'internal_surfaces',
                          #'chemistry',
@@ -289,8 +289,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Boundary Conditions',
-                     'Point Sources',
+        for name in ('Point Sources',
                      'Internal Surfaces',
                      'Chemistry',
                      'Monitors',
@@ -301,7 +300,6 @@ class MfixGui(QtWidgets.QMainWindow,
                      'Export',
                      'Plugins'):
             self.find_navigation_tree_item(name).setDisabled(True)
-
 
         # Initialize popup dialogs
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
@@ -631,7 +629,7 @@ class MfixGui(QtWidgets.QMainWindow,
                                        or self.solids_nscalar_eq > 0
                                        or len(self.solids) > 0
                                        or not(self.fluid_solver_disabled) )
-        for name in ("Initial Conditions",): # "Boundary Conditions"):
+        for name in ("Initial Conditions", "Boundary Conditions"):
             item = self.find_navigation_tree_item(name)
             item.setDisabled(not enabled)
 
@@ -890,6 +888,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_window_title()
 
     def disable_fluid_solver(self, disabled):
+        # Option to disable the fluid phase
+        # Disables the Fluid task pane menu
+        # Sets keyword RO_G0 to 0.0
         self.fluid_solver_disabled = disabled
         m = self.ui.model_setup
         enabled = not disabled
@@ -899,7 +900,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.enable_turbulence(False)
             self.saved_ro_g0 = self.project.get_value('ro_g0')
             self.update_keyword('ro_g0', 0) # issues/124
-            # TODO restore widget text ?
             if self.saved_ro_g0 is not None:
                 self.ui.fluid.lineedit_keyword_ro_g0.setText(str(self.saved_ro_g0))
         else:
@@ -1203,7 +1203,6 @@ class MfixGui(QtWidgets.QMainWindow,
     def change_pane(self, name):
         """set current pane to the one matching 'name'.  Must be the long
         (non-abbreviated) navigation label.  Case-insensitive"""
-
         items = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
@@ -1219,32 +1218,33 @@ class MfixGui(QtWidgets.QMainWindow,
                         break
         assert len(items) == 1
         self.ui.treewidget_navigation.setCurrentItem(items[0])
-        self.navigation_changed()
+        #self.navigation_changed() # not needed, since setCurrentItem triggers callback
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-
         current_selection = self.ui.treewidget_navigation.selectedItems()
         if not current_selection:
             return
-        text = str(current_selection[-1].text(0))
+        name = str(current_selection[0].text(0))
         # Translate from short to long name
         for (long, short) in self.nav_labels:
-            if text==short:
-                text=long
+            if name==short:
+                name=long
                 break
-        text = '_'.join(text.lower().split(' '))
+        name = '_'.join(name.lower().split(' '))
 
-        current_index = 0
-        for i in range(self.ui.stackedWidgetTaskPane.count()):
-            widget = self.ui.stackedWidgetTaskPane.widget(i)
-            if text == str(widget.objectName()):
-                current_index = i
-                break
+        matches = [i
+                   for i in range(self.ui.stackedWidgetTaskPane.count())
+                   if self.ui.stackedWidgetTaskPane.widget(i).objectName() == name]
+
+        assert len(matches) == 1
+
+        to_index = matches[0]
+
         self.animate_stacked_widget(
             self.ui.stackedWidgetTaskPane,
             self.ui.stackedWidgetTaskPane.currentIndex(),
-            current_index)
+            to_index)
 
         self.setup_current_tab()
 
@@ -2172,12 +2172,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # to create new projects.
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
-        # cgw - lots more model setup todo here.  Should we do this here or
-        #  in ProjectManager.load_project_file (where we do guess/set_solver)
-        # make sure exceptions are handled & reported
-        # values that don't map to keywords, saved as #!MFIX-GUI params
-
         # Model parameters
+
+
         # TODO: set 'disable fluid solver' checkbox if appropriate
 
         turbulence_model = self.project.get_value('turbulence_model')
