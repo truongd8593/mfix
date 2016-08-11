@@ -1827,7 +1827,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             dialog_message,
                             os.path.join(
                                 self.get_project_dir(),
-                                self.project.run_name.value + ".mfx"),
+                                self.get_runname()+"..mfx",
                             "*.mfx")
         if PYQT5:
             filename = filename[0]
@@ -1976,7 +1976,7 @@ class MfixGui(QtWidgets.QMainWindow,
         template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
         self.open_project(project_file, auto_rename=False)
-        self.project.run_name.updateValue(run_name)
+        self.update_value('run_name', run_name)
         self.save_project()
 
     def get_open_filename(self):
