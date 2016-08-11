@@ -111,7 +111,7 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
-        self.lineedit_job_name.setText(self.parent.project.run_name.value)
+        self.lineedit_job_name.setText(self.parent.project.get_value('run_name',default=''))
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
