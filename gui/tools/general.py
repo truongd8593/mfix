@@ -141,12 +141,6 @@ def get_image_path(name):
 
     return path
 
-
-def make_callback(func, *args, **kwargs):
-    """Helper function to make sure lambda functions are cached and not lost."""
-    return lambda: func(*args, **kwargs)
-
-
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object

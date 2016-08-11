@@ -25,7 +25,7 @@ except ImportError:
 # local imports
 from widgets.base import Table
 from widgets.run_popup import RunPopup
-from tools.general import make_callback, get_icon
+from tools.general import get_icon
 from constants import PARAMETER_DICT
 from job import JobManager
 from project import Project
@@ -88,10 +88,44 @@ class TestNode(Node):
 
     def run_project(self):
         self.parent.workflow_widget.run_project(self.proj_file)
+        
+        
+class ExportNode(Node):
+    name = 'Export'
+
+    def __init__(self):
+        self.terminalOpts = OrderedDict([
+            ('path', {'widget': 'browse',
+                      'in': True,
+                      'out': True,
+                      'showlabel': True,
+                      'dtype': str,
+                      }),
+            ('parameters', {'widget': None,
+                        'in': True,
+                        'out': False,
+                        'showlabel': True,
+                        'dtype': dict,
+                        'default':{}
+                        }),
+             ])
+
+        Node.__init__(self)
+
+    def process(self):
+
+        exp_path = self.terminals['path'].value
+        if not os.path.exists(exp_path):
+            os.mkdir(exp_path)
+
+        self.proj_file = self.parent.workflow_widget.export_project(
+            exp_path, # export path
+            self.terminals['parameters'].value, # parameters
+            )
 
 
 # --- Mock Parent for job submission ---
-class MockMonitor(object):
+class Mock(object):
     def noop(self, *args, **kwargs):
         return False
     def __getattr__(self, name):
@@ -99,14 +133,16 @@ class MockMonitor(object):
 
 
 class MockParent(QtWidgets.QWidget):
-    stdout_signal = pyqtSignal(object)
     stderr_signal = pyqtSignal(object)
+    stdout_signal = pyqtSignal(object)
     signal_update_runbuttons = pyqtSignal(object)
     project = None
     project_dir = None
     project_file = None
     settings = None
-    monitor = MockMonitor()
+    monitor = Mock()
+    ui = Mock()
+    ui.tabWidgetGraphics = Mock()
 
     def __init__(self, parent=None, mfix_gui = None):
         QtWidgets.QWidget.__init__(self, parent)
@@ -193,7 +229,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.nodeChart.nodeLibrary.buildDefaultLibrary()
 
         # Add custom Nodes
-        for node in [TestNode]:
+        for node in [TestNode, ExportNode]:
             self.nodeChart.nodeLibrary.addNode(node, ['MFIX', ])
 
         # --- initialize job status table ---
@@ -396,7 +432,8 @@ class WorkflowWidget(QtWidgets.QWidget):
             parent.settings = self.mfixgui.settings
 
             full_runname_pid = os.path.join(proj_dir, pid_files[0])
-            job = JobManager(full_runname_pid, parent)
+            job = JobManager(parent)
+            job.try_to_connect(full_runname_pid)
 
             self.job_dict[dir_base] = job
             self.file_watcher.removePath(proj_dir)
@@ -461,8 +498,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         for job_name in data.keys():
             if job_name in self.job_dict:
 
-                job = self.job_dict[job_name]
-                job.update_status()
+                job = self.job_dict[job_name].job
 
                 if data[job_name]['status'] != 'stopped':
                     if job.is_paused():
@@ -512,7 +548,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """play the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            job.unpause()
+            job.job.unpause()
 
     def handle_stop(self):
         """stop the selected job"""
@@ -520,7 +556,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         data = self.job_status_table.value
         for proj in projs:
             job = self.job_dict[proj]
-            job.terminate_pymfix()
+            job.stop_mfix()
             data[proj]['status'] = 'stopped'
         self.job_status_table.set_value(data)
 
@@ -528,7 +564,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         """pause the selected job"""
         jobs = self.get_selected_jobs()
         for job in jobs:
-            job.pause()
+            job.job.pause()
 
     def handle_restart(self):
         """restart the selected job"""

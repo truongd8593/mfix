@@ -833,7 +833,7 @@ class Project(object):
                             # keywords as parsed
         self.thermo_data =  {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
-        self.parameter_key_map = {}  #data structure to hold parameter->keyword mapping
+        self.parameter_key_map = {}  # key=parameter, value=set of keywords
         # See also 'reset'
 
         self.init_data()

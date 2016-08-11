@@ -7,6 +7,7 @@ import pprint
 import signal
 import tempfile
 import uuid
+from functools import partial
 
 from subprocess import Popen
 
@@ -17,7 +18,6 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkReply,
                              QNetworkRequest)
 
-from tools.general import make_callback
 from tools.general import get_mfix_home
 
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
@@ -97,10 +97,10 @@ class PymfixAPI(QNetworkAccessManager):
         response_handler = handlers.get('response', self.def_response_handler)
         error_handler = handlers.get('error')
         request_object.finished.connect(
-          make_callback(
+          partial(
             self.slot_api_response, req_id, request_object, response_handler))
         request_object.error.connect(
-          make_callback(
+          partial(
             self.slot_protocol_error, req_id, request_object, error_handler))
         return req_id
 

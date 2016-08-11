@@ -1,18 +1,13 @@
 # VTK widget
 
 from __future__ import print_function, absolute_import, unicode_literals, division
-
 import os
 import copy
-from collections import OrderedDict
 import logging
-log = logging.getLogger(__name__)
-
-# 3rd party imports
+from functools import partial
 import numpy as np
-
-# Qt imports
 from qtpy import QtCore, QtGui, QtWidgets
+import math
 
 # VTK imports
 import vtk
@@ -25,164 +20,16 @@ except ImportError:
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
-                           get_image_path, make_callback, topological_sort)
+                           get_image_path, topological_sort)
 from widgets.base import LineEdit
 from project import Equation, ExtendedJSON
+from widgets.vtk_constants import *
 
-CELL_TYPE_ENUM = {
-    0:  'empty_cell',
-    1:  'vertex',
-    2:  'poly_vertex',
-    3:  'line',
-    4:  'poly_line',
-    5:  'triangle',
-    6:  'triangle_strip',
-    7:  'polygon',
-    8:  'pixel',
-    9:  'quad',
-    10: 'tetra',
-    11: 'voxel',
-    12: 'hexahedron',
-    13: 'wedge',
-    14: 'pyramid',
-    15: 'pentagonal_prism',
-    16: 'hexagonal_prism',
-    21: 'quadratic_edge',
-    22: 'quadratic_triangle',
-    23: 'quadratic_quad',
-    24: 'quadratic_tetra',
-    25: 'quadratic_hexahedron',
-    26: 'quadratic_wedge',
-    27: 'quadratic_pyramid',
-    28: 'biquadratic_quad',
-    29: 'triquadratic_hexahedron',
-    30: 'quadratic_linear_quad',
-    31: 'quadratic_linear_wedge',
-    32: 'biquadratic_quadratic_wedge',
-    33: 'biquadratic_quadratic_hexahedron',
-    34: 'biquadratic_traingle',
-    35: 'cubic_line',
-    36: 'quadratic_polygon',
-    }
-
-DEFAULT_PRIMITIVE_PARAMS = {
-    'centerx':         0.0,
-    'centery':         0.0,
-    'centerz':         0.0,
-    'rotationx':       0.0,
-    'rotationy':       0.0,
-    'rotationz':       0.0,
-    'radius':          1.0,
-    'directionx':      1.0,
-    'directiony':      0.0,
-    'directionz':      0.0,
-    'lengthx':         1.0,
-    'lengthy':         1.0,
-    'lengthz':         1.0,
-    'height':          1.0,
-    'resolution':      10,
-    'thetaresolution': 10,
-    'phiresolution':   10,
-    'visible':         True,
-    'geo_type':        'primitive',
-    'type':            '',
-    }
-
-DEFAULT_PARAMETRIC_PARAMS = {
-    'translationx':       0.0,
-    'translationy':       0.0,
-    'translationz':       0.0,
-    'centerx':            0.0,
-    'centery':            0.0,
-    'centerz':            0.0,
-    'rotationx':          0.0,
-    'rotationy':          0.0,
-    'rotationz':          0.0,
-    'radius':             1.0,
-    'radiusx':            1.0,
-    'radiusy':            1.0,
-    'radiusz':            1.0,
-    'ringradius':         1.0,
-    'crosssectionradius': 0.5,
-    'zscale':             0.125,
-    'ascale':             0.8,
-    'bscale':             0.2,
-    'bfunc':              1.0,
-    'cfunc':              0.1,
-    'nfunc':              2.0,
-    'nhills':             30,
-    'variancex':          2.5,
-    'scalex':             0.3,
-    'variancey':          2.5,
-    'scaley':             0.3,
-    'amplitude':          2.0,
-    'scaleamplitude':     0.3,
-    'allowrandom':        True,
-    'n1':                 1.0,
-    'n2':                 1.0,
-    'visible':            True,
-    'geo_type':           'parametric',
-    'type':               ''}
-
-DEFAULT_FILTER_PARAMS = {
-    'linestopoints':        True,
-    'polystolines':         True,
-    'stripstopolys':        True,
-    'maximumholesize':      1.0,
-    'processvertices':      True,
-    'processlines':         True,
-    'targetreduction':      0.2,
-    'preservetopology':     True,
-    'splitmesh':            True,
-    'deletevertices':       False,
-    'divisionsx':           10,
-    'divisionsy':           10,
-    'divisionsz':           10,
-    'autoadjustdivisions':  True,
-    'visible':              True,
-    'relaxation':           0.01,
-    'iterations':           20,
-    'boundarysmoothing':    True,
-    'featureangle':         45.0,
-    'featureedgesmoothing': False,
-    'edgeangle':            15.0,
-    'passband':             0.1,
-    'manifoldsmoothing':    False,
-    'normalize':            False,
-    'geo_type':             'filter',
-    'type':                 ''}
-
-DEFAULT_BOOLEAN_PARAMS = {
-    'children': [],
-    'visible':  True,
-    'type':     '',
-    'geo_type': 'boolean',
-    }
-
-DEFAULT_STL_PARAMS = {
-    'type':            'stl',
-    'filename':        None,
-    'centerx':         0.0,
-    'centery':         0.0,
-    'centerz':         0.0,
-    'rotationx':       0.0,
-    'rotationy':       0.0,
-    'rotationz':       0.0,
-    'translationx':    0.0,
-    'translationy':    0.0,
-    'translationz':    0.0,
-    'visible':         True,
-    'geo_type':        'stl'}
-
-DEFAULT_PARAMS = {
-    'primitive':   DEFAULT_PRIMITIVE_PARAMS,
-    'parametric':  DEFAULT_PARAMETRIC_PARAMS,
-    'filter':      DEFAULT_FILTER_PARAMS,
-    'boolean':     DEFAULT_BOOLEAN_PARAMS,
-    'stl':         DEFAULT_STL_PARAMS,
-}
+log = logging.getLogger(__name__)
 
 gui = None
+
+
 def safe_float(x):
     try:
         return float(x)
@@ -221,6 +68,18 @@ def clean_geo_dict(d):
                            'booleanoperation']:
                 if isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]:
                     clean_dict[geo][key] = value
+    return clean_dict
+
+def clean_visual_dict(d):
+    clean_dict = {}
+    for geo, geo_dict in d.items():
+        clean_dict[geo] = {}
+        for key, value in geo_dict.items():
+            if key in ['color', 'edge']:
+                clean_dict[geo][key] = d[geo][key].getRgb()
+            else:
+                clean_dict[geo][key] = d[geo][key]
+
     return clean_dict
 
 
@@ -285,76 +144,23 @@ class VtkWidget(QtWidgets.QWidget):
 
         # --- data ---
         self.geometrydict = {}
-        self.geometry_visible = True
-        self.regions_visible = True
         self.defer_render = False
         self.region_dict = {}
         self.parameter_key_map = {}
-
+        self.view_flip = [False]*3
         self.booleanbtndict = {
             'union':        self.ui.geometry.toolbutton_geometry_union,
             'intersection': self.ui.geometry.toolbutton_geometry_intersect,
             'difference':   self.ui.geometry.toolbutton_geometry_difference,
             }
-
-        self.primitivedict = OrderedDict([
-            ('sphere',   vtk.vtkSphereSource),
-            ('box',      vtk.vtkCubeSource),
-            ('cylinder', vtk.vtkCylinderSource),
-            ('cone',     vtk.vtkConeSource),
-            ])
-
-        self.parametricdict = OrderedDict([
-            ('torus',           vtk.vtkParametricTorus),
-            ('boy',             vtk.vtkParametricBoy),
-            ('conic_spiral',    vtk.vtkParametricConicSpiral),
-            ('cross_cap',       vtk.vtkParametricCrossCap),
-            ('dini',            vtk.vtkParametricDini),
-            ('ellipsoid',       vtk.vtkParametricEllipsoid),
-            ('enneper',         vtk.vtkParametricEnneper),
-            ('figure_8_klein',  vtk.vtkParametricFigure8Klein),
-            ('klein',           vtk.vtkParametricKlein),
-            ('mobius',          vtk.vtkParametricMobius),
-            ('random_hills',    vtk.vtkParametricRandomHills),
-            ('roman',           vtk.vtkParametricRoman),
-            ('super_ellipsoid', vtk.vtkParametricSuperEllipsoid),
-            ('super_toroid',    vtk.vtkParametricSuperToroid),
-            ])
-
-        self.filterdict = OrderedDict([
-            ('clean',                 vtk.vtkCleanPolyData),
-            ('fill_holes',            vtk.vtkFillHolesFilter),
-            ('triangle',              vtk.vtkTriangleFilter),
-            ('decimate',              vtk.vtkDecimatePro),
-            ('quadric_decimation',    vtk.vtkQuadricDecimation),
-            ('quadric_clustering',    vtk.vtkQuadricClustering),
-            ('linear_subdivision',    vtk.vtkLinearSubdivisionFilter),
-            ('loop_subdivision',      vtk.vtkLoopSubdivisionFilter),
-            ('butterfly_subdivision', vtk.vtkButterflySubdivisionFilter),
-            ('smooth',                vtk.vtkSmoothPolyDataFilter),
-            ('windowed_sinc',         vtk.vtkWindowedSincPolyDataFilter),
-        ])
+        self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
 
         self.rectilinear_grid = vtk.vtkRectilinearGrid()
-
         self.grid_viewer_dict = {
             'filters': [],
             'mappers': [],
             'actors':  [],
             }
-
-        # set default colors
-        self.color_dict = {
-            'mesh':                QtGui.QColor(244,  67,  54),
-            'background_mesh':     QtGui.QColor(100, 182, 247),
-            'geometry':            QtGui.QColor(224, 224, 224),
-            'regions':             QtGui.QColor(224, 224, 224),
-            }
-
-        # add edge color
-        for color in list(self.color_dict.keys()):
-            self.color_dict['_'.join([color, 'edge'])] = \
-                self.color_dict[color].darker()
 
         self.cell_spacing_widgets = [
             self.parent.ui.mesh.lineedit_mesh_cells_size_x,
@@ -431,18 +237,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         # --- setup vtk mappers/actors ---
         self.mesh = None
-        self.mesh_mapper = vtk.vtkDataSetMapper()
-        self.mesh_mapper.ScalarVisibilityOff()
-
-        self.mesh_actor = vtk.vtkActor()
-        self.mesh_actor.SetMapper(self.mesh_mapper)
-        self.mesh_actor.GetProperty().SetRepresentationToWireframe()
-        self.mesh_actor.GetProperty().SetColor(
-            self.color_dict['mesh'].getRgbF()[:3])
-        self.mesh_actor.GetProperty().SetEdgeColor(
-            self.color_dict['mesh_edge'].getRgbF()[:3])
-
-        self.vtkrenderer.AddActor(self.mesh_actor)
+        self.mesh_actor = None
+        self.mesh_mapper = None
 
         # set types on lineedits
         for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
@@ -483,30 +279,26 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.add_geometry_menu.addSeparator()
 
-        for geo in self.primitivedict.keys():
+        for geo in PRIMITIVE_DICT.keys():
             action = QtWidgets.QAction(geo, self.add_geometry_menu)
-            action.triggered.connect(
-                make_callback(self.add_primitive, geo))
+            action.triggered.connect(partial(self.add_primitive, primtype=geo))
             self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
 
-        for geo in self.parametricdict.keys():
-            action = QtWidgets.QAction(geo.replace('_', ' '),
-                                       self.add_geometry_menu)
-            action.triggered.connect(
-                make_callback(self.add_parametric, geo))
+        for geo in PARAMETRIC_DICT.keys():
+            action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
+            action.triggered.connect(partial(self.add_parametric, paramtype=geo))
             self.add_geometry_menu.addAction(action)
 
         # --- filter button ---
         self.add_filter_menu = QtWidgets.QMenu(self)
         self.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
-        for geo in self.filterdict.keys():
+        for geo in FILTER_DICT.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '),
                                        self.add_filter_menu)
-            action.triggered.connect(
-                make_callback(self.add_filter, geo))
+            action.triggered.connect(partial(self.add_filter, filtertype=geo))
             self.add_filter_menu.addAction(action)
 
         # setup signals
@@ -517,26 +309,21 @@ class VtkWidget(QtWidgets.QWidget):
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
-            btn.pressed.connect(
-                make_callback(self.boolean_operation, key))
+            btn.pressed.connect(partial(self.boolean_operation, booltype=key))
 
         # connect parameter widgets
         for widget in widget_iter(
                 self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtWidgets.QLineEdit):
-                widget.editingFinished.connect(
-                    make_callback(self.parameter_edited, widget))
+                widget.editingFinished.connect(partial(self.parameter_edited, widget))
             elif isinstance(widget, QtWidgets.QCheckBox):
-                widget.stateChanged.connect(
-                    make_callback(self.parameter_edited, widget))
+                widget.stateChanged.connect(partial(self.parameter_edited, widget))
 
         # --- mesh ---
         # connect mesh tab btns
         for i, btn in enumerate([self.ui.mesh.pushbutton_mesh_uniform,
-                                 self.ui.mesh.pushbutton_mesh_controlpoints,
                                  self.ui.mesh.pushbutton_mesh_mesher]):
-            btn.pressed.connect(
-                make_callback(self.change_mesh_tab, i, btn))
+            btn.pressed.connect(partial(self.change_mesh_tab, i, btn))
 
         self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
@@ -546,6 +333,7 @@ class VtkWidget(QtWidgets.QWidget):
                     self.change_mesher_options)
 
         self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
+        self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
 
     def __add_tool_buttons(self):
 
@@ -584,55 +372,49 @@ class VtkWidget(QtWidgets.QWidget):
         # --- visual representation menu ---
         layout = QtWidgets.QGridLayout(self.visible_menu)
         layout.setContentsMargins(5, 5, 5, 5)
+        self.visual_btns = {}
         for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
                                  'Regions', ]):
-
+            geo_name = geo
+            geo = geo.lower().replace(' ', '_')
+            btns=self.visual_btns[geo]={}
             # tool button
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.pressed.connect(make_callback(self.change_visibility,
-                                                     geo.lower(), toolbutton))
+            toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
             toolbutton.setIcon(get_icon('visibility.png'))
             layout.addWidget(toolbutton, i, 0)
+            btns['visible']=toolbutton
 
             # style
             combobox = QtWidgets.QComboBox()
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
-            combobox.currentIndexChanged.connect(
-                make_callback(self.change_representation,
-                              geo.lower(), combobox))
+            combobox.activated.connect(partial(self.change_representation, geo, combobox))
             layout.addWidget(combobox, i, 1)
+            btns['rep'] = combobox
 
             # color
-            toolbutton = QtWidgets.QToolButton()
-            toolbutton.pressed.connect(make_callback(self.change_color,
-                                                     geo.lower(), toolbutton))
-            toolbutton.setAutoRaise(True)
-            toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(
-                self.color_dict[
-                    '_'.join(geo.lower().split(' '))].name())
-                )
-            layout.addWidget(toolbutton, i, 2)
+            if not geo=='regions':
+                toolbutton = QtWidgets.QToolButton()
+                toolbutton.pressed.connect(partial(self.change_color, geo, toolbutton))
+                toolbutton.setAutoRaise(True)
+                layout.addWidget(toolbutton, i, 2)
+                btns['color']=toolbutton
 
             # opacity
             slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
             slider.setRange(0, 100)
-            if geo == 'Regions':
-                slider.setValue(50)
-            else:
-                slider.setValue(100)
             slider.setFixedWidth(40)
-            slider.valueChanged.connect(make_callback(self.change_opacity,
-                                                      geo.lower(),
-                                                      slider
-                                                      ))
+            slider.sliderReleased.connect(partial(self.change_opacity, geo, slider))
             layout.addWidget(slider, i, 3)
+            btns['opacity']=slider
 
             # label
-            label = QtWidgets.QLabel(geo)
+            label = QtWidgets.QLabel(geo_name)
             layout.addWidget(label, i, 4)
+        self.set_visual_btn_values()
 
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
@@ -645,6 +427,21 @@ class VtkWidget(QtWidgets.QWidget):
             btn.setAutoRaise(True)
 
         self.button_bar_layout.addStretch()
+
+    def set_visual_btn_values(self):
+        for geo, info in self.visual_props.items():
+            for key, value in info.items():
+                if geo in self.visual_btns and key in self.visual_btns[geo]:
+                    wid = self.visual_btns[geo][key]
+                    if key=='rep':
+                        wid.setCurrentIndex(wid.findText(value))
+                    elif key=='visible':
+                        wid.setChecked(value)
+                        self.set_visible_btn_image(wid, value)
+                    elif key=='color':
+                        wid.setStyleSheet("QToolButton{{ background: {};}}".format(value.name()))
+                    elif key=='opacity':
+                        wid.setValue(value*100)
 
     def emitUpdatedValue(self, key, value, args=None):
         self.value_updated.emit(self, {key: value}, args)
@@ -681,12 +478,12 @@ class VtkWidget(QtWidgets.QWidget):
             text = item.text(0)
             if text not in tree:
                 tree[text] = []
-            for i in  range(item.childCount()):
+            for i in range(item.childCount()):
                 tree[text].append(item.child(i).text(0))
             itr += 1
 
         data = {'geometry_dict': clean_geo_dict(self.geometrydict),
-                'tree':tree}
+                'tree': tree}
 
         return ExtendedJSON.dumps(data)
 
@@ -730,6 +527,27 @@ class VtkWidget(QtWidgets.QWidget):
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
 
+    def visual_props_to_str(self):
+        """convert visual props to str"""
+        return ExtendedJSON.dumps(clean_visual_dict(self.visual_props))
+
+    def visual_props_from_str(self, string):
+        """convert string to visual props"""
+        data = ExtendedJSON.loads(string)
+
+        for geo, geo_dict in data.items():
+            for key, value in geo_dict.items():
+                if key in ['color', 'edge']:
+                    data[geo][key] = QtGui.QColor(*value)
+
+        self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
+        self.visual_props.update(data)
+        if not self.mesh_actor is None:
+            self.set_mesh_actor_props()
+
+        self.set_visual_btn_values()
+        for actor in self.grid_viewer_dict['actors']:
+            self.set_background_mesh_actor_props(actor)
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):
@@ -824,7 +642,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         name = str(item.text(0)).lower()
         if item.checkState(0) == QtCore.Qt.Checked:
-            if self.geometry_visible:
+            if self.visual_props['geometry']['visible']:
                 self.geometrydict[name]['actor'].VisibilityOn()
             self.geometrydict[name]['visible'] = True
         else:
@@ -940,13 +758,13 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrydict[name][key] = value
 
             if self.geometrydict[name]['type'] in \
-                    list(self.primitivedict.keys()):
+                    list(PRIMITIVE_DICT.keys()):
                 self.update_primitive(name)
             elif self.geometrydict[name]['type'] in \
-                    list(self.filterdict.keys()):
+                    list(FILTER_DICT.keys()):
                 self.update_filter(name)
             elif self.geometrydict[name]['type'] in \
-                    list(self.parametricdict.keys()):
+                    list(PARAMETRIC_DICT.keys()):
                 self.update_parametric(name)
 
             if 'transform' in self.geometrydict[name]:
@@ -1035,7 +853,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # translate stl files
         if self.geometrydict[name]['type'] in ['stl'] + \
-                list(self.parametricdict.keys()):
+                list(PARAMETRIC_DICT.keys()):
             transform.Translate(
                 safe_float(self.geometrydict[name]['translationx']),
                 safe_float(self.geometrydict[name]['translationy']),
@@ -1051,15 +869,14 @@ class VtkWidget(QtWidgets.QWidget):
         """
         Add the specified primitive
         """
-
         if name is None:
             name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
         # create primitive
         if data is not None:
             primtype = data['type']
-        if primtype in self.primitivedict:
-            source = self.primitivedict[primtype]()
+        if primtype in PRIMITIVE_DICT:
+            source = PRIMITIVE_DICT[primtype]()
         else:
             return
 
@@ -1203,7 +1020,7 @@ class VtkWidget(QtWidgets.QWidget):
         if name is None:
             name = get_unique_string(paramtype, list(self.geometrydict.keys()))
 
-        parametric_object = self.parametricdict[paramtype]()
+        parametric_object = PARAMETRIC_DICT[paramtype]()
         source = vtk.vtkParametricFunctionSource()
         source.SetParametricFunction(parametric_object)
 
@@ -1364,7 +1181,7 @@ class VtkWidget(QtWidgets.QWidget):
             # move children to toplevel, make visible
             for child in item.takeChildren():
                 self.geometrytree.addTopLevelItem(child)
-                if self.geometry_visible:
+                if self.visual_props['geometry']['visible']:
                     name = str(child.text(0)).lower()
                     self.geometrydict[name]['actor'].VisibilityOn()
                     self.geometrydict[name]['visible'] = True
@@ -1530,7 +1347,7 @@ class VtkWidget(QtWidgets.QWidget):
         # init filter
         if data is not None:
             filtertype = data['type']
-        vtkfilter = self.filterdict[filtertype]()
+        vtkfilter = FILTER_DICT[filtertype]()
         self.geometrydict[name]['filter'] = vtkfilter
 
         # set input data
@@ -1637,23 +1454,15 @@ class VtkWidget(QtWidgets.QWidget):
     def set_geometry_actor_props(self, actor, name):
         """ set the geometry proprerties to the others in the scene """
 
-        # copy properties from an exsiting actor
-        if len(self.geometrydict) > 1:
-            name_list = list(self.geometrydict.keys())
-            # Get any key which is not equal to 'name'.  Order of keys is arbitrary
-            other_name = name_list[1] if name_list[0] == name else name_list[0]
-            other_actor = self.geometrydict[other_name]['actor']
-            actor.GetProperty().DeepCopy(other_actor.GetProperty())
-        else:
-            actor.GetProperty().SetRepresentationToWireframe()
+        props = self.visual_props['geometry']
 
-        actor.GetProperty().SetColor(
-            self.color_dict['geometry'].getRgbF()[:3])
-        actor.GetProperty().SetEdgeColor(
-                self.color_dict['geometry_edge'].getRgbF()[:3])
+        self.set_representation(actor, props['rep'])
+        actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
+        actor.GetProperty().SetEdgeColor(props['edge'].getRgbF()[:3])
+        actor.GetProperty().SetOpacity(props['opacity'])
 
         # check visibility
-        if not self.geometry_visible:
+        if not props['visible']:
             actor.VisibilityOff()
 
     # --- parameters ---
@@ -1767,7 +1576,7 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             shape = 'box'
 
-        source = self.primitivedict[shape]()
+        source = PRIMITIVE_DICT[shape]()
         self.region_dict[name]['source'] = source
         self.update_region_source(name)
 
@@ -1827,7 +1636,7 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             shape = 'box'
 
-        source = self.primitivedict[shape]()
+        source = PRIMITIVE_DICT[shape]()
         self.region_dict[name]['source'] = source
         self.update_region_source(name)
         self.select_facets(name)
@@ -1846,7 +1655,7 @@ class VtkWidget(QtWidgets.QWidget):
     def change_region_visibility(self, name, visible):
         """ change the visibility of a region """
 
-        if visible and self.regions_visible:
+        if visible and self.visual_props['regions']['visible']:
             self.region_dict[name]['actor'].VisibilityOn()
             if 'clip_actor' in self.region_dict[name]:
                 self.region_dict[name]['clip_actor'].VisibilityOn()
@@ -1861,23 +1670,17 @@ class VtkWidget(QtWidgets.QWidget):
     def set_region_actor_props(self, actor, name, color=None):
         """ set the geometry properties to the others in the scene """
 
-        # copy properties from an exsiting actor
-        if len(self.region_dict) > 1:
-            other_actor = list(self.region_dict.keys())
-            other_actor.remove(name)
-            other_actor = self.region_dict[other_actor[0]]['actor']
-            actor.GetProperty().DeepCopy(other_actor.GetProperty())
-            opacity = other_actor.GetProperty().GetOpacity()
-            actor.GetProperty().SetOpacity(opacity)
-        else:
-            actor.GetProperty().SetRepresentationToWireframe()
-            actor.GetProperty().SetOpacity(0.5)
+        props = self.visual_props['regions']
+        self.set_representation(actor, props['rep'])
+        actor.GetProperty().SetOpacity(props['opacity'])
 
         if color:
             actor.GetProperty().SetColor(*color)
+        else:
+            actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
 
         # check visibility
-        if not self.regions_visible:
+        if not props['visible']:
             actor.VisibilityOff()
 
     def select_facets(self, name):
@@ -2066,7 +1869,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
-            wid.setText('{0:.2e}'.format((t-f)/c))
+            wid.setText('{0:.2e}'.format((t-f)/(c-1)))
         self.rectilinear_grid.SetDimensions(*cells)
 
         # determine cell spacing
@@ -2085,25 +1888,6 @@ class VtkWidget(QtWidgets.QWidget):
         self.rectilinear_grid.SetXCoordinates(x_coords)
         self.rectilinear_grid.SetYCoordinates(y_coords)
         self.rectilinear_grid.SetZCoordinates(z_coords)
-
-        # update actors
-
-        # copy properties of one of the actors
-        mesh_is_visible = 1
-        actor_property = None
-        if self.grid_viewer_dict['actors']:
-            actor_property = vtk.vtkProperty()
-            actor_property.DeepCopy(
-                self.grid_viewer_dict['actors'][0].GetProperty())
-
-            # reset the colors
-            actor_property.SetColor(
-                    self.color_dict['background_mesh'].getRgbF()[:3])
-            actor_property.SetEdgeColor(
-                 self.color_dict['background_mesh_edge'].getRgbF()[:3])
-
-            mesh_is_visible = \
-                self.grid_viewer_dict['actors'][0].GetVisibility()
 
         # remove exsisting
         for actor in self.grid_viewer_dict['actors']:
@@ -2134,20 +1918,20 @@ class VtkWidget(QtWidgets.QWidget):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.SetVisibility(mesh_is_visible)
-            if actor_property is not None:
-                actor.GetProperty().DeepCopy(actor_property)
-            else:
-                actor.GetProperty().SetRepresentationToWireframe()
-                actor.GetProperty().SetColor(
-                    self.color_dict['background_mesh'].getRgbF()[:3])
-                actor.GetProperty().SetEdgeColor(
-                 self.color_dict['background_mesh_edge'].getRgbF()[:3])
+            self.set_background_mesh_actor_props(actor)
             self.grid_viewer_dict['actors'].append(actor)
 
             self.vtkrenderer.AddActor(actor)
 
         self.render()
+
+    def set_background_mesh_actor_props(self, actor):
+        props = self.visual_props['background_mesh']
+        self.set_representation(actor, props['rep'])
+        actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
+        actor.GetProperty().SetEdgeColor(props['color'].getRgbF()[:3])
+        actor.GetProperty().SetOpacity(props['opacity'])
+        actor.SetVisibility(int(props['visible']))
 
     def vtk_calc_distance_from_geometry(self):
 
@@ -2186,18 +1970,11 @@ class VtkWidget(QtWidgets.QWidget):
             )
         clipper.SetValue(0.0)
         clipper.Update()
+        self.export_mesh(clipper)
+
         self.mesh = clipper.GetOutput()
-
-        self.mesh_mapper.SetInputData(self.mesh)
-
-        self.render()
-
+        self.show_mesh()
         self.mesh_stats()
-
-        # export geometry
-        project_dir = self.parent.get_project_dir()
-        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
-                                 clipper.GetOutputPort())
 
     def vtk_mesher_threshold(self):
 
@@ -2217,19 +1994,17 @@ class VtkWidget(QtWidgets.QWidget):
             thresh.AllScalarsOn()
 
         thresh.Update()
+        self.export_mesh(thresh)
 
         self.mesh = thresh.GetOutput()
-
-        self.mesh_mapper.SetInputData(self.mesh)
-
-        self.render()
-
+        self.show_mesh()
         self.mesh_stats()
 
+    def export_mesh(self, mesh, name=DEFAULT_MESH_NAME):
         # export geometry
-        project_dir = self.parent.settings.value('project_dir')
-        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
-                                 thresh.GetOutputPort())
+        project_dir = self.parent.get_project_dir()
+        self.export_unstructured(os.path.join(project_dir, name),
+                                 mesh.GetOutputPort())
 
     def mesh_stats(self):
 
@@ -2263,54 +2038,93 @@ class VtkWidget(QtWidgets.QWidget):
         elif mesher == 'vtkThreshold':
             self.vtk_mesher_threshold()
 
+    def remove_mesh(self, name=DEFAULT_MESH_NAME):
+        project_dir = self.parent.get_project_dir()
+        path = os.path.join(project_dir, name)
+        if not os.path.exists(path): return
+        key = gui.message(text='Remove %s?' % name, buttons=['yes', 'no'], default='no')
+        if key == 'no': return
+
+        os.remove(path)
+
+        if self.mesh_actor is not None:
+            self.vtkrenderer.RemoveActor(self.mesh_actor)
+            self.mesh_actor = None
+
+    def set_mesh_actor_props(self):
+        props = self.visual_props['mesh']
+        self.set_representation(self.mesh_actor, props['rep'])
+        self.mesh_actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
+        self.mesh_actor.GetProperty().SetEdgeColor(props['edge'].getRgbF()[:3])
+        self.mesh_actor.SetVisibility(int(props['visible']))
+
+    def show_mesh(self):
+        if self.mesh is None: return
+
+        if not self.mesh_actor is None:
+            self.vtkrenderer.RemoveActor(self.mesh_actor)
+        self.mesh_mapper = vtk.vtkDataSetMapper()
+        self.mesh_mapper.ScalarVisibilityOff()
+        self.mesh_mapper.SetInputData(self.mesh)
+        self.mesh_actor = vtk.vtkActor()
+        self.mesh_actor.SetMapper(self.mesh_mapper)
+        self.vtkrenderer.AddActor(self.mesh_actor)
+        self.set_mesh_actor_props()
+        self.render()
+
     # --- view ---
-    def perspective(self):
+    def perspective(self, parallel=None):
         camera = self.vtkrenderer.GetActiveCamera()
 
-        if camera.GetParallelProjection():
-            camera.ParallelProjectionOff()
-            self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
-        else:
+        if parallel is None:
+            parallel = not camera.GetParallelProjection()
+
+        if parallel:
             camera.ParallelProjectionOn()
             self.toolbutton_perspective.setIcon(get_icon('parallel.png'))
+        else:
+            camera.ParallelProjectionOff()
+            self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
 
         self.render()
 
     def set_view(self, view='xy'):
-
+        self.perspective(parallel=True)
         camera = self.vtkrenderer.GetActiveCamera()
-
         if view == 'xy':
             camera.SetPosition(0, 0, 10000000)
             camera.SetViewUp(0, 1, 0)
+            if self.view_flip[1]:
+                camera.Azimuth(180)
+            self.view_flip[1] = not self.view_flip[1]
         elif view == 'yz':
             camera.SetPosition(0, 10000000, 0)
             camera.SetViewUp(1, 0, 0)
+            if self.view_flip[2]:
+                camera.Azimuth(180)
+            self.view_flip[2] = not self.view_flip[2]
         elif view == 'xz':
             camera.SetPosition(10000000, 0, 0)
-            camera.SetViewUp(0, 0, 1)
-#        self.vtkrenderer.ResetCamera()
-        self.render()
+            camera.SetViewUp(0, 1, 0)
+            if self.view_flip[2]:
+                camera.Azimuth(180)
+            self.view_flip[2] = not self.view_flip[2]
+
+        self.reset_view()
 
     def reset_view(self):
         self.vtkrenderer.ResetCamera()
         self.render()
 
     def change_visibility(self, name, toolbutton):
-
         actors = None
         if name == 'mesh':
             actors = [self.mesh_actor]
-        elif name == 'background mesh':
+        elif name == 'background_mesh':
             actors = self.grid_viewer_dict['actors']
         elif name == 'geometry':
             actors = [geo['actor'] for geo in self.geometrydict.values()
                       if geo['visible']]
-
-            if toolbutton.isChecked():
-                self.geometry_visible = False
-            else:
-                self.geometry_visible = True
         elif name == 'regions':
             actors = [geo['actor'] for geo in self.region_dict.values()
                       if geo['visible']]
@@ -2318,98 +2132,21 @@ class VtkWidget(QtWidgets.QWidget):
             actors += [geo['clip_actor'] for geo in self.region_dict.values()
                        if 'clip_actor' in geo and geo['visible']]
 
-            if toolbutton.isChecked():
-                self.regions_visible = False
-            else:
-                self.regions_visible = True
-
-        if toolbutton.isChecked():
-            toolbutton.setIcon(
-                        get_icon('visibilityofftransparent.png'))
-        else:
-            toolbutton.setIcon(get_icon('visibility.png'))
-
+        visible = self.visual_props[name]['visible'] = not toolbutton.isChecked()
+        self.set_visible_btn_image(toolbutton, visible)
         if actors is not None:
             for actor in actors:
-                if toolbutton.isChecked():
-                    actor.VisibilityOff()
-                else:
+                if visible:
                     actor.VisibilityOn()
-
+                else:
+                    actor.VisibilityOff()
             self.render()
 
-    def change_representation(self, name, combobox):
-
-        representation = str(combobox.currentText())
-        actors = None
+    def get_actors(self, name):
+        actors = []
         if name == 'mesh':
             actors = [self.mesh_actor]
-        elif name == 'background mesh':
-            actors = self.grid_viewer_dict['actors']
-        elif name == 'geometry':
-            actors = [geo['actor'] for geo in self.geometrydict.values()]
-        elif name == 'regions':
-            actors = [geo['actor'] for geo in self.region_dict.values()
-                      if geo['type'].lower() != 'stl']
-            actors += [geo['clip_actor'] for geo in self.region_dict.values()
-                       if 'clip_actor' in geo]
-
-        if actors is not None:
-            for actor in actors:
-                if representation == 'wire':
-                    actor.GetProperty().SetRepresentationToWireframe()
-                elif representation == 'solid':
-                    actor.GetProperty().SetRepresentationToSurface()
-                    actor.GetProperty().EdgeVisibilityOff()
-                elif representation == 'edges':
-                    actor.GetProperty().SetRepresentationToSurface()
-                    actor.GetProperty().EdgeVisibilityOn()
-                elif representation == 'points':
-                    actor.GetProperty().SetRepresentationToPoints()
-
-            self.render()
-
-    def change_color(self, name, button):
-
-        col = QtWidgets.QColorDialog.getColor()
-
-        if col.isValid():
-
-            button.setStyleSheet("QToolButton{{ background: {};}}".format(
-                col.name()))
-
-            name = '_'.join(name.lower().split(' '))
-            name_edge = '_'.join([name, 'edge'])
-
-            self.color_dict[name] = col
-            self.color_dict[name_edge] = col.darker()
-
-            actors = None
-            if name == 'mesh':
-                actors = [self.mesh_actor]
-            elif name == 'background_mesh':
-                actors = self.grid_viewer_dict['actors']
-            elif name == 'geometry':
-                actors = [geo['actor'] for geo in self.geometrydict.values()]
-                actors += [geo['clip_actor'] for geo in self.region_dict.values()
-                           if 'clip_actor' in geo]
-
-            if actors is not None:
-                for actor in actors:
-                    actor.GetProperty().SetColor(
-                        self.color_dict[name].getRgbF()[:3])
-                    actor.GetProperty().SetEdgeColor(
-                     self.color_dict[name_edge].getRgbF()[:3])
-
-                self.render()
-
-    def change_opacity(self, name, slider):
-
-        value = slider.value()/100.0
-        actors = None
-        if name == 'mesh':
-            actors = [self.mesh_actor]
-        elif name == 'background mesh':
+        elif name == 'background_mesh':
             actors = self.grid_viewer_dict['actors']
         elif name == 'geometry':
             actors = [geo['actor'] for geo in self.geometrydict.values()]
@@ -2417,9 +2154,58 @@ class VtkWidget(QtWidgets.QWidget):
             actors = [geo['actor'] for geo in self.region_dict.values()]
             actors += [geo['clip_actor'] for geo in self.region_dict.values()
                        if 'clip_actor' in geo]
+        for actor in actors:
+            yield actor
 
-        if actors is not None:
-            for actor in actors:
-                actor.GetProperty().SetOpacity(value)
+    def set_representation(self, actor, rep):
+        if rep == 'wire':
+            actor.GetProperty().SetRepresentationToWireframe()
+        elif rep == 'solid':
+            actor.GetProperty().SetRepresentationToSurface()
+            actor.GetProperty().EdgeVisibilityOff()
+        elif rep == 'edges':
+            actor.GetProperty().SetRepresentationToSurface()
+            actor.GetProperty().EdgeVisibilityOn()
+        elif rep == 'points':
+            actor.GetProperty().SetRepresentationToPoints()
 
-            self.render()
+    def change_representation(self, name, combobox):
+        representation = str(combobox.currentText())
+
+        self.visual_props[name]['rep'] = representation
+
+        for actor in self.get_actors(name):
+            self.set_representation(actor, representation)
+
+        self.render()
+
+    def change_color(self, name, button):
+        col = QtWidgets.QColorDialog.getColor()
+        if not col.isValid(): return
+
+        button.setStyleSheet("QToolButton{{ background: {};}}".format(
+            col.name()))
+
+        self.visual_props[name]['color'] = col
+        dark = self.visual_props[name]['edge'] = col.darker()
+
+        for actor in self.get_actors(name):
+            actor.GetProperty().SetColor(col.getRgbF()[:3])
+            actor.GetProperty().SetEdgeColor(dark.getRgbF()[:3])
+
+        self.render()
+
+    def change_opacity(self, name, slider):
+        value = slider.value()/100.0
+        self.visual_props[name]['opacity'] = value
+
+        for actor in self.get_actors(name):
+            actor.GetProperty().SetOpacity(value)
+        self.render()
+
+    def set_visible_btn_image(self, btn, checked):
+        if not checked:
+            btn.setIcon(
+                        get_icon('visibilityofftransparent.png'))
+        else:
+            btn.setIcon(get_icon('visibility.png'))

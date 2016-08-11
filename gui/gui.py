@@ -14,6 +14,7 @@ import socket
 import sys
 import traceback
 from collections import OrderedDict
+from functools import partial
 
 # Initialize logger early
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
@@ -58,7 +59,7 @@ from bcs import BCS
 
 from interpreter import Interpreter
 
-from tools.general import (make_callback, get_icon, get_mfix_home,
+from tools.general import (get_icon, get_mfix_home,
                            widget_iter, set_script_directory,
                            format_key_with_args, to_unicode_from_fs)
 
@@ -398,7 +399,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.clicked.connect(make_callback(self.mode_changed, mode))
+            btn.clicked.connect(partial(self.mode_changed,mode))
 
         # navigation tree
         ui.treewidget_navigation.itemSelectionChanged.connect(
@@ -1335,12 +1336,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # animation group FIXME why 2 callbacks?
         self.stack_animation.finished.connect(
-            make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, tb=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
 
         self.stack_animation.stateChanged.connect(
-            make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, tb=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
 
         self.animating = True
         self.stack_animation.start()
@@ -1777,6 +1776,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
+        self.project.mfix_gui_comments['visual_props'] = self.vtkwidget.visual_props_to_str()
 
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
@@ -2203,7 +2203,12 @@ class MfixGui(QtWidgets.QMainWindow,
             if key == 'regions_dict':
                 self.ui.regions.regions_from_str(val)
             if key == 'geometry':
+                # load props first
+                if 'visual_props' in self.project.mfix_gui_comments:
+                    self.vtkwidget.visual_props_from_str(
+                        self.project.mfix_gui_comments['visual_props'])
                 self.vtkwidget.geometry_from_str(val)
+
             if key == 'ic_regions':
                 self.ics_regions_from_str(val)
             # Add more here
@@ -2280,9 +2285,14 @@ class MfixGui(QtWidgets.QMainWindow,
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
 
+        # Initial conditions
         self.ics_extract_regions()
         self.ics_update_enabled()
 
+        # Boundary conditions
+        self.bcs_extract_regions()
+        self.bcs_update_enabled()
+        # Chemistry
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
