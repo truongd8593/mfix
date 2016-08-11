@@ -1865,7 +1865,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
-            wid.setText('{0:.2e}'.format((t-f)/c))
+            wid.setText('{0:.2e}'.format((t-f)/(c-1)))
         self.rectilinear_grid.SetDimensions(*cells)
 
         # determine cell spacing
