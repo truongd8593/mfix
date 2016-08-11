@@ -13,9 +13,6 @@
 ! Number of INTEGER words in 512 bytes
       integer, parameter :: NWORDS_I = 128
 
-!
-      LOGICAL :: JUST_FLUSH = .TRUE.
-
 ! computer node name/id
       CHARACTER(LEN=64) :: ID_NODE
 
@@ -177,32 +174,5 @@
       IF(DMP_LOG) FLUSH(UNIT_LOG)
       RETURN
       END SUBROUTINE END_LOG
-
-      subroutine slumber
-      return
-      end subroutine slumber
-
-      subroutine pc_quickwin
-      return
-      end subroutine pc_quickwin
-
-      subroutine ran
-      return
-      end subroutine ran
-
-      subroutine flush_bin(iunit)
-      implicit none
-      integer :: iunit
-
-      flush(iunit)
-      return
-      end subroutine flush_bin
-
-      subroutine flush_res(iunit)
-      implicit none
-      integer :: iunit
-      flush(iunit)
-      return
-      end subroutine flush_res
 
       END MODULE machine

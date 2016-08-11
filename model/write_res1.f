@@ -18,7 +18,6 @@
       USE fldvar
       USE funits
       USE geometry
-      USE machine, only: flush_res
       USE mpi_utility
       USE output
       USE param
@@ -149,7 +148,7 @@
 !---------------------------------------------------------------------
 
       if ( (myPE.eq.PE_IO .and. .not.bDist_IO) .or. bDist_IO) then
-           CALL FLUSH_res (UNIT_RES)
+           FLUSH(UNIT_RES)
         end if
 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
