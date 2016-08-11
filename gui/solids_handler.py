@@ -1142,6 +1142,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 for args in indices:
                     if args[1] != phase:
                         continue
+                    # TODO check if value is default, if so allow delete
                     if self.project.get_value(k, args=args) is not None:
                         return format_key_with_args(k,args)
 
