@@ -890,6 +890,8 @@ class ICS(object):
             if widget:
                 return widget
             widget = getattr(ics, 'lineedit_keyword_%s_args_IC' % key, None)
+            if not widget:
+                self.error('no widget for key %s' % key)
             return widget
 
         def setup_key_widget(key, default, enabled=True):
