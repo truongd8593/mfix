@@ -1817,18 +1817,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('run_name', run_name)
         self.save_project()
 
-    def get_save_filename(self, dialog_message=None):
+    def get_save_filename(self, message=None):
         """wrapper for call to getSaveFileName, override in unit tests"""
-
-        if not dialog_message:
-            dialog_message = 'Save Project As'
-        filename = QtWidgets.QFileDialog.getSaveFileName(
-                            self,
-                            dialog_message,
-                            os.path.join(
-                                self.get_project_dir(),
-                                self.get_runname()+"..mfx",
-                            "*.mfx")
+        if message is None:
+            message = 'Save Project As'
+        default = os.path.join(self.get_project_dir(), self.get_runname()+".mfx",)
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, message, default, "*.mfx")
         if PYQT5:
             filename = filename[0]
         return filename
