@@ -336,7 +336,8 @@ class TestParser(unittest.TestCase):
         project = Project(testString)
 
         self.assertEqual('value',
-            project._keyword_dict['key'].value)
+                         project.get_value('key'))
+
 
     def test_parsemfixdat_booleans(self):
         testString = """
@@ -359,10 +360,10 @@ class TestParser(unittest.TestCase):
                     'falsea': False,
                     'falseb': False,
                     'falsec': False,
-                    'falsed': False,
-                    }
+                    'falsed': False, }
 
-        self.assertDictEqual(expected, project._keyword_dict)
+        for (key, expected_val) in expected.items():
+            self.assertEqual(project.get_value(key), expected_val)
 
     def test_parsemfixdat_floats(self):
         testString = """
@@ -377,12 +378,12 @@ class TestParser(unittest.TestCase):
         expected = {'keya': 3.0,
                     'keyb': 3.0,
                     'keyc': 3.0,
-                    'keyd': 3.0E5,
-                    }
+                    'keyd': 3.0E5 }
 
-        for key in expected.keys():
-            self.assertEqual(expected[key],
-                             float(project._keyword_dict[key]))
+
+        for key, expected_val in expected.items():
+            self.assertEqual(float(project.get_value(key)), expected_val)
+
 
     def test_parsemfixdat_exponentialnotation(self):
         testString = """
@@ -393,10 +394,12 @@ class TestParser(unittest.TestCase):
         project = Project(testString)
 
         expected = {'keya': 3.0E-10,
-                    'keyb': 1.1E10,
-                    }
+                    'keyb': 1.1E10 }
 
-        self.assertDictEqual(expected, project._keyword_dict)
+
+        for key, expected_val in expected.items():
+            self.assertEqual(float(project.get_value(key)), expected_val)
+
 
     def test_parsemfixdat_equations(self):
         testString = """
@@ -418,9 +421,10 @@ class TestParser(unittest.TestCase):
         project = Project(testString)
 
         expected = {'keya': 'value',
-                    'keyb': 'value'
-                    }
-        self.assertDictEqual(expected, project._keyword_dict)
+                    'keyb': 'value' }
+
+        for key, expected_val in expected.items():
+            self.assertEqual(project.get_value(key), expected_val)
 
     def test_parsemfixdat_commentedKeywords(self):
         testString = """
@@ -430,7 +434,7 @@ class TestParser(unittest.TestCase):
 
         project = Project(testString)
 
-        self.assertDictEqual({}, project._keyword_dict)
+        self.assertEqual(list(project.keywordItems()), [])
 
     def test_parsemfixdat_expandshorthand(self):
         testString = """

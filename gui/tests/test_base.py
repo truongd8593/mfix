@@ -56,7 +56,7 @@ class BaseWidgetTests(TestQApplication):
         waitFor(10)
         self.assertIsInstance(self.widget.value, Equation)
         self.assertEqual(self.widget.value.eq, '10.0*4')
-        
+
     def test_lineedit_float_eq_pi(self):
         self.widget = base.LineEdit()
         self.widget.setdtype('dp')
@@ -140,7 +140,7 @@ class BaseWidgetTests(TestQApplication):
         waitFor(10)
         self.assertFalse(self.widget._completer.popup().isVisible())
 
-    def test_lineedt_qcompleter(self):
+    def test_lineedit_qcompleter(self):
         self.widget = base.LineEdit()
         self.widget.allow_parameters = True
         self.widget.show()
@@ -149,7 +149,7 @@ class BaseWidgetTests(TestQApplication):
         waitFor(10)
         self.assertTrue(self.widget._completer.popup().isVisible())
 
-    def test_lineedt_qcompleter_completion_sin(self):
+    def test_lineedit_qcompleter_completion_sin(self):
         self.widget = base.LineEdit()
         self.widget.allow_parameters = True
         self.widget.show()
@@ -160,7 +160,7 @@ class BaseWidgetTests(TestQApplication):
         QTest.keyClick(self.widget._completer.popup(), QtCore.Qt.Key_Enter)
         self.assertEqual(self.widget.text(), 'sin')
 
-    def test_lineedt_qcompleter_completion_eq(self):
+    def test_lineedit_qcompleter_completion_eq(self):
         self.widget = base.LineEdit()
         self.widget.allow_parameters = True
         self.widget.show()
@@ -171,7 +171,7 @@ class BaseWidgetTests(TestQApplication):
         QTest.keyClick(self.widget._completer.popup(), QtCore.Qt.Key_Enter)
         self.assertEqual(self.widget.text(), '10*3+4/cos')
 
-    def test_lineedt_qcompleter_completion_eq_middle(self):
+    def test_lineedit_qcompleter_completion_eq_middle(self):
         self.widget = base.LineEdit()
         self.widget.allow_parameters = True
         self.widget.show()
