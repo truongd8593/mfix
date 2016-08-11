@@ -1,0 +1,2705 @@
+for
+
+MFIX-User Interface
+Version 1.0
+
+Prepared by J.Musser, J.Weber, W. Rogers, M. Meredith
+
+National Energy Technology Laboratory
+Research and Innovation Center
+
+August, 2016
+
+Table of Contents
+Table of Contents .......................................................................................................................... ii
+Revision History ............................................................................................................................ ii
+1. Introduction ..............................................................................................................................1
+Purpose...................................................................................................................................................... 1
+Document Conventions............................................................................................................................. 1
+Intended Audience and Reading Suggestions ........................................................................................... 1
+Product Scope ........................................................................................................................................... 1
+References ................................................................................................................................................. 1
+
+2. Overall Description ..................................................................................................................1
+Product Perspective................................................................................................................................... 1
+Product Functions ..................................................................................................................................... 2
+User Classes and Characteristics .............................................................................................................. 2
+Operating Environment............................................................................................................................. 2
+Design and Implementation Constraints ................................................................................................... 2
+User Documentation ................................................................................................................................. 3
+Assumptions and Dependencies ............................................................................................................... 3
+
+3. External Interface Requirements ...........................................................................................3
+User Interfaces .......................................................................................................................................... 3
+Hardware Interfaces ................................................................................................................................ 61
+0Software Interfaces ............................................................................................................................... 61
+Communications Interfaces .................................................................................................................... 61
+
+4. System Features .....................................................................................................................62
+5. Other Nonfunctional Requirements .....................................................................................67
+Performance Requirements ..................................................................................................................... 67
+Safety Requirements ............................................................................................................................... 67
+Security Requirements ............................................................................................................................ 67
+Software Quality Attributes .................................................................................................................... 67
+Code Style Guide .................................................................................................................................... 68
+Business Rules ........................................................................................................................................ 68
+
+6. Other Requirements ..............................................................................................................68
+Appendix A: Glossary..................................................................................................................68
+Appendix B: Analysis Models .....................................................................................................68
+Appendix C: To Be Determined List ..........................................................................................68
+
+Revision History
+Name
+
+Date
+
+Reason For Changes
+
+Version
+
+1. Introduction
+Purpose
+This SRS outlines the requirements for MFIX-UI version 1.0.
+
+Document Conventions
+Place holder.
+
+Intended Audience and Reading Suggestions
+The intended audience for this document is primarily project managers, GUI developers, and MFIX
+users. The secondary audience will be code testers, and documentation writers. This primary
+purpose of the document is to capture the design and performance specifications in one location
+so that the project scope can be defined and managed.
+
+Product Scope
+A comprehensive graphical user interface (GUI) for interacting with the MFIX Suite of multiphase
+flow software will be developed. The purpose of the GUI will be to provide a user-friendly interface
+to:
+#### Set up the MFIX simulation;
+#### Control and interact with the MFIX code during execution;
+#### Provide post-processing capabilities for analyzing output data;
+While developing this capability in V1.0, we will monitor progress of other development teams that
+are also creating MFIX enhancements (MFIX Development, REMS toolkit development, UQ toolkit
+development) and provide these groups with information on GUI capabilities and incremental GUI
+code beta releases.
+
+References
+Place holder text.
+
+2. Overall Description
+Product Perspective
+This product is an evolution of the current MFIX-GUI application. The original product (v0.1) is
+currently available to the MFIX user base and works as a mediator between users and the model
+deck file (mfix.dat) while offering moderate runtime analysis (e.g., plotting residuals) and build
+environment support. The expanding model capabilities of the MFIX software suite, growing need
+for runtime control and interaction of simulations, and model optimization necessitates an
+immersive user interface.
+
+Product Functions
+
+Fully specify an MFIX simulation through an easy to use user interface (UI)
+# Define run parameters, geometry, initial/boundary conditions, material properties
+# Basic in situ 'sanity checks' on specified input
+Instantaneous control/interaction of a running MFIX simulation
+# Launch simulations from the UI, locally or via a queuing system
+# Connect to running simulations that were launched in batch mode
+# Patch field variables with user specified value
+Basic in situ data collection/analysis
+# Average field variable across point/line/plane/volume
+# Plot field variable across line/plane
+
+User Classes and Characteristics
+General CFD practitioners: This user class is comprised of traditional CFD users interested
+primarily in setting up and running single- and multi-phase flow simulations. This class may make
+use well supported/defined UDF hooks however; substantial interest in code development is not
+expected.
+General developers: This user class is comprised of researches at Universities and other National
+Labs. This class engages in moderate levels of code development, primarily to investigate specific
+physical models. This class needs the ability to readily build and rebuild MFIX executables from
+locally modified source code. This user is not like to modify the MFIX-UI or contribute to general
+code maintenance.
+MFIX developers: This user class is comprised of the core MFIX development team and NETL
+support collaborators. This class will regularly modify the MFIX solver source code for debugging
+and model development. This class requires access to the MFIX deck file for toggling new
+features. This user must work tightly with the MFIX-UI team to ensure features added to the solver
+are available through the MFIX-UI.
+
+Operating Environment
+The user interface shall work on the following operating systems:
+#### Linux (Ubuntu, Fedora, OpenSUSE)
+#### Windows 7, 8.1, 10
+#### OS X (Mac)
+The interface shall connect and interact with running models on Linux based systems. Joule, the
+NETL Supercomputer, is the primary target of this feature. However, extension and testing on
+other HPC systems will be investigated as access and resources permit.
+
+Design and Implementation Constraints
+Python will be used to implement the MFIX-UI. The MFIX executable compiled with Python/Fortran
+bindings provides access to Python libraries for networking. Anaconda Python Distribution from
+Continuum Analytics provides dependencies across all operating environments as described in 0.
+
+Primary Language: Python
+# Target versions: 2.7 and 3.5
+
+# This includes all “python core” libraries such as os, etc.
+Third party Python libraries (open source)
+# GUI library: Qt
+## Supported wrappers: PyQt4, PyQt5, PySide
+# 3D graphics library: VTK
+# Array library: numpy
+# Fortran/Python interface generator: F2PY
+# Web framework library: Flask
+
+User Documentation
+Text based documentation generated using Sphinx, covering the following areas:
+#### Disclaimer
+#### Introduction
+#### Installation
+#### Features
+#### Tutorials
+#### Developer Guide
+# Contributing
+# Style Guide
+# Tests
+# Building Binaries
+#### Help
+#### Release Notes
+#### Test Harness Report
+#### API
+# Automatically pulled from docstrings in the code
+Video based screen cast tutorials will also be developed and published on YouTube through the
+NETL YouTube Channel.
+
+Assumptions and Dependencies
+This plans assumes continued support for the Anaconda Python Distribution and that it will contain
+the following dependencies:
+
+PyQt4, PyQt5, or PySide
+VTK
+Numpy
+F2PY
+Flask
+
+3. External Interface Requirements
+User Interfaces
+The UI consists of a basic layout with a main menu bar, tabbed graphics windows, a mode area,
+mode selection bar, and a console, illustrated in Figure 1. Splitters will resize/hide the mode area
+
+and the graphics area as well as hide/resize the console. Widgets listed in the mode area will
+change based on the user model selections.
+
+Figure 1: Basic layout of UI
+
+3.1.1 File Menu
+The file menu should provide pertinent information regarding the project, similar to MS office. The
+following information should be displayed:
+1. Author
+2. Last date modified
+3. Directory size on disk?
+
+MS Word's version of the file menu
+
+3.1.2 Modeler Mode
+Modeler mode intuitively guides a user through creating an MFIX model. Shown in Figure 2, the
+interface consists of a “Navigation Pane” and a “Task Pane”Error! Reference source not
+found.the user through the model setup process in a logical order. The entries in this tree adapt to
+user input, i.e. hiding/showing entries based on user selected options and models. the user
+through the model setup process in a logical order. The entries in this tree adapt to user input, i.e.
+hiding/showing entries based on user selected options and models. the user through the model
+setup process in a logical order. The entries in this tree adapt to user input, i.e. hiding/showing
+entries based on user selected options and models. the user through the model setup process in a
+logical order. The entries in this tree adapt to user input, i.e. hiding/showing entries based on user
+selected options and models. the user through the model setup process in a logical order. The
+entries in this tree adapt to user input, i.e. hiding/showing entries based on user selected options
+and models.
+
+Figure 2: General layout of the Modeler mode
+
+Navigation Pane:
+
+Geometry
+Mesh
+Regions
+Model Setup
+# Fluid (available unless disabled in solver task pane)
+# Solids (only available if TFM/DEM/PIC/Hybrid solver is selected)
+## TFM (only available if TFM or Hybrid solver is selected)
+## DEM (only available if DEM or Hybrid solver is selected)
+## PIC (available only if PIC solver is selected)
+# Initial Conditions
+# Boundary Conditions
+# Point Sources
+# Internal Surfaces
+# Chemistry
+Numerics
+Output
+Monitors
+# Points
+# Planes
+# Volumes
+Run
+Post Processing
+
+# Export
+# Plugins
+Geometry Task Pane Window: Load/create geometry
+#### Specify stl file(s)
+#### Specify primitive(s) (box, sphere, cylinder, cone)
+#### Apply filters
+# vtkCleanPolyData, vtkFillHolesFilter, vtkTriangleFilter, vtkDecimate,
+vtkDecimatePro, vtkQuadricDecimation, vtkQuadricClustering
+#### Perform boolean operations (union, difference, intersect)
+#### Edit geometry parameters
+# STL:
+## Select units, scale accordingly
+## Select center, translate accordingly
+## Rotate about x, y, and z axis
+# Box:
+## Select center, x, y, z lengths
+## Rotate about x, y, and z axis
+# Sphere
+## Select center, radius
+## Select resolution
+## Rotate about x, y, and z axis
+# Cylinder
+## Select center, radius, height
+## Select resolution
+## Rotate about x, y, and z axis
+# Cone
+## Select center, radius, height, direction
+## Select resolution
+## Rotate about x, y, and z axis
+
+Mockup of geometry task plane.
+Mesh Task Pane Window: Specify/Generate 3D Cartesian mesh
+#### Specify domain extents (xmin, xmax, ymin, ymax, zmin, zmax)
+#### Specify control points (location, cells, stretch)
+#### Specify remove small cells tolerances
+#### Specify snap tolerances
+#### Create the mesh
+#### Import a mesh
+
+Regions Task Pane Window: Define regions within the domain
+#### Specify an alias for easy referencing (e.g., outlet, solids-bed).
+#### Specify region extents (xmin, xmax, ymin, ymax, zmin, zmax)
+#### Specify a shape (sphere, cylinder, plane, disk, point)
+
+Model Setup Task Pane Window: Select MFIX solver and other conservation equations
+#### Select MFIX Solver:
+# Available selections:
+## Single phase
+#### Selection disables 'Solids' task pane menu
+#### Selection disables 'Continuum Solids Model' task pane menu
+#### Selection disables 'Discrete Element Model' task pane menu
+#### Selection disables 'Particle-in-Cell' task pane menu
+## MFIX-TFM
+#### Selection enables 'Solids' task pane menu
+#### Selection enables 'Continuum Solids Model' task pane menu
+## MFIX-DEM
+#### Selection enables 'Solids' task pane menu
+#### Selection enables 'Discrete Element Model' task pane menu
+## MFIX-PIC
+#### Selection enables 'Solids' task pane menu
+#### Selection enables 'Particle-in-Cell' task pane menu
+## MFIX-Hybrid
+#### Selection enables 'Solids' task pane menu
+#### Selection enables 'Continuum Solids Model' task pane menu
+#### Selection enables 'Discrete Element Model' task pane menu
+#### Option to disable the fluid phase
+# Disables the 'Fluid' task pane menu
+# Sets keyword RO_G0 to 0.0
+#### Option to enable thermal energy equations
+# This keyword should always be specified in the input deck
+# Sets keyword ENERGY_EQ
+# DEFAULT value of .FALSE.
+#### Option to enable turbulence
+# Selection available if fluid phase is enabled
+
+# Available selections:
+## None; [DEFAULT]
+## Mixing Length:
+#### Selection always available
+#### Sets keyword TURBULENCE_MODEL to MIXING_LENGTH
+#### Requires IC_L_SCALE for all IC regions
+## K-Epsilon
+#### Selection always available
+#### Sets keyword TURBULENCE_MODEL to K_EPSILON
+#### Requires IC_K_TURB_G for all IC regions
+#### Requires IC_E_TURB_G for all IC regions
+#### Requires BC_K_TURB_G for inflow (MI and PI) BC regions
+#### Requires BC_E_TURB_G for inflow (MI and PI) BC regions
+Specify maximum fluid viscosity (not shown in mockup)
+# Selection available if TURBULENCE_MODEL =/ 'NONE'
+# Sets keyword MU_GMAX
+# DEFAULT value of 1.0e3 (Pa.s)
+Specify drag model
+# Selection requires TFM, DEM, or PIC solver
+# Sets keyword DRAG_TYPE
+# Available selections:
+## SYAM_OBRIEN (DEFAULT)
+#### Specify model parameter: DRAG_C1
+# DEFAULT value of 0.8
+#### Specify model parameter: DRAG_D1
+# DEFAULT value of 2.65
+## BVK
+## GIDASPOW
+## GIDASPOW_BLEND
+## GIDASPOW_PCF
+## GIDASPOW_BLEND_PCF
+## HYS
+#### Specify model parameter LAM_HYS
+# DEFAULT value of 1.0e-6 (meters)
+## KOCH_HILL
+## KOCH_HILL_PCF
+## WEN_YU
+## WEN_YU_PCF
+## USER_DRAG
+Specify heat transfer correlation (requires TFM, DEM, or PIC solver)
+*This option may be premature as MFIX is limited in heat HTCs.
+Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishi
+Select sub-grid model:
+# Selection requirements:
+## Only available with MFIX-TFM solver
+## DRAG_TYPE="WEN_YU"
+## KT_TYPE="ALGEBRAIC"
+## TURBULENCE_MODEL /= K_EPSILON
+## BLENDING_STRESS = NONE
+## FRICTION_MODEL /= SRIVASTAVA
+## (There are more restrictions…)
+# Sets keyword SUBGRID_TYPE
+# Available selections
+## NONE (DEFAULT)
+
+## IGCI
+## MILIO
+Specify sub-grid model filter size ratio:
+# Specification requires SUBGRID_TYPE =/ NONE
+# Sets keyword FILTER_SIZE_RATIO
+# DEFAULT value of 2.0
+Enable sub-grid wall correction model:
+# Specification requires SUBGRID_TYPE =/ NONE
+# Sets keyword SUBGRID_WALL
+# DEFAULT value of FALSE
+
+Mockup of Task pane for defining the Model Setup.
+
+Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
+#### Option to rename the phase (e.g, air, gas)
+#### Option to disable Momentum Equations (enabled by default)
+# Sets keyword: MOMENTUM_X/Y/Z_EQ(0)
+#### Option to enable Species Equations
+# Sets keyword: SPECIES_EQ(0)
+#### Option to enable scalar equations
+# Define the number of scalar equations
+# Value sums into keyword NSCALAR
+# Sets keyword PHASE4SCALAR(*)=0 for total listed scalars
+#### Select Density Model:
+# Selection always available
+# Available selections:
+## Constant: [DEFAULT]
+#### Selection always available
+#### Specify constant gas density, RO_G0
+## Ideal gas law:
+#### Selection always available
+#### Keyword RO_G0 must be undefined
+
+#### Requires a fluid phase molecular weight
+#### Requires temperature field for full domain
+## UDF
+#### Selection is always available
+#### Sets keyword USR_ROg
+#### MFIX runtime check verifies UDF was provided
+Select Viscosity Model:
+# Selection always available
+# Available selections:
+## Constant: [DEFAULT]
+#### Selection always available
+#### Specify constant gas viscosity, MU_G0
+## Sutherland's law
+#### Selection always available
+#### Keyword MU_G0 must be undefined
+#### Requires temperature field for full domain
+## UDF
+#### Selection always available
+#### Sets keyword USR_MUg
+#### MFIX runtime check verifies UDF was provided
+Select Molecular Weight Model:
+# Selection always available
+# Available selections:
+## Constant; [DEFAULT]
+#### Specification always available
+#### Specify constant molecular weight, MW_AVG
+## Mixture:
+#### Selection always available
+#### Requires molecular weights for all species components
+Select Specific Heat Model:
+# Selection available only when solving thermal energy equations
+# Available selections:
+## Constant; [DEFAULT]
+#### Selection always available
+#### Specify constant fluid phase specific heat, C_PG0
+## Mixture:
+#### Selection always available
+#### Keyword C_PG0 must be undefined
+#### Requires specific heats for all species components
+## UDF
+#### Selection always available
+#### Sets keyword USR_CPg
+#### MFIX runtime check verifies UDF was provided
+Select Thermal Conductivity Model:
+# Selection only available when solving thermal energy equations
+# Available selections:
+## Constant
+#### Selection always available
+#### Specify constant thermal conductivity, K_G0
+## Temperature dependent (air); [DEFAULT]
+#### Selection always available
+#### Keyword K_G0 must be undefined
+## UDF
+#### Selection always available
+
+#### Set keyword USR_KG
+#### MFIX runtime check verifies UDF was provided
+Select Diffusion Coefficient Model:
+# Selection only available when solving species equations
+# Available selections:
+## Constant
+#### Selection always available
+#### Specify a constant diffusion coefficient, DIF_G0
+## Dilute Mixture Approximation (air); [DEFAULT]
+#### Selection always available
+#### Keyword DIF_G0 must be undefined
+#### Requires temperature field for full domain
+## UDF
+#### Selection always available
+#### Sets keyword USR_DIFG
+#### MFIX runtime check verifies UDF was provided
+Fluid phase species selection:
+# Species data required under any of the following conditions:
+## Solving species equations
+## Density model is the ideal gas law with mixture molecular weight model
+## Energy equations are solved with mixture specific heat model
+# Specification panel operates as a popup window triggered by an Add/Edit button
+# Summary window provides a list of the species and an overview of some properties
+
+Fluid phase Material Database window (popup):
+#### Select database (BURCAT); later could link in other databases.
+#### Capability to search selected database for chemical name
+#### Import from database copies the usable information from the database into a new entry in
+the 'run database'
+#### New creates a new 'blank' species in the 'run database' where the user must supply all the
+thermochemical data.
+#### Delete removes an entry from the 'run database'
+
+Left: Mockup of Task pane for defining the fluid phase. Model options toggle between available and
+unavailable given selections. Right: Popup material database window for specifying fluid phase
+species.
+NOTE: Generalization of the MFIX solver implementations for specific heat, thermal conductivity,
+and diffusion coefficient models would naturally lead to more Subtask Panes for each model
+whereby the user can further define model properties. Presently, these models -especially thermal
+conductivity and the diffusion coefficient models- are hard coded for specific compositions. This
+would permit greater modeling flexibility moving forward.
+NOTE: The gas phase species molecular weights, MW_G(#) cannot be directly specified. This
+keyword is not needed because users can edit the molecular weight in the material database popup
+window.
+Solids Task Pane Window:
+#### Select Solids model
+# Sets keyword SOLIDS_MODEL(#)
+# Selection locked to Two-Fluid Model (MFIX-TFM) for MFIX-TFM solver
+# Selection locked to Discrete Element Model (MFIX-DEM) for MFIX-DEM solver
+# Selection locked to Multiphase Particle-in-Cell (MFIX-PIC) for MFIX-PIC solver
+# Selections available for MFIX-Hybrid solver
+## Two-Fluid Model (MFIX-TFM)
+## Discrete Element Model (MFIX-DEM)
+#### Option to give the phase a referenceable name (e.g., coal, sand)
+# Default to Solid-#
+#### Option to solve Momentum Equations
+# Selection only available for MFIX-TFM solids model
+# Sets keyword: MOMENTUM_X/Y/Z_EQ(#)
+# Moment equations enabled [DEFAULT]
+#### Option to enable Species Equations
+# Sets keyword: SPECIES_EQ(#)
+# Species Equations disabled [DEFAULT]
+#### Option to enable scalar equations
+# Selection only available for MFIX-TFM solids model
+# Define the number of scalar equations
+# Value sums into keyword NSCALAR
+# Sets keyword PHASE4SCALAR(*)=# for total listed scalars
+#### Specify Diameter (required)
+# Sets keyword: D_p0(#)
+#### Select Solids Density model
+# Selection requires species equations
+# Available selections:
+## Constant; [DEFAULT]
+#### Selection always available
+#### Specify a constant solids density, RO_S0(#)
+## Variable Solids Density
+#### Selection available with species equations enable
+#### Keyword RO_S0(#) must be undefined
+#### Requires material densities for all solids species
+#### Requires base composition be specified
+#### Requires an inert species be identified
+#### Select Solids Viscosity Model:
+# Selection only available for MFIX-TFM solids model
+
+# Available selections:
+## Continuum Solids Stress Theory [DEFAULT]
+#### Selection always available
+#### Keyword MU_s0 must be undefined
+#### Requires selection of viscous solids stress model
+#### Requires selection of frictional solids stress model
+## Constant
+#### Selection always available
+#### Specify a constant solids viscosity, MU_s0(#)
+#### Disables selection of viscous solids stress model
+#### Disables selection of frictional stress model
+## UDF
+#### Selection always available
+#### Sets keyword USR_MUS
+#### MFIX runtime check verifies UDF was provided
+Select Molecular Weight Model:
+# Selection available. Always locked to Mixture.
+# Available selections:
+## Mixture [DEFAULT]
+#### Selection always available
+#### Requires molecular weights for all species components
+Select Specific Heat Model:
+# Selection available only when solving thermal energy equations
+# Available selections:
+## Constant; [DEFAULT]
+#### Selection always available
+#### Specify constant solids phase specific heat, C_PS0(#)
+## Mixture:
+#### Selection always available
+#### Keyword C_PS0(#) must be undefined
+#### Requires specific heats for all species components
+## UDF
+#### Selection always available
+#### Sets keyword USR_CPS(#)
+#### MFIX runtime check verifies UDF was provided
+Select Thermal Conductivity Model:
+# Selection only available for MFIX-TFM solids model
+# Selection only available when solving thermal energy equations
+# Available selections:
+## Constant [Locked DEFAULT for MFIX-DEM, MFIX-PIC]
+#### Selection always available
+#### Specify constant thermal conductivity, K_S0(#)
+## Temperature dependent (ash); [DEFAULT]
+#### Selection always available
+#### Keyword K_S0(#) must be undefined
+## UDF
+#### Selection always available
+#### Set keyword USR_KS(#)
+#### MFIX runtime check verifies UDF was provided
+Specify solids phase emissivity
+# Selection only available for MFIX-DEM solids model
+# Specification only available when solving energy equations
+# Sets keyword DES_EM(#)
+Solids phase species selection:
+
+# Species data required under any of the following conditions:
+## Solving species equations
+## Energy equations are solved with mixture specific heat model
+# Specification panel operates as a popup window triggered by an Add/Edit button
+# Summary window provides a list of the species and an overview of some properties
+Baseline (unreacted) composition selection:
+# Available only for variable solids density model
+# Select the solids phase species that comprise the initial particle composition
+# Specify initial mass fractions of the unreacted species, X_s0(#,#)
+# Mark one species as an inert material, INERT_SPECIES(#)
+
+List the following options under an 'Advanced' section header.
+
+Option to disable close packing
+# Selection only available for MFIX-TFM solids model
+# Sets keyword CLOSE_PACKED(#) = .FALSE.
+# Disabling close pack triggers a popup warning message.
+Option to include added mass force
+# Selection only available for MFIX-TFM solids model
+# Sets keyword ADDED_MASS and M_AM=#
+# Note: Only one phase can have added mass force
+
+Mockup of Task pane for adding non-reacting TFM solids. Clicking the 'Save' button creates the
+solids phase whereas the 'Cancel' button resets all data fields to the default. In this mockup, solids
+are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane.
+
+Mockup of Task pane for adding non-reacting DEM solids. Clicking the 'Save' button creates the
+solids phase whereas the 'Cancel' button resets all data fields to the default. In this mockup, solids
+are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
+
+Mockup of Task pane for adding non-reacting PIC solids. Clicking the 'Save' button creates the
+solids phase whereas the 'Cancel' button resets all data fields to the default. In this mockup, solids
+are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
+
+Mockup of Task pane for adding reacting TFM solids. Note that reactions are consistent across all
+solids models. Left: Bottom of the task pane showing the species information and baseline solids
+composition. Right: Popup material database window for specifying solids phase species.
+
+Continuum Solids Model Task Pane Window: (requires TFM solver)
+#### Specify void fraction at close pack (required)
+# Sets keyword EP_STAR
+#### Select Viscous Stress Model (KTGS):
+# Selection is unavailable for constant solids viscosity (MU_S0 defined)
+# Available selections:
+## Algebraic Formulation [DEFAULT]
+#### Selection always available
+#### Sets keyword KT_TYPE to ALGEBRAIC
+## Lun et al, 1984
+#### Selection always available
+#### Sets keyword KT_TYPE to LUN_1984
+#### Requires particle-particle restitution coefficient, C_E
+#### If MMAX>1, requires interphase friction coefficient, C_F
+## Iddir & Arastoopour, 2005
+#### Selection always available
+#### Sets keyword KT_TYPE to IA_NONEP
+#### Requires particle-particle restitution coefficient, C_E
+## Simonin, 1996
+#### Selection only available with k-ε turbulence enabled
+#### Sets keyword KT_TYPE to SIMONIN
+## Cao & Ahmadi, 1995
+#### Selection only available with k-ε turbulence enabled
+#### Sets keyword KT_TYPE to AHMADI
+## Garzo and Dufty, 1999
+#### Selection only available with MMAX=1 (monodisperse)
+
+#### Sets keyword KT_TYPE to GD_99
+#### Requires particle-particle restitution coefficient, C_E
+## Garzo, Tenneti, Subramaniam, Hrenya, 2012
+#### Selection only available with MMAX=1 (monodisperse)
+#### Sets keyword KT_TYPE to GTSH
+#### Requires particle-particle restitution coefficient, C_E
+## Garzo, Hrenya and Dufty, 2007
+#### Selection not available for MMAX > 2
+#### Selection not available with added mass force
+#### Sets keyword KT_TYPE to GHD
+#### Requires WEN_YU or HYS drag model
+#### Specify coefficient of restitution; R_p (optional)
+Select Frictional Stress Model
+# Selection is unavailable for constant solids viscosity (MU_S0 defined)
+# Available selections
+## Schaeffer
+#### Selection always available
+#### Sets keyword FRICTION_MODEL to SCHAEFFER
+#### Requires angle of particle-particle friction, PHI
+## Srivastava and Sundaresan, 2003
+#### Unavailable for Algebraic Formulation viscous stress model
+#### Sets keyword FRICTION_MODEL to SRIVASTAVA
+#### Requires angle of particle-particle friction, PHI
+#### Requires angle of particle-wall friction, PHI_W
+## None
+#### Selection always available
+#### Sets keyword FRICTION_MODEL to NONE
+Specify solids volume fraction at onset of friction
+# Only available with FRICTION_MODEL=SRIVASTAVA
+# Default value of 0.5
+# Sets keyword EPS_F_MIN
+Specify particle-particle restitution coefficient
+# Specification available only when required
+# Required for MMAX >=2
+# Required for viscous stress models except GHD and algebraic formulation
+# Sets keyword C_E
+Specify interphase friction coefficient
+# Specification available only when required
+# Required for MMAX >= 2
+# Sets keyword C_F
+Specify angle of particle-particle friction
+# Specification available only when required
+# Required for FRICTION_MODEL=SCHAEFFER
+# Required for FRICTION_MODEL=SRIVASTAVA
+# Sets keyword PHI
+
+List the following options under an 'Advanced' section header.
+
+Select radial distribution function
+# Selection always available
+# Available selections:
+## Carnahan-Starling
+#### Only available for MMAX==1
+#### Sets keyword RDF_TYPE to LEBOWITZ (this is correct)
+
+Lebowitz
+#### Only available for MMAX >1
+#### Sets keyword RDF_TYPE to LEBOWITZ
+Mansoori
+#### Only available for MMAX>1
+#### Sets keyword RDF_TYPE to MANSOORI
+Modified Lebowitz
+#### Only available for MMAX >1
+#### Sets keyword RDF_TYPE to MODIFIED_LEBOWITZ
+Modified Mansoori
+#### Only available for MMAX>1
+#### Sets keyword RDF_TYPE to MODIFIED_MANSOORI
+
+Select stress blending model
+# Selection only available with FRICTION_MODEL=SCHAEFFER
+# Available selections:
+## None [DEFAULT]
+#### Selection always available
+#### Sets keyword BLENDING_FUNCTION to NONE
+## Hyperbolic Tangent
+#### Selection always available
+#### Sets keyword BLENDING_FUNCTION to TANH_BLEND
+## Sigmodial
+#### Selection always available
+#### Sets keyword BLENDING_FUNCTION to SIGM_BLEND
+Specify the segregation slope coefficient
+# Only available for MMAX > 1 in conjunction with the following viscous stress
+models: algebraic formulation; Lun. 1984; Simonin, 1996; Ahmadi, 1995
+# Unavailable with (+other requirements)
+# Sets keyword SEGREGATION_SLOPE_COEFFICIENT
+Select maximum packing correlation
+# Selection only available with FRICTION_MODEL=SCHAEFFER and MMAX >1
+# Available selections:
+## Constant [DEFAULT]
+#### Selection always available
+#### Sets keyword YU_STANDIS to false
+#### Sets keyword FEDORS_LANDEL to false
+## Yu & Standish
+#### Selection only available for MMAX = 2
+#### Sets keyword YU_STANDIS to true
+#### Sets keyword FEDORS_LANDEL to false
+## Fedors & Landel
+#### Selection always available
+#### Sets keyword YU_STANDIS to false
+#### Sets keyword FEDORS_LANDEL to true
+Specify excluded volume in Boyle-Massoudi stress (optional)
+# Only available with algebraic formulation of viscous stress model
+# Sets keyword V_EX
+
+Mockup of Task pane for specifying the continuum solids model parameters.
+Discrete Element Model Task Pane Window: (requires DEM solver)
+#### Enable automatic particle generation
+# Enabled sets keyword GENER_PART_CONFIG to true
+# Disabled enables the user to specify number of entries in particle input file
+## Default value is 0
+## Sets keyword PARTICLES
+#### Select numerical integration method
+# Selection always available
+# Available selections
+## Euler [DEFAULT]
+#### Selection always available
+#### Sets keyword DES_INTG_METHOD to 'EULER'
+## Adams-Bashforth
+#### Selection always available
+#### Sets keyword DES_INTG_METHOD to 'ADAMS_BASHFORTH'
+#### Selection collision model
+# Selection always available
+# Available selections
+## Linear Spring-Dashpot [DEFAULT]
+#### Selection always available
+#### Sets keyword DES_COLL_MODEL to 'LSD'
+## Hertzian
+#### Selection always available
+#### Sets keyword DES_COLL_MODEL to 'HERTZIAN'
+#### Select gas-solids coupling scheme:
+# Selection unavailable if fluid model is disabled
+# Available selections:
+## One-way Coupled
+#### Selection always available
+#### Sets keyword DES_ONEWAY_COUPLED true
+## Fully Coupled [DEFAULT]
+
+#### Selection always available
+#### Sets keyword DES_ONEWAY_COUPLED false
+Optional to enable explicitly coupled simulation
+# Unavailable for GARG_2012 interpolation
+Select interpolation framework:
+# Selection always available
+# Available selections:
+## field-to-particle and particle-to-field [DEFAULT]
+#### Sets keyword DES_INTERP_ON to true
+#### Sets keyword DES_INTERP_MEAN_FIELDS to true
+## field-to-particle only
+#### Sets keyword DES_INTERP_ON to true
+#### Sets keyword DES_INTERP_MEAN_FIELDS to false
+## particle-to-field only
+#### Sets keyword DES_INTERP_ON to false
+#### Sets keyword DES_INTERP_MEAN_FIELDS to true
+## no-interpolation
+#### Sets keyword DES_INTERP_ON to false
+#### Sets keyword DES_INTERP_MEAN_FIELDS to false
+Select interpolation scheme:
+# Selection available except when no-interpolation framework is selected
+# Available selections:
+## None [locked default for no-interpolation framework]
+#### Selection always available
+#### Sets keyword DES_INTERP_SCHEME='NONE'
+## Garg 2012
+#### Selection not available with explicit coupling enabled
+#### Sets keyword DES_INTERP_SCHEME='GARG_2012'
+## Square DPVM
+#### Selection always available
+#### Requires an interpolation width, DES_INTERP_WIDTH
+#### Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+Define interpolation width (DPVM only) (required)
+# Specification only available with SQUARE_DPVM interpolation scheme
+# Sets keyword DES_INTERP_WIDTH
+Option to enable diffusion of particle data
+# Selection unavailable with GARG_2012 interpolation scheme
+# No keyword is set by this option
+# Enables the user to specify a diffusion width
+## Sets keyword DES_DIFFUSE_WIDTH
+Specify friction coefficient
+# Specification always required
+# Sets keyword MEW (MEW_W)
+Specify normal spring constant
+# Only available for LSD collision model
+# Sets keyword KN (KN_W)
+Specify tangential spring constant factor
+# Only available for LSD collision model
+# Sets keyword KT_FAC (KT_W_FAC)
+# Default values of 2.0/7.0
+Specify tangential damping coefficient factor
+# Only available for LSD collision model
+# Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
+# Default values of 0.5
+
+Specify Young's modulus
+# Only available for Hertzian collision model
+# Sets keyword E_YOUNG (EW_YOUNG)
+Specify Poisson ratio:
+# Only available for Hertzian collision model
+# Sets keyword V_POISSON (VW_POISSON)
+Specify normal restitution coefficient
+# Specification always required
+# Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
+# Input given as an upper triangular matrix
+Specify tangential restitution coefficient
+# Specification available for Hertzian collision model
+# Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
+# Input given as an upper triangular matrix
+Select cohesion model
+# Selection always available
+# Available selections
+## None [DEFAULT]
+#### Selection always available
+#### Sets keyword USE_COHESION to false
+#### Sets keyword VAN_DER_WAALS to false
+## Van der Waals
+#### Selection always available
+#### Sets keyword USE_COHESION to true
+#### Sets keyword VAN_DER_WAALS to true
+Specify Hamaker constant
+# Specification only available for Van der Waals cohesion model
+# Sets keyword HAMAKER_CONSTANT (WALL_HAMAKER_CONSTANT)
+Specify outer cutoff;
+# Specification only available for Van der Waals cohesion model
+# Sets keyword VDW_OUTER_CUTOFF (WALL_OUTER_CUTOFF)
+Specify inner cutoff
+# Specification only available for Van der Waals cohesion model
+# Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
+Specify asperities
+# Specification only available for Van der Waals cohesion model
+# Sets keyword ASPERITIES
+
+List the following options under an 'Advanced' section header.
+
+Select Neighbor Search Method
+# Selection always available
+# Available selection
+## Grid-based [DEFAULT]
+#### Selection always available
+#### Sets keyword DES_NEIGHBOR_SEARCH 4
+## N-Square
+#### Selection always available
+#### Sets keyword DES_NEIGHBOR_SEARCH 1
+Specify maximum steps between neighbor search
+# Specification always available
+# Sets keyword NEIGHBOR_SEARCH_N
+Specify factor defining particle neighborhood
+# Specification always available
+
+# Sets keyword FACTOR_RLM
+Specify neighborhood search radius ratio
+# Specification always available
+# Sets keyword NEIGHBOR_SEARCH_RAD_RATIO
+Specify search grid partitions (optional)
+# Specification always available
+# Sets keyword DESGRIDSEARCH_IMAX
+# Sets keyword DESGRIDSEARCH_JMAX
+# Sets keyword DESGRIDSEARCH_KMAX
+Enable user scalar tracking
+# Selection always available
+# Does not directly set any keywords
+# Enables specification of number of user scalars
+## Sets keyword DES_USR_VAR_SIZE
+Define minimum distance for contact conduction (optional)
+# Unavailable if not solving energy equations
+Define fluid lens proportion constant (optional)
+# Unavailable if not solving energy equations
+
+Mockup of Task pane for specifying the discrete element model parameters.
+Particle in Cell Model Task Pane Window: (requires PIC solver)
+
+Specify void fraction at close pack (required)
+# Sets keyword EP_STAR [0.42]
+Define parcel CFL number
+# Sets keyword CFL_PIC
+# DEFAULT value of 0.1
+Select solid stress model
+# Selection always available
+# Available selection
+## Snider, 2001 [DEFAULT]
+#### Selection always available
+#### Sets keyword MPPIC_SOLID_STRESS_SNIDER=.T.
+Option to enable implicit treatment of drag force
+
+# Sets keyword: MPPIC_PDRAG_IMPLICIT
+# Disabled [DEFAULT]
+Define particle-particle momentum retention
+# Sets keyword MPPIC_COEFF_EN1
+# DEFAULT value of 0.4
+Define wall normal momentum retention
+# Sets keyword MPPIC_COEFF_EN_WALL
+# DEFAULT value of 0.3
+Define wall tangential momentum retention
+# Sets keyword MPPIC_COEFF_ET_WALL
+# DEFAULT value of 0.99
+Select gas-solids coupling scheme:
+# Selection unavailable if fluid model is disabled
+# Available selections:
+## One-way Coupled
+#### Selection always available
+#### Sets keyword DES_ONEWAY_COUPLED true
+## Fully Coupled
+#### Selection always available
+#### Sets keyword DES_ONEWAY_COUPLED false
+Select interpolation framework:
+# Selection always available
+# Available selections:
+## field-to-particle and particle-to-field [DEFAULT]
+#### Sets keyword DES_INTERP_ON to true
+#### Sets keyword DES_INTERP_MEAN_FIELDS to true
+## field-to-particle only
+#### Sets keyword DES_INTERP_ON to true
+#### Sets keyword DES_INTERP_MEAN_FIELDS to false
+## particle-to-field only
+#### Sets keyword DES_INTERP_ON to false
+#### Sets keyword DES_INTERP_MEAN_FIELDS to true
+## no-interpolation
+#### Sets keyword DES_INTERP_ON to false
+#### Sets keyword DES_INTERP_MEAN_FIELDS to false
+Select interpolation scheme:
+# Selection available except when no-interpolation framework is selected
+# Available selections:
+## None [locked default for no-interpolation framework]
+#### Selection not available
+#### Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+## Garg 2012
+#### Selection not available with explicit coupling enabled
+#### Sets keyword DES_INTERP_SCHEME='GARG_2012'
+## Square DPVM
+#### Selection always available
+#### Requires an interpolation width, DES_INTERP_WIDTH
+#### Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+Define interpolation width (DPVM only) (required)
+# Specification only available with SQUARE_DPVM interpolation scheme
+# Sets keyword DES_INTERP_WIDTH
+Define solids stress model parameter: pressure constant
+# Sets keyword PSFAC_FRIC_PIC
+# DEFAULT value of 10.0
+
+Define solids stress model parameter: volume fraction exponent
+# Sets keyword FRIC_EXP_PIC
+# DEFAULT value of 3.0
+Define solids stress model parameter: non-singularity factor
+# Sets keyword FRIC_NON_SING_FAC
+# DEFAULT value of 1.0E-8
+
+Mockup of Task pane for specifying the particle in cell model parameters.
+Initial Conditions Task Pane Window: This section allows a user to define the initial conditions
+for the described model. This section relies on regions named in the Regions section.
+The top of the task pane is where users define/select IC regions
+
+Icons to add/remove/duplicate regions are given at the top
+Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+the region to apply the initial condition.
+# Users cannot select inapplicable regions.
+# IC regions must be volumes (not planes, points, or STLs)
+# No region can define more than one initial condition.
+
+Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
+define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
+get messy, and if so, scrap this idea.
+
+Tabs group initial condition parameters for phases and additional equations. Tabs are unavailable if
+no input is required from the user.
+#### Fluid tab - Unavailable if the fluid phase was disabled.
+#### Each solid phase will have its own tab. The tab name should be the name of the solid
+#### Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
+inputs a 'collapsible list' may make navigation easier.
+Fluid (tab)
+#### Define volume fraction
+# Specification never available
+# Sets keyword IC_EP_G(#)
+# CALCULATED from 1.0 - sum(IC_EP_s(#,#)
+# GUI should show the result of the calculation.
+#### Define temperature
+# Specification always available
+# Input required for any of the following
+## Fluid density model: Ideal Gas Law
+## Fluid viscosity model: Sutherland's Law
+## Energy equations are solved
+# Sets keyword IC_T_G(#)
+# DEFAULT value of 293.15
+#### Define pressure (optional)
+# Specification always available
+# Sets keyword IC_P_g(#)
+# DEFAULT - no input#### Define velocity components (required)
+# Specification always available
+# Sets keywords IC_U_G(#), IC_V_G(#), IC_W_G(#)
+# DEFAULT value of 0.0
+#### Select species and set mass fractions (table format)
+# Specification always available
+# Sets keyword IC_X_G
+# Input required for species equations
+# Drop down menu of fluid species
+# DEFAULT - last defined species has mass fraction of 1.0
+# Error check: mass fractions must sum to one
+#### Turbulence: Define mixing length model length scale
+# Specification only available with Mixing Length turbulence model
+# Sets keyword IC_L_SCALE(#)
+# DEFAULT value of 1.0
+#### Turbulence: Define k-ε turbulent kinetic energy
+
+# Specification only available with K-Epsilon turbulence model
+# Sets keyword IC_K_TURB_G(#)
+# DEFAULT value of 0.0
+Turbulence: Define k-ε turbulent dissipation
+# Specification only available with K-Epsilon turbulence model
+# Sets keywords IC_E_TURB_G(#)
+# DEFAULT value of 0.0
+Advanced: Define radiation coefficient
+# Specification only available when solving energy equations
+# Sets keyword IC_GAMA_RG(#)
+# DEFAULT value of 0.0
+Advanced: Define radiation temperature
+# Specification only available when solving energy equations
+# Sets keyword IC_T_RG(#)
+# DEFAULT value of 293.15
+
+Mockup of Task pane for specifying the fluid properties for initial conditions parameters.
+Solid-# (tab) - Rename tab to user provided solids name.
+#### Define volume fraction (required)
+# Specification always available
+# Sets keyword IC_EP_S(#,#)
+# DEFAULT value of 0.0
+#### Define temperature
+# Specification always available
+# Input required when solving energy equations
+# Sets keyword IC_T_S(#,#)
+# DEFAULT value of 293.15
+#### Define velocity components (required)
+# Specification always available
+# Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
+# DEFAULT value of 0.0
+#### Define pressure (optional)
+# Specification only available for SOLIDS_MODEL(#)='TFM'
+# Sets keyword IC_P_STAR(#)
+
+# DEFAULT of 0.0
+# Common to all phases - Warn user if changed.
+Define granular temperature
+# Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
+formulation viscous stress model (see continuous solids model section) or for
+SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
+# Sets keyword IC_THETA_M(#,#)
+# DEFAULT value of 0.0
+Define particles per parcel
+# Specification only available for SOLIDS_MODEL(#)='PIC'
+# Sets keyword IC_PIC_CONST_STATWT(#,#)
+# DEFAULT value of 10.0
+Select species and set mass fractions (table format)
+# Specification always available
+# Input required for species equations
+# Drop down menu of solids species
+# Sets keyword IC_X_S(#,#,#)
+# DEFAULT - last defined species has mass fraction of 1.0
+# Error check: mass fractions must sum to one
+Advanced: Option to enable fitting DES particles to region
+# Option only available for DEM solids
+# Sets keyword: IC_DES_FIT_TO_REGION
+# Disabled [DEFAULT]
+Advanced: Define radiation coefficient
+# Specification only available when solving energy equations
+# Sets keyword IC_GAMA_S(#,#)
+# DEFAULT value of 0.0
+Advanced: Define radiation temperature
+# Specification only available when solving energy equations
+# Sets keyword IC_T_RS(#,#)
+# DEFAULT value of 293.15
+
+Mockup of Task pane for specifying solids-# initial condition parameters.
+Scalar (tab) - Tab only available if scalar equations are solved
+#### Define initial scalar value
+
+# Sets keyword IC_SCALAR(#,#)
+# DEFAULT value of 0.0
+
+Mockup of Task pane for specifying the Scalar properties for initial condition regions. Note that
+this tab should only be available if scalar equations are being solved. Furthermore, the number of
+scalars requiring input (here 2) comes from the number of scalar equations specified by the user.
+Boundary Conditions Task Pane Window: This section allows a user to define the boundary
+conditions for the described model. This section relies on regions named in the Regions section.
+The top of the task pane is where users define/select BC regions
+
+Icons to add/remove/duplicate boundary conditions are given at the top
+Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+a region to apply the boundary condition.
+# Users cannot select inapplicable regions.
+# BC regions must be planes or STLs (not volumes or points)
+# No region can define more than one boundary condition.
+Select boundary type
+# Selection is required
+# Available selections:
+## Mass Inflow
+#### Plane regions set keyword BC_TYPE(#) to 'MI'
+#### STL regions set keyword BC_TYPE(#) to 'CG_MI'
+## Pressure Outflow
+#### Plane regions set keyword BC_TYPE(#) to 'PO'
+#### STL regions set keyword BC_TYPE(#) to 'CG_PO'
+## No Slip Wall
+#### Plane regions set keyword BC_TYPE(#) to 'NSW'
+#### STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+## Free Slip Wall
+#### Plane regions set keyword BC_TYPE(#) to 'FSW'
+#### STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+## Partial Slip Wall
+
+#### Plane regions set keyword BC_TYPE(#) to 'PSW'
+#### STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+Pressure Inflow
+#### Plane regions set keyword BC_TYPE(#) to 'PI'
+#### Not available for STL regions
+Mass Outflow
+#### Plane regions set keyword BC_TYPE(#) to 'MO'
+#### STL regions set keyword BC_TYPE(#) to 'CG_MO'
+
+# Specification always available
+# DEFAULT - No slip wall
+# Error check: mass fractions must sum to one
+
+Tabs group boundary condition parameters for phases and additional equations. Tabs are
+unavailable if no input is required from the user.
+#### Fluid tab - Unavailable if the fluid phase was disabled.
+#### Each solid phase will have its own tab. The tab name should be the name of the solid
+#### Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
+inputs a 'collapsible list' may make navigation easier.
+Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
+Condition Regions
+Fluid (tab)
+#### Define transfer coefficient
+# Specification only available with PSW
+# Sets keyword BC_HW_G(#)
+# DEFAULT value of 0.0
+#### Define Wall U-velocity
+# Specification only available with PSW
+# Sets keyword BC_UW_G(#)
+# DEFAULT value of 0.0
+#### Define Wall V-velocity
+# Specification only available with PSW
+# Sets keyword BC_VW_G(#)
+# DEFAULT value of 0.0
+#### Define Wall W-velocity
+# Specification only available with PSW
+# Sets keyword BC_WW_G(#)
+# DEFAULT value of 0.0
+
+Select energy equation boundary type:
+# Selection only available when solving energy equations
+# Available selections:
+## No-Flux (adiabatic) [DEFAULT]
+#### Sets keyword BC_HW_T_G(#) to 0.0
+#### Sets keyword BC_C_T_G(#) to 0.0
+#### Sets keyword BC_TW_G(#) to UNDEFINED
+## Specified Temperature
+#### Sets keyword BC_HW_T_G(#) to UNDEFINED
+#### Sets keyword BC_C_T_G(#) to 0.0
+#### Requires BC_TW_G(#)
+## Specified Flux
+#### Sets keyword BC_HW_T_G(#) to 0.0
+#### Requires BC_C_T_G(#)
+#### Sets keyword BC_TW_G(#) to UNDEFINED
+## Convective Flux
+#### Requires BC_HW_T_G(#)
+#### Sets keyword BC_C_T_G(#) to 0.0
+#### Requires BC_TW_G(#)
+Define wall temperature
+# Specification only available with 'Specified Temperature' BC type
+# Sets keyword BC_TW_G(#)
+# DEFAULT value of 293.15
+Define constant flux
+# Specification only available with 'Specified Flux' BC type
+# Sets keyword BC_C_T_G(#)
+# DEFAULT value of 0.0
+Define transfer coefficient
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_HW_T_G(#)
+# DEFAULT value of 0.0
+Define free stream temperature
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_TW_G(#)
+# DEFAULT value of 0.0
+Select species equation boundary type:
+# Selection only available when solving species equations
+# Available selections:
+## No-Flux [DEFAULT]
+#### Sets keyword BC_HW_X_G(#) to 0.0
+#### Sets keyword BC_C_X_G(#) to 0.0
+#### Sets keyword BC_XW_G(#) to UNDEFINED
+## Specified Mass Fraction
+#### Sets keyword BC_XW_T_G(#) to UNDEFINED
+#### Sets keyword BC_C_X_G(#) to 0.0
+#### Requires BC_XW_G(#)
+## Specified Flux
+#### Sets keyword BC_HW_X_G(#) to 0.0
+#### Requires BC_C_X_G(#)
+#### Sets keyword BC_XW_G(#) to UNDEFINED
+## Convective Flux
+#### Requires BC_HW_X_G(#)
+#### Sets keyword BC_C_X_G(#) to 0.0
+#### Requires BC_XW_G(#)
+
+Define wall mass fraction
+# Specification only available with 'Specified Mass Fraction' BC type
+# Sets keyword BC_XW_G(#)
+# DEFAULT value of 0.0
+Define constant flux
+# Specification only available with 'Specified Flux' BC type
+# Sets keyword BC_C_X_G(#)
+# DEFAULT value of 0.0
+Define transfer coefficient
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_HW_X_G(#)
+# DEFAULT value of 0.0
+Define free stream mass fraction
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_XW_G(#)
+# DEFAULT value of 0.0
+
+Mockup of Task pane for specifying the Fluid properties for WALL boundary condition regions.
+Solids-# (tab) - (Replace with phase name defined by the user)
+#### Enable Jackson-Johnson partial slip boundary
+# Disabled (0.0) for CARTESIAN_GRID = .TRUE.
+# Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
+# Disabled (0.0) for KT_TYPE = 'GHD_2007'
+# Sets keyword BC_JJ_PS(#)
+# DEFALUT value of 1.0 when not disabled
+#### Select type of Jackson and Johnson BC:
+# Selection only available BC_JJ_PS(#) = 1.0
+# Available selections:
+## Default Jackson-Johnson BC [DEFAULT]
+#### Sets keyword BC_JJ_M to .FALSE.
+#### Sets keyword JENKINS to .FALSE.
+## Variable specularity coefficient
+
+#### Sets keyword BC_JJ_M to .TRUE.
+#### Sets keyword JENKINS to .FALSE.
+## Jenkins small frictional boundary
+#### Sets keyword BC_JJ_M to .FALSE.
+#### Sets keyword JENKINS to .TRUE.
+Define restitution coefficient
+# Specification only available with BC_JJ_PS(#) = 1.0
+# Sets keyword E_W
+# DEFAULT value of 1.0
+# Required when available
+Define specularity coefficient
+# Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
+# Sets keyword PHIP
+# DEFAULT value of 0.6
+# Required when available
+Define specularity coefficient at zero slip
+# Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
+# Sets keyword PHIP0
+# DEFAULT -blanko Optional when available
+Define angle of internal friction
+# Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE.
+FRICTION_MODEL=SRIVASTAVA)
+# DEFAULT value of 11.31
+# Required when available
+Define transfer coefficient
+# Specification only available with PSW
+# Sets keyword BC_HW_S(#,#)
+# DEFAULT value of 0.0
+Define Wall U-velocity
+# Specification only available with PSW or BC_JJ_PS(#) = 1.0
+# Sets keyword BC_UW_S(#,#)
+# DEFAULT value of 0.0
+Define Wall V-velocity
+# Specification only available with PSW or BC_JJ_PS(#) = 1.0
+# Sets keyword BC_VW_S(#,#)
+# DEFAULT value of 0.0
+Define Wall W-velocity
+# Specification only available with PSW or BC_JJ_PS(#) = 1.0
+# Sets keyword BC_WW_S(#,#)
+# DEFAULT value of 0.0
+Select energy equation boundary type:
+# Selection only available when solving energy equations
+# Available selections:
+## No-Flux (adiabatic) [DEFAULT]
+#### Sets keyword BC_HW_T_S(#,#) to 0.0
+#### Sets keyword BC_C_T_S(#,#) to 0.0
+#### Sets keyword BC_TW_S(#,#) to UNDEFINED
+## Specified Temperature
+#### Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+#### Sets keyword BC_C_T_S(#,#) to 0.0
+#### Requires BC_TW_S(#,#)
+## Specified Flux
+#### Sets keyword BC_HW_T_S(#,#) to 0.0
+
+#### Requires BC_C_T_S(#)
+#### Sets keyword BC_TW_S(#,#) to UNDEFINED
+## Convective Flux
+#### Requires BC_HW_T_S(#,#)
+#### Sets keyword BC_C_T_S(#,#) to 0.0
+#### Requires BC_TW_S(#,#)
+Define wall temperature
+# Specification only available with 'Specified Temperature' BC type
+# Sets keyword BC_TW_S(#,#)
+# DEFAULT value of 293.15
+Define constant flux
+# Specification only available with 'Specified Flux' BC type
+# Sets keyword BC_C_T_S(#,#)
+# DEFAULT value of 0.0
+Define transfer coefficient
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_HW_T_S(#,#)
+# DEFAULT value of 0.0
+Define free stream temperature
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_TW_S(#,#)
+# DEFAULT value of 0.0
+Select granular energy equation boundary type:
+# Selection only available with BC_JJ_PS(#)=0.0 and KT_TYPE /= 'ALGEBRAIC'
+# Available selections:
+## No-Flux [DEFAULT]
+#### Sets keyword BC_HW_THETA_M(#,#) to 0.0
+#### Sets keyword BC_C_THETA_M (#,#) to 0.0
+#### Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+## Specified Temperature
+#### Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
+#### Sets keyword BC_C_THETA_M(#,#) to 0.0
+#### Requires BC_THETAW_M(#,#)
+## Specified Flux
+#### Sets keyword BC_HW_THETA_M(#,#) to 0.0
+#### Requires BC_C_THETA_M(#)
+#### Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+Define granular temperature
+# Specification only available with 'Specified Temperature' BC type
+# Sets keyword BC_THETAW_M(#,#)
+# DEFAULT value of 0.0
+Define constant flux
+# Specification only available with 'Specified Flux' BC type
+# Sets keyword BC_C_THETA_M(#,#)
+# DEFAULT value of 0.0
+
+When solving solids species equations:
+#### Set keyword BC_HW_X_S(#,#,#) to 0.0
+#### Set keyword BC_C_X_S(#,#,#) to 0.0
+#### Set keyword BC_XW_S(#,#,#) to UNDEFINED
+
+Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
+Scalar (tab) - Tab only available if scalar equations are solved
+#### Select scalar boundary type:
+# Available selections:
+## No-Flux [DEFAULT]
+#### Sets keyword BC_HW_SCALAR(#,#) to 0.0
+#### Sets keyword BC_C_SCALAR(#,#) to 0.0
+#### Sets keyword BC_SCALARW(#,#) to UNDEFINED
+## Specified Temperature
+#### Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+#### Sets keyword BC_C_SCALAR (#,#) to 0.0
+#### Requires BC_SCALARW (#,#)
+## Specified Flux
+#### Sets keyword BC_HW_T_S(#,#) to 0.0
+#### Requires BC_C_SCALAR (#)
+#### Sets keyword BC_SCALARW (#,#) to UNDEFINED
+## Convective Flux
+#### Requires BC_HW_T_S(#,#)
+#### Sets keyword BC_C_SCALAR (#,#) to 0.0
+#### Requires BC_SCALARW (#,#)
+#### Define wall temperature
+# Specification only available with 'Specified Temperature' BC type
+# Sets keyword BC_SCALARW (#,#)
+# DEFAULT value of 0.0
+#### Define constant flux
+# Specification only available with 'Specified Flux' BC type
+# Sets keyword BC_C_SCALAR (#,#)
+# DEFAULT value of 0.0
+#### Define transfer coefficient
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_HW_SCALAR(#,#)
+# DEFAULT value of 0.0
+#### Define free stream temperature
+
+# Specification only available with 'Convective Flux' BC type
+# Sets keyword BC_SCALARW (#,#)
+# DEFAULT value of 0.0
+
+Mockup of Task pane for specifying the Scalar properties for WALL boundary condition regions.
+Note that this tab should only be available if scalar equations are being solved. Furthermore, the
+number of scalars requiring input (here 2) comes from the number of scalar equations specified by
+the user.
+Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
+Fluid (tab)
+#### Define volume fraction
+# Specification always available
+# Sets keyword BC_EP_G(#)
+## DEFAULT value of 1.0 for MI and CG_MI; leave [UNDEFINED] for PI
+## Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
+## Error Check: For PI - either all are defined and sum to 1, or all are undefined
+#### Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
+Region orientation (e.g., XZ-Plane)
+# For BC_TYPE='MI' and XZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Y-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+
+Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MI' and YZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### X-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MI' and XY-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Z-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='CG_MI' or 'PI'
+## Specify all velocity components:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_V_G(#)
+
+# DEFAULT value of 0.0
+Define temperature
+# Specification always available
+# Input required for any of the following
+## Fluid density model: Ideal Gas Law
+## Fluid viscosity model: Sutherland's Law
+## Energy equations are solved
+# Sets keyword BC_T_G(#)
+# DEFAULT value of 293.15
+Define pressure
+# Specification always available
+# Input required when combining ideal gas law and specified mass inflow rate
+# Input required for BC_TYPE = PI
+# Sets keyword BC_P_G(#)
+# DEFAULT 101.325d3
+Select species and set mass fractions (table format)
+# Specification always available
+# Input required for species equations
+# Drop down menu of fluid species
+# Sets keyword BC_X_G(#,#)
+# DEFAULT - last defined species has mass fraction of 1.0
+# Error check: mass fractions must sum to one
+Turbulence: Define k-ε turbulent kinetic energy
+# Specification only available with K-Epsilon turbulence model
+# Sets keyword BC_K_TURB_G(#)
+# DEFAULT value of 0.0
+Turbulence: Define k-ε turbulent dissipation
+# Specification only available with K-Epsilon turbulence model
+# Sets keywords BC_E_TURB_G(#)
+# DEFAULT value of 0.0
+
+Mockup of Task pane for specifying the Fluid properties for MI, boundary condition regions.
+
+Solid-# (tab) - Rename tab to user provided solids name.
+
+Define volume fraction
+# Specification always available
+# Sets keyword BC_EP_S(#,#)
+## DEFAULT value of 1.0 - (sum of previous tabs) for MI and CG_MI; leave
+[UNDEFINED] for PI
+## Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
+## Error Check: For PI - either all are defined and sum to 1, or all are undefined
+Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
+Region orientation (e.g., XZ-Plane)
+# For BC_TYPE='MI' and XZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Y-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_S(#,#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_G(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MI' and YZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### X-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_U_S(#,#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_S#, (#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_S(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MI' and XY-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Z-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_W_S(#,#)
+
+# DEFAULT value of 0.0
+Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_S(#,#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_S(#,#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='CG_MI' or 'PI'
+## Specify all velocity components:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_S(#,#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+Define temperature
+# Specification always available
+# Input required when energy equations are solved
+# Sets keyword BC_T_S(#,#)
+# DEFAULT value of 293.15
+Select species and set mass fractions (table format)
+# Specification always available
+# Input required for species equations
+# Drop down menu of fluid species
+# Sets keyword BC_X_S(#,#,#)
+# DEFAULT - last defined species has mass fraction of 1.0
+# Error check: mass fractions must sum to one
+
+Mockup of Task pane for specifying the Solids properties for MI, CG_MI, and PI boundary
+condition regions.
+Scalar (tab) - Tab only available if scalar equations are solved
+#### Define initial scalar value
+# Sets keyword BC_SCALAR(#,#)
+# DEFAULT value of 0.0
+Subtask Pane Tab for PRESSURE OUTFLOW type (PO) Boundary Condition Regions
+Fluid (tab)
+#### Define pressure
+# Specification always available
+# Input required
+# Sets keyword BC_P_G(#)
+# DEFAULT 101.325d3
+The remaining inputs are "optional." They do not have default values, because MFIX will calculate
+appropriate values if they are unspecified and 'backflow' occurs at the outlet.
+#### Define volume fraction
+# Specification always available
+# Sets keyword BC_EP_G(#)
+# No DEFAULT value
+# Error Check: If any volume fraction for the BC region is specified, then all volume
+fractions for the BC region must be specified and must sum to one.
+#### Define temperature
+# Specification always available
+# NO DEFAULT value
+# Sets keyword BC_T_G(#)
+#### Select species and set mass fractions (table format)
+# Specification always available
+# NO DEFAULT value
+# Sets keyword BC_X_G(#,#)
+
+# Error check: if specified, mass fractions must sum to one_
+Solids-# (tab)
+All inputs are optional. They do not have default values, because MFIX will calculate appropriate
+values if they are unspecified and 'backflow' occurs at the outlet.
+#### Define volume fraction
+# Specification always available
+# Sets keyword BC_EP_S(#,#)
+# No DEFAULT value
+# Error Check: If any volume fraction for the BC region is specified, then all volume
+fractions for the BC region must be specified and must sum to one.
+#### Define temperature
+# Specification always available
+# NO DEFAULT value
+# Sets keyword BC_T_S(#,#)
+#### Select species and set mass fractions (table format)
+# Specification always available
+# NO DEFAULT value
+# Sets keyword BC_X_S(#,#,#)
+# Error check: if specified, mass fractions must sum to one_
+Scalar (tab) - Tab only available if scalar equations are solved
+All inputs are optional. They do not have default values, because MFIX will calculate appropriate
+values if they are unspecified and 'backflow' occurs at the outlet.
+
+Define scalar value
+# Sets keyword BC_SCALAR(#,#)
+# NO DEFAULT value
+
+Subtask Pane Tab for MASS OUTFLOW type (MO) Boundary Condition Regions
+Fluid (tab)
+#### Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
+Region orientation (e.g., XZ-Plane)
+# For BC_TYPE='MO' and XZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Y-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MO' and YZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### X-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MO' and XY-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Z-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_W_G(#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_G(#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_G(#)
+
+# DEFAULT value of 0.0
+Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+# For BC_TYPE='CG_MO'
+## Specify all velocity components:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_G(#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_V_G(#)
+# DEFAULT value of 0.0
+
+Define duration to average outflow rate.
+# Specification always available
+# Input required
+# Sets keyword BC_DT_0(#)
+# DEFAULT value of 0.1
+# Error Check: Value should be positive (non-negative)
+# BC_DT_0 specification should persist across the gas and solids tabs. If the user sets
+it in the gas phase tab, but then changes it under a solids tab, a warning messing
+indicating that this value is 'constant' across all phases should be given.
+
+The remaining inputs are only required when either the mass or the volumetric flowrates are
+specified. They are not required if the velocities are given for the outlet.
+
+Define volume fraction
+# Specification only available with mass or volumetric flowrates.
+# Input required
+# Sets keyword BC_EP_G(#)
+# DEFAULT value 1.0
+# Error Check: If any volume fraction for the BC region is specified, then all volume
+fractions for the BC region must be specified and must sum to one.
+Define temperature
+# Specification only available with mass or volumetric flowrates and R_G0 is
+UNDEFINED
+# DEFAULT value 293.15
+# Sets keyword BC_T_G(#)
+Select species and set mass fractions (table format)
+# Specification only available with mass or volumetric flowrates and R_G0 is
+UNDEFINED
+# DEFAULT value 1.0 of last defined species
+# Sets keyword BC_X_G(#,#)
+# Error check: if specified, mass fractions must sum to one_
+
+Solids-# (tab)
+
+Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
+Region orientation (e.g., XZ-Plane)
+# For BC_TYPE='MO' and XZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Y-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_V_S(#,#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_ S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_ S(#,#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_ S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_ S(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MO' and YZ-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### X-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_U_ S(#,#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_ S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_ S(#,#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_ S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_W_ S(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='MO' and XY-Plane region
+## Select mass inflow specification type:
+#### Available selections:
+#### Z-Axial Velocity (m/s) [DEFAULT]
+# Sets keyword BC_W_ S(#,#)
+# DEFAULT value of 0.0
+#### Volumetric Flowrate (m3/s)
+# Sets keyword BC_VOLFLOW_ S(#,#)
+# DEFAULT value of 0.0
+#### Mass Flowrate (kg/s)
+# Sets keyword BC_MASSFLOW_ S(#,#)
+# DEFAULT value of 0.0
+## Define Tangential Velocities:
+#### Define X-Axial Velocity
+
+# Sets keyword BC_U_ S(#,#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_ S(#,#)
+# DEFAULT value of 0.0
+# For BC_TYPE='CG_MO'
+## Specify all velocity components:
+#### Define X-Axial Velocity
+# Sets keyword BC_U_ S(#,#)
+# DEFAULT value of 0.0
+#### Define Y-Axial Velocity
+# Sets keyword BC_V_ S(#,#)
+# DEFAULT value of 0.0
+#### Define Z-Axial Velocity
+# Sets keyword BC_V_ S(#,#)
+# DEFAULT value of 0.0
+
+Define duration to average outflow rate.
+# Specification always available
+# Input required
+# Sets keyword BC_DT_0(#)
+# DEFAULT value of 0.1
+# Error Check: Value should be positive (non-negative)
+BC_DT_0 specification should persist across the gas and solids tabs. If the user sets it in the gas
+phase tab, but then changes it under a solids tab, a warning messing indicating that this value is
+'constant' across all phases should be given.
+
+Point Source Task Pane Window: This section allows a user to define point sources for the
+described model. This section relies on regions named in the Regions section.
+The top of the task pane is where users define/select PS regions
+
+Icons to add/remove/duplicate boundary conditions are given at the top
+
+Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+a region to apply the point source.
+# Users cannot select inapplicable regions.
+# PS regions can be points, planes, or volumes (not STLs)
+# No region can define more than one point source.
+
+Tabs group point source parameters for phases. Tabs are unavailable if no input is required from the
+user.
+#### Fluid tab - Unavailable if the fluid phase was disabled.
+#### Each solid phase will have its own tab. The tab name should be the name of the solid
+Fluid (tab)
+#### Define mass flowrate:
+# Select mass inflow specification type:
+# Sets keyword PS_MASSFLOW_G(#)
+# DEFAULT value of 0.0
+#### Define temperature
+# Specification only available when solving energy equations
+# DEFAULT value 293.15
+# Sets keyword PS_T_G(#)
+#### Select species and set mass fractions (table format)
+# Specification only available when solving species equations
+# DEFAULT value 1.0 of last defined species
+# Sets keyword PS_X_G(#,#)
+# Error check: if specified, mass fractions must sum to one
+#### Define X-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_U_G(#)
+#### Define Y-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_V_G(#)
+#### Define Z-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_W_G(#)
+Solids-# (tab) - At this time, only TFM solids can be defined with point sources. At some point in the
+future, this could be extended to PIC solids, but never DEM.
+
+Define mass flowrate:
+# Select mass inflow specification type:
+# Sets keyword PS_MASSFLOW_S(#,#)
+# DEFAULT value of 0.0
+Define temperature
+# Specification only available when solving energy equations
+# DEFAULT value 293.15
+# Sets keyword PS_T_S(#,#)
+Select species and set mass fractions (table format)
+# Specification only available when solving species equations
+# DEFAULT value 1.0 of last defined species
+# Sets keyword PS_X_S(#,#,#)
+# Error check: if specified, mass fractions must sum to one
+Define X-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_U_S(#,#)
+Define Y-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_V_S(#,#)
+Define Z-axial velocity:
+# Specification always
+# No DEFAULT value (blank)
+# Sets keyword PS_W_S(#,#)
+
+Internal Surfaces Task Pane Window: This section allows a user to define internal surfaces for
+the described model. This section relies on regions named in the Regions section.
+The top of the task pane is where users define/select IS regions
+
+Icons to add/remove/duplicate boundary conditions are given at the top
+Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+a region to apply the point source.
+# Users cannot select inapplicable regions.
+# IS regions can be planes or volumes (not points or STLs)
+# No region can define more than one internal surface.
+Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+a region to apply the boundary condition.
+# Users cannot select inapplicable regions.
+# BC regions must be planes or STLs (not volumes or points)
+# No region can define more than one boundary condition.
+Select internal surface type
+# Selection is required
+# Available selections:
+## Impermeable
+#### Selection only available for plane regions
+#### set keyword IS_TYPE(#) to 'IMPERMEABLE'
+## X-Axis Impermeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'X_IMPERMEABLE'
+## Y-Axis Impermeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
+
+Z-Axis Impermeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
+## Semi-permeable
+#### Selection only available for plane regions
+#### set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
+## X-Axis semi-permeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'X_SEMIPERMEABLE'
+## Y-Axis semi-permeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'Y_SEMIPERMEABLE'
+## Z-Axis semi-permeable
+#### Selection only available for volume regions
+#### set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
+# Input required for species equations
+# DEFAULT - Impermeable
+Input is only needed for semi-permeable surfaces.
+
+Gas permeability:
+# Specification only available for semipermeable regions
+# DEFAULT value 1.0d32
+# Sets keyword IS_PC(#,1)
+Internal resistance coefficient:
+# Specification only available for semipermeable regions
+# DEFAULT value 0.0
+# Sets keyword IS_PC(#,2)
+Solids velocity through surface:
+# Specification only available for semipermeable regions
+# DEFAULT value 0.0
+# Sets keyword IS_VEL_s(#,PHASE)
+# There should be a line for each solids phase. Use the user provided solids name.
+
+Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
+Chemistry pane is disabled if any solids are specified as PIC.
+
+Enable the stiff chemistry solver
+# Selection always available
+# Sets keyword STIFF_CHEMISTRY to .TRUE.
+
+Chemical reaction input is handled different that keyword pair inputs. All homogeneous gas phase
+chemical reactions and all heterogeneous gas-tfm solids reactions are specified between @(RXNS)
+and @(END) reaction block. All heterogeneous gas-dem and gas-pic reactions are specified
+between @(DES_RXNS) and @(END) reaction block.
+
+Users use the globally unique species aliases to specify the chemical reaction equation. Each
+reaction is specified with a unique reaction identify.
+
+Specify the reaction identifier (Name)
+# Specification always available
+# DEFAULT value reactionN (for the Nth reaction)
+# Reaction identifiers must be "Fortran compilable"
+## Alphanumeric combinations (no special characters excluding underscores)
+## Limited to 32 characters
+## First character must be a letter
+## No black spaces
+Specify chemical reaction reactants (table format)
+# Use +/- buttons to add/remove reactants
+# Column 1 - Select phase for reactant
+## Use drop down list of user defined phase names
+## Reactions are limited to homogeneous or two-phase heterogeneous reactions
+(e.g., species from three separate phases cannot be referenced by any single
+chemical reaction)
+# Column 2 - Select reactant species
+## Use drop down list to show species in selected phase
+## A species can only appear once as a reactant in the same reaction
+# Column 3 - Enter stoichiometric coefficient
+## Numerical value (integer or float)
+## Value must be non-negative
+Specify chemical reaction products (table format)
+# Use +/- buttons to add/remove products
+# Column 1 - Select phase for product
+## Use drop down list of user defined phase names
+
+Reactions are limited to homogeneous or two-phase heterogeneous reactions
+(e.g., species from three separate phases cannot be referenced by any single
+chemical reaction)
+# Column 2 - Select product species
+## Use drop down list to show species in selected phase
+## A species can only appear once as a product in the same reaction
+# Column 3 - Enter stoichiometric coefficient
+## Numerical value (integer or float)
+## Value must be non-negative
+
+Reactant/Product information is combined with stoichiometric coefficients to define the
+chemical reaction as a string.
+# Sets reaction construct keyword CHEM_EQ
+# Example: CHEM_EQ = "rcoeff1*reactant1 + rcoeff2*reactant2 -->
+pcoeff1*product1"
+
+Error check: Mass of the reactants equal mass of the products (within a tolerance, 1.0e-6).
+abs[(rcoeff1*MW(reactant1) + rcoeff2*MW(reactant2) - (pcoeff1*product1)] < 1.0e-6
+
+Enable user-defined heat of reaction
+# Selection always available
+# DEFAULT disabled
+Specify heat of reaction
+# Only available if user-defined heat of reaction is enabled
+# DEFAULT value 0.0
+# Sets reaction construct keyword DH
+Specify HoR fraction assigned to -phaseo Only available if user-defined heat of reaction is enabled
+# Homogeneous chemical reactions
+## Specification is not available
+## Set reaction construct keyword fracDH(#) to 1.0 where # is the phase index
+# Heterogeneous chemical reactions
+## Entry for each phase referenced by the reaction
+## DEFAULT value 0.5 for both entires
+## Sets reaction construct keyword fracDH(#) for each referenced phase
+
+The user cannot 'save' the reaction if there are errors. After saving (adding?) the reaction, the
+reaction identifier (name) and chemical equation are shown in the summary box at the top. A
+chemical reaction is activated/deactivated by checking/unchecking the box. If the user 'deactivates'
+the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
+
+Numerics Task Pane Window:
+The numerics input is split into tabs to group similar inputs and reduce the amount of intput needed
+on a single pane.
+Residuals (tab)
+
+Specify residual for continuity plus momentum equations
+# Specification always available
+# Sets keyword TOL_RESID
+# DEFAULT value of 1.0e-3
+Specify residual for energy equations
+# Specification always available
+# Sets keyword TOL_RESID_T
+# DEFAULT value of 1.0e-4
+Specify residual for species equations
+# Specification always available
+# Sets keyword TOL_RESID_X
+# DEFAULT value of 1.0e-4
+Specify residual for granular energy equations
+# Specification always available
+# Sets keyword TOL_RESID_TH
+# DEFAULT value of 1.0e-4
+Specify residual for scalar/K-Epsilon
+# Specification always available
+# Sets keyword TOL_RESID_SCALAR
+# DEFAULT value of 1.0e-4
+
+Discretization (tab)
+
+Select temporal discretization scheme
+# Selection always available
+# Available selections:
+## Implicit Euler [DEFAULT]
+#### Sets keyword CN_ON to .FALSE.
+## Crank-Nicholson
+#### Sets keyword CN_ON to .TRUE.
+Specify spatial discretization and under relation factors (table format)
+# Specification always available
+# Column 1: List of equations
+# Column 2: Select discretization scheme for equation #
+## Available selections
+#### First-order upwind [DEFAULT for all equations]
+# Sets keyword DISCRETIZE(#) to 0
+#### First-order upwind (dwf)
+# Sets keyword DISCRETIZE(#) to 1
+#### Superbee
+# Sets keyword DISCRETIZE(#) to 2
+#### SMART
+# Sets keyword DISCRETIZE(#) to 3
+#### ULTRA-QUICK
+# Sets keyword DISCRETIZE(#) to 4
+#### QUICKEST
+# Sets keyword DISCRETIZE(#) to 5
+#### MUSCL
+# Sets keyword DISCRETIZE(#) to 6
+#### van Leer
+# Sets keyword DISCRETIZE(#) to 7
+#### minmod
+# Sets keyword DISCRETIZE(#) to 8
+#### Central
+# Sets keyword DISCRETIZE(#) to 9
+
+# Column 3: Specify under relation factors
+## Specification always available
+## Sets keyword UR_FAC for each equation #
+## DEFAULTS are equation type specific
+#### 1 - gas pressure: 0.8
+#### 2 - volume fraction: 0.5
+#### 3 - u-momentum: 0.5
+#### 4 - v-momentum: 0.5
+#### 5 - w-momentum: 0.5
+#### 6 - energy: 1.0
+#### 7 - species: 1.0
+#### 8 - granular energy: 0.5
+#### 9 - user-scalar/k-epsilon: 0.8
+#### 10 - DES diffusion: 1.0
+Enable deferred correction
+# Selection only available if minval(discretize) > 0
+# Sets keyword DEF_COR
+# DEFAULT value .FALSE.
+Enable chi-scheme correction
+# Selection only available if the species equation spatial discretization is SMART or
+MUSCL (DISCRETIZE(7) = 3 or 6)
+# Sets keyword CHI_SCHEME
+# DEFAULT value .FALSE.
+
+Linear Solver (tab)
+
+Specify linear solver, number of iterations, and convergence tolerance (table format)
+# Specification always available
+# Column 1: List of equations
+# Column 2: Select linear equation solver method for equation #
+## Available selections
+#### BiCGSTAB [DEFAULT for all equations]
+# Sets keyword LEQ_METHOD(#) to 2
+#### GMRES
+
+## Sets keyword LEQ_METHOD(#) to 3
+# Column 3: Specify number of iterations
+## Specification always available
+## Sets keyword LEQ_IT for each equation #
+## DEFAULTS are equation type specific
+#### 1 - gas pressure: 20
+#### 2 - volume fraction: 20
+#### 3 - u-momentum: 5
+#### 4 - v-momentum: 5
+#### 5 - w-momentum: 5
+#### 6 - energy: 15
+#### 7 - species: 15
+#### 8 - granular energy: 15
+#### 9 - user-scalar/k-epsilon: 15
+#### 10 - DES diffusion: 5
+# Column 4: Specify convergence tolerance
+## Specification always available
+## Sets keyword LEQ_TOL
+## DEFAULT value of 1.0E-4 for all equations
+
+Preconditioner (tab)
+
+Specify linear solver, number of preconditioner and sweep direction (table format)
+# Specification only available for equations using BiCGSTAB solver
+# Column 1: List of equations
+# Column 2: Preconditioner for equation #
+## Available selections
+#### None
+# Sets keyword LEQ_PC(#) to 'NONE'
+#### Line Relaxation [DEFAULT for all equations]
+# Sets keyword LEQ_PC(#) to 'LINE'
+#### Diagonal Scaling
+# Sets keyword LEQ_PC(#) to 'DIAG'
+
+# Column 3: Preconditioner sweep direction for equation #
+## Selection only available for equations with LINE preconditioner
+## Available selections
+#### 'Red-black sweep' [DEFAULT for all equations]
+# Sets keyword LEQ_PC(#) to 'RSRS'
+#### All sweep
+# Sets keyword LEQ_PC(#) to 'ASAS'
+#### I-sweep
+# Sets keyword LEQ_PC(#) to 'ISIS'
+#### J-sweep
+# Sets keyword LEQ_PC(#) to 'JSJS'
+#### K-sweep
+# Sets keyword LEQ_PC(#) to 'KSKS'
+
+Advanced (tab)
+
+Specify maximum inlet velocity factor
+# Specification always available
+# Sets keyword MAX_INLET_VEL_FAC
+# DEFAULT value of 1.0
+# Error check: Value greater than or equal to 1.0
+Specify drag under relation factor
+# Specification only available with MFIX-TFM and MFIX-Hybrid solvers
+# Sets keyword UR_F_GS
+# DEFAULT value of 1.0
+# Error check: Value bounded between 0 and 1
+Specify IA theory conductivity under relation factor
+# Specification only available with KT_TYPE = 'IA_NONEP'
+# Sets keyword IA_NONEP
+# DEFAULT value of 1.0
+# Error check: value bounded between 0 and 1
+Enable four point, fourth order interpolation
+# Specification always available
+# Sets keyword FPFOI
+
+# DEFAULT value of .FALSE.
+Specify the universal limiter
+# Specification only available if four point, forth order interpolation is enabled
+# Sets keyword C_FAC
+# DEFAULT value of 1.0
+# Error check: value bounded between 0 and 1
+
+Output Task Pane Window:
+#### Specify Restart/Checkpoint Frequency
+#### Option to enable restart backups
+# Subtask Pane Tab for restart/checkpoint backups
+# Backup frequency (multiple of restart/checkpoint frequency)
+# Number of backup copies to retain
+#### Option to enable SPx output format
+# Subtask Pane Tab for SPx output format
+# Write frequency of SPx files (table format)
+#### Option to enable VTK output format
+# Subtask Pane Tab for VTK output format
+# Write frequency of VTK output (table format)
+#### Option to enable NetCDF output
+# Subtask Pane Tab for NetCDF output format
+# Write frequency of NetCDF output (table format)
+#### Option to write particle data (requires DEM or PIC solver)
+#### Option to enable distributed I/O
+3.1.3 Job submission/Interactive Control
+This section describes the interface for running a job and how to interact with the running solver.
+When the MFIX solver is launched the following actions are taken:
+1) Initializes MPI for DMP enabled solvers.
+2) Initializes OpenMP threads for SMP enabled solvers.
+
+3) Processes the case file (*.mfx)
+4) Check validity of project settings
+a. Check and setup base background mesh
+b. Setup MPI domain decomposition
+c. Preform sanity checks on user inputs
+d. Set flags and loop structures for background mesh
+e. Invoke Cartesian grid cut-cell preprocessing
+f. Allocate data arrays
+5) Process RES (restart) files
+a. Save current state for new runs
+b. Read RES files for restarts
+6) Setup initial field states prior to time march
+
+yeStep 4 is where the majority of failures will be caught when starting the MFIX solver. The solver
+should catch the error and report it back to the GUI so the user may correct the issue. To facilitate
+
+3.1.4 Workflow Mode
+Workflow mode utilizes pyqtnode's graphical programing interface and provides a collection of
+MFIX specific blocks for creating, running, and post processing MFIX simulations. This is where
+design of experiments, uncertainty quantification, and optimization can be performed.
+
+Figure 3: General layout of the “Workflow” mode.
+
+3.1.5 Developer Mode
+Developer mode allows users to edit user-defined functions (UDFs) and the MFIX-Solver source
+code. Developer mode also contains tools to help develop, maintain, and characterize performance
+of the MFIX-Solver source code.
+
+The layout will consist of a tree on the left side showing the structure and files that compose the
+MFIX-Solver. There will also be a search bar that can either search the files names or search
+through the files and show were that specific search term exists in the files it has been found in.
+Screenshot of a neat tool in spyder for searching through code repositories with regular
+expressions. Indicates files and lines in files where the search has been found.
+A light-weight text editor should be included, providing FORTRAN syntax highlighting, tabbed
+completion, and inline error checking (Note: could use spyder's editor, however it seems to be
+sluggish and “heavy” sometimes, especially on the SBEUC).
+
+Hardware Interfaces
+XBOX Kinetic control of the interface with hand motions .
+
+Software Interfaces
+
+Paraview: The MFIX-UI should be able to open Paraview and ideally open a graphics file
+stack from the current simulation directory with a state file.
+C3M: Open C3M (available only on Windows)
+
+Communications Interfaces
+
+Interaction with a running simulation
+# The MFIX-UI will communicate with a running MFIX simulation over a user-specified
+port using a RESTful HTTP interface. The interface will be language neutral, using
+the JSON format for data exchange.
+# The status of a running MFIX simulation will be monitored by the MFIX-UI over
+HTTP.
+Interaction with the MFS Website
+# Read/display news
+# Import particle properties from the MFS particle database
+# Download updates?
+
+o
+
+UDF repository?
+
+4. System Features
+4.1 Guided Simulation Setup
+4.1.1 Description and Priority
+High priority: Specify an MFIX simulation through an intuitive user interface (UI). This
+feature should guide users in constructing a simulation by enabling/disabling
+features depending on selected options. For example, users should not be able to
+specify a kinetic theory model for non-Eulerian solids.
+
+4.1.2 Stimulus/Response Sequences
+Users will be guided through a logic process for selecting model parameters.
+
+4.1.3 Functional Requirements
+See section 3.
+
+4.2 Internal Console
+4.2.1 Description and Priority
+High priority: Create an interactive console that allows user manipulation of the model such
+as:
+#### Changing keywords
+#### Programmatically create BCs/ICs/PSs
+As well as display relevant information including:
+#### Errors
+#### MFIX process connection info
+
+4.2.2 Stimulus/Response Sequences
+When the user enters commands, process those commands and update the UI/model
+accordingly. Display relevant information from UI algorithms.
+
+4.2.3 Functional Requirements
+REQ-1:
+REQ-2:
+REQ-3:
+
+Display a console
+Allow user input
+Display information
+
+4.3 3D Graphics - Visualization
+4.3.1 Description and Priority
+High priority: Create a primitive 3D graphics environment to help visualize the simulation
+setup including:
+
+Displaying geometry
+
+Displaying the grid
+Displaying defined regions
+
+4.3.2 Stimulus/Response Sequences
+As the user sets up the model, display relevant 3D objects to show geometry and regions.
+
+4.3.3 Functional Requirements
+REQ-4:
+REQ-5:
+REQ-6:
+REQ-7:
+
+Display the geometry (stl, primitives)
+Display Rectilinear grid overlaid with the geometry
+Display meshed geometry
+Display regions (point, plane, volume)
+
+4.4 3D Graphics – Interaction
+4.4.1 Description and Priority
+Medium priority: Provide user interactivity with the 3D environment for changing the size,
+rotation, and position of objects such as the geometry, grid, and regions.
+
+4.4.2 Stimulus/Response Sequences
+The user will use mouse and keyboard inputs to change objects in the 3D space
+
+4.4.3 Functional Requirements
+REQ-1:
+REQ-2:
+REQ-3:
+REQ-4:
+
+Change the size, position, and rotation of geometry objects
+Move grid control points
+Change the size, position, and rotation of region objects
+Select individual cells/triangles
+
+4.5 Geometric preprocessing
+4.5.1 Description and Priority
+High priority: Create an mfix.dat file through the GUI.
+
+4.5.2 Stimulus/Response Sequences
+As the user works through the interface, key, arguments, and values will be generated and
+stored in a data structure. When the user “saves” the project, the mfix.dat will be
+generated.
+
+4.5.3 Functional Requirements
+REQ-1:
+Collect and store correct keywords, arguments, and values
+Write the collected keywords
+
+4.6 Installer
+4.6.1 Description and Priority
+
+High priority: Create a self-contained installed program each targeted platform.
+
+4.6.2 Stimulus/Response Sequences
+The user will download a single platform-specific installer file to install MFIX, the MFIX-UI,
+and all dependencies. PyInstaller will be used to bundle together the Python
+distribution and dependencies into a convenient installer.
+
+4.6.3 Functional Requirements
+REQ-1:
+REQ-2:
+REQ-3:
+
+Installation on Windows
+Installation on Linux (ubunutu, opensuse, fedora, …)
+Installation on OSX
+
+4.7 Creating mfix.dat
+4.7.1 Description and Priority
+High priority: Create an mfix.dat file through the GUI.
+
+4.7.2 Stimulus/Response Sequences
+As the user works through the interface, key, arguments, and values will be generated and
+stored in a data structure. When the user “saves” the project, the mfix.dat will be
+generated.
+
+4.7.3 Functional Requirements
+REQ-1:
+Collect and store correct keywords, arguments, and values
+REQ-2:
+Write the collected keywords, arguments, and values to a text file named
+mfix.dat
+
+4.8 Building MFIX
+4.8.1 Description and Priority
+Medium priority: Build MFIX
+
+4.8.2 Stimulus/Response Sequences
+The user will select a button or menu item to build an MFIX executable from the MFIX
+source distributed with the MFIX UI.
+
+4.8.3 Functional Requirements
+This capability is optional for the binary distribution of MFIX-UI, which will include a prebuilt
+MFIX executable, for the situation when the user does not have a compiler installed.
+Building MFIX through the GUI would be useful to rebuild with different build
+options: SMP, DMP, different Fortran compilers and MPI implementations.
+REQ-1:
+REQ-2:
+REQ-3:
+
+Build on Linux
+Build on OSX
+Build using Autotools
+
+REQ-4:
+REQ-5:
+
+Build using SMP
+Build using DMP
+
+4.9 Running MFIX
+4.9.1 Description and Priority
+High priority: Start MFIX
+
+4.9.2 Stimulus/Response Sequences
+The user will select a menu item to launch MFIX locally, submit it to a batch queue, or
+connect to an already running MFIX simulation. The MFIX-UI will then display the
+progress of the job and various statistics.
+
+4.9.3 Functional Requirements
+REQ-1:
+Remove existing run files
+REQ-2:
+Check to make sure a compiled MFIX source is available
+REQ-3:
+Copy required files
+REQ-4:
+Launch job locally
+REQ-5:
+Pause a running job
+REQ-6:
+Resume a job
+REQ-7:
+Update timestep
+REQ-8:
+Write restart (RES) files
+REQ-9:
+Terminate a job
+REQ-10: Reinitialize with an updated mfix.dat
+REQ-11: View a job's current simulation time, current timestep, residuals for current
+iteration of the current timestep, and estimated walltime to finish
+
+4.10 Queue Support
+4.10.1 Description and Priority
+High priority: Allow for submitting/monitoring/canceling of jobs submitted to a queue
+manager.
+
+4.10.2 Stimulus/Response Sequences
+The user can select to submit a job to s specific queue.
+
+4.10.3 Functional Requirements
+REQ-1:
+REQ-2:
+REQ-3:
+REQ-4:
+REQ-5:
+queues
+
+Flexible interface for users to specify queue parameters
+Submit job to a queue
+Monitor job status (waiting/running/canceled/ended)
+Remove job from queue
+Monitor queue availability and automatically move queued jobs to other
+
+4.11 External Programs
+4.11.1 Description and Priority
+
+Medium Priority: After running MFIX, provide a button to open simulation results in
+Paraview.
+
+4.11.2 Stimulus/Response Sequences
+The user will select a menu item to launch MFIX simulation results in Paraview. Ideally, this
+will include opening the graphics stack and applying a state file.
+
+4.11.3 Functional Requirements
+REQ-1:
+REQ-2:
+REQ-3:
+
+Launch Paraview by pressing a button in the UI
+Open the current simulation's graphics stack in Paraview
+Set a state file to setup the visualization in Paraview
+
+4.12 Plugins
+4.12.1 Description and Priority
+Medium Priority: Provide a structure for user supplied plugins
+
+4.12.2 Stimulus/Response Sequences
+Users will be able to create plugins for the UI to handle:
+
+queue submissions
+widgets
+Post processing
+
+4.12.3 Functional Requirements
+REQ-1:
+REQ-2:
+
+Automatically look for plugins
+expose the plugin in the UI
+
+4.13 Pyqtnode Interaction
+4.13.1 Description and Priority
+High Priority: import the pyqtnode library and display under the “workflow” mode.
+
+4.13.2 Stimulus/Response Sequences
+The user will select the “workflow” mode where the UI will change to show the pyqtnode
+interface. Run and autorun buttons will be exposed.
+
+4.13.3 Functional Requirements
+REQ-1:
+REQ-2:
+
+Import pyqtnode and imbed in the UI
+expose hooks for pyqtnode to run MFIX simulations
+
+4.14 Species Database
+4.14.1 Description and Priority
+High Priority: Include a large collection of thermodynamic species data that a user can
+“import” into the model.
+Database links: http://webbook.nist.gov/chemistry/,
+http://www.grc.nasa.gov/WWW/CEAWeb/ceaThermoBuild.htm
+
+4.14.2 Stimulus/Response Sequences
+Where needed, a user can search and import gas, liquid, and solids species from a database.
+4.14.3 Functional Requirements
+REQ-1:
+REQ-2:
+
+Include a thermodynamic data base with the UI
+Import species data from that data base
+
+5. Other Nonfunctional Requirements
+Performance Requirements
+The UI should not “hang” during operations that require significant amounts of time (> 1s) to
+complete. Example actions that could take significant time include:
+#### Reading stl files
+#### Sending interaction requests to a running MFIX simulation
+#### Receiving data from a running MFIX simulation
+#### Compiling MFIX
+
+Safety Requirements
+If the UI removes any files from the user's system, a prompt must be displayed asking the user to
+continue.
+
+Security Requirements
+User names and passwords for access to the MFS (mfix.netl.doe.gov) website should be stored
+(encrypted) securely.
+
+Software Quality Attributes
+The software must be written in a modular and flexible fashion, allowing for maintainability,
+reusability, and robustness. Documentation, “docstrings”, should be included with function, class,
+and method definitions. All functions, classes, and methods should be unit-testable. Unit tests
+should be written for every function, class, and method as the functions, classes, and methods are
+developed, NOT AS AN AFTERTHOUGHT.
+
+Code Style Guide
+All Python code should follow the standard Python style guide. If your editor supports it, please
+enable pylint checking.
+
+Business Rules
+<List any operating principles about the product, such as which individuals or roles can perform
+which functions under specific circumstances. These are not functional requirements in
+themselves, but they may imply certain functional requirements to enforce the rules.>
+
+6. Other Requirements
+<Define any other requirements not covered elsewhere in the SRS. This might include database
+requirements, internationalization requirements, legal requirements, reuse objectives for the
+project, and so on. Add any new sections that are pertinent to the project.>
+
+Appendix A: Glossary
+<Define all the terms necessary to properly interpret the SRS, including acronyms and
+abbreviations. You may wish to build a separate glossary that spans multiple projects or the entire
+organization, and just include terms specific to a single project in each SRS.>
+
+Appendix B: Analysis Models
+<Optionally, include any pertinent analysis models, such as data flow diagrams, class diagrams,
+state-transition diagrams, or entity-relationship diagrams.>
+
+Appendix C: To Be Determined List
+<Collect a numbered list of the TBD (to be determined) references that remain in the SRS so they
+can be tracked to closure.>
+
+Appendix D: UI Resources
+Other CFD UI's
+
+SimFlow
+
+HELYX-OS
+
+SimScale
+
+DICEhub
+
