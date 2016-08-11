@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Initial Conditions</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -26,10 +26,10 @@
    <item>
     <widget class="QFrame" name="frame_add_delete">
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Plain</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_7">
       <property name="spacing">
@@ -151,7 +151,7 @@
          <x>0</x>
          <y>0</y>
          <width>469</width>
-         <height>790</height>
+         <height>794</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -660,14 +660,14 @@
                 <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_IC_P"/>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="label_ic_pic_const_npc">
+                <widget class="QLabel" name="label_ic_pic_const_statwt">
                  <property name="text">
                   <string>Particles per parcel</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_npc_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_IC_P"/>
                </item>
               </layout>
              </widget>
