@@ -43,7 +43,7 @@
         <item>
          <widget class="QToolButton" name="toolbutton_add">
           <property name="toolTip">
-           <string>Define new initial condition over one or more regions</string>
+           <string>Define new boundary condition over one or more regions</string>
           </property>
           <property name="text">
            <string>Add</string>
@@ -59,7 +59,7 @@
            <bool>false</bool>
           </property>
           <property name="toolTip">
-           <string>Delete initial conditions for region</string>
+           <string>Delete boundary conditions for region</string>
           </property>
           <property name="text">
            <string>Delete</string>
@@ -258,7 +258,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_ep_g_args_IC">
+                <widget class="LineEdit" name="lineedit_keyword_ic_ep_g_args_BC">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
@@ -272,7 +272,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_t_g_args_IC"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_t_g_args_BC"/>
                </item>
                <item row="1" column="2">
                 <widget class="QLabel" name="label_ic_t_g_units">
@@ -289,7 +289,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_p_g_args_IC"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_p_g_args_BC"/>
                </item>
                <item row="2" column="2">
                 <widget class="QLabel" name="label_ic_p_g_units">
@@ -306,7 +306,7 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_u_g_args_IC"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_u_g_args_BC"/>
                </item>
                <item row="3" column="2">
                 <widget class="QLabel" name="label_ic_u_g_units">
@@ -323,7 +323,7 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_v_g_args_IC"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_v_g_args_BC"/>
                </item>
                <item row="4" column="2">
                 <widget class="QLabel" name="label_ic_v_g_units">
@@ -340,7 +340,7 @@
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_w_g_args_IC"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_w_g_args_BC"/>
                </item>
                <item row="5" column="2">
                 <widget class="QLabel" name="label_ic_v_w_units">
@@ -397,7 +397,7 @@
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_l_scale_args_IC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_l_scale_args_BC"/>
                  </item>
                  <item row="0" column="2">
                   <widget class="QLabel" name="label_ic_l_scale_units">
@@ -414,7 +414,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_k_turb_g_args_IC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_k_turb_g_args_BC"/>
                  </item>
                  <item row="1" column="2">
                   <widget class="QLabel" name="label_ic_k_turb_g_units">
@@ -431,7 +431,7 @@
                   </widget>
                  </item>
                  <item row="2" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_e_turb_g_args_IC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_e_turb_g_args_BC"/>
                  </item>
                  <item row="2" column="2">
                   <widget class="QLabel" name="label_ic_e_turb_g_units">
@@ -461,7 +461,7 @@
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rg_args_IC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rg_args_BC"/>
                  </item>
                  <item row="0" column="2">
                   <widget class="QLabel" name="label_ic_gama_rg_units">
@@ -478,7 +478,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rg_args_IC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rg_args_BC"/>
                  </item>
                  <item row="1" column="2">
                   <widget class="QLabel" name="label_ic_t_rg_units">
@@ -558,7 +558,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_ep_s_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_ep_s_args_BC_P"/>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_ic_t_s">
@@ -568,7 +568,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_BC_P"/>
                </item>
                <item row="1" column="2">
                 <widget class="QLabel" name="label_ic_t_s_units">
@@ -585,7 +585,7 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_BC_P"/>
                </item>
                <item row="2" column="2">
                 <widget class="QLabel" name="label_ic_u_s_units">
@@ -602,7 +602,7 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_BC_P"/>
                </item>
                <item row="3" column="2">
                 <widget class="QLabel" name="label_ic_v_s_units">
@@ -619,7 +619,7 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_BC_P"/>
                </item>
                <item row="4" column="2">
                 <widget class="QLabel" name="label_ic_w_s_units">
@@ -636,7 +636,7 @@
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_BC_P"/>
                </item>
                <item row="5" column="2">
                 <widget class="QLabel" name="label_ic_p_star_units">
@@ -653,7 +653,7 @@
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_BC_P"/>
                </item>
                <item row="7" column="0">
                 <widget class="QLabel" name="label_ic_pic_const_statwt">
@@ -663,7 +663,7 @@
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_IC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_BC_P"/>
                </item>
               </layout>
              </widget>
@@ -704,7 +704,7 @@
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
                <item row="0" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_ic_des_fit_to_region_args_IC">
+                <widget class="CheckBox" name="checkbox_keyword_ic_des_fit_to_region_args_BC">
                  <property name="text">
                   <string>Fit particles to region</string>
                  </property>
@@ -720,7 +720,7 @@
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rs_args_IC_P"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rs_args_BC_P"/>
                  </item>
                  <item row="0" column="2">
                   <widget class="QLabel" name="label_ic_gama_rs_units">
@@ -737,7 +737,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rs_args_IC_P"/>
+                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rs_args_BC_P"/>
                  </item>
                  <item row="1" column="2">
                   <widget class="QLabel" name="label_ic_t_rs_units">

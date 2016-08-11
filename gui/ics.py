@@ -53,7 +53,7 @@ class ICS(object):
         #define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
         #get messy, and if so, scrap this idea.
         # (Note- Suggestion implemented)
-
+        # TODO: implement 'duplicate' (what does this do?)
         ics.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
         ics.toolbutton_delete.clicked.connect(self.ics_delete_regions)
         ics.toolbutton_delete.setEnabled(False) # Need a selection
@@ -125,7 +125,7 @@ class ICS(object):
         for (name,data) in self.ics_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
-            available = (shape=='box' and data.get('available', True))
+            available = data.get('available', True) and (shape == 'box')
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
@@ -136,7 +136,7 @@ class ICS(object):
                      ics.toolbutton_add,
                      ics.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup("Select region(s) for initial condition")
+        rp.popup(boundary=False)
 
 
     def ics_cancel_add(self):
@@ -894,7 +894,7 @@ class ICS(object):
                 self.error('no widget for key %s' % key)
             return widget
 
-        def setup_key_widget(key, default, enabled=True):
+        def setup_key_widget(key, default=None, enabled=True):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_IC_P',
                          'lineedit_keyword_%s_args_IC'):

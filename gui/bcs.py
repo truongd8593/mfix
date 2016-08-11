@@ -1,48 +1,206 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import print_function, absolute_import, unicode_literals, division
+from collections import OrderedDict
+
+from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
+from qtpy.QtGui import QPicture
+
+UserRole = QtCore.Qt.UserRole
+
+from widgets.regions_popup import RegionsPopup
+from widgets.base import LineEdit
+
+from tools.general import (set_item_noedit, set_item_enabled,
+                           get_selected_row, make_callback,
+                           widget_iter)
+
+# We don't need extended JSON here
+from json import JSONDecoder, JSONEncoder
+
+def safe_float(val):
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
+
+
+class BCS(object):
+    #Boundary Conditions Task Pane Window: This section allows a user to define the boundary
+    #conditions for the described model. This section relies on regions named in the Regions section.
+
+    def init_bcs(self):
+        ui = self.ui
+        bcs = ui.boundary_conditions
+
+        self.bcs = {} # key: index.  value: data dictionary for boundary cond
+        self.bcs_current_indices = [] # List of BC indices
+        self.bcs_current_regions = [] # And the names of the regions which define them
+        self.bcs_region_dict = None
+
+        # The top of the task pane is where users define/select BC regions
+        # (see handle_bcs_region_selection)
+        #
+        #Icons to add/remove/duplicate boundary conditions are given at the top
+        #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
+        #a region to apply the boundary condition.
+        bcs.toolbutton_add.clicked.connect(self.bcs_show_regions_popup)
+        bcs.toolbutton_delete.clicked.connect(self.bcs_delete_regions)
+        # TODO implement 'duplicate' (what does this do?)
+
+
+        #Select boundary type
+        # Selection is required
+        # Available selections:
+        #  Mass Inflow
+        #    Plane regions set keyword BC_TYPE(#) to 'MI'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
+        #  Pressure Outflow
+        #    Plane regions set keyword BC_TYPE(#) to 'PO'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
+        #  No Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'NSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+        #  Free Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'FSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+        #  Partial Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'PSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+        #  Pressure Inflow
+        #    Plane regions set keyword BC_TYPE(#) to 'PI'
+        #    Not available for STL regions
+        # Mass Outflow
+        #    Plane regions set keyword BC_TYPE(#) to 'MO'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
+        # Specification always available
+        # DEFAULT - No slip wall
+        # Error check: mass fractions must sum to one
+
+    def bcs_show_regions_popup(self):
+        # Users cannot select inapplicable regions.
+        # BC regions must be planes or STLs (not volumes or points)
+        # No region can define more than one boundary condition.
+        ui = self.ui
+        bcs = ui.boundary_conditions
+        rp = self.regions_popup
+        rp.clear()
+        for (name,data) in self.bcs_region_dict.items():
+            shape = data.get('type', '---')
+            # Assume available if unmarked
+            available = data.get('available', True) and (shape=='STL' or 'plane' in shape)
+            row = (name, shape, available)
+            rp.add_row(row)
+        rp.reset_signals()
+        rp.save.connect(self.bcs_add_regions)
+        rp.cancel.connect(self.bcs_cancel_add)
+        for item in (bcs.tablewidget_regions,
+                     bcs.scrollarea_detail,
+                     bcs.toolbutton_add,
+                     bcs.toolbutton_delete):
+            item.setEnabled(False)
+        rp.popup(boundary=True)
+
+    def bcs_cancel_add(self):
+        ui = self.ui
+        bcs = ui.boundary_conditions
+
+        for item in (bcs.toolbutton_add,
+                     bcs.tablewidget_regions):
+            item.setEnabled(True)
+
+        if get_selected_row(bcs.tablewidget_regions) is not None:
+            for item in (bcs.scrollarea_detail,
+                         bcs.toolbutton_delete):
+                item.setEnabled(True)
+
+
+    def bcs_add_regions(self):
+        # Interactively add regions to define BCs
+        pass
+
+    def bcs_delete_regions(self):
+        pass
+
+    def handle_bcs_region_selection(self):
+        pass
+
+    def fixup_bcs_table(self, tw, stretch_column=0):
+        pass
+
+    def bcs_update_enabled(self):
+        pass
+
+    def bcs_change_tab(self, tab, solid):
+        pass
+
+    def bcs_check_region_in_use(self, name):
+        return False
+
+    def bcs_update_region(self, name, data):
+        pass
+
+    def bcs_set_region_keys(self, name, index, data):
+        pass
+
+    def reset_bcs(self):
+        pass
+
+    def bcs_to_str(self):
+        return ""
+
+    def bcs_regions_from_str(self, s):
+        pass
+
+    def setup_bcs(self):
+        ui = self.ui
+        bcs = ui.boundary_conditions
+        # Grab a fresh copy, may have been updated
+        self.bcs_region_dict = ui.regions.get_region_dict()
+
+        # Mark regions which are in use (this gets reset each time we get here)
+        for (i, data) in self.bcs.items():
+            region = data['region']
+            if region in self.bcs_region_dict:
+                self.bcs_region_dict[region]['available'] = False
+
+
+    def bcs_setup_current_tab(self):
+        pass
+
+
+    def bcs_set_volume_fraction_limit(self):
+        pass
+    def handle_bcs_volume_fraction(self, widget, val, args):
+        pass
+    def bcs_find_index(self):
+        pass
+    def update_bcs_fluid_mass_fraction_table(self):
+        pass
+
+    def handle_bcs_fluid_mass_fraction(self, widget, value_dict, args):
+        pass
+    def update_bcs_fluid_mass_fraction_total(self):
+        pass
+    def update_bcs_solids_mass_fraction_table(self):
+        pass
+
+    def handle_bcs_solids_mass_fraction(self, widget, value_dict, args):
+        pass
+    def update_bcs_solids_mass_fraction_total(self):
+        pass
+    def bcs_extract_regions(self):
+        pass
+    def setup_bcs_fluid_tab(self):
+        pass
+    def setup_bcs_solids_tab(self, P):
+        pass
+
+    def setup_bcs_scalar_tab(self):
+        pass
 
 
 """
-Boundary Conditions Task Pane Window: This section allows a user to define the boundary
-conditions for the described model. This section relies on regions named in the Regions section.
-The top of the task pane is where users define/select BC regions
-
-Icons to add/remove/duplicate boundary conditions are given at the top
-Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
-a region to apply the boundary condition.
-# Users cannot select inapplicable regions.
-# BC regions must be planes or STLs (not volumes or points)
-# No region can define more than one boundary condition.
-
-Select boundary type
-# Selection is required
-# Available selections:
-#  Mass Inflow
-#    Plane regions set keyword BC_TYPE(#) to 'MI'
-#    STL regions set keyword BC_TYPE(#) to 'CG_MI'
-#  Pressure Outflow
-#    Plane regions set keyword BC_TYPE(#) to 'PO'
-#    STL regions set keyword BC_TYPE(#) to 'CG_PO'
-#  No Slip Wall
-#    Plane regions set keyword BC_TYPE(#) to 'NSW'
-#    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
-#  Free Slip Wall
-#    Plane regions set keyword BC_TYPE(#) to 'FSW'
-#    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
-#  Partial Slip Wall
-#    Plane regions set keyword BC_TYPE(#) to 'PSW'
-#    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-Pressure Inflow
-#    Plane regions set keyword BC_TYPE(#) to 'PI'
-#    Not available for STL regions
-Mass Outflow
-#    Plane regions set keyword BC_TYPE(#) to 'MO'
-#    STL regions set keyword BC_TYPE(#) to 'CG_MO'
-# Specification always available
-# DEFAULT - No slip wall
-# Error check: mass fractions must sum to one
-
 Tabs group boundary condition parameters for phases and additional equations. Tabs are
 unavailable if no input is required from the user.
 
@@ -777,19 +935,3 @@ BC_DT_0 specification should persist across the gas and solids tabs. If the user
 phase tab, but then changes it under a solids tab, a warning messing indicating that this value is
 'constant' across all phases should be given.
 """
-class BCS(object):
-    def init_bcs(self):
-        self.bcs_current_indices = []
-        self.bcs_current_regions = []
-
-    def setup_bcs(self):
-        pass
-
-    def bcs_check_region_in_use(self, name):
-        return False
-
-    def bcs_update_region(self, name, data):
-        pass
-
-    def reset_bcs(self):
-        pass
