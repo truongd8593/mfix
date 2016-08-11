@@ -87,7 +87,6 @@ class ProjectManager(Project):
         try:
             updatedKeyword = self.updateKeyword(key, newValue, args)
             updatedValue = updatedKeyword.value
-            print("UDV", updatedValue)
         except Exception as e:
             self.gui.print_internal("Warning: %s: %s" %
                                        (format_key_with_args(key, args), e),
