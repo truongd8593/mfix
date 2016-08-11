@@ -114,7 +114,7 @@ class SolidsTFM(object):
 
         ### Advanced
         # Select radial distribution function
-        rdf_type = self.project.get_value('rdf_type', 'LEBOWITZ') #default??
+        rdf_type = self.project.get_value('rdf_type', default='LEBOWITZ') #default??
         if rdf_type not in rdf_types:
             self.warn('Invalid rdf_type %s' % rdf_type)
             rdf_type = 'LEBOWITZ'
@@ -139,7 +139,7 @@ class SolidsTFM(object):
 
         # Select stress blending model
         # Selection only available with FRICTION_MODEL=SCHAEFFER
-        blending_function = self.project.get_value('blending_function', 'NONE')
+        blending_function = self.project.get_value('blending_function', default='NONE')
         if blending_function not in blending_functions:
             self.warn('Invalid blending_function %s' % blending_function)
             blending_function = 'NONE'

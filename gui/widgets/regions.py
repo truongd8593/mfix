@@ -523,6 +523,9 @@ class RegionsWidget(QtWidgets.QWidget):
         region_dict = self.tablewidget_regions.value
         return copy.deepcopy(region_dict) # Allow clients to modify dict
 
+    def __len__(self):
+        return len(self.tablewidget_regions.value)
+
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
         data = self.tablewidget_regions.value

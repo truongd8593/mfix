@@ -8,7 +8,7 @@ from qtpy import QtWidgets, QtCore
 import copy
 
 from widgets.base import Table
-from tools.general import get_icon, get_unique_string, unformat_key_with_args
+from tools.general import get_icon, get_unique_string, parse_key_with_args
 from constants import *
 from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 from regexes import *
@@ -267,7 +267,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
         if old_name in p_map.keys():
             for keyword in p_map[old_name]:
-                key, args = unformat_key_with_args(keyword)
+                key, args = parse_key_with_args(keyword)
                 if [key]+args in proj:
                     eq = proj[[key]+args].value
                     eq.eq = eq.eq.replace(old_name, new_name)

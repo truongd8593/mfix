@@ -179,7 +179,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_Fluid,
                         Ui_Solids,
                         Ui_initial_conditions,
-                        # Ui_boundary_conditions,
+                        Ui_boundary_conditions,
                         # Ui_point_sources,
                         # Ui_internal_surfaces,
                         # Ui_chemistry,
@@ -214,7 +214,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'fluid',
                          'solids',
                          'initial_conditions',
-                         #'boundary_conditions',
+                         'boundary_conditions',
                          #'point_sources',
                          #'internal_surfaces',
                          #'chemistry',
@@ -290,8 +290,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Boundary Conditions',
-                     'Point Sources',
+        for name in ('Point Sources',
                      'Internal Surfaces',
                      'Chemistry',
                      'Monitors',
@@ -302,7 +301,6 @@ class MfixGui(QtWidgets.QMainWindow,
                      'Export',
                      'Plugins'):
             self.find_navigation_tree_item(name).setDisabled(True)
-
 
         # Initialize popup dialogs
         self.species_popup = SpeciesPopup(QtWidgets.QDialog())
@@ -563,11 +561,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-        if value in (None, ''):
+        if value is None or value=='':
             self.unset_keyword(key, args)
             return
-        if not isinstance(value, Equation):  # Always update equations
-            if self.project.get_value(key, args=args) == value:
+        if not isinstance(value, Equation):  # Always update equations (why?)
+            # Note, not all keyword updates use this function (should they?)
+            v = self.project.get_value(key, args=args)
+            if v==value:
                 return
         self.set_keyword(key, value, args=args)
 
@@ -577,8 +577,6 @@ class MfixGui(QtWidgets.QMainWindow,
         #   keywords with project manager
         if isinstance(args, int):
             args = [args]
-        elif args is None:
-            args = []
         try:
             success = self.project.removeKeyword(key, args, warn=False)
             if success:
@@ -632,7 +630,7 @@ class MfixGui(QtWidgets.QMainWindow,
                                        or self.solids_nscalar_eq > 0
                                        or len(self.solids) > 0
                                        or not(self.fluid_solver_disabled) )
-        for name in ("Initial Conditions",): # "Boundary Conditions"):
+        for name in ("Initial Conditions", "Boundary Conditions"):
             item = self.find_navigation_tree_item(name)
             item.setDisabled(not enabled)
 
@@ -891,6 +889,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_window_title()
 
     def disable_fluid_solver(self, disabled):
+        # Option to disable the fluid phase
+        # Disables the Fluid task pane menu
+        # Sets keyword RO_G0 to 0.0
         self.fluid_solver_disabled = disabled
         m = self.ui.model_setup
         enabled = not disabled
@@ -900,7 +901,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.enable_turbulence(False)
             self.saved_ro_g0 = self.project.get_value('ro_g0')
             self.update_keyword('ro_g0', 0) # issues/124
-            # TODO restore widget text ?
             if self.saved_ro_g0 is not None:
                 self.ui.fluid.lineedit_keyword_ro_g0.setText(str(self.saved_ro_g0))
         else:
@@ -1204,7 +1204,6 @@ class MfixGui(QtWidgets.QMainWindow,
     def change_pane(self, name):
         """set current pane to the one matching 'name'.  Must be the long
         (non-abbreviated) navigation label.  Case-insensitive"""
-
         items = self.ui.treewidget_navigation.findItems(
                     name,
                     Qt.MatchFixedString | Qt.MatchRecursive, 0)
@@ -1220,32 +1219,33 @@ class MfixGui(QtWidgets.QMainWindow,
                         break
         assert len(items) == 1
         self.ui.treewidget_navigation.setCurrentItem(items[0])
-        self.navigation_changed()
+        #self.navigation_changed() # not needed, since setCurrentItem triggers callback
 
     def navigation_changed(self):
         """an item in the tree was selected, change panes"""
-
         current_selection = self.ui.treewidget_navigation.selectedItems()
         if not current_selection:
             return
-        text = str(current_selection[-1].text(0))
+        name = str(current_selection[0].text(0))
         # Translate from short to long name
         for (long, short) in self.nav_labels:
-            if text==short:
-                text=long
+            if name==short:
+                name=long
                 break
-        text = '_'.join(text.lower().split(' '))
+        name = '_'.join(name.lower().split(' '))
 
-        current_index = 0
-        for i in range(self.ui.stackedWidgetTaskPane.count()):
-            widget = self.ui.stackedWidgetTaskPane.widget(i)
-            if text == str(widget.objectName()):
-                current_index = i
-                break
+        matches = [i
+                   for i in range(self.ui.stackedWidgetTaskPane.count())
+                   if self.ui.stackedWidgetTaskPane.widget(i).objectName() == name]
+
+        assert len(matches) == 1
+
+        to_index = matches[0]
+
         self.animate_stacked_widget(
             self.ui.stackedWidgetTaskPane,
             self.ui.stackedWidgetTaskPane.currentIndex(),
-            current_index)
+            to_index)
 
         self.setup_current_tab()
 
@@ -1302,6 +1302,7 @@ class MfixGui(QtWidgets.QMainWindow,
             offsetx = -width
             offsety = 0
         else:
+            return #?
             offsetx = 0
             offsety = 0
 
@@ -2032,8 +2033,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # Should these just be in the template file? TODO
         self.update_keyword('chk_batchq_end', True)
 
-    def get_runname(self):
-        name = self.project.get_value('run_name', default='new_file')
+    def get_runname(self, default='new_file'):
+        name = self.project.get_value('run_name', default=default)
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         return name
@@ -2086,7 +2087,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
-        runname = self.get_runname()
+        default_runname = os.path.splitext(os.path.basename(project_file))[0]
+        runname = self.get_runname(default=default_runname)
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
 
         if os.path.exists(runname_pid):
@@ -2124,8 +2126,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.project.writeDatFile(project_file) #XX
                     #self.print_internal(save_msg, color='blue')
                     self.clear_unsaved_flag()
-                except Exception as ex:
-                    msg = 'Failed to save %s: %s: %s' % (project_file, ex.__class__.__name__, ex)
+                except Exception as e:
+                    msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
                     self.print_internal("Error: %s" % msg, color='red')
                     self.message(title='Error',
                                  icon='error',
@@ -2151,10 +2153,11 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
-        if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
-            self.vtkwidget.add_stl(None, filename=geometry_file)
-            msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
-            self.message(title='Warning', text=msg)
+        # Do this warning at save-time FIXME
+        #if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
+        #    self.vtkwidget.add_stl(None, filename=geometry_file)
+        #    msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
+        #    self.message(title='Warning', text=msg)
 
         # TODO: load more geometry
 
@@ -2165,16 +2168,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Note that energy_eq is TRUE by default according to MFIX but
         # FALSE by default according to SRS document.  We have to respect
-        # MFIX.  The GUI defaults are enforced in the template file used
+        # MFIX.  This default is enforced in the template file used
         # to create new projects.
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
-        # cgw - lots more model setup todo here.  Should we do this here or
-        #  in ProjectManager.load_project_file (where we do guess/set_solver)
-        # make sure exceptions are handled & reported
-        # values that don't map to keywords, saved as #!MFIX-GUI params
-
         # Model parameters
+
+
         # TODO: set 'disable fluid solver' checkbox if appropriate
 
         turbulence_model = self.project.get_value('turbulence_model')
@@ -2208,7 +2208,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.vtkwidget.visual_props_from_str(
                         self.project.mfix_gui_comments['visual_props'])
                 self.vtkwidget.geometry_from_str(val)
-            
+
             if key == 'ic_regions':
                 self.ics_regions_from_str(val)
             # Add more here
@@ -2232,15 +2232,13 @@ class MfixGui(QtWidgets.QMainWindow,
         self.solids_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
 
-
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
-        # need to initialize per-solid 'nscalar_eq' and 'saved_nscalar_eq' so
+        # need to initialize per-solid 'nscalar_eq' so
         # that update_scalar_equations will do the right thing
         for (i, (k,v)) in enumerate(self.solids.items(), 1):
             v['nscalar_eq'] = sum(1 for j in range(1, nscalar+1)
                                   if self.project.get_value('phase4scalar', args=j) == i)
 
-            v['saved_nscalar_eq'] = v['nscalar_eq']
 
         # setValue will trigger update_scalar_equations (ok)
         self.ui.fluid.spinbox_nscalar_eq.setValue(self.fluid_nscalar_eq)
@@ -2292,9 +2290,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ics_update_enabled()
 
         # Boundary conditions
-
+        self.bcs_extract_regions()
+        self.bcs_update_enabled()
         # Chemistry
-
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
@@ -2319,7 +2317,7 @@ def Usage(name):
     -h, --help: display this help message
     -e, --exe:  specify MFIX executable (full path)
     -l, --log=LEVEL: set logging level (error,warning,info,debug)
-    -n, --new:  open new project (do not autoload previous)
+    -n, --noload:  do not autoload previous project
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
 
@@ -2329,7 +2327,7 @@ def main(args):
     args = sys.argv
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "new", "log=", "exe="])
+        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "noload", "log=", "exe="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)

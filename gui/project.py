@@ -20,7 +20,6 @@ There are three paths to the Keyword objects in the Project:
  dict for programmatically changing keywords
  collections for user interaction with the keywords
 
-
 History
 -------
 
@@ -59,8 +58,7 @@ log = logging.getLogger(__name__)
 # local imports
 from tools.simpleeval import simple_eval
 from tools.comparable import Comparable
-from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
-                           to_unicode_from_fs, to_fs_from_unicode,
+from tools.general import (to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string,
                            safe_shlex_split, format_key_with_args)
 
@@ -293,8 +291,8 @@ class Equation(object):
                     pass
             try:
                 return float(simple_eval(self.eq.lower(),
-                                         names=name_dict
-                                         ))
+                                         names=name_dict))
+
             except:
                 raise ValueError(self.eq) # TODO make an EquationError class
 
@@ -350,19 +348,21 @@ class Keyword(Comparable):
         self.valids = None
         self.fmt = None
         self.comment = comment
-        if args is None:
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
             args = []
         self.args = args
         assert isinstance(args, list)
 
         if dtype is None:
-            self._update_dtype()
+            self.update_dtype()
 
     def __float__(self):
         try:
             return float(self.value)
         except (ValueError, TypeError, ZeroDivisionError):
-            return NaN
+            return NaN # !?
 
     def __int__(self):
         return int(self.value)
@@ -407,7 +407,7 @@ class Keyword(Comparable):
         else:
             return sval
 
-    def _update_dtype(self):
+    def update_dtype(self):
         # Check data type & modify if needed
         for dtype in (bool, float, int, FloatExp, Equation):
             if isinstance(self.value, dtype):
@@ -431,7 +431,7 @@ class Keyword(Comparable):
                                           ','.join([to_text_string(x) for x in self.args]),
                                           val)
 
-        if len(self.comment) > 0:
+        if self.comment:
             line = '    !'.join([line, self.comment])
 
         return line
@@ -459,7 +459,7 @@ class Keyword(Comparable):
         else:
             self.value = value
         # TODO> make sure we don't change to invalid type
-        self._update_dtype()
+        self.update_dtype()
 
     def lower(self):
         return self.value.lower()
@@ -468,40 +468,32 @@ class Keyword(Comparable):
 class Base(object):
     def __init__(self, ind):
         self.ind = ind # index
-        self._keyword_dict = {}
-        self.delete = False
+        self.keyword_dict = {}
 
     def __getitem__(self, name):
-        return self._keyword_dict[name]
+        return self.keyword_dict[name]
 
     def __setitem__(self, name, value):
-        if name in self._keyword_dict and isinstance(self._keyword_dict[name],
+        if name in self.keyword_dict and isinstance(self.keyword_dict[name],
                                                     Keyword):
             if isinstance(value, Keyword):
-                self._keyword_dict[name].updateValue(value.value)
+                self.keyword_dict[name].updateValue(value.value)
             else:
-                self._keyword_dict[name].updateValue(value)
+                self.keyword_dict[name].updateValue(value)
         else:
-            self._keyword_dict[name] = value
+            self.keyword_dict[name] = value
 
     def __contains__(self, item):
-        return item in self._keyword_dict
+        return item in self.keyword_dict
 
     def __len__(self):
-        return len(self._keyword_dict)
+        return len(self.keyword_dict)
 
     def get(self, key, default=None):
         # Note, this only works with dynamic attributes, not static ones defined
         # in subclasses of Base (eg Solid.name)
-        d =  self._keyword_dict.get(key)
+        d =  self.keyword_dict.get(key)
         return default if d is None else d.value
-
-#    def updateKeyword(self, key, value, args=[]):
-#        self._keyword_dict[key] = Keyword(key, value, args=args)
-
-#    def deleteDict(self):
-#        self.delete = True
-#        return dict([(key, None) for key, val in self._keyword_dict.items()])
 
 
 class CondBase(Base):
@@ -525,19 +517,19 @@ class BC(CondBase):
 
         if self.gasSpecies:
             gasSpec = ['  Gas Species:'] + [''.join(['    ', val]) for val in
-                                            self.gasSpecies._prettyPrintList()]
+                                            self.gasSpecies.prettyPrintList()]
         else:
             gasSpec = []
 
         if self.solids:
-            solids = ['  Solids:'] + self.solids._prettyPrintList()
+            solids = ['  Solids:'] + self.solids.prettyPrintList()
         else:
             solids = []
 
         return '\n'.join(
             ["Boundary Condition %s: %s"%(self.ind, bctype)]
             + [''.join(['  ', to_text_string(key), ': ', to_text_string(value)])
-               for key, value in self._keyword_dict.items()]
+               for key, value in self.keyword_dict.items()]
             + gasSpec
             + solids)
 
@@ -596,7 +588,7 @@ class ConditionCollection(list):
         elif self.condtype == 'is':
             self.append(IS(item))
         else:
-            raise Exception("Collection Type Not Set.")
+            raise Exception("Collection Type Not Set")
 
         return self[item]
 
@@ -616,9 +608,6 @@ class Species(Base):
         Base.__init__(self, ind)
         self.phase = phase
 
-    #def get(self, key, default=None):
-    #    return self._keyword_dict.get(key, default)
-
     def __str__(self):
         if self.phase == 'g':
             p = 'Gas'
@@ -626,7 +615,7 @@ class Species(Base):
             p = "Solid"
         return '\n'.join(["{} Species: {}".format(p, self.ind), ] +
                          [''.join(['  ', str(key), ': ', str(value)])
-                         for key, value in self._keyword_dict.items()])
+                         for key, value in self.keyword_dict.items()])
 
 
 class Solid(Base):
@@ -636,23 +625,23 @@ class Solid(Base):
         self.species = SpeciesCollection()
         self.name = 'Solid {}'.format(self.ind)
 
-    #def get(self, key, default=None):
-    #    return self._keyword_dict.get(key, default)
+    def get(self, key, default=None):
+            return self.keyword_dict.get(key, default)
 
     def addSpecies(self, ind):
         return self.species.new(ind, phase='s')
 
-    def _prettyPrintList(self):
+    def prettyPrintList(self):
         solidAttr = [''.join(['  ', str(key), ': ', str(value)])
-                     for key, value in self._keyword_dict.items()]
+                     for key, value in self.keyword_dict.items()]
 
         lst = [self.name] + solidAttr +\
               ['  Species:'] + [''.join(['    ', val]) for val in
-                                self.species._prettyPrintList()]
+                                self.species.prettyPrintList()]
         return lst
 
     def __str__(self):
-        return '\n'.join(self._prettyPrintList())
+        return '\n'.join(self.prettyPrintList())
 
 
 class Collection(list):
@@ -679,7 +668,7 @@ class Collection(list):
             if itm.ind == item:
                 return itm
 
-    def _check_ind(self, ind):
+    def check_ind(self, ind):
         # Check index for valid range
         currentSet = [itm.ind for itm in self]
         if ind in currentSet:
@@ -700,8 +689,7 @@ class Collection(list):
 
     def clean(self):
         for itm in self:
-            if hasattr(itm, '_keyword_dict') and \
-                    len(itm._keyword_dict.keys()) < 1:
+            if hasattr(itm, 'keyword_dict') and not itm.keyword_dict:
                 self.pop(self.index(itm))
 
     def delete(self, itm):
@@ -713,11 +701,11 @@ class SpeciesCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None, phase='g'):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(Species(ind, phase))
         return self[ind]
 
-    def _prettyPrintList(self):
+    def prettyPrintList(self):
         printDict = {}
         for spec in self:
             if hasattr(spec, 'species_alias_s'):
@@ -745,7 +733,7 @@ class SpeciesEqCollection(Collection):
         self.indStart = 0
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(SpeciesEq(ind))
         return self[ind]
 
@@ -755,7 +743,7 @@ class SolidsCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(Solid(ind))
         return self[ind]
 
@@ -780,7 +768,7 @@ class LinearEquationSolverCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(LinearEquationSolver(ind))
         return self[ind]
 
@@ -795,7 +783,7 @@ class SPXCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(SPX(ind))
         return self[ind]
 
@@ -810,7 +798,7 @@ class VtkVarCollection(Collection):
         Collection.__init__(self)
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(VtkVar(ind))
         return self[ind]
 
@@ -820,13 +808,13 @@ class VariableGridVar(Base):
         Base.__init__(self, ind)
 
 
-class  VariableGridCollection(Collection):
+class VariableGridCollection(Collection):
     def __init__(self):
         Collection.__init__(self)
         self.indStart = 0
 
     def new(self, ind=None):
-        ind = self._check_ind(ind)
+        ind = self.check_ind(ind)
         self.append(VariableGridVar(ind))
         return self[ind]
 
@@ -840,7 +828,7 @@ class Project(object):
         self.dat_file = dat_file
         self.keyword_doc = keyword_doc
         self.comments = {}
-        self._keyword_dict = {}
+        self.keyword_dict = {}
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
         self.thermo_data =  {} # key=species value=list of lines
@@ -848,12 +836,12 @@ class Project(object):
         self.parameter_key_map = {}  # key=parameter, value=set of keywords
         # See also 'reset'
 
-        self.__initDataStructure__()
+        self.init_data()
 
         if self.dat_file is not None:
             self.parsemfixdat()
 
-    def __initDataStructure__(self):
+    def init_data(self):
         # Conditions
         self.ics = ConditionCollection('ic')
         self.bcs = ConditionCollection('bc')
@@ -878,58 +866,89 @@ class Project(object):
         self.variablegrid = VariableGridCollection()
 
     def __getattr__(self, name):
-        return self._keyword_dict[name]
+        raise DeprecationWarning('__getattr__(%s)' % name)
 
     def __getitem__(self, key):
-        if not isinstance(key, list) and not isinstance(key, tuple):
-            key = [key]
-        return get_from_dict(self._keyword_dict, key)
+        raise DeprecationWarning('__getitem__(%s)' % key)
 
-    def __contains__(self, item):
-        try:
-            if not isinstance(item, list) and not isinstance(item, tuple):
-                item = [item]
-            get_from_dict(self._keyword_dict, item)
-            return True
-        except KeyError:
-            return False
+    def get(self, key, args=None):
+        """get(key, args=None): returns a keyword object, if defined, else None"""
+        key = key.lower()
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+        r = self.keyword_dict.get(key)
+        if r is None:
+            return None
+        r = r.get(tuple(args))
+        return r
+
+    def put(self, key, keyword, args=None):
+        """add a keyword to project."""
+        key = key.lower()
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+        if not isinstance(keyword, Keyword):
+            raise TypeError(keyword)
+        if key not in self.keyword_dict:
+            self.keyword_dict[key] = {}
+        self.keyword_dict[key][tuple(args)] = keyword
+        self.dat_file_list.append(keyword) # placement?
 
     def get_value(self, key, default=None, args=None):
-        # move to gui.py since it's just a convenience func?
-        key = key[:]
+        """get_value(key, default=None, args=None): return value of keyword
+        object, else default.  'default' and 'args' should be keyword args"""
+        r = self.get(key, args)
+        return default if r is None else r.value
 
-        if not isinstance(key, list) and not isinstance(key, tuple):
-            key = [key]
-        if args:
-            if isinstance(args, int):
-                args = [args]
-            key += list(args)
+    def get_key_indices(self, key):
+        """return an iterator over the set of indices (args) for which
+        the key is defined"""
+        return self.keyword_dict.get(key, {}).keys()
 
-        # Hack to accomodate multi-vector keys (ICs)
-        for (i, k) in enumerate(key):
-            if isinstance(k, tuple):
-                k = list(k)
-            if isinstance(k, list):
-                key[i] = k[0] # TODO: ensure values are equal across list
-                break
+    def removeKeyword(self, key, args=None, warn=True):
+        """Remove a keyword from the project. (keyword_dict and dat_file_list)
+        return True if item deleted.
+        if warn=True, raise KeyError if item not present, else return False."""
+        key = key.lower()
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
+            args = []
+
         try:
-            r =  get_from_dict(self._keyword_dict, key)
+            r = self.keyword_dict[key]
         except KeyError:
-            return default
+            if warn:
+                raise
+            else:
+                return False
+        try:
+            del r[tuple(args)]
+        except KeyError:
+            if warn:
+                raise
+            else:
+                return False
+        if not self.keyword_dict[key]: # empty sub-dict
+            del self.keyword_dict[key]
 
-        if isinstance(r, dict): # Should we return the whole vector?
-            return default
-        return r.value
+        # remove from dat_file_list
+        # Note. list.remove does not work because of the way keyword comparison is implemented,
+        #  since remove will remove the first key with matching value
+        #  (Do we really need comparison of keyword object by value to work?)
+        self.dat_file_list = [k for k in self.dat_file_list
+                              if not (isinstance(k, Keyword)
+                                      and k.key==key and k.args==args)]
+        return True
 
-
-    def __deepcopy__(self, memo):
-        # TODO: this is not efficient
-        return Project(''.join(self.convertToString()))
 
     def parsemfixdat(self, fname=None):
         """Parse the mfix.dat file with regular expressions.
         fname can be a StringIO instance, path, or a plain string.
-        Saves the results in self.mfixDatKeyDict dictionary.
         """
         # TODO. move this to another module
         #  maybe write a real tokenizer and grammar.
@@ -939,19 +958,19 @@ class Project(object):
 
         # check to see if the file is a StringIO object
         if isinstance(self.dat_file, StringIO):
-            self._parsemfixdat(self.dat_file)
+            self.parsemfixdat_inner(self.dat_file)
             return
 
         # Try to open the file
         try:
             with open(self.dat_file, 'rb') as dat_file:
-                self._parsemfixdat(dat_file)
+                self.parsemfixdat_inner(dat_file)
             return
         except (IOError, OSError):
             pass
         # maybe it is just a string?
         if is_text_string(self.dat_file):
-            self._parsemfixdat(StringIO(self.dat_file))
+            self.parsemfixdat_inner(StringIO(self.dat_file))
             return
 
     def parseKeywordLine(self, line, equation_str=None):
@@ -1048,13 +1067,13 @@ class Project(object):
                                     # correct?
                                     # a(3,4) = 11*5 sets a(3,4) through a(13,4) = 5
                                     # instead of a(3,4) through a(3,14)
-
+                                    # Hopefully nobody depends on this behavior
                             for n in range(args[0], args[0]+numVals):
                                 keywordArgList.append([n] + args[1:])
                         else:
                             # hack for species eq
                             # FIXME - do this for more keywords which start
-                            # at 0, like momentum_eq
+                            # at 0, like momentum_eq (?)
                             start = 0 if key == 'species_eq' else 1
                             for val in range(start, numVals+1):
                                 keywordArgList.append([val]+args[1:])
@@ -1092,11 +1111,11 @@ class Project(object):
         if 'parameters' in self.mfix_gui_comments:
             self.parameters_from_str(self.mfix_gui_comments['parameters'])
 
-    def _parsemfixdat(self, fobject):
+    def parsemfixdat_inner(self, fobject):
         """This does the actual parsing."""
         self.comments.clear()
-        self._keyword_dict.clear()
-        self.__initDataStructure__()
+        self.keyword_dict.clear()
+        self.init_data()
         self.dat_file_list = []
         self.thermo_data.clear()
         reactionSection = False
@@ -1171,50 +1190,41 @@ class Project(object):
                 if species:
                     self.thermo_data[species].append(line)
 
-    def updateKeyword(self, key, value, args=None,  keywordComment=''):
+    def updateKeyword(self, key, value, args=None,  keywordComment=None):
         """Update or add a keyword to the project.  Raises ValueError if there is a
         problem with the key or value.
-
-        Parameters
-        ----------
-        key (str):
-            the keyword to be added
-        value (int, float, bool, str):
-            the value of the keyword
-        args (list):
-            list of arguments for the keyword, or None
-        keywordComment (str):
-            a comment to be included with the keyword (default: '')
         """
-        # TODO:  refactor
-        if args is None:
+        if isinstance(args, int):
+            args = [args]
+        elif args is None:
             args = []
 
         key = key.lower()
 
-        # special handleing of xmin, xlength, ymin, ylength, zmin, zlength
+        # special handling of xmin, xlength, ymin, ylength, zmin, zlength
         if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
             par_key = key.replace('length', 'max')
             PARAMETER_DICT[par_key] = value
 
         # check to see if the keyword already exists
-        if [key]+args in self:
-            # if previous value is equation, update the parameter dict
-            if isinstance(self[[key]+args].value, Equation) or isinstance(value, Equation):
+        keyword = self.get(key, args)
+        if keyword is not None:
+            # if previous value is equation, update the parameter dict (why?)
+            if isinstance(keyword.value, Equation) or isinstance(value, Equation):
                 self.update_parameter_map(value, key, args)
-            self[[key]+args].updateValue(value)
-            if keywordComment:
-                self[[key]+args].comment = keywordComment
-            return self[[key]+args]
+            keyword.updateValue(value)
+            if keywordComment is not None:
+                keyword.comment = keywordComment
+            return keyword
 
         # if equation, update the parameter dict
         if isinstance(value, Equation):
             self.update_parameter_map(value, key, args)
 
-        keywordobject = None
+        keyword = None
 
         if args:
-            # Find condition keywords and separate
+            # Find condition keywords and separate  (do we need this?)
             if key.startswith('ic_'):
                 cond = self.ics
             elif key.startswith('bc_') and not key.endswith('_q'):
@@ -1228,9 +1238,9 @@ class Project(object):
             # Save conditions
             if cond is not None:
                 if len(args) == 1: # 1-dimensional
-                    keywordobject = Keyword(key, value, args=args,
+                    keyword = Keyword(key, value, args=args,
                                             comment=keywordComment)
-                    cond[args[0]][key] = keywordobject
+                    cond[args[0]][key] = keyword
                 # Gas Keys
                 elif len(args) == 2 and key.endswith('_g'):
                     condItm = cond[args[0]]
@@ -1238,9 +1248,9 @@ class Project(object):
                         spec = condItm.gasSpecies.new(args[1])
                     else:
                         spec = condItm.gasSpecies[args[1]]
-                    keywordobject = Keyword(key, value, args=args,
+                    keyword = Keyword(key, value, args=args,
                                             comment=keywordComment)
-                    spec[key] = keywordobject
+                    spec[key] = keyword
                 # Solid Keys
                 elif key.endswith('_s'):
                     condItm = cond[args[0]]
@@ -1250,23 +1260,23 @@ class Project(object):
                     else:
                         solid = condItm.solids[args[1]]
                     if len(args) == 2:
-                        keywordobject = Keyword(key, value, args=args,
+                        keyword = Keyword(key, value, args=args,
                                                 comment=keywordComment)
-                        solid[key] = keywordobject
+                        solid[key] = keyword
                     elif len(args) == 3:
                         if args[2] not in solid.species:
                             spec = solid.addSpecies(args[2])
                         else:
                             spec = solid.species[args[2]]
-                        keywordobject = Keyword(key, value, args=args,
+                        keyword = Keyword(key, value, args=args,
                                                 comment=keywordComment)
-                        spec[key] = keywordobject
+                        spec[key] = keyword
                 else:
                     # Create keyword objects for other keys not handled above,
                     # eg IC_THETA_M(IC, Phase),
                     # (see 'save everything else' comment below)
                     # TODO - is there more to do here?
-                    keywordobject = Keyword(key, value, args=args,
+                    keyword = Keyword(key, value, args=args,
                                             comment=keywordComment)
                     log.debug("Created keyword object for %s" %
                               format_key_with_args(key, args))
@@ -1279,35 +1289,35 @@ class Project(object):
                 else:
                     solid = self.solids[args[0]]
                 if len(args) == 1:
-                    keywordobject = Keyword(key, value, args=args,
+                    keyword = Keyword(key, value, args=args,
                                             comment=keywordComment)
-                    solid[key] = keywordobject
+                    solid[key] = keyword
                 else:
                     if args[1] not in solid.species:
                         spec = solid.addSpecies(args[1])
                     else:
                         spec = solid.species[args[1]]
-                    keywordobject = Keyword(key, value, args=args,
+                    keyword = Keyword(key, value, args=args,
                                             comment=keywordComment)
-                    spec[key] = keywordobject
+                    spec[key] = keyword
             # Gas Species
             elif key in ['species_g', 'species_alias_g', 'mw_g']:
                 if args[0] not in self.gasSpecies:
                     spec = self.gasSpecies.new(args[0])
                 else:
                     spec = self.gasSpecies[args[0]]
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                spec[key] = keywordobject
-            # Species_eq
+                spec[key] = keyword
+            # Species_eq # TODO do we need this?
             elif key in ['species_eq']:
                 if args[0] not in self.speciesEq:
                     leq = self.speciesEq.new(args[0])
                 else:
                     leq = self.speciesEq[args[0]]
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                leq[key] = keywordobject
+                leq[key] = keyword
             # LEQ
             elif key in ['leq_method', 'leq_tol', 'leq_it', 'leq_sweep',
                          'leq_pc', 'ur_fac', ]:
@@ -1315,18 +1325,18 @@ class Project(object):
                     leq = self.linearEq.new(args[0])
                 else:
                     leq = self.linearEq[args[0]]
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                leq[key] = keywordobject
+                leq[key] = keyword
             # SPX
             elif key in ['spx_dt']:
                 if args[0] not in self.spx:
                     spx = self.spx.new(args[0])
                 else:
                     spx = self.spx[args[0]]
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                spx[key] = keywordobject
+                spx[key] = keyword
             # VTK
             elif key in ['vtk_var']:
                 if args[0] not in self.vtkvar:
@@ -1334,9 +1344,9 @@ class Project(object):
                 else:
                     vtkvar = self.vtkvar[args[0]]
 
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                vtkvar[key] = keywordobject
+                vtkvar[key] = keyword
             # variable grid
             elif key in ['cpx', 'ncx', 'erx', 'first_dx', 'last_dx', 'cpy',
                          'ncy', 'ery', 'first_dy', 'last_dy', 'cpz', 'ncz',
@@ -1345,168 +1355,33 @@ class Project(object):
                     variablegrid = self.variablegrid.new(args[0])
                 else:
                     variablegrid = self.variablegrid[args[0]]
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
-                variablegrid[key] = keywordobject
+                variablegrid[key] = keyword
             # Save everything else
             else:
-                keywordobject = Keyword(key, value, args=args,
+                keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
         else: # no args
-            keywordobject = Keyword(key, value, args=None,
+            keyword = Keyword(key, value, args=None,
                                     comment=keywordComment)
 
         # add keyword to other data structures
-        if keywordobject is not None:
-            self.dat_file_list.append(keywordobject)
-            self._recursiveAddKeyToKeywordDict(keywordobject,
-                                               [key]+args)
+        if keyword is not None:
+            self.put(key, keyword, args=args)
         else:
             raise ValueError(format_key_with_args(key, args))
 
-        return keywordobject
-
-    def _recursiveAddKeyToKeywordDict(self, keyword, keys=()):
-        keywordDict = self._keyword_dict
-        for key in keys[:-1]:
-            keywordDict = keywordDict.setdefault(key, {})
-        keywordDict[keys[-1]] = keyword
-
-    def _recursiveRemoveKeyFromKeywordDict(self, keys=(), warn=True):
-        keywordDict = self._keyword_dict
-        for key in keys[:-1]:
-            keywordDict = keywordDict[key]
-        keywordDict.pop(keys[-1])
-
-    def _purgeemptydicts(self):
-        # TODO: write a test for this!
-        while True:
-            changed = False
-            for (path,val) in list(recurse_dict_empty(self._keyword_dict)):
-                if val == {}:
-                    keywordDict = self._keyword_dict
-                    for key in path[:-1]:
-                        keywordDict = keywordDict[key]
-                    keywordDict.pop(path[-1])
-                    changed = True
-            if not changed:
-                break
+        return keyword
 
     def keywordItems(self):
-        for keys, value in recurse_dict_empty(self._keyword_dict):
-            yield value
-
-    def removeKeyword(self, key, args=None, warn=True):
-        """Remove a keyword from the project.
-        return True if item deleted.
-        if warn=True, raise KeyError if item not present, else return False."""
-        if args is None:
-            args = []
-        keyword = self.keywordLookup(key, args, warn=False)
-        if keyword is None:
-            if warn:
-                raise KeyError(key)
-            else:
-                return False
-        # remove from dat_file_list
-        # Note. list.remove does not work because of the way keyword comparison is implemented
-        #  (remove will remove the first key with matching value)
-        #  Do we really need comparison of keyword object by value to work?
-        #try:
-        #    self.dat_file_list.remove(keyword) #
-        #except ValueError:
-        #    pass
-        self.dat_file_list = [k for k in self.dat_file_list if k is not keyword]
-
-        # remove from dict
-        self._recursiveRemoveKeyFromKeywordDict([key]+args, warn)
-        for i in range(len(args)):
-            self._purgeemptydicts()
-
-        # purge
-        keyword.delete = True
-        self._cleanDeletedItems()
-        return True
-
-    def _cleanDeletedItems(self):
-        """Purge objects marked with self.delete==True"""
-
-        for condType in [self.ics, self.bcs, self.pss, self.iss]:
-            for cond in condType:
-                for gas in cond.gasSpecies:
-                    if gas.delete:
-                        cond.gasSpecies.delete(gas)
-                        #self.dat_file_list.remove(gas) FIXME this won't work
-                for solid in cond.solids:
-                    for species in solid.species:
-                        if species.delete:
-                            solid.species.delete(species)
-                            # dat file list?
-                    if solid.delete:
-                        cond.solids.delete(solid)
-
-                if cond.delete:
-                    condType.delete(cond)
-
-        for collection in (self.gasSpecies, self.solids, self.speciesEq,
-                     self.linearEq, self.speciesEq, self.spx,
-                     self.vtkvar, self.variablegrid):
-            if hasattr(collection, 'species'):
-                for item in collection.species:
-                    if item.delete:
-                        collection.species.delete(item)
-            for item in collection:
-                collection.delete(item)
+        for r in self.keyword_dict.values():
+            for v in r.values():
+                yield v
 
 
-    def keywordLookup(self, key, args=None, warn=True):
-        """Search the project for a key and return the Keyword object
-        If not found, raise KeyError if warn, else return None"""
-
-        if args is None:
-            args = []
-
-        key = key.lower()
-        keywordobject = None
-
-        # FIXME
-        # This is unfortunate - defeats the efficiency of dictionaries
-        # because all lookups iterate through the whole dictionary
-        for (k, v) in recurse_dict(self._keyword_dict):
-            if k[0] == key:
-                if args and args == v.args:
-                    keywordobject = v
-                    break
-                elif not args: #? sloppy matching - why needed?
-                    keywordobject = v
-                    break
-                else:
-                    continue
-
-        if warn and keywordobject is None:
-            raise KeyError(key)
-        return keywordobject
-
-
-    def changekeywordvalue(self, key, value, args=None):
-        """Change a value of a keyword.
-
-        Parameters
-        ----------
-        key (str):
-            keyword to change
-        value (int, float, bool, str):
-            the value to set the keyword to
-        args (list or None):
-            a list of arguments for that keyword"""
-
-        if args is None:
-            args = []
-        keywordobject = self.keywordLookup(key, args)
-        keywordobject.updateValue(value)
-        return keywordobject
-
-    def convertToString(self):
+    def to_string(self):
+        # Why not just __str__ ?
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
                 yield to_text_string(line.line() + '\n')
@@ -1537,7 +1412,7 @@ class Project(object):
 
         last_line = None
         with open(fname, 'wb') as dat_file:
-            for line in self.convertToString():
+            for line in self.to_string():
                 if line == last_line == '\n': # Avoid multiple blank lines
                     continue
                 last_line = line
@@ -1546,7 +1421,7 @@ class Project(object):
     def reset(self):
         self.dat_file = None
         self.dat_file_list = []
-        self._keyword_dict.clear()
+        self.keyword_dict.clear()
         self.comments.clear()
         self.thermo_data.clear()
         self.mfix_gui_comments.clear()
@@ -1556,6 +1431,10 @@ class Project(object):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
                 Collection.__init__(attr)
+
+    def __deepcopy__(self, memo):
+        # This is not efficient.  Remove?  (Only used in workflow widget)
+        return Project(''.join(self.to_string()))
 
     def parameters_from_str(self, string):
         """load parameter data from a saved string"""
@@ -1580,31 +1459,27 @@ class Project(object):
         return ExtendedJSON.dumps(data)
 
     def update_parameter_map(self, new_value, key, args):
-        """update the mapping of parameters and keywords"""
+        """update the dependency graph of parameters and keywords"""
+
         key_args = format_key_with_args(key, args)
 
         # new params
-        if isinstance(new_value, Equation):
-            new_params = new_value.get_used_parameters()
-        else:
-            new_params = []
+        new_params = new_value.get_used_parameters() if isinstance(new_value, Equation) else []
 
         # old params
-        if [key]+args in self and isinstance(self[[key]+args].value, Equation):
-            old_params = self[[key]+args].value.get_used_parameters()
-        else:
-            old_params = []
+        old_value = self.get_value(key, args=args)
+        old_params = old_value.get_used_parameters() if isinstance(old_value, Equation) else []
 
-        add = set(new_params)-set(old_params)
-        for param in add:
+        to_add = set(new_params)-set(old_params)
+        for param in to_add:
             if param not in self.parameter_key_map:
                 self.parameter_key_map[param] = set()
             self.parameter_key_map[param].add(key_args)
 
-        remove = set(old_params)-set(new_params)
-        for param in remove:
+        to_remove = set(old_params)-set(new_params)
+        for param in to_remove:
             self.parameter_key_map[param].remove(key_args)
-            if len(self.parameter_key_map[param]) == 0:
+            if not self.parameter_key_map[param]:
                 self.parameter_key_map.pop(param)
 
 

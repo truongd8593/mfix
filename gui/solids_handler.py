@@ -19,7 +19,9 @@ from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
                            widget_iter,
                            format_key_with_args,
-                           get_combobox_item, set_item_enabled)
+                           get_combobox_item, set_item_enabled,
+                           drop_row_column_triangular, append_row_column_triangular )
+
 
 from tools import keyword_args
 
@@ -58,7 +60,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                 return "proxy"
             def updateValue(*args):
                 self.update_solids_table()
-
+        # TODO the solids_table should just be directly editable
         self.project.register_widget(TableWidgetProxy(),
                              ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw_solids.itemSelectionChanged.connect(self.handle_solids_table_selection)
@@ -126,7 +128,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                             lineedit.setText(str(val_s0))
                 elif model == UDF:
                     self.unset_keyword(key_s0, args=phase)
-                    self.set_keyword(key_usr, True, args=phase)
+                    self.update_keyword(key_usr, True, args=phase)
                 else: # Continuum, mixture, etc
                     self.unset_keyword(key_s0, args=phase)
                     self.unset_keyword(key_usr, args=phase)
@@ -365,6 +367,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             cb.setCurrentIndex(i)
             cb.setToolTip(cb.currentText())
 
+
     def handle_combobox_solids_model(self, index):
         ## NB:  Solids model is not the same as solver!
         # Solver values are enumerated in constants.py.  Solids models are strings, 'TFM', 'DEM', 'PIC'
@@ -406,7 +409,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
-        self.update_keyword('nmax_s', 0, args=[n])
+        #self.update_keyword('nmax_s', 0, args=[n])
+        self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
 
@@ -429,7 +433,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_solids_detail_pane()
 
     def update_solids_detail_pane(self):
-        # Note, this is being called excessively
         """update the solids detail pane for currently selected solids phase.
         if no solid phase # selected, pane is cleared and disabled"""
         s = self.ui.solids
@@ -443,7 +446,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
                     item.setChecked(False)
-                # Clear out all values?
+                if isinstance(item, QtWidgets.QLineEdit):
+                    # Surprise, a spinbox includes a lineedit!
+                    if 'spinbox' in item.objectName(): # 'qt_spinbox_lineedit':
+                        item.setText('1')
+                    else:
+                        item.setText('')
             return
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
@@ -457,8 +465,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Inialize all the line edit widgets
         def as_str(x):
             return '' if x is None else str(x)
-        s.lineedit_keyword_d_p0_args_S.setText(as_str(solid['diameter']))
-        s.lineedit_keyword_ro_s0_args_S.setText(as_str(solid['density']))
+        # Why not get these from keywords?
+        def get_widget(key):
+            return getattr(s, 'lineedit_keyword_%s_args_S' % key)
+        for key in ('d_p0', 'ro_s0', 'des_em'): # use a widget iterator?
+            get_widget(key).setText(as_str(self.project.get_value(key, args=phase)))
+
         # And the checkboxes
         for key in ('momentum_x_eq', 'momentum_y_eq', 'momentum_z_eq'):
             cb = getattr(s, 'checkbox_keyword_%s_args_S'%key)
@@ -477,17 +489,24 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         cb.setChecked(species_eq)
 
         # Deal with scalar eq
-        nscalar = self.project.get_value('nscalar', 0)
+        sb = s.spinbox_nscalar_eq
+        nscalar = self.project.get_value('nscalar', default=0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
-        saved_nscalar_eq = solid.get('saved_nscalar_eq', 0)
-        if s.spinbox_nscalar_eq.value() != saved_nscalar_eq:
-            s.spinbox_nscalar_eq.setValue(saved_nscalar_eq)
+        saved_nscalar_eq = solid.get('saved_nscalar_eq', 1)
+
+        if sb.value() != saved_nscalar_eq:
+            # set value without triggering callback
+            # Maybe this is too much trouble to go through,
+            # just to save/restore per-phase nscalar
+            sb.valueChanged.disconnect()
+            sb.setValue(saved_nscalar_eq)
+            sb.valueChanged.connect(self.set_solids_nscalar_eq)
         enabled = (nscalar_phase > 0)
         s.checkbox_enable_scalar_eq.setChecked(enabled)
-        s.spinbox_nscalar_eq.setEnabled(enabled)
+        sb.setEnabled(enabled)
         if enabled:
-            s.spinbox_nscalar_eq.setValue(nscalar_phase)
+            sb.setValue(nscalar_phase)
         #self.enable_solids_scalar_eq(enabled)
 
         ### Restrictions (see SRS p13)
@@ -642,8 +661,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return True
 
     def solids_delete(self):
-        ### XXX FIXME.  need to deal with all higher-number phases, can't leave a
-        # hole.  This is going to mess up a lot of things, eg restitution coeffs.
         tw = self.ui.solids.tablewidget_solids
         row = get_selected_row(tw)
 
@@ -661,57 +678,80 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         self.solids_current_phase = None
         self.solids_current_phase_name = None
-        # avoid callbacks to handle_solids_table_selection (why?)
-        tw.itemSelectionChanged.disconnect() # TODO: is this really needed?
-        tw.clearSelection()  # Why do we still have a selected row after delete? (and should we?)
-        name = tw.item(row, 0).text()
 
+        tw.itemSelectionChanged.disconnect() # Avoid selection callbacks during delete.  Reenabled below
+        try:
+            name = tw.item(row, 0).text()
+            tw.removeRow(row)
+            del self.solids[name] # This is an ordered dict, keyed by name - no 'hole' problem
 
-        # Clear out all keywords related to deleted phase
-        self.solids_delete_keys(phase)
+            self.update_keyword('mmax', len(self.solids))
 
-        # TODO FIXME FIX SCALAR EQ!
-        del self.solids[name]
-        tw.removeRow(row)
-        self.update_keyword('mmax', len(self.solids))
-        key = 'solids_phase_name(%s)' % phase
-        if key in self.project.mfix_gui_comments:
-            del self.project.mfix_gui_comments[key]
+            # Clear out all keywords related to deleted phase
+            self.solids_delete_phase_keys(phase)
 
-        # Fix "hole"
-        del self.solids_species[phase]
-        for n in range(phase, len(self.solids)):
-            self.solids_species[n] = self.solids_species[n+1]
-        if len(self.solids) > phase + 1:
-            del self.solids_species[len(self.solids)+1]
-        # TODO need to update keywords not just internal data
-        nscalar = self.project.get_value('nscalar', 0)
-        for i in range(1, nscalar+1):
-            if self.project.get_value('phase4scalar', args=i) == phase:
-                self.unset_keyword('phase4scalar', args=i)
-                nscalar -= 1
-        for i in range(1, nscalar+1):
-            phase4scalar = self.project.get_value('phase4scalar', args=i)
-            if phase4scalar > phase:
-                self.update_keyword('phase4scalar', args=phase4scalar-1)
-        #  TODO fix initial conditions for scalars
-        # TODO fix restitution coeffs
-        self.update_keyword('nscalar', nscalar)
-        self.update_solids_table()
-        tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
+            # Fix holes
+            # Fixup phase names in mfix_gui_comments
+            # TODO make some util functions to manage mfix_gui_comments in a less ad-hoc manner
+            for (k,v) in list(self.project.mfix_gui_comments.items()):
+                if k.startswith('solids_phase_name('):
+                    del self.project.mfix_gui_comments[k]
+            for (i,name) in enumerate(self.solids.keys(), 1):
+                self.project.mfix_gui_comments['solids_phase_name(%s)'%i] = name
 
-        self.set_unsaved_flag()
-        row = get_selected_row(tw)
-        if row is None:
+            # species dictionary (also need to remap keys)
+            for n in range(phase, len(self.solids)+1):
+                self.solids_species[n] = self.solids_species[n+1]
+            del self.solids_species[len(self.solids_species)]
+
+            # fix nscalar
+            nscalar = self.project.get_value('nscalar', default=0)
+            key = 'phase4scalar'
+            vals = [self.project.get_value(key, default=0, args=i) for i in range(1, nscalar+1)]
+            new_vals = [v if v<phase else v-1 for v in vals if v != phase]
+            for (i, val) in enumerate(new_vals, 1):
+                self.update_keyword(key, val, args=i)
+            for i in range(len(new_vals)+1, nscalar+1):
+                self.unset_keyword(key, args=i)
+            self.update_keyword('nscalar', nscalar)
+            #  TODO fix initial conditions for scalars
+
+            # Fix hole in restitution coeffs
+            n = len(self.solids)
+            for key in  ('des_et_input', 'des_en_input'):
+                prev_size = ((n+1)*(n+2))//2 # Size before row deleted
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                if any(v is not None for v in vals):
+                    new_vals = drop_row_column_triangular(vals, n+1, phase)
+                    for (i, val) in enumerate(new_vals, 1):
+                        self.update_keyword(key, val, args=i)
+                    for i in range(len(new_vals)+1,  len(vals)+1):
+                        self.unset_keyword(key, args=i)
+            for key in ('des_et_wall_input', 'des_en_wall_input'):
+                prev_size = n+1
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                if any(v is not None for v in vals):
+                    new_vals = vals[:]
+                    del new_vals[phase-1] # 1-based
+                    for (i, val) in enumerate(new_vals, 1):
+                        self.update_keyword(key, val, args=i)
+                    for i in range(len(new_vals)+1,  len(vals)+1):
+                        self.unset_keyword(key, args=i)
+
+            self.update_solids_table()
+            # ICs enabled/disabled depends on nscalar & number of solids
+            self.ics_update_enabled()
+            self.update_nav_tree()
+            # Tabs enable/disable depending on number of solids
+            self.solids_update_tabs()
+        finally:
+            # selection callbacks were disabled
+            tw.itemSelectionChanged.connect(self.handle_solids_table_selection)
             self.handle_solids_table_selection()
-            # Hack to force update after deleting last row
-            # FIXME this is not working
+            self.set_unsaved_flag()
 
-        # ICs enabled/disabled depends on nscalar & number of solids
-        self.ics_update_enabled()
-        self.update_nav_tree()
-        # Tabs enable/disable depending on number of solids
-        self.solids_update_tabs()
 
 
     def enable_solids_scalar_eq(self, state):
@@ -724,7 +764,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
         if state:
-            value = solid.get('saved_nscalar_eq', 1)
+            value = spinbox.value()
             self.set_solids_nscalar_eq(value)
         else:
             # Don't call set_solids_nscalar_eq(0) b/c that will clobber spinbox
@@ -736,13 +776,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def update_solids_species_groupbox(self):
         """enable/disable species tables based on state"""
-        # Species data required under any of the following condvitions:
+        # Species data required under any of the following conditions:
         #  Solving species equations
         #  Energy equations are solved with mixture specific heat model
         phase = self.solids_current_phase
         ui = self.ui
         s = ui.solids
-
         if phase is None:
             enabled = False
         else:
@@ -887,10 +926,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
+
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
-        nscalar = self.project.get_value('nscalar', 0)
+        nscalar = self.project.get_value('nscalar', default=0)
         prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
 
         solid['nscalar_eq'] = value
@@ -899,7 +939,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         spinbox = self.ui.solids.spinbox_nscalar_eq
         if value != spinbox.value():
+            spinbox.valueChanged.disconnect()
             spinbox.setValue(value)
+            spinbox.valueChanged.connect(self.set_solids_nscalar_eq)
             return
         self.update_scalar_equations(prev_nscalar)
 
@@ -1086,23 +1128,65 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def solids_phase_in_use(self, phase):
         for k in keyword_args.keys_by_type['phase']:
-            args = keyword_args.keyword_args[k]
-            if args == ['phase']:
-                # Single reference is OK.  We will
-                # delete these keys along with the phase
+            indices = self.project.get_key_indices(k)
+            if not indices:
                 continue
-            if args == ['ic', 'phase']:
-                for ic in range(1,10): #?
-                    if self.project.get_value(k, args=[ic,phase]) is not None:
-                        return format_key_with_args(k,[ic, phase])
+            arg_types = keyword_args.keyword_args[k]
+
+            if arg_types == ['phase']:
+                # Single reference is OK.  We will
+                # delete these keys along with the phase in solids_delete_phase_keys
+                continue
+            if arg_types == ['ic', 'phase']:
+                for args in indices:
+                    if args[1] != phase:
+                        continue
+                    # TODO check if value is default, if so allow delete
+                    if self.project.get_value(k, args=args) is not None:
+                        return format_key_with_args(k,args)
 
         return None # Ok to delete phase, no refs
 
-    def solids_delete_keys(self, phase):
-        for k in keyword_args.keys_by_type['phase']:
-            args = keyword_args.keyword_args[k]
-            if args == ['phase']:
-                self.unset_keyword(k, args=phase)
+    def solids_delete_phase_keys(self, phase):
+        prev_size = len(self.solids) + 1 # Size before row deleted
+        for key in keyword_args.keys_by_type['phase']:
+            arg_types = keyword_args.keyword_args[key]
+            indices = self.project.get_key_indices(key)
+            if not indices:
+                continue
+
+            if arg_types == ['phase']:
+                # Copy/slide/trim
+                vals = [self.project.get_value(key, args=i)
+                        for i in range(1, 1+prev_size)]
+                del vals[phase-1] # Slide (1-based)
+                for (i, val) in enumerate(vals, 1):
+                    self.update_keyword(key, val, args=i)
+                self.unset_keyword(key, args=prev_size) #Trim off the end
+
+            # the only phase-phase keyword is R_P,  this code doesn't handle that yet
+            elif arg_types == ['phase', 'phase']: # FIXME
+                raise TypeError(key, arg_types)
+
+            else:
+                # Multidimensional copy-and-slide, using dict instead of list
+                phase_pos = arg_types.index('phase')
+                new_vals = {}
+                for args in indices:
+                    args_phase = args[phase_pos]
+                    if args_phase == phase:
+                        continue # skip the phase we're deleting
+                    new_args = list(args)
+                    if args_phase > phase:
+                        new_args[phase_pos] -= 1 #Slide along 'phase_pos' axis
+                    new_vals[tuple(new_args)] = self.project.get_value(key, args=args)
+                for (args, val) in new_vals.items():
+                    self.update_keyword(key, val, args=args)
+                for args in indices: # Trim
+                    key_phase = args[phase_pos]
+                    if key_phase == prev_size:
+                        self.unset_keyword(key, args)
+
 
     def reset_solids(self):
         # Set all solid-related state back to default

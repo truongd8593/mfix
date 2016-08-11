@@ -16,7 +16,8 @@ from qtpy.QtCore import QObject, QEvent
 UserRole = QtCore.Qt.UserRole
 
 from tools.general import (set_item_noedit, set_item_enabled,
-                           get_selected_row, widget_iter)
+                           get_selected_row, get_selected_rows,
+                           widget_iter)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -240,9 +241,11 @@ class SpeciesPopup(QtWidgets.QDialog):
         return name
 
     def do_import(self):
-        row = get_selected_row(self.tablewidget_search)
-        if row is None: # No selection
-            return
+        rows = get_selected_rows(self.tablewidget_search)
+        for row in rows:
+            self.do_import_row(row)
+
+    def do_import_row(self, row):
         self.ui.combobox_phase.setEnabled(False)
         rowdata = self.search_results[row]
         key, phase = rowdata

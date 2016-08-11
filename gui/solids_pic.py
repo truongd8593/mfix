@@ -114,13 +114,13 @@ class SolidsPIC(object):
         # no-interpolation
         # Sets keyword DES_INTERP_ON to false
         # Sets keyword DES_INTERP_MEAN_FIELDS to false
-        des_interp_on = self.project.get_value('des_interp_on', True)
+        des_interp_on = self.project.get_value('des_interp_on', default=True)
         if des_interp_on not in (True, False):
             self.warn("Invalid des_interp_on %s" % des_interp_on)
             des_interp_on = True
             self.update_keyword('des_interp_on', des_interp_on)
 
-        des_interp_mean_fields = self.project.get_value('des_interp_mean_fields', True)
+        des_interp_mean_fields = self.project.get_value('des_interp_mean_fields', default=True)
         if des_interp_mean_fields not in (True, False):
             self.warn("Invalid des_interp_mean_fields %s" % des_interp_mean_fields)
             des_interp_mean_fields = True

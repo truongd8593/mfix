@@ -40,14 +40,16 @@ def get_mfix_home():
 
 
 def format_key_with_args(key, args=None):
-    if args:
+    if args is not None:
+        if isinstance(args, int):
+            args = [args]
         return "%s(%s)" % (key, ','.join(str(a) for a in args))
     else:
         return str(key)
 
 
-def unformat_key_with_args(string):
-    """companion function to "undo" format_key_with_args"""
+def parse_key_with_args(string):
+    # inverse of format_key_with_args
     if string.endswith(')'):
         key, args = string[:-1].split('(')
         args = [int(arg) for arg in args.split(',')]
@@ -85,6 +87,11 @@ def get_selected_row(table):
     rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
+def get_selected_rows(table):
+    """get index of selected row from a QTableWidget"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedIndexes())
+    return sorted(list(rows))
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
@@ -186,75 +193,6 @@ def widget_iter(widget):
             for child2 in widget_iter(child):
                 yield child2
         yield child
-
-
-def get_from_dict(data_dict, map_list):
-    return reduce(lambda d, k: d[k], map_list, data_dict)
-
-
-def set_in_dict(data_dict, map_list, value):
-    get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
-def recurse_dict(d, path=()):
-    """Depth-first iterator though nested dictionaries,
-    Yields (path, value), eg if d['a']['b']['c]=3,
-    one of the yielded values will be (('a','b','c'), 3).
-    See test_recurse_dict for an example"""
-
-    # Not quite depth-first b/c order of dictionary key is arbitrary
-    for (k,v) in d.items():
-        subpath = path + (k,)
-        if isinstance(v, dict):
-            for r in recurse_dict(v, subpath):
-                yield r
-        else:
-            yield (subpath, v)
-
-def test_recurse_dict():
-    d = {1: {2:3,
-             3: {},
-             4: {5:6},
-             5: {6:{}, 7:8}},
-         2: {}}
-
-    l = list(recurse_dict(d))
-    l.sort()
-    assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
-
-
-def recurse_dict_empty(d, path=()):
-    """Depth-first iterator though nested dictionaries
-    Yields (keytuple, value), eg if d['a']['b']['c]=3,
-    one of the yielded values will be (('a','b','c'), 3)
-    Differs from recurse_dict in that an empty dictionary
-    encountered as a value will be yielded, eg
-    if d[1][2]={}, then ((1,2), {}) will be one of the
-    yielded values.
-    See test_recurse_dict_empty for an example"""
-
-    # Not quite depth-first b/c order of dictionary key is arbitrary
-    for (k,v) in d.items():
-        subpath = path + (k,)
-        if isinstance(v, dict):
-            if v == {}:
-                yield(subpath, v)
-            else:
-                for r in recurse_dict_empty(v, subpath):
-                    yield r
-        else:
-            yield (subpath, v)
-
-def test_recurse_dict_empty():
-    d = {1: {2:3,
-             3: {},
-             4: {5:6},
-             5: {6:{}, 7:8}},
-         2: {}}
-
-    l = list(recurse_dict_empty(d))
-    l.sort()
-    assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
 
 #http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
 #see also notes at https://pypi.python.org/pypi/ushlex/
@@ -437,6 +375,85 @@ def topological_sort(dependency_dict):
                 if item not in ordered}
     assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
 
+def drop_row_column_triangular(a, n, r):
+    # Inputs:
+    #  a :  upper-triangular n by n matrix represented as a list (n)(n+1)/2
+    #  n :  size of input
+    #  r :  index of row/column to drop, 1-based
+    # Return:
+    #  list representing matrix "a" with row/column "r" removed
+    ret = []
+    i = j = 1
+    for x in a:
+        if i != r and j != r:
+            ret.append(x)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    return ret
+
+def append_row_column_triangular(a, n, fill_value = None):
+    # Append a row and column to an upper-triangular rank-n matrix
+    ret = []
+    i = j = 1
+    for x in a:
+        ret.append(x)
+        if j == n:
+            ret.append(fill_value)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    ret.append(fill_value)
+    return ret
+
+
 if __name__ == '__main__':
+    def test_recurse_dict():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
+
     test_recurse_dict()
+
+    def test_recurse_dict_empty():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict_empty(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
+
+
     test_recurse_dict_empty()
+
+    def test_drop_add_triangular():
+        a = [ 1, 2, 3, 4,
+                 5, 6, 7,
+                    8, 9,
+                       10]
+        b = drop_row_column_triangular(a, 4, 2)
+        assert b == [1, 3, 4,
+                        8, 9,
+                           10]
+
+        c = drop_row_column_triangular(b, 3, 3)
+        assert c == [1, 3,
+                        8]
+
+        d = append_row_column_triangular(c, 2, 999)
+        assert d == [1, 3, 999,
+                        8, 999,
+                           999]
+
+    test_drop_add_triangular()

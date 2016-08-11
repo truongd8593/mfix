@@ -11,7 +11,7 @@ Research and Innovation Center
 
 August, 2016
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -38,23 +38,23 @@ Assumptions and Dependencies ...................................................
 
 3. External Interface Requirements ...........................................................................................3
 User Interfaces .......................................................................................................................................... 3
-Hardware Interfaces ................................................................................................................................ 60
-0Software Interfaces ............................................................................................................................... 60
-Communications Interfaces .................................................................................................................... 60
+Hardware Interfaces ................................................................................................................................ 61
+0Software Interfaces ............................................................................................................................... 61
+Communications Interfaces .................................................................................................................... 61
 
-4. System Features .....................................................................................................................60
-5. Other Nonfunctional Requirements .....................................................................................66
-Performance Requirements ..................................................................................................................... 66
-Safety Requirements ............................................................................................................................... 66
-Security Requirements ............................................................................................................................ 66
-Software Quality Attributes .................................................................................................................... 66
-Code Style Guide .................................................................................................................................... 66
-Business Rules ........................................................................................................................................ 66
+4. System Features .....................................................................................................................62
+5. Other Nonfunctional Requirements .....................................................................................67
+Performance Requirements ..................................................................................................................... 67
+Safety Requirements ............................................................................................................................... 67
+Security Requirements ............................................................................................................................ 67
+Software Quality Attributes .................................................................................................................... 67
+Code Style Guide .................................................................................................................................... 68
+Business Rules ........................................................................................................................................ 68
 
-6. Other Requirements ..............................................................................................................67
-Appendix A: Glossary..................................................................................................................67
-Appendix B: Analysis Models .....................................................................................................67
-Appendix C: To Be Determined List ..........................................................................................67
+6. Other Requirements ..............................................................................................................68
+Appendix A: Glossary..................................................................................................................68
+Appendix B: Analysis Models .....................................................................................................68
+Appendix C: To Be Determined List ..........................................................................................68
 
 Revision History
 Name
@@ -65,7 +65,7 @@ Reason For Changes
 
 Version
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -108,7 +108,7 @@ environment support. The expanding model capabilities of the MFIX software suite
 for runtime control and interaction of simulations, and model optimization necessitates an
 immersive user interface.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -165,7 +165,7 @@ Continuum Analytics provides dependencies across all operating environments as d
 Primary Language: Python
 o Target versions: 2.7 and 3.5
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -222,7 +222,7 @@ User Interfaces
 The UI consists of a basic layout with a main menu bar, tabbed graphics windows, a mode area,
 mode selection bar, and a console, illustrated in Figure 1. Splitters will resize/hide the mode area
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -240,7 +240,7 @@ following information should be displayed:
 2. Last date modified
 3. Directory size on disk?
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -262,7 +262,7 @@ selected options and models. the user through the model setup process in a logic
 entries in this tree adapt to user input, i.e. hiding/showing entries based on user selected options
 and models.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -306,7 +306,7 @@ Post Processing
 
 Page 6
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -342,7 +342,7 @@ o Cone
 
 Page 7
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -362,7 +362,7 @@ Regions Task Pane Window: Define regions within the domain
 
 Page 8
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -399,7 +399,7 @@ o Selection available if fluid phase is enabled
 
 Page 9
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -468,7 +468,7 @@ o Sets keyword SUBGRID_TYPE
 o Available selections
  NONE (DEFAULT)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -511,7 +511,7 @@ o Available selections:
 
 Page 11
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -580,7 +580,7 @@ o Available selections:
 
 Page 12
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -623,7 +623,7 @@ the ‘run database’
 thermochemical data.
  Delete removes an entry from the ‘run database’
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -680,7 +680,7 @@ o Available selections:
  Select Solids Viscosity Model:
 o Selection only available for MFIX-TFM solids model
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -751,7 +751,7 @@ Solids phase species selection:
 
 Page 15
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -788,7 +788,7 @@ Mockup of Task pane for adding non-reacting TFM solids. Clicking the ‘Save’ 
 solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
 are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -802,7 +802,7 @@ Mockup of Task pane for adding non-reacting PIC solids. Clicking the ‘Save’ 
 solids phase whereas the ‘Cancel’ button resets all data fields to the default. In this mockup, solids
 are listed in a table as they are created. Left: Top of the task pane. Right: Bottom of task pane
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -839,7 +839,7 @@ o Available selections:
  Garzo and Dufty, 1999
  Selection only available with MMAX=1 (monodisperse)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -911,7 +911,7 @@ o Available selections:
 
 Page 19
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -979,7 +979,7 @@ Specify excluded volume in Boyle-Massoudi stress (optional)
 o Only available with algebraic formulation of viscous stress model
 o Sets keyword V_EX
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -1018,7 +1018,7 @@ o Available selections:
  Sets keyword DES_ONEWAY_COUPLED true
  Fully Coupled [DEFAULT]
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1059,8 +1059,8 @@ Select interpolation scheme:
 o Selection available except when no-interpolation framework is selected
 o Available selections:
  None [locked default for no-interpolation framework]
- Selection not available
- Sets keyword DES_INTERP_SCHEME=’SQUARE_DPVM’
+ Selection always available
+ Sets keyword DES_INTERP_SCHEME=’NONE’
  Garg 2012
  Selection not available with explicit coupling enabled
  Sets keyword DES_INTERP_SCHEME=’GARG_2012’
@@ -1093,7 +1093,7 @@ o Default values of 0.5
 
 Page 22
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1171,7 +1171,7 @@ o Sets keyword NEIGHBOR_SEARCH_N
 Specify factor defining particle neighborhood
 o Specification always available
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1225,7 +1225,7 @@ Option to enable implicit treatment of drag force
 
 Page 24
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1248,7 +1248,7 @@ o Sets keyword MPPIC_COEFF_EN1
 o DEFAULT value of 0.4
 Define wall normal momentum retention
 o Sets keyword MPPIC_COEFF_EN_WALL
-o DEFUULT value of 0.3
+o DEFAULT value of 0.3
 Define wall tangential momentum retention
 o Sets keyword MPPIC_COEFF_ET_WALL
 o DEFAULT value of 0.99
@@ -1298,7 +1298,7 @@ o DEFAULT value of 10.0
 
 Page 25
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1332,7 +1332,7 @@ Implementation Idea: Allow the user to select multiple regions in the popup wind
 define one IC region over multiple regions. Managing the MFIX IC indices on the back end could
 get messy, and if so, scrap this idea.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -1378,7 +1378,7 @@ o Sets keyword IC_L_SCALE(#)
 o DEFAULT value of 1.0
  Turbulence: Define k-ε turbulent kinetic energy
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1425,7 +1425,7 @@ o Sets keyword IC_P_STAR(#)
 
 Page 28
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1479,7 +1479,7 @@ Mockup of Task pane for specifying solids-# initial condition parameters.
 Scalar (tab) - Tab only available if scalar equations are solved
  Define initial scalar value
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -1522,7 +1522,7 @@ o Available selections:
  STL regions set keyword BC_TYPE(#) to 'CG_FSW'
  Partial Slip Wall
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1570,7 +1570,7 @@ o Specification only available with PSW
 o Sets keyword BC_WW_G(#)
 o DEFAULT value of 0.0
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1643,7 +1643,7 @@ o Available selections:
 
 Page 32
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1690,7 +1690,7 @@ o Available selections:
  Sets keyword JENKINS to .FALSE.
  Variable specularity coefficient
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1768,7 +1768,7 @@ o Available selections:
 
 Page 34
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1839,7 +1839,7 @@ When solving solids species equations:
  Set keyword BC_C_X_S(#,#,#) to 0.0
  Set keyword BC_XW_S(#,#,#) to UNDEFINED
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -1879,7 +1879,7 @@ o Sets keyword BC_HW_SCALAR(#,#)
 o DEFAULT value of 0.0
  Define free stream temperature
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -1917,7 +1917,7 @@ o Sets keyword BC_MASSFLOW_G(#)
 o DEFAULT value of 0.0
  Define Tangential Velocities:
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -1980,7 +1980,7 @@ o Sets keyword BC_V_G(#)
 
 Page 38
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -2029,7 +2029,7 @@ o DEFAULT value of 0.0
 
 Mockup of Task pane for specifying the Fluid properties for MI, boundary condition regions.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2093,7 +2093,7 @@ o For BC_TYPE='MI' and XY-Plane region
  Z-Axial Velocity (m/s) [DEFAULT]
 o Sets keyword BC_W_S(#,#)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 o DEFAULT value of 0.0
 Volumetric Flowrate (m3/s)
@@ -2142,7 +2142,7 @@ UI
 
 Page 41
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2178,7 +2178,7 @@ o Specification always available
 o NO DEFAULT value
 o Sets keyword BC_X_G(#,#)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2212,7 +2212,7 @@ Define scalar value
 o Sets keyword BC_SCALAR(#,#)
 o NO DEFAULT value
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2272,7 +2272,7 @@ o DEFAULT value of 0.0
  Mass Flowrate (kg/s)
 o Sets keyword BC_MASSFLOW_G(#)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2340,7 +2340,7 @@ o Error check: if specified, mass fractions must sum to one_
 
 Solids-# (tab)
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -2403,7 +2403,7 @@ o DEFAULT value of 0.0
  Define Tangential Velocities:
  Define X-Axial Velocity
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2444,7 +2444,7 @@ The top of the task pane is where users define/select PS regions
 
 Icons to add/remove/duplicate boundary conditions are given at the top
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -2491,7 +2491,7 @@ o Sets keyword PS_W_G(#)
 Solids-# (tab) - At this time, only TFM solids can be defined with point sources. At some point in the
 future, this could be extended to PIC solids, but never DEM.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -2567,7 +2567,7 @@ o Available selections:
  Selection only available for volume regions
  set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2613,7 +2613,7 @@ o DEFAULT value 0.0
 o Sets keyword IS_VEL_s(#,PHASE)
 o There should be a line for each solids phase. Use the user provided solids name.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2666,7 +2666,7 @@ o Use +/- buttons to add/remove products
 o Column 1 - Select phase for product
  Use drop down list of user defined phase names
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2714,7 +2714,7 @@ o Heterogeneous chemical reactions
  DEFAULT value 0.5 for both entires
  Sets reaction construct keyword fracDH(#) for each referenced phase
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2760,7 +2760,7 @@ o Specification always available
 o Sets keyword TOL_RESID_SCALAR
 o DEFAULT value of 1.0e-4
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2804,7 +2804,7 @@ o Sets keyword DISCRETIZE(#) to 9
 
 Page 54
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
@@ -2850,7 +2850,7 @@ o Column 2: Select linear equation solver method for equation #
 o Sets keyword LEQ_METHOD(#) to 2
  GMRES
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2891,7 +2891,7 @@ o Sets keyword LEQ_PC(#) to 'DIAG'
 
 Page 56
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
@@ -2939,11 +2939,13 @@ o Sets keyword FPFOI
 
 Page 57
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 
 
 UI
+
+Page 58
 
 o DEFAULT value of .FALSE.
 Specify the universal limiter
@@ -2969,33 +2971,57 @@ o Subtask Pane Tab for NetCDF output format
 o Write frequency of NetCDF output (table format)
  Option to write particle data (requires DEM or PIC solver)
  Option to enable distributed I/O
+3.1.3 Job submission/Interactive Control
+This section describes the interface for running a job and how to interact with the running solver.
+When the MFIX solver is launched the following actions are taken:
+1) Initializes MPI for DMP enabled solvers.
+2) Initializes OpenMP threads for SMP enabled solvers.
 
-3.1.3 Workflow Mode
-
-Page 58
-
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
 Page 59
 
+3) Processes the case file (*.mfx)
+4) Check validity of project settings
+a. Check and setup base background mesh
+b. Setup MPI domain decomposition
+c. Preform sanity checks on user inputs
+d. Set flags and loop structures for background mesh
+e. Invoke Cartesian grid cut-cell preprocessing
+f. Allocate data arrays
+5) Process RES (restart) files
+a. Save current state for new runs
+b. Read RES files for restarts
+6) Setup initial field states prior to time march
+
+yeStep 4 is where the majority of failures will be caught when starting the MFIX solver. The solver
+should catch the error and report it back to the GUI so the user may correct the issue. To facilitate
+
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 60
+
+3.1.4 Workflow Mode
 Workflow mode utilizes pyqtnode’s graphical programing interface and provides a collection of
 MFIX specific blocks for creating, running, and post processing MFIX simulations. This is where
 design of experiments, uncertainty quantification, and optimization can be performed.
 
 Figure 3: General layout of the “Workflow” mode.
 
-3.1.4 Developer Mode
+3.1.5 Developer Mode
 Developer mode allows users to edit user-defined functions (UDFs) and the MFIX-Solver source
 code. Developer mode also contains tools to help develop, maintain, and characterize performance
 of the MFIX-Solver source code.
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 UI
 
-Page 60
+Page 61
 
 The layout will consist of a tree on the left side showing the structure and files that compose the
 MFIX-Solver. There will also be a search bar that can either search the files names or search
@@ -3032,7 +3058,16 @@ Interaction with the MFS Website
 o Read/display news
 o Import particle properties from the MFS particle database
 o Download updates?
-o UDF repository?
+
+Software Requirements Specification for MFIX-
+
+o
+
+UI
+
+Page 62
+
+UDF repository?
 
 4. System Features
 4.1 Guided Simulation Setup
@@ -3044,12 +3079,6 @@ specify a kinetic theory model for non-Eulerian solids.
 
 4.1.2 Stimulus/Response Sequences
 Users will be guided through a logic process for selecting model parameters.
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 61
 
 4.1.3 Functional Requirements
 See section 3.
@@ -3083,10 +3112,18 @@ High priority: Create a primitive 3D graphics environment to help visualize the 
 setup including:
 
 
+
+Displaying geometry
+
+Software Requirements Specification for MFIX-
+
 
 
 
-Displaying geometry
+UI
+
+Page 63
+
 Displaying the grid
 Displaying defined regions
 
@@ -3106,13 +3143,6 @@ Display regions (point, plane, volume)
 
 4.4 3D Graphics – Interaction
 4.4.1 Description and Priority
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 62
-
 Medium priority: Provide user interactivity with the 3D environment for changing the size,
 rotation, and position of objects such as the geometry, grid, and regions.
 
@@ -3146,6 +3176,13 @@ Write the collected keywords
 
 4.6 Installer
 4.6.1 Description and Priority
+
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 64
+
 High priority: Create a self-contained installed program each targeted platform.
 
 4.6.2 Stimulus/Response Sequences
@@ -3163,13 +3200,6 @@ Installation on Linux (ubunutu, opensuse, fedora, …)
 Installation on OSX
 
 4.7 Creating mfix.dat
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 63
-
 4.7.1 Description and Priority
 High priority: Create an mfix.dat file through the GUI.
 
@@ -3201,12 +3231,20 @@ options: SMP, DMP, different Fortran compilers and MPI implementations.
 REQ-1:
 REQ-2:
 REQ-3:
-REQ-4:
-REQ-5:
 
 Build on Linux
 Build on OSX
 Build using Autotools
+
+Software Requirements Specification for MFIX-
+
+REQ-4:
+REQ-5:
+
+UI
+
+Page 65
+
 Build using SMP
 Build using DMP
 
@@ -3221,15 +3259,7 @@ progress of the job and various statistics.
 
 4.9.3 Functional Requirements
 REQ-1:
-
 Remove existing run files
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 64
-
 REQ-2:
 Check to make sure a compiled MFIX source is available
 REQ-3:
@@ -3274,6 +3304,13 @@ Monitor queue availability and automatically move queued jobs to other
 
 4.11 External Programs
 4.11.1 Description and Priority
+
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 66
+
 Medium Priority: After running MFIX, provide a button to open simulation results in
 Paraview.
 
@@ -3286,18 +3323,11 @@ REQ-1:
 REQ-2:
 REQ-3:
 
-4.12 Plugins
-
 Launch Paraview by pressing a button in the UI
 Open the current simulation’s graphics stack in Paraview
 Set a state file to setup the visualization in Paraview
 
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 65
-
+4.12 Plugins
 4.12.1 Description and Priority
 Medium Priority: Provide a structure for user supplied plugins
 
@@ -3306,12 +3336,10 @@ Users will be able to create plugins for the UI to handle:
 
 
 
+
 
 queue submissions
 widgets
-
-
-
 Post processing
 
 4.12.3 Functional Requirements
@@ -3336,6 +3364,12 @@ REQ-2:
 Import pyqtnode and imbed in the UI
 expose hooks for pyqtnode to run MFIX simulations
 
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 67
+
 4.14 Species Database
 4.14.1 Description and Priority
 High Priority: Include a large collection of thermodynamic species data that a user can
@@ -3346,15 +3380,8 @@ http://www.grc.nasa.gov/WWW/CEAWeb/ceaThermoBuild.htm
 4.14.2 Stimulus/Response Sequences
 Where needed, a user can search and import gas, liquid, and solids species from a database.
 4.14.3 Functional Requirements
-
-Software Requirements Specification for MFIX-
-
 REQ-1:
 REQ-2:
-
-UI
-
-Page 66
 
 Include a thermodynamic data base with the UI
 Import species data from that data base
@@ -3383,6 +3410,12 @@ and method definitions. All functions, classes, and methods should be unit-testa
 should be written for every function, class, and method as the functions, classes, and methods are
 developed, NOT AS AN AFTERTHOUGHT.
 
+Software Requirements Specification for MFIX-
+
+UI
+
+Page 68
+
 Code Style Guide
 All Python code should follow the standard Python style guide. If your editor supports it, please
 enable pylint checking.
@@ -3391,12 +3424,6 @@ Business Rules
 <List any operating principles about the product, such as which individuals or roles can perform
 which functions under specific circumstances. These are not functional requirements in
 themselves, but they may imply certain functional requirements to enforce the rules.>
-
-Software Requirements Specification for MFIX-
-
-UI
-
-Page 67
 
 6. Other Requirements
 <Define any other requirements not covered elsewhere in the SRS. This might include database
@@ -3419,7 +3446,7 @@ can be tracked to closure.>
 Appendix D: UI Resources
 Other CFD UI’s
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 SimFlow
 
@@ -3427,9 +3454,9 @@ HELYX-OS
 
 UI
 
-Page 68
+Page 69
 
-Software Requirements Specification for MFIX-
+Software Requirements Specification for MFIX-
 
 SimScale
 
@@ -3437,6 +3464,5 @@ DICEhub
 
 UI
 
-Page 69
+Page 70
 
-

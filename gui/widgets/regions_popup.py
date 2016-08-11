@@ -74,7 +74,14 @@ class RegionsPopup(QtWidgets.QDialog):
         table.setItem(nrows, 1, make_item(shape, available))
         table.setItem(nrows, 2, make_item('Yes' if available else 'No', available))
 
-    def popup(self, text="Select regions"):
+    def popup(self, boundary=False):
+        text = "Select region(s) for %s coundition" % ('boundary' if boundary else 'initial')
+        for item in (self.ui.combobox_boundary_type, self.ui.label_boundary_type):
+            if boundary:
+                item.show()
+            else:
+                item.hide()
+
         self.ui.label.setText(text)
         self.show()
         self.raise_()

@@ -206,13 +206,13 @@ class SolidsDEM(object):
         #  Sets keyword DES_INTERP_MEAN_FIELDS to false
         #
         # issues/116 must also set DES_INTERP_SCHEME to None when no-interpolation
-        des_interp_on = self.project.get_value('des_interp_on', True)
+        des_interp_on = self.project.get_value('des_interp_on', default=True)
         if des_interp_on not in (True, False):
             self.warn("Invalid des_interp_on %s" % des_interp_on)
             des_interp_on = True
             self.update_keyword('des_interp_on', des_interp_on)
 
-        des_interp_mean_fields = self.project.get_value('des_interp_mean_fields', True)
+        des_interp_mean_fields = self.project.get_value('des_interp_mean_fields', default=True)
         if des_interp_mean_fields not in (True, False):
             self.warn("Invalid des_interp_mean_fields %s" % des_interp_mean_fields)
             des_interp_mean_fields = True
@@ -352,7 +352,7 @@ class SolidsDEM(object):
         # Specification always required
         # Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
         # Input given as an upper triangular matrix
-        mmax = self.project.get_value('mmax', 1)
+        mmax = self.project.get_value('mmax', default=len(self.solids)) #?
         tw = s.tablewidget_des_en_input
         # Table size changed
         def make_item(str):
@@ -572,7 +572,7 @@ class SolidsDEM(object):
         #Does not directly set any keywords
         #Enables specification of number of user scalars
         # Sets keyword DES_USR_VAR_SIZE
-        des_usr_var_size = self.project.get_value('des_usr_var_size', None)
+        des_usr_var_size = self.project.get_value('des_usr_var_size', default=None)
         enabled = (des_usr_var_size is not None)
         cb = s.checkbox_enable_des_usr_var_size
         cb.setChecked(enabled)

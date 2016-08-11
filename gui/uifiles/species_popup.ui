@@ -282,7 +282,7 @@
    <item row="3" column="0" colspan="4">
     <widget class="QTableWidget" name="tablewidget_search">
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::MultiSelection</enum>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>

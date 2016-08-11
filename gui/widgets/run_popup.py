@@ -97,12 +97,13 @@ class RunPopup(QDialog):
         ui.spinbox_keyword_nodesj.setValue(self.project.get_value('nodesj', default=1))
         ui.spinbox_keyword_nodesk.setValue(self.project.get_value('nodesk', default=1))
 
-        if len(self.mfix_exe_list) > 0:
+        if self.mfix_exe_list:
             self.mfix_available = True
             self.mfix_exe = self.mfix_exe_list[0]
             self.populate_combobox_mfix_exe()
         else:
             self.mfix_available = False
+            self.mfix_exe = None
             self.parent.message(
                 icon='warning',
                 text='MFIX not found. Please browse for an executable.',
@@ -110,7 +111,7 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
-        self.lineedit_job_name.setText(self.parent.project.run_name.value)
+        self.lineedit_job_name.setText(self.parent.project.get_value('run_name',default=''))
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
@@ -211,7 +212,7 @@ class RunPopup(QDialog):
             return
 
         self.start_command(
-            cmd=self.get_run_cmd(),
+            cmd=self.get_run_command(),
             cwd=self.parent.get_project_dir(),
             env=os.environ)
 
@@ -220,7 +221,7 @@ class RunPopup(QDialog):
             return
 
         self.submit_command(
-            cmd=self.get_run_cmd())
+            cmd=self.get_run_command())
 
     def handle_resume(self):
         """resume previously stopped mfix run"""
@@ -379,13 +380,12 @@ class RunPopup(QDialog):
 
     def get_exe_flags(self, mfix_exe):
         """ get and cache (and update) executable features """
-        if not self.exe_exists(mfix_exe):
-            raise ValueError(
-                "File does not exist or is not executable: %s" % mfix_exe)
+        if mfix_exe is None:
+            return None
         try:
             stat = os.stat(mfix_exe)
-        except OSError as err:
-            log.debug('Could not stat %s' % mfix_exe)
+        except OSError as e:
+            log.debug(str(e))
             return None
 
         # stat will have changed if the exe has been modified since last check
@@ -419,7 +419,7 @@ class RunPopup(QDialog):
         flags = config['flags'] if config else ''
         return 'smp' in flags
 
-    def get_run_cmd(self):
+    def get_run_command(self):
 
         if self.dmp_enabled():
             mpiranks = (self.project.nodesi.value *
