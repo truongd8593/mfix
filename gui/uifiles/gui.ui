@@ -762,7 +762,6 @@ QPushButton:checked {
                  <property name="currentIndex">
                   <number>0</number>
                  </property>
-                 <widget class="QWidget" name="boundary_conditions"/>
                  <widget class="QWidget" name="point_sources"/>
                  <widget class="QWidget" name="internal_surfaces"/>
                  <widget class="QWidget" name="chemistry"/>
