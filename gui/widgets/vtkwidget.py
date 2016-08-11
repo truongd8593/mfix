@@ -2043,6 +2043,10 @@ class VtkWidget(QtWidgets.QWidget):
 
         os.remove(path)
 
+        if self.mesh_actor is not None:
+            self.vtkrenderer.RemoveActor(self.mesh_actor)
+            self.mesh_actor = None
+
     def set_mesh_actor_props(self):
         props = self.visual_props['mesh']
         self.set_representation(self.mesh_actor, props['rep'])
