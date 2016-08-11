@@ -13,31 +13,31 @@ Clicking the 'add' and 'duplicate' buttons triggers a popup window where the use
  Users cannot select inapplicable regions.
  BC regions must be planes or STLs (not volumes or points)
  No region can define more than one boundary condition.
+
 Select boundary type
  Selection is required
  Available selections:
-  Mass Inflow
+ Mass Inflow
   Plane regions set keyword BC_TYPE(#) to 'MI'
- STL regions set keyword BC_TYPE(#) to 'CG_MI'
+  STL regions set keyword BC_TYPE(#) to 'CG_MI'
  Pressure Outflow
- Plane regions set keyword BC_TYPE(#) to 'PO'
- STL regions set keyword BC_TYPE(#) to 'CG_PO'
+  Plane regions set keyword BC_TYPE(#) to 'PO'
+  STL regions set keyword BC_TYPE(#) to 'CG_PO'
  No Slip Wall
- Plane regions set keyword BC_TYPE(#) to 'NSW'
- STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+  Plane regions set keyword BC_TYPE(#) to 'NSW'
+  STL regions set keyword BC_TYPE(#) to 'CG_NSW'
  Free Slip Wall
- Plane regions set keyword BC_TYPE(#) to 'FSW'
- STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+  Plane regions set keyword BC_TYPE(#) to 'FSW'
+  STL regions set keyword BC_TYPE(#) to 'CG_FSW'
  Partial Slip Wall
- Plane regions set keyword BC_TYPE(#) to 'PSW'
- STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-
-Pressure Inflow
- Plane regions set keyword BC_TYPE(#) to 'PI'
- Not available for STL regions
-Mass Outflow
- Plane regions set keyword BC_TYPE(#) to 'MO'
- STL regions set keyword BC_TYPE(#) to 'CG_MO'
+  Plane regions set keyword BC_TYPE(#) to 'PSW'
+  STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+ Pressure Inflow
+  Plane regions set keyword BC_TYPE(#) to 'PI'
+  Not available for STL regions
+ Mass Outflow
+  Plane regions set keyword BC_TYPE(#) to 'MO'
+  STL regions set keyword BC_TYPE(#) to 'CG_MO'
  Specification always available
  DEFAULT - No slip wall
  Error check: mass fractions must sum to one
@@ -45,10 +45,11 @@ Mass Outflow
 Tabs group boundary condition parameters for phases and additional equations. Tabs are
 unavailable if no input is required from the user.
  Fluid tab - Unavailable if the fluid phase was disabled.
+
  Each solid phase will have its own tab. The tab name should be the name of the solid
  Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped inputs a 'collapsible list' may make navigation easier.
-Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
-Condition Regions
+
+Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
 Fluid (tab)
  Define transfer coefficient
  Specification only available with PSW
@@ -137,7 +138,7 @@ Define free stream mass fraction
  Sets keyword BC_XW_G(#)
  DEFAULT value of 0.0
 
-Mockup of Task pane for specifying the Fluid properties for WALL boundary condition regions.
+
 Solids-# (tab) - (Replace with phase name defined by the user)
  Enable Jackson-Johnson partial slip boundary
  Disabled (0.0) for CARTESIAN_GRID = .TRUE.
@@ -173,8 +174,7 @@ Define specularity coefficient at zero slip
  DEFAULT -blank
  Optional when available
 Define angle of internal friction
- Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE.
-FRICTION_MODEL=SRIVASTAVA)
+ Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE. and FRICTION_MODEL=SRIVASTAVA)
  DEFAULT value of 11.31
  Required when available
 Define transfer coefficient
@@ -257,7 +257,6 @@ When solving solids species equations:
   Set keyword BC_C_X_S(#,#,#) to 0.0
   Set keyword BC_XW_S(#,#,#) to UNDEFINED
 
-Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
 Scalar (tab) - Tab only available if scalar equations are solved
   Select scalar boundary type:
   Available selections:
@@ -294,10 +293,6 @@ Scalar (tab) - Tab only available if scalar equations are solved
   Sets keyword BC_SCALARW (#,#)
   DEFAULT value of 0.0
 
-Mockup of Task pane for specifying the Scalar properties for WALL boundary condition regions.
-Note that this tab should only be available if scalar equations are being solved. Furthermore, the
-number of scalars requiring input (here 2) comes from the number of scalar equations specified by
-the user.
 Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
 Fluid (tab)
   Define volume fraction
@@ -406,7 +401,6 @@ Turbulence: Define k-ε turbulent dissipation
   Sets keywords BC_E_TURB_G(#)
   DEFAULT value of 0.0
 
-Mockup of Task pane for specifying the Fluid properties for MI, boundary condition regions.
 Solid-# (tab) - Rename tab to user provided solids name.
 Define volume fraction
   Specification always available
@@ -498,8 +492,6 @@ Select species and set mass fractions (table format)
   DEFAULT - last defined species has mass fraction of 1.0
   Error check: mass fractions must sum to one
 
-Mockup of Task pane for specifying the Solids properties for MI, CG_MI, and PI boundary
-condition regions.
 Scalar (tab) - Tab only available if scalar equations are solved
   Define initial scalar value
   Sets keyword BC_SCALAR(#,#)
