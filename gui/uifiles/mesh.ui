@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>932</height>
+    <height>473</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -47,7 +47,7 @@
     </spacer>
    </item>
    <item row="5" column="4">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="pushbutton_remove_mesh">
      <property name="text">
       <string>Remove Mesh</string>
      </property>

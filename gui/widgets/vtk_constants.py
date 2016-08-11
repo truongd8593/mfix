@@ -6,6 +6,8 @@ import vtk
 # Qt imports
 from qtpy import QtGui
 
+DEFAULT_MESH_NAME = 'mesh.vtu'
+
 CELL_TYPE_ENUM = {
     0:  'empty_cell',
     1:  'vertex',

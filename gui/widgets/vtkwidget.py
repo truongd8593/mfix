@@ -226,18 +226,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         # --- setup vtk mappers/actors ---
         self.mesh = None
-        self.mesh_mapper = vtk.vtkDataSetMapper()
-        self.mesh_mapper.ScalarVisibilityOff()
-
-        self.mesh_actor = vtk.vtkActor()
-        self.mesh_actor.SetMapper(self.mesh_mapper)
-        self.mesh_actor.GetProperty().SetRepresentationToWireframe()
-        self.mesh_actor.GetProperty().SetColor(
-            self.visual_props['mesh']['color'].getRgbF()[:3])
-        self.mesh_actor.GetProperty().SetEdgeColor(
-            self.visual_props['mesh']['edge'].getRgbF()[:3])
-
-        self.vtkrenderer.AddActor(self.mesh_actor)
+        self.mesh_actor = None
+        self.mesh_mapper = None
 
         # set types on lineedits
         for widget in widget_iter(self.ui.geometry.stackedWidgetGeometryDetails):
@@ -332,6 +322,7 @@ class VtkWidget(QtWidgets.QWidget):
                     self.change_mesher_options)
 
         self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
+        self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
 
     def __add_tool_buttons(self):
 
@@ -540,6 +531,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
         self.visual_props.update(data)
+        if not self.mesh_actor is None:
+            self.set_mesh_actor_props()
 
         self.set_visual_btn_values()
         for actor in self.grid_viewer_dict['actors']:
@@ -1973,19 +1966,11 @@ class VtkWidget(QtWidgets.QWidget):
             )
         clipper.SetValue(0.0)
         clipper.Update()
+        self.export_mesh(clipper)
+
         self.mesh = clipper.GetOutput()
-
-        self.mesh_mapper.SetInputData(self.mesh)
-        self.mesh_mapper.Update()
-
-        self.render()
-
+        self.show_mesh()
         self.mesh_stats()
-
-        # export geometry
-        project_dir = self.parent.get_project_dir()
-        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
-                                 clipper.GetOutputPort())
 
     def vtk_mesher_threshold(self):
 
@@ -2005,19 +1990,17 @@ class VtkWidget(QtWidgets.QWidget):
             thresh.AllScalarsOn()
 
         thresh.Update()
+        self.export_mesh(thresh)
 
         self.mesh = thresh.GetOutput()
-
-        self.mesh_mapper.SetInputData(self.mesh)
-
-        self.render()
-
+        self.show_mesh()
         self.mesh_stats()
 
+    def export_mesh(self, mesh, name=DEFAULT_MESH_NAME):
         # export geometry
-        project_dir = self.parent.settings.value('project_dir')
-        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
-                                 thresh.GetOutputPort())
+        project_dir = self.parent.get_project_dir()
+        self.export_unstructured(os.path.join(project_dir, name),
+                                 mesh.GetOutputPort())
 
     def mesh_stats(self):
 
@@ -2050,6 +2033,36 @@ class VtkWidget(QtWidgets.QWidget):
             self.vtk_mesher_table_based()
         elif mesher == 'vtkThreshold':
             self.vtk_mesher_threshold()
+
+    def remove_mesh(self, name=DEFAULT_MESH_NAME):
+        project_dir = self.parent.get_project_dir()
+        path = os.path.join(project_dir, name)
+        if not os.path.exists(path): return
+        key = gui.message(text='Remove %s?' % name, buttons=['yes', 'no'], default='no')
+        if key == 'no': return
+
+        os.remove(path)
+
+    def set_mesh_actor_props(self):
+        props = self.visual_props['mesh']
+        self.set_representation(self.mesh_actor, props['rep'])
+        self.mesh_actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
+        self.mesh_actor.GetProperty().SetEdgeColor(props['edge'].getRgbF()[:3])
+        self.mesh_actor.SetVisibility(int(props['visible']))
+
+    def show_mesh(self):
+        if self.mesh is None: return
+
+        if not self.mesh_actor is None:
+            self.vtkrenderer.RemoveActor(self.mesh_actor)
+        self.mesh_mapper = vtk.vtkDataSetMapper()
+        self.mesh_mapper.ScalarVisibilityOff()
+        self.mesh_mapper.SetInputData(self.mesh)
+        self.mesh_actor = vtk.vtkActor()
+        self.mesh_actor.SetMapper(self.mesh_mapper)
+        self.vtkrenderer.AddActor(self.mesh_actor)
+        self.set_mesh_actor_props()
+        self.render()
 
     # --- view ---
     def perspective(self, parallel=None):
