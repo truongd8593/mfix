@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Solids</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_10">
    <property name="leftMargin">
@@ -595,7 +595,7 @@ QPushButton:checked {
                   </size>
                  </property>
                  <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Plain</enum>
@@ -1063,6 +1063,9 @@ QPushButton:checked {
                    <width>16777215</width>
                    <height>16777215</height>
                   </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Plain</enum>
@@ -2584,10 +2587,10 @@ background-color:transparent;
               <item>
                <widget class="QFrame" name="frame_36">
                 <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
+                 <enum>QFrame::NoFrame</enum>
                 </property>
                 <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
+                 <enum>QFrame::Plain</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_23">
                  <item>
