@@ -12,8 +12,7 @@ from widgets.regions_popup import RegionsPopup
 from widgets.base import LineEdit
 
 from tools.general import (set_item_noedit, set_item_enabled,
-                           get_selected_row,
-                           widget_iter)
+                           get_selected_row, widget_iter)
 
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
