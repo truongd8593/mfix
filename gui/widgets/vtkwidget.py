@@ -321,7 +321,6 @@ class VtkWidget(QtWidgets.QWidget):
         # --- mesh ---
         # connect mesh tab btns
         for i, btn in enumerate([self.ui.mesh.pushbutton_mesh_uniform,
-                                 self.ui.mesh.pushbutton_mesh_controlpoints,
                                  self.ui.mesh.pushbutton_mesh_mesher]):
             btn.pressed.connect(partial(self.change_mesh_tab, i, btn))
 
@@ -543,6 +542,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.visual_props.update(data)
 
         self.set_visual_btn_values()
+        for actor in self.grid_viewer_dict['actors']:
+            self.set_background_mesh_actor_props(actor)
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):
@@ -1920,7 +1921,6 @@ class VtkWidget(QtWidgets.QWidget):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.SetVisibility(int(self.visual_props['background_mesh']['visible']))
             self.set_background_mesh_actor_props(actor)
             self.grid_viewer_dict['actors'].append(actor)
 
@@ -1934,6 +1934,7 @@ class VtkWidget(QtWidgets.QWidget):
         actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
         actor.GetProperty().SetEdgeColor(props['color'].getRgbF()[:3])
         actor.GetProperty().SetOpacity(props['opacity'])
+        actor.SetVisibility(int(props['visible']))
 
     def vtk_calc_distance_from_geometry(self):
 

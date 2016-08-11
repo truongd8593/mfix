@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>552</height>
+    <height>932</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -22,10 +22,13 @@
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>10</height>
       </size>
      </property>
     </spacer>
@@ -62,53 +65,98 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="uniform">
-      <layout class="QGridLayout" name="gridLayout_34">
+     <widget class="QWidget" name="background">
+      <layout class="QGridLayout" name="gridLayout_3">
        <property name="margin">
         <number>0</number>
        </property>
        <property name="spacing">
         <number>5</number>
        </property>
-       <item row="0" column="1">
-        <widget class="LineEdit" name="lineedit_keyword_imax">
-         <property name="text">
-          <string>10</string>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Uniform</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="lineedit_mesh_cells_size_x">
-         <property name="readOnly">
+         <property name="flat">
           <bool>true</bool>
          </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="horizontalSpacing">
+           <number>5</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Cells</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_imax">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="LineEdit" name="lineedit_keyword_jmax">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="LineEdit" name="lineedit_keyword_kmax">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Cell Size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineedit_mesh_cells_size_x">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="lineedit_mesh_cells_size_y">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="lineedit_mesh_cells_size_z">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Cell Size</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="LineEdit" name="lineedit_keyword_jmax">
-         <property name="text">
-          <string>10</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="lineedit_mesh_cells_size_y">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
         <spacer name="verticalSpacer_8">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -118,226 +166,7 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="3">
-        <widget class="LineEdit" name="lineedit_keyword_kmax">
-         <property name="text">
-          <string>10</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QLineEdit" name="lineedit_mesh_cells_size_z">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Cells</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="control_points">
-      <layout class="QGridLayout" name="gridLayout_7">
-       <property name="margin">
-        <number>0</number>
-       </property>
-       <property name="spacing">
-        <number>5</number>
-       </property>
        <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="title">
-          <string>Z Control Points</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_51">
-          <property name="margin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="1" column="0">
-           <widget class="QTableWidget" name="tablewidget_mesh_control_points_z">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Plain</enum>
-            </property>
-            <column>
-             <property name="text">
-              <string>Position</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Cells</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Stretch</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QFrame" name="frame_33">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="margin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QToolButton" name="toolbutton_mesh_add_z">
-               <property name="text">
-                <string>Add</string>
-               </property>
-               <property name="autoRaise">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolbutton_mesh_remove_z">
-               <property name="text">
-                <string>Delete</string>
-               </property>
-               <property name="autoRaise">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_11">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="title">
-          <string>Y Control Points</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_50">
-          <property name="margin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="1" column="0">
-           <widget class="QTableWidget" name="tablewidget_mesh_control_points_y">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Plain</enum>
-            </property>
-            <column>
-             <property name="text">
-              <string>Position</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Cells</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Stretch</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QFrame" name="frame_4">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_23">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="margin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QToolButton" name="toolbutton_mesh_add_y">
-               <property name="text">
-                <string>Add</string>
-               </property>
-               <property name="autoRaise">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolbutton_mesh_remove_y">
-               <property name="text">
-                <string>Delete</string>
-               </property>
-               <property name="autoRaise">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_10">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
           <string>X Control Points</string>
@@ -434,6 +263,194 @@
          </layout>
         </widget>
        </item>
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>Y Control Points</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_50">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="1" column="0">
+           <widget class="QTableWidget" name="tablewidget_mesh_control_points_y">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Plain</enum>
+            </property>
+            <column>
+             <property name="text">
+              <string>Position</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Cells</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Stretch</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QFrame" name="frame_4">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_23">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolButton" name="toolbutton_mesh_add_y">
+               <property name="text">
+                <string>Add</string>
+               </property>
+               <property name="autoRaise">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolbutton_mesh_remove_y">
+               <property name="text">
+                <string>Delete</string>
+               </property>
+               <property name="autoRaise">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Z Control Points</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_51">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <item row="1" column="0">
+           <widget class="QTableWidget" name="tablewidget_mesh_control_points_z">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Plain</enum>
+            </property>
+            <column>
+             <property name="text">
+              <string>Position</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Cells</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Stretch</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QFrame" name="frame_33">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolButton" name="toolbutton_mesh_add_z">
+               <property name="text">
+                <string>Add</string>
+               </property>
+               <property name="autoRaise">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolbutton_mesh_remove_z">
+               <property name="text">
+                <string>Delete</string>
+               </property>
+               <property name="autoRaise">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_11">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="mesher">
@@ -472,7 +489,7 @@
           <item row="1" column="0">
            <widget class="QStackedWidget" name="stackedwidget_mesher_options">
             <property name="currentIndex">
-             <number>1</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="vtkTableBasedClipDataSet">
              <layout class="QGridLayout" name="gridLayout_56">
@@ -704,7 +721,7 @@ QPushButton:checked {
          </font>
         </property>
         <property name="text">
-         <string>Uniform</string>
+         <string>Background</string>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -718,24 +735,6 @@ QPushButton:checked {
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="pushbutton_mesh_controlpoints">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Control Points</string>
-        </property>
-        <property name="checkable">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
        <widget class="QPushButton" name="pushbutton_mesh_mesher">
         <property name="font">
          <font>
@@ -786,22 +785,6 @@ QPushButton:checked {
  </customwidgets>
  <tabstops>
   <tabstop>pushbutton_mesh_uniform</tabstop>
-  <tabstop>lineedit_keyword_imax</tabstop>
-  <tabstop>lineedit_keyword_jmax</tabstop>
-  <tabstop>lineedit_keyword_kmax</tabstop>
-  <tabstop>lineedit_mesh_cells_size_x</tabstop>
-  <tabstop>lineedit_mesh_cells_size_y</tabstop>
-  <tabstop>lineedit_mesh_cells_size_z</tabstop>
-  <tabstop>pushbutton_mesh_controlpoints</tabstop>
-  <tabstop>toolbutton_mesh_add_x</tabstop>
-  <tabstop>toolbutton_mesh_remove_x</tabstop>
-  <tabstop>tablewidget_mesh_control_points_x</tabstop>
-  <tabstop>toolbutton_mesh_add_y</tabstop>
-  <tabstop>toolbutton_mesh_remove_y</tabstop>
-  <tabstop>tablewidget_mesh_control_points_y</tabstop>
-  <tabstop>toolbutton_mesh_add_z</tabstop>
-  <tabstop>toolbutton_mesh_remove_z</tabstop>
-  <tabstop>tablewidget_mesh_control_points_z</tabstop>
   <tabstop>pushbutton_mesh_mesher</tabstop>
   <tabstop>combobox_mesher</tabstop>
   <tabstop>checkbox_mesh_inside</tabstop>
