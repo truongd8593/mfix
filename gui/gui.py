@@ -1128,9 +1128,14 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
+        disable_vtk = False
+        if not 'MFIX_NO_VTK' in os.environ: # Aovoid importing vtkwidget if MFIX_NO_VTK set
+            from widgets.vtkwidget import VTK_AVAILABLE
+            disable_vtk = not VTK_AVAILABLE
+        else: # env var set
+            disable_vtk = True
 
-        from widgets.vtkwidget import VTK_AVALIABLE
-        if 'MFIX_NO_VTK' in os.environ or not VTK_AVALIABLE:
+        if disable_vtk:
             log.info("MFIX_NO_VTK set or vtk not importable, creating fake VTK")
             # Create a dummy object, so we don't have to test for 'if use_vtk' all over
             class FakeVtk:
