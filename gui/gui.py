@@ -2371,7 +2371,7 @@ def main(args):
         Usage(name)
 
     qapp = QtWidgets.QApplication([])
-    qapp.setStyle("fusion") #Changing the style
+    #qapp.setStyle("fusion") #Changing the style
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 
