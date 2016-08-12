@@ -397,7 +397,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.clicked.connect(lambda m=mode: self.mode_changed(m))
+            btn.pressed.connect(lambda m=mode: self.mode_changed(m))
 
         # navigation tree
         ui.treewidget_navigation.itemSelectionChanged.connect(
@@ -1128,7 +1128,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
-        
+
         from widgets.vtkwidget import VTK_AVALIABLE
         if 'MFIX_NO_VTK' in os.environ or not VTK_AVALIABLE:
             log.info("MFIX_NO_VTK set or vtk not importable, creating fake VTK")
@@ -1334,11 +1334,11 @@ class MfixGui(QtWidgets.QMainWindow,
                         break
 
         # animation group FIXME why 2 callbacks?
-        self.stack_animation.finished.connect(
-            partial(self.animate_stacked_widget_finished, stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+        self.stack_animation.finished.connect(lambda: self.animate_stacked_widget_finished(
+            stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
-        self.stack_animation.stateChanged.connect(
-            partial(self.animate_stacked_widget_finished, stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
+        self.stack_animation.stateChanged.connect(lambda: self.animate_stacked_widget_finished(
+            stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
         self.animating = True
         self.stack_animation.start()
