@@ -1335,10 +1335,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # animation group FIXME why 2 callbacks?
         self.stack_animation.finished.connect(
-            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, tb=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
+            partial(self.animate_stacked_widget_finished, stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
         self.stack_animation.stateChanged.connect(
-            lambda s=stackedwidget, f=from_, t=to, b=btn_layout, tb=to_btn, l=line, lt=line_to: self.animate_stacked_widget_finished(s,f,t,b,tb,l,lt))
+            partial(self.animate_stacked_widget_finished, stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
         self.animating = True
         self.stack_animation.start()
