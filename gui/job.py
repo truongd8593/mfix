@@ -13,7 +13,7 @@ from subprocess import Popen
 
 log = logging.getLogger(__name__)
 
-from qtpy.QtCore import QObject, QTimer, QUrl, Signal, pyqtSignal
+from qtpy.QtCore import QObject, QTimer, QUrl, Signal
 from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkReply,
                              QNetworkRequest)
@@ -110,7 +110,7 @@ class PymfixAPI(QNetworkAccessManager):
         :arg response_object: API call response object
         :type response_object: QtNetwork.QNetworkReply
         :arg signal: Signal to emit
-        :type signal: QtCore.pyqtSignal
+        :type signal: QtCore.Signal
         """
         try:
             response = response_object.readAll()
@@ -373,12 +373,12 @@ class Job(QObject):
     """class for managing and monitoring an MFIX job"""
 
     sig_job_exit = Signal()
-    sig_api_response = pyqtSignal(str, str)
+    sig_api_response = Signal(str, str)
     sig_api_error = Signal()
     sig_api_success = Signal()
 
-    sig_handle_api_test = pyqtSignal(str, str)
-    sig_handle_api_test_error = pyqtSignal(str, QObject)
+    sig_handle_api_test = Signal(str, str)
+    sig_handle_api_test_error = Signal(str, QObject)
 
     sig_update_job_status = Signal()
     sig_change_run_state = Signal()

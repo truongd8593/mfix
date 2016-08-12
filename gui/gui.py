@@ -24,7 +24,7 @@ log.debug(SCRIPT_DIRECTORY)
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT5
-from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, pyqtSignal
+from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, Signal
 UserRole = QtCore.Qt.UserRole
 
 # TODO: add pyside? There is an issue to add this to qtpy:
@@ -99,9 +99,9 @@ class MfixGui(QtWidgets.QMainWindow,
     """Main window class for MFIX-GUI"""
     settings = QSettings('MFIX', 'MFIX')
 
-    stdout_signal = pyqtSignal(str)
-    stderr_signal = pyqtSignal(str)
-    signal_update_runbuttons = pyqtSignal(str)
+    stdout_signal = Signal(str)
+    stderr_signal = Signal(str)
+    signal_update_runbuttons = Signal(str)
 
     # Allow LineEdit widgets to report out-of-bounds values.
     def popup_value_error(self, exc):

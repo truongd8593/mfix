@@ -7,7 +7,7 @@ This module contains the work flow widget.
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from qtpy import QtCore, QtWidgets
-from qtpy.QtCore import pyqtSignal
+from qtpy.QtCore import Signal
 from collections import OrderedDict
 import copy
 import os
@@ -133,9 +133,9 @@ class Mock(object):
 
 
 class MockParent(QtWidgets.QWidget):
-    stderr_signal = pyqtSignal(object)
-    stdout_signal = pyqtSignal(object)
-    signal_update_runbuttons = pyqtSignal(object)
+    stderr_signal = Signal(object)
+    stdout_signal = Signal(object)
+    signal_update_runbuttons = Signal(object)
     project = None
     project_dir = None
     project_file = None
