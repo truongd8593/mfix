@@ -209,7 +209,10 @@ class ExtendedJSON(object):
 
     @staticmethod
     def loads(string):
-        return EquationAwareJSONDecoder().decode(string)
+        if string in ("None", None):
+            return {}
+        else:
+            return EquationAwareJSONDecoder().decode(string)
 
 
 class EquationAwareJSONEncoder(JSONEncoder):
