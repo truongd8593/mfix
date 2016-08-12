@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
-from qtpy.QtGui import QPicture
+from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
@@ -145,7 +145,7 @@ class BCS(object):
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
 
-        # Interactively add regions to define ICs
+        # Interactively add regions to define BCs
         ui = self.ui
         bcs = ui.boundary_conditions
         rp = self.regions_popup
@@ -189,7 +189,16 @@ class BCS(object):
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
+
+
+            if val== 'CG_PI': # Shouldn't happen!
+                self.error("Invalid bc_type %s" % val)
+                continue
+            self.update_keyword('bc_type', val,
+                                args=[idx])
+
             self.bcs_set_region_keys(region_name, idx, region_data)
+
 
             self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
@@ -210,7 +219,6 @@ class BCS(object):
         while n in self.bcs:
             n += 1
         return n
-
 
     def bcs_delete_regions(self):
         pass
@@ -259,8 +267,15 @@ class BCS(object):
     def bcs_update_region(self, name, data):
         pass
 
-    def bcs_set_region_keys(self, name, index, data):
-        pass
+    def bcs_set_region_keys(self, name, idx, data):
+        # Update the keys which define the box-shaped region the BC applies to
+        for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+                              data['from']+data['to']):
+            key = 'bc_' + key
+            self.update_keyword(key, val, args=[idx])
+        val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
+                        BC_TYPES[bc_type])
+        self.update_keyword('bc_type', val, args=[idx])
 
     def reset_bcs(self):
         pass

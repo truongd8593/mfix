@@ -737,7 +737,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_bc_t_rs_args_BC_P"/>
+                  <widget class="LineEdit" name="lineedit_nonkeyword_bc_t_rs_args_BC_P"/>
                  </item>
                  <item row="1" column="2">
                   <widget class="QLabel" name="label_bc_t_rs_units">

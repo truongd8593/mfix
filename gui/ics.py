@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
-from qtpy.QtGui import QPicture
+from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
@@ -338,9 +338,9 @@ class ICS(object):
                 dummy_label = ics.label_dummy_solids_R
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
-            picture = QPicture() #ics.page_solids.size())
-            ics.page_solids.render(picture)
-            dummy_label.setPicture(picture)
+            pixmap = QPixmap(ics.page_solids.size())
+            ics.page_solids.render(pixmap)
+            dummy_label.setPixmap(pixmap)
             ics.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.ics_current_tab = tab
@@ -374,12 +374,12 @@ class ICS(object):
             if ic.get('region') == name:
                 self.ics_set_region_keys(name, i, data)
 
-    def ics_set_region_keys(self, name, index,  data):
+    def ics_set_region_keys(self, name, idx, data ):
         # Update the keys which define the box-shaped region the IC applies to
         for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
             key = 'ic_' + key
-            self.update_keyword(key, val, args=[index])
+            self.update_keyword(key, val, args=[idx])
 
     def reset_ics(self):
         pass

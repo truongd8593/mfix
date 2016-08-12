@@ -397,7 +397,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.pressed.connect(lambda m=mode: self.mode_changed(m))
+            btn.pressed.connect(lambda mode=mode: self.mode_changed(mode))
 
         # navigation tree
         ui.treewidget_navigation.itemSelectionChanged.connect(
