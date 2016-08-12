@@ -196,7 +196,6 @@ class ICS(object):
                 self.warn("no data for region %s" % region_name)
                 continue
             self.ics_set_region_keys(region_name, idx, region_data)
-
             self.ics_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
@@ -233,7 +232,6 @@ class ICS(object):
             if r in self.ics_region_dict:
                 self.ics_region_dict[r]['available'] = True
 
-
         for i in self.ics_current_indices:
             del self.ics[i]
 
@@ -262,9 +260,7 @@ class ICS(object):
                 if isinstance(widget, QLineEdit): # Does this work for LineEdit?
                     widget.setText('')
             return
-
         self.ics_setup_current_tab() # reinitialize all widgets in current tab
-
 
     def fixup_ics_table(self, tw, stretch_column=0):
         # TODO fix and unify all the fixup_*_table functions
@@ -382,9 +378,14 @@ class ICS(object):
             self.update_keyword(key, val, args=[idx])
 
     def reset_ics(self):
-        pass
-        # TODO implement
-        # Clear regions table, remove solids tabs, disable all inputs
+        self.ics.clear()
+        self.ics_current_indices = []
+        self.ics_current_regions = []
+        self.ics_region_dict = None
+        ics = self.ui.initial_conditions
+        ics.tablewidget_regions.clearContents()
+        ics.tablewidget_regions.setRowCount(0)
+        # anything else to do here?
 
     def ics_to_str(self):
         ics = self.ui.initial_conditions
