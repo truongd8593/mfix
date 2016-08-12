@@ -2210,9 +2210,10 @@ class MfixGui(QtWidgets.QMainWindow,
                     pass # handled in 'geometry' section above
                 elif key == 'parameters':
                     pass # Where is this handled?
-                else:
-                    self.warn("Unknown mfix-gui setting '%s'" % key)
                 # Add more here
+                #else:  # Too many warnings!
+                #    self.warn("Unknown mfix-gui setting '%s'" % key)
+
         except Exception as e:
             self.error("%s: %s" % (key, e))
 
