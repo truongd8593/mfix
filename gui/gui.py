@@ -135,7 +135,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.message_box = None # for tests to access
 
-
         # Initialize data members - make sure these values match 'reset'!
         self.solver_name = None
         self.fluid_solver_disabled = False
@@ -2186,26 +2185,33 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         #  Non-keyword params stored as !#MFIX_GUI comments
-        # TODO: add exception handling here
         solids_phase_names = {}
-        for (key, val) in self.project.mfix_gui_comments.items():
-            if key == 'fluid_phase_name':
-                self.set_fluid_phase_name(val)
-            if key.startswith('solids_phase_name('):
-                n = int(key.split('(')[1][:-1])
-                solids_phase_names[n] = val
-            if key == 'regions_dict':
-                self.ui.regions.regions_from_str(val)
-            if key == 'geometry':
-                # load props first
-                if 'visual_props' in self.project.mfix_gui_comments:
-                    self.vtkwidget.visual_props_from_str(
-                        self.project.mfix_gui_comments['visual_props'])
-                self.vtkwidget.geometry_from_str(val)
+        try:
+            for (key, val) in self.project.mfix_gui_comments.items():
+                if key == 'fluid_phase_name':
+                    self.set_fluid_phase_name(val)
+                elif key.startswith('solids_phase_name('):
+                    n = int(key.split('(')[1][:-1])
+                    solids_phase_names[n] = val
+                elif key == 'regions_dict':
+                    self.ui.regions.regions_from_str(val)
+                elif key == 'geometry':
+                    # load props first
+                    props = self.project.mfix_gui_comments.get('visual_props')
+                    if props:
+                        self.vtkwidget.visual_props_from_str(props)
+                    if val:
+                        self.vtkwidget.geometry_from_str(val)
 
-            if key == 'ic_regions':
-                self.ics_regions_from_str(val)
-            # Add more here
+                elif key == 'ic_regions':
+                    self.ics_regions_from_str(val)
+                elif key == 'visual_props':
+                    pass # handled in 'geometry' section above
+                else:
+                    self.warn("Unknown mfix-gui setting %s" % key)
+                # Add more here
+        except Exception as e:
+            self.error("%s: %s" % (key, e))
 
         # Copy ordered dict to modify keys w/o losing order
         if solids_phase_names:
