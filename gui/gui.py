@@ -1183,20 +1183,23 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def mode_changed(self, mode):
         """change the Modeler, Workflow, Developer tab"""
-        current_index = 0
+        to_index = None
         self.capture_output(mode=='interpreter')
         for i in range(self.ui.stackedwidget_mode.count()):
             widget = self.ui.stackedwidget_mode.widget(i)
             if mode == str(widget.objectName()):
-                current_index = i
+                to_index = i
                 break
+        if to_index is None:
+            self.error("Invalid mode %s" % mode)
+            return
 
         for key, btn in self.modebuttondict.items():
             btn.setChecked(mode == key)
 
         self.animate_stacked_widget(self.ui.stackedwidget_mode,
                                     self.ui.stackedwidget_mode.currentIndex(),
-                                    current_index,
+                                    to_index,
                                     'horizontal')
 
     # --- modeler pane navigation ---
