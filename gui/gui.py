@@ -14,7 +14,6 @@ import socket
 import sys
 import traceback
 from collections import OrderedDict
-from functools import partial
 
 # Initialize logger early
 SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
@@ -398,7 +397,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.clicked.connect(partial(self.mode_changed,mode))
+            btn.clicked.connect(lambda m=mode: self.mode_changed(m))
 
         # navigation tree
         ui.treewidget_navigation.itemSelectionChanged.connect(
