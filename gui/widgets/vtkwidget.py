@@ -10,11 +10,11 @@ from qtpy import QtCore, QtGui, QtWidgets
 log = logging.getLogger(__name__)
 
 # VTK imports
-VTK_AVALIABLE = True
+VTK_AVAILABLE = True
 try:
     import vtk
 except ImportError:
-    VTK_AVALIABLE = False
+    VTK_AVAILABLE = False
     log.info("can't import vtk")
 try:
     # Try Qt 5.x
@@ -24,7 +24,7 @@ except ImportError:
         # Fall back to Qt 4.x
         from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
     except ImportError:
-        VTK_AVALIABLE = False
+        VTK_AVAILABLE = False
         log.info("Can't import QVTKRenderWindowInteractor ")
 
 
