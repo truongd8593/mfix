@@ -1129,9 +1129,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
-
-        if 'MFIX_NO_VTK' in os.environ:
-            log.info("MFIX_NO_VTK set, creating fake VTK")
+        
+        from widgets.vtkwidget import VTK_AVALIABLE
+        if 'MFIX_NO_VTK' in os.environ or not VTK_AVALIABLE:
+            log.info("MFIX_NO_VTK set or vtk not importable, creating fake VTK")
             # Create a dummy object, so we don't have to test for 'if use_vtk' all over
             class FakeVtk:
                 def noop(self, *args, **kwargs):
@@ -2369,6 +2370,7 @@ def main(args):
         Usage(name)
 
     qapp = QtWidgets.QApplication([])
+    qapp.setStyle("fusion") #Changing the style
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 

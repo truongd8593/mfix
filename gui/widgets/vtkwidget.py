@@ -7,16 +7,26 @@ import logging
 from functools import partial
 import numpy as np
 from qtpy import QtCore, QtGui, QtWidgets
-import math
+log = logging.getLogger(__name__)
 
 # VTK imports
-import vtk
+VTK_AVALIABLE = True
+try:
+    import vtk
+except ImportError:
+    VTK_AVALIABLE = False
+    log.info("can't import vtk")
 try:
     # Try Qt 5.x
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 except ImportError:
-    # Fall back to Qt 4.x
-    from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    try:
+        # Fall back to Qt 4.x
+        from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    except ImportError:
+        VTK_AVALIABLE = False
+        log.info("Can't import QVTKRenderWindowInteractor ")
+
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
@@ -25,7 +35,7 @@ from widgets.base import LineEdit
 from project import Equation, ExtendedJSON
 from widgets.vtk_constants import *
 
-log = logging.getLogger(__name__)
+
 
 gui = None
 
@@ -1865,7 +1875,11 @@ class VtkWidget(QtWidgets.QWidget):
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
-            wid.setText('{0:.2e}'.format((t-f)/(c-1)))
+            if c-1 > 0:
+                w = (t-f)/(c-1)
+            else:
+                w = t-f
+            wid.setText('{0:.2e}'.format(w))
         self.rectilinear_grid.SetDimensions(*cells)
 
         # determine cell spacing
