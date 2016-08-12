@@ -189,17 +189,7 @@ class BCS(object):
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
-
-
-            if val== 'CG_PI': # Shouldn't happen!
-                self.error("Invalid bc_type %s" % val)
-                continue
-            self.update_keyword('bc_type', val,
-                                args=[idx])
-
-            self.bcs_set_region_keys(region_name, idx, region_data)
-
-
+            self.bcs_set_region_keys(region_name, idx, bc_type, region_data)
             self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
@@ -267,15 +257,22 @@ class BCS(object):
     def bcs_update_region(self, name, data):
         pass
 
-    def bcs_set_region_keys(self, name, idx, data):
+    def bcs_set_region_keys(self, name, idx, bc_type, data):
         # Update the keys which define the box-shaped region the BC applies to
+        val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
+                       BC_TYPES[bc_type])
+        if val== 'CG_PI': # Shouldn't happen!
+            self.error("Invalid bc_type %s" % val)
+            return
+        self.update_keyword('bc_type', val, args=[idx])
+
         for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
             key = 'bc_' + key
             self.update_keyword(key, val, args=[idx])
-        val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
-                        BC_TYPES[bc_type])
-        self.update_keyword('bc_type', val, args=[idx])
+
+
+
 
     def reset_bcs(self):
         pass

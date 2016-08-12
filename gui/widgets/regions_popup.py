@@ -13,7 +13,8 @@ from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 UserRole = QtCore.Qt.UserRole
 
-from tools.general import (set_item_noedit, set_item_enabled, get_selected_rows)
+from tools.general import (set_item_noedit, set_item_enabled,
+                           get_combobox_item, get_selected_rows)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -25,6 +26,7 @@ else:
 # move to "constants"
 # must match order in combobox_boundary_type
 boundary_types = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+default_boundary_type = boundary_types.index('NSW')  # No Slip Wall
 
 class RegionsPopup(QtWidgets.QDialog):
 
@@ -39,11 +41,11 @@ class RegionsPopup(QtWidgets.QDialog):
             pi_index = boundary_types.index('PI')
             pi_item = get_combobox_item(cb, pi_index)
             disable = any(tw.item(x,1).text()=='STL'
-                          for x in get_selected_rows(self))
+                          for x in get_selected_rows(tw))
             set_item_enabled(pi_item, not disable)
             # Don't stay on disabled item
-            if disable and tw.currentIndex() == pi_index:
-                cb.setCurrentIndex(boundary_types.index('NSW')) # default
+            if disable and cb.currentIndex() == pi_index:
+                cb.setCurrentIndex(default_boundary_type)
 
 
     def reset_signals(self):
@@ -68,9 +70,10 @@ class RegionsPopup(QtWidgets.QDialog):
         buttons = ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
-        self.ui.table.doubleClicked.connect(lambda: self.save.emit())
-        self.ui.table.doubleClicked.connect(lambda: self.accept())
-        self.rejected.connect(lambda: self.cancel.emit())
+        self.ui.table.doubleClicked.connect(self.save.emit)
+        self.ui.table.doubleClicked.connect(self.accept)
+        self.ui.table.itemSelectionChanged.connect(self.handle_regions_selection)
+        self.rejected.connect(self.cancel.emit)
 
     def clear(self):
         self.ui.table.clearContents()
@@ -99,7 +102,7 @@ class RegionsPopup(QtWidgets.QDialog):
                 item.show()
             else:
                 item.hide()
-
+        self.ui.combobox_boundary_type.setCurrentIndex(default_boundary_type)
         self.ui.label.setText(text)
         self.show()
         self.raise_()
