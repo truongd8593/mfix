@@ -23,6 +23,22 @@ def safe_float(val):
     except ValueError:
         return 0.0
 
+FLUID_TAB = 0
+SOLIDS_TAB_DUMMY_L = 1
+SOLIDS_TAB = 2
+SOLIDS_TAB_DUMMY_R = 3
+SCALAR_TAB = 4
+
+# Move to "constants"?
+BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
+            'Free Slip Wall', 'Partial Slip Wall',
+            'Pressure Inflow', 'Mass Outflow']
+(MASS_INFLOW, PRESSURE_OUTFLOW,
+ NO_SLIP_WALL, FREE_SLIP_WALL, PARTIAL_SLIP_WALL,
+ PRESSURE_INFLOW, MASS_OUTFLOW) = range(7)
+
+DEFAULT_BC_TYPE = NO_SLIP_WALL
 
 class BCS(object):
     #Boundary Conditions Task Pane Window: This section allows a user to define the boundary
@@ -46,35 +62,21 @@ class BCS(object):
         bcs.toolbutton_add.clicked.connect(self.bcs_show_regions_popup)
         bcs.toolbutton_delete.clicked.connect(self.bcs_delete_regions)
         # TODO implement 'duplicate' (what does this do?)
+        bcs.toolbutton_delete.setEnabled(False) # Need a selection
 
+        bcs.tablewidget_regions.itemSelectionChanged.connect(self.handle_bcs_region_selection)
 
-        #Select boundary type
-        # Selection is required
-        # Available selections:
-        #  Mass Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MI'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
-        #  Pressure Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
-        #  No Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'NSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
-        #  Free Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'FSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
-        #  Partial Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'PSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-        #  Pressure Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PI'
-        #    Not available for STL regions
-        # Mass Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
-        # Specification always available
-        # DEFAULT - No slip wall
-        # Error check: mass fractions must sum to one
+        self.bcs_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
+        self.bcs_current_solid = None
+        bcs.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,0))
+        bcs.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,0))
+
+        # Trim width of "Fluid" and "Scalar" buttons, like we do for
+        # dynamically-created "Solid #" buttons
+        for b in (bcs.pushbutton_fluid, bcs.pushbutton_scalar):
+            w = b.fontMetrics().boundingRect(b.text()).width() + 20
+            b.setMaximumWidth(w)
+
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
@@ -115,8 +117,100 @@ class BCS(object):
 
 
     def bcs_add_regions(self):
-        # Interactively add regions to define BCs
-        pass
+        #Select boundary type
+        # Selection is required
+        # Available selections:
+        #  Mass Inflow
+        #    Plane regions set keyword BC_TYPE(#) to 'MI'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
+        #  Pressure Outflow
+        #    Plane regions set keyword BC_TYPE(#) to 'PO'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
+        #  No Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'NSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+        #  Free Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'FSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+        #  Partial Slip Wall
+        #    Plane regions set keyword BC_TYPE(#) to 'PSW'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+        #  Pressure Inflow
+        #    Plane regions set keyword BC_TYPE(#) to 'PI'
+        #    Not available for STL regions
+        # Mass Outflow
+        #    Plane regions set keyword BC_TYPE(#) to 'MO'
+        #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
+        # Specification always available
+        # DEFAULT - No slip wall
+        # Error check: mass fractions must sum to one
+
+        # Interactively add regions to define ICs
+        ui = self.ui
+        bcs = ui.boundary_conditions
+        rp = self.regions_popup
+        self.bcs_cancel_add() # Reenable input widgets
+        selections = rp.get_selection_list()
+        bc_type = rp.combobox_boundary_type.currentIndex()
+        if not selections:
+            return
+        self.bcs_add_regions_1(selections, bc_type) # Indices will be assigned
+        self.bcs_setup_current_tab() # Update the widgets
+
+    def bcs_add_regions_1(self, selections,
+                          bc_type=DEFAULT_BC_TYPE, indices=None):
+        # Used by both interactive and load-time add-region handlers
+        ui = self.ui
+        if self.bcs_region_dict is None:
+            self.bcs_region_dict = ui.regions.get_region_dict()
+
+        bcs = ui.boundary_conditions
+        tw = bcs.tablewidget_regions
+        nrows = tw.rowCount()
+        tw.setRowCount(nrows+1)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        item = make_item('+'.join(selections))
+
+        if indices is None:
+            indices = [None] * len(selections)
+        else:
+            assert len(selections) == len(indices)
+
+        for (i, region_name) in enumerate(selections):
+            idx = indices[i]
+            if idx is None:
+                idx = self.bcs_find_index()
+                indices[i] = idx
+            self.bcs[idx] = {'region': region_name}
+            region_data = self.bcs_region_dict.get(region_name)
+            if region_data is None: # ?
+                self.warn("no data for region %s" % region_name)
+                continue
+            self.bcs_set_region_keys(region_name, idx, region_data)
+
+            self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
+
+        item.setData(UserRole, (tuple(indices), tuple(selections)))
+
+        self.bcs_current_regions = selections
+        self.bcs_current_indices = indices
+        tw.setItem(nrows, 0, item)
+
+        item = make_item(BC_NAMES[bc_type])
+        tw.setItem(nrows, 1, item)
+
+        self.fixup_bcs_table(tw)
+        tw.setCurrentCell(nrows, 0) # Might as well make it selected
+
+    def bcs_find_index(self):
+        n = 1
+        while n in self.bcs:
+            n += 1
+        return n
+
 
     def bcs_delete_regions(self):
         pass
@@ -125,7 +219,33 @@ class BCS(object):
         pass
 
     def fixup_bcs_table(self, tw, stretch_column=0):
-        pass
+        # TODO fix and unify all the fixup_*_table functions
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.columnCount()
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        # trim excess vertical space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+
+        # TODO FIXME scrollbar handling is not right - scrollbar status can change
+        # outside of this function.  We need to call this everytime window geometry changes
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        nrows = tw.rowCount()
+
+        if nrows==0:
+            height = header_height+scrollbar_height
+        else:
+            height =  (header_height+scrollbar_height
+                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+        tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
+        tw.updateGeometry() #? needed?
+
 
     def bcs_update_enabled(self):
         pass
@@ -163,6 +283,72 @@ class BCS(object):
             if region in self.bcs_region_dict:
                 self.bcs_region_dict[region]['available'] = False
 
+        self.fixup_bcs_table(bcs.tablewidget_regions)
+        row = get_selected_row(bcs.tablewidget_regions)
+        enabled = (row is not None)
+        bcs.toolbutton_delete.setEnabled(enabled)
+        bcs.scrollarea_detail.setEnabled(enabled)
+        # Tabs group boundary condition parameters for phases and additional equations. Tabs are
+        # unavailable if no input is required from the user.
+        #
+        #Fluid tab - Unavailable if the fluid phase was disabled.
+        b = bcs.pushbutton_fluid
+        b.setText(self.fluid_phase_name)
+        b.setEnabled(not self.fluid_solver_disabled)
+        if self.fluid_solver_disabled:
+            if self.bcs_current_tab == 0: # Don't stay on disabled tab
+                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,0))
+        font = b.font()
+        font.setBold(self.bcs_current_tab == 0)
+        b.setFont(font)
+
+        #  Each solid phase will have its own tab. The tab name should be the name of the solid
+        # (Could do this only on solid name change)
+        n_cols = bcs.tab_box.columnCount()
+        # Clear out the old ones
+        for i in range(n_cols-1, 0, -1):
+            item = bcs.tab_box.itemAtPosition(0, i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                continue
+            if widget in (bcs.pushbutton_fluid, bcs.pushbutton_scalar):
+                continue
+            bcs.tab_box.removeWidget(widget)
+            widget.setParent(None)
+            widget.deleteLater()
+        # And make new ones
+        for (i, solid_name) in enumerate(self.solids.keys(),1):
+            b = QPushButton(text=solid_name)
+            w = b.fontMetrics().boundingRect(solid_name).width() + 20
+            b.setMaximumWidth(w)
+            b.setFlat(True)
+            font = b.font()
+            font.setBold(self.bcs_current_tab==1 and i==self.bcs_current_solid)
+            b.setFont(font)
+            b.clicked.connect(lambda clicked, i=i: self.bcs_change_tab(SOLIDS_TAB, i))
+            bcs.tab_box.addWidget(b, 0, i)
+        # Don't stay on disabled tab TODO
+        # if self.bcs_current_tab == 1 and ...
+
+        #Scalar (tab) - Tab only available if scalar equations are solved
+        # Move the 'Scalar' button to the right of all solids, if needed
+        b = bcs.pushbutton_scalar
+        font = b.font()
+        font.setBold(self.bcs_current_tab==SCALAR_TAB)
+        b.setFont(font)
+        nscalar = self.project.get_value('nscalar', default=0)
+        enabled = (nscalar > 0)
+        b.setEnabled(enabled)
+        if len(self.solids) > 0:
+            bcs.tab_box.removeWidget(b)
+            bcs.tab_box.addWidget(b, 0, 1+len(self.solids))
+        # Don't stay on a disabled tab TODO
+        # if self.bcs_current_tab == 2 and nscalar == 0:
+        #
+        self.bcs_setup_current_tab()
+
 
     def bcs_setup_current_tab(self):
         pass
@@ -170,10 +356,10 @@ class BCS(object):
 
     def bcs_set_volume_fraction_limit(self):
         pass
+
     def handle_bcs_volume_fraction(self, widget, val, args):
         pass
-    def bcs_find_index(self):
-        pass
+
     def update_bcs_fluid_mass_fraction_table(self):
         pass
 
@@ -199,13 +385,9 @@ class BCS(object):
         pass
 
 
+
+
 """
-Tabs group boundary condition parameters for phases and additional equations. Tabs are
-unavailable if no input is required from the user.
-
-#    Fluid tab - Unavailable if the fluid phase was disabled.
-
-#    Each solid phase will have its own tab. The tab name should be the name of the solid
 
 #    Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
 inputs a 'collapsible list' may make navigation easier.

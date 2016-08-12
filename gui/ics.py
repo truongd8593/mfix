@@ -61,8 +61,8 @@ class ICS(object):
 
         self.ics_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
         self.ics_current_solid = None
-        ics.pushbutton_fluid.clicked.connect(lambda: self.ics_change_tab(FLUID_TAB,0))
-        ics.pushbutton_scalar.clicked.connect(lambda: self.ics_change_tab(SCALAR_TAB,0))
+        ics.pushbutton_fluid.pressed.connect(lambda: self.ics_change_tab(FLUID_TAB,0))
+        ics.pushbutton_scalar.pressed.connect(lambda: self.ics_change_tab(SCALAR_TAB,0))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -267,6 +267,7 @@ class ICS(object):
 
 
     def fixup_ics_table(self, tw, stretch_column=0):
+        # TODO fix and unify all the fixup_*_table functions
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -457,7 +458,7 @@ class ICS(object):
             font = b.font()
             font.setBold(self.ics_current_tab==1 and i==self.ics_current_solid)
             b.setFont(font)
-            b.clicked.connect(lambda clicked, i=i: self.ics_change_tab(SOLIDS_TAB, i))
+            b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
             ics.tab_box.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...

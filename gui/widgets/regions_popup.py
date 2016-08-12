@@ -13,7 +13,7 @@ from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 UserRole = QtCore.Qt.UserRole
 
-from tools.general import (set_item_noedit, set_item_enabled, get_selected_row)
+from tools.general import (set_item_noedit, set_item_enabled, get_selected_rows)
 
 if PYQT5:
     def resize_column(table, col, flags):
@@ -22,13 +22,29 @@ else:
     def resize_column(table, col, flags):
         table.horizontalHeader().setResizeMode(col, flags)
 
+# move to "constants"
+# must match order in combobox_boundary_type
+boundary_types = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+
 class RegionsPopup(QtWidgets.QDialog):
 
     save = QtCore.Signal()
     cancel = QtCore.Signal()
 
     def handle_regions_selection(self):
-        pass
+        tw = self.ui.table
+        if self.boundary:
+            #  Pressure Inflow: Not available for STL regions
+            cb = self.ui.combobox_boundary_type
+            pi_index = boundary_types.index('PI')
+            pi_item = get_combobox_item(cb, pi_index)
+            disable = any(tw.item(x,1).text()=='STL'
+                          for x in get_selected_rows(self))
+            set_item_enabled(pi_item, not disable)
+            # Don't stay on disabled item
+            if disable and tw.currentIndex() == pi_index:
+                cb.setCurrentIndex(boundary_types.index('NSW')) # default
+
 
     def reset_signals(self):
         # todo:  fix this so it's not the caller's responsibility
@@ -75,7 +91,9 @@ class RegionsPopup(QtWidgets.QDialog):
         table.setItem(nrows, 2, make_item('Yes' if available else 'No', available))
 
     def popup(self, boundary=False):
+        # Widget is shared by ICs and BCs pane
         text = "Select region(s) for %s coundition" % ('boundary' if boundary else 'initial')
+        self.boundary = boundary
         for item in (self.ui.combobox_boundary_type, self.ui.label_boundary_type):
             if boundary:
                 item.show()

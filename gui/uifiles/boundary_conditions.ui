@@ -251,99 +251,99 @@
              <widget class="QFrame" name="frame_fluid_parameters">
               <layout class="QGridLayout" name="gridLayout_3">
                <item row="0" column="0">
-                <widget class="QLabel" name="label_ic_ep_g">
+                <widget class="QLabel" name="label_bc_ep_g">
                  <property name="text">
                   <string>Volume fraction</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_ep_g_args_BC">
+                <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label_ic_t_g">
+                <widget class="QLabel" name="label_bc_t_g">
                  <property name="text">
                   <string>Temperature</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_t_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_t_g_args_BC"/>
                </item>
                <item row="1" column="2">
-                <widget class="QLabel" name="label_ic_t_g_units">
+                <widget class="QLabel" name="label_bc_t_g_units">
                  <property name="text">
                   <string>K</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_ic_p_g">
+                <widget class="QLabel" name="label_bc_p_g">
                  <property name="text">
                   <string>Pressure</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_p_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_p_g_args_BC"/>
                </item>
                <item row="2" column="2">
-                <widget class="QLabel" name="label_ic_p_g_units">
+                <widget class="QLabel" name="label_bc_p_g_units">
                  <property name="text">
                   <string>Pa</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_ic_u_g">
+                <widget class="QLabel" name="label_bc_u_g">
                  <property name="text">
                   <string>U-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_u_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_u_g_args_BC"/>
                </item>
                <item row="3" column="2">
-                <widget class="QLabel" name="label_ic_u_g_units">
+                <widget class="QLabel" name="label_bc_u_g_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_ic_v_g">
+                <widget class="QLabel" name="label_bc_v_g">
                  <property name="text">
                   <string>V-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_v_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_v_g_args_BC"/>
                </item>
                <item row="4" column="2">
-                <widget class="QLabel" name="label_ic_v_g_units">
+                <widget class="QLabel" name="label_bc_v_g_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="label_ic_v_w">
+                <widget class="QLabel" name="label_bc_v_w">
                  <property name="text">
                   <string>W-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_w_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_w_g_args_BC"/>
                </item>
                <item row="5" column="2">
-                <widget class="QLabel" name="label_ic_v_w_units">
+                <widget class="QLabel" name="label_bc_v_w_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
@@ -390,51 +390,51 @@
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_6">
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_ic_l_scale">
+                  <widget class="QLabel" name="label_bc_l_scale">
                    <property name="text">
                     <string>Mixing length model scale</string>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_l_scale_args_BC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_l_scale_args_BC"/>
                  </item>
                  <item row="0" column="2">
-                  <widget class="QLabel" name="label_ic_l_scale_units">
+                  <widget class="QLabel" name="label_bc_l_scale_units">
                    <property name="text">
                     <string>m</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="0">
-                  <widget class="QLabel" name="label_ic_k_turb_g">
+                  <widget class="QLabel" name="label_bc_k_turb_g">
                    <property name="text">
                     <string>K-ε turbulent kinetic energy</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_k_turb_g_args_BC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_k_turb_g_args_BC"/>
                  </item>
                  <item row="1" column="2">
-                  <widget class="QLabel" name="label_ic_k_turb_g_units">
+                  <widget class="QLabel" name="label_bc_k_turb_g_units">
                    <property name="text">
                     <string>???</string>
                    </property>
                   </widget>
                  </item>
                  <item row="2" column="0">
-                  <widget class="QLabel" name="label_ic_e_turb_g">
+                  <widget class="QLabel" name="label_bc_e_turb_g">
                    <property name="text">
                     <string>K-ε turbulent dissipation</string>
                    </property>
                   </widget>
                  </item>
                  <item row="2" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_e_turb_g_args_BC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_e_turb_g_args_BC"/>
                  </item>
                  <item row="2" column="2">
-                  <widget class="QLabel" name="label_ic_e_turb_g_units">
+                  <widget class="QLabel" name="label_bc_e_turb_g_units">
                    <property name="text">
                     <string>???</string>
                    </property>
@@ -454,34 +454,34 @@
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_7">
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_ic_gama_rg">
+                  <widget class="QLabel" name="label_bc_gama_rg">
                    <property name="text">
                     <string>Radiation coefficient</string>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rg_args_BC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_gama_rg_args_BC"/>
                  </item>
                  <item row="0" column="2">
-                  <widget class="QLabel" name="label_ic_gama_rg_units">
+                  <widget class="QLabel" name="label_bc_gama_rg_units">
                    <property name="text">
                     <string>W/m² .K</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="0">
-                  <widget class="QLabel" name="label_ic_t_rg">
+                  <widget class="QLabel" name="label_bc_t_rg">
                    <property name="text">
                     <string>Radiation temperature</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rg_args_BC"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_t_rg_args_BC"/>
                  </item>
                  <item row="1" column="2">
-                  <widget class="QLabel" name="label_ic_t_rg_units">
+                  <widget class="QLabel" name="label_bc_t_rg_units">
                    <property name="text">
                     <string>K</string>
                    </property>
@@ -551,119 +551,119 @@
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
                <item row="0" column="0">
-                <widget class="QLabel" name="label_ic_ep_s">
+                <widget class="QLabel" name="label_bc_ep_s">
                  <property name="text">
                   <string>Volume fraction</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_ep_s_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_ep_s_args_BC_P"/>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label_ic_t_s">
+                <widget class="QLabel" name="label_bc_t_s">
                  <property name="text">
                   <string>Temperature</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_t_s_args_BC_P"/>
                </item>
                <item row="1" column="2">
-                <widget class="QLabel" name="label_ic_t_s_units">
+                <widget class="QLabel" name="label_bc_t_s_units">
                  <property name="text">
                   <string>K</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_ic_u_s">
+                <widget class="QLabel" name="label_bc_u_s">
                  <property name="text">
                   <string>U-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_u_s_args_BC_P"/>
                </item>
                <item row="2" column="2">
-                <widget class="QLabel" name="label_ic_u_s_units">
+                <widget class="QLabel" name="label_bc_u_s_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_ic_v_s">
+                <widget class="QLabel" name="label_bc_v_s">
                  <property name="text">
                   <string>V-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_v_s_args_BC_P"/>
                </item>
                <item row="3" column="2">
-                <widget class="QLabel" name="label_ic_v_s_units">
+                <widget class="QLabel" name="label_bc_v_s_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_ic_w_s">
+                <widget class="QLabel" name="label_bc_w_s">
                  <property name="text">
                   <string>W-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_w_s_args_BC_P"/>
                </item>
                <item row="4" column="2">
-                <widget class="QLabel" name="label_ic_w_s_units">
+                <widget class="QLabel" name="label_bc_w_s_units">
                  <property name="text">
                   <string>m/s</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="0">
-                <widget class="QLabel" name="label_ic_p_star">
+                <widget class="QLabel" name="label_bc_p_star">
                  <property name="text">
                   <string>Pressure (optional)</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_p_star_args_BC_P"/>
                </item>
                <item row="5" column="2">
-                <widget class="QLabel" name="label_ic_p_star_units">
+                <widget class="QLabel" name="label_bc_p_star_units">
                  <property name="text">
                   <string>Pa</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="0">
-                <widget class="QLabel" name="label_ic_theta_m">
+                <widget class="QLabel" name="label_bc_theta_m">
                  <property name="text">
                   <string>Granular temperature</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_theta_m_args_BC_P"/>
                </item>
                <item row="7" column="0">
-                <widget class="QLabel" name="label_ic_pic_const_statwt">
+                <widget class="QLabel" name="label_bc_pic_const_statwt">
                  <property name="text">
                   <string>Particles per parcel</string>
                  </property>
                 </widget>
                </item>
                <item row="7" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_BC_P"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_pic_const_statwt_args_BC_P"/>
                </item>
               </layout>
              </widget>
@@ -704,7 +704,7 @@
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
                <item row="0" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_ic_des_fit_to_region_args_BC">
+                <widget class="CheckBox" name="checkbox_keyword_bc_des_fit_to_region_args_BC">
                  <property name="text">
                   <string>Fit particles to region</string>
                  </property>
@@ -713,34 +713,34 @@
                <item row="1" column="0">
                 <layout class="QGridLayout" name="gridLayout_5">
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_ic_gama_rs">
+                  <widget class="QLabel" name="label_bc_gama_rs">
                    <property name="text">
                     <string>Radiation coefficient</string>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_gama_rs_args_BC_P"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_gama_rs_args_BC_P"/>
                  </item>
                  <item row="0" column="2">
-                  <widget class="QLabel" name="label_ic_gama_rs_units">
+                  <widget class="QLabel" name="label_bc_gama_rs_units">
                    <property name="text">
                     <string>W/m² .K</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="0">
-                  <widget class="QLabel" name="label_ic_t_rs">
+                  <widget class="QLabel" name="label_bc_t_rs">
                    <property name="text">
                     <string>Radiation temperature</string>
                    </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_ic_t_rs_args_BC_P"/>
+                  <widget class="LineEdit" name="lineedit_keyword_bc_t_rs_args_BC_P"/>
                  </item>
                  <item row="1" column="2">
-                  <widget class="QLabel" name="label_ic_t_rs_units">
+                  <widget class="QLabel" name="label_bc_t_rs_units">
                    <property name="text">
                     <string>K</string>
                    </property>
