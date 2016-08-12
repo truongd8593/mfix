@@ -293,13 +293,14 @@ class ICS(object):
     def ics_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
         # then we have no input tabs on the ICs pane, so disable it completely
-        disabled = (len(self.ui.regions)==0
+        regions = self.ui.regions.get_region_dict()
+        nregions = len([r for r in regions.values()
+                        if r.get('type')=='box'])
+        disabled = (nregions==0
                     or (self.fluid_solver_disabled
                         and self.project.get_value('nscalar',default=0)==0
                         and len(self.solids)==0))
-
         self.find_navigation_tree_item("Initial Conditions").setDisabled(disabled)
-
 
     def ics_change_tab(self, tab, solid):
         ics = self.ui.initial_conditions
@@ -360,10 +361,8 @@ class ICS(object):
             to_btn = ics.tab_box.itemAtPosition(0, index),
             btn_layout = ics.tab_box)
 
-
-
-    def ics_check_region_in_use(self, region):
-        return any(data.get('region')==region for data in self.ics.values())
+    def ics_check_region_in_use(self, name):
+        return any(data.get('region')==name for data in self.ics.values())
 
     def ics_update_region(self, name, data):
         for (i,ic) in self.ics.items():

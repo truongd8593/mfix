@@ -372,6 +372,9 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.tablewidget_regions.set_value(data)
 
+        if key == 'type':
+            self.parent.update_nav_tree() # ICs/BCs availability depends on region types
+
     def table_value_changed(self, name, key, value):
         # When is this called?
         data = self.tablewidget_regions.value

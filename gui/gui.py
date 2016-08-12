@@ -623,14 +623,8 @@ class MfixGui(QtWidgets.QMainWindow,
                      text='Feature not implemented')
 
     def update_nav_tree(self):
-        n_regions = len(self.ui.regions.get_region_dict()) # causes an extra copy
-        enabled = (n_regions > 0) and (self.fluid_nscalar_eq > 0
-                                       or self.solids_nscalar_eq > 0
-                                       or len(self.solids) > 0
-                                       or not(self.fluid_solver_disabled) )
-        for name in ("Initial Conditions", "Boundary Conditions"):
-            item = self.find_navigation_tree_item(name)
-            item.setDisabled(not enabled)
+        self.ics_update_enabled()
+        self.bcs_update_enabled()
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
@@ -910,7 +904,6 @@ class MfixGui(QtWidgets.QMainWindow,
         m.combobox_turbulence_model.setEnabled(enabled and
                         m.checkbox_enable_turbulence.isChecked())
 
-        self.ics_update_enabled()
         self.update_nav_tree()
         # TODO update nscalar
 
@@ -1010,7 +1003,6 @@ class MfixGui(QtWidgets.QMainWindow,
             i += 1
 
         # ICs enabled/disabled depends on nscalar
-        self.ics_update_enabled()
         self.update_nav_tree()
 
     # helper functions for __init__
@@ -2298,11 +2290,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Initial conditions
         self.ics_extract_regions()
-        self.ics_update_enabled()
 
         # Boundary conditions
         self.bcs_extract_regions()
-        self.bcs_update_enabled()
+
         # Chemistry
 
         ### Workflow
@@ -2320,6 +2311,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
+        self.update_nav_tree()
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
