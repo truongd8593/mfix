@@ -489,13 +489,9 @@ class VtkWidget(QtWidgets.QWidget):
 
     def geometry_from_str(self, string):
         """convert string to geometry"""
-        try:
-            data = ExtendedJSON.loads(string)
-            tree = data['tree']
-            geo_dict = data['geometry_dict']
-        except Exception as e:
-            self.parent.message(text='Error loading geometry: %s' % e)
-            return
+        data = ExtendedJSON.loads(string)
+        tree = data.get('tree')
+        geo_dict = data.get('geometry_dict')
 
         if not tree or not data:
             return
