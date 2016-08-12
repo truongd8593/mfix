@@ -77,7 +77,6 @@ class BCS(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
-
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
         # BC regions must be planes or STLs (not volumes or points)
@@ -211,10 +210,55 @@ class BCS(object):
         return n
 
     def bcs_delete_regions(self):
-        pass
+        tw = self.ui.boundary_conditions.tablewidget_regions
+        row = get_selected_row(tw)
+        if row is None: # No selection
+            return
+
+        # Unset keywords
+        kwlist = list(self.project.keywordItems())[:]
+        for kw in kwlist:
+            key, args = kw.key, kw.args
+            # TODO use keyword_args here instead of startswith
+            if key.startswith('bc_') and args and args[0] in self.bcs_current_indices:
+                self.unset_keyword(key, args=args)
+
+        # TODO: fix any resulting holes in index sequence!
+
+        for r in self.bcs_current_regions:
+            if r in self.bcs_region_dict:
+                self.bcs_region_dict[r]['available'] = True
+
+        for i in self.bcs_current_indices:
+            del self.bcs[i]
+
+        self.bcs_current_regions = []
+        self.bcs_current_indices = []
+
+        tw.removeRow(row)
+        self.bcs_setup_current_tab()
+
 
     def handle_bcs_region_selection(self):
-        pass
+        bcs = self.ui.boundary_conditions
+        table = bcs.tablewidget_regions
+        row = get_selected_row(table)
+        if row is None:
+            indices = []
+            regions = []
+        else:
+            (indices, regions) = table.item(row,0).data(UserRole)
+        self.bcs_current_indices, self.bcs_current_regions = indices, regions
+        enabled = (row is not None)
+        bcs.toolbutton_delete.setEnabled(enabled)
+        bcs.scrollarea_detail.setEnabled(enabled)
+        if not enabled:
+            # Clear
+            for widget in widget_iter(bcs.scrollarea_detail):
+                if isinstance(widget, QLineEdit): # Does this work for LineEdit?
+                    widget.setText('')
+            return
+        self.bcs_setup_current_tab() # reinitialize all widgets in current tab
 
     def fixup_bcs_table(self, tw, stretch_column=0):
         # TODO fix and unify all the fixup_*_table functions
@@ -246,16 +290,85 @@ class BCS(object):
 
 
     def bcs_update_enabled(self):
-        pass
+        # If there are no solids, no scalar equations, and the fluid solver is disabled,
+        regions = self.ui.regions.get_region_dict()
+        nregions = len([r for r in regions.values()
+                       if r.get('type')=='STL' or 'plane' in r.get('type')])
+        disabled = (nregions==0
+                    or (self.fluid_solver_disabled
+                        and self.project.get_value('nscalar',default=0)==0
+                        and len(self.solids)==0))
+        self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
     def bcs_change_tab(self, tab, solid):
-        pass
+        bcs = self.ui.boundary_conditions
+        index = (0 if tab==FLUID_TAB
+                 else len(self.solids)+1 if tab==SCALAR_TAB
+                 else solid)
+
+        for i in range(bcs.tab_box.columnCount()):
+            item = bcs.tab_box.itemAtPosition(0, i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                continue
+            font = widget.font()
+            font.setBold(i==index)
+            widget.setFont(font)
+
+        current_index = bcs.stackedwidget.currentIndex()
+        # If we're switching from solid m to solid n, we need some
+        # special handling, because both tabs are really the same
+        # widget.  We make a picture of the current tab, display that
+        # in a dummy pane, then slide back to the solids tab
+        if tab == current_index == SOLIDS_TAB:
+            if solid == self.bcs_current_solid:
+                return # Really nothing to do
+
+            if solid > self.bcs_current_solid:
+                dummy_label = bcs.label_dummy_solids_L
+                dummy_tab = SOLIDS_TAB_DUMMY_L
+            else:
+                dummy_label = bcs.label_dummy_solids_R
+                dummy_tab = SOLIDS_TAB_DUMMY_R
+
+            pixmap = QPixmap(bcs.page_solids.size())
+            bcs.page_solids.render(pixmap)
+            dummy_label.setPixmap(pixmap)
+            bcs.stackedwidget.setCurrentIndex(dummy_tab)
+
+        self.bcs_current_tab = tab
+        self.bcs_current_solid = solid
+
+        #update tab contents
+        if tab==FLUID_TAB:
+            self.setup_bcs_fluid_tab()
+        elif tab==SOLIDS_TAB:
+            self.setup_bcs_solids_tab(self.bcs_current_solid)
+        elif tab==SCALAR_TAB:
+            self.setup_bcs_scalar_tab()
+
+        # change stackedwidget contents
+        self.animate_stacked_widget(
+            bcs.stackedwidget,
+            bcs.stackedwidget.currentIndex(),
+            tab,
+            direction='horizontal',
+            line = bcs.tab_underline,
+            to_btn = bcs.tab_box.itemAtPosition(0, index),
+            btn_layout = bcs.tab_box)
 
     def bcs_check_region_in_use(self, name):
-        return False
+        # Should we allow any change of region type?  eg. xy plane -> xz plane?
+        #  Probably not
+        return any(data.get('region')==name for data in self.bcs.values())
 
     def bcs_update_region(self, name, data):
-        pass
+        for (i,bc) in self.bcs.items():
+            if bc.get('region') == name:
+                self.bcs_set_region_keys(name, i, data)
+
 
     def bcs_set_region_keys(self, name, idx, bc_type, data):
         # Update the keys which define the box-shaped region the BC applies to
@@ -271,11 +384,15 @@ class BCS(object):
             key = 'bc_' + key
             self.update_keyword(key, val, args=[idx])
 
-
-
-
     def reset_bcs(self):
-        pass
+        self.bcs.clear()
+        self.bcs_current_indices = []
+        self.bcs_current_regions = []
+        self.bcs_region_dict = None
+        bcs = self.ui.boundary_conditions
+        bcs.tablewidget_regions.clearContents()
+        bcs.tablewidget_regions.setRowCount(0)
+        # anything else to do here?
 
     def bcs_to_str(self):
         return ""
