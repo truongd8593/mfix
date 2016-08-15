@@ -502,28 +502,28 @@ QPushButton:checked {
                 <number>5</number>
                </property>
                <item row="0" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_S">
+                <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_P">
                  <property name="text">
                   <string>Solve U-Momentum Equation</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq_args_S">
+                <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq_args_P">
                  <property name="text">
                   <string>Solve V-Momentum Equation</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_momentum_z_eq_args_S">
+                <widget class="CheckBox" name="checkbox_keyword_momentum_z_eq_args_P">
                  <property name="text">
                   <string>Solve W-Momentum Equation</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="CheckBox" name="checkbox_keyword_species_eq_args_S">
+                <widget class="CheckBox" name="checkbox_keyword_species_eq_args_P">
                  <property name="text">
                   <string>Enable Species Equations</string>
                  </property>
@@ -781,7 +781,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="1" column="2">
-                <widget class="LineEdit" name="lineedit_keyword_ro_s0_args_S"/>
+                <widget class="LineEdit" name="lineedit_keyword_ro_s0_args_P"/>
                </item>
                <item row="1" column="3">
                 <widget class="QLabel" name="label_ro_s0_units">
@@ -826,7 +826,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="2" column="2">
-                <widget class="LineEdit" name="lineedit_keyword_mu_s0_args_S">
+                <widget class="LineEdit" name="lineedit_keyword_mu_s0_args_P">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -914,7 +914,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="4" column="2">
-                <widget class="LineEdit" name="lineedit_keyword_c_ps0_args_S"/>
+                <widget class="LineEdit" name="lineedit_keyword_c_ps0_args_P"/>
                </item>
                <item row="4" column="3">
                 <widget class="QLabel" name="label_c_ps0_units">
@@ -959,7 +959,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="5" column="2">
-                <widget class="LineEdit" name="lineedit_keyword_k_s0_args_S">
+                <widget class="LineEdit" name="lineedit_keyword_k_s0_args_P">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
@@ -980,7 +980,7 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_d_p0_args_S"/>
+                <widget class="LineEdit" name="lineedit_keyword_d_p0_args_P"/>
                </item>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_d_p0_units">
@@ -990,31 +990,31 @@ QPushButton:checked {
                 </widget>
                </item>
                <item row="6" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_des_em_args_S"/>
+                <widget class="LineEdit" name="lineedit_keyword_des_em_args_P"/>
                </item>
               </layout>
               <zorder>label_solids_viscosity_model</zorder>
               <zorder>label_solids_specific_heat_model</zorder>
               <zorder>label_c_ps0_units</zorder>
-              <zorder>lineedit_keyword_des_em_args_S</zorder>
+              <zorder>lineedit_keyword_des_em_args_P</zorder>
               <zorder>label_d_p0</zorder>
-              <zorder>lineedit_keyword_d_p0_args_S</zorder>
+              <zorder>lineedit_keyword_d_p0_args_P</zorder>
               <zorder>label_solids_density_model</zorder>
               <zorder>combobox_solids_density_model</zorder>
-              <zorder>lineedit_keyword_ro_s0_args_S</zorder>
+              <zorder>lineedit_keyword_ro_s0_args_P</zorder>
               <zorder>label_ro_s0_units</zorder>
               <zorder>combobox_solids_viscosity_model</zorder>
-              <zorder>lineedit_keyword_mu_s0_args_S</zorder>
+              <zorder>lineedit_keyword_mu_s0_args_P</zorder>
               <zorder>label_mu_s0_units</zorder>
               <zorder>label_solids_mol_weight_model</zorder>
               <zorder>combobox_solids_mol_weight_model_locked</zorder>
               <zorder>lineedit_mol_weight_disabled</zorder>
               <zorder>label_mol_weight_units_disabled</zorder>
               <zorder>combobox_solids_specific_heat_model</zorder>
-              <zorder>lineedit_keyword_c_ps0_args_S</zorder>
+              <zorder>lineedit_keyword_c_ps0_args_P</zorder>
               <zorder>label_solids_conductivity_model</zorder>
               <zorder>combobox_solids_conductivity_model</zorder>
-              <zorder>lineedit_keyword_k_s0_args_S</zorder>
+              <zorder>lineedit_keyword_k_s0_args_P</zorder>
               <zorder>label_k_s0_units</zorder>
               <zorder>label_des_em</zorder>
               <zorder>label_d_p0_units</zorder>
