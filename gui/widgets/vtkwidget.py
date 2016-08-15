@@ -32,6 +32,7 @@ except ImportError:
 from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
 from widgets.base import LineEdit
+from widgets.distributed_popup import DistributionPopUp
 from project import Equation, ExtendedJSON
 from widgets.vtk_constants import *
 
@@ -78,6 +79,14 @@ def clean_geo_dict(d):
                            'booleanoperation']:
                 if isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]:
                     clean_dict[geo][key] = value
+    return clean_dict
+    
+def remove_vtk_objects(d):
+    clean_dict = {}
+    for key, value in d.items():
+        if not isinstance(value, vtk.vtkObject):
+            clean_dict[key] = value
+            
     return clean_dict
 
 def clean_visual_dict(d):
@@ -286,6 +295,20 @@ class VtkWidget(QtWidgets.QWidget):
         action = QtWidgets.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
         self.add_geometry_menu.addAction(action)
+        
+        self.add_geometry_menu.addSeparator()
+        
+        # wizards
+        wizard_menu = QtWidgets.QMenu('wizards', self.add_geometry_menu)
+        self.add_geometry_menu.addMenu(wizard_menu)
+        
+        action = QtWidgets.QAction('cyclone', wizard_menu)
+        action.triggered.connect(self.cyclone_wizard)
+        wizard_menu.addAction(action)
+        
+        action = QtWidgets.QAction('distributed', wizard_menu)
+        action.triggered.connect(self.distributed_wizard)
+        wizard_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
 
@@ -315,7 +338,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.ui.geometry.toolbutton_remove_geometry.pressed.connect(
             self.remove_geometry)
         self.ui.geometry.toolbutton_copy_geometry.pressed.connect(
-            self.copy_geometry)
+            self.handle_copy_geometry)
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
@@ -1199,7 +1222,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             self.render()
 
-    def copy_geometry(self):
+    def handle_copy_geometry(self):
         """ duplicate the selected geometry """
         raise NotImplementedError
 
@@ -1219,6 +1242,27 @@ class VtkWidget(QtWidgets.QWidget):
 #            self.geometrydict[new] = copy.deepcopy(self.geometrydict[text])
 #
 #            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
+
+    def copy_geometry(self, name, center=None):
+        
+        data = copy.deepcopy(remove_vtk_objects(self.geometrydict[name]))
+        
+        if center is not None:
+            for key, val in zip(['centerx', 'centery', 'centerz'], center):
+                data[key] = val
+        
+        if data['geo_type'] == 'primitive':
+            self.add_primitive(data=data)
+        elif data['geo_type'] == 'parametric':
+            self.add_parametric(data=data)
+        elif data['geo_type'] == 'filter':
+            self.add_filter(data=data)
+        elif data['geo_type'] =='boolean':
+            self.boolean_operation(data=data)
+        elif data['geo_type'] =='stl':
+            self.add_stl(None, filename=data['filename'],
+                         data=data)
+        
 
     def update_filter(self, name):
         """
@@ -2219,3 +2263,15 @@ class VtkWidget(QtWidgets.QWidget):
                         get_icon('visibilityofftransparent.png'))
         else:
             btn.setIcon(get_icon('visibility.png'))
+            
+    # --- wizards ---            
+    def cyclone_wizard(self):
+        pass
+    
+    def distributed_wizard(self):
+        
+        popup = DistributionPopUp(self)
+        popup.popup()
+
+    def reactor_wizard(self):
+        pass
