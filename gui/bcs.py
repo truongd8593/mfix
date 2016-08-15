@@ -395,10 +395,20 @@ class BCS(object):
         # anything else to do here?
 
     def bcs_to_str(self):
-        return ""
+        bcs = self.ui.boundary_conditions
+        tw = bcs.tablewidget_regions
+        data = [tw.item(i,0).data(UserRole)
+                for i in range(tw.rowCount())]
+        return JSONEncoder().encode(data)
 
     def bcs_regions_from_str(self, s):
-        pass
+        if not s:
+            return
+        data = JSONDecoder().decode(s)
+        for (indices, regions) in data:
+            # bc_type keyword should be set already when we call this
+            self.bcs_add_regions_1(regions, indices)
+
 
     def setup_bcs(self):
         ui = self.ui
@@ -480,7 +490,13 @@ class BCS(object):
 
 
     def bcs_setup_current_tab(self):
-        pass
+        if self.bcs_current_tab == FLUID_TAB:
+            self.setup_bcs_fluid_tab()
+        elif self.bcs_current_tab == SOLIDS_TAB:
+            self.setup_bcs_solids_tab(self.bcs_current_solid)
+        elif self.bcs_current_tab == SCALAR_TAB:
+            self.setup_bcs_scalar_tab()
+
 
 
     def bcs_set_volume_fraction_limit(self):
@@ -503,10 +519,58 @@ class BCS(object):
         pass
     def update_bcs_solids_mass_fraction_total(self):
         pass
+
     def bcs_extract_regions(self):
-        pass
+        if self.bcs:
+            # We assume that bc regions have been initialized correctly
+            # from mfix_gui_comments.
+            # TODO: verify that there is an BC region for each BC
+            return
+
+        if self.bcs_region_dict is None:
+            self.bcs_region_dict = self.ui.regions.get_region_dict()
+
+        # TODO: if we wanted to be fancy, we could find regions where
+        # BC values matched, and merge into a new BC region.  That
+        # is only needed for projects created outside the GUI (otherwise
+        # we have already stored the BC regions).  Also would be nice
+        # to offer a way to split compound regions.
+        for bc in self.project.bcs:
+            d = bc.keyword_dict
+            extent = [d.get(k, None) for k in ('bc_x_w', 'bc_y_s', 'bc_z_b',
+                                              'bc_x_e', 'bc_y_n', 'bc_z_t')]
+            # should we distinguish 0 from unset?  in the region_dict we get
+            #  from the regions_widget, the values are 0, while in the project,
+            #  keywords are simply unset (value None) rather than set to 0
+            extent = [0.0 if x is None else x.value for x in extent]
+            # Check dimensionality?
+            #if any (x is None for x in extent):
+            #    self.warn("boundary condition %s: invalid extents %s" %
+            #               (bc.ind, extent))
+            #    continue
+            for (region_name, data) in self.bcs_region_dict.items():
+                ext2 = data.get('from',[]) + data.get('to',[])
+                if data.get('from',[]) + data.get('to',[]) == extent:
+                    if data.get('available', True):
+                        bc_type = self.project.get_value('bc_type', args=bc.ind)
+                        if bc_type is None:
+                            self.warn("no bc_type for region %s" % bc.ind)
+                        elif bc_type not in BC_TYPES:
+                            self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
+                        else:
+                            self.bcs_add_regions_1([region_name], BC_TYPES.index(bc_type), [bc.ind])
+                            break
+            else:
+                self.warn("boundary condition %s: could not match defined region %s" %
+                          (bc.ind, extent))
+
+
+
+
     def setup_bcs_fluid_tab(self):
         pass
+
+
     def setup_bcs_solids_tab(self, P):
         pass
 

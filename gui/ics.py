@@ -688,7 +688,7 @@ class ICS(object):
         # TODO: if we wanted to be fancy, we could find regions where
         # IC values matched, and merge into a new IC region.  That
         # is only needed for projects created outside the GUI (otherwise
-        # we have already stored the IC regions).  Also woule be nice
+        # we have already stored the IC regions).  Also would be nice
         # to offer a way to split compound regions.
         for ic in self.project.ics:
 

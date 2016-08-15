@@ -304,12 +304,21 @@ class RegionsWidget(QtWidgets.QWidget):
         if name is None:
             name = list(data.keys())[rows[-1]]
         key = list(value.keys())[0]
-
+        row_data = data[name] # guaranteed to be present
         if self.check_region_in_use(name):
             if key in ('type', 'name'):
                 # Should we just disable the widgets for in-use regions?
-                self.parent.message(text="Region %s is in use" % name)
-                widget.setCurrentText('box') # TODO: might not be a box!
+                self.parent.message(text="Region %s is in use, cannot change %s" %
+                                    (name, key))
+                # Should we allow rename? We'd have to fix up defs in ics and bcs
+                # but that's possible
+
+                # Restore vals
+                if key == 'type':
+                    widget.setCurrentText(row_data.get('type'))
+                elif key == 'name':
+                    widget.setText(name)
+
                 return
 
         self.parent.set_unsaved_flag()

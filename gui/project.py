@@ -513,11 +513,6 @@ class BC(CondBase):
         self.name = 'BC'
 
     def __str__(self):
-        try:
-            bctype = self.bc_type
-        except AttributeError:
-            bctype = 'UNDEFINED_C'
-
         if self.gasSpecies:
             gasSpec = ['  Gas Species:'] + [''.join(['    ', val]) for val in
                                             self.gasSpecies.prettyPrintList()]
@@ -530,12 +525,11 @@ class BC(CondBase):
             solids = []
 
         return '\n'.join(
-            ["Boundary Condition %s: %s"%(self.ind, bctype)]
+            ["BC %s:"%self.ind]
             + [''.join(['  ', to_text_string(key), ': ', to_text_string(value)])
                for key, value in self.keyword_dict.items()]
             + gasSpec
             + solids)
-
 
 
 class IC(CondBase):
@@ -544,11 +538,7 @@ class IC(CondBase):
         self.name = 'IC'
 
     def __str__(self):
-        try:
-            ictype = self.ic_type
-        except AttributeError:
-            ictype = 'UNDEFINED_C'
-        return "Initial Condition {}: {}".format(self.ind, ictype)
+        return "IC %s" % self.ind
 
 
 class PS(CondBase):
@@ -557,7 +547,7 @@ class PS(CondBase):
         self.name = 'PS'
 
     def __str__(self):
-        return "Point Source {}:".format(self.ind)
+        return "PS %s" % self.ind
 
 
 class IS(CondBase):
