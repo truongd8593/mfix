@@ -294,6 +294,25 @@
            </widget>
           </item>
           <item>
+           <widget class="QToolButton" name="toolbutton_wizard">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Wizards</string>
+            </property>
+            <property name="text">
+             <string>wizard</string>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QToolButton" name="toolbutton_remove_geometry">
             <property name="enabled">
              <bool>false</bool>

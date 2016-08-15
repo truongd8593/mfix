@@ -390,6 +390,7 @@ class MfixGui(QtWidgets.QMainWindow,
         geo = self.ui.geometry
         geo.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         geo.toolbutton_add_filter.setIcon(get_icon('filter.png'))
+        geo.toolbutton_wizard.setIcon(get_icon('wand.png'))
         geo.toolbutton_geometry_union.setIcon(get_icon('union.png'))
         geo.toolbutton_geometry_intersect.setIcon(get_icon('intersect.png'))
         geo.toolbutton_geometry_difference.setIcon(get_icon('difference.png'))
@@ -1144,10 +1145,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
         # register with project manager
-        self.project.register_widget(self.vtkwidget,
-                                     ['xmin', 'xlength', 'ymin', 'ylength',
-                                      'zmin', 'zlength', 'imax', 'jmax',
-                                      'kmax', 'no_k'])
+        self.project.register_widget(
+            self.vtkwidget, ['xmin', 'xlength', 'ymin', 'ylength', 'zmin',
+                             'zlength', 'imax', 'jmax', 'kmax', 'no_k'])
 
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget

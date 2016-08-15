@@ -297,20 +297,6 @@ class VtkWidget(QtWidgets.QWidget):
         self.add_geometry_menu.addAction(action)
         
         self.add_geometry_menu.addSeparator()
-        
-        # wizards
-        wizard_menu = QtWidgets.QMenu('wizards', self.add_geometry_menu)
-        self.add_geometry_menu.addMenu(wizard_menu)
-        
-        action = QtWidgets.QAction('cyclone', wizard_menu)
-        action.triggered.connect(self.cyclone_wizard)
-        wizard_menu.addAction(action)
-        
-        action = QtWidgets.QAction('distributed', wizard_menu)
-        action.triggered.connect(self.distributed_wizard)
-        wizard_menu.addAction(action)
-
-        self.add_geometry_menu.addSeparator()
 
         for geo in PRIMITIVE_DICT.keys():
             action = QtWidgets.QAction(geo, self.add_geometry_menu)
@@ -323,6 +309,19 @@ class VtkWidget(QtWidgets.QWidget):
             action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
             action.triggered.connect(partial(self.add_parametric, paramtype=geo))
             self.add_geometry_menu.addAction(action)
+            
+        # --- wizards ---
+        wizard_menu = QtWidgets.QMenu('wizards', self)
+        
+        action = QtWidgets.QAction('cyclone', wizard_menu)
+        action.triggered.connect(self.cyclone_wizard)
+        wizard_menu.addAction(action)
+        
+        action = QtWidgets.QAction('distributed', wizard_menu)
+        action.triggered.connect(self.distributed_wizard)
+        wizard_menu.addAction(action)
+
+        self.ui.geometry.toolbutton_wizard.setMenu(wizard_menu)
 
         # --- filter button ---
         self.add_filter_menu = QtWidgets.QMenu(self)
@@ -1249,12 +1248,16 @@ class VtkWidget(QtWidgets.QWidget):
 #
 #            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
 
-    def copy_geometry(self, name, center=None):
+    def copy_geometry(self, name, center=None, rotation=None):
         
         data = copy.deepcopy(remove_vtk_objects(self.geometrydict[name]))
         
         if center is not None:
             for key, val in zip(['centerx', 'centery', 'centerz'], center):
+                data[key] = val
+                
+        if rotation is not None:
+            for key, val in zip(['rotationx', 'rotationy', 'rotationz'], rotation):
                 data[key] = val
         
         name = None
