@@ -379,15 +379,15 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.toolbutton_view_xy = QtWidgets.QToolButton()
         self.toolbutton_view_xy.pressed.connect(lambda: self.set_view('xy'))
-        self.toolbutton_view_xy.setIcon(get_icon('-z.png'))
+        self.toolbutton_view_xy.setIcon(get_icon('xy.png'))
 
         self.toolbutton_view_yz = QtWidgets.QToolButton()
         self.toolbutton_view_yz.pressed.connect(lambda: self.set_view('yz'))
-        self.toolbutton_view_yz.setIcon(get_icon('-x.png'))
+        self.toolbutton_view_yz.setIcon(get_icon('yz.png'))
 
         self.toolbutton_view_xz = QtWidgets.QToolButton()
         self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
-        self.toolbutton_view_xz.setIcon(get_icon('-y.png'))
+        self.toolbutton_view_xz.setIcon(get_icon('xz.png'))
 
         self.toolbutton_screenshot = QtWidgets.QToolButton()
         self.toolbutton_screenshot.pressed.connect(self.screenshot)
