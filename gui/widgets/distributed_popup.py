@@ -62,7 +62,12 @@ class DistributionPopUp(QtWidgets.QDialog):
             point = np.random.random(3)
             point = [p*(t-f)+f for p, f, t in zip(point, bounds[::2], bounds[1::2])]
             for p in self.points_in_geo(geo, [point]):
-                self.vtk_widget.copy_geometry(shape, p)
+                new = self.vtk_widget.copy_geometry(shape, p)
+                if self.ui.checkbox_union.isChecked() and last is not None:
+                    last = self.vtk_widget.boolean_operation(
+                        booltype='union', children=[last, new])
+                else:
+                    last = new
                 n_points+=1
             max_itr +=1
             

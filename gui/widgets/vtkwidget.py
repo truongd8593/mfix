@@ -757,6 +757,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.setCurrentItem(item)
 
             self.parent.set_unsaved_flag()
+            return name
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
         """
@@ -962,6 +963,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.setCurrentItem(item)
 
         self.parent.set_unsaved_flag()
+        return  name
 
     def update_parametric(self, name):
         """
@@ -1105,6 +1107,9 @@ class VtkWidget(QtWidgets.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
+        
+        self.parent.set_unsaved_flag()
+        return name
 
     def boolean_operation(self, booltype=None, boolname=None, data=None, children=None):
         """
@@ -1188,6 +1193,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.setCurrentItem(toplevel)
 
         self.parent.set_unsaved_flag()
+        return boolname
 
     def clear_all_geometry(self):
         """ remove all geometry """
@@ -1251,17 +1257,19 @@ class VtkWidget(QtWidgets.QWidget):
             for key, val in zip(['centerx', 'centery', 'centerz'], center):
                 data[key] = val
         
+        name = None
         if data['geo_type'] == 'primitive':
-            self.add_primitive(data=data)
+            name = self.add_primitive(data=data)
         elif data['geo_type'] == 'parametric':
-            self.add_parametric(data=data)
+            name = self.add_parametric(data=data)
         elif data['geo_type'] == 'filter':
-            self.add_filter(data=data)
+            name = self.add_filter(data=data)
         elif data['geo_type'] =='boolean':
-            self.boolean_operation(data=data)
+            name = self.boolean_operation(data=data)
         elif data['geo_type'] =='stl':
-            self.add_stl(None, filename=data['filename'],
+            name = self.add_stl(None, filename=data['filename'],
                          data=data)
+        return name
         
 
     def update_filter(self, name):
