@@ -1,5 +1,4 @@
 # VTK widget
-
 from __future__ import print_function, absolute_import, unicode_literals, division
 import os
 import copy
@@ -27,16 +26,15 @@ except ImportError:
         VTK_AVAILABLE = False
         log.info("Can't import QVTKRenderWindowInteractor ")
 
-
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
 from widgets.base import LineEdit
 from widgets.distributed_popup import DistributionPopUp
+from widgets.cyclone_popup import CyclonePopUp
+from widgets.reactor_popup import ReactorPopUp
 from project import Equation, ExtendedJSON
 from widgets.vtk_constants import *
-
-
 
 gui = None
 
@@ -80,13 +78,13 @@ def clean_geo_dict(d):
                 if isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]:
                     clean_dict[geo][key] = value
     return clean_dict
-    
+
 def remove_vtk_objects(d):
     clean_dict = {}
     for key, value in d.items():
         if not isinstance(value, vtk.vtkObject):
             clean_dict[key] = value
-            
+
     return clean_dict
 
 def clean_visual_dict(d):
@@ -295,7 +293,7 @@ class VtkWidget(QtWidgets.QWidget):
         action = QtWidgets.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
         self.add_geometry_menu.addAction(action)
-        
+
         self.add_geometry_menu.addSeparator()
 
         for geo in PRIMITIVE_DICT.keys():
@@ -309,16 +307,20 @@ class VtkWidget(QtWidgets.QWidget):
             action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
             action.triggered.connect(partial(self.add_parametric, paramtype=geo))
             self.add_geometry_menu.addAction(action)
-            
+
         # --- wizards ---
         wizard_menu = QtWidgets.QMenu('wizards', self)
-        
+
+        action = QtWidgets.QAction('distributed', wizard_menu)
+        action.triggered.connect(self.distributed_wizard)
+        wizard_menu.addAction(action)
+
         action = QtWidgets.QAction('cyclone', wizard_menu)
         action.triggered.connect(self.cyclone_wizard)
         wizard_menu.addAction(action)
-        
-        action = QtWidgets.QAction('distributed', wizard_menu)
-        action.triggered.connect(self.distributed_wizard)
+
+        action = QtWidgets.QAction('reactor', wizard_menu)
+        action.triggered.connect(self.reactor_wizard)
         wizard_menu.addAction(action)
 
         self.ui.geometry.toolbutton_wizard.setMenu(wizard_menu)
@@ -1106,7 +1108,7 @@ class VtkWidget(QtWidgets.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
-        
+
         self.parent.set_unsaved_flag()
         return name
 
@@ -1249,17 +1251,17 @@ class VtkWidget(QtWidgets.QWidget):
 #            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
 
     def copy_geometry(self, name, center=None, rotation=None):
-        
+
         data = copy.deepcopy(remove_vtk_objects(self.geometrydict[name]))
-        
+
         if center is not None:
             for key, val in zip(['centerx', 'centery', 'centerz'], center):
                 data[key] = val
-                
+
         if rotation is not None:
             for key, val in zip(['rotationx', 'rotationy', 'rotationz'], rotation):
                 data[key] = val
-        
+
         name = None
         if data['geo_type'] == 'primitive':
             name = self.add_primitive(data=data)
@@ -1273,7 +1275,7 @@ class VtkWidget(QtWidgets.QWidget):
             name = self.add_stl(None, filename=data['filename'],
                          data=data)
         return name
-        
+
 
     def update_filter(self, name):
         """
@@ -2274,15 +2276,16 @@ class VtkWidget(QtWidgets.QWidget):
                         get_icon('visibilityofftransparent.png'))
         else:
             btn.setIcon(get_icon('visibility.png'))
-            
-    # --- wizards ---            
+
+    # --- wizards ---
     def cyclone_wizard(self):
-        pass
-    
+        popup = CyclonePopUp(self)
+        popup.popup()
+
     def distributed_wizard(self):
-        
         popup = DistributionPopUp(self)
         popup.popup()
 
     def reactor_wizard(self):
-        pass
+        popup = ReactorPopUp(self)
+        popup.popup()

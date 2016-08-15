@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>318</width>
-    <height>152</height>
+    <width>400</width>
+    <height>258</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,70 +20,97 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <item row="2" column="3">
-    <widget class="QLineEdit" name="lineedit_number">
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="lineedit_n"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>1</string>
+      <string>M</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>B</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>F</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="lineedit_b"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>K</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>L</string>
      </property>
     </widget>
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>shape</string>
+      <string>Dc</string>
      </property>
     </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QComboBox" name="combobox_shape"/>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>volume</string>
+      <string>C</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="combobox_volume"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_4">
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>distribution</string>
+      <string>E</string>
      </property>
     </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="lineedit_m"/>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineedit_dc"/>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLineEdit" name="lineedit_f"/>
    </item>
    <item row="2" column="1">
-    <widget class="QComboBox" name="combobox_distribution">
-     <item>
-      <property name="text">
-       <string>random</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>cubic</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>face centered cubic</string>
-      </property>
-     </item>
+    <widget class="QLineEdit" name="lineedit_k"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineedit_c"/>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>N</string>
+     </property>
     </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="lineedit_e"/>
    </item>
    <item row="3" column="1">
-    <widget class="QCheckBox" name="checkbox_union">
-     <property name="text">
-      <string>union</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+    <widget class="QLineEdit" name="lineedit_l"/>
    </item>
-   <item row="5" column="0" colspan="4">
+   <item row="18" column="0" colspan="3">
     <widget class="QWidget" name="widget" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
@@ -122,17 +149,10 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QLabel" name="label_numberspacing">
+   <item row="0" column="2" rowspan="9">
+    <widget class="QLabel" name="label_image">
      <property name="text">
-      <string>number</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QCheckBox" name="checkbox_rotation">
-     <property name="text">
-      <string>random rotation</string>
+      <string>TextLabel</string>
      </property>
     </widget>
    </item>

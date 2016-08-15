@@ -141,6 +141,11 @@ def get_image_path(name):
 
     return path
 
+
+def get_pixmap(name):
+    return QtGui.QPixmap(get_image_path(name))
+
+
 icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
