@@ -81,6 +81,8 @@ class BCS(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
+        bcs.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
+
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
         # BC regions must be planes or STLs (not volumes or points)
@@ -565,26 +567,36 @@ class BCS(object):
             # should we distinguish 0 from unset?  in the region_dict we get
             #  from the regions_widget, the values are 0, while in the project,
             #  keywords are simply unset (value None) rather than set to 0
+
             extent = [0.0 if x is None else x.value for x in extent]
+
+            bc_type = d.get('bc_type')
+            if bc_type is None:
+                self.error("No type for boundary condition %s" % bc.ind)
+                continue
+            bc_type = bc_type.value
+
+            is_stl = (bc_type.startswith('CG_'))
+            if is_stl:
+                bc_type = bc_type[3:]
+
             # Check dimensionality?
             #if any (x is None for x in extent):
             #    self.warn("boundary condition %s: invalid extents %s" %
             #               (bc.ind, extent))
             #    continue
             for (region_name, data) in self.bcs_region_dict.items():
-                # TODO: FIXME check for match - this is only right for boxes
 
                 ext2 = data.get('from',[]) + data.get('to',[])
 
-                if data.get('from',[]) + data.get('to',[]) == extent:
+                # TODO this only works for a single STL
+                if (is_stl and data.get('type')=='STL'
+                    or not is_stl and ext2==extent):
 
                     if data.get('available', True):
-                        bc_type = self.project.get_value('bc_type', args=bc.ind)
                         if bc_type is None:
                             self.warn("no bc_type for region %s" % bc.ind)
-                        if bc_type.startswith("CG_"):
-                            bc_type = bc_type[3:]
-                        elif bc_type not in BC_TYPES:
+                        if bc_type not in BC_TYPES:
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
                             self.bcs_add_regions_1([region_name], BC_TYPES.index(bc_type), [bc.ind])
@@ -594,6 +606,16 @@ class BCS(object):
                           (bc.ind, extent))
 
 
+    def set_bcs_fluid_energy_eq_type(self, btype):
+        if not self.bcs_current_indices:
+            return
+        for BC in self.bcs_current_indices:
+            if btype == NO_FLUX:
+                hw, c, tw = 0.0, 0.0, None
+            elif btype == SPECIFIED_TEMPERATURE:
+                hw, c, tw = None, 0.0, True
+            elif btype == SPECIFIED_FLUX:
+                pass
 
     def setup_bcs_fluid_tab(self):
         #Fluid (tab)
@@ -688,6 +710,7 @@ class BCS(object):
         c = self.project.get_value('bc_c_t_g', args=[BC0])
         tw = self.project.get_value('bc_tw_g', args=[BC0])
 
+        btype = None
         if hw==0.0 and c==0.0 and tw is None:
             btype = NO_FLUX
         elif hw is None and c==0.0 and tw is not None:
@@ -698,8 +721,9 @@ class BCS(object):
             btype = CONVECTIVE_FLUX
         else:
             self.error("Cannot determine type for energy boundary equation %s" % BC0)
-            btype = NO_FLUX # ?
-            #return
+
+        if btype:
+            bcs.combobox_fluid_energy_eq_type.setCurrentIndex(btype)
 
         #Define wall temperature
         # Specification only available with 'Specified Temperature' BC type
