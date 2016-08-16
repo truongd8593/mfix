@@ -495,10 +495,9 @@ class RegionsWidget(QtWidgets.QWidget):
                 if not self.check_extents_in_regions(extents):
 
                     extents = [extents[::2], extents[1::2]]
-
                     if ('bc_type' in cond and
-                            str(cond['bc_type']).startswith('cg')):
-                        rtype = 'stl'
+                            cond['bc_type'].value.lower().startswith('cg')):
+                        rtype = 'STL'
                     else:
                         rtype = self.get_region_type(extents)
 

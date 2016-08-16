@@ -2151,9 +2151,9 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Geometry
         # Look for geometry.stl and load automatically
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
+        if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
+            self.vtkwidget.add_stl(None, filename=geometry_file)
         # Do this warning at save-time FIXME
-        #if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
-        #    self.vtkwidget.add_stl(None, filename=geometry_file)
         #    msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
         #    self.message(title='Warning', text=msg)
 
@@ -2207,7 +2207,6 @@ class MfixGui(QtWidgets.QMainWindow,
                         self.vtkwidget.visual_props_from_str(props)
                     if val:
                         self.vtkwidget.geometry_from_str(val)
-
                 elif key == 'ic_regions':
                     self.ics_regions_from_str(val)
                 elif key == 'visual_props':
