@@ -105,6 +105,7 @@ class BCS(object):
             item.setEnabled(False)
         rp.popup(boundary=True)
 
+
     def bcs_cancel_add(self):
         ui = self.ui
         bcs = ui.boundary_conditions
@@ -160,6 +161,7 @@ class BCS(object):
         self.bcs_add_regions_1(selections, bc_type) # Indices will be assigned
         self.bcs_setup_current_tab() # Update the widgets
 
+
     def bcs_add_regions_1(self, selections,
                           bc_type=DEFAULT_BC_TYPE, indices=None):
         # Used by both interactive and load-time add-region handlers
@@ -213,11 +215,13 @@ class BCS(object):
 
         tw.setCurrentCell(nrows, 0) # Might as well make it selected
 
+
     def bcs_find_index(self):
         n = 1
         while n in self.bcs:
             n += 1
         return n
+
 
     def bcs_delete_regions(self):
         tw = self.ui.boundary_conditions.tablewidget_regions
@@ -270,6 +274,7 @@ class BCS(object):
             return
         self.bcs_setup_current_tab() # reinitialize all widgets in current tab
 
+
     def fixup_bcs_table(self, tw, stretch_column=0):
         # TODO fix and unify all the fixup_*_table functions
         hv = QtWidgets.QHeaderView
@@ -309,6 +314,7 @@ class BCS(object):
                         and self.project.get_value('nscalar',default=0)==0
                         and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
+
 
     def bcs_change_tab(self, tab, solid):
         bcs = self.ui.boundary_conditions
@@ -370,10 +376,12 @@ class BCS(object):
             to_btn = bcs.tab_layout.itemAtPosition(0, index),
             btn_layout = bcs.tab_layout)
 
+
     def bcs_check_region_in_use(self, name):
         # Should we allow any change of region type?  eg. xy plane -> xz plane?
         #  Probably not
         return any(data.get('region')==name for data in self.bcs.values())
+
 
     def bcs_update_region(self, name, data):
         for (i,bc) in self.bcs.items():
@@ -395,6 +403,7 @@ class BCS(object):
             key = 'bc_' + key
             self.update_keyword(key, val, args=[idx])
 
+
     def reset_bcs(self):
         self.bcs.clear()
         self.bcs_current_indices = []
@@ -405,12 +414,14 @@ class BCS(object):
         bcs.tablewidget_regions.setRowCount(0)
         # anything else to do here?
 
+
     def bcs_to_str(self):
         bcs = self.ui.boundary_conditions
         tw = bcs.tablewidget_regions
         data = [tw.item(i,0).data(UserRole)
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
+
 
     def bcs_regions_from_str(self, s):
         if not s:
@@ -419,6 +430,7 @@ class BCS(object):
         for (indices, regions) in data:
             # bc_type keyword should be set already when we call this
             self.bcs_add_regions_1(regions, indices)
+
 
     def setup_bcs(self):
         ui = self.ui
