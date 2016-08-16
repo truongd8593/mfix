@@ -1866,14 +1866,27 @@ class VtkWidget(QtWidgets.QWidget):
     def export_stl(self, file_name):
         """ export visible toplevel geometry """
 
-        geometry = self.collect_toplevel_geometry()
+        basename = os.path.splitext(os.path.basename(file_name))[0]
+        basename = os.path.join(os.path.dirname(file_name), basename)
 
+        geometry = self.collect_toplevel_geometry()
         if geometry:
             # write file
             stl_writer = vtk.vtkSTLWriter()
             stl_writer.SetFileName(file_name)
             stl_writer.SetInputConnection(geometry.GetOutputPort())
             stl_writer.Write()
+
+        if self.region_dict:
+            i = 0
+            for region, data in self.region_dict.items():
+                if data['type'] == 'STL' and 'clipper' in data:
+                    fname = basename + '_{0:04d}.stl'.format(i)
+                    stl_writer = vtk.vtkSTLWriter()
+                    stl_writer.SetFileName(fname)
+                    stl_writer.SetInputConnection(data['clipper'].GetOutputPort())
+                    stl_writer.Write()
+                    i += 1
 
     def export_unstructured(self, fname, grid):
         """ export an unstructured grid """
