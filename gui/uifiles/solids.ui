@@ -1632,12 +1632,9 @@ QPushButton:checked {
         <number>0</number>
        </property>
        <item>
-        <widget class="QScrollArea" name="scrollarea_des_model">
+        <widget class="QScrollArea" name="scrollarea_dem_model">
          <property name="autoFillBackground">
           <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QWidget#scrollareawidgetcontents_dem_model{background-color:white}</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -1657,15 +1654,15 @@ QPushButton:checked {
             <x>0</x>
             <y>0</y>
             <width>433</width>
-            <height>1288</height>
+            <height>1284</height>
            </rect>
           </property>
           <property name="autoFillBackground">
            <bool>false</bool>
           </property>
           <property name="styleSheet">
-           <string notr="true">QWidget#scrollareawidgetcontents_des_model{
-background-color:transparent;
+           <string notr="true">QWidget#scrollareawidgetcontents_dem_model{
+background-color:white;
 }</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">

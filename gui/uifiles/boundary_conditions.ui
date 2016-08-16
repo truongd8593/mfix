@@ -6,14 +6,29 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>492</width>
-    <height>599</height>
+    <width>475</width>
+    <height>707</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Boundary Conditions</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QFrame" name="frame_add_delete">
      <property name="frameShape">
@@ -136,100 +151,121 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">QWidget#scrollAreaWidgetContents{background-color:white}</string>
+       <string notr="true">QWidget#scrollareawidgetcontents {background-color: white}</string>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
+      <widget class="QWidget" name="scrollareawidgetcontents">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>451</width>
-         <height>574</height>
+         <width>466</width>
+         <height>569</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="3" column="0">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item row="0" column="0">
-         <layout class="QGridLayout" name="tab_box">
-          <property name="spacing">
-           <number>0</number>
+         <widget class="QFrame" name="tab_frame">
+          <property name="styleSheet">
+           <string notr="true">QPushButton:hover {color:#64B5F6; background-color: transparent;}
+QPushButton:pressed {color: #64B5F6; background-color: transparent;}
+QPushButton:checked { font: bold; background-color: transparent;}</string>
           </property>
-          <item row="1" column="0">
-           <widget class="Line" name="tab_underline">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>3</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>3</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QWidget{
+          <layout class="QGridLayout" name="tab_layout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item row="1" column="0">
+            <widget class="Line" name="tab_underline">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>3</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>3</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QWidget{
 	background-color: #64B5F6;
 	border-color: #64B5F6;
 }</string>
-            </property>
-            <property name="lineWidth">
-             <number>0</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="pushbutton_scalar">
-            <property name="text">
-             <string>Scalar</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="pushbutton_fluid">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Fluid</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+             </property>
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="pushbutton_scalar">
+             <property name="text">
+              <string>Scalar</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="pushbutton_fluid">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Fluid</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item row="1" column="0" rowspan="2" colspan="2">
          <widget class="QStackedWidget" name="stackedwidget">
@@ -243,109 +279,332 @@
            <number>0</number>
           </property>
           <widget class="QWidget" name="page_fluid">
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
            <property name="styleSheet">
-            <string notr="true">background-color:white</string>
+            <string notr="true"/>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
-             <widget class="QFrame" name="frame_fluid_parameters">
+             <widget class="QGroupBox" name="groupbox_fluid_momentum_eq">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string extracomment="Hi Mom">Momentum Equations</string>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
               <layout class="QGridLayout" name="gridLayout_3">
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>10</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
                <item row="0" column="0">
-                <widget class="QLabel" name="label_bc_ep_g">
+                <widget class="QLabel" name="label_bc_hw_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
-                  <string>Volume fraction</string>
+                  <string>Transfer coefficient</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC">
-                 <property name="readOnly">
-                  <bool>true</bool>
+                <widget class="LineEdit" name="lineedit_keyword_bc_hw_g_args_BC"/>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_bc_hw_g_units">
+                 <property name="text">
+                  <string>TBD</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label_bc_t_g">
+                <widget class="QLabel" name="label_bc_uw_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
-                  <string>Temperature</string>
+                  <string>Wall U-Velocity</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_t_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_uw_g_args_BC"/>
                </item>
                <item row="1" column="2">
-                <widget class="QLabel" name="label_bc_t_g_units">
+                <widget class="QLabel" name="label_bc_uw_g_units">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_bc_vw_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Wall V-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_vw_g_args_BC"/>
+               </item>
+               <item row="3" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_ww_g_args_BC"/>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_bc_vw_g_units">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_bc_ww_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Wall W-Velocity</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_bc_ww_g_units">
+                 <property name="text">
+                  <string>m/s</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupbox_fluid_energy_eq">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Energy Equation</string>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>10</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item row="1" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_tw_g_args_BC"/>
+               </item>
+               <item row="0" column="0" colspan="2">
+                <layout class="QHBoxLayout" name="horizontalLayout_2">
+                 <item>
+                  <widget class="QLabel" name="label_fluid_energy_eq_type">
+                   <property name="font">
+                    <font>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="combobox_fluid_energy_eq_type">
+                   <property name="font">
+                    <font>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>No-Flux (adiabatic)</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Specified Temperature</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Specified Flux</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Convective Flux</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_bc_tw_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Wall temperature</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_bc_tw_g_units">
                  <property name="text">
                   <string>K</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_bc_p_g">
+                <widget class="QLabel" name="label_bc_c_t_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
-                  <string>Pressure</string>
+                  <string>Constant flux</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_p_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_c_t_g_args_BC"/>
                </item>
                <item row="2" column="2">
-                <widget class="QLabel" name="label_bc_p_g_units">
+                <widget class="QLabel" name="label_bc_c_t_g_units">
                  <property name="text">
-                  <string>Pa</string>
+                  <string>TBD</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_bc_u_g">
+                <widget class="QLabel" name="label_bc_hw_t_g">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
-                  <string>U-Velocity</string>
+                  <string>Transfer coefficient</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_u_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_hw_t_g_args_BC"/>
                </item>
                <item row="3" column="2">
-                <widget class="QLabel" name="label_bc_u_g_units">
+                <widget class="QLabel" name="label_bc_hw_t_g_units">
                  <property name="text">
-                  <string>m/s</string>
+                  <string>TBD</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_bc_v_g">
+                <widget class="QLabel" name="label_bc_tw_g_2">
+                 <property name="font">
+                  <font>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Free stream temperature</string>
+                 </property>
                  <property name="text">
-                  <string>V-Velocity</string>
+                  <string>Free stream temp.</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_v_g_args_BC"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_tw_g_2_args_BC"/>
                </item>
                <item row="4" column="2">
-                <widget class="QLabel" name="label_bc_v_g_units">
+                <widget class="QLabel" name="label_bc_tw_g_units_2">
                  <property name="text">
-                  <string>m/s</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_bc_v_w">
-                 <property name="text">
-                  <string>W-Velocity</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="LineEdit" name="lineedit_keyword_bc_w_g_args_BC"/>
-               </item>
-               <item row="5" column="2">
-                <widget class="QLabel" name="label_bc_v_w_units">
-                 <property name="text">
-                  <string>m/s</string>
+                  <string>K</string>
                  </property>
                 </widget>
                </item>
@@ -353,139 +612,92 @@
              </widget>
             </item>
             <item>
-             <widget class="QTableWidget" name="tablewidget_fluid_mass_fraction">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>35</height>
-               </size>
+             <widget class="QGroupBox" name="groupbox_fluid_species_eq">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
               </property>
-              <property name="selectionMode">
-               <enum>QAbstractItemView::NoSelection</enum>
-              </property>
-              <attribute name="verticalHeaderVisible">
-               <bool>false</bool>
-              </attribute>
-              <column>
-               <property name="text">
-                <string>Species</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Mass Fraction</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupbox_turbulence">
               <property name="title">
-               <string>Turbulence</string>
+               <string>Species Equation</string>
               </property>
               <property name="flat">
                <bool>true</bool>
               </property>
-              <layout class="QGridLayout" name="gridLayout_9">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_6">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_bc_l_scale">
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>10</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="font">
+                    <font>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
-                    <string>Mixing length model scale</string>
+                    <string>Type</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_nonkeyword_bc_l_scale_args_BC"/>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_bc_l_scale_units">
-                   <property name="text">
-                    <string>m</string>
+                 <item>
+                  <widget class="QComboBox" name="combobox_fluid_species_eq_type">
+                   <property name="font">
+                    <font>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
                    </property>
+                   <property name="frame">
+                    <bool>true</bool>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>No-Flux</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Specified Mass Fraction</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Specified Flux</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Convective Flux</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_bc_k_turb_g">
-                   <property name="text">
-                    <string>K-ε turbulent kinetic energy</string>
+                 <item>
+                  <spacer name="horizontalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_bc_k_turb_g_args_BC"/>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="label_bc_k_turb_g_units">
-                   <property name="text">
-                    <string>???</string>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_bc_e_turb_g">
-                   <property name="text">
-                    <string>K-ε turbulent dissipation</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="LineEdit" name="lineedit_keyword_bc_e_turb_g_args_BC"/>
-                 </item>
-                 <item row="2" column="2">
-                  <widget class="QLabel" name="label_bc_e_turb_g_units">
-                   <property name="text">
-                    <string>???</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupbox_fluid_advanced">
-              <property name="title">
-               <string>Advanced</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_8">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_7">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_bc_gama_rg">
-                   <property name="text">
-                    <string>Radiation coefficient</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="LineEdit" name="lineedit_nonkeyword_bc_gama_rg_args_BC"/>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_bc_gama_rg_units">
-                   <property name="text">
-                    <string>W/m² .K</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_bc_t_rg">
-                   <property name="text">
-                    <string>Radiation temperature</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="LineEdit" name="lineedit_nonkeyword_bc_t_rg_args_BC"/>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="label_bc_t_rg_units">
-                   <property name="text">
-                    <string>K</string>
-                   </property>
-                  </widget>
+                  </spacer>
                  </item>
                 </layout>
                </item>
@@ -522,9 +734,6 @@
            </layout>
           </widget>
           <widget class="QWidget" name="page_solids">
-           <property name="styleSheet">
-            <string notr="true">background-color: white</string>
-           </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <property name="spacing">
              <number>6</number>
@@ -770,6 +979,9 @@
            <layout class="QGridLayout" name="gridLayout_11">
             <item row="0" column="0">
              <widget class="QLabel" name="label_dummy_solids_R">
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
               <property name="styleSheet">
                <string notr="true">background-color: white</string>
               </property>
@@ -781,9 +993,6 @@
            </layout>
           </widget>
           <widget class="QWidget" name="page_scalar">
-           <property name="styleSheet">
-            <string notr="true">background-color:white</string>
-           </property>
            <layout class="QGridLayout" name="gridLayout">
             <property name="leftMargin">
              <number>0</number>
@@ -814,6 +1023,19 @@
           </widget>
          </widget>
         </item>
+        <item row="3" column="0">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="0" column="1">
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
@@ -821,16 +1043,17 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>270</width>
-            <height>29</height>
+            <width>40</width>
+            <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
        </layout>
+       <zorder>tab_frame</zorder>
        <zorder>stackedwidget</zorder>
-       <zorder>horizontalSpacer_2</zorder>
        <zorder>verticalSpacer</zorder>
+       <zorder>horizontalSpacer_2</zorder>
       </widget>
      </widget>
     </widget>
