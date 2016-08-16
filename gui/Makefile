@@ -46,3 +46,6 @@ test-load-all:
 
 pyinst: all ../mfix
 	pyinstaller gui.spec
+
+docs:
+	PYTHONPATH=.. make -C sphinxdoc html
