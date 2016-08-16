@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
+from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
@@ -34,9 +34,13 @@ BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
 BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
             'Free Slip Wall', 'Partial Slip Wall',
             'Pressure Inflow', 'Mass Outflow']
+
 (MASS_INFLOW, PRESSURE_OUTFLOW,
  NO_SLIP_WALL, FREE_SLIP_WALL, PARTIAL_SLIP_WALL,
  PRESSURE_INFLOW, MASS_OUTFLOW) = range(7)
+
+(NO_FLUX, SPECIFIED_TEMPERATURE, SPECIFIED_FLUX, CONVECTIVE_FLUX) = range(4)
+SPECIFIED_MASS_FRACTION = 1
 
 DEFAULT_BC_TYPE = NO_SLIP_WALL
 
@@ -66,10 +70,10 @@ class BCS(object):
 
         bcs.tablewidget_regions.itemSelectionChanged.connect(self.handle_bcs_region_selection)
 
-        self.bcs_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
-        self.bcs_current_solid = None
-        bcs.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,0))
-        bcs.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,0))
+        self.bcs_current_tab = FLUID_TAB # #  If fluid is disabled, we will switch
+        self.bcs_current_solid = self.P = None
+        bcs.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,None))
+        bcs.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -201,6 +205,12 @@ class BCS(object):
         tw.setItem(nrows, 1, item)
 
         self.fixup_bcs_table(tw)
+
+        for BC in indices:
+            for key in 'bc_hw_t_g', 'bc_c_t_g':
+                if self.project.get_value(key, args=[BC]) is None:
+                    self.update_keyword(key, 0.0, args=[BC]) # Force type to No-Flux
+
         tw.setCurrentCell(nrows, 0) # Might as well make it selected
 
     def bcs_find_index(self):
@@ -255,7 +265,7 @@ class BCS(object):
         if not enabled:
             # Clear
             for widget in widget_iter(bcs.scrollarea_detail):
-                if isinstance(widget, QLineEdit): # Does this work for LineEdit?
+                if isinstance(widget, LineEdit):
                     widget.setText('')
             return
         self.bcs_setup_current_tab() # reinitialize all widgets in current tab
@@ -306,8 +316,8 @@ class BCS(object):
                  else len(self.solids)+1 if tab==SCALAR_TAB
                  else solid)
 
-        for i in range(bcs.tab_box.columnCount()):
-            item = bcs.tab_box.itemAtPosition(0, i)
+        for i in range(bcs.tab_layout.columnCount()):
+            item = bcs.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -334,12 +344,13 @@ class BCS(object):
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
             pixmap = QPixmap(bcs.page_solids.size())
-            bcs.page_solids.render(pixmap)
+            pixmap.fill() #fill bg with white
+            bcs.page_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
             dummy_label.setPixmap(pixmap)
             bcs.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.bcs_current_tab = tab
-        self.bcs_current_solid = solid
+        self.bcs_current_solid = self.P = solid if tab==SOLIDS_TAB else None
 
         #update tab contents
         if tab==FLUID_TAB:
@@ -356,8 +367,8 @@ class BCS(object):
             tab,
             direction='horizontal',
             line = bcs.tab_underline,
-            to_btn = bcs.tab_box.itemAtPosition(0, index),
-            btn_layout = bcs.tab_box)
+            to_btn = bcs.tab_layout.itemAtPosition(0, index),
+            btn_layout = bcs.tab_layout)
 
     def bcs_check_region_in_use(self, name):
         # Should we allow any change of region type?  eg. xy plane -> xz plane?
@@ -409,7 +420,6 @@ class BCS(object):
             # bc_type keyword should be set already when we call this
             self.bcs_add_regions_1(regions, indices)
 
-
     def setup_bcs(self):
         ui = self.ui
         bcs = ui.boundary_conditions
@@ -436,17 +446,17 @@ class BCS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.bcs_current_tab == 0: # Don't stay on disabled tab
-                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,0))
+                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None))
         font = b.font()
         font.setBold(self.bcs_current_tab == 0)
         b.setFont(font)
 
         #  Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
-        n_cols = bcs.tab_box.columnCount()
+        n_cols = bcs.tab_layout.columnCount()
         # Clear out the old ones
         for i in range(n_cols-1, 0, -1):
-            item = bcs.tab_box.itemAtPosition(0, i)
+            item = bcs.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -454,7 +464,7 @@ class BCS(object):
                 continue
             if widget in (bcs.pushbutton_fluid, bcs.pushbutton_scalar):
                 continue
-            bcs.tab_box.removeWidget(widget)
+            bcs.tab_layout.removeWidget(widget)
             widget.setParent(None)
             widget.deleteLater()
         # And make new ones
@@ -464,10 +474,10 @@ class BCS(object):
             b.setMaximumWidth(w)
             b.setFlat(True)
             font = b.font()
-            font.setBold(self.bcs_current_tab==1 and i==self.bcs_current_solid)
+            font.setBold(self.bcs_current_tab==SOLIDS_TAB and i==self.bcs_current_solid)
             b.setFont(font)
-            b.clicked.connect(lambda clicked, i=i: self.bcs_change_tab(SOLIDS_TAB, i))
-            bcs.tab_box.addWidget(b, 0, i)
+            b.pressed.connect(lambda i=i: self.bcs_change_tab(SOLIDS_TAB, i))
+            bcs.tab_layout.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.bcs_current_tab == 1 and ...
 
@@ -481,11 +491,12 @@ class BCS(object):
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
         if len(self.solids) > 0:
-            bcs.tab_box.removeWidget(b)
-            bcs.tab_box.addWidget(b, 0, 1+len(self.solids))
+            bcs.tab_layout.removeWidget(b)
+            bcs.tab_layout.addWidget(b, 0, 1+len(self.solids))
         # Don't stay on a disabled tab TODO
         # if self.bcs_current_tab == 2 and nscalar == 0:
         #
+        self.P = self.bcs_current_solid
         self.bcs_setup_current_tab()
 
 
@@ -549,12 +560,18 @@ class BCS(object):
             #               (bc.ind, extent))
             #    continue
             for (region_name, data) in self.bcs_region_dict.items():
+                # TODO: FIXME check for match - this is only right for boxes
+
                 ext2 = data.get('from',[]) + data.get('to',[])
+
                 if data.get('from',[]) + data.get('to',[]) == extent:
+
                     if data.get('available', True):
                         bc_type = self.project.get_value('bc_type', args=bc.ind)
                         if bc_type is None:
                             self.warn("no bc_type for region %s" % bc.ind)
+                        if bc_type.startswith("CG_"):
+                            bc_type = bc_type[3:]
                         elif bc_type not in BC_TYPES:
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
@@ -566,9 +583,188 @@ class BCS(object):
 
 
 
-
     def setup_bcs_fluid_tab(self):
-        pass
+        #Fluid (tab)
+        if self.fluid_solver_disabled:
+            # we shouldn't be on this tab!
+            return
+        bcs = self.ui.boundary_conditions
+        # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
+        #
+        if not self.bcs_current_indices:
+            return # Nothing selected.  What can we do? (Clear out all lineedits?)
+
+        BC0 = self.bcs_current_indices[0]
+
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+
+        # as generic as possible - see comments in ics.py
+
+        def get_widget(key):
+            widget = getattr(bcs, 'lineedit_keyword_%s_args_BC' % key, None)
+            if not widget:
+                self.error('no widget for key %s' % key)
+            return widget
+
+        def setup_key_widget(key, default=None, enabled=True):
+            for name in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC'):
+                item = getattr(bcs, name%key, None)
+                if item:
+                    item.setEnabled(enabled)
+            if not enabled:
+                get_widget(key).setText('')
+                return
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC])
+            get_widget(key).updateValue(key, val, args=[BC0])
+
+        #    Define transfer coefficient
+        # Specification only available with PSW
+        # Sets keyword BC_HW_G(#)
+        # DEFAULT value of 0.0
+
+        #    Define Wall U-velocity
+        # Specification only available with PSW
+        # Sets keyword BC_UW_G(#)
+        # DEFAULT value of 0.0
+
+        #    Define Wall V-velocity
+        # Specification only available with PSW
+        # Sets keyword BC_VW_G(#)
+        # DEFAULT value of 0.0
+
+        #    Define Wall W-velocity
+        # Specification only available with PSW
+        # Sets keyword BC_WW_G(#)
+        # DEFAULT value of 0.0
+        default = 0.0
+        enabled = (bc_type=='PSW')
+        for c in 'huvw':
+            key = 'bc_%sw_g' % c
+            setup_key_widget(key, default, enabled)
+        # Enable/disable entire groupbox
+        bcs.groupbox_fluid_momentum_eq.setEnabled(enabled) # Hide it???
+
+        #Select energy equation boundary type:
+        # Selection only available when solving energy equations
+        # Available selections:
+        #  No-Flux (adiabatic) [DEFAULT]
+        #    Sets keyword BC_HW_T_G(#) to 0.0
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Sets keyword BC_TW_G(#) to UNDEFINED
+        #  Specified Temperature
+        #    Sets keyword BC_HW_T_G(#) to UNDEFINED
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Requires BC_TW_G(#)
+        #  Specified Flux
+        #    Sets keyword BC_HW_T_G(#) to 0.0
+        #    Requires BC_C_T_G(#)
+        #    Sets keyword BC_TW_G(#) to UNDEFINED
+        #  Convective Flux
+        #    Requires BC_HW_T_G(#)
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Requires BC_TW_G(#)
+        hw = self.project.get_value('bc_hw_t_g', args=[BC0])
+        c = self.project.get_value('bc_c_t_g', args=[BC0])
+        tw = self.project.get_value('bc_tw_g', args=[BC0])
+
+        if hw==0.0 and c==0.0 and tw is None:
+            btype = NO_FLUX
+        elif hw is None and c==0.0 and tw is not None:
+            btype = SPECIFIED_TEMPERATURE
+        elif hw==0.0 and c!=0.0 and tw is None:
+            btype = SPECIFIED_FLUX
+        elif hw is not None and c==0.0 and tw is not None:
+            btype = CONVECTIVE_FLUX
+        else:
+            self.error("Cannot determine type for energy boundary equation %s" % BC0)
+            btype = NO_FLUX # ?
+            #return
+
+        #Define wall temperature
+        # Specification only available with 'Specified Temperature' BC type
+        # Sets keyword BC_TW_G(#)
+        # DEFAULT value of 293.15
+        enabled = (btype==SPECIFIED_TEMPERATURE)
+        key = 'bc_tw_g'
+        default = 293.15
+        setup_key_widget(key, default, enabled)
+
+        #Define constant flux
+        # Specification only available with 'Specified Flux' BC type
+        # Sets keyword BC_C_T_G(#)
+        # DEFAULT value of 0.0
+        enabled = (btype==SPECIFIED_FLUX)
+        key = 'bc_c_t_g'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
+
+        #Define transfer coefficient
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_HW_T_G(#)
+        # DEFAULT value of 0.0
+        enabled = (btype==CONVECTIVE_FLUX)
+        key = 'bc_hw_t_g'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
+
+        #Define free stream temperature
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_TW_G(#)
+        # DEFAULT value of 0.0
+        enabled = (btype==CONVECTIVE_FLUX)
+        key = 'bc_tw_g'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
+
+        #Select species equation boundary type:
+        # Selection only available when solving species equations
+        # Available selections:
+        #  No-Flux [DEFAULT]
+        #    Sets keyword BC_HW_X_G(#) to 0.0
+        #    Sets keyword BC_C_X_G(#) to 0.0
+        #    Sets keyword BC_XW_G(#) to UNDEFINED
+        #  Specified Mass Fraction
+        #    Sets keyword BC_XW_T_G(#) to UNDEFINED
+        #    Sets keyword BC_C_X_G(#) to 0.0
+        #    Requires BC_XW_G(#)
+        #  Specified Flux
+        #    Sets keyword BC_HW_X_G(#) to 0.0
+        #    Requires BC_C_X_G(#)
+        #    Sets keyword BC_XW_G(#) to UNDEFINED
+        #  Convective Flux
+        #    Requires BC_HW_X_G(#)
+        #    Sets keyword BC_C_X_G(#) to 0.0
+        #    Requires BC_XW_G(#)
+
+        #Define wall mass fraction
+        # Specification only available with 'Specified Mass Fraction' BC type
+        # Sets keyword BC_XW_G(#)
+        # DEFAULT value of 0.0
+
+        #Define constant flux
+        # Specification only available with 'Specified Flux' BC type
+        # Sets keyword BC_C_X_G(#)
+        # DEFAULT value of 0.0
+
+        #Define transfer coefficient
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_HW_X_G(#)
+        # DEFAULT value of 0.0
+
+        #Define free stream mass fraction
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_XW_G(#)
+        # DEFAULT value of 0.0
+
 
 
     def setup_bcs_solids_tab(self, P):
@@ -578,118 +774,10 @@ class BCS(object):
         pass
 
 
-
-
 """
 
-#    Group tab inputs by equation type (e.g., momentum, energy, species). Making the grouped
-inputs a 'collapsible list' may make navigation easier.
 
-Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
-
-Fluid (tab)
-#    Define transfer coefficient
-# Specification only available with PSW
-# Sets keyword BC_HW_G(#)
-# DEFAULT value of 0.0
-
-#    Define Wall U-velocity
-# Specification only available with PSW
-# Sets keyword BC_UW_G(#)
-# DEFAULT value of 0.0
-
-#    Define Wall V-velocity
-# Specification only available with PSW
-# Sets keyword BC_VW_G(#)
-# DEFAULT value of 0.0
-
-#    Define Wall W-velocity
-# Specification only available with PSW
-# Sets keyword BC_WW_G(#)
-# DEFAULT value of 0.0
-
-Select energy equation boundary type:
-# Selection only available when solving energy equations
-# Available selections:
-#  No-Flux (adiabatic) [DEFAULT]
-#    Sets keyword BC_HW_T_G(#) to 0.0
-#    Sets keyword BC_C_T_G(#) to 0.0
-#    Sets keyword BC_TW_G(#) to UNDEFINED
-#  Specified Temperature
-#    Sets keyword BC_HW_T_G(#) to UNDEFINED
-#    Sets keyword BC_C_T_G(#) to 0.0
-#    Requires BC_TW_G(#)
-#  Specified Flux
-#    Sets keyword BC_HW_T_G(#) to 0.0
-#    Requires BC_C_T_G(#)
-#    Sets keyword BC_TW_G(#) to UNDEFINED
-#  Convective Flux
-#    Requires BC_HW_T_G(#)
-#    Sets keyword BC_C_T_G(#) to 0.0
-#    Requires BC_TW_G(#)
-
-Define wall temperature
-# Specification only available with 'Specified Temperature' BC type
-# Sets keyword BC_TW_G(#)
-# DEFAULT value of 293.15
-
-Define constant flux
-# Specification only available with 'Specified Flux' BC type
-# Sets keyword BC_C_T_G(#)
-# DEFAULT value of 0.0
-
-Define transfer coefficient
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_HW_T_G(#)
-# DEFAULT value of 0.0
-
-Define free stream temperature
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_TW_G(#)
-# DEFAULT value of 0.0
-
-Select species equation boundary type:
-# Selection only available when solving species equations
-# Available selections:
-#  No-Flux [DEFAULT]
-#    Sets keyword BC_HW_X_G(#) to 0.0
-#    Sets keyword BC_C_X_G(#) to 0.0
-#    Sets keyword BC_XW_G(#) to UNDEFINED
-#  Specified Mass Fraction
-#    Sets keyword BC_XW_T_G(#) to UNDEFINED
-#    Sets keyword BC_C_X_G(#) to 0.0
-#    Requires BC_XW_G(#)
-#  Specified Flux
-#    Sets keyword BC_HW_X_G(#) to 0.0
-#    Requires BC_C_X_G(#)
-#    Sets keyword BC_XW_G(#) to UNDEFINED
-#  Convective Flux
-#    Requires BC_HW_X_G(#)
-#    Sets keyword BC_C_X_G(#) to 0.0
-#    Requires BC_XW_G(#)
-
-Define wall mass fraction
-# Specification only available with 'Specified Mass Fraction' BC type
-# Sets keyword BC_XW_G(#)
-# DEFAULT value of 0.0
-
-Define constant flux
-# Specification only available with 'Specified Flux' BC type
-# Sets keyword BC_C_X_G(#)
-# DEFAULT value of 0.0
-
-Define transfer coefficient
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_HW_X_G(#)
-# DEFAULT value of 0.0
-
-Define free stream mass fraction
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_XW_G(#)
-# DEFAULT value of 0.0
-
-Mockup of Task pane for specifying the Fluid properties for WALL boundary condition regions.
-Solids-# (tab) - (Replace with phase name defined by the user)
+#Solids-# (tab) - (Replace with phase name defined by the user)
 #    Enable Jackson-Johnson partial slip boundary
 # Disabled (0.0) for CARTESIAN_GRID = .TRUE.
 # Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'

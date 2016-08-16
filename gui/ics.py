@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout
+from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
@@ -59,10 +59,10 @@ class ICS(object):
 
         ics.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
 
-        self.ics_current_tab = 0 # #? "Fluid" tab.  If fluid is disabled, we will switch
-        self.ics_current_solid = None
-        ics.pushbutton_fluid.pressed.connect(lambda: self.ics_change_tab(FLUID_TAB,0))
-        ics.pushbutton_scalar.pressed.connect(lambda: self.ics_change_tab(SCALAR_TAB,0))
+        self.ics_current_tab = FLUID_TAB # If fluid is disabled, we will switch
+        self.ics_current_solid = self.P = None
+        ics.pushbutton_fluid.pressed.connect(lambda: self.ics_change_tab(FLUID_TAB,None))
+        ics.pushbutton_scalar.pressed.connect(lambda: self.ics_change_tab(SCALAR_TAB,None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -257,7 +257,7 @@ class ICS(object):
         if not enabled:
             # Clear
             for widget in widget_iter(ics.scrollarea_detail):
-                if isinstance(widget, QLineEdit): # Does this work for LineEdit?
+                if isinstance(widget, LineEdit):
                     widget.setText('')
             return
         self.ics_setup_current_tab() # reinitialize all widgets in current tab
@@ -308,8 +308,8 @@ class ICS(object):
                  else len(self.solids)+1 if tab==SCALAR_TAB
                  else solid)
 
-        for i in range(ics.tab_box.columnCount()):
-            item = ics.tab_box.itemAtPosition(0, i)
+        for i in range(ics.tab_layout.columnCount()):
+            item = ics.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -336,12 +336,13 @@ class ICS(object):
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
             pixmap = QPixmap(ics.page_solids.size())
-            ics.page_solids.render(pixmap)
+            pixmap.fill() # fill bg with white
+            ics.page_solids.render(pixmap, flags=QWidget.DrawChildren)  #avoid rendering bg
             dummy_label.setPixmap(pixmap)
             ics.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.ics_current_tab = tab
-        self.ics_current_solid = solid
+        self.ics_current_solid = self.P = solid if tab==SOLIDS_TAB else None
 
         #update tab contents
         if tab==FLUID_TAB:
@@ -358,8 +359,8 @@ class ICS(object):
             tab,
             direction='horizontal',
             line = ics.tab_underline,
-            to_btn = ics.tab_box.itemAtPosition(0, index),
-            btn_layout = ics.tab_box)
+            to_btn = ics.tab_layout.itemAtPosition(0, index),
+            btn_layout = ics.tab_layout)
 
     def ics_check_region_in_use(self, name):
         return any(data.get('region')==name for data in self.ics.values())
@@ -381,6 +382,7 @@ class ICS(object):
         self.ics_current_indices = []
         self.ics_current_regions = []
         self.ics_region_dict = None
+        self.ics_current_solid = self.P = None
         ics = self.ui.initial_conditions
         ics.tablewidget_regions.clearContents()
         ics.tablewidget_regions.setRowCount(0)
@@ -428,17 +430,17 @@ class ICS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.ics_current_tab == 0: # Don't stay on disabled tab
-                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,0))
+                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None))
         font = b.font()
         font.setBold(self.ics_current_tab == 0)
         b.setFont(font)
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
-        n_cols = ics.tab_box.columnCount()
+        n_cols = ics.tab_layout.columnCount()
         # Clear out the old ones
         for i in range(n_cols-1, 0, -1):
-            item = ics.tab_box.itemAtPosition(0, i)
+            item = ics.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -446,7 +448,7 @@ class ICS(object):
                 continue
             if widget in (ics.pushbutton_fluid, ics.pushbutton_scalar):
                 continue
-            ics.tab_box.removeWidget(widget)
+            ics.tab_layout.removeWidget(widget)
             widget.setParent(None)
             widget.deleteLater()
         # And make new ones
@@ -456,10 +458,10 @@ class ICS(object):
             b.setMaximumWidth(w)
             b.setFlat(True)
             font = b.font()
-            font.setBold(self.ics_current_tab==1 and i==self.ics_current_solid)
+            font.setBold(self.ics_current_tab==SOLIDS_TAB and i==self.ics_current_solid)
             b.setFont(font)
             b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
-            ics.tab_box.addWidget(b, 0, i)
+            ics.tab_layout.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...
 
@@ -473,11 +475,12 @@ class ICS(object):
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
         if len(self.solids) > 0:
-            ics.tab_box.removeWidget(b)
-            ics.tab_box.addWidget(b, 0, 1+len(self.solids))
+            ics.tab_layout.removeWidget(b)
+            ics.tab_layout.addWidget(b, 0, 1+len(self.solids))
         # Don't stay on a disabled tab TODO
         # if self.ics_current_tab == 2 and nscalar == 0:
         #
+        self.P = self.ics_current_solid
         self.ics_setup_current_tab()
 
 
@@ -497,9 +500,9 @@ class ICS(object):
         table.setRowCount(0)
         if not (self.fluid_species and self.ics_current_indices):
             self.fixup_ics_table(table)
-            table.setEnabled(False)
+            ics.groupbox_fluid_composition.setEnabled(False)
             return
-        table.setEnabled(True)
+        ics.groupbox_fluid_composition.setEnabled(True)
         IC0 = self.ics_current_indices[0]
         species = self.fluid_species
         if species:
@@ -588,7 +591,9 @@ class ICS(object):
         if not (P and self.solids_species.get(P) and self.ics_current_indices):
             self.fixup_ics_table(table)
             table.setEnabled(False)
+            ics.groupbox_solids_composition.setEnabled(False)
             return
+        ics.groupbox_solids_composition.setEnabled(True)
         table.setEnabled(True)
         IC0 = self.ics_current_indices[0]
         species = self.solids_species[P]
@@ -713,12 +718,10 @@ class ICS(object):
 
     def setup_ics_fluid_tab(self):
         #Fluid (tab)
-        ics = self.ui.initial_conditions
-
         if self.fluid_solver_disabled:
             # we shouldn't be on this tab!
             return
-
+        ics = self.ui.initial_conditions
         tw = ics.tablewidget_fluid_mass_fraction
         enabled = (self.fluid_species is not None)
         if not enabled:
@@ -739,7 +742,10 @@ class ICS(object):
         #  If we can make this code generic enough perhaps someday it can
         # be autogenerated from SRS doc
         def get_widget(key):
-            return getattr(ics, 'lineedit_keyword_%s_args_IC' % key)
+            widget = getattr(ics, 'lineedit_keyword_%s_args_IC' % key)
+            if not widget:
+                self.error('no widget for key %s' % key)
+            return widget
 
         def setup_key_widget(key, default=None, enabled=True):
             for name in ('label_%s', 'label_%s_units',
@@ -754,9 +760,9 @@ class ICS(object):
             val = self.project.get_value(key, args=[IC0])
             if val is None:
                 val = default
-            if val is not None:
-                for IC in self.ics_current_indices:
-                    self.update_keyword(key, val, args=[IC])
+
+            for IC in self.ics_current_indices:
+                self.update_keyword(key, val, args=[IC])
                 get_widget(key).updateValue(key, val, args=[IC0])
 
         #Define volume fraction
@@ -768,7 +774,7 @@ class ICS(object):
         default = 1.0
         setup_key_widget(key, default)
         get_widget(key).setReadOnly(True)
-        get_widget(key).setEnabled(False)
+        get_widget(key).setEnabled(False) # better way to indicate read-only?
         # Issues/121 ; make non-editable
 
         #Define temperature
@@ -866,7 +872,7 @@ class ICS(object):
         # Solid-# (tab) - Rename tab to user provided solids name.
 
         # Note, solids phases are numbered 1-N
-        self.ics_current_solid = P
+        self.ics_current_solid = self.P = P
         if P is None: # Nothing to do
             return
 
@@ -910,11 +916,10 @@ class ICS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            if val is not None:
-                for IC in self.ics_current_indices:
-                    self.update_keyword(key, val, args=[IC] if key in no_p_keys
-                                        else [IC,P])
-                get_widget(key).updateValue(key, val, args=args)
+            for IC in self.ics_current_indices:
+                self.update_keyword(key, val, args=[IC] if key in no_p_keys
+                                    else [IC,P])
+            get_widget(key).updateValue(key, val, args=args)
 
 
         #Group tab inputs by equation type (e.g., momentum, energy, species).
