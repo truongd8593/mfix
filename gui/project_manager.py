@@ -113,7 +113,6 @@ class ProjectManager(Project):
 
 
         if updatedValue is None or updatedValue=='':
-            print("UNSET", key, args)
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = to_text_string(updatedValue) # Just used for log message
@@ -138,16 +137,16 @@ class ProjectManager(Project):
             if a=='*':
                 continue # matches everything
 
-            elif a=='S':
-                if b != self.gui.solids_current_phase:
-                    return False
-
             elif a=='P':
-                if b != self.gui.ics_current_solid:
+                if b != self.gui.P:
                     return False
 
             elif a=='IC':
-                if  b not in self.gui.ics_current_indices:
+                if b not in self.gui.ics_current_indices:
+                    return False
+
+            elif a=='BC':
+                if b not in self.gui.bcs_current_indices:
                     return False
 
             elif a != b:
@@ -156,8 +155,9 @@ class ProjectManager(Project):
         return True
 
     def expand_args(self, args_in):
-        return [(self.gui.solids_current_phase if a == 'S'
-                 else self.gui.ics_current_solid if a == 'P'
+        if any (a == 'S' for a in args_in):
+            raise DeprecationWarning("keyword argument S is deprectated, use P")
+        return [(self.gui.P if a=='P'
                  else self.gui.ics_current_indices if a == 'IC'
                  else self.gui.bcs_current_indices if a == 'BC'
                  else a)
