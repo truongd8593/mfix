@@ -633,6 +633,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
+        self.print_internal(message, color='blue')
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -640,7 +641,7 @@ class MfixGui(QtWidgets.QMainWindow,
         runname = self.get_runname()
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
         if self.get_project_dir() and not self.job_manager.job:
-            log.debug("SLOT_RUNDIR_CHANGED was called")
+            log.debug("slot_rundir_changed was called")
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             self.job_manager.try_to_connect(full_runname_pid)
 
@@ -1192,7 +1193,11 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         for key, btn in self.modebuttondict.items():
-            btn.setChecked(mode == key)
+            btn.setChecked(mode == key) # what does this do? buttons are not checkable
+            # Bold-facing the current selection seems a little heavy
+            #font = btn.font()
+            #font.setBold(mode == key)
+            #btn.setFont(font)
 
         self.animate_stacked_widget(self.ui.stackedwidget_mode,
                                     self.ui.stackedwidget_mode.currentIndex(),
@@ -1500,7 +1505,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 a = [int(x) for x in a.split(',')]
             else:
                 a = None
-            self.unset_keyword(k,a)
+            self.unset_keyword(k, a) #TODO FIXME does not weed out malformed keywords
 
         resp = buttons[message_box.exec_()].lower()
         if not resp or resp=='ignore': # User bailed out
