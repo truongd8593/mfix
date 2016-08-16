@@ -91,6 +91,7 @@ class ICS(object):
         widget.min = 0.0
         widget.max = lim
 
+
     def handle_ics_volume_fraction(self, widget, val, args):
         # We may have been called before submit_change
         if widget is None:
@@ -164,6 +165,7 @@ class ICS(object):
         self.ics_add_regions_1(selections) # Indices will be assigned
         self.ics_setup_current_tab() # Update the widgets
 
+
     def ics_add_regions_1(self, selections, indices=None):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui
@@ -206,11 +208,13 @@ class ICS(object):
         self.fixup_ics_table(tw)
         tw.setCurrentCell(nrows, 0) # Might as well make it selected
 
+
     def ics_find_index(self):
         n = 1
         while n in self.ics:
             n += 1
         return n
+
 
     def ics_delete_regions(self):
         tw = self.ui.initial_conditions.tablewidget_regions
@@ -241,6 +245,7 @@ class ICS(object):
         tw.removeRow(row)
         self.ics_setup_current_tab()
 
+
     def handle_ics_region_selection(self):
         ics = self.ui.initial_conditions
         table = ics.tablewidget_regions
@@ -261,6 +266,7 @@ class ICS(object):
                     widget.setText('')
             return
         self.ics_setup_current_tab() # reinitialize all widgets in current tab
+
 
     def fixup_ics_table(self, tw, stretch_column=0):
         # TODO fix and unify all the fixup_*_table functions
@@ -290,6 +296,7 @@ class ICS(object):
         tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
+
     def ics_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
         # then we have no input tabs on the ICs pane, so disable it completely
@@ -301,6 +308,7 @@ class ICS(object):
                         and self.project.get_value('nscalar',default=0)==0
                         and len(self.solids)==0))
         self.find_navigation_tree_item("Initial Conditions").setDisabled(disabled)
+
 
     def ics_change_tab(self, tab, solid):
         ics = self.ui.initial_conditions
@@ -362,13 +370,16 @@ class ICS(object):
             to_btn = ics.tab_layout.itemAtPosition(0, index),
             btn_layout = ics.tab_layout)
 
+
     def ics_check_region_in_use(self, name):
         return any(data.get('region')==name for data in self.ics.values())
+
 
     def ics_update_region(self, name, data):
         for (i,ic) in self.ics.items():
             if ic.get('region') == name:
                 self.ics_set_region_keys(name, i, data)
+
 
     def ics_set_region_keys(self, name, idx, data ):
         # Update the keys which define the box-shaped region the IC applies to
@@ -376,6 +387,7 @@ class ICS(object):
                               data['from']+data['to']):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[idx])
+
 
     def reset_ics(self):
         self.ics.clear()
@@ -388,12 +400,14 @@ class ICS(object):
         ics.tablewidget_regions.setRowCount(0)
         # anything else to do here?
 
+
     def ics_to_str(self):
         ics = self.ui.initial_conditions
         tw = ics.tablewidget_regions
         data = [tw.item(i,0).data(UserRole)
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
+
 
     def ics_regions_from_str(self, s):
         if not s:
@@ -537,8 +551,8 @@ class ICS(object):
             font.setBold(True)
             item.setFont(font)
             self.update_ics_fluid_mass_fraction_total()
-
         self.fixup_ics_table(table)
+
 
     def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
         ics = self.ui.initial_conditions
@@ -551,6 +565,7 @@ class ICS(object):
         else:
             self.update_keyword(key, val, args=args)
         self.update_ics_fluid_mass_fraction_total()
+
 
     def update_ics_fluid_mass_fraction_total(self):
         if not self.ics_current_indices:
@@ -580,6 +595,7 @@ class ICS(object):
                     self.update_keyword('ic_x_g', 0.0, args=[IC, i])
                 self.update_keyword('ic_x_g', 1.0, args=[IC, len(self.fluid_species)]) # Last defined species
             self.update_ics_fluid_mass_fraction_table()
+
 
     # TODO DRY out fluid/solids code
     def update_ics_solids_mass_fraction_table(self):
@@ -633,6 +649,7 @@ class ICS(object):
 
         self.fixup_ics_table(table)
 
+
     def handle_ics_solids_mass_fraction(self, widget, value_dict, args):
         ics = self.ui.initial_conditions
         key = 'ic_x_s'
@@ -644,6 +661,7 @@ class ICS(object):
         else:
             self.update_keyword(key, val, args=args)
         self.update_ics_solids_mass_fraction_total()
+
 
     def update_ics_solids_mass_fraction_total(self):
         if not self.ics_current_indices:
@@ -677,7 +695,6 @@ class ICS(object):
                     self.update_keyword('ic_x_s', 0.0, args=[IC, P, i])
                 self.update_keyword('ic_x_s', 1.0, args=[IC, P, len(species)]) # Last defined species
             self.update_ics_solids_mass_fraction_table()
-
 
 
     def ics_extract_regions(self):
@@ -867,6 +884,7 @@ class ICS(object):
         default =  293.15
         enabled = bool(energy_eq)
         setup_key_widget(key, default, enabled)
+
 
     def setup_ics_solids_tab(self, P):
         # Solid-# (tab) - Rename tab to user provided solids name.
