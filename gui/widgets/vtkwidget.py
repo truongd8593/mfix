@@ -2205,10 +2205,11 @@ class VtkWidget(QtWidgets.QWidget):
         self.set_visible_btn_image(toolbutton, visible)
         if actors is not None:
             for actor in actors:
-                if visible:
-                    actor.VisibilityOn()
-                else:
-                    actor.VisibilityOff()
+                if actor is not None:
+                    if visible:
+                        actor.VisibilityOn()
+                    else:
+                        actor.VisibilityOff()
             self.render()
 
     def get_actors(self, name):
