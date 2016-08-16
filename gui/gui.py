@@ -1974,7 +1974,7 @@ class MfixGui(QtWidgets.QMainWindow,
         template = os.path.join(get_mfix_home(), 'gui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
         self.open_project(project_file, auto_rename=False)
-        self.update_value('run_name', run_name)
+        self.update_keyword('run_name', run_name)
         self.save_project()
 
     def get_open_filename(self):
