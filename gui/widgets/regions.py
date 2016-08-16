@@ -312,7 +312,6 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.parent.message(text="Region %s is in use, cannot change type" % name)
                 widget.setCurrentText(row_data.get('type'))
             elif key == 'name':
-                self.print_internal('%s -> %s' % (name, value))
                 self.parent.ics_change_region_name(name, value)
                 self.parent.bcs_change_region_name(name, value)
 
