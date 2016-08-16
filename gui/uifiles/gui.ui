@@ -65,19 +65,16 @@ QTreeView::item:selected {
       <property name="styleSheet">
        <string notr="true">QPushButton:hover {
     color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
     background-color: transparent;
 }
 
 QPushButton:pressed {
     color: #1974f4;
     background-color: transparent;
-	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
 }
 
 QPushButton:checked {
     color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
     background-color: transparent;
 }
 

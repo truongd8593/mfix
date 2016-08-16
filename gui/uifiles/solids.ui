@@ -37,22 +37,16 @@
      <property name="styleSheet">
       <string notr="true">QPushButton:hover {
     color:#64B5F6;;
-	font: 75 10pt &quot;MS Shell Dlg 2&quot;;
     background-color: transparent;
 }
-
 QPushButton:pressed {
     color: #64B5F6;
     background-color: transparent;
-	font: 75 10pt &quot;MS Shell Dlg 2&quot;;
 }
-
 QPushButton:checked {
-    color:#64B5F6;
-	font: 75 10pt &quot;MS Shell Dlg 2&quot;;
+    font: bold;
     background-color: transparent;
 }
-
 </string>
      </property>
      <property name="frameShape">
