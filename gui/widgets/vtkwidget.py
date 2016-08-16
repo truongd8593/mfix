@@ -1,6 +1,7 @@
 # VTK widget
 from __future__ import print_function, absolute_import, unicode_literals, division
 import os
+import shutil
 import copy
 import logging
 from functools import partial
@@ -12,6 +13,8 @@ log = logging.getLogger(__name__)
 VTK_AVAILABLE = True
 try:
     import vtk
+    log.info('VTK version: %s' % vtk.vtkVersion.GetVTKVersion())
+    VTK_MAJOR_VERSION = vtk.VTK_MAJOR_VERSION
 except ImportError:
     VTK_AVAILABLE = False
     log.info("can't import vtk")
@@ -98,6 +101,44 @@ def clean_visual_dict(d):
                 clean_dict[geo][key] = d[geo][key]
 
     return clean_dict
+
+
+def is_stl_ascii(fname):
+    with open(fname, 'rb') as stlFile:
+        # Check first line if ASCII, should start with "solid"
+        try:
+            solid = stlFile.readline().strip().lower().startswith(b'solid')
+        except:
+            solid = False
+    return solid
+
+
+def purge_multi_solids(fname):
+    """
+    Remove multiple solids from an stl file, only works with ascii
+    """
+    # if it already ends in .onesolid.stl, assume cleaned
+    if fname.endswith('.onesolid.stl'):
+        return fname
+    name = os.path.splitext(os.path.basename(fname))[0]
+    dir = os.path.dirname(fname)
+    newfile = os.path.join(dir, name + '.onesolid.stl')
+    multi_solid = 0
+    with open(fname, "r") as input:
+        with open(newfile, "wb") as output:
+            output.write('solid ascii\n')
+            for line in input:
+                if 'solid' not in line:
+                    output.write(line)
+                else:
+                    multi_solid += 1
+            output.write('endsolid\n')
+    if multi_solid > 2:
+        log.warn('the stl file: %s has multiple solids, removing' % fname)
+        return newfile
+    else:
+        os.remove(newfile)
+        return fname
 
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
@@ -698,6 +739,10 @@ class VtkWidget(QtWidgets.QWidget):
             filename = str(filename)
 
         if filename:
+            # purge solids
+            if is_stl_ascii(filename):
+                filename = purge_multi_solids(filename)
+
             if name is None:
                 name = os.path.basename(filename).lower()
                 name = get_unique_string(name, list(self.geometrydict.keys()))
@@ -711,6 +756,7 @@ class VtkWidget(QtWidgets.QWidget):
             # reader
             reader = vtk.vtkSTLReader()
             reader.SetFileName(filename)
+            reader.MergingOn()
 
             # Create transformer
             transform = vtk.vtkTransform()
@@ -1461,7 +1507,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.setCurrentItem(toplevel)
 
         self.parent.set_unsaved_flag()
-        
+
         return name
 
     def get_input_data(self, name):
