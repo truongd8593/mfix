@@ -380,6 +380,12 @@ class ICS(object):
             if ic.get('region') == name:
                 self.ics_set_region_keys(name, i, data)
 
+    def ics_change_region_name(self, old_name, new_name):
+        # TODO preserve order, update table
+        if old_name in self.ics:
+            self.ics[new_name] = self.ics[old_name]
+            del self.ics[old_name]
+
 
     def ics_set_region_keys(self, name, idx, data ):
         # Update the keys which define the box-shaped region the IC applies to

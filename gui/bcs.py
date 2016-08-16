@@ -196,7 +196,7 @@ class BCS(object):
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
-            self.bcs_set_region_keys(region_name, idx, bc_type, region_data)
+            self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
             self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
@@ -390,15 +390,23 @@ class BCS(object):
             if bc.get('region') == name:
                 self.bcs_set_region_keys(name, i, data)
 
+    def bcs_change_region_name(self, old_name, new_name):
+        # TODO preserve order, update table
+        if old_name in self.bcs:
+            self.bcs[new_name] = self.bcs[old_name]
+            del self.bcs[old_name]
 
-    def bcs_set_region_keys(self, name, idx, bc_type, data):
+
+
+    def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the box-shaped region the BC applies to
-        val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
-                       BC_TYPES[bc_type])
-        if val== 'CG_PI': # Shouldn't happen!
-            self.error("Invalid bc_type %s" % val)
-            return
-        self.update_keyword('bc_type', val, args=[idx])
+        if bc_type is not None:
+            val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
+                           BC_TYPES[bc_type])
+            if val== 'CG_PI': # Shouldn't happen!
+                self.error("Invalid bc_type %s" % val)
+                return
+            self.update_keyword('bc_type', val, args=[idx])
 
         for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
@@ -609,13 +617,29 @@ class BCS(object):
     def set_bcs_fluid_energy_eq_type(self, btype):
         if not self.bcs_current_indices:
             return
+
+        for bc_name in self.bcs_current_regions:
+            self.bcs[bc_name].energy_eq_type = btype
+
         for BC in self.bcs_current_indices:
             if btype == NO_FLUX:
                 hw, c, tw = 0.0, 0.0, None
             elif btype == SPECIFIED_TEMPERATURE:
                 hw, c, tw = None, 0.0, True
             elif btype == SPECIFIED_FLUX:
-                pass
+                hw, c, tw = 0.0, True, None
+            elif btype == CONVECTIVE_FLUX:
+                hw, c, tw, = True, 0.0, True
+            else:
+                self.warning("Invalid BC fluid energy equation type %s" % btype)
+                return
+            for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
+                if val is True:
+                    self.update_keyword(key, 1.0, args=[BC])
+                    pass # Enable input widget
+                else:
+                    self.update_keyword(key, val, args=[BC])
+        self.setup_bcs_fluid_tab() # too heavy
 
     def setup_bcs_fluid_tab(self):
         #Fluid (tab)
@@ -709,7 +733,7 @@ class BCS(object):
         hw = self.project.get_value('bc_hw_t_g', args=[BC0])
         c = self.project.get_value('bc_c_t_g', args=[BC0])
         tw = self.project.get_value('bc_tw_g', args=[BC0])
-
+        self.print_internal('hw %s c %s tw %s' % (hw, c, tw))
         btype = None
         if hw==0.0 and c==0.0 and tw is None:
             btype = NO_FLUX
@@ -722,7 +746,7 @@ class BCS(object):
         else:
             self.error("Cannot determine type for energy boundary equation %s" % BC0)
 
-        if btype:
+        if btype is not None:
             bcs.combobox_fluid_energy_eq_type.setCurrentIndex(btype)
 
         #Define wall temperature
