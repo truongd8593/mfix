@@ -142,6 +142,7 @@ FILTER_DICT = OrderedDict([
     ('butterfly_subdivision', vtk.vtkButterflySubdivisionFilter),
     ('smooth',                vtk.vtkSmoothPolyDataFilter),
     ('windowed_sinc',         vtk.vtkWindowedSincPolyDataFilter),
+    ('reverse_sense',        vtk.vtkReverseSense),
     ])
 
 DEFAULT_FILTER_PARAMS = {
@@ -169,6 +170,8 @@ DEFAULT_FILTER_PARAMS = {
     'passband':             0.1,
     'manifoldsmoothing':    False,
     'normalize':            False,
+    'reversecells':         False,
+    'reversenormals':       True,
     'geo_type':             'filter',
     'type':                 ''}
 

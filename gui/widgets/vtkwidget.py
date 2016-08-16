@@ -1425,6 +1425,15 @@ class VtkWidget(QtWidgets.QWidget):
                 vtkfilter.NormalizeCoordinatesOn()
             else:
                 vtkfilter.NormalizeCoordinatesOff()
+        elif filtertype == 'reverse_sense':
+            if self.geometrydict[name]['reversecells']:
+                vtkfilter.ReverseCellsOn()
+            else:
+                vtkfilter.ReverseCellsOff()
+            if self.geometrydict[name]['reversenormals']:
+                vtkfilter.ReverseNormalsOn()
+            else:
+                vtkfilter.ReverseCellsOff()
 
         vtkfilter.Update()
 
@@ -1884,7 +1893,10 @@ class VtkWidget(QtWidgets.QWidget):
                     fname = basename + '_{0:04d}.stl'.format(i)
                     stl_writer = vtk.vtkSTLWriter()
                     stl_writer.SetFileName(fname)
-                    stl_writer.SetInputConnection(data['clipper'].GetOutputPort())
+                    if data['slice']:
+                        stl_writer.SetInputConnection(data['clipper'].GetClippedOutputPort())
+                    else:
+                        stl_writer.SetInputConnection(data['clipper'].GetOutputPort())
                     stl_writer.Write()
                     i += 1
 
