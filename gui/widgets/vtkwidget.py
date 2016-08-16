@@ -1461,6 +1461,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.setCurrentItem(toplevel)
 
         self.parent.set_unsaved_flag()
+        
+        return name
 
     def get_input_data(self, name):
         """ based on the type of geometry, return the data """
