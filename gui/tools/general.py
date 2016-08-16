@@ -34,13 +34,13 @@ def set_script_directory(script):
 
 # Helper functions
 def get_mfix_home():
-    "return the top level directory"
+    """return the top level directory"""
     return os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def format_key_with_args(key, args=None):
-    if args is not None:
+    if args is not None and args != []:
         if isinstance(args, int):
             args = [args]
         return "%s(%s)" % (key, ','.join(str(a) for a in args))
