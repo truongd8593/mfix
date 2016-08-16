@@ -305,21 +305,16 @@ class RegionsWidget(QtWidgets.QWidget):
             name = list(data.keys())[rows[-1]]
         key = list(value.keys())[0]
         row_data = data[name] # guaranteed to be present
+
         if self.check_region_in_use(name):
-            if key in ('type', 'name'):
+            if key == 'type':
                 # Should we just disable the widgets for in-use regions?
-                self.parent.message(text="Region %s is in use, cannot change %s" %
-                                    (name, key))
-                # Should we allow rename? We'd have to fix up defs in ics and bcs
-                # but that's possible
-
-                # Restore vals
-                if key == 'type':
-                    widget.setCurrentText(row_data.get('type'))
-                elif key == 'name':
-                    widget.setText(name)
-
-                return
+                self.parent.message(text="Region %s is in use, cannot change type" % name)
+                widget.setCurrentText(row_data.get('type'))
+            elif key == 'name':
+                self.print_internal('%s -> %s' % (name, value))
+                self.parent.ics_change_region_name(name, value)
+                self.parent.bcs_change_region_name(name, value)
 
         self.parent.set_unsaved_flag()
 
@@ -348,10 +343,10 @@ class RegionsWidget(QtWidgets.QWidget):
                                 (k, v) in data.items()))
 
             self.vtkwidget.change_region_name(name, new_name)
+            # TODO FIXME fit table to contents
 
         elif 'type' in key:
             data[name]['type'] = value.values()[0]
-
             self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
 
