@@ -498,6 +498,9 @@ class RegionsWidget(QtWidgets.QWidget):
                     if ('bc_type' in cond and
                             cond['bc_type'].value.lower().startswith('cg')):
                         rtype = 'STL'
+                        if cond.ind == proj.get_value('stl_bc_id'):
+                            ext = [Equation(s) for s in ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax']]
+                            extents = [ext[::2], ext[1::2]]
                     else:
                         rtype = self.get_region_type(extents)
 
