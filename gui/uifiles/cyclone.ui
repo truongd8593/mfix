@@ -21,7 +21,11 @@
     <number>5</number>
    </property>
    <item row="6" column="1">
-    <widget class="QLineEdit" name="lineedit_n"/>
+    <widget class="QLineEdit" name="lineedit_n">
+     <property name="text">
+      <string>.1</string>
+     </property>
+    </widget>
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_5">
@@ -45,7 +49,11 @@
     </widget>
    </item>
    <item row="7" column="1">
-    <widget class="QLineEdit" name="lineedit_b"/>
+    <widget class="QLineEdit" name="lineedit_b">
+     <property name="text">
+      <string>1</string>
+     </property>
+    </widget>
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_2">
@@ -83,19 +91,39 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLineEdit" name="lineedit_m"/>
+    <widget class="QLineEdit" name="lineedit_m">
+     <property name="text">
+      <string>.3</string>
+     </property>
+    </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="lineedit_dc"/>
+    <widget class="QLineEdit" name="lineedit_dc">
+     <property name="text">
+      <string>1</string>
+     </property>
+    </widget>
    </item>
    <item row="5" column="1">
-    <widget class="QLineEdit" name="lineedit_f"/>
+    <widget class="QLineEdit" name="lineedit_f">
+     <property name="text">
+      <string>.4</string>
+     </property>
+    </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QLineEdit" name="lineedit_k"/>
+    <widget class="QLineEdit" name="lineedit_k">
+     <property name="text">
+      <string>.25</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QLineEdit" name="lineedit_c"/>
+    <widget class="QLineEdit" name="lineedit_c">
+     <property name="text">
+      <string>1</string>
+     </property>
+    </widget>
    </item>
    <item row="6" column="0">
     <widget class="QLabel" name="label_9">
@@ -105,10 +133,18 @@
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="QLineEdit" name="lineedit_e"/>
+    <widget class="QLineEdit" name="lineedit_e">
+     <property name="text">
+      <string>.2</string>
+     </property>
+    </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="lineedit_l"/>
+    <widget class="QLineEdit" name="lineedit_l">
+     <property name="text">
+      <string>.25</string>
+     </property>
+    </widget>
    </item>
    <item row="18" column="0" colspan="3">
     <widget class="QWidget" name="widget" native="true">
