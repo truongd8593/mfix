@@ -52,7 +52,7 @@ AM_CONDITIONAL([INTEL], [$FC --version|grep ifort])
 AM_CONDITIONAL([IBM], [$FC --version|grep -i ibm])
 AM_CONDITIONAL([PGI], [$FC --version|grep Portland])
 
-# If pymfix support is enabled, require f2py and pyinstaller to be in PATH and
+# If pymfix support is enabled, require f2py to be in PATH and
 # add -fPIC to FCFLAGS and FFLAGS.
 
 AC_ARG_ENABLE([python],
@@ -74,14 +74,9 @@ AC_MSG_ERROR([Enabling python support requires pyuic to be in PATH])
 fi
 
 AC_CHECK_PROG(F2PY,f2py,f2py)
-AC_CHECK_PROG(PYINSTALLER,pyinstaller,pyinstaller)
 
 if test x"$F2PY" = x; then
    AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])
-fi
-
-if test x"$PYINSTALLER" = x; then
-   AC_MSG_ERROR([Enabling python support requires pyinstaller to be in PATH])
 fi
 
 AC_MSG_CHECKING(whether fPIC compiler option is accepted)
