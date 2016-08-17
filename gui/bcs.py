@@ -989,11 +989,13 @@ Define specularity coefficient
 Define specularity coefficient at zero slip
 # Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
 # Sets keyword PHIP0
-# DEFAULT -blanko Optional when available
+# DEFAULT -blank
+# Optional when available
 
 Define angle of internal friction
 # Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE. FRICTION_MODEL=SRIVASTAVA)
-# DEFAULT value of 11.31
+# DEFAULT value of 11.31 = atan(0.2) * (180/pi)
+# Sets keyword PHI_W # ?
 # Required when available
 
 Define transfer coefficient
