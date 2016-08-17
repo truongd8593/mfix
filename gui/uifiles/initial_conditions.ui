@@ -394,7 +394,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="3" column="0">
                 <widget class="QLabel" name="label_ic_u_g">
                  <property name="text">
-                  <string>U-Velocity</string>
+                  <string>U-velocity</string>
                  </property>
                 </widget>
                </item>
@@ -411,7 +411,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="4" column="0">
                 <widget class="QLabel" name="label_ic_v_g">
                  <property name="text">
-                  <string>V-Velocity</string>
+                  <string>V-velocity</string>
                  </property>
                 </widget>
                </item>
@@ -428,7 +428,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="5" column="0">
                 <widget class="QLabel" name="label_ic_v_w">
                  <property name="text">
-                  <string>W-Velocity</string>
+                  <string>W-velocity</string>
                  </property>
                 </widget>
                </item>
@@ -785,7 +785,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="2" column="0">
                 <widget class="QLabel" name="label_ic_u_s">
                  <property name="text">
-                  <string>U-Velocity</string>
+                  <string>U-velocity</string>
                  </property>
                 </widget>
                </item>
@@ -802,7 +802,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="3" column="0">
                 <widget class="QLabel" name="label_ic_v_s">
                  <property name="text">
-                  <string>V-Velocity</string>
+                  <string>V-velocity</string>
                  </property>
                 </widget>
                </item>
@@ -819,7 +819,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <item row="4" column="0">
                 <widget class="QLabel" name="label_ic_w_s">
                  <property name="text">
-                  <string>W-Velocity</string>
+                  <string>W-velocity</string>
                  </property>
                 </widget>
                </item>
