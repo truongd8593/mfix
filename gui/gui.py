@@ -1105,8 +1105,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
                     description = doc.get('description')
                     if description is not None:
-                        widget.help_text = '%s: %s' % (key, description)
-                        widget.setToolTip('<b>%s</b>: %s</br>' % (key, description))
+                        msg = '<b>%s</b>: %s</br>' % (key, description)
+                        widget.setToolTip(msg)
+                        widget.help_text = msg # TODO: can we get more info here, so help_text
+                        # is not just a repeat of the tooltip?
 
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
                         widget.allow_parameters = True
