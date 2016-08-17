@@ -73,7 +73,7 @@
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD
-      USE MAIN, ONLY: GET_DATA, CHECK_DATA, INITIALIZE, FINALIZE
+      USE MAIN, ONLY: GET_DATA, CHECK_DATA, PRE_INIT, INITIALIZE, FINALIZE
       USE MAIN, ONLY: EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
       USE MPI_UTILITY
       USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP, RUN_NAME, RUN_TYPE
@@ -124,26 +124,13 @@
       ENDDO
 
 ! Invoke MPI/SMP initialization and get rank info.
-     CALL PARALLEL_INIT
+      CALL PARALLEL_INIT
 
 ! Dynamic load balance loop
       DO
 
-! Read input data, check data, do computations for IC and BC locations
-! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL GET_DATA
-
-! Initialize the error manager. This call occurs after the mfix.dat
-! is read so that message verbosity can be set and the .LOG file
-! can be opened.
-      CALL INIT_ERROR_MANAGER
-
-! Write header in the .LOG file and to screen.
-! Not sure if the values are correct or useful
-      CALL WRITE_HEADER
-
-! Open files
-      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
+! Read input file and prepare to do check input
+      CALL PRE_INIT
 
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.

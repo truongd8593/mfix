@@ -42,6 +42,7 @@ from mfix import des_time_march as DES_TIME_MARCH
 from mfix import discretelement as DEM
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
+from mfix import parallel_mpi as PARALLEL_MPI
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import step as STEP
@@ -186,6 +187,16 @@ class Mfix(object):
         for arg in keyword_args:
             MAIN.add_command_line_keyword(arg)
 
+        PARALLEL_MPI.parallel_init()
+        MAIN.pre_init()
+
+        RUN.reinitializing = True
+        MAIN.check_data()
+        while not MAIN.good_config:
+            while self.paused:
+                self.check_requests()
+                MAIN.check_data()
+
         MAIN.initialize()
 
         self.t0 = float(RUN.time)
@@ -327,8 +338,11 @@ class Mfix(object):
 
     def unpause(self, _):
         " unpause "
-        self.paused = False
-        return 200, "UNPAUSING MFIX"
+        if MAIN.good_config:
+            self.paused = False
+            return 200, "UNPAUSING MFIX"
+        else:
+            return 200, "UNABLE TO UNPAUSE MFIX"
 
     def pause(self, _):
         " paused "
@@ -347,7 +361,10 @@ class Mfix(object):
 
     def reinit(self, _):
         " reinitialize "
-        MAIN.do_reinit(_.get('filename', None))
+        tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
+        tmp.write(_.get('mfix_dat'))
+        MAIN.do_reinit(tmp.name)
+        os.unlink(tmp.name)
         return 200, 'REINITIALIZING MFIX\n'
 
     def exit(self, _):
@@ -519,15 +536,15 @@ def upload():
     # mfix.dat.upload.* files are not used by pymfix, but are for the user's
     # benefit to keep track of mfix.dat changes when doing multiple reinits
     # during a run
-    if COMPAR.mype == 0:
-        upload_file = open('mfix.dat.upload.%s' % int(time.time()), 'w')
-        request.files['file'].save(upload_file)
-        upload_file.close()
+    upload_file = open('mfix.dat.upload.%s' % int(time.time()), 'w')
+    request.files['file'].save(upload_file)
+    upload_file.close()
 
     tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
     request.files['file'].save(tmp)
-    status_code, command_output = mfix_thread.do_command("REINIT", args={'filename':tmp.name})
+    mfix_dat = tmp.read()
     os.unlink(tmp.name)
+    status_code, command_output = mfix_thread.do_command("REINIT", args={'mfix_dat':mfix_dat})
 
     if status_code != 200:
         return command_output

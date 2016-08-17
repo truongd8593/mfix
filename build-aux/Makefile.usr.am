@@ -159,6 +159,7 @@ pymfix_src = \
 	$(top_srcdir)/../model/param_mod.f \
 	$(top_srcdir)/../model/param1_mod.f \
 	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/../model/dmp_modules/parallel_mpi_mod.f \
 	$(top_srcdir)/../model/fldvar_mod.f \
 	$(top_srcdir)/../model/des/discretelement_mod.f \
 	$(top_srcdir)/../model/des/des_time_march.f \
@@ -171,6 +172,7 @@ pymfix_src = \
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
 mfix$(EXEEXT): mfix.so
+	-rm -f $@
 	$(LN_S) $(top_srcdir)/../gui/pymfix $@
 
 mfix.so: $(LIBMFIX).md5

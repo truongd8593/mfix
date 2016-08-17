@@ -29,11 +29,39 @@
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
 
+! Flag to indicate whether the configuration is good
+      LOGICAL :: GOOD_CONFIG = .FALSE.
+
       CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
       INTEGER :: CMD_LINE_ARGS_COUNT = 0
       CHARACTER(LEN=80) :: MFIX_DAT = "mfix.dat"
 
       CONTAINS
+
+      SUBROUTINE PRE_INIT
+         USE error_manager, only: init_error_manager
+         USE param1, only: n_spx
+         USE run, only: run_name, run_type
+
+         IMPLICIT NONE
+
+         ! Read input data, check data, do computations for IC and BC locations
+         ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+         CALL GET_DATA
+
+         ! Initialize the error manager. This call occurs after the mfix.dat
+         ! is read so that message verbosity can be set and the .LOG file
+         ! can be opened.
+         CALL INIT_ERROR_MANAGER
+
+         ! Write header in the .LOG file and to screen.
+         ! Not sure if the values are correct or useful
+         CALL WRITE_HEADER
+
+         ! Open files
+         CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
+
+      END SUBROUTINE PRE_INIT
 
       SUBROUTINE INITIALIZE
 !f2py threadsafe
@@ -65,7 +93,6 @@
       USE mfix_netcdf, only: mfix_usingnetcdf
       USE output, only: dbgprn_layout
       USE output_man, only: init_output_vars, output_manager
-      USE parallel_mpi, only: parallel_init, parallel_fin
       USE param1, only: n_spx, undefined, zero, large_number
       USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
       USE physprop, only: mmax
@@ -73,7 +100,7 @@
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: call_usr, dem_solids, dt_max, dt_min
       USE run, only: id_version
-      USE run, only: ier
+      USE run, only: ier, run_name
       USE run, only: nstep, pic_solids, run_type, dt, shear, time, v_sh
       USE run, only: time
       USE time_cpu, only: CPU00, wall0
@@ -467,6 +494,8 @@
          ! shift DX, DY and DZ values
          LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
+         GOOD_CONFIG = .FALSE.
+
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.
       CALL CHECK_GEOMETRY_PREREQS; IF(REINIT_ERROR()) RETURN
@@ -544,6 +573,8 @@
          CALL DESMPI_INIT; IF(REINIT_ERROR()) RETURN
          CALL DES_STL_PREPROCESSING; IF(REINIT_ERROR()) RETURN
       ENDIF
+
+      GOOD_CONFIG = .TRUE.
 
       END SUBROUTINE CHECK_DATA
 

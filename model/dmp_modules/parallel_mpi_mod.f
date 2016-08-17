@@ -1,4 +1,5 @@
-      module parallel_mpi
+! -*- f90 -*-
+module parallel_mpi
 
       use geometry
       use compar
@@ -161,5 +162,4 @@
       end subroutine MPI_Check
 
 
-      end module parallel_mpi
-
+end module parallel_mpi

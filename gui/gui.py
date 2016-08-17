@@ -731,7 +731,7 @@ class MfixGui(QtWidgets.QMainWindow,
         paused = self.job_manager.job and self.job_manager.job.is_paused()
         unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
-        editable = project_open and not (pending or paused or unpaused or resumable)
+        editable = project_open and not (pending or unpaused or resumable)
 
         log.debug("UPDATE RUN OPTIONS: pending=%s paused=%s resumable=%s",
                    pending, paused, resumable)
