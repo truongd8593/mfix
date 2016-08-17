@@ -311,9 +311,16 @@ class RegionsWidget(QtWidgets.QWidget):
                 # Should we just disable the widgets for in-use regions?
                 self.parent.message(text="Region %s is in use, cannot change type" % name)
                 widget.setCurrentText(row_data.get('type'))
+                return
+
             elif key == 'name':
-                self.parent.ics_change_region_name(name, value)
-                self.parent.bcs_change_region_name(name, value)
+                new_name = value.get('name')
+                if new_name:
+                    self.parent.ics_change_region_name(name, new_name)
+                    self.parent.bcs_change_region_name(name, new_name)
+                else:
+                    self.parent.error('invalid value %s' % value)
+                    return
 
         self.parent.set_unsaved_flag()
 
