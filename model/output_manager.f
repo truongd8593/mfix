@@ -1118,10 +1118,11 @@ MODULE output_man
 
 
 ! Now save the new partition to gridmap.dat before restarting
-!         IF(ADJUST_PARTITION) THEN
-! JFD: Temporarily disabling DLB for debuging purposes
-         ADJUST_PARTITION = .TRUE.
-         IF(.FALSE.) THEN
+         IF(ADJUST_PARTITION) THEN
+! JFD: Comment line above and uncomment next two lines to
+!      temporarily disabling DLB for debuging purposes.
+!         ADJUST_PARTITION = .TRUE.
+!         IF(.FALSE.) THEN
             OPEN(UNIT=777, FILE='gridmap.dat')
             WRITE (777, 1005) DLB_NODESI(BEST_PARTITION), &
                               DLB_NODESJ(BEST_PARTITION), &

@@ -326,19 +326,19 @@
       endif
 
       IF(.NOT.INCREMENT_ARRAYS_ALLOCATED) THEN
-         allocate(WEST_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(EAST_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(SOUTH_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(NORTH_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(BOTTOM_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(TOP_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(west_array_of)) deallocate(west_array_of); allocate(WEST_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(east_array_of)) deallocate(east_array_of); allocate(EAST_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(south_array_of)) deallocate(south_array_of); allocate(SOUTH_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(north_array_of)) deallocate(north_array_of); allocate(NORTH_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(bottom_array_of)) deallocate(bottom_array_of); allocate(BOTTOM_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(top_array_of)) deallocate(top_array_of); allocate(TOP_ARRAY_OF(ijkstart3:ijkend3))
 
-         allocate(IM_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(IP_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(JM_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(JP_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(KM_ARRAY_OF(ijkstart3:ijkend3))
-         allocate(KP_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(IM_ARRAY_OF)) deallocate(IM_ARRAY_OF); allocate(IM_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(IP_ARRAY_OF)) deallocate(IP_ARRAY_OF); allocate(IP_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(JM_ARRAY_OF)) deallocate(JM_ARRAY_OF); allocate(JM_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(JP_ARRAY_OF)) deallocate(JP_ARRAY_OF); allocate(JP_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(KM_ARRAY_OF)) deallocate(KM_ARRAY_OF); allocate(KM_ARRAY_OF(ijkstart3:ijkend3))
+         if (allocated(KP_ARRAY_OF)) deallocate(KP_ARRAY_OF); allocate(KP_ARRAY_OF(ijkstart3:ijkend3))
       ENDIF
 
       INCREMENT_ARRAYS_ALLOCATED = .TRUE.
@@ -462,7 +462,7 @@
 
 !   Loop through useful cells and save their index
 !======================================================================
-    
+
       IF(ALLOCATED(BACKGROUND_IJK_OF)) DEALLOCATE(BACKGROUND_IJK_OF)
       IF(ALLOCATED(IJK_OF_BACKGROUND)) DEALLOCATE(IJK_OF_BACKGROUND)
       IF(ALLOCATED(TEMP_IJK_ARRAY_OF)) DEALLOCATE(TEMP_IJK_ARRAY_OF)
@@ -1803,7 +1803,7 @@
 #endif
 
 !  INSERT NEW SEND_RECV INIT HERE
- 
+
    call sendrecv_re_init_after_re_indexing(comm, 0 )
 
    ENDIF ! IS_SERIAL

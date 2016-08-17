@@ -270,11 +270,13 @@
       INTEGER, ALLOCATABLE :: int_tmp(:)
       DOUBLE PRECISION, ALLOCATABLE :: real_tmp(:)
 
-      INTEGER :: lSIZE, II
+      INTEGER :: lSIZE, II,FC
       DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
 
 
-      IF(FACETS_AT_DG(IJK)%COUNT > 0) THEN
+      FC = FACETS_AT_DG(IJK)%COUNT 
+      IF(FC > 0) THEN
+!      IF(FACETS_AT_DG(IJK)%COUNT > 0) THEN
 
          DO II=1, FACETS_AT_DG(IJK)%COUNT
             IF(FACET_ID == FACETS_AT_DG(IJK)%ID(II)) RETURN
@@ -303,14 +305,23 @@
 
       ELSE
          FACETS_AT_DG(IJK)%COUNT = 1
-         IF(.not.allocated(FACETS_AT_DG(IJK)%ID)) &
-            allocate(FACETS_AT_DG(IJK)%ID(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%DIR)) &
-            allocate(FACETS_AT_DG(IJK)%DIR(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%MIN)) &
-            allocate(FACETS_AT_DG(IJK)%MIN(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%MAX)) &
-            allocate(FACETS_AT_DG(IJK)%MAX(4))
+         IF(allocated(FACETS_AT_DG(IJK)%ID)) deallocate(FACETS_AT_DG(IJK)%ID)
+         allocate(FACETS_AT_DG(IJK)%ID(4))
+         IF(allocated(FACETS_AT_DG(IJK)%DIR)) deallocate(FACETS_AT_DG(IJK)%DIR)
+         allocate(FACETS_AT_DG(IJK)%DIR(4))
+         IF(allocated(FACETS_AT_DG(IJK)%MIN)) deallocate(FACETS_AT_DG(IJK)%MIN)
+         allocate(FACETS_AT_DG(IJK)%MIN(4))
+         IF(allocated(FACETS_AT_DG(IJK)%MAX)) deallocate(FACETS_AT_DG(IJK)%MAX)
+         allocate(FACETS_AT_DG(IJK)%MAX(4))
+
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%ID)) &
+         !    allocate(FACETS_AT_DG(IJK)%ID(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%DIR)) &
+         !    allocate(FACETS_AT_DG(IJK)%DIR(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%MIN)) &
+         !    allocate(FACETS_AT_DG(IJK)%MIN(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%MAX)) &
+         !    allocate(FACETS_AT_DG(IJK)%MAX(4))
       ENDIF
 
       FACETS_AT_DG(IJK)%ID(FACETS_AT_DG(IJK)%COUNT) = FACET_ID

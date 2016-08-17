@@ -19,11 +19,7 @@
 ! time used for computations.
       DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
 ! DISTIO variable for specifying the mfix version
-      CHARACTER(LEN=512) :: version
-! environment variable
-!$ CHARACTER(LEN=512) :: omp_num_threads
-!$ INTEGER :: length
-!$ INTEGER :: status
+      CHARACTER(LEN=512) :: version = 'RES = 01.6'
 
 ! Number of iterations
       INTEGER :: NIT_TOTAL
@@ -54,20 +50,23 @@
       USE compar, only: mype, pe_io
       USE cont, only: do_cont
       USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
+      USE dashboard, ONLY: dtmax, dtmin, init_time, n_dashboard, nit_max, nit_min, smmax, smmin
       USE dbg, only: debug_write_layout, write_parallel_info
+      USE des_allocate, only: des_allocate_arrays
       USE discretelement, only: discrete_element
       USE drag, only: f_gs
       USE error_manager, only: err_msg, flush_err_msg
       USE error_manager, only: init_err_msg, finl_err_msg
       USE fldvar, only: rop_g, rop_s
       USE funits, only: dmp_log, unit_log, unit_res
+      USE iterate, ONLY: max_nit
       USE machine, only: start_log, end_log
-      USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
+      USE machine, only: wall_time, start_log, end_log
       USE mfix_netcdf, only: mfix_usingnetcdf
       USE output, only: dbgprn_layout
       USE output_man, only: init_output_vars, output_manager
       USE parallel_mpi, only: parallel_init, parallel_fin
-      USE param1, only: n_spx, undefined, zero
+      USE param1, only: n_spx, undefined, zero, large_number
       USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
       USE physprop, only: mmax
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
@@ -90,69 +89,37 @@
 
      INTEGER :: LL, MM
 
-!$    INTEGER num_threads, threads_specified, omp_id
-!$    INTEGER omp_get_num_threads
-!$    INTEGER omp_get_thread_num
 
-! DISTIO
-! If you change the value below in this subroutine, you must also
-! change it in write_res0.f and the value should also be consistent
-! with the check in read_res0
-      version = 'RES = 01.6'
+     !--------------------------  ARRAY ALLOCATION -----------------------!
 
-      bDoing_postmfix = .false.
+     ! Allocate array storage.
+     CALL ALLOCATE_ARRAYS
+     IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
+     IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
-! Invoke MPI initialization routines and get rank info.
-      CALL PARALLEL_INIT
-      CALL GEN_LOG_BASENAME
+     ! Initialize arrays.
+     CALL INIT_FVARS
+     IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
 
-! we want only PE_IO to write out common error messages
-      DMP_LOG = (myPE == PE_IO)
+     !======================================================================
+     ! Data initialization for Dashboard
+     !======================================================================
+     INIT_TIME = TIME
+     SMMIN =  LARGE_NUMBER
+     SMMAX = -LARGE_NUMBER
 
-! set the version.release of the software
-      ID_VERSION = '2016-1'
+     DTMIN =  LARGE_NUMBER
+     DTMAX = -LARGE_NUMBER
 
-! set automatic restart flag to false
-!      AUTOMATIC_RESTART = .FALSE.
-!      ITER_RESTART      = 1
+     NIT_MIN = MAX_NIT
+     NIT_MAX = 0
 
-! specify the number of processors to be used
-!$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)
-!$      if (status.eq.0 .and. length.ne.0) then
-!$        read(omp_num_threads,*) threads_specified
-!$      else
-!$        WRITE(*,'(A)') 'Enter the number of threads to be used for SMP: '
-!$        READ(*,*) threads_specified
-!$      endif
-
-!$      call omp_set_num_threads(threads_specified)
-
-! Find the number of processors used
-!$omp  parallel
-!$      num_threads = omp_get_num_threads()
-!$      omp_id = omp_get_thread_num()
-!$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
-!$omp  end parallel
-
-! Set machine dependent constants
-      CALL MACHINE_CONS
-
-! Get the date and time. They give the unique run_id in binary output
-! files
-      CALL GET_RUN_ID
+     N_DASHBOARD = 0
 
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
       WALL0 = WALL_TIME()
-
-! Read input data, check data, do computations for IC and BC locations
-! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL GET_DATA
-
-! Check data, do computations for IC and BC locations
-! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL CHECK_DATA
 
 ! Write the initial part of the standard output file
       CALL WRITE_OUT0
@@ -161,17 +128,7 @@
 ! Write the initial part of the special output file(s)
       CALL WRITE_USR0
 
-!$    CALL START_LOG
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
-!$    CALL END_LOG
-
-!  setup for PC quickwin application
-      CALL PC_QUICKWIN
-
       CALL INIT_ERR_MSG('MFIX')
-
 
 ! if not netcdf writes asked for ... globally turn off netcdf
       if(MFIX_usingNETCDF()) then
@@ -492,7 +449,6 @@
          USE cut_cell_preproc, only: cut_cell_preprocessing
          USE cutcell, ONLY: cartesian_grid
          USE dashboard, ONLY: dtmax, dtmin, init_time, n_dashboard, nit_max, nit_min, smmax, smmin
-         USE des_allocate
          USE desgrid, only: DESGRID_INIT
          USE discretelement, ONLY: discrete_element
          USE error_manager
@@ -511,61 +467,49 @@
          ! shift DX, DY and DZ values
          LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
-! Initialize the error manager. This call occurs after the mfix.dat
-! is read so that message verbosity can be set and the .LOG file
-! can be opened.
-      CALL INIT_ERROR_MANAGER
-
-! Write header in the .LOG file and to screen.
-! Not sure if the values are correct or useful
-      CALL WRITE_HEADER
-
-! Open files
-      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
-
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.
-      CALL CHECK_GEOMETRY_PREREQS
-      CALL CHECK_DMP_PREREQS
+      CALL CHECK_GEOMETRY_PREREQS; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_DMP_PREREQS; IF(REINIT_ERROR()) RETURN
 
 ! Set up the physical domain indicies (cell index max/min values).
-      CALL SET_MAX2
+      CALL SET_MAX2; IF(REINIT_ERROR()) RETURN
 
 ! Set constants
-      CALL SET_CONSTANTS
+      CALL SET_CONSTANTS; IF(REINIT_ERROR()) RETURN
 
 ! Adjust partition for better load balance (done when RE_INDEXING is .TRUE.)
-      CALL ADJUST_IJK_SIZE
+      CALL ADJUST_IJK_SIZE; IF(REINIT_ERROR()) RETURN
 
 ! Partition the domain and set indices
-      CALL GRIDMAP_INIT
+      CALL GRIDMAP_INIT; IF(REINIT_ERROR()) RETURN
 
 ! Check the minimum solids phase requirements.
-      CALL CHECK_SOLIDS_MODEL_PREREQS
+      CALL CHECK_SOLIDS_MODEL_PREREQS; IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_RUN_CONTROL
-      CALL CHECK_NUMERICS
-      CALL CHECK_OUTPUT_CONTROL
+      CALL CHECK_RUN_CONTROL; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_NUMERICS; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_OUTPUT_CONTROL; IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_GAS_PHASE
-      CALL CHECK_SOLIDS_PHASES
-      CALL SET_PARAMETERS
+      CALL CHECK_GAS_PHASE; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_SOLIDS_PHASES; IF(REINIT_ERROR()) RETURN
+      CALL SET_PARAMETERS; IF(REINIT_ERROR()) RETURN
 
 ! Basic geometry checks.
-      CALL CHECK_GEOMETRY(SHIFT)
-      IF(DISCRETE_ELEMENT) CALL CHECK_GEOMETRY_DES
+      CALL CHECK_GEOMETRY(SHIFT); IF(REINIT_ERROR()) RETURN
+      IF(DISCRETE_ELEMENT) CALL CHECK_GEOMETRY_DES; IF(REINIT_ERROR()) RETURN
 
 ! Set grid spacing variables.
-      CALL SET_GEOMETRY
-      IF(DISCRETE_ELEMENT) CALL SET_GEOMETRY_DES
+      CALL SET_GEOMETRY; IF(REINIT_ERROR()) RETURN
+      IF(DISCRETE_ELEMENT) CALL SET_GEOMETRY_DES; IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_INITIAL_CONDITIONS
-      CALL CHECK_BOUNDARY_CONDITIONS
-      CALL CHECK_INTERNAL_SURFACES
-      CALL CHECK_POINT_SOURCES
+      CALL CHECK_INITIAL_CONDITIONS; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_BOUNDARY_CONDITIONS; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_INTERNAL_SURFACES; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_POINT_SOURCES; IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_CHEMICAL_RXNS
-      CALL CHECK_ODEPACK_STIFF_CHEM
+      CALL CHECK_CHEMICAL_RXNS; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_ODEPACK_STIFF_CHEM; IF(REINIT_ERROR()) RETURN
 
 
 
@@ -573,60 +517,33 @@
 
 
 ! This call needs to occur before any of the IC/BC checks.
-      CALL SET_ICBC_FLAG
+      CALL SET_ICBC_FLAG; IF(REINIT_ERROR()) RETURN
 
 ! Compute area of boundary surfaces.
-      CALL GET_BC_AREA
+      CALL GET_BC_AREA; IF(REINIT_ERROR()) RETURN
 
 ! Convert (mass, volume) flows to velocities.
-      CALL SET_BC_FLOW
+      CALL SET_BC_FLOW; IF(REINIT_ERROR()) RETURN
 
 ! Set the flags for identifying computational cells
-      CALL SET_FLAGS
+      CALL SET_FLAGS; IF(REINIT_ERROR()) RETURN
 ! Set arrays for computing indices
-      CALL SET_INCREMENTS
-      CALL SET_INCREMENTS3
+      CALL SET_INCREMENTS; IF(REINIT_ERROR()) RETURN
+      CALL SET_INCREMENTS3; IF(REINIT_ERROR()) RETURN
 
 ! Cartesian grid implementation
-      CALL CHECK_DATA_CARTESIAN
+      CALL CHECK_DATA_CARTESIAN; IF(REINIT_ERROR()) RETURN
       IF(CARTESIAN_GRID) THEN
-         CALL CUT_CELL_PREPROCESSING
+         CALL CUT_CELL_PREPROCESSING; IF(REINIT_ERROR()) RETURN
       ELSE
-         CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
+         CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS; IF(REINIT_ERROR()) RETURN
       ENDIF
 
       IF(DISCRETE_ELEMENT) THEN
-         CALL DESGRID_INIT
-         CALL DESMPI_INIT
-         CALL DES_STL_PREPROCESSING
+         CALL DESGRID_INIT; IF(REINIT_ERROR()) RETURN
+         CALL DESMPI_INIT; IF(REINIT_ERROR()) RETURN
+         CALL DES_STL_PREPROCESSING; IF(REINIT_ERROR()) RETURN
       ENDIF
-
-!--------------------------  ARRAY ALLOCATION -----------------------!
-
-! Allocate array storage.
-      CALL ALLOCATE_ARRAYS
-      IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
-      IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
-
-! Initialize arrays.
-      CALL INIT_FVARS
-      IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
-
-!======================================================================
-! Data initialization for Dashboard
-!======================================================================
-      INIT_TIME = TIME
-      SMMIN =  LARGE_NUMBER
-      SMMAX = -LARGE_NUMBER
-
-      DTMIN =  LARGE_NUMBER
-      DTMAX = -LARGE_NUMBER
-
-      NIT_MIN = MAX_NIT
-      NIT_MAX = 0
-
-      N_DASHBOARD = 0
-
 
       END SUBROUTINE CHECK_DATA
 
@@ -683,43 +600,6 @@
       CALL FINL_ERR_MSG
 
       END SUBROUTINE FINALIZE
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: GEN_LOG_BASENAME                                        !
-!  Author: Aytekin Gel                                Date: 19-SEP-03  !
-!                                                                      !
-!  Purpose: Generate the file base for DMP logs.                       !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE GEN_LOG_BASENAME
-
-      use compar, only: myPE
-      use compar, only: fbname
-
-      implicit none
-
-! Variables for generating file basename with processor id
-      INTEGER :: i1, i10, i100, i1000, i10000
-
-! PAR_I/O Generate file basename for LOG files
-      i10000 = int(myPE/10000)
-      i1000  = int((myPE-i10000*10000)/1000)
-      i100   = int((myPE-i10000*10000-i1000*1000)/100)
-      i10    = int((myPE-i10000*10000-i1000*1000-i100*100)/10)
-      i1     = int((myPE-i10000*10000-i1000*1000-i100*100-i10*10)/1)
-
-      i10000 = i10000 + 48
-      i1000  = i1000  + 48
-      i100   = i100   + 48
-      i10    = i10    + 48
-      i1     = i1     + 48
-
-      fbname=char(i10000)//char(i1000)//char(i100)//char(i10)//char(i1)
-
-      RETURN
-      END SUBROUTINE GEN_LOG_BASENAME
-
 
 
 

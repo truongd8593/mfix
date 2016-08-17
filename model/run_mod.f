@@ -39,7 +39,7 @@
       INTEGER :: ITER_RESTART
 
 ! version.release of software
-      CHARACTER(LEN=10) :: ID_VERSION
+      CHARACTER(LEN=10) :: ID_VERSION = '2016-1'
 
 ! Start-time of the run.
       DOUBLE PRECISION :: TIME

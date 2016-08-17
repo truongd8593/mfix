@@ -68,13 +68,18 @@
       USE COMPAR, only:ADJUST_PARTITION
       USE DES_TIME_MARCH, ONLY: DES_TIME_INIT, DES_TIME_STEP, DES_TIME_END, FACTOR, EXIT_LOOP
       USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
+      USE ERROR_MANAGER, ONLY: INIT_ERROR_MANAGER
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
-      USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD, INITIALIZE, FINALIZE, EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
+      USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD
+      USE MAIN, ONLY: GET_DATA, CHECK_DATA, INITIALIZE, FINALIZE
+      USE MAIN, ONLY: EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
       USE MPI_UTILITY
-      USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
+      USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP, RUN_NAME, RUN_TYPE
       USE STEP, ONLY: CHECK_LOW_DT, CHEM_MASS, TIME_STEP_INIT, TIME_STEP_END
+      USE param1, only: n_spx
+      USE parallel_mpi, only: parallel_init
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -97,11 +102,15 @@
          ENDIF
 
          IF (tmp=='-h'.or.tmp=='--help') THEN
-            print *, "Usage: mfix [-h,--help] [-p,--print-flags] [-f,--file <filename>] [<KEYWORD>=<VALUE> ...]"
+            print *, "Usage: mfix [-h,--help] [-p,--print-flags] &
+               &[-f,--file <filename>] [<KEYWORD>=<VALUE> ...]"
             print *, "       -h,--help: display this help message"
-            print *, "       -p,--print-flags: print flags MFIX was built with (if any): dmp mkl netcdf python smp"
-            print *, "       -f,--file <filename>: specify filename of input file (Default: mfix.dat)"
-            print *, "       <KEYWORD>=<VALUE>: specify keyword on command line, overrides values in mfix.dat"
+            print *, "       -p,--print-flags: print flags MFIX was &
+               &built with (if any): dmp mkl netcdf python smp"
+            print *, "       -f,--file <filename>: &
+               &specify filename of input file (Default: mfix.dat)"
+            print *, "       <KEYWORD>=<VALUE>: specify keyword on &
+               &command line, overrides values in mfix.dat"
             STOP
          ELSE IF (tmp=='-p'.or.tmp=='--print-flags') THEN
             CALL PRINT_FLAGS
@@ -114,8 +123,31 @@
          ENDIF
       ENDDO
 
+! Invoke MPI/SMP initialization and get rank info.
+     CALL PARALLEL_INIT
+
 ! Dynamic load balance loop
       DO
+
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL GET_DATA
+
+! Initialize the error manager. This call occurs after the mfix.dat
+! is read so that message verbosity can be set and the .LOG file
+! can be opened.
+      CALL INIT_ERROR_MANAGER
+
+! Write header in the .LOG file and to screen.
+! Not sure if the values are correct or useful
+      CALL WRITE_HEADER
+
+! Open files
+      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
+
+! Check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL CHECK_DATA
 
 ! Initialize the simulation
       CALL INITIALIZE

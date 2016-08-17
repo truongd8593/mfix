@@ -425,13 +425,13 @@
 ! consider cyclic boundary condition using the imap(:),jmap(:),kmap(:)
 ! indirection arrays
 
-      allocate( imap( imin4:imax4 ) )
-      allocate( jmap( jmin4:jmax4 ) )
-      allocate( kmap( kmin4:kmax4 ) )
+      if (allocated( imap)) deallocate( imap); allocate( imap( imin4:imax4 ) )
+      if (allocated( jmap)) deallocate( jmap); allocate( jmap( jmin4:jmax4 ) )
+      if (allocated( kmap)) deallocate( kmap); allocate( kmap( kmin4:kmax4 ) )
 
-      allocate( imap_c( imin4:imax4 ) )
-      allocate( jmap_c( jmin4:jmax4 ) )
-      allocate( kmap_c( kmin4:kmax4 ) )
+      if (allocated( imap_c)) deallocate( imap_c); allocate( imap_c( imin4:imax4 ) )
+      if (allocated( jmap_c)) deallocate( jmap_c); allocate( jmap_c( jmin4:jmax4 ) )
+      if (allocated( kmap_c)) deallocate( kmap_c); allocate( kmap_c( kmin4:kmax4 ) )
 
       do kk=kmin4,kmax4
         kmap(kk) = kk

@@ -62,9 +62,6 @@
       nodesk = 1
       call parallel_init()
 
-! set up machine constants
-      CALL MACHINE_CONS
-
 ! get the RUN_NAME from the user
       IF (DO_XFORMS) THEN
          L = INDEX(DIR_NAME,'.RES')

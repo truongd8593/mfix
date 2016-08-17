@@ -3,7 +3,7 @@
 
       logical :: bDist_IO
       logical :: bStart_with_one_RES
-      logical :: bDoing_postmfix
+      logical :: bDoing_postmfix = .false.
 
       integer :: netCDF_file_index
 

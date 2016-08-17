@@ -6,8 +6,8 @@ fi
 
 post_script=AUTOTEST/post.script.NEW
 
-if [ -n "${MPIRANKS}" ]; then
-    mpirun -np ${MPIRANKS} ./mfix${EXEEXT}
+if [ -n "${MPICMD}" ]; then
+    ${MPICMD} ./mfix${EXEEXT}
 else
     ./mfix${EXEEXT}
 fi
