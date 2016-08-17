@@ -81,6 +81,7 @@ class BCS(object):
             b.setMaximumWidth(w)
 
         ui.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
+        ui.combobox_fluid_species_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_species_eq_type)
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
@@ -189,7 +190,9 @@ class BCS(object):
                 idx = self.bcs_find_index()
                 indices[i] = idx
             self.bcs[idx] = {'region': region_name,
-                             'energy_eq_type': NO_FLUX} # set default for new regions
+                             'energy_eq_type': NO_FLUX,
+                             'species_eq_type': NO_FLUX,
+            } # set defaults for new regions
 
             region_data = self.bcs_region_dict.get(region_name)
             if region_data is None: # ?
@@ -613,13 +616,13 @@ class BCS(object):
                           (bc.ind, extent))
 
 
-    def set_bcs_fluid_energy_eq_type(self, bctype):
+    def set_bcs_fluid_energy_eq_type(self, eq_type):
         if not self.bcs_current_indices:
             return
         #Select energy equation boundary type:
         # Available selections:
         #  No-Flux (adiabatic) [DEFAULT]
-        if bctype == NO_FLUX:
+        if eq_type == NO_FLUX:
             #    Sets keyword BC_HW_T_G(#) to 0.0
             hw = 0.0
             #    Sets keyword BC_C_T_G(#) to 0.0
@@ -627,7 +630,7 @@ class BCS(object):
             #    Sets keyword BC_TW_G(#) to UNDEFINED
             tw = None
         #  Specified Temperature
-        elif bctype == SPECIFIED_TEMPERATURE:
+        elif eq_type == SPECIFIED_TEMPERATURE:
             #    Sets keyword BC_HW_T_G(#) to UNDEFINED
             hw = None
             #    Sets keyword BC_C_T_G(#) to 0.0
@@ -635,23 +638,26 @@ class BCS(object):
             #    Requires BC_TW_G(#)
             tw = True
         #  Specified Flux
-        elif bctype == SPECIFIED_FLUX:
+        elif eq_type == SPECIFIED_FLUX:
             #    Sets keyword BC_HW_T_G(#) to 0.0
             hw = 0.0
             #    Requires BC_C_T_G(#)
             c = True
             #    Sets keyword BC_TW_G(#) to UNDEFINED
             tw = None
-        elif bctype == CONVECTIVE_FLUX:
+        elif eq_type == CONVECTIVE_FLUX:
             #    Requires BC_HW_T_G(#)
             hw = True
             #    Sets keyword BC_C_T_G(#) to 0.0
             c = 0.0
             #    Requires BC_TW_G(#)
             tw = True
-        self.print_internal('tw %s c %s hw %s' % (tw, c, hw))
+        else:
+            self.error("Invalid energy_eq type %s" % eq_type)
+            return
+
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['energy_eq_type'] = bctype
+            self.bcs[BC]['energy_eq_type'] = eq_type
             for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
                 if val is True:
                     pass # 'required'
@@ -659,18 +665,58 @@ class BCS(object):
                     self.update_keyword(key, val, args=[BC])
 
         self.setup_bcs_fluid_tab()
-        # hacks to prevent duplicate display of bc_tw_g
-        ui = self.ui.boundary_conditions
-        if bctype == SPECIFIED_TEMPERATURE:
-            ui.lineedit_keyword_bc_tw_g_2_args_BC.setText('')
-        elif bctype == CONVECTIVE_FLUX:
-            ui.lineedit_keyword_bc_tw_g_args_BC.setText('')
 
 
-    def set_bcs_fluid_species_eq_type(self, bctype):
+    def set_bcs_fluid_species_eq_type(self, eq_type):
         if not self.bcs_current_indices:
             return
+        #Select species equation boundary type:
+        # Selection only available when solving species equations
+        # Available selections:
+        #  No-Flux [DEFAULT]
+        if eq_type == NO_FLUX:
+            #    Sets keyword BC_HW_X_G(#) to 0.0
+            hw = 0.0
+            #    Sets keyword BC_C_X_G(#) to 0.0
+            c = 0
+            #    Sets keyword BC_XW_G(#) to UNDEFINED
+            xw = None
+        #  Specified Mass Fraction
+        elif eq_type == SPECIFIED_MASS_FRACTION:
+            #    Sets keyword BC_XW_T_G(#) to UNDEFINED # should be BC_H_X_G ?
+            hw = None
+            #    Sets keyword BC_C_X_G(#) to 0.0
+            c = 0.0
+            #    Requires BC_XW_G(#)
+            xw = True
+        #  Specified Flux
+        elif eq_type == SPECIFIED_FLUX:
+            #    Sets keyword BC_HW_X_G(#) to 0.0
+            hw = 0.0
+            #    Requires BC_C_X_G(#)
+            c = True
+            #    Sets keyword BC_XW_G(#) to UNDEFINED
+            xw = None
+        #  Convective Flux
+        elif eq_type == CONVECTIVE_FLUX:
+            #    Requires BC_HW_X_G(#)
+            hw = True
+            #    Sets keyword BC_C_X_G(#) to 0.0
+            c = 0.0
+            #    Requires BC_XW_G(#)
+            xw = True
+        else:
+            self.error("Invalid species_eq type %s" % eq_type)
 
+        for BC in self.bcs_current_indices:
+            self.bcs[BC]['species_eq_type'] = eq_type
+            for (key, val) in (('bc_hw_x_g', hw), ('bc_c_x_g', c), ('bc_xw_g', xw)):
+                if val is True:
+                    pass # 'required'
+                else:
+                    self.update_keyword(key, val, args=[BC])
+
+        self.setup_bcs_fluid_tab()
 
 
     def setup_bcs_fluid_tab(self):
@@ -705,8 +751,9 @@ class BCS(object):
                 item = getattr(ui, name%(key+suffix), None)
                 if item:
                     item.setEnabled(enabled)
-                else:
-                    self.warn("NO WIDGET FOR " + (name%(key+suffix)))
+                elif not name.startswith('label'):
+                    self.error("no widget for " + (name%(key+suffix)))
+                    return
             #if not enabled:
             #    get_widget(key+suffix).setText('') # Is this a good idea?
             #    return
@@ -722,17 +769,17 @@ class BCS(object):
         # Specification only available with PSW
         # Sets keyword BC_HW_G(#)
         # DEFAULT value of 0.0
-
+        #
         #    Define Wall U-velocity
         # Specification only available with PSW
         # Sets keyword BC_UW_G(#)
         # DEFAULT value of 0.0
-
+        #
         #    Define Wall V-velocity
         # Specification only available with PSW
         # Sets keyword BC_VW_G(#)
         # DEFAULT value of 0.0
-
+        #
         #    Define Wall W-velocity
         # Specification only available with PSW
         # Sets keyword BC_WW_G(#)
@@ -750,44 +797,48 @@ class BCS(object):
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = bool(energy_eq)
         ui.groupbox_fluid_energy_eq.setEnabled(enabled)
-        bctype = None
+        eq_type = None
         if enabled:
-            bctype = self.bcs[BC0].get('energy_eq_type')
+            eq_type = self.bcs[BC0].get('energy_eq_type')
              # If not in dict, attempt to guess it based on keywords
-            if bctype is None:
+            if eq_type is None:
                 hw = self.project.get_value('bc_hw_t_g', args=[BC0])
                 c = self.project.get_value('bc_c_t_g', args=[BC0])
                 tw = self.project.get_value('bc_tw_g', args=[BC0])
                 if hw==0.0 and c==0.0 and tw is None:
-                    bctype = NO_FLUX
+                    eq_type = NO_FLUX
                 elif hw is None and c==0.0 and tw is not None:
-                    bctype = SPECIFIED_TEMPERATURE
+                    eq_type = SPECIFIED_TEMPERATURE
                 elif hw==0.0 and c!=0.0 and tw is None:
-                    bctype = SPECIFIED_FLUX
+                    eq_type = SPECIFIED_FLUX
                 elif hw is not None and c==0.0 and tw is not None:
-                    bctype = CONVECTIVE_FLUX
+                    eq_type = CONVECTIVE_FLUX
                 else:
                     self.error("Cannot determine type for energy boundary equation %s" % BC0)
-            if bctype is not None:
-                ui.combobox_fluid_energy_eq_type.setCurrentIndex(bctype)
+            if eq_type is not None:
+                ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
             else:
-                bctype = NO_FLUX # default
+                eq_type = NO_FLUX # default
 
         if energy_eq:
             #Define wall temperature
             # Specification only available with 'Specified Temperature' BC type
             # Sets keyword BC_TW_G(#)
             # DEFAULT value of 293.15
-            enabled = (bctype==SPECIFIED_TEMPERATURE)
+            enabled = (bc_type==SPECIFIED_TEMPERATURE)
             key = 'bc_tw_g'
             default = 293.15 if enabled else None
             setup_key_widget(key, default, enabled)
-
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_tw_g_2_args_BC.setText('')
+            else:
+                ui.lineedit_keyword_bc_tw_g_args_BC.setText('')
             #Define constant flux
             # Specification only available with 'Specified Flux' BC type
             # Sets keyword BC_C_T_G(#)
             # DEFAULT value of 0.0
-            enabled = (bctype==SPECIFIED_FLUX)
+            enabled = (eq_type==SPECIFIED_FLUX)
             key = 'bc_c_t_g'
             default = 0.0
             setup_key_widget(key, default, enabled)
@@ -796,7 +847,7 @@ class BCS(object):
             # Specification only available with 'Convective Flux' BC type
             # Sets keyword BC_HW_T_G(#)
             # DEFAULT value of 0.0
-            enabled = (bctype==CONVECTIVE_FLUX)
+            enabled = (eq_type==CONVECTIVE_FLUX)
             key = 'bc_hw_t_g'
             default = 0.0
             setup_key_widget(key, default, enabled)
@@ -805,36 +856,90 @@ class BCS(object):
             # Specification only available with 'Convective Flux' BC type
             # Sets keyword BC_TW_G(#)
             # DEFAULT value of 0.0
-            enabled = (bctype==CONVECTIVE_FLUX)
+            enabled = (eq_type==CONVECTIVE_FLUX)
             key = 'bc_tw_g'
             default = 0.0 if enabled else None
             setup_key_widget(key, default, enabled, suffix='_2')
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_tw_g_args_BC.setText('')
+            else:
+                ui.lineedit_keyword_bc_tw_g_2_args_BC.setText('')
 
         #Select species equation boundary type:
         # Selection only available when solving species equations
         species_eq = self.project.get_value('species_eq', default=True, args=[0])
         enabled = bool(species_eq)
         ui.groupbox_fluid_species_eq.setEnabled(enabled)
+        eq_type = None
+        if enabled:
+            eq_type = self.bcs[BC0].get('species_eq_type')
+             # If not in dict, attempt to guess it based on keywords
+            if eq_type is None:
+                hw = self.project.get_value('bc_hw_x_g', args=[BC0])
+                c = self.project.get_value('bc_c_x_g', args=[BC0])
+                xw = self.project.get_value('bc_xw_g', args=[BC0])
+                if hw==0.0 and c==0.0 and xw is None:
+                    eq_type = NO_FLUX
+                elif hw is None and c==0.0 and xw is not None:
+                    eq_type = SPECIFIED_MASS_FRACTION
+                elif hw==0.0 and c!=0.0 and xw is None:
+                    eq_type = SPECIFIED_FLUX
+                elif hw is not None and c==0.0 and xw is not None:
+                    eq_type = CONVECTIVE_FLUX
+                else:
+                    self.error("Cannot determine type for species boundary equation %s" % BC0)
+            if eq_type is not None:
+                ui.combobox_fluid_species_eq_type.setCurrentIndex(eq_type)
+            else:
+                eq_type = NO_FLUX # default
 
-        #Define wall mass fraction
-        # Specification only available with 'Specified Mass Fraction' BC type
-        # Sets keyword BC_XW_G(#)
-        # DEFAULT value of 0.0
+        if species_eq:
+            #Define wall mass fraction
+            # Specification only available with 'Specified Mass Fraction' BC type
+            # Sets keyword BC_XW_G(#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_MASS_FRACTION)
+            key = 'bc_xw_g'
+            default = 0.0 if enabled else None
+            setup_key_widget(key, default, enabled)
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_xw_g_2_args_BC.setText('')
+            else:
+                ui.lineedit_keyword_bc_xw_g_args_BC.setText('')
 
-        #Define constant flux
-        # Specification only available with 'Specified Flux' BC type
-        # Sets keyword BC_C_X_G(#)
-        # DEFAULT value of 0.0
+            #Define constant flux
+            # Specification only available with 'Specified Flux' BC type
+            # Sets keyword BC_C_X_G(#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_FLUX)
+            key = 'bc_c_x_g'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
 
-        #Define transfer coefficient
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_HW_X_G(#)
-        # DEFAULT value of 0.0
+            #Define transfer coefficient
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_HW_X_G(#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_hw_x_g'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
 
-        #Define free stream mass fraction
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_XW_G(#)
-        # DEFAULT value of 0.0
+            #Define free stream mass fraction
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_XW_G(#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_xw_g'
+            default = 0.0 if enabled else None
+            setup_key_widget(key, default, enabled, suffix='_2')
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_xw_g_args_BC.setText('')
+            else:
+                ui.lineedit_keyword_bc_xw_g_2_args_BC.setText('')
 
 
 

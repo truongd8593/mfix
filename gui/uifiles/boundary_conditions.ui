@@ -160,9 +160,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
-         <width>466</width>
-         <height>569</height>
+         <y>-31</y>
+         <width>447</width>
+         <height>600</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
@@ -625,20 +625,8 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
               <property name="flat">
                <bool>true</bool>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_4">
-               <property name="leftMargin">
-                <number>5</number>
-               </property>
-               <property name="topMargin">
-                <number>10</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>5</number>
-               </property>
-               <item>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="0" colspan="3">
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
                   <widget class="QLabel" name="label">
@@ -700,6 +688,60 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
                   </spacer>
                  </item>
                 </layout>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_bc_xw_g">
+                 <property name="text">
+                  <string>Wall mass fraction</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_bc_c_x_g">
+                 <property name="text">
+                  <string>Constant flux</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_c_x_g_args_BC"/>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_bc_c_x_g_units">
+                 <property name="text">
+                  <string>TBD</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_bc_hw_x_g">
+                 <property name="text">
+                  <string>Transfer coefficient</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_hw_x_g_args_BC"/>
+               </item>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_bc_hw_x_g_units">
+                 <property name="text">
+                  <string>TBD</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_bc_xw_g_2">
+                 <property name="text">
+                  <string>Free stream mass frac.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_xw_g_args_BC"/>
+               </item>
+               <item row="4" column="1">
+                <widget class="LineEdit" name="lineedit_keyword_bc_xw_g_2_args_BC"/>
                </item>
               </layout>
              </widget>
