@@ -463,10 +463,11 @@ class ProjectManager(Project):
         be updated only when the keyword with matching args is updated.  If
         args=['*'], widget recieves updates regardless of args.
 
-        Special args:  'S' will be substituted with the currently selected
+        Special args:  'P' will be substituted with the currently selected
                         solids phase (the one the user is editing)
                        '*' : described above
-                       'IC' : current initial condition index """
+                       'IC' : current initial condition index
+                       'BC' : current initial condition index """
 
         if isinstance(args, int):
             args = [args]
