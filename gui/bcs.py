@@ -181,17 +181,21 @@ class BCS(object):
             return item
         item = make_item('+'.join(selections))
 
-        if indices is None:
+        if indices is None: # interactive
             indices = [None] * len(selections)
-        else:
+            autoselect = True
+        else: # loading file
             assert len(selections) == len(indices)
+            autoselect = False
 
         for (i, region_name) in enumerate(selections):
             idx = indices[i]
             if idx is None:
                 idx = self.bcs_find_index()
                 indices[i] = idx
-            self.bcs[idx] = {'region': region_name}
+            self.bcs[idx] = {'region': region_name,
+                             'energy_eq_type': NO_FLUX} # set default for new regions
+
             region_data = self.bcs_region_dict.get(region_name)
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
@@ -214,8 +218,8 @@ class BCS(object):
             for key in 'bc_hw_t_g', 'bc_c_t_g':
                 if self.project.get_value(key, args=[BC]) is None:
                     self.update_keyword(key, 0.0, args=[BC]) # Force type to No-Flux
-
-        tw.setCurrentCell(nrows, 0) # Might as well make it selected
+        if autoselect:
+            tw.setCurrentCell(nrows, 0)
 
 
     def bcs_find_index(self):
@@ -390,13 +394,22 @@ class BCS(object):
             if bc.get('region') == name:
                 self.bcs_set_region_keys(name, i, data)
 
+
     def bcs_change_region_name(self, old_name, new_name):
-        # TODO preserve order, update table
-        if old_name in self.bcs:
-            self.bcs[new_name] = self.bcs[old_name]
-            del self.bcs[old_name]
-
-
+        for (key, val) in self.bcs.items():
+            if val.get('region') == old_name:
+                self.bcs[key]['region'] = new_name
+                tw = self.ui.boundary_conditions.tablewidget_regions
+                for i in range(tw.rowCount()):
+                    data = tw.item(i,0).data(UserRole)
+                    indices, names = data
+                    if old_name in names:
+                        item = tw.item(i,0)
+                        names = (new_name if n==old_name else n for n in names)
+                        item.setData(UserRole, (indices, names))
+                        item.setText('+'.join(names))
+                        break
+                break
 
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the box-shaped region the BC applies to
@@ -428,8 +441,7 @@ class BCS(object):
     def bcs_to_str(self):
         bcs = self.ui.boundary_conditions
         tw = bcs.tablewidget_regions
-        data = [tw.item(i,0).data(UserRole)
-                for i in range(tw.rowCount())]
+        data = [tw.item(i,0).data(UserRole) for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
 
 
@@ -614,32 +626,49 @@ class BCS(object):
                           (bc.ind, extent))
 
 
-    def set_bcs_fluid_energy_eq_type(self, btype):
+    def set_bcs_fluid_energy_eq_type(self, bctype):
+        # Available selections:
+        #  No-Flux (adiabatic) [DEFAULT]
+        #    Sets keyword BC_HW_T_G(#) to 0.0
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Sets keyword BC_TW_G(#) to UNDEFINED
+        #  Specified Temperature
+        #    Sets keyword BC_HW_T_G(#) to UNDEFINED
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Requires BC_TW_G(#)
+        #  Specified Flux
+        #    Sets keyword BC_HW_T_G(#) to 0.0
+        #    Requires BC_C_T_G(#)
+        #    Sets keyword BC_TW_G(#) to UNDEFINED
+        #  Convective Flux
+        #    Requires BC_HW_T_G(#)
+        #    Sets keyword BC_C_T_G(#) to 0.0
+        #    Requires BC_TW_G(#)
         if not self.bcs_current_indices:
             return
 
-        for bc_name in self.bcs_current_regions:
-            self.bcs[bc_name].energy_eq_type = btype
+        if bctype == NO_FLUX:
+            hw, c, tw = 0.0, 0.0, None
+        elif bctype == SPECIFIED_TEMPERATURE:
+            hw, c, tw = None, 0.0, True
+        elif bctype == SPECIFIED_FLUX:
+            hw, c, tw = 0.0, True, None
+        elif bctype == CONVECTIVE_FLUX:
+            hw, c, tw, = True, 0.0, True
+        else:
+            self.warning("Invalid BC fluid energy equation type %s" % bctype)
+            return
 
         for BC in self.bcs_current_indices:
-            if btype == NO_FLUX:
-                hw, c, tw = 0.0, 0.0, None
-            elif btype == SPECIFIED_TEMPERATURE:
-                hw, c, tw = None, 0.0, True
-            elif btype == SPECIFIED_FLUX:
-                hw, c, tw = 0.0, True, None
-            elif btype == CONVECTIVE_FLUX:
-                hw, c, tw, = True, 0.0, True
-            else:
-                self.warning("Invalid BC fluid energy equation type %s" % btype)
-                return
+            self.bcs[BC]['energy_eq_type'] = bctype
             for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
                 if val is True:
-                    self.update_keyword(key, 1.0, args=[BC])
-                    pass # Enable input widget
+                    pass
                 else:
                     self.update_keyword(key, val, args=[BC])
-        self.setup_bcs_fluid_tab() # too heavy
+
+        self.setup_bcs_fluid_tab() # too heavy?
+
 
     def setup_bcs_fluid_tab(self):
         #Fluid (tab)
@@ -667,12 +696,14 @@ class BCS(object):
                 self.error('no widget for key %s' % key)
             return widget
 
-        def setup_key_widget(key, default=None, enabled=True):
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_BC'):
-                item = getattr(bcs, name%key, None)
+                item = getattr(bcs, name%(key+suffix), None)
                 if item:
                     item.setEnabled(enabled)
+                else:
+                    self.warn("NO WIGET FOR " + (name%(key+suffix)))
             if not enabled:
                 get_widget(key).setText('')
                 return
@@ -713,97 +744,72 @@ class BCS(object):
 
         #Select energy equation boundary type:
         # Selection only available when solving energy equations
-        # Available selections:
-        #  No-Flux (adiabatic) [DEFAULT]
-        #    Sets keyword BC_HW_T_G(#) to 0.0
-        #    Sets keyword BC_C_T_G(#) to 0.0
-        #    Sets keyword BC_TW_G(#) to UNDEFINED
-        #  Specified Temperature
-        #    Sets keyword BC_HW_T_G(#) to UNDEFINED
-        #    Sets keyword BC_C_T_G(#) to 0.0
-        #    Requires BC_TW_G(#)
-        #  Specified Flux
-        #    Sets keyword BC_HW_T_G(#) to 0.0
-        #    Requires BC_C_T_G(#)
-        #    Sets keyword BC_TW_G(#) to UNDEFINED
-        #  Convective Flux
-        #    Requires BC_HW_T_G(#)
-        #    Sets keyword BC_C_T_G(#) to 0.0
-        #    Requires BC_TW_G(#)
-        hw = self.project.get_value('bc_hw_t_g', args=[BC0])
-        c = self.project.get_value('bc_c_t_g', args=[BC0])
-        tw = self.project.get_value('bc_tw_g', args=[BC0])
-        self.print_internal('hw %s c %s tw %s' % (hw, c, tw))
-        btype = None
-        if hw==0.0 and c==0.0 and tw is None:
-            btype = NO_FLUX
-        elif hw is None and c==0.0 and tw is not None:
-            btype = SPECIFIED_TEMPERATURE
-        elif hw==0.0 and c!=0.0 and tw is None:
-            btype = SPECIFIED_FLUX
-        elif hw is not None and c==0.0 and tw is not None:
-            btype = CONVECTIVE_FLUX
-        else:
-            self.error("Cannot determine type for energy boundary equation %s" % BC0)
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        enabled = bool(energy_eq)
+        bcs.groupbox_fluid_energy_eq.setEnabled(enabled)
+        bctype = None
+        if enabled:
+            bctype = self.bcs[BC0].get('energy_eq_type')
+             # If not in dict, attempt to guess it based on keywords
+            if bctype is None:
+                hw = self.project.get_value('bc_hw_t_g', args=[BC0])
+                c = self.project.get_value('bc_c_t_g', args=[BC0])
+                tw = self.project.get_value('bc_tw_g', args=[BC0])
+                if hw==0.0 and c==0.0 and tw is None:
+                    bctype = NO_FLUX
+                elif hw is None and c==0.0 and tw is not None:
+                    bctype = SPECIFIED_TEMPERATURE
+                elif hw==0.0 and c!=0.0 and tw is None:
+                    bctype = SPECIFIED_FLUX
+                elif hw is not None and c==0.0 and tw is not None:
+                    bctype = CONVECTIVE_FLUX
+                else:
+                    self.error("Cannot determine type for energy boundary equation %s" % BC0)
+            if bctype is not None:
+                bcs.combobox_fluid_energy_eq_type.setCurrentIndex(bctype)
+            else:
+                bctype = NO_FLUX # default
 
-        if btype is not None:
-            bcs.combobox_fluid_energy_eq_type.setCurrentIndex(btype)
+        if energy_eq:
+            #Define wall temperature
+            # Specification only available with 'Specified Temperature' BC type
+            # Sets keyword BC_TW_G(#)
+            # DEFAULT value of 293.15
+            enabled = (bctype==SPECIFIED_TEMPERATURE)
+            key = 'bc_tw_g'
+            default = 293.15
+            setup_key_widget(key, default, enabled)
 
-        #Define wall temperature
-        # Specification only available with 'Specified Temperature' BC type
-        # Sets keyword BC_TW_G(#)
-        # DEFAULT value of 293.15
-        enabled = (btype==SPECIFIED_TEMPERATURE)
-        key = 'bc_tw_g'
-        default = 293.15
-        setup_key_widget(key, default, enabled)
+            #Define constant flux
+            # Specification only available with 'Specified Flux' BC type
+            # Sets keyword BC_C_T_G(#)
+            # DEFAULT value of 0.0
+            enabled = (bctype==SPECIFIED_FLUX)
+            key = 'bc_c_t_g'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
 
-        #Define constant flux
-        # Specification only available with 'Specified Flux' BC type
-        # Sets keyword BC_C_T_G(#)
-        # DEFAULT value of 0.0
-        enabled = (btype==SPECIFIED_FLUX)
-        key = 'bc_c_t_g'
-        default = 0.0
-        setup_key_widget(key, default, enabled)
+            #Define transfer coefficient
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_HW_T_G(#)
+            # DEFAULT value of 0.0
+            enabled = (bctype==CONVECTIVE_FLUX)
+            key = 'bc_hw_t_g'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
 
-        #Define transfer coefficient
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_HW_T_G(#)
-        # DEFAULT value of 0.0
-        enabled = (btype==CONVECTIVE_FLUX)
-        key = 'bc_hw_t_g'
-        default = 0.0
-        setup_key_widget(key, default, enabled)
+            #Define free stream temperature
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_TW_G(#)
+            # DEFAULT value of 0.0
+            enabled = (bctype==CONVECTIVE_FLUX)
+            key = 'bc_tw_g'
+            default = 0.0
+            setup_key_widget(key, default, enabled, suffix='_2')
 
-        #Define free stream temperature
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_TW_G(#)
-        # DEFAULT value of 0.0
-        enabled = (btype==CONVECTIVE_FLUX)
-        key = 'bc_tw_g'
-        default = 0.0
-        setup_key_widget(key, default, enabled)
 
         #Select species equation boundary type:
         # Selection only available when solving species equations
-        # Available selections:
-        #  No-Flux [DEFAULT]
-        #    Sets keyword BC_HW_X_G(#) to 0.0
-        #    Sets keyword BC_C_X_G(#) to 0.0
-        #    Sets keyword BC_XW_G(#) to UNDEFINED
-        #  Specified Mass Fraction
-        #    Sets keyword BC_XW_T_G(#) to UNDEFINED
-        #    Sets keyword BC_C_X_G(#) to 0.0
-        #    Requires BC_XW_G(#)
-        #  Specified Flux
-        #    Sets keyword BC_HW_X_G(#) to 0.0
-        #    Requires BC_C_X_G(#)
-        #    Sets keyword BC_XW_G(#) to UNDEFINED
-        #  Convective Flux
-        #    Requires BC_HW_X_G(#)
-        #    Sets keyword BC_C_X_G(#) to 0.0
-        #    Requires BC_XW_G(#)
 
         #Define wall mass fraction
         # Specification only available with 'Specified Mass Fraction' BC type
