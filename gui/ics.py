@@ -182,10 +182,12 @@ class ICS(object):
             return item
         item = make_item('+'.join(selections))
 
-        if indices is None:
+        if indices is None: # interactive
             indices = [None] * len(selections)
-        else:
+            autoselect = True
+        else: # loading file
             assert len(selections) == len(indices)
+            autoselect = False
 
         for (i, region_name) in enumerate(selections):
             idx = indices[i]
@@ -206,7 +208,8 @@ class ICS(object):
         self.ics_current_indices = indices
         tw.setItem(nrows, 0, item)
         self.fixup_ics_table(tw)
-        tw.setCurrentCell(nrows, 0) # Might as well make it selected
+        if autoselect:
+            tw.setCurrentCell(nrows, 0)
 
 
     def ics_find_index(self):
@@ -393,6 +396,22 @@ class ICS(object):
                               data['from']+data['to']):
             key = 'ic_' + key
             self.update_keyword(key, val, args=[idx])
+
+    def ics_change_region_name(self, old_name, new_name):
+        for (key, val) in self.ics.items():
+            if val.get('region') == old_name:
+                self.ics[key]['region'] = new_name
+                tw = self.ui.initial_conditions.tablewidget_regions
+                for i in range(tw.rowCount()):
+                    data = tw.item(i,0).data(UserRole)
+                    indices, names = data
+                    if key in indices:
+                        item = tw.item(i,0)
+                        names = (new_name if n==old_name else n for n in names)
+                        item.setData(UserRole, (indices, names))
+                        item.setText('+'.join(names))
+                        break
+                break
 
 
     def reset_ics(self):
