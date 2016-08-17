@@ -478,6 +478,15 @@ class ProjectManager(Project):
         d = self.registered_widgets
         for key in keys:
             key = key.lower()
+            # The BC and IC panes set themselves up and do not rely on the
+            # project manager for widget updates.  We still need to register
+            # these widgets so that keyword updating works.
+            # Note, most widgets don't really need the callback from the
+            # project manager, especially after the file is initially loaded.
+            # Maybe remove project manager -> widget callbacks completely
+            # and follow the IC/BC model everywhere
+            if any(key.startswith(x) for x in ('ic_', 'bc_')):
+                continue
             if key not in d:
                 d[key] = []
             d[key].append((args, widget))
