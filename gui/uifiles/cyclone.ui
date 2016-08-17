@@ -114,7 +114,7 @@
    <item row="2" column="1">
     <widget class="QLineEdit" name="lineedit_k">
      <property name="text">
-      <string>.25</string>
+      <string>.4</string>
      </property>
     </widget>
    </item>
@@ -194,6 +194,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineedit_dc</tabstop>
+  <tabstop>lineedit_c</tabstop>
+  <tabstop>lineedit_k</tabstop>
+  <tabstop>lineedit_l</tabstop>
+  <tabstop>lineedit_m</tabstop>
+  <tabstop>lineedit_f</tabstop>
+  <tabstop>lineedit_n</tabstop>
+  <tabstop>lineedit_b</tabstop>
+  <tabstop>lineedit_e</tabstop>
+  <tabstop>pushbutton_close</tabstop>
+  <tabstop>pushbutton_apply</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
