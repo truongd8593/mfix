@@ -13,10 +13,10 @@ NONE, SQUARE_DPVM, GARG_2012 = (0,1,2)
 
 class SolidsPIC(object):
     def init_solids_pic(self):
-        s = self.ui.solids
-        s.combobox_des_interp_2.activated.connect(self.set_des_interp_2)
-        s.combobox_des_interp_scheme_2.activated.connect(self.set_des_interp_scheme_2)
-        s.combobox_coupling_method_2.activated.connect(self.set_coupling_method_2)
+        ui = self.ui.solids
+        ui.combobox_des_interp_2.activated.connect(self.set_des_interp_2)
+        ui.combobox_des_interp_scheme_2.activated.connect(self.set_des_interp_scheme_2)
+        ui.combobox_coupling_method_2.activated.connect(self.set_coupling_method_2)
 
     def set_des_interp_2(self, val):
         des_interp_on = not bool(val>>1)
@@ -37,7 +37,7 @@ class SolidsPIC(object):
     def setup_pic_tab(self):
         # Note - we are doing this setup on first show of this tab, rather
         # than at init or project load time
-        s = self.ui.solids
+        ui = self.ui.solids
 
         #Specify void fraction at close pack (required)
         # Sets keyword EP_STAR [0.42]
@@ -90,14 +90,14 @@ class SolidsPIC(object):
         # Selection always available
         # Sets keyword DES_ONEWAY_COUPLED false
         enabled = not self.fluid_solver_disabled
-        for item in (s.label_coupling_method_2, s.combobox_coupling_method_2):
+        for item in (ui.label_coupling_method_2, ui.combobox_coupling_method_2):
             item.setEnabled(enabled)
         des_oneway_coupled = self.project.get_value('des_oneway_coupled', default=False)
         if des_oneway_coupled not in (True, False):
             self.warn("Invalid des_oneway_coupled %s" % des_oneway_coupled)
             des_oneway_coupled = False
             self.update_keyword('des_oneway_coupled', des_oneway_coupled)
-        s.combobox_coupling_method_2.setCurrentIndex(0 if des_oneway_coupled else 1)
+        ui.combobox_coupling_method_2.setCurrentIndex(0 if des_oneway_coupled else 1)
 
         #Select interpolation framework:
         # Selection always available
@@ -127,7 +127,7 @@ class SolidsPIC(object):
             self.update_keyword('des_interp_mean_fields', des_interp_mean_fields)
 
         index = 2*(1-des_interp_on) + (1-des_interp_mean_fields)
-        s.combobox_des_interp_2.setCurrentIndex(index)
+        ui.combobox_des_interp_2.setCurrentIndex(index)
 
 
         #Select interpolation scheme:
@@ -144,8 +144,8 @@ class SolidsPIC(object):
         # Requires an interpolation width, DES_INTERP_WIDTH
         # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
         #
-        cb = s.combobox_des_interp_scheme_2
-        label = s.label_des_interp_scheme_2
+        cb = ui.combobox_des_interp_scheme_2
+        label = ui.label_des_interp_scheme_2
         des_interp_scheme = self.project.get_value('des_interp_scheme')
         des_explicity_coupled = self.project.get_value('des_explicity_coupled')
         interp_enabled = des_interp_on or des_interp_mean_fields # not no-interp
@@ -175,13 +175,13 @@ class SolidsPIC(object):
         # TODO default?
         key = 'des_interp_width'
         enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
-        for item in (s.label_des_interp_width_2, s.lineedit_keyword_des_interp_width_2,
-                     s.label_des_interp_width_units_2):
+        for item in (ui.label_des_interp_width_2, ui.lineedit_keyword_des_interp_width_2,
+                     ui.label_des_interp_width_units_2):
             item.setEnabled(enabled)
         if des_interp_scheme != 'SQUARE_DPVM':
             self.unset_keyword(key)
         else:
-            self.update_keyword('des_interp_width', s.lineedit_keyword_des_interp_width_2.value)
+            self.update_keyword('des_interp_width', ui.lineedit_keyword_des_interp_width_2.value)
 
 
         #Define solids stress model parameter: pressure constant

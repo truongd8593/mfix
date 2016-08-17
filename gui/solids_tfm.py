@@ -15,29 +15,29 @@ blending_functions = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
 
 class SolidsTFM(object):
     def init_solids_tfm(self):
-        s = self.ui.solids
-        s.combobox_kt_type.activated.connect(self.set_kt_type)
-        s.combobox_friction_model.activated.connect(self.set_friction_model)
-        s.combobox_rdf_type.activated.connect(self.set_rdf_type)
-        s.combobox_blending_function.activated.connect(self.set_blending_function)
-        s.combobox_max_packing_correlation.activated.connect(self.set_max_packing_correlation)
+        ui = self.ui.solids
+        ui.combobox_kt_type.activated.connect(self.set_kt_type)
+        ui.combobox_friction_model.activated.connect(self.set_friction_model)
+        ui.combobox_rdf_type.activated.connect(self.set_rdf_type)
+        ui.combobox_blending_function.activated.connect(self.set_blending_function)
+        ui.combobox_max_packing_correlation.activated.connect(self.set_max_packing_correlation)
 
     def setup_tfm_tab(self):
         # Note - we are doing this setup on first show of this tab, rather
         # than at init or project load time
-        s = self.ui.solids
+        ui = self.ui.solids
 
         # Select Viscous Stress Model (KTGS):
         # Selection is unavailable for constant solids viscosity (MU_S0 defined)
         # FIXME This is not right, solids visc. model is phase-dependent
         #enabled = (self.solids_viscosity_model != CONSTANT) # SRS p18
-        #for item in (s.label_kt_type, s.combobox_kt_type,
-        #             s.label_friction_model, s.combobox_friction_model):
+        #for item in (ui.label_kt_type, ui.combobox_kt_type,
+        #             ui.label_friction_model, ui.combobox_friction_model):
         #    item.setEnabled(enabled)
 
         # SRS p18 - enable/disable menu items in viscous stress model
         kt_type = self.project.get_value('kt_type')
-        cb = s.combobox_kt_type
+        cb = ui.combobox_kt_type
         if kt_type:
             if kt_type not in kt_types:
                 self.warn("Invalid kt_type %s" % kt_type)
@@ -63,7 +63,7 @@ class SolidsTFM(object):
             set_item_enabled(get_combobox_item(cb,i), e)
 
         # Select Frictional Stress Model
-        cb = s.combobox_friction_model
+        cb = ui.combobox_friction_model
         # Srivastava and Sundaresan, 2003
         # Unavailable for Algebraic Formulation viscous stress model
         set_item_enabled(get_combobox_item(cb,1), (kt_type!='ALGEBRAIC'))
@@ -83,7 +83,7 @@ class SolidsTFM(object):
 
         # Specify solids volume fraction at onset of friction
         enabled = (friction_model == 'SRIVASTAVA')
-        for item in (s.label_eps_f_min, s.lineedit_keyword_eps_f_min):
+        for item in (ui.label_eps_f_min, ui.lineedit_keyword_eps_f_min):
             item.setEnabled(enabled)
 
         #Specify particle-particle restitution coefficient
@@ -92,7 +92,7 @@ class SolidsTFM(object):
         # Required for viscous stress models except GHD and algebraic formulation
         # Sets keyword C_E
         enabled = (mmax>=2) or (kt_type not in ('GHD', 'ALGEBRAIC'))
-        for item in (s.label_c_e, s.lineedit_keyword_c_e):
+        for item in (ui.label_c_e, ui.lineedit_keyword_c_e):
             item.setEnabled(enabled)
 
         #Specify interphase friction coefficient
@@ -100,7 +100,7 @@ class SolidsTFM(object):
         # Required for MMAX >= 2
         # Sets keyword C_F
         enabled = (mmax>=2)
-        for item in (s.label_c_f, s.lineedit_keyword_c_f):
+        for item in (ui.label_c_f, ui.lineedit_keyword_c_f):
             item.setEnabled(enabled)
 
         #Specify angle of particle-particle friction
@@ -109,7 +109,7 @@ class SolidsTFM(object):
         # Required for FRICTION_MODEL=SRIVASTAVA
         # Sets keyword PHI
         enabled = friction_model in ('SCHAEFFER', 'SRIVASTAVA')
-        for item in (s.label_phi, s.lineedit_keyword_phi):
+        for item in (ui.label_phi, ui.lineedit_keyword_phi):
             item.setEnabled(enabled)
 
         ### Advanced
@@ -128,7 +128,7 @@ class SolidsTFM(object):
         else:
             index = rdf_types.index(rdf_type)
 
-        cb = s.combobox_rdf_type
+        cb = ui.combobox_rdf_type
         cb.setCurrentIndex(index)
 
         enabled = [mmax==1] + 4*[mmax>1]
@@ -145,14 +145,14 @@ class SolidsTFM(object):
             blending_function = 'NONE'
             self.update_keyword('blending_function', blending_function)
 
-        s.combobox_blending_function.setCurrentIndex(blending_functions.index(blending_function))
+        ui.combobox_blending_function.setCurrentIndex(blending_functions.index(blending_function))
         enabled = (friction_model=='SCHAEFFER')
-        for item in (s.label_blending_function, s.combobox_blending_function):
+        for item in (ui.label_blending_function, ui.combobox_blending_function):
                     item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('blending_function') #
         else:
-            v = s.combobox_blending_function.currentIndex()
+            v = ui.combobox_blending_function.currentIndex()
             self.update_keyword('blending_function', blending_functions[v])
 
 
@@ -160,20 +160,20 @@ class SolidsTFM(object):
         #  Only available for MMAX > 1 in conjunction with the following viscous stress
         # algebraic formulation; Lun. 1984; Simonin, 1996; Ahmadi, 1995
         enabled = (mmax>1) and kt_type in ['ALGEBRAIC', 'LUN_1984', 'SIMONIN', 'AHMADI']
-        for item in (s.label_segregation_slope_coefficient,
-                     s.lineedit_keyword_segregation_slope_coefficient):
+        for item in (ui.label_segregation_slope_coefficient,
+                     ui.lineedit_keyword_segregation_slope_coefficient):
                     item.setEnabled(enabled)
 
         # Select maximum packing correlation
         # Selection only available with FRICTION_MODEL=SCHAEFFER and MMAX >1
         enabled = (friction_model=='SCHAEFFER') and (mmax>1)
-        for item in (s.label_max_packing_correlation, s.combobox_max_packing_correlation):
+        for item in (ui.label_max_packing_correlation, ui.combobox_max_packing_correlation):
             item.setEnabled(enabled)
         # Constant [DEFAULT]
         # Selection always available
         # Yu & Standish
         # Selection only available for MMAX = 2
-        cb = s.combobox_max_packing_correlation
+        cb = ui.combobox_max_packing_correlation
         set_item_enabled(get_combobox_item(cb, 1), mmax==2)
         yu_standis = self.project.get_value('yu_standis')
         fedors_landel = self.project.get_value('fedors_landel')
@@ -196,7 +196,7 @@ class SolidsTFM(object):
         # Specify excluded volume in Boyle-Massoudi stress (optional)
         # Only available with algebraic formulation of viscous stress model
         enabled = (kt_type=='ALGEBRAIC')
-        for item in (s.label_v_ex, s.lineedit_keyword_v_ex):
+        for item in (ui.label_v_ex, ui.lineedit_keyword_v_ex):
             item.setEnabled(enabled)
 
 

@@ -24,31 +24,31 @@ class SolidsDEM(object):
     # Therefore, 'setup_dem_tab' must not call any of the setters
 
     def init_solids_dem(self):
-        s = self.ui.solids
-        s.checkbox_keyword_gener_part_config.clicked.connect(self.set_gener_part_config)
-        s.combobox_des_intg_method.activated.connect(self.set_des_intg_method)
-        s.combobox_des_coll_model.activated.connect(self.set_des_coll_model)
-        s.combobox_coupling_method.activated.connect(self.set_coupling_method)
-        s.checkbox_keyword_des_explicitly_coupled.clicked.connect(self.setup_dem_tab)
-        s.combobox_des_interp.activated.connect(self.set_des_interp)
-        s.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
-        s.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
-        s.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
-        s.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
-        s.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
-        s.lineedit_keyword_des_diffuse_width.setdtype('dp')
+        ui = self.ui.solids
+        ui.checkbox_keyword_gener_part_config.clicked.connect(self.set_gener_part_config)
+        ui.combobox_des_intg_method.activated.connect(self.set_des_intg_method)
+        ui.combobox_des_coll_model.activated.connect(self.set_des_coll_model)
+        ui.combobox_coupling_method.activated.connect(self.set_coupling_method)
+        ui.checkbox_keyword_des_explicitly_coupled.clicked.connect(self.setup_dem_tab)
+        ui.combobox_des_interp.activated.connect(self.set_des_interp)
+        ui.combobox_des_interp_scheme.activated.connect(self.set_des_interp_scheme)
+        ui.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
+        ui.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
+        ui.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
+        ui.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
+        ui.lineedit_keyword_des_diffuse_width.setdtype('dp')
 
     def set_gener_part_config(self, val):
-        s = self.ui.solids
+        ui = self.ui.solids
         self.update_keyword('gener_part_config', val)
         if val:
             self.unset_keyword("particles")
         else:
-            self.update_keyword("particles", s.lineedit_particles.value)
+            self.update_keyword("particles", ui.lineedit_particles.value)
 
 
         enabled = not val
-        for item in (s.label_particles, s.lineedit_particles):
+        for item in (ui.label_particles, ui.lineedit_particles):
             item.setEnabled(enabled)
 
     def set_des_intg_method(self, val):
@@ -77,16 +77,16 @@ class SolidsDEM(object):
 
 
     def enable_des_diffuse_width(self, val):
-        s = self.ui.solids
+        ui = self.ui.solids
         enabled = val
-        for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
-                     s.label_des_diffuse_width_units):
+        for item in (ui.label_des_diffuse_width, ui.lineedit_keyword_des_diffuse_width,
+                     ui.label_des_diffuse_width_units):
             item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('des_diffuse_width')
         else: #Restore value
             self.update_keyword('des_diffuse_width',
-                                s.lineedit_keyword_des_diffuse_width.value)
+                                ui.lineedit_keyword_des_diffuse_width.value)
 
 
     def set_cohesion_model(self, val):
@@ -95,12 +95,12 @@ class SolidsDEM(object):
         self.setup_dem_tab()
 
     def enable_des_usr_var_size(self, val):
-        s = self.ui.solids
+        ui = self.ui.solids
         if not val:
             self.unset_keyword('des_usr_var_size')
         else:
             self.update_keyword('des_usr_var_size',
-                                s.lineedit_keyword_des_usr_var_size.value)
+                                ui.lineedit_keyword_des_usr_var_size.value)
         self.setup_dem_tab()
 
     def set_des_neighbor_search(self, val):
@@ -110,7 +110,7 @@ class SolidsDEM(object):
     def setup_dem_tab(self):
         # Ensures all constraints (items enabled/disabled) are set
         # called by each 'set_' function, so don't call those here
-        s = self.ui.solids
+        ui = self.ui.solids
         # Inline comments from MFIX-UI SRS as of 2016-07-01
         #  Please update as needed!
 
@@ -131,7 +131,7 @@ class SolidsDEM(object):
             self.update_keyword('gener_part_config', False)
             gener_part_config = False
         enabled = not gener_part_config
-        for item in (s.label_particles, s.lineedit_particles):
+        for item in (ui.label_particles, ui.lineedit_particles):
             item.setEnabled(enabled)
 
         #Select numerical integration method
@@ -147,7 +147,7 @@ class SolidsDEM(object):
         if des_intg_method not in des_intg_methods:
             self.warn("Invalid des_intg_method %s" % des_intg_method)
             des_intg_method = 'EULER'
-        s.combobox_des_intg_method.setCurrentIndex(des_intg_methods.index(des_intg_method))
+        ui.combobox_des_intg_method.setCurrentIndex(des_intg_methods.index(des_intg_method))
 
         #Selection collision model
         # Selection always available
@@ -162,7 +162,7 @@ class SolidsDEM(object):
         if des_coll_model not in des_coll_models:
             self.warn("Invalid des_coll_model %s" % des_coll_model)
             des_coll_model = 'LSD'
-        s.combobox_des_coll_model.setCurrentIndex(des_coll_models.index(des_coll_model))
+        ui.combobox_des_coll_model.setCurrentIndex(des_coll_models.index(des_coll_model))
 
         #Select gas-solids coupling scheme:
         # Selection unavailable if fluid model is disabled
@@ -174,20 +174,20 @@ class SolidsDEM(object):
         # Selection always available
         # Sets keyword DES_ONEWAY_COUPLED false
         enabled = not self.fluid_solver_disabled
-        for item in (s.label_coupling_method, s.combobox_coupling_method):
+        for item in (ui.label_coupling_method, ui.combobox_coupling_method):
             item.setEnabled(enabled)
         des_oneway_coupled = self.project.get_value('des_oneway_coupled', default=False)
         if des_oneway_coupled not in (True, False):
             self.warn("Invalid des_oneway_coupled %s" % des_oneway_coupled)
             des_oneway_coupled = False
             self.update_keyword('des_oneway_coupled', des_oneway_coupled)
-        s.combobox_coupling_method.setCurrentIndex(0 if des_oneway_coupled else 1)
+        ui.combobox_coupling_method.setCurrentIndex(0 if des_oneway_coupled else 1)
 
         #Optional to enable explicitly coupled simulation
         # Unavailable for GARG_2012 interpolation
         des_interp_scheme = self.project.get_value('des_interp_scheme')
         enabled = (des_interp_scheme!='GARG_2012')
-        s.checkbox_keyword_des_explicitly_coupled.setEnabled(enabled)
+        ui.checkbox_keyword_des_explicitly_coupled.setEnabled(enabled)
 
         #Select interpolation framework:
         # Selection always available
@@ -219,7 +219,7 @@ class SolidsDEM(object):
             self.update_keyword('des_interp_mean_fields', des_interp_mean_fields)
 
         index = 2*(1-des_interp_on) + (1-des_interp_mean_fields)
-        s.combobox_des_interp.setCurrentIndex(index)
+        ui.combobox_des_interp.setCurrentIndex(index)
 
         #Select interpolation scheme:
         # Selection available except when no-interpolation framework is selected
@@ -235,8 +235,8 @@ class SolidsDEM(object):
         # Requires an interpolation width, DES_INTERP_WIDTH
         # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
         #
-        cb = s.combobox_des_interp_scheme
-        label = s.label_des_interp_scheme
+        cb = ui.combobox_des_interp_scheme
+        label = ui.label_des_interp_scheme
         des_interp_scheme = self.project.get_value('des_interp_scheme')
         des_explicity_coupled = self.project.get_value('des_explicity_coupled')
         interp_enabled = des_interp_on or des_interp_mean_fields # not no-interp
@@ -266,13 +266,13 @@ class SolidsDEM(object):
         # TODO default?
         key = 'des_interp_width'
         enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
-        for item in (s.label_des_interp_width, s.lineedit_keyword_des_interp_width,
-                     s.label_des_interp_width_units):
+        for item in (ui.label_des_interp_width, ui.lineedit_keyword_des_interp_width,
+                     ui.label_des_interp_width_units):
             item.setEnabled(enabled)
         if des_interp_scheme != 'SQUARE_DPVM':
             self.unset_keyword(key)
         else:
-            self.update_keyword(key, s.lineedit_keyword_des_interp_width.value)
+            self.update_keyword(key, ui.lineedit_keyword_des_interp_width.value)
 
 
         #Option to enable diffusion of particle data
@@ -282,17 +282,17 @@ class SolidsDEM(object):
         # Sets keyword DES_DIFFUSE_WIDTH
         key = 'des_diffuse_width'
         enabled = (des_interp_scheme!='GARG_2012')
-        s.checkbox_enable_des_diffuse_width.setEnabled(enabled)
+        ui.checkbox_enable_des_diffuse_width.setEnabled(enabled)
         if not enabled:
-            s.checkbox_enable_des_diffuse_width.setChecked(False)
+            ui.checkbox_enable_des_diffuse_width.setChecked(False)
             self.unset_keyword(key)
-            s.lineedit_keyword_des_diffuse_width.clear() # ??? FIXME
-        enabled = s.checkbox_enable_des_diffuse_width.isChecked()
-        for item in (s.label_des_diffuse_width, s.lineedit_keyword_des_diffuse_width,
-                     s.label_des_diffuse_width_units):
+            ui.lineedit_keyword_des_diffuse_width.clear() # ??? FIXME
+        enabled = ui.checkbox_enable_des_diffuse_width.isChecked()
+        for item in (ui.label_des_diffuse_width, ui.lineedit_keyword_des_diffuse_width,
+                     ui.label_des_diffuse_width_units):
             item.setEnabled(enabled)
             if enabled:
-                self.update_keyword(key, s.lineedit_keyword_des_diffuse_width.value)
+                self.update_keyword(key, ui.lineedit_keyword_des_diffuse_width.value)
 
 
         #Specify friction coefficient
@@ -312,16 +312,16 @@ class SolidsDEM(object):
         # Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
         # Default values of 0.5
         enabled = (des_coll_model=='LSD')
-        for item in (s.label_kn,
-                     s.lineedit_keyword_kn,
-                     s.lineedit_keyword_kn_w,
-                     s.label_kn_units,
-                     s.label_kt_fac,
-                     s.lineedit_keyword_kt_fac,
-                     s.lineedit_keyword_kt_w_fac,
-                     s.label_des_etat_fac,
-                     s.lineedit_keyword_des_etat_fac,
-                     s.lineedit_keyword_des_etat_w_fac):
+        for item in (ui.label_kn,
+                     ui.lineedit_keyword_kn,
+                     ui.lineedit_keyword_kn_w,
+                     ui.label_kn_units,
+                     ui.label_kt_fac,
+                     ui.lineedit_keyword_kt_fac,
+                     ui.lineedit_keyword_kt_w_fac,
+                     ui.label_des_etat_fac,
+                     ui.lineedit_keyword_des_etat_fac,
+                     ui.lineedit_keyword_des_etat_w_fac):
             item.setEnabled(enabled)
 
 
@@ -339,13 +339,13 @@ class SolidsDEM(object):
         # Only available for Hertzian collision model
         # Sets keyword V_POISSON (VW_POISSON)
         enabled = (des_coll_model=='HERTZIAN')
-        for item in (s.label_e_young,
-                     s.lineedit_keyword_e_young,
-                     s.lineedit_keyword_ew_young,
-                     s.label_e_young_units,
-                     s.label_v_poisson,
-                     s.lineedit_keyword_v_poisson,
-                     s.lineedit_keyword_vw_poisson):
+        for item in (ui.label_e_young,
+                     ui.lineedit_keyword_e_young,
+                     ui.lineedit_keyword_ew_young,
+                     ui.label_e_young_units,
+                     ui.label_v_poisson,
+                     ui.lineedit_keyword_v_poisson,
+                     ui.lineedit_keyword_vw_poisson):
             item.setEnabled(enabled)
 
         #Specify normal restitution coefficient
@@ -353,7 +353,7 @@ class SolidsDEM(object):
         # Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
         # Input given as an upper triangular matrix
         mmax = self.project.get_value('mmax', default=len(self.solids)) #?
-        tw = s.tablewidget_des_en_input
+        tw = ui.tablewidget_des_en_input
         # Table size changed
         def make_item(str):
             item = QtWidgets.QTableWidgetItem(str)
@@ -421,8 +421,8 @@ class SolidsDEM(object):
         # Sets keyword DES_ET_INPUT (DES_ET_WALL_INPUT)
         # Input given as an upper triangular matrix
         enabled = (des_coll_model=='HERTZIAN')
-        s.label_des_et_input.setEnabled(enabled)
-        tw = s.tablewidget_des_et_input
+        ui.label_des_et_input.setEnabled(enabled)
+        tw = ui.tablewidget_des_et_input
         # TODO - this is too much of a duplicate of des_en_input above
         if not enabled:
             # Clear out old lineedit widgets
@@ -504,7 +504,7 @@ class SolidsDEM(object):
         #Sets keyword VAN_DER_WAALS to true
         use_cohesion = self.project.get_value('use_cohesion')
         van_der_waals = self.project.get_value('van_der_waals')
-        cb = s.combobox_cohesion_model
+        cb = ui.combobox_cohesion_model
         if use_cohesion:
             if not van_der_waals:
                 self.warn('inconsistent value for keyword van_der_waals')
@@ -529,7 +529,7 @@ class SolidsDEM(object):
         # Specification only available for Van der Waals cohesion model
         # Sets keyword ASPERITIES
         enabled = bool(van_der_waals)
-        s.groupbox_cohesion_parameters.setEnabled(enabled)
+        ui.groupbox_cohesion_parameters.setEnabled(enabled)
         # (settings handled by keyword widgets.  TODO:
         #  decide if we want to unset keywords if not enabled
 
@@ -548,7 +548,7 @@ class SolidsDEM(object):
             self.warn("Invalid des_neighbor_search %s" % des_neighbor_search)
             des_neighbor_search = 4
             self.update_keyword('des_neighbor_search', des_neighbor_search)
-        cb = s.combobox_des_neighbor_search
+        cb = ui.combobox_des_neighbor_search
         cb.setCurrentIndex(0 if des_neighbor_search==4 else 1)
 
         #Specify maximum steps between neighbor search
@@ -574,20 +574,20 @@ class SolidsDEM(object):
         # Sets keyword DES_USR_VAR_SIZE
         des_usr_var_size = self.project.get_value('des_usr_var_size', default=None)
         enabled = (des_usr_var_size is not None)
-        cb = s.checkbox_enable_des_usr_var_size
+        cb = ui.checkbox_enable_des_usr_var_size
         cb.setChecked(enabled)
-        s.lineedit_keyword_des_usr_var_size.setEnabled(enabled)
+        ui.lineedit_keyword_des_usr_var_size.setEnabled(enabled)
 
         #Define minimum distance for contact conduction (optional)
         #Unavailable if not solving energy equations
         #Define fluid lens proportion constant (optional)
         # Unavailable if not solving energy equations
         enabled = self.project.get_value('energy_eq', default=True)
-        for item in (s.label_des_min_cond_dist,
-                     s.lineedit_keyword_des_min_cond_dist,
-                     s.label_des_min_cond_dist_units,
-                     s.label_flpc,
-                     s.lineedit_keyword_flpc):
+        for item in (ui.label_des_min_cond_dist,
+                     ui.lineedit_keyword_des_min_cond_dist,
+                     ui.label_des_min_cond_dist_units,
+                     ui.label_flpc,
+                     ui.lineedit_keyword_flpc):
             item.setEnabled(enabled)
 
         # Fin!

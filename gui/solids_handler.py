@@ -46,14 +46,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_species = {} #dict of OrderedDict, keyed by phase
         self.solids_current_tab = 0 # Materials
 
-        ui = self.ui
-        s = ui.solids
-        tb = s.toolbutton_solids_add
+        ui = self.ui.solids
+        tb = ui.toolbutton_solids_add
         tb.clicked.connect(self.solids_add)
-        tb = s.toolbutton_solids_delete
+        tb = ui.toolbutton_solids_delete
         tb.clicked.connect(self.solids_delete)
         tb.setEnabled(False)
-        tw_solids, tw_solids_species = s.tablewidget_solids, s.tablewidget_solids_species
+        tw_solids, tw_solids_species = ui.tablewidget_solids, ui.tablewidget_solids_species
         # Force summary table to update on kw updates
         class TableWidgetProxy:
             def objectName(self):
@@ -64,28 +63,28 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.project.register_widget(TableWidgetProxy(),
                              ['solids_model', 'd_p0', 'ro_s0'], args='*')
         tw_solids.itemSelectionChanged.connect(self.handle_solids_table_selection)
-        cb = s.combobox_solids_model
+        cb = ui.combobox_solids_model
         cb.activated.connect(self.handle_combobox_solids_model)
         cb.setToolTip(cb.currentText())
-        s.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
-        s.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
-        s.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
+        ui.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
+        ui.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
+        ui.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
         self.saved_solids_species = None
         self.init_solids_default_models()
-        self.ui.solids.checkbox_keyword_species_eq_args_P.clicked.connect(
+        ui.checkbox_keyword_species_eq_args_P.clicked.connect(
             self.handle_solids_species_eq)
 
         # Handle a number of cases which are essentially the same
         # avoid repetition in set_solids_*_model methods
         def make_solids_model_setter(self, name, key):
             def setter(model=None): # If not specified, determine correct model from keywords
-                s = self.ui.solids
+                ui = self.ui.solids
                 phase = self.solids_current_phase
                 key_s0 = 'c_ps0' if key=='c_p' else key + '_s0'
                 key_usr = 'usr_cps' if key=='c_p' else 'usr_' + key + 's'
-                lineedit = getattr(s, 'lineedit_keyword_%s_args_P' % key_s0)
-                units_label = getattr(s, 'label_%s_units' % key_s0)
+                lineedit = getattr(ui, 'lineedit_keyword_%s_args_P' % key_s0)
+                units_label = getattr(ui, 'label_%s_units' % key_s0)
 
                 if model is None and phase is not None:
                     val_s0 = self.project.get_value(key_s0, args=[phase])
@@ -97,7 +96,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                         lineedit.setText(str(val_s0))
 
                 setattr(self, name, model) # self.solids_<name>_model = model
-                combobox = getattr(s, 'combobox_' + name)
+                combobox = getattr(ui, 'combobox_' + name)
                 if model != combobox.currentIndex():
                     combobox.setCurrentIndex(model)
                 # Make tooltip match setting (for longer names which are truncated)
@@ -149,36 +148,36 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             model_name = 'solids_%s_model' % name
             setter = make_solids_model_setter(self, model_name, key)
             setattr(self, 'set_%s' % model_name, setter)
-            combobox = getattr(s, 'combobox_'+model_name)
+            combobox = getattr(ui, 'combobox_'+model_name)
             combobox.activated.connect(setter)
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)
 
 
         # Solids species
-        tb = s.toolbutton_solids_species_add
+        tb = ui.toolbutton_solids_species_add
         tb.clicked.connect(self.solids_species_add)
-        tb = s.toolbutton_solids_species_copy # misnomer - edit
+        tb = ui.toolbutton_solids_species_copy # misnomer - edit
         tb.clicked.connect(self.solids_species_edit)
         tb.setEnabled(False)
-        tb = s.toolbutton_solids_species_delete
+        tb = ui.toolbutton_solids_species_delete
         tb.setEnabled(False)
         tb.clicked.connect(self.solids_species_delete)
         tw_solids_species.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
         # Advanced
-        s.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
-        s.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
+        ui.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
+        ui.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
 
         # connect solid tab buttons
-        for i, btn in enumerate((s.pushbutton_solids_materials,
-                                 s.pushbutton_solids_tfm,
-                                 s.pushbutton_solids_dem,
-                                 s.pushbutton_solids_pic)):
+        for i, btn in enumerate((ui.pushbutton_solids_materials,
+                                 ui.pushbutton_solids_tfm,
+                                 ui.pushbutton_solids_dem,
+                                 ui.pushbutton_solids_pic)):
             btn.pressed.connect(lambda i=i, btn=btn: self.solids_change_tab(i, btn))
 
-        for tw in (s.tablewidget_solids, s.tablewidget_solids_species,
-                   s.tablewidget_solids_baseline):
+        for tw in (ui.tablewidget_solids, ui.tablewidget_solids_species,
+                   ui.tablewidget_solids_baseline):
             self.fixup_solids_table(tw)
 
         self.init_solids_tfm()
@@ -186,14 +185,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.init_solids_pic()
 
     def solids_update_tabs(self):
-        s = self.ui.solids
+        ui = self.ui.solids
         solver = self.project.solver
         if solver == SINGLE: # We shouldn't be here
             return
 
-        items = (s.pushbutton_solids_tfm,
-                 s.pushbutton_solids_dem,
-                 s.pushbutton_solids_pic)
+        items = (ui.pushbutton_solids_tfm,
+                 ui.pushbutton_solids_dem,
+                 ui.pushbutton_solids_pic)
 
         enable_dict = {TFM: (True, False, False),
                        DEM: (False, True, False),
@@ -207,33 +206,33 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # Don't stay on a disabled tab!
         # (Do we ever disable "Materials"? - don't think so)
-        active_tab = s.stackedwidget_solids.currentIndex()
+        active_tab = ui.stackedwidget_solids.currentIndex()
         if active_tab > 0 and not enabled[active_tab-1]:
             if solver==SINGLE:
-                i, p = 0, s.pushbutton_solids_materials
+                i, p = 0, ui.pushbutton_solids_materials
             elif solver in (TFM, HYBRID):
-                i, p = 1, s.pushbutton_solids_tfm
+                i, p = 1, ui.pushbutton_solids_tfm
             elif solver==DEM:
-                i, p = 2, s.pushbutton_solids_dem
+                i, p = 2, ui.pushbutton_solids_dem
             elif solver==PIC:
-                i, p = 3, s.pushbutton_solids_pic
+                i, p = 3, ui.pushbutton_solids_pic
             self.solids_change_tab(i, p)
 
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, to_btn):
-        s = self.ui.solids
+        ui = self.ui.solids
         self.solids_current_tab = tabnum
         self.animate_stacked_widget(
-            s.stackedwidget_solids,
-            s.stackedwidget_solids.currentIndex(),
+            ui.stackedwidget_solids,
+            ui.stackedwidget_solids.currentIndex(),
             tabnum,
             direction='horizontal',
-            line=self.ui.solids.line_solids,
+            line=ui.line_solids,
             to_btn=to_btn,
-            btn_layout=s.gridlayout_solid_tab_btns)
+            btn_layout=ui.gridlayout_solid_tab_btns)
         self.setup_solids_tab(tabnum)
-        for btn in (s.pushbutton_solids_pic, s.pushbutton_solids_dem, s.pushbutton_solids_tfm,
-                    s.pushbutton_solids_materials):
+        for btn in (ui.pushbutton_solids_pic, ui.pushbutton_solids_dem, ui.pushbutton_solids_tfm,
+                    ui.pushbutton_solids_materials):
             btn.setChecked(btn==to_btn)
             font = btn.font()
             font.setBold(btn==to_btn)
@@ -252,7 +251,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     # Advanced
     def disable_close_pack(self, val):
-        cb = self.ui.solids.checkbox_disable_close_pack
+        ui = self.ui.solids
+        cb = ui.checkbox_disable_close_pack
         if val != cb.isChecked(): # not from a click action
             cb.setChecked(val)
             return
@@ -274,7 +274,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_keyword('close_packed', not val, args=phase)
 
     def enable_added_mass_force(self, val):
-        cb = self.ui.solids.checkbox_enable_added_mass_force
+        ui = self.ui.solids
+        cb = ui.checkbox_enable_added_mass_force
         if val != cb.isChecked(): # not from a click action
             cb.setChecked(val)
             return
@@ -303,7 +304,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def fixup_solids_table(self, tw, stretch_column=0):
         # Should we just hide the entire table (including header) if no rows?
-        s = self.ui.solids
+        ui = self.ui.solids
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -333,8 +334,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
     def handle_solids_species_eq(self, enabled):
         if not enabled:
             self.set_solids_density_model(CONSTANT)
-            #self.ui.solids.combobox_solids_density_model.setCurrentIndex(CONSTANT)
-        set_item_enabled(get_combobox_item(self.ui.solids.combobox_solids_density_model,
+            #ui.combobox_solids_density_model.setCurrentIndex(CONSTANT)
+        set_item_enabled(get_combobox_item(ui.combobox_solids_density_model,
                                                 VARIABLE), enabled)
         self.update_solids_species_groupbox() # availability
 
@@ -345,8 +346,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if solver == SINGLE:
             # Note, if Single-Phase solver is enabled, this pane is disabled
             return
-
-        cb = self.ui.solids.combobox_solids_model
+        ui = self.ui.solids
+        cb = ui.combobox_solids_model
         model = cb.model()
         #          TFM,  DEM,  PIC
         enabled = [False, False, False]
@@ -399,7 +400,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return name
 
     def solids_add(self):
-        tw = self.ui.solids.tablewidget_solids
+        ui = self.ui.solids
+        tw = ui.tablewidget_solids
         nrows = tw.rowCount()
         n = nrows + 1 # index of new solid
         tw.setRowCount(n)
@@ -429,12 +431,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def handle_solids_table_selection(self):
-        s = self.ui.solids
-        tw = s.tablewidget_solids
+        ui = self.ui.solids
+        tw = ui.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
-        s.toolbutton_solids_delete.setEnabled(enabled)
-        #s.toolbutton_solids_copy.setEnabled(enabled) - removed from ui
+        ui.toolbutton_solids_delete.setEnabled(enabled)
+        #ui.toolbutton_solids_copy.setEnabled(enabled) - removed from ui
         self.solids_current_phase_name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
         self.P = self.solids_current_phase
@@ -443,13 +445,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
     def update_solids_detail_pane(self):
         """update the solids detail pane for currently selected solids phase.
         if no solid phase # selected, pane is cleared and disabled"""
-        s = self.ui.solids
-        sa = s.scrollarea_solids_detail
+        ui = self.ui.solids
+        sa = ui.scrollarea_solids_detail
         phase = self.P = self.solids_current_phase
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
             self.update_solids_species_table()
-            self.fixup_solids_table(s.tablewidget_solids)
+            self.fixup_solids_table(ui.tablewidget_solids)
             sa.setEnabled(False)
             for item in widget_iter(sa):
                 if isinstance(item, QtWidgets.QCheckBox):
@@ -467,7 +469,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # Enable the input areas, initialize to values for current solid
         sa.setEnabled(True)
-        s.lineedit_solids_phase_name.setText(self.solids_current_phase_name)
+        ui.lineedit_solids_phase_name.setText(self.solids_current_phase_name)
         self.setup_combobox_solids_model()
 
         # Inialize all the line edit widgets
@@ -475,13 +477,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             return '' if x is None else str(x)
         # Why not get these from keywords?
         def get_widget(key):
-            return getattr(s, 'lineedit_keyword_%s_args_P' % key)
+            return getattr(ui, 'lineedit_keyword_%s_args_P' % key)
         for key in ('d_p0', 'ro_s0', 'des_em'): # use a widget iterator?
             get_widget(key).setText(as_str(self.project.get_value(key, args=phase)))
 
         # And the checkboxes
         for key in ('momentum_x_eq', 'momentum_y_eq', 'momentum_z_eq'):
-            cb = getattr(s, 'checkbox_keyword_%s_args_P'%key)
+            cb = getattr(ui, 'checkbox_keyword_%s_args_P'%key)
             if model == 'TFM': # momentum eq only avail w/ TFM solid model
                 val = self.project.get_value(key, default=True, args=phase)
                 cb.setEnabled(True)
@@ -493,11 +495,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Set species eq checkbox to correct value
         key = 'species_eq'
         species_eq = self.project.get_value(key, default=True, args=[phase])
-        cb = getattr(s, 'checkbox_keyword_%s_args_P'%key)
+        cb = getattr(ui, 'checkbox_keyword_%s_args_P'%key)
         cb.setChecked(species_eq)
 
         # Deal with scalar eq
-        sb = s.spinbox_nscalar_eq
+        sb = ui.spinbox_nscalar_eq
         nscalar = self.project.get_value('nscalar', default=0)
         nscalar_phase = sum(1 for i in range(1, nscalar+1)
                             if self.project.get_value('phase4scalar', args=i) == phase)
@@ -511,7 +513,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             sb.setValue(saved_nscalar_eq)
             sb.valueChanged.connect(self.set_solids_nscalar_eq)
         enabled = (nscalar_phase > 0)
-        s.checkbox_enable_scalar_eq.setChecked(enabled)
+        ui.checkbox_enable_scalar_eq.setChecked(enabled)
         sb.setEnabled(enabled)
         if enabled:
             sb.setValue(nscalar_phase)
@@ -520,7 +522,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         ### Restrictions (see SRS p13)
 
         # Variable density model requires species equations
-        cb_density =  s.combobox_solids_density_model
+        cb_density =  ui.combobox_solids_density_model
         enabled = bool(species_eq)
         set_item_enabled(get_combobox_item(cb_density, VARIABLE), enabled)
         ro_s0 = self.project.get_value('ro_s0', args=[phase], default=None)
@@ -529,12 +531,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         # Viscosity only available for TFM solids
         self.set_solids_viscosity_model()
         enabled = (model=='TFM')
-        for item in (s.label_solids_viscosity_model,
-                     s.combobox_solids_viscosity_model):
+        for item in (ui.label_solids_viscosity_model,
+                     ui.combobox_solids_viscosity_model):
             item.setEnabled(enabled)
         if not enabled:
-            for item in (s.lineedit_keyword_mu_s0_args_P,
-                         s.label_mu_s0_units):
+            for item in (ui.lineedit_keyword_mu_s0_args_P,
+                         ui.label_mu_s0_units):
                 item.setEnabled(False)
 
         # Mol. wt is locked to MIXTURE
@@ -543,18 +545,18 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.set_solids_specific_heat_model()
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = (energy_eq==True)
-        for item in (s.combobox_solids_specific_heat_model,
-                     s.label_solids_specific_heat_model):
+        for item in (ui.combobox_solids_specific_heat_model,
+                     ui.label_solids_specific_heat_model):
             item.setEnabled(enabled)
         if not enabled:
-            for item in (s.lineedit_keyword_c_ps0_args_P,
-                         s.label_c_ps0_units):
+            for item in (ui.lineedit_keyword_c_ps0_args_P,
+                         ui.label_c_ps0_units):
                 item.setEnabled(False)
 
         # Thermal Conductivity Model:
         # Selection only available for MFIX-TFM solids model
         # Selection only available when solving thermal energy equations
-        cb = s.combobox_solids_conductivity_model
+        cb = ui.combobox_solids_conductivity_model
         if model != 'TFM':
             self.set_solids_conductivity_model(CONSTANT)
             for (i,e) in enumerate((True,False,False)):
@@ -564,19 +566,19 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             for (i,e) in enumerate((True,True,True)):
                 set_item_enabled(get_combobox_item(cb,i), e)
         enabled = bool(energy_eq)
-        for item in (s.combobox_solids_conductivity_model,
-                     s.label_solids_conductivity_model):
+        for item in (ui.combobox_solids_conductivity_model,
+                     ui.label_solids_conductivity_model):
             item.setEnabled(enabled)
         if not enabled:
-            for item in (s.lineedit_keyword_k_s0_args_P,
-                         s.label_k_s0_units):
+            for item in (ui.lineedit_keyword_k_s0_args_P,
+                         ui.label_k_s0_units):
                 item.setEnabled(False)
 
         # Specify solids phase emissivity
         # Selection only available for MFIX-DEM solids model
         enabled = (model=='DEM')
-        for item in (s.label_des_em,
-                     s.lineedit_keyword_des_em_args_P):
+        for item in (ui.label_des_em,
+                     ui.lineedit_keyword_des_em_args_P):
             item.setEnabled(enabled)
 
         # Species input is in its own function
@@ -585,17 +587,17 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_solids_baseline_groupbox(self.solids_density_model)
 
         self.update_solids_species_table()
-        self.fixup_solids_table(s.tablewidget_solids)
+        self.fixup_solids_table(ui.tablewidget_solids)
 
         # Advanced
         enabled = (model=='TFM')
-        s.groupbox_advanced.setEnabled(enabled)
+        ui.groupbox_advanced.setEnabled(enabled)
         if enabled:
             close_packed = self.project.get_value('close_packed', default=True, args=phase)
             self.disable_close_pack(not(close_packed))
         else:
-            s.checkbox_disable_close_pack.setChecked(False)
-            s.checkbox_enable_added_mass_force.setChecked(False)
+            ui.checkbox_disable_close_pack.setChecked(False)
+            ui.checkbox_enable_added_mass_force.setChecked(False)
 
         added_mass = self.project.get_value('added_mass', default=False)
         m_am = self.project.get_value('m_am', default=None)
@@ -603,7 +605,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def update_solids_table(self):
-        table = self.ui.solids.tablewidget_solids
+        ui = self.ui.solids
+        table = ui.tablewidget_solids
         if self.solids is None:
             table.clearContents()
             self.unset_keyword('mmax')
@@ -647,7 +650,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def handle_solids_phase_name(self):
-        new_name = self.ui.solids.lineedit_solids_phase_name.text()
+        ui = self.ui.solids
+        new_name = ui.lineedit_solids_phase_name.text()
         phase = self.solids_current_phase
         if phase is None:
             return
@@ -669,7 +673,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return True
 
     def solids_delete(self):
-        tw = self.ui.solids.tablewidget_solids
+        ui = self.ui.solids
+        tw = ui.tablewidget_solids
         row = get_selected_row(tw)
 
         if row is None: # No selection
@@ -763,7 +768,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def enable_solids_scalar_eq(self, state):
-        spinbox = self.ui.solids.spinbox_nscalar_eq
+        ui = self.ui.solids
+        spinbox = ui.spinbox_nscalar_eq
         spinbox.setEnabled(state)
         phase = self.solids_current_phase
         if phase is None:
@@ -788,8 +794,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         #  Solving species equations
         #  Energy equations are solved with mixture specific heat model
         phase = self.solids_current_phase
-        ui = self.ui
-        s = ui.solids
+        ui = self.ui.solids
+
         if phase is None:
             enabled = False
         else:
@@ -798,12 +804,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
 
         # Is it a good idea to have hidden items? No.
-        #s.groupbox_species.setVisible(enabled)
-        s.groupbox_species.setEnabled(enabled)
+        #ui.groupbox_species.setVisible(enabled)
+        ui.groupbox_species.setEnabled(enabled)
         # Buttons seem to take up a lot of space when table is shrunk
-        s.frame_add_delete_copy_species.setVisible(enabled)
+        ui.frame_add_delete_copy_species.setVisible(enabled)
 
-        #tw = s.tablewidget_solids_species
+        #tw = ui.tablewidget_solids_species
         #if not enabled: # Hide species?  shrink input area?
         #    tw.clearContents()
         #    tw.setMaximumHeight(32) #?
@@ -814,12 +820,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
     def update_solids_baseline_groupbox(self, density_model):
         #Baseline (unreacted) composition selection:
         # Available only for variable solids density model
-        s = self.ui.solids
+        ui = self.ui.solids
         enabled = density_model==VARIABLE
-        s.groupbox_baseline.setEnabled(enabled)
+        ui.groupbox_baseline.setEnabled(enabled)
         if not enabled:
-            s.tablewidget_solids_baseline.clearContents()
-            s.tablewidget_solids_baseline.setRowCount(0)
+            ui.tablewidget_solids_baseline.clearContents()
+            ui.tablewidget_solids_baseline.setRowCount(0)
         else:
             self.update_solids_baseline_table()
 
@@ -827,9 +833,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
+        ui = self.ui.solids
         key = 'x_s0'
         val = value_dict[key]
-        table = self.ui.solids.tablewidget_solids_baseline
+
+        table = ui.tablewidget_solids_baseline
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=[phase]+args)
@@ -838,11 +846,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_solids_mass_fraction_total()
 
     def update_solids_mass_fraction_total(self):
+        ui = self.ui.solids
         key = 'x_s0'
         phase = self.solids_current_phase
         if phase is None:
             return
-        table = self.ui.solids.tablewidget_solids_baseline
+        table = ui.tablewidget_solids_baseline
         if table.rowCount() == 0:
             return
         total = sum(float(self.project.get_value(key, default=0.0, args=[phase,i]))
@@ -868,7 +877,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def update_solids_baseline_table(self):
-        table = self.ui.solids.tablewidget_solids_baseline
+        ui = self.ui.solids
+        table = ui.tablewidget_solids_baseline
         phase = self.solids_current_phase
         if phase is None:
             return
@@ -934,7 +944,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
-
+        ui = self.ui.solids
         name = list(self.solids.keys())[phase-1]
         solid = self.solids[name]
 
@@ -945,7 +955,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         solid['saved_nscalar_eq'] = value
         self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
 
-        spinbox = self.ui.solids.spinbox_nscalar_eq
+        spinbox = ui.spinbox_nscalar_eq
         if value != spinbox.value():
             spinbox.valueChanged.disconnect()
             spinbox.setValue(value)
@@ -971,19 +981,18 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
+        ui = self.ui.solids
         self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        s = self.ui.solids
-        self.fixup_solids_table(s.tablewidget_solids_species)
-        self.fixup_solids_table(s.tablewidget_solids_baseline)
+        self.fixup_solids_table(ui.tablewidget_solids_species)
+        self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
         which are not tied to a single widget"""
-
-        s = self.ui.solids
-        table = s.tablewidget_solids_species
+        ui = self.ui.solids
+        table = ui.tablewidget_solids_species
         table.clearContents()
         phase = self.solids_current_phase
         if phase is None:
@@ -1029,15 +1038,16 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
         # FIXME, what's the right place for this?
         #self.project.update_thermo_data(self.solids_species[phase])
-        self.fixup_solids_table(s.tablewidget_solids_species)
-        self.fixup_solids_table(s.tablewidget_solids_baseline)
+        self.fixup_solids_table(ui.tablewidget_solids_species)
+        self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
     def handle_solids_species_selection(self):
+        ui = self.ui.solids
         table = self.ui.solids.tablewidget_solids_species
         row = get_selected_row(table)
         enabled = (row is not None)
-        self.ui.solids.toolbutton_solids_species_delete.setEnabled(enabled)
-        self.ui.solids.toolbutton_solids_species_copy.setEnabled(enabled) # edit
+        ui.toolbutton_solids_species_delete.setEnabled(enabled)
+        ui.toolbutton_solids_species_copy.setEnabled(enabled) # edit
         if enabled:
             table.doubleClicked.connect(self.solids_species_edit)
         else:
@@ -1079,15 +1089,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         return aliases
 
     def solids_species_delete(self):
-        # XXX FIXME TODO this is potentially a big problem since
-        # it results in species being renumbered, or a hole in
-        # the sequence - either way is trouble.  Have to warn
-        # user, if species is referenced elsewhere.
         phase = self.solids_current_phase
         if phase is None:
             return
-        s = self.ui.solids
-        table = s.tablewidget_solids_species
+        ui = self.ui.solids
+
+        table = ui.tablewidget_solids_species
         row = get_selected_row(table)
         if row is None: # No selection
             return
@@ -1098,8 +1105,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             del self.project.thermo_data[key]
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
-        self.fixup_solids_table(s.tablewidget_solids_species)
-        self.fixup_solids_table(s.tablewidget_solids_baseline)
+        self.fixup_solids_table(ui.tablewidget_solids_species)
+        self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
@@ -1111,7 +1118,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         phase = self.solids_current_phase
         if phase is None:
             return
-        table = self.ui.solids.tablewidget_solids_species
+        ui = self.ui.solids
+        table = ui.tablewidget_solids_species
         row = get_selected_row(table)
         sp = self.species_popup
         sp.set_phases('SC')

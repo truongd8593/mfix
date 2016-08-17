@@ -49,8 +49,7 @@ class BCS(object):
     #conditions for the described model. This section relies on regions named in the Regions section.
 
     def init_bcs(self):
-        ui = self.ui
-        bcs = ui.boundary_conditions
+        ui = self.ui.boundary_conditions
 
         self.bcs = {} # key: index.  value: data dictionary for boundary cond
         self.bcs_current_indices = [] # List of BC indices
@@ -63,32 +62,31 @@ class BCS(object):
         #Icons to add/remove/duplicate boundary conditions are given at the top
         #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
         #a region to apply the boundary condition.
-        bcs.toolbutton_add.clicked.connect(self.bcs_show_regions_popup)
-        bcs.toolbutton_delete.clicked.connect(self.bcs_delete_regions)
+        ui.toolbutton_add.clicked.connect(self.bcs_show_regions_popup)
+        ui.toolbutton_delete.clicked.connect(self.bcs_delete_regions)
         # TODO implement 'duplicate' (what does this do?)
-        bcs.toolbutton_delete.setEnabled(False) # Need a selection
+        ui.toolbutton_delete.setEnabled(False) # Need a selection
 
-        bcs.tablewidget_regions.itemSelectionChanged.connect(self.handle_bcs_region_selection)
+        ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_bcs_region_selection)
 
         self.bcs_current_tab = FLUID_TAB # #  If fluid is disabled, we will switch
         self.bcs_current_solid = self.P = None
-        bcs.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,None))
-        bcs.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,None))
+        ui.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,None))
+        ui.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
-        for b in (bcs.pushbutton_fluid, bcs.pushbutton_scalar):
+        for b in (ui.pushbutton_fluid, ui.pushbutton_scalar):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
-        bcs.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
+        ui.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
         # BC regions must be planes or STLs (not volumes or points)
         # No region can define more than one boundary condition.
-        ui = self.ui
-        bcs = ui.boundary_conditions
+        ui = self.ui.boundary_conditions
         rp = self.regions_popup
         rp.clear()
         for (name,data) in self.bcs_region_dict.items():
@@ -100,25 +98,24 @@ class BCS(object):
         rp.reset_signals()
         rp.save.connect(self.bcs_add_regions)
         rp.cancel.connect(self.bcs_cancel_add)
-        for item in (bcs.tablewidget_regions,
-                     bcs.scrollarea_detail,
-                     bcs.toolbutton_add,
-                     bcs.toolbutton_delete):
+        for item in (ui.tablewidget_regions,
+                     ui.scrollarea_detail,
+                     ui.toolbutton_add,
+                     ui.toolbutton_delete):
             item.setEnabled(False)
         rp.popup(boundary=True)
 
 
     def bcs_cancel_add(self):
-        ui = self.ui
-        bcs = ui.boundary_conditions
+        ui = self.ui.boundary_conditions
 
-        for item in (bcs.toolbutton_add,
-                     bcs.tablewidget_regions):
+        for item in (ui.toolbutton_add,
+                     ui.tablewidget_regions):
             item.setEnabled(True)
 
-        if get_selected_row(bcs.tablewidget_regions) is not None:
-            for item in (bcs.scrollarea_detail,
-                         bcs.toolbutton_delete):
+        if get_selected_row(ui.tablewidget_regions) is not None:
+            for item in (ui.scrollarea_detail,
+                         ui.toolbutton_delete):
                 item.setEnabled(True)
 
 
@@ -152,8 +149,7 @@ class BCS(object):
         # Error check: mass fractions must sum to one
 
         # Interactively add regions to define BCs
-        ui = self.ui
-        bcs = ui.boundary_conditions
+        ui = self.ui.boundary_conditions
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
@@ -167,12 +163,11 @@ class BCS(object):
     def bcs_add_regions_1(self, selections,
                           bc_type=DEFAULT_BC_TYPE, indices=None):
         # Used by both interactive and load-time add-region handlers
-        ui = self.ui
         if self.bcs_region_dict is None:
-            self.bcs_region_dict = ui.regions.get_region_dict()
+            self.bcs_region_dict = self.ui.regions.get_region_dict()
 
-        bcs = ui.boundary_conditions
-        tw = bcs.tablewidget_regions
+        ui = self.ui.boundary_conditions
+        tw = ui.tablewidget_regions
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
         def make_item(val):
@@ -253,8 +248,8 @@ class BCS(object):
 
 
     def handle_bcs_region_selection(self):
-        bcs = self.ui.boundary_conditions
-        table = bcs.tablewidget_regions
+        ui = self.ui.boundary_conditions
+        table = ui.tablewidget_regions
         row = get_selected_row(table)
         if row is None:
             indices = []
@@ -264,11 +259,11 @@ class BCS(object):
         self.bcs_current_indices = indices
         self.bcs_current_regions = regions
         enabled = (row is not None)
-        bcs.toolbutton_delete.setEnabled(enabled)
-        bcs.scrollarea_detail.setEnabled(enabled)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.scrollarea_detail.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(bcs.scrollarea_detail):
+            for widget in widget_iter(ui.scrollarea_detail):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -317,13 +312,13 @@ class BCS(object):
 
 
     def bcs_change_tab(self, tab, solid):
-        bcs = self.ui.boundary_conditions
+        ui = self.ui.boundary_conditions
         index = (0 if tab==FLUID_TAB
                  else len(self.solids)+1 if tab==SCALAR_TAB
                  else solid)
 
-        for i in range(bcs.tab_layout.columnCount()):
-            item = bcs.tab_layout.itemAtPosition(0, i)
+        for i in range(ui.tab_layout.columnCount()):
+            item = ui.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -333,7 +328,7 @@ class BCS(object):
             font.setBold(i==index)
             widget.setFont(font)
 
-        current_index = bcs.stackedwidget.currentIndex()
+        current_index = ui.stackedwidget.currentIndex()
         # If we're switching from solid m to solid n, we need some
         # special handling, because both tabs are really the same
         # widget.  We make a picture of the current tab, display that
@@ -343,17 +338,17 @@ class BCS(object):
                 return # Really nothing to do
 
             if solid > self.bcs_current_solid:
-                dummy_label = bcs.label_dummy_solids_L
+                dummy_label = ui.label_dummy_solids_L
                 dummy_tab = SOLIDS_TAB_DUMMY_L
             else:
-                dummy_label = bcs.label_dummy_solids_R
+                dummy_label = ui.label_dummy_solids_R
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
-            pixmap = QPixmap(bcs.page_solids.size())
+            pixmap = QPixmap(ui.page_solids.size())
             pixmap.fill() #fill bg with white
-            bcs.page_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
+            ui.page_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
             dummy_label.setPixmap(pixmap)
-            bcs.stackedwidget.setCurrentIndex(dummy_tab)
+            ui.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.bcs_current_tab = tab
         self.bcs_current_solid = self.P = solid if tab==SOLIDS_TAB else None
@@ -368,23 +363,23 @@ class BCS(object):
 
         # change stackedwidget contents
         self.animate_stacked_widget(
-            bcs.stackedwidget,
-            bcs.stackedwidget.currentIndex(),
+            ui.stackedwidget,
+            ui.stackedwidget.currentIndex(),
             tab,
             direction='horizontal',
-            line = bcs.tab_underline,
-            to_btn = bcs.tab_layout.itemAtPosition(0, index),
-            btn_layout = bcs.tab_layout)
+            line = ui.tab_underline,
+            to_btn = ui.tab_layout.itemAtPosition(0, index),
+            btn_layout = ui.tab_layout)
 
 
     def bcs_check_region_in_use(self, name):
         # Should we allow any change of region type?  eg. xy plane -> xz plane?
         #  Probably not
-        return any(data.get('region')==name for data in self.bcs.values())
+        return any(data.get('region')==name for data in self.ui.values())
 
 
     def bcs_update_region(self, name, data):
-        for (i,bc) in self.bcs.items():
+        for (i,bc) in self.ui.items():
             if bc.get('region') == name:
                 self.bcs_set_region_keys(name, i, data)
 
@@ -426,15 +421,15 @@ class BCS(object):
         self.bcs_current_indices = []
         self.bcs_current_regions = []
         self.bcs_region_dict = None
-        bcs = self.ui.boundary_conditions
-        bcs.tablewidget_regions.clearContents()
-        bcs.tablewidget_regions.setRowCount(0)
+        ui = self.ui.boundary_conditions
+        ui.tablewidget_regions.clearContents()
+        ui.tablewidget_regions.setRowCount(0)
         # anything else to do here?
 
 
     def bcs_to_str(self):
-        bcs = self.ui.boundary_conditions
-        tw = bcs.tablewidget_regions
+        ui = self.ui.boundary_conditions
+        tw = ui.tablewidget_regions
         data = [tw.item(i,0).data(UserRole) for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
 
@@ -449,27 +444,25 @@ class BCS(object):
 
 
     def setup_bcs(self):
-        ui = self.ui
-        bcs = ui.boundary_conditions
         # Grab a fresh copy, may have been updated
-        self.bcs_region_dict = ui.regions.get_region_dict()
-
+        self.bcs_region_dict = self.ui.regions.get_region_dict()
+        ui = self.ui.boundary_conditions
         # Mark regions which are in use (this gets reset each time we get here)
         for (i, data) in self.bcs.items():
             region = data['region']
             if region in self.bcs_region_dict:
                 self.bcs_region_dict[region]['available'] = False
 
-        self.fixup_bcs_table(bcs.tablewidget_regions)
-        row = get_selected_row(bcs.tablewidget_regions)
+        self.fixup_bcs_table(ui.tablewidget_regions)
+        row = get_selected_row(ui.tablewidget_regions)
         enabled = (row is not None)
-        bcs.toolbutton_delete.setEnabled(enabled)
-        bcs.scrollarea_detail.setEnabled(enabled)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.scrollarea_detail.setEnabled(enabled)
         # Tabs group boundary condition parameters for phases and additional equations. Tabs are
         # unavailable if no input is required from the user.
         #
         #Fluid tab - Unavailable if the fluid phase was disabled.
-        b = bcs.pushbutton_fluid
+        b = ui.pushbutton_fluid
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
@@ -481,18 +474,18 @@ class BCS(object):
 
         #  Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
-        n_cols = bcs.tab_layout.columnCount()
+        n_cols = ui.tab_layout.columnCount()
         # Clear out the old ones
         for i in range(n_cols-1, 0, -1):
-            item = bcs.tab_layout.itemAtPosition(0, i)
+            item = ui.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
             if not widget:
                 continue
-            if widget in (bcs.pushbutton_fluid, bcs.pushbutton_scalar):
+            if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar):
                 continue
-            bcs.tab_layout.removeWidget(widget)
+            ui.tab_layout.removeWidget(widget)
             widget.setParent(None)
             widget.deleteLater()
         # And make new ones
@@ -505,13 +498,13 @@ class BCS(object):
             font.setBold(self.bcs_current_tab==SOLIDS_TAB and i==self.bcs_current_solid)
             b.setFont(font)
             b.pressed.connect(lambda i=i: self.bcs_change_tab(SOLIDS_TAB, i))
-            bcs.tab_layout.addWidget(b, 0, i)
+            ui.tab_layout.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.bcs_current_tab == 1 and ...
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
-        b = bcs.pushbutton_scalar
+        b = ui.pushbutton_scalar
         font = b.font()
         font.setBold(self.bcs_current_tab==SCALAR_TAB)
         b.setFont(font)
@@ -519,8 +512,8 @@ class BCS(object):
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
         if len(self.solids) > 0:
-            bcs.tab_layout.removeWidget(b)
-            bcs.tab_layout.addWidget(b, 0, 1+len(self.solids))
+            ui.tab_layout.removeWidget(b)
+            ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
         # Don't stay on a disabled tab TODO
         # if self.bcs_current_tab == 2 and nscalar == 0:
         #
@@ -666,9 +659,9 @@ class BCS(object):
 
         self.setup_bcs_fluid_tab()
         # hacks to prevent duplicate display of bc_tw_g
-        bcs = self.ui.boundary_conditions
+        ui = self.ui.boundary_conditions
         if bctype == SPECIFIED_TEMPERATURE:
-
+            pass
 
 
 
@@ -677,7 +670,7 @@ class BCS(object):
         if self.fluid_solver_disabled:
             # we shouldn't be on this tab!
             return
-        bcs = self.ui.boundary_conditions
+        ui = self.ui.boundary_conditions
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
         #
         if not self.bcs_current_indices:
@@ -742,13 +735,13 @@ class BCS(object):
             key = 'bc_%sw_g' % c
             setup_key_widget(key, default, enabled)
         # Enable/disable entire groupbox
-        bcs.groupbox_fluid_momentum_eq.setEnabled(enabled) # Hide it???
+        ui.groupbox_fluid_momentum_eq.setEnabled(enabled) # Hide it???
 
         #Select energy equation boundary type:
         # Selection only available when solving energy equations
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = bool(energy_eq)
-        bcs.groupbox_fluid_energy_eq.setEnabled(enabled)
+        ui.groupbox_fluid_energy_eq.setEnabled(enabled)
         bctype = None
         if enabled:
             bctype = self.bcs[BC0].get('energy_eq_type')
@@ -768,7 +761,7 @@ class BCS(object):
                 else:
                     self.error("Cannot determine type for energy boundary equation %s" % BC0)
             if bctype is not None:
-                bcs.combobox_fluid_energy_eq_type.setCurrentIndex(bctype)
+                ui.combobox_fluid_energy_eq_type.setCurrentIndex(bctype)
             else:
                 bctype = NO_FLUX # default
 
@@ -813,7 +806,7 @@ class BCS(object):
         # Selection only available when solving species equations
         species_eq = self.project.get_value('species_eq', default=True, args=[0])
         enabled = bool(species_eq)
-        bcs.groupbox_fluid_species_eq.setEnabled(enabled)
+        ui.groupbox_fluid_species_eq.setEnabled(enabled)
 
         #Define wall mass fraction
         # Specification only available with 'Specified Mass Fraction' BC type

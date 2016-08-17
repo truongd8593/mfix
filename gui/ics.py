@@ -34,8 +34,7 @@ class ICS(object):
     # for the described model. This section relies on regions named in the Regions section.
 
     def init_ics(self):
-        ui = self.ui
-        ics = ui.initial_conditions
+        ui = self.ui.initial_conditions
 
         self.ics = {} # key: index.  value: data dictionary for initial cond
         self.ics_current_indices = [] # List of IC indices
@@ -53,20 +52,20 @@ class ICS(object):
         #get messy, and if so, scrap this idea.
         # (Note- Suggestion implemented)
         # TODO: implement 'duplicate' (what does this do?)
-        ics.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
-        ics.toolbutton_delete.clicked.connect(self.ics_delete_regions)
-        ics.toolbutton_delete.setEnabled(False) # Need a selection
+        ui.toolbutton_add.clicked.connect(self.ics_show_regions_popup)
+        ui.toolbutton_delete.clicked.connect(self.ics_delete_regions)
+        ui.toolbutton_delete.setEnabled(False) # Need a selection
 
-        ics.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
+        ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_ics_region_selection)
 
         self.ics_current_tab = FLUID_TAB # If fluid is disabled, we will switch
         self.ics_current_solid = self.P = None
-        ics.pushbutton_fluid.pressed.connect(lambda: self.ics_change_tab(FLUID_TAB,None))
-        ics.pushbutton_scalar.pressed.connect(lambda: self.ics_change_tab(SCALAR_TAB,None))
+        ui.pushbutton_fluid.pressed.connect(lambda: self.ics_change_tab(FLUID_TAB,None))
+        ui.pushbutton_scalar.pressed.connect(lambda: self.ics_change_tab(SCALAR_TAB,None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
-        for b in (ics.pushbutton_fluid, ics.pushbutton_scalar):
+        for b in (ui.pushbutton_fluid, ui.pushbutton_scalar):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
@@ -118,8 +117,7 @@ class ICS(object):
         #Users cannot select inapplicable regions.
         #IC regions must be volumes (not planes, points, or STLs)
         #No region can define more than one initial condition.
-        ui = self.ui
-        ics = ui.initial_conditions
+        ui = self.ui.initial_conditions
         rp = self.regions_popup
         rp.clear()
         for (name,data) in self.ics_region_dict.items():
@@ -131,32 +129,30 @@ class ICS(object):
         rp.reset_signals()
         rp.save.connect(self.ics_add_regions)
         rp.cancel.connect(self.ics_cancel_add)
-        for item in (ics.tablewidget_regions,
-                     ics.scrollarea_detail,
-                     ics.toolbutton_add,
-                     ics.toolbutton_delete):
+        for item in (ui.tablewidget_regions,
+                     ui.scrollarea_detail,
+                     ui.toolbutton_add,
+                     ui.toolbutton_delete):
             item.setEnabled(False)
         rp.popup(boundary=False)
 
 
     def ics_cancel_add(self):
-        ui = self.ui
-        ics = ui.initial_conditions
+        ui = self.ui.initial_conditions
 
-        for item in (ics.toolbutton_add,
-                     ics.tablewidget_regions):
+        for item in (ui.toolbutton_add,
+                     ui.tablewidget_regions):
             item.setEnabled(True)
 
-        if get_selected_row(ics.tablewidget_regions) is not None:
-            for item in (ics.scrollarea_detail,
-                         ics.toolbutton_delete):
+        if get_selected_row(ui.tablewidget_regions) is not None:
+            for item in (ui.scrollarea_detail,
+                         ui.toolbutton_delete):
                 item.setEnabled(True)
 
 
     def ics_add_regions(self):
         # Interactively add regions to define ICs
-        ui = self.ui
-        ics = ui.initial_conditions
+        ui = self.ui.initial_conditions
         rp = self.regions_popup
         self.ics_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
@@ -168,12 +164,12 @@ class ICS(object):
 
     def ics_add_regions_1(self, selections, indices=None):
         # Used by both interactive and load-time add-region handlers
-        ui = self.ui
-        if self.ics_region_dict is None:
-            self.ics_region_dict = ui.regions.get_region_dict()
 
-        ics = ui.initial_conditions
-        tw = ics.tablewidget_regions
+        if self.ics_region_dict is None:
+            self.ics_region_dict = self.ui.regions.get_region_dict()
+
+        ui = self.ui.initial_conditions
+        tw = ui.tablewidget_regions
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
         def make_item(val):
@@ -248,8 +244,8 @@ class ICS(object):
 
 
     def handle_ics_region_selection(self):
-        ics = self.ui.initial_conditions
-        table = ics.tablewidget_regions
+        ui = self.ui.initial_conditions
+        table = ui.tablewidget_regions
         row = get_selected_row(table)
         if row is None:
             indices = []
@@ -258,11 +254,11 @@ class ICS(object):
             (indices, regions) = table.item(row,0).data(UserRole)
         self.ics_current_indices, self.ics_current_regions = indices, regions
         enabled = (row is not None)
-        ics.toolbutton_delete.setEnabled(enabled)
-        ics.scrollarea_detail.setEnabled(enabled)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.scrollarea_detail.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ics.scrollarea_detail):
+            for widget in widget_iter(ui.scrollarea_detail):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -312,13 +308,13 @@ class ICS(object):
 
 
     def ics_change_tab(self, tab, solid):
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         index = (0 if tab==FLUID_TAB
                  else len(self.solids)+1 if tab==SCALAR_TAB
                  else solid)
 
-        for i in range(ics.tab_layout.columnCount()):
-            item = ics.tab_layout.itemAtPosition(0, i)
+        for i in range(ui.tab_layout.columnCount()):
+            item = ui.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
@@ -328,7 +324,7 @@ class ICS(object):
             font.setBold(i==index)
             widget.setFont(font)
 
-        current_index = ics.stackedwidget.currentIndex()
+        current_index = ui.stackedwidget.currentIndex()
         # If we're switching from solid m to solid n, we need some
         # special handling, because both tabs are really the same
         # widget.  We make a picture of the current tab, display that
@@ -338,17 +334,17 @@ class ICS(object):
                 return # Really nothing to do
 
             if solid > self.ics_current_solid:
-                dummy_label = ics.label_dummy_solids_L
+                dummy_label = ui.label_dummy_solids_L
                 dummy_tab = SOLIDS_TAB_DUMMY_L
             else:
-                dummy_label = ics.label_dummy_solids_R
+                dummy_label = ui.label_dummy_solids_R
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
-            pixmap = QPixmap(ics.page_solids.size())
+            pixmap = QPixmap(ui.page_solids.size())
             pixmap.fill() # fill bg with white
-            ics.page_solids.render(pixmap, flags=QWidget.DrawChildren)  #avoid rendering bg
+            ui.page_solids.render(pixmap, flags=QWidget.DrawChildren)  #avoid rendering bg
             dummy_label.setPixmap(pixmap)
-            ics.stackedwidget.setCurrentIndex(dummy_tab)
+            ui.stackedwidget.setCurrentIndex(dummy_tab)
 
         self.ics_current_tab = tab
         self.ics_current_solid = self.P = solid if tab==SOLIDS_TAB else None
@@ -363,13 +359,13 @@ class ICS(object):
 
         # change stackedwidget contents
         self.animate_stacked_widget(
-            ics.stackedwidget,
-            ics.stackedwidget.currentIndex(),
+            ui.stackedwidget,
+            ui.stackedwidget.currentIndex(),
             tab,
             direction='horizontal',
-            line = ics.tab_underline,
-            to_btn = ics.tab_layout.itemAtPosition(0, index),
-            btn_layout = ics.tab_layout)
+            line = ui.tab_underline,
+            to_btn = ui.tab_layout.itemAtPosition(0, index),
+            btn_layout = ui.tab_layout)
 
 
     def ics_check_region_in_use(self, name):
@@ -418,15 +414,15 @@ class ICS(object):
         self.ics_current_regions = []
         self.ics_region_dict = None
         self.ics_current_solid = self.P = None
-        ics = self.ui.initial_conditions
-        ics.tablewidget_regions.clearContents()
-        ics.tablewidget_regions.setRowCount(0)
+        ui = self.ui.initial_conditions
+        ui.tablewidget_regions.clearContents()
+        ui.tablewidget_regions.setRowCount(0)
         # anything else to do here?
 
 
     def ics_to_str(self):
-        ics = self.ui.initial_conditions
-        tw = ics.tablewidget_regions
+        ui = self.ui.initial_conditions
+        tw = ui.tablewidget_regions
         data = [tw.item(i,0).data(UserRole)
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
@@ -441,10 +437,9 @@ class ICS(object):
 
 
     def setup_ics(self):
-        ui = self.ui
-        ics = ui.initial_conditions
         # Grab a fresh copy, may have been updated
-        self.ics_region_dict = ui.regions.get_region_dict()
+        self.ics_region_dict = self.ui.regions.get_region_dict()
+        ui = self.ui.initial_conditions
 
         # Mark regions which are in use (this gets reset each time we get here)
         for (i, data) in self.ics.items():
@@ -452,17 +447,17 @@ class ICS(object):
             if region in self.ics_region_dict:
                 self.ics_region_dict[region]['available'] = False
 
-        self.fixup_ics_table(ics.tablewidget_regions)
-        row = get_selected_row(ics.tablewidget_regions)
+        self.fixup_ics_table(ui.tablewidget_regions)
+        row = get_selected_row(ui.tablewidget_regions)
         enabled = (row is not None)
-        ics.toolbutton_delete.setEnabled(enabled)
-        ics.scrollarea_detail.setEnabled(enabled)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.scrollarea_detail.setEnabled(enabled)
 
         #Tabs group initial condition parameters for phases and additional equations.
         # Tabs are unavailable if no input is required from the user.
 
         #Fluid tab - Unavailable if the fluid phase was disabled.
-        b = ics.pushbutton_fluid
+        b = ui.pushbutton_fluid
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
@@ -474,18 +469,18 @@ class ICS(object):
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
         # (Could do this only on solid name change)
-        n_cols = ics.tab_layout.columnCount()
+        n_cols = ui.tab_layout.columnCount()
         # Clear out the old ones
         for i in range(n_cols-1, 0, -1):
-            item = ics.tab_layout.itemAtPosition(0, i)
+            item = ui.tab_layout.itemAtPosition(0, i)
             if not item:
                 continue
             widget = item.widget()
             if not widget:
                 continue
-            if widget in (ics.pushbutton_fluid, ics.pushbutton_scalar):
+            if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar):
                 continue
-            ics.tab_layout.removeWidget(widget)
+            ui.tab_layout.removeWidget(widget)
             widget.setParent(None)
             widget.deleteLater()
         # And make new ones
@@ -498,13 +493,13 @@ class ICS(object):
             font.setBold(self.ics_current_tab==SOLIDS_TAB and i==self.ics_current_solid)
             b.setFont(font)
             b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
-            ics.tab_layout.addWidget(b, 0, i)
+            ui.tab_layout.addWidget(b, 0, i)
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
-        b = ics.pushbutton_scalar
+        b = ui.pushbutton_scalar
         font = b.font()
         font.setBold(self.ics_current_tab==SCALAR_TAB)
         b.setFont(font)
@@ -512,8 +507,8 @@ class ICS(object):
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
         if len(self.solids) > 0:
-            ics.tab_layout.removeWidget(b)
-            ics.tab_layout.addWidget(b, 0, 1+len(self.solids))
+            ui.tab_layout.removeWidget(b)
+            ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
         # Don't stay on a disabled tab TODO
         # if self.ics_current_tab == 2 and nscalar == 0:
         #
@@ -531,15 +526,15 @@ class ICS(object):
 
 
     def update_ics_fluid_mass_fraction_table(self):
-        ics = self.ui.initial_conditions
-        table = ics.tablewidget_fluid_mass_fraction
+        ui = self.ui.initial_conditions
+        table = ui.tablewidget_fluid_mass_fraction
         table.clearContents()
         table.setRowCount(0)
         if not (self.fluid_species and self.ics_current_indices):
             self.fixup_ics_table(table)
-            ics.groupbox_fluid_composition.setEnabled(False)
+            ui.groupbox_fluid_composition.setEnabled(False)
             return
-        ics.groupbox_fluid_composition.setEnabled(True)
+        ui.groupbox_fluid_composition.setEnabled(True)
         IC0 = self.ics_current_indices[0]
         species = self.fluid_species
         if species:
@@ -578,10 +573,10 @@ class ICS(object):
 
 
     def handle_ics_fluid_mass_fraction(self, widget, value_dict, args):
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         key = 'ic_x_g'
         val = value_dict[key]
-        table = ics.tablewidget_fluid_mass_fraction
+        table = ui.tablewidget_fluid_mass_fraction
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=args)
@@ -596,9 +591,9 @@ class ICS(object):
         if not self.fluid_species:
             return
         IC0 = self.ics_current_indices[0]
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         key = 'ic_x_g'
-        table = ics.tablewidget_fluid_mass_fraction
+        table = ui.tablewidget_fluid_mass_fraction
         if table.rowCount() == 0:
             return
         total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,i]))
@@ -622,17 +617,17 @@ class ICS(object):
 
     # TODO DRY out fluid/solids code
     def update_ics_solids_mass_fraction_table(self):
-        ics = self.ui.initial_conditions
-        table = ics.tablewidget_solids_mass_fraction
+        ui = self.ui.initial_conditions
+        table = ui.tablewidget_solids_mass_fraction
         table.clearContents()
         table.setRowCount(0)
         P = self.ics_current_solid
         if not (P and self.solids_species.get(P) and self.ics_current_indices):
             self.fixup_ics_table(table)
             table.setEnabled(False)
-            ics.groupbox_solids_composition.setEnabled(False)
+            ui.groupbox_solids_composition.setEnabled(False)
             return
-        ics.groupbox_solids_composition.setEnabled(True)
+        ui.groupbox_solids_composition.setEnabled(True)
         table.setEnabled(True)
         IC0 = self.ics_current_indices[0]
         species = self.solids_species[P]
@@ -674,10 +669,10 @@ class ICS(object):
 
 
     def handle_ics_solids_mass_fraction(self, widget, value_dict, args):
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         key = 'ic_x_s'
         val = value_dict[key]
-        table = ics.tablewidget_fluid_mass_fraction
+        table = ui.tablewidget_fluid_mass_fraction
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=args)
@@ -696,9 +691,9 @@ class ICS(object):
         species = self.solids_species.get(P)
         if not P:
             return
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         key = 'ic_x_s'
-        table = ics.tablewidget_solids_mass_fraction
+        table = ui.tablewidget_solids_mass_fraction
         if table.rowCount() == 0:
             return
         total = sum(float(self.project.get_value(key, default=0.0, args=[IC0,P,i]))
@@ -761,8 +756,8 @@ class ICS(object):
         if self.fluid_solver_disabled:
             # we shouldn't be on this tab!
             return
-        ics = self.ui.initial_conditions
-        tw = ics.tablewidget_fluid_mass_fraction
+        ui = self.ui.initial_conditions
+        tw = ui.tablewidget_fluid_mass_fraction
         enabled = (self.fluid_species is not None)
         if not enabled:
             tw.clearContents()
@@ -782,7 +777,7 @@ class ICS(object):
         #  If we can make this code generic enough perhaps someday it can
         # be autogenerated from SRS doc
         def get_widget(key):
-            widget = getattr(ics, 'lineedit_keyword_%s_args_IC' % key)
+            widget = getattr(ui, 'lineedit_keyword_%s_args_IC' % key)
             if not widget:
                 self.error('no widget for key %s' % key)
             return widget
@@ -790,7 +785,7 @@ class ICS(object):
         def setup_key_widget(key, default=None, enabled=True):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_IC'):
-                item = getattr(ics, name%key, None)
+                item = getattr(ui, name%key, None)
                 if item:
                     item.setEnabled(enabled)
             if not enabled:
@@ -857,7 +852,7 @@ class ICS(object):
         key = 'turbulence_model'
         turbulence_model = self.project.get_value(key)
         enabled = (turbulence_model is not None)
-        ics.groupbox_turbulence.setEnabled(enabled)
+        ui.groupbox_turbulence.setEnabled(enabled)
 
         #Turbulence: Define mixing length model length scale
         # Specification only available with Mixing Length turbulence model
@@ -888,7 +883,7 @@ class ICS(object):
 
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = bool(energy_eq)
-        ics.groupbox_fluid_advanced.setEnabled(enabled)
+        ui.groupbox_fluid_advanced.setEnabled(enabled)
 
         #Advanced: Define radiation coefficient
         # Specification only available when solving energy equations
@@ -921,22 +916,22 @@ class ICS(object):
             # TODO clear all widgets
             return
 
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         IC0 = self.ics_current_indices[0]
 
         # issues/121
         self.ics_set_volume_fraction_limit()
-        widget = ics.lineedit_keyword_ic_ep_s_args_IC_P
+        widget = ui.lineedit_keyword_ic_ep_s_args_IC_P
         # Have to do this after project manager has registered widgets
         widget.value_updated.disconnect()
         widget.value_updated.connect(self.handle_ics_volume_fraction)
 
         # Generic!
         def get_widget(key):
-            widget = getattr(ics, 'lineedit_keyword_%s_args_IC_P' % key, None)
+            widget = getattr(ui, 'lineedit_keyword_%s_args_IC_P' % key, None)
             if widget:
                 return widget
-            widget = getattr(ics, 'lineedit_keyword_%s_args_IC' % key, None)
+            widget = getattr(ui, 'lineedit_keyword_%s_args_IC' % key, None)
             if not widget:
                 self.error('no widget for key %s' % key)
             return widget
@@ -945,7 +940,7 @@ class ICS(object):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_IC_P',
                          'lineedit_keyword_%s_args_IC'):
-                item = getattr(ics, name%key, None)
+                item = getattr(ui, name%key, None)
                 if item:
                     item.setEnabled(enabled)
             if not enabled:
@@ -1043,14 +1038,14 @@ class ICS(object):
         self.update_ics_solids_mass_fraction_table()
 
         enabled = (solids_model=='DEM' or bool(energy_eq))
-        ics.groupbox_solids_advanced.setEnabled(enabled)
+        ui.groupbox_solids_advanced.setEnabled(enabled)
 
         #Advanced: Option to enable fitting DES particles to region
         # Option only available for DEM solids
         # Sets keyword: IC_DES_FIT_TO_REGION
         # Disabled [DEFAULT]
         enabled = (solids_model=='DEM')
-        item = ics.checkbox_keyword_ic_des_fit_to_region_args_IC
+        item = ui.checkbox_keyword_ic_des_fit_to_region_args_IC
         item.setEnabled(enabled)
         key = 'ic_des_fit_to_region'
         default = False
@@ -1094,10 +1089,10 @@ class ICS(object):
             return # No selection
         IC0 = self.ics_current_indices[0]
 
-        ics = self.ui.initial_conditions
+        ui = self.ui.initial_conditions
         nscalar = self.project.get_value('nscalar', default=0)
 
-        page =  ics.page_scalar
+        page =  ui.page_scalar
         layout = page.layout()
 
         spacer = None
