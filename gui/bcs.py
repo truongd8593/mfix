@@ -204,9 +204,6 @@ class BCS(object):
             self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
-
-        self.bcs_current_regions = selections
-        self.bcs_current_indices = indices
         tw.setItem(nrows, 0, item)
 
         item = make_item(BC_NAMES[bc_type])
@@ -214,10 +211,6 @@ class BCS(object):
 
         self.fixup_bcs_table(tw)
 
-        for BC in indices:
-            for key in 'bc_hw_t_g', 'bc_c_t_g':
-                if self.project.get_value(key, args=[BC]) is None:
-                    self.update_keyword(key, 0.0, args=[BC]) # Force type to No-Flux
         if autoselect:
             tw.setCurrentCell(nrows, 0)
 
@@ -236,7 +229,7 @@ class BCS(object):
             return
 
         # Unset keywords
-        kwlist = list(self.project.keywordItems())[:]
+        kwlist = list(self.project.keywordItems())
         for kw in kwlist:
             key, args = kw.key, kw.args
             # TODO use keyword_args here instead of startswith
@@ -268,7 +261,8 @@ class BCS(object):
             regions = []
         else:
             (indices, regions) = table.item(row,0).data(UserRole)
-        self.bcs_current_indices, self.bcs_current_regions = indices, regions
+        self.bcs_current_indices = indices
+        self.bcs_current_regions = regions
         enabled = (row is not None)
         bcs.toolbutton_delete.setEnabled(enabled)
         bcs.scrollarea_detail.setEnabled(enabled)
@@ -646,7 +640,6 @@ class BCS(object):
         #    Requires BC_TW_G(#)
         if not self.bcs_current_indices:
             return
-
         if bctype == NO_FLUX:
             hw, c, tw = 0.0, 0.0, None
         elif bctype == SPECIFIED_TEMPERATURE:
@@ -705,7 +698,7 @@ class BCS(object):
                 else:
                     self.warn("NO WIGET FOR " + (name%(key+suffix)))
             if not enabled:
-                get_widget(key).setText('')
+                get_widget(key+suffix).setText('')
                 return
             val = self.project.get_value(key, args=[BC0])
             if val is None:
@@ -713,7 +706,7 @@ class BCS(object):
 
             for BC in self.bcs_current_indices:
                 self.update_keyword(key, val, args=[BC])
-            get_widget(key).updateValue(key, val, args=[BC0])
+            get_widget(key+suffix).updateValue(key, val, args=[BC0])
 
         #    Define transfer coefficient
         # Specification only available with PSW
@@ -807,9 +800,11 @@ class BCS(object):
             default = 0.0
             setup_key_widget(key, default, enabled, suffix='_2')
 
-
         #Select species equation boundary type:
         # Selection only available when solving species equations
+        species_eq = self.project.get_value('species_eq', default=True, args=[0])
+        enabled = bool(species_eq)
+        bcs.groupbox_fluid_species_eq.setEnabled(enabled)
 
         #Define wall mass fraction
         # Specification only available with 'Specified Mass Fraction' BC type
