@@ -65,8 +65,16 @@ def buildKeywordDoc(mfixSourcePath):
         mfixKeywordDict.update(parsedNameList)
         mfixKeywordDict['keywordlist'] = keywordlist+parsedNameList['keywordlist']
         mfixKeywordDict['categories'] = catlist+parsedNameList['categories']
+    cgs_re = re.compile(r' *\[.*CGS.*\] *', flags=re.IGNORECASE)
+    def redact(v):
+        if not isinstance(v, dict): # 'categories' and 'keywordlist'
+            return v
+        d = v.get('description')
+        if d:
+            v['description'] = cgs_re.sub('', d)
+        return v
 
-    return dict((k.lower(), v) for k, v in mfixKeywordDict.items())
+    return dict((k.lower(),redact(v)) for k, v in mfixKeywordDict.items())
 
 def findNamePath(path):
     pattern = os.path.join(path, insensitiveGlobPattern('*namelist*.f'))
