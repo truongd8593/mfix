@@ -467,8 +467,11 @@ class MfixGui(QtWidgets.QMainWindow,
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
         # These are all fractions, must be btwn 0 and 1, not documented as such
-        for key in ('des_em', 'eps_f_min'):
+        for key in ('des_em',
+                    'eps_f_min',
+                    'bc_xw_g'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
+
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
         # All temperatures > 0 ?
