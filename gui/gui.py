@@ -1105,8 +1105,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
                     description = doc.get('description')
                     if description is not None:
-                        widget.help_text = description
-                        widget.setToolTip('%s<br/>' % doc['description'])
+                        widget.help_text = '%s: %s' % (key, description)
+                        widget.setToolTip('<b>%s</b>: %s</br>' % (key, description))
 
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
                         widget.allow_parameters = True
