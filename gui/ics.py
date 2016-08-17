@@ -203,10 +203,8 @@ class ICS(object):
             self.ics_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
-
-        self.ics_current_regions = selections
-        self.ics_current_indices = indices
         tw.setItem(nrows, 0, item)
+
         self.fixup_ics_table(tw)
         if autoselect:
             tw.setCurrentCell(nrows, 0)
@@ -226,7 +224,7 @@ class ICS(object):
             return
 
         # Unset keywords
-        kwlist = list(self.project.keywordItems())[:]
+        kwlist = list(self.project.keywordItems())
         for kw in kwlist:
             key, args = kw.key, kw.args
             # TODO use keyword_args here instead of startswith
