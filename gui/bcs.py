@@ -616,7 +616,8 @@ class BCS(object):
     def set_bcs_fluid_energy_eq_type(self, bctype):
         if not self.bcs_current_indices:
             return
-
+        #Select energy equation boundary type:
+        # Available selections:
         #  No-Flux (adiabatic) [DEFAULT]
         if bctype == NO_FLUX:
             #    Sets keyword BC_HW_T_G(#) to 0.0
@@ -648,10 +649,10 @@ class BCS(object):
             c = 0.0
             #    Requires BC_TW_G(#)
             tw = True
-
+        self.print_internal('tw %s c %s hw %s' % (tw, c, hw))
         for BC in self.bcs_current_indices:
             self.bcs[BC]['energy_eq_type'] = bctype
-            for (key, val) in (('bc_hw_t_g', hw), ('bg_c_t_g', c), ('bc_tw_g', tw)):
+            for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
                 if val is True:
                     pass # 'required'
                 else:
@@ -661,7 +662,14 @@ class BCS(object):
         # hacks to prevent duplicate display of bc_tw_g
         ui = self.ui.boundary_conditions
         if bctype == SPECIFIED_TEMPERATURE:
-            pass
+            ui.lineedit_keyword_bc_tw_g_2_args_BC.setText('')
+        elif bctype == CONVECTIVE_FLUX:
+            ui.lineedit_keyword_bc_tw_g_args_BC.setText('')
+
+
+    def set_bcs_fluid_species_eq_type(self, bctype):
+        if not self.bcs_current_indices:
+            return
 
 
 
@@ -686,7 +694,7 @@ class BCS(object):
         # as generic as possible - see comments in ics.py
 
         def get_widget(key):
-            widget = getattr(bcs, 'lineedit_keyword_%s_args_BC' % key, None)
+            widget = getattr(ui, 'lineedit_keyword_%s_args_BC' % key, None)
             if not widget:
                 self.error('no widget for key %s' % key)
             return widget
@@ -694,7 +702,7 @@ class BCS(object):
         def setup_key_widget(key, default=None, enabled=True, suffix=''):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_BC'):
-                item = getattr(bcs, name%(key+suffix), None)
+                item = getattr(ui, name%(key+suffix), None)
                 if item:
                     item.setEnabled(enabled)
                 else:
@@ -729,8 +737,8 @@ class BCS(object):
         # Specification only available with PSW
         # Sets keyword BC_WW_G(#)
         # DEFAULT value of 0.0
-        default = 0.0
         enabled = (bc_type=='PSW')
+        default = 0.0 if enabled else None
         for c in 'huvw':
             key = 'bc_%sw_g' % c
             setup_key_widget(key, default, enabled)
@@ -781,7 +789,7 @@ class BCS(object):
             # DEFAULT value of 0.0
             enabled = (bctype==SPECIFIED_FLUX)
             key = 'bc_c_t_g'
-            default = 0.0 if enabled else None
+            default = 0.0
             setup_key_widget(key, default, enabled)
 
             #Define transfer coefficient
@@ -790,7 +798,7 @@ class BCS(object):
             # DEFAULT value of 0.0
             enabled = (bctype==CONVECTIVE_FLUX)
             key = 'bc_hw_t_g'
-            default = 0.0 if enabled else None
+            default = 0.0
             setup_key_widget(key, default, enabled)
 
             #Define free stream temperature
