@@ -160,7 +160,7 @@ class FluidHandler(object):
 
     def fixup_fluids_table(self):
         hv = QtWidgets.QHeaderView
-        f=self.ui.fluid
+        ui = self.ui.fluid
         table = ui.tablewidget_fluid_species
         if PYQT5:
             resize = table.horizontalHeader().setSectionResizeMode
