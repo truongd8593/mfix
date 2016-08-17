@@ -55,7 +55,7 @@
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
-! Backgroud - full domain initialize
+! Background - full domain initialize
 !---------------------------------------------------------------------//
   IC_X_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
   IC_Y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
