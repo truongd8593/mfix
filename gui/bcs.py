@@ -83,6 +83,8 @@ class BCS(object):
         ui.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
         ui.combobox_fluid_species_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_species_eq_type)
 
+        ui.checkbox_keyword_bc_jj_ps_args_BC.dtype = int
+
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
         # BC regions must be planes or STLs (not volumes or points)
