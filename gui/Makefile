@@ -11,6 +11,7 @@ all: ${PY_UIFILES}
 
 clean:
 	-rm -rf ${PY_UIFILES} dist __pycache__
+	rm -rf doc/generated
 	find . -name \*.pyc -delete
 	make -C .. clean
 
@@ -47,5 +48,9 @@ test-load-all:
 pyinst: all ../mfix
 	pyinstaller gui.spec
 
-docs:
-	PYTHONPATH=.. make -C sphinxdoc html
+sphinx-docs:
+	cd doc/sphinx; sphinx-apidoc -o ../generated/source ../..
+	cp doc/sphinx/index.rst doc/sphinx/conf.py doc/generated/source
+	make -C doc/sphinx html
+
+docs: sphinx-docs

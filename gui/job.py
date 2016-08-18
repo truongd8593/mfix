@@ -354,12 +354,13 @@ class JobManager(QObject):
         # else check queue process (TODO)
 
     def reset_api_error_count(self):
+        """Set API connection error count to 0"""
         self.api_error_count = 0
         log.debug('Reset API error count %s', self)
 
     def increment_api_error_count(self):
-        """Increment API error count and signal job exit if limit
-        has been exceeded.
+        """Increment API error count. Signal job exit if limit
+        :class:`JobManager.API_ERROR_HARD_LIMIT` has been exceeded.
         """
         self.api_error_count += 1
         count = self.api_error_count
