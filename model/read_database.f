@@ -18,7 +18,7 @@
 !  referenced species (lName) is obtained.                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)
+      SUBROUTINE READ_DATABASE(MFIX_DAT, lM, lN, lName, lMW)
 
       USE compar
       USE constant
@@ -26,7 +26,6 @@
       USE discretelement
       USE error_manager
       USE funits
-      USE main, only: MFIX_DAT
       USE param
       USE param1
       USE physprop
@@ -35,6 +34,9 @@
       USE rxns
 
       IMPLICIT NONE
+
+! project filename
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Phase and species indices
       INTEGER, INTENT(IN) :: lM, lN
@@ -195,7 +197,7 @@
 !  Author: J. Musser                                  Date: 02-Oct-12  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE0()
+      SUBROUTINE READ_DATABASE0(MFIX_DAT)
 
       USE compar
       USE constant
@@ -209,6 +211,8 @@
       USE rxns
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Loop indices for mass phase and species
       INTEGER M, NN
@@ -236,7 +240,7 @@
              CALL MFIX_EXIT(mypE)
           ENDIF
 ! Read the database.
-         CALL READ_DATABASE(0, NN, SPECIES_NAME(Nsp), MW_g(NN))
+         CALL READ_DATABASE(MFIX_DAT, 0, NN, SPECIES_NAME(Nsp), MW_g(NN))
        ENDDO
 
 ! Read species data for the continuum solids phases.
@@ -253,7 +257,7 @@
                   IF(DMP_LOG) WRITE(UNIT_LOG,1011)'continuum', M, NN
                    CALL MFIX_EXIT(mypE)
                 ENDIF
-               CALL READ_DATABASE(M, NN, SPECIES_NAME(Nsp), MW_s(M,NN))
+               CALL READ_DATABASE(MFIX_DAT, M, NN, SPECIES_NAME(Nsp), MW_s(M,NN))
              ENDDO   ! N=1, NMAX(M)
           ENDDO   ! M=1, MMAX
       ENDIF

@@ -163,6 +163,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEPRECATED(LINE_NO, INPUT, RELEASE)
 
+         use error_manager, only: is_pymfix
+
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT
       CHARACTER(len=*), INTENT(IN) :: RELEASE
@@ -170,7 +172,11 @@
       IF(myPE == 0) &
          WRITE(*,1000) trim(iVAL(LINE_NO)), RELEASE, trim(INPUT)
 
-      CALL MFIX_EXIT(myPE)
+      IF(IS_PYMFIX)THEN
+        IER_EM = 1
+      ELSE
+        CALL MFIX_EXIT(myPE)
+      ENDIF
 
  1000 FORMAT(//1X,70('*')/' From DEPRECATED',/' Error 1000:',          &
          ' A keyword pair on line ',A,' of the mfix.dat file was',/    &
@@ -191,12 +197,18 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE UNKNOWN_KEYWORD(LINE_NO, INPUT)
 
+         use error_manager, only: is_pymfix
+
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT
 
       IF(myPE == 0) WRITE(*,2000) trim(iVAL(LINE_NO)), trim(INPUT)
 
-      CALL MFIX_EXIT(myPE)
+      IF(IS_PYMFIX)THEN
+         IER_EM = 1
+      ELSE
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
  2000 FORMAT(//1X,70('*')/' From: UNKNOWN_KEYWORD',/' Error 2000: ',   &
          'Unable to process line ',A,' of the mfix.dat file.',2/3x,    &

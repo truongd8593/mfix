@@ -73,8 +73,8 @@
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
       USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE MAIN, ONLY: ADD_COMMAND_LINE_KEYWORD
-      USE MAIN, ONLY: GET_DATA, CHECK_DATA, PRE_INIT, INITIALIZE, FINALIZE
-      USE MAIN, ONLY: EXIT_SIGNAL, MFIX_DAT, PRINT_FLAGS
+      USE MAIN, ONLY: GET_DATA, CHECK_DATA, INITIALIZE, FINALIZE
+      USE MAIN, ONLY: EXIT_SIGNAL, PRINT_FLAGS
       USE MPI_UTILITY
       USE RUN, ONLY:  DT, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP, RUN_NAME, RUN_TYPE
       USE STEP, ONLY: CHECK_LOW_DT, CHEM_MASS, TIME_STEP_INIT, TIME_STEP_END
@@ -89,6 +89,7 @@
       INTEGER :: II
       CHARACTER(LEN=80) :: tmp
       LOGICAL :: read_dat
+      CHARACTER(LEN=80) :: MFIX_DAT = "mfix.dat"
 
       read_dat = .false.
       DO II=1, COMMAND_ARGUMENT_COUNT()
@@ -129,12 +130,9 @@
 ! Dynamic load balance loop
       DO
 
-! Read input file and prepare to do check input
-      CALL PRE_INIT
-
-! Check data, do computations for IC and BC locations
+! Read input data, check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL CHECK_DATA
+      CALL GET_DATA(MFIX_DAT)
 
 ! Initialize the simulation
       CALL INITIALIZE

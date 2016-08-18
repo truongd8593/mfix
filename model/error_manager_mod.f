@@ -39,6 +39,8 @@
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
 
+      LOGICAL :: IS_PYMFIX = .FALSE.
+
 ! Error Flag.
       INTEGER :: IER_EM
 
@@ -469,7 +471,7 @@
 
 ! Abort the run if specified.
       IF(A_FLAG) THEN
-         IF(REINITIALIZING)THEN
+         IF(IS_PYMFIX)THEN
             IER_EM = 1
          ELSE
             IF(D_FLAG) WRITE(*,3000) myPE

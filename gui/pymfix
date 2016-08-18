@@ -42,6 +42,7 @@ from mfix import des_time_march as DES_TIME_MARCH
 from mfix import discretelement as DEM
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
+from mfix import error_manager as ERROR_MANAGER
 from mfix import parallel_mpi as PARALLEL_MPI
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
@@ -83,10 +84,10 @@ def main():
     """The main function starts MFIX on a separate thread, then
        start the Flask server. """
 
-    paused, port, keyword_args = parse_command_line_arguments()
+    mfix_dat, paused, port, keyword_args = parse_command_line_arguments()
 
     global mfix_thread
-    mfix_thread = Mfix(paused, keyword_args, port=port)
+    mfix_thread = Mfix(mfix_dat, paused, keyword_args, port=port)
     mfix_thread.start()
 
     def setup_ssl():
@@ -156,13 +157,14 @@ class Mfix(object):
     requests = {}
     responses = {}
 
-    def __init__(self, paused, keyword_args, port):
+    def __init__(self, mfix_dat, paused, keyword_args, port):
         " constructor "
         self.keyword_args = keyword_args
         self.thread = None
         self.status = json.dumps({})
         self.stopped = False
         self.paused = paused
+        self.mfix_dat = mfix_dat
         self.port = port
         self.t0 = 0.
         self.walltime = 0.
@@ -188,14 +190,17 @@ class Mfix(object):
             MAIN.add_command_line_keyword(arg)
 
         PARALLEL_MPI.parallel_init()
-        MAIN.pre_init()
+        ERROR_MANAGER.is_pymfix = True
 
-        RUN.reinitializing = True
-        MAIN.check_data()
+        # Read input data, check data, do computations for IC and BC locations
+        # and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+        MAIN.get_data(self.mfix_dat)
+
         while not MAIN.good_config:
-            while self.paused:
-                self.check_requests()
-                MAIN.check_data()
+            self.paused = True
+            self.check_requests()
+            MAIN.get_data(self.mfix_dat)
+            time.sleep(0.1)
 
         MAIN.initialize()
 
@@ -693,11 +698,12 @@ def parse_command_line_arguments():
         print(usage_string)
         sys.exit(1)
 
+    mfix_dat = "mfix.dat"
     mfix_paused = True
     for opt, arg in opts:
         if opt in ("-f", "--file"):
             # Fortran strings need to be padded with blanks (ljust)
-            MAIN.mfix_dat = arg.ljust(len(MAIN.mfix_dat))
+            mfix_dat = arg.ljust(80)
         elif opt in ("-h", "--help"):
             print(usage_string)
             sys.exit(0)
@@ -722,7 +728,7 @@ def parse_command_line_arguments():
         print("Only %d or fewer command line arguments are supported." % len(MAIN.cmd_line_args))
         sys.exit(1)
 
-    return mfix_paused, port, keyword_args
+    return mfix_dat, mfix_paused, port, keyword_args
 
 if __name__ == '__main__':
     main()

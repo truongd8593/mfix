@@ -34,34 +34,8 @@
 
       CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
       INTEGER :: CMD_LINE_ARGS_COUNT = 0
-      CHARACTER(LEN=80) :: MFIX_DAT = "mfix.dat"
 
       CONTAINS
-
-      SUBROUTINE PRE_INIT
-         USE error_manager, only: init_error_manager
-         USE param1, only: n_spx
-         USE run, only: run_name, run_type
-
-         IMPLICIT NONE
-
-         ! Read input data, check data, do computations for IC and BC locations
-         ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-         CALL GET_DATA
-
-         ! Initialize the error manager. This call occurs after the mfix.dat
-         ! is read so that message verbosity can be set and the .LOG file
-         ! can be opened.
-         CALL INIT_ERROR_MANAGER
-
-         ! Write header in the .LOG file and to screen.
-         ! Not sure if the values are correct or useful
-         CALL WRITE_HEADER
-
-         ! Open files
-         CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
-
-      END SUBROUTINE PRE_INIT
 
       SUBROUTINE INITIALIZE
 !f2py threadsafe
@@ -424,24 +398,34 @@
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_DATA
+      SUBROUTINE GET_DATA(MFIX_DAT)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
 
       USE compar, only: adjust_partition, mype, nodesi, nodesj, nodesk, pe_io
+      USE error_manager, only: init_error_manager, reinit_error
       USE mpi_utility, only: bcast
-      USE run, only: run_type
+      USE param1, only: n_spx
+      USE run, only: run_type, run_name
 
       IMPLICIT NONE
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
       LOGICAL :: PRESENT
+
+      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
+
+      GOOD_CONFIG = .FALSE.
 
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(0,MFIX_DAT)
+      IF(REINIT_ERROR()) RETURN
+
 ! Set RUN_TYPE to RESTART_1 when adjusting partition
 ! and read partition layout in gridmap.dat if it exists
       IF(ADJUST_PARTITION) THEN
@@ -464,6 +448,27 @@
          ENDIF
 
       ENDIF
+
+      IF (FIRST_PASS) THEN
+! Initialize the error manager. This call occurs after the mfix.dat
+! is read so that message verbosity can be set and the .LOG file
+! can be opened.
+         CALL INIT_ERROR_MANAGER
+
+! Write header in the .LOG file and to screen.
+! Not sure if the values are correct or useful
+         CALL WRITE_HEADER
+
+! Open files
+         CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
+         FIRST_PASS = .FALSE.
+      ENDIF
+
+! Check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+      CALL CHECK_DATA
+
+      GOOD_CONFIG = .NOT.REINIT_ERROR()
 
       RETURN
 
@@ -493,8 +498,6 @@
          !-----------------------------------------------
          ! shift DX, DY and DZ values
          LOGICAL, PARAMETER :: SHIFT = .TRUE.
-
-         GOOD_CONFIG = .FALSE.
 
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.

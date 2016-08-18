@@ -16,8 +16,7 @@
 !  Author: J.Musser                                  Date: 03-FEB-14   !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_SOLIDS_COMMON_ALL
-
+      SUBROUTINE CHECK_SOLIDS_COMMON_ALL(MFIX_DAT)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -49,9 +48,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -120,7 +119,7 @@
       IF(USE_RRATES)THEN
          CALL CHECK_SOLIDS_SPECIES_LEGACY(MMAX_L)
       ELSE
-         CALL CHECK_SOLIDS_SPECIES(MMAX_L)
+         CALL CHECK_SOLIDS_SPECIES(MFIX_DAT, MMAX_L)
       ENDIF
 
 ! Currently MMS uses constant properties. These are in place simply
@@ -247,18 +246,13 @@
 
       END SUBROUTINE CHECK_SOLIDS_DRAG
 
-
-
-
-
 !----------------------------------------------------------------------!
 ! Subroutine: CHECK_SOLIDS_SPECIES                                     !
 ! Purpose: Check solids species input.                                 !
 !                                                                      !
 ! Author: J. Musser                                  Date: 07-FEB-14   !
 !----------------------------------------------------------------------!
-      SUBROUTINE CHECK_SOLIDS_SPECIES(MMAX_LL)
-
+      SUBROUTINE CHECK_SOLIDS_SPECIES(MFIX_DAT, MMAX_LL)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -290,12 +284,13 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
-
 
 ! Subroutine Arguments:
 !---------------------------------------------------------------------//
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Total number of solids phases
       INTEGER, intent(in) :: MMAX_LL
 
@@ -315,9 +310,7 @@
 ! Loop counters.
       INTEGER :: M, N
 
-
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_SPECIES")
@@ -405,7 +398,7 @@
                   ENDIF
                   3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
-                  CALL READ_DATABASE(M, N, SPECIES_s(M,N), MW_S(M,N))
+                  CALL READ_DATABASE(MFIX_DAT, M, N, SPECIES_s(M,N), MW_S(M,N))
 ! Flag variable to stating that the database was read.
                   rDatabase(M,N) = .TRUE.
                ENDIF

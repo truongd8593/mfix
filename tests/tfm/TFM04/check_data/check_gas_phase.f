@@ -312,7 +312,7 @@
                ENDIF
                3001 FORMAT(/2x,'>',I3,': Species: ',A)
 ! Read the database.
-               CALL READ_DATABASE(0, N, SPECIES_g(N), MW_g(N))
+               CALL READ_DATABASE(MFIX_DAT, 0, N, SPECIES_g(N), MW_g(N))
 ! Flag variable to stating that the database was read.
                rDatabase(0,N) = .TRUE.
             ENDIF
@@ -446,4 +446,3 @@
          'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
 
       END SUBROUTINE CHECK_GAS_SPECIES_LEGACY
-
