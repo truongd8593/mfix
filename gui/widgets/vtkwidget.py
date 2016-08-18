@@ -65,7 +65,6 @@ def safe_int(x):
 
 def clean_geo_dict(d):
     clean_dict = {}
-
     for geo, geo_dict in d.items():
         clean_dict[geo] = {}
         geo_type = None
@@ -74,12 +73,8 @@ def clean_geo_dict(d):
         clean_dict[geo]['geo_type'] = geo_type
         for key, value in geo_dict.items():
             # filter out vtk objects/default values
-            if key not in ['mapper', 'actor', 'reader', 'transform',
-                           'transformfilter', 'center_filter', 'source',
-                           'trianglefilter', 'parametric_object', 'filter',
-                           'booleanoperation']:
-                if isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]:
-                    clean_dict[geo][key] = value
+            if not isinstance(value, vtk.vtkObject) and (isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]):
+                clean_dict[geo][key] = value
     return clean_dict
 
 def remove_vtk_objects(d):
@@ -522,7 +517,6 @@ class VtkWidget(QtWidgets.QWidget):
         self.value_updated.emit(self, {key: value}, args)
 
     def updateValue(self, key, newValue, args=None):
-
         if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
                    'imax', 'jmax', 'kmax']:
             self.update_mesh()
@@ -581,18 +575,19 @@ class VtkWidget(QtWidgets.QWidget):
                 if node in geo_dict and 'geo_type' in geo_dict[node]:
                     geo_data = copy.deepcopy(DEFAULT_PARAMS[geo_dict[node]['geo_type']])
                     geo_data.update(geo_dict[node])
-                    if geo_dict[node]['geo_type'] == 'primitive':
+                    geo_type = geo_dict[node]['geo_type']
+                    if geo_type == 'primitive':
                         self.add_primitive(name=node, data=geo_data)
-                    elif geo_dict[node]['geo_type'] == 'parametric':
+                    elif geo_type == 'parametric':
                         self.add_parametric(name=node, data=geo_data)
-                    elif geo_dict[node]['geo_type'] == 'filter':
+                    elif geo_type == 'filter':
                         self.add_filter(name=node, data=geo_data,
                                         child=tree[node].pop())
-                    elif geo_dict[node]['geo_type'] =='boolean':
+                    elif geo_type =='boolean':
                         self.boolean_operation(boolname=node, data=geo_data,
                                                children=tree[node])
-                    elif geo_dict[node]['geo_type'] =='stl':
-                        self.add_stl(None, filename=geo_dict[node]['filename'],
+                    elif geo_type =='stl':
+                        self.add_stl(None, filename=geo_data['filename'],
                                      name=node, data=geo_data)
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
@@ -633,47 +628,44 @@ class VtkWidget(QtWidgets.QWidget):
         The selected geometry changed, update UI
         """
         current_selection = self.geometrytree.selectedItems()
+        top_level_items = [self.geometrytree.indexOfTopLevelItem(select) > -1
+                           for select in current_selection]
 
+        # boolean btns
         enableboolbtn = False
-        if len(current_selection) == 2 and all(
-                [self.geometrytree.indexOfTopLevelItem(select) > -1
-                 for select in current_selection]
-        ):
-
+        if len(current_selection) == 2 and all(top_level_items):
             enableboolbtn = True
-
         for btn in self.booleanbtndict.values():
             btn.setEnabled(enableboolbtn)
 
         # enable/disable delete/copy/filter button
-        if len(current_selection) == 1 and \
-                self.ui.geometry.treeWidgetGeometry.indexOfTopLevelItem(
-                current_selection[0]) > -1:
+        enables = [False]*3
+        if len(current_selection) == 1 and all(top_level_items):
+            enables = [True]*3
+        elif any(top_level_items):
+            enables[0] = True
 
-            self.ui.geometry.toolbutton_remove_geometry.setEnabled(True)
-            self.ui.geometry.toolbutton_add_filter.setEnabled(True)
-            self.ui.geometry.toolbutton_copy_geometry.setEnabled(True)
-        else:
-            self.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
-            self.ui.geometry.toolbutton_add_filter.setEnabled(False)
-            self.ui.geometry.toolbutton_copy_geometry.setEnabled(False)
+        for enable, widget in zip(enables, [self.ui.geometry.toolbutton_remove_geometry,
+                                            self.ui.geometry.toolbutton_add_filter,
+                                            self.ui.geometry.toolbutton_copy_geometry,]):
+            widget.setEnabled(enable)
 
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
+            data = self.geometrydict.get(text)
 
             current_index = 0
             for i in range(
                     self.ui.geometry.stackedWidgetGeometryDetails.count()):
-                widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(
-                                                                             i)
-                if str(widget.objectName()) == self.geometrydict[text]['type']:
+                widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(i)
+                if str(widget.objectName()) == data['type']:
                     current_index = i
                     break
 
             # set the widget parameters
             for child in widget_iter(widget):
                 name = str(child.objectName()).lower().replace('_', '')
-                for key, value in self.geometrydict[text].items():
+                for key, value in data.items():
                     if key in name:
                         break
 
@@ -712,13 +704,15 @@ class VtkWidget(QtWidgets.QWidget):
         """
 
         name = str(item.text(0)).lower()
+        geo = self.geometrydict.get(name)
+        if geo is None: return
         if item.checkState(0) == QtCore.Qt.Checked:
             if self.visual_props['geometry']['visible']:
-                self.geometrydict[name]['actor'].VisibilityOn()
-            self.geometrydict[name]['visible'] = True
+                geo['actor'].VisibilityOn()
+            geo['visible'] = True
         else:
-            self.geometrydict[name]['actor'].VisibilityOff()
-            self.geometrydict[name]['visible'] = False
+            geo['actor'].VisibilityOff()
+            geo['visible'] = False
 
         self.render()
 
@@ -751,7 +745,9 @@ class VtkWidget(QtWidgets.QWidget):
                 self.geometrydict[name] = data
             else:
                 self.geometrydict[name] = copy.deepcopy(DEFAULT_STL_PARAMS)
-            self.geometrydict[name]['filename'] = filename
+
+            geo_data = self.geometrydict.get(name)
+            geo_data['filename'] = filename
 
             # reader
             reader = vtk.vtkSTLReader()
@@ -786,15 +782,15 @@ class VtkWidget(QtWidgets.QWidget):
             center = center_filter.GetCenter()
 
             # Add to dict
-            self.geometrydict[name]['reader'] = reader
-            self.geometrydict[name]['transform'] = transform
-            self.geometrydict[name]['transformfilter'] = transform_filter
-            self.geometrydict[name]['center_filter'] = center_filter
-            self.geometrydict[name]['mapper'] = mapper
-            self.geometrydict[name]['actor'] = actor
-            self.geometrydict[name]['centerx'] = center[0]
-            self.geometrydict[name]['centery'] = center[1]
-            self.geometrydict[name]['centerz'] = center[2]
+            geo_data['reader'] = reader
+            geo_data['transform'] = transform
+            geo_data['transformfilter'] = transform_filter
+            geo_data['center_filter'] = center_filter
+            geo_data['mapper'] = mapper
+            geo_data['actor'] = actor
+            geo_data['centerx'] = center[0]
+            geo_data['centery'] = center[1]
+            geo_data['centerz'] = center[2]
 
             # Add to tree
             item = QtWidgets.QTreeWidgetItem([name])
@@ -820,7 +816,9 @@ class VtkWidget(QtWidgets.QWidget):
             parameters = str(widget.objectName()).lower().split('_')
             parameter = ''.join(parameters[1:])
 
-            for key in self.geometrydict[name].keys():
+            geo_data = self.geometrydict.get(name)
+
+            for key in geo_data.keys():
                 if key in parameter:
                     break
 
@@ -832,19 +830,17 @@ class VtkWidget(QtWidgets.QWidget):
 
         if value is not None:
             self.update_parameter_map(value, name, key)
-            self.geometrydict[name][key] = value
+            geo_data[key] = value
+            geo_type = geo_data['type']
 
-            if self.geometrydict[name]['type'] in \
-                    list(PRIMITIVE_DICT.keys()):
+            if geo_type in list(PRIMITIVE_DICT.keys()):
                 self.update_primitive(name)
-            elif self.geometrydict[name]['type'] in \
-                    list(FILTER_DICT.keys()):
+            elif geo_type in list(FILTER_DICT.keys()):
                 self.update_filter(name)
-            elif self.geometrydict[name]['type'] in \
-                    list(PARAMETRIC_DICT.keys()):
+            elif geo_type in list(PARAMETRIC_DICT.keys()):
                 self.update_parametric(name)
 
-            if 'transform' in self.geometrydict[name]:
+            if 'transform' in geo_data:
                 self.update_transform(name)
             self.render()
 
@@ -853,51 +849,44 @@ class VtkWidget(QtWidgets.QWidget):
         Update the specified primitive
         """
         primtype = self.geometrydict[name]['type']
+        geo = self.geometrydict.get(name)
 
         if 'source' in self.geometrydict[name]:
-            source = self.geometrydict[name]['source']
+            source = geo['source']
         else:
             source = None
 
         # update source
         if primtype == 'sphere':
-            source.SetRadius(safe_float(self.geometrydict[name]['radius']))
-            source.SetThetaResolution(safe_int(
-                self.geometrydict[name]['thetaresolution']))
-            source.SetPhiResolution(safe_int(
-                self.geometrydict[name]['phiresolution']))
-
+            source.SetRadius(safe_float(geo['radius']))
+            source.SetThetaResolution(safe_int(geo['thetaresolution']))
+            source.SetPhiResolution(safe_int(geo['phiresolution']))
         elif primtype == 'box':
-            source.SetXLength(safe_float(self.geometrydict[name]['lengthx']))
-            source.SetYLength(safe_float(self.geometrydict[name]['lengthy']))
-            source.SetZLength(safe_float(self.geometrydict[name]['lengthz']))
-
+            source.SetXLength(safe_float(geo['lengthx']))
+            source.SetYLength(safe_float(geo['lengthy']))
+            source.SetZLength(safe_float(geo['lengthz']))
         elif primtype == 'cone':
-            source.SetRadius(safe_float(self.geometrydict[name]['radius']))
-            source.SetHeight(safe_float(self.geometrydict[name]['height']))
-            source.SetDirection(safe_float(self.geometrydict[name]['directionx']),
-                                safe_float(self.geometrydict[name]['directiony']),
-                                safe_float(self.geometrydict[name]['directionz']))
-            source.SetResolution(safe_int(self.geometrydict[name]['resolution']))
+            source.SetRadius(safe_float(geo['radius']))
+            source.SetHeight(safe_float(geo['height']))
+            source.SetDirection(safe_float(geo['directionx']),
+                                safe_float(geo['directiony']),
+                                safe_float(geo['directionz']))
+            source.SetResolution(safe_int(geo['resolution']))
             source.CappingOn()
-
         elif primtype == 'cylinder':
-            source.SetRadius(safe_float(self.geometrydict[name]['radius']))
-            source.SetHeight(safe_float(self.geometrydict[name]['height']))
-            source.SetResolution(safe_int(self.geometrydict[name]['resolution']))
-
+            source.SetRadius(safe_float(geo['radius']))
+            source.SetHeight(safe_float(geo['height']))
+            source.SetResolution(safe_int(geo['resolution']))
         elif primtype == 'stl':
             pass
-
         else:
             return
 
         # common props
         if source is not None:
-            source.SetCenter(safe_float(self.geometrydict[name]['centerx']),
-                             safe_float(self.geometrydict[name]['centery']),
-                             safe_float(self.geometrydict[name]['centerz']))
-
+            source.SetCenter(safe_float(geo['centerx']),
+                             safe_float(geo['centery']),
+                             safe_float(geo['centerz']))
             source.Update()
 
         return source
@@ -906,35 +895,35 @@ class VtkWidget(QtWidgets.QWidget):
         """
         Update the specified object's transform filter.
         """
-        transform = self.geometrydict[name]['transform']
-        transform_filter = self.geometrydict[name]['transformfilter']
+        geo = self.geometrydict.get(name)
+        transform = geo['transform']
+        transform_filter = geo['transformfilter']
 
         # reset to Identity
         transform.Identity()
         transform.PostMultiply()
 
         # translate to center
-        transform.Translate(-safe_float(self.geometrydict[name]['centerx']),
-                            -safe_float(self.geometrydict[name]['centery']),
-                            -safe_float(self.geometrydict[name]['centerz']))
+        transform.Translate(-safe_float(geo['centerx']),
+                            -safe_float(geo['centery']),
+                            -safe_float(geo['centerz']))
 
         # rotation
-        transform.RotateWXYZ(safe_float(self.geometrydict[name]['rotationx']), 1, 0, 0)
-        transform.RotateWXYZ(safe_float(self.geometrydict[name]['rotationy']), 0, 1, 0)
-        transform.RotateWXYZ(safe_float(self.geometrydict[name]['rotationz']), 0, 0, 1)
+        transform.RotateWXYZ(safe_float(geo['rotationx']), 1, 0, 0)
+        transform.RotateWXYZ(safe_float(geo['rotationy']), 0, 1, 0)
+        transform.RotateWXYZ(safe_float(geo['rotationz']), 0, 0, 1)
 
         # back to position
-        transform.Translate(safe_float(self.geometrydict[name]['centerx']),
-                            safe_float(self.geometrydict[name]['centery']),
-                            safe_float(self.geometrydict[name]['centerz']))
+        transform.Translate(safe_float(geo['centerx']),
+                            safe_float(geo['centery']),
+                            safe_float(geo['centerz']))
 
         # translate stl files
-        if self.geometrydict[name]['type'] in ['stl'] + \
-                list(PARAMETRIC_DICT.keys()):
+        if self.geometrydict[name]['type'] in ['stl'] + list(PARAMETRIC_DICT.keys()):
             transform.Translate(
-                safe_float(self.geometrydict[name]['translationx']),
-                safe_float(self.geometrydict[name]['translationy']),
-                safe_float(self.geometrydict[name]['translationz']),
+                safe_float(geo['translationx']),
+                safe_float(geo['translationy']),
+                safe_float(geo['translationz']),
                 )
 
         # update
@@ -962,7 +951,8 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrydict[name]['type'] = primtype
         else:
             self.geometrydict[name] = data
-        self.geometrydict[name]['source'] = source
+        geo = self.geometrydict.get(name)
+        geo['source'] = source
 
         source = self.update_primitive(name)
 
@@ -972,8 +962,8 @@ class VtkWidget(QtWidgets.QWidget):
         transform_filter.SetTransform(transform)
         transform_filter.SetInputConnection(source.GetOutputPort())
 
-        self.geometrydict[name]['transform'] = transform
-        self.geometrydict[name]['transformfilter'] = transform_filter
+        geo['transform'] = transform
+        geo['transformfilter'] = transform_filter
 
         # update transform
         self.update_transform(name)
@@ -997,10 +987,10 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
         # add to dict
-        self.geometrydict[name]['mapper'] = mapper
-        self.geometrydict[name]['actor'] = actor
-        self.geometrydict[name]['trianglefilter'] = trianglefilter
-        self.geometrydict[name]['source'] = source
+        geo['mapper'] = mapper
+        geo['actor'] = actor
+        geo['trianglefilter'] = trianglefilter
+        geo['source'] = source
 
         # Add to tree
         item = QtWidgets.QTreeWidgetItem([name])
@@ -1016,75 +1006,60 @@ class VtkWidget(QtWidgets.QWidget):
         """
         Update the specified parameteric object.
         """
-        paratype = self.geometrydict[name]['type']
-        para_object = self.geometrydict[name]['parametric_object']
-        source = self.geometrydict[name]['source']
+        geo = self.geometrydict.get(name)
+        paratype = geo['type']
+        para_object = geo['parametric_object']
+        source = geo['source']
 
         if paratype == 'torus':
-            para_object.SetRingRadius(safe_float(
-                self.geometrydict[name]['ringradius']))
-            para_object.SetCrossSectionRadius(safe_float(
-                self.geometrydict[name]['crosssectionradius']))
+            para_object.SetRingRadius(safe_float(geo['ringradius']))
+            para_object.SetCrossSectionRadius(safe_float(geo['crosssectionradius']))
         elif paratype == 'boy':
-            para_object.SetZScale(safe_float(self.geometrydict[name]['zscale']))
+            para_object.SetZScale(safe_float(geo['zscale']))
         elif paratype == 'conic_spiral':
-            para_object.SetA(safe_float(self.geometrydict[name]['ascale']))
-            para_object.SetB(safe_float(self.geometrydict[name]['bfunc']))
-            para_object.SetC(safe_float(self.geometrydict[name]['cfunc']))
-            para_object.SetN(safe_float(self.geometrydict[name]['nfunc']))
+            para_object.SetA(safe_float(geo['ascale']))
+            para_object.SetB(safe_float(geo['bfunc']))
+            para_object.SetC(safe_float(geo['cfunc']))
+            para_object.SetN(safe_float(geo['nfunc']))
         elif paratype == 'dini':
-            para_object.SetA(safe_float(self.geometrydict[name]['ascale']))
-            para_object.SetB(safe_float(self.geometrydict[name]['bscale']))
+            para_object.SetA(safe_float(geo['ascale']))
+            para_object.SetB(safe_float(geo['bscale']))
         elif paratype == 'ellipsoid':
-            para_object.SetXRadius(safe_float(self.geometrydict[name]['radiusx']))
-            para_object.SetYRadius(safe_float(self.geometrydict[name]['radiusy']))
-            para_object.SetZRadius(safe_float(self.geometrydict[name]['radiusz']))
+            para_object.SetXRadius(safe_float(geo['radiusx']))
+            para_object.SetYRadius(safe_float(geo['radiusy']))
+            para_object.SetZRadius(safe_float(geo['radiusz']))
         elif paratype == 'figure_8_klein':
-            para_object.SetRadius(safe_float(self.geometrydict[name]['radius']))
+            para_object.SetRadius(safe_float(geo['radius']))
         elif paratype == 'mobius':
-            para_object.SetRadius(safe_float(self.geometrydict[name]['radius']))
+            para_object.SetRadius(safe_float(geo['radius']))
         elif paratype == 'random_hills':
-            para_object.SetHillXVariance(safe_float(
-                self.geometrydict[name]['variancex']))
-            para_object.SetXVarianceScaleFactor(safe_float(
-                self.geometrydict[name]['scalex']))
-            para_object.SetHillYVariance(safe_float(
-                self.geometrydict[name]['variancey']))
-            para_object.SetYVarianceScaleFactor(safe_float(
-                self.geometrydict[name]['scaley']))
-            para_object.SetHillAmplitude(safe_float(
-                self.geometrydict[name]['amplitude']))
-            para_object.SetAmplitudeScaleFactor(safe_float(
-                self.geometrydict[name]['scaleamplitude']))
-            para_object.SetNumberOfHills(safe_int(
-                self.geometrydict[name]['nhills']))
-            if self.geometrydict[name]['allowrandom']:
-                para_object.AllowRandomGenerationOn()
-            else:
-                para_object.AllowRandomGenerationOff()
+            para_object.SetHillXVariance(safe_float(geo['variancex']))
+            para_object.SetXVarianceScaleFactor(safe_float(geo['scalex']))
+            para_object.SetHillYVariance(safe_float(geo['variancey']))
+            para_object.SetYVarianceScaleFactor(safe_float(geo['scaley']))
+            para_object.SetHillAmplitude(safe_float(geo['amplitude']))
+            para_object.SetAmplitudeScaleFactor(safe_float(geo['scaleamplitude']))
+            para_object.SetNumberOfHills(safe_int(geo['nhills']))
+            para_object.SetAllowRandomGenerationOn(safe_int(geo['allowrandom']))
         elif paratype == 'roman':
-            para_object.SetRadius(safe_float(self.geometrydict[name]['radius']))
+            para_object.SetRadius(safe_float(geo['radius']))
         elif paratype == 'super_ellipsoid':
-            para_object.SetXRadius(safe_float(self.geometrydict[name]['radiusx']))
-            para_object.SetYRadius(safe_float(self.geometrydict[name]['radiusy']))
-            para_object.SetZRadius(safe_float(self.geometrydict[name]['radiusz']))
-            para_object.SetN1(safe_float(self.geometrydict[name]['n1']))
-            para_object.SetN2(safe_float(self.geometrydict[name]['n2']))
+            para_object.SetXRadius(safe_float(geo['radiusx']))
+            para_object.SetYRadius(safe_float(geo['radiusy']))
+            para_object.SetZRadius(safe_float(geo['radiusz']))
+            para_object.SetN1(safe_float(geo['n1']))
+            para_object.SetN2(safe_float(geo['n2']))
         elif paratype == 'super_toroid':
-            para_object.SetXRadius(safe_float(self.geometrydict[name]['radiusx']))
-            para_object.SetYRadius(safe_float(self.geometrydict[name]['radiusy']))
-            para_object.SetZRadius(safe_float(self.geometrydict[name]['radiusz']))
-            para_object.SetRingRadius(safe_float(
-                self.geometrydict[name]['ringradius']))
-            para_object.SetCrossSectionRadius(safe_float(
-                self.geometrydict[name]['crosssectionradius']))
-            para_object.SetN1(safe_float(self.geometrydict[name]['n1']))
-            para_object.SetN2(safe_float(self.geometrydict[name]['n2']))
+            para_object.SetXRadius(safe_float(geo['radiusx']))
+            para_object.SetYRadius(safe_float(geo['radiusy']))
+            para_object.SetZRadius(safe_float(geo['radiusz']))
+            para_object.SetRingRadius(safe_float(geo['ringradius']))
+            para_object.SetCrossSectionRadius(safe_float(geo['crosssectionradius']))
+            para_object.SetN1(safe_float(geo['n1']))
+            para_object.SetN2(safe_float(geo['n2']))
 
         source.Update()
-
         self.parent.set_unsaved_flag()
-
         return source
 
     def add_parametric(self, paramtype=None, name=None, data=None):
@@ -1107,8 +1082,9 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrydict[name]['type'] = paramtype
         else:
             self.geometrydict[name] = data
-        self.geometrydict[name]['parametric_object'] = parametric_object
-        self.geometrydict[name]['source'] = source
+        geo = self.geometrydict.get(name)
+        geo['parametric_object'] = parametric_object
+        geo['source'] = source
 
         source = self.update_parametric(name)
 
@@ -1118,8 +1094,8 @@ class VtkWidget(QtWidgets.QWidget):
         transform_filter.SetTransform(transform)
         transform_filter.SetInputConnection(source.GetOutputPort())
 
-        self.geometrydict[name]['transform'] = transform
-        self.geometrydict[name]['transformfilter'] = transform_filter
+        geo['transform'] = transform
+        geo['transformfilter'] = transform_filter
 
         # update transform
         self.update_transform(name)
@@ -1143,10 +1119,10 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
         # add to dict
-        self.geometrydict[name]['mapper'] = mapper
-        self.geometrydict[name]['actor'] = actor
-        self.geometrydict[name]['trianglefilter'] = trianglefilter
-        self.geometrydict[name]['source'] = source
+        geo['mapper'] = mapper
+        geo['actor'] = actor
+        geo['trianglefilter'] = trianglefilter
+        geo['source'] = source
 
         # Add to tree
         item = QtWidgets.QTreeWidgetItem([name])
@@ -1252,49 +1228,35 @@ class VtkWidget(QtWidgets.QWidget):
         Remove the currently selected geometry, filter, or boolean operation
         """
         currentSelection = self.geometrytree.selectedItems()
-        if currentSelection:
-            text = str(currentSelection[-1].text(0)).lower()
+        for selection in currentSelection:
+            text = str(selection.text(0)).lower()
 
             # remove tree item
             toplevelindex = self.geometrytree.indexOfTopLevelItem(
-                currentSelection[-1])
+                selection)
             item = self.geometrytree.takeTopLevelItem(toplevelindex)
 
             # move children to toplevel, make visible
             for child in item.takeChildren():
                 self.geometrytree.addTopLevelItem(child)
                 if self.visual_props['geometry']['visible']:
-                    name = str(child.text(0)).lower()
-                    self.geometrydict[name]['actor'].VisibilityOn()
-                    self.geometrydict[name]['visible'] = True
+                    geo = self.geometrydict.get(str(child.text(0)).lower())
+                    geo['actor'].VisibilityOn()
+                    geo['visible'] = True
                 child.setCheckState(0, QtCore.Qt.Checked)
 
             # remove graphics
             geo = self.geometrydict.pop(text)
             self.vtkrenderer.RemoveActor(geo['actor'])
 
-            self.render()
+        self.render()
 
     def handle_copy_geometry(self):
         """ duplicate the selected geometry """
-        raise NotImplementedError
-
-#        currentSelection = self.geometrytree.selectedItems()
-#        if currentSelection:
-#            text = str(currentSelection[-1].text(0)).lower()
-#
-#            new = get_unique_string(text, self.geometrydict.keys())
-#
-#            # copy values
-#            self.geometrydict[new] = {}
-#            for key, value in self.geometrydict[text].items():
-#                if not isinstance(value, vtk.vtkObject):
-#                    self.geometrydict[new][key] = copy.deepcopy(value)
-#
-#
-#            self.geometrydict[new] = copy.deepcopy(self.geometrydict[text])
-#
-#            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
+        currentSelection = self.geometrytree.selectedItems()
+        if currentSelection:
+            text = str(currentSelection[-1].text(0)).lower()
+            self.copy_geometry(text)
 
     def copy_geometry(self, name, center=None, rotation=None):
 
@@ -1309,131 +1271,64 @@ class VtkWidget(QtWidgets.QWidget):
                 data[key] = val
 
         name = None
-        if data['geo_type'] == 'primitive':
+        geo_type = data['geo_type']
+        if geo_type == 'primitive':
             name = self.add_primitive(data=data)
-        elif data['geo_type'] == 'parametric':
+        elif geo_type == 'parametric':
             name = self.add_parametric(data=data)
-        elif data['geo_type'] == 'filter':
+        elif geo_type == 'filter':
             name = self.add_filter(data=data)
-        elif data['geo_type'] =='boolean':
+        elif geo_type == 'boolean':
             name = self.boolean_operation(data=data)
-        elif data['geo_type'] =='stl':
-            name = self.add_stl(None, filename=data['filename'],
-                         data=data)
+        elif geo_type == 'stl':
+            name = self.add_stl(None, filename=data['filename'], data=data)
         return name
-
 
     def update_filter(self, name):
         """
         Update the currently selected filter
         """
-
-        filtertype = self.geometrydict[name]['type']
-        vtkfilter = self.geometrydict[name]['filter']
+        geo = self.geometrydict.get(name)
+        filtertype = geo['type']
+        vtkfilter = geo['filter']
 
         if filtertype == 'clean':
-            if self.geometrydict[name]['linestopoints']:
-                vtkfilter.ConvertLinesToPointsOn()
-            else:
-                vtkfilter.ConvertLinesToPointsOff()
-
-            if self.geometrydict[name]['polystolines']:
-                vtkfilter.ConvertPolysToLinesOn()
-            else:
-                vtkfilter.ConvertPolysToLinesOff()
-
-            if self.geometrydict[name]['stripstopolys']:
-                vtkfilter.ConvertStripsToPolysOn()
-            else:
-                vtkfilter.ConvertStripsToPolysOff()
-
+            vtkfilter.SetConvertLinesToPoints(safe_int(geo['linestopoints']))
+            vtkfilter.SetConvertPolysToLines(safe_int(geo['polystolines']))
+            vtkfilter.SetConvertStripsToPolys(safe_int(geo['stripstopolys']))
         elif filtertype == 'fill_holes':
-            vtkfilter.SetHoleSize(self.geometrydict[name]['maximumholesize'])
-
+            vtkfilter.SetHoleSize(safe_float(geo['maximumholesize']))
         elif filtertype == 'triangle':
-            if self.geometrydict[name]['processvertices']:
-                vtkfilter.PassVertsOn()
-            else:
-                vtkfilter.PassVertsOff()
-
-            if self.geometrydict[name]['processlines']:
-                vtkfilter.PassLinesOn()
-            else:
-                vtkfilter.PassLinesOff()
-
+            vtkfilter.SetPassVerts(safe_int(geo['processvertices']))
+            vtkfilter.SetPassLines(safe_int(geo['processlines']))
         elif filtertype == 'decimate':
-            vtkfilter.SetTargetReduction(
-                self.geometrydict[name]['targetreduction'])
-
+            vtkfilter.SetTargetReduction(safe_float(geo['targetreduction']))
         elif filtertype == 'quadric_decimation':
-            vtkfilter.SetTargetReduction(
-                self.geometrydict[name]['targetreduction'])
-
+            vtkfilter.SetTargetReduction(safe_float(geo['targetreduction']))
         elif filtertype == 'quadric_clustering':
-            vtkfilter.SetNumberOfXDivisions(
-                self.geometrydict[name]['divisionsx'])
-            vtkfilter.SetNumberOfYDivisions(
-                self.geometrydict[name]['divisionsy'])
-            vtkfilter.SetNumberOfZDivisions(
-                self.geometrydict[name]['divisionsz'])
-
-            if self.geometrydict[name]['autoadjustdivisions']:
-                vtkfilter.AutoAdjustNumberOfDivisionsOn()
-            else:
-                vtkfilter.AutoAdjustNumberOfDivisionsOff()
+            vtkfilter.SetNumberOfXDivisions(safe_int(geo['divisionsx']))
+            vtkfilter.SetNumberOfYDivisions(safe_int(geo['divisionsy']))
+            vtkfilter.SetNumberOfZDivisions(safe_int(geo['divisionsz']))
+            vtkfilter.SetAutoAdjustNumberOfDivisions(safe_int(geo['autoadjustdivisions']))
         elif filtertype == 'smooth':
-            vtkfilter.SetEdgeAngle(self.geometrydict[name]['edgeangle'])
-            vtkfilter.SetFeatureAngle(self.geometrydict[name]['featureangle'])
-            vtkfilter.SetNumberOfIterations(
-                self.geometrydict[name]['iterations'])
-            vtkfilter.SetRelaxationFactor(
-                self.geometrydict[name]['relaxation'])
-
-            if not self.geometrydict[name]['featureedgesmoothing']:
-                vtkfilter.FeatureEdgeSmoothingOn()
-            else:
-                vtkfilter.FeatureEdgeSmoothingOff()
-
-            if self.geometrydict[name]['boundarysmoothing']:
-                vtkfilter.BoundarySmoothingOn()
-            else:
-                vtkfilter.BoundarySmoothingOff()
-
+            vtkfilter.SetEdgeAngle(safe_float(geo['edgeangle']))
+            vtkfilter.SetFeatureAngle(safe_float(geo['featureangle']))
+            vtkfilter.SetNumberOfIterations(safe_int(geo['iterations']))
+            vtkfilter.SetRelaxationFactor(safe_float(geo['relaxation']))
+            vtkfilter.SetFeatureEdgeSmoothing(safe_int(geo['featureedgesmoothing']))
+            vtkfilter.SetBoundarySmoothing(safe_int(geo['boundarysmoothing']))
         elif filtertype == 'windowed_sinc':
-            vtkfilter.SetEdgeAngle(self.geometrydict[name]['edgeangle'])
-            vtkfilter.SetFeatureAngle(self.geometrydict[name]['featureangle'])
-            vtkfilter.SetNumberOfIterations(
-                self.geometrydict[name]['iterations'])
-            vtkfilter.SetPassBand(self.geometrydict[name]['passband'])
-
-            if not self.geometrydict[name]['featureedgesmoothing']:
-                vtkfilter.FeatureEdgeSmoothingOn()
-            else:
-                vtkfilter.FeatureEdgeSmoothingOff()
-
-            if self.geometrydict[name]['boundarysmoothing']:
-                vtkfilter.BoundarySmoothingOn()
-            else:
-                vtkfilter.BoundarySmoothingOff()
-
-            if self.geometrydict[name]['manifoldsmoothing']:
-                vtkfilter.NonManifoldSmoothingOn()
-            else:
-                vtkfilter.NonManifoldSmoothingOff()
-
-            if self.geometrydict[name]['normalize']:
-                vtkfilter.NormalizeCoordinatesOn()
-            else:
-                vtkfilter.NormalizeCoordinatesOff()
+            vtkfilter.SetEdgeAngle(safe_float(geo['edgeangle']))
+            vtkfilter.SetFeatureAngle(safe_float(geo['featureangle']))
+            vtkfilter.SetNumberOfIterations(safe_int(geo['iterations']))
+            vtkfilter.SetPassBand(safe_float(geo['passband']))
+            vtkfilter.SetFeatureEdgeSmoothing(safe_int(geo['featureedgesmoothing']))
+            vtkfilter.SetBoundarySmoothing(safe_int(geo['boundarysmoothing']))
+            vtkfilter.SetNonManifoldSmoothing(safe_int(geo['manifoldsmoothing']))
+            vtkfilter.SetNormalizeCoordinates(safe_int(geo['normalize']))
         elif filtertype == 'reverse_sense':
-            if self.geometrydict[name]['reversecells']:
-                vtkfilter.ReverseCellsOn()
-            else:
-                vtkfilter.ReverseCellsOff()
-            if self.geometrydict[name]['reversenormals']:
-                vtkfilter.ReverseNormalsOn()
-            else:
-                vtkfilter.ReverseCellsOff()
+            vtkfilter.SetReverseCells(safe_int(geo['reversecells']))
+            vtkfilter.SetReverseNormals(safe_int(geo['reversenormals']))
 
         vtkfilter.Update()
 
@@ -1462,11 +1357,13 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             self.geometrydict[name] = data
 
+        geo = self.geometrydict.get(name)
+
         # init filter
         if data is not None:
             filtertype = data['type']
         vtkfilter = FILTER_DICT[filtertype]()
-        self.geometrydict[name]['filter'] = vtkfilter
+        geo['filter'] = vtkfilter
 
         # set input data
         inputdata = self.get_input_data(selection_text)
@@ -1497,8 +1394,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
         # save references
-        self.geometrydict[name]['actor'] = actor
-        self.geometrydict[name]['mapper'] = mapper
+        geo['actor'] = actor
+        geo['mapper'] = mapper
 
         # Add to tree
         toplevel = QtWidgets.QTreeWidgetItem([name])
@@ -1521,18 +1418,15 @@ class VtkWidget(QtWidgets.QWidget):
 
     def get_input_data(self, name):
         """ based on the type of geometry, return the data """
-
-        if 'trianglefilter' in self.geometrydict[name]:
-            inputdata = self.geometrydict[name]['trianglefilter']
-        elif 'booleanoperation' in self.geometrydict[name]:
-            inputdata = self.geometrydict[name][
-                'booleanoperation']
-        elif 'reader' in self.geometrydict[name]:
-            inputdata = self.geometrydict[name][
-                'transformfilter']
-        elif 'filter' in self.geometrydict[name]:
-            inputdata = self.geometrydict[name]['filter']
-
+        geo = self.geometrydict.get(name)
+        if 'trianglefilter' in geo:
+            inputdata = geo['trianglefilter']
+        elif 'booleanoperation' in geo:
+            inputdata = geo['booleanoperation']
+        elif 'reader' in geo:
+            inputdata = geo['transformfilter']
+        elif 'filter' in geo:
+            inputdata = geo['filter']
         return inputdata
 
     def collect_toplevel_geometry(self):
@@ -1733,16 +1627,15 @@ class VtkWidget(QtWidgets.QWidget):
 
     def change_region_color(self, name, color):
         """ change the color of a region """
-        self.region_dict[name]['color'] = copy.deepcopy(color)
+        reg = self.region_dict.get(name)
+        reg['color'] = copy.deepcopy(color)
 
-        actor = self.region_dict[name]['actor']
-        actor.GetProperty().SetColor(
-            *self.region_dict[name]['color'].color_float)
+        actor = reg['actor']
+        actor.GetProperty().SetColor(*reg['color'].color_float)
 
         if 'clip_actor' in self.region_dict[name]:
-            actor = self.region_dict[name]['clip_actor']
-            actor.GetProperty().SetColor(
-                *self.region_dict[name]['color'].color_float)
+            actor = reg['clip_actor']
+            actor.GetProperty().SetColor(*reg['color'].color_float)
 
         self.render()
 
@@ -1774,16 +1667,16 @@ class VtkWidget(QtWidgets.QWidget):
 
     def change_region_visibility(self, name, visible):
         """ change the visibility of a region """
-
+        reg = self.region_dict.get(name)
         if visible and self.visual_props['regions']['visible']:
-            self.region_dict[name]['actor'].VisibilityOn()
-            if 'clip_actor' in self.region_dict[name]:
-                self.region_dict[name]['clip_actor'].VisibilityOn()
+            reg['actor'].VisibilityOn()
+            if 'clip_actor' in reg:
+                reg['clip_actor'].VisibilityOn()
         else:
-            self.region_dict[name]['actor'].VisibilityOff()
-            if 'clip_actor' in self.region_dict[name]:
-                self.region_dict[name]['clip_actor'].VisibilityOff()
-        self.region_dict[name]['visible'] = visible
+            reg['actor'].VisibilityOff()
+            if 'clip_actor' in reg:
+                reg['clip_actor'].VisibilityOff()
+        reg['visible'] = visible
 
         self.render()
 
