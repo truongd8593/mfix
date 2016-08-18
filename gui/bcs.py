@@ -380,20 +380,21 @@ class BCS(object):
     def bcs_check_region_in_use(self, name):
         # Should we allow any change of region type?  eg. xy plane -> xz plane?
         #  Probably not
-        return any(data.get('region')==name for data in self.ui.values())
+        return any(data.get('region')==name for data in self.bcs.values())
 
 
     def bcs_update_region(self, name, data):
-        for (i,bc) in self.ui.items():
+        for (i,bc) in self.bcs.items():
             if bc.get('region') == name:
                 self.bcs_set_region_keys(name, i, data)
 
 
     def bcs_change_region_name(self, old_name, new_name):
+        ui = self.ui.boundary_conditions
         for (key, val) in self.bcs.items():
             if val.get('region') == old_name:
                 self.bcs[key]['region'] = new_name
-                tw = self.ui.boundary_conditions.tablewidget_regions
+                tw = ui.tablewidget_regions
                 for i in range(tw.rowCount()):
                     data = tw.item(i,0).data(UserRole)
                     indices, names = data
@@ -953,15 +954,13 @@ class BCS(object):
 
 
 """
-
-
 #Solids-# (tab) - (Replace with phase name defined by the user)
 #    Enable Jackson-Johnson partial slip boundary
 # Disabled (0.0) for CARTESIAN_GRID = .TRUE.
 # Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
 # Disabled (0.0) for KT_TYPE = 'GHD_2007'
 # Sets keyword BC_JJ_PS(#)
-# DEFALUT value of 1.0 when not disabled
+# DEFAULT value of 1.0 when not disabled
 
 #    Select type of Jackson and Johnson BC:
 # Selection only available BC_JJ_PS(#) = 1.0
