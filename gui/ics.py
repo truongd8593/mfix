@@ -69,6 +69,13 @@ class ICS(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
+        # Not auto-registered with project manager
+        widget = ui.lineedit_ic_ep_s_args_IC_P
+        widget.key = 'ic_ep_s'
+        widget.args = ['IC', 'P']
+        widget.dtype = float
+        widget.value_updated.connect(self.handle_ics_volume_fraction)
+
 
     def ics_set_volume_fraction_limit(self):
         # Set ic_ep_g from ic_ep_s (issues/121)
@@ -87,23 +94,23 @@ class ICS(object):
         lim = max(0, 1.0 - s)
         lim = round(lim, 10) # avoid problem with 1 - 0.9 != 0.1
 
-        widget = ui.lineedit_keyword_ic_ep_s_args_IC_P
+        widget = ui.lineedit_ic_ep_s_args_IC_P
         widget.min = 0.0
         widget.max = lim
 
 
     def handle_ics_volume_fraction(self, widget, val, args):
-        # We may have been called before submit_change
-        if widget is None:
-            return
-        self.project.submit_change(widget, val, args)
         if not self.ics_current_indices:
             return
         IC0 = self.ics_current_indices[0]
         if not self.ics_current_solid:
             return
         P = self.ics_current_solid
-        s = sum(safe_float(self.project.get_value('ic_ep_s', default=0, args=[IC0, s]))
+        ui = self.ui.initial_conditions
+        key =  'ic_ep_s'
+        self.project.submit_change(widget, val, args)
+
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
                 for s in range(1, len(self.solids)+1))
         if s > 1.0:
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
@@ -350,14 +357,7 @@ class ICS(object):
 
         self.ics_current_tab = tab
         self.ics_current_solid = self.P = solid if tab==SOLIDS_TAB else None
-
-        #update tab contents
-        if tab==FLUID_TAB:
-            self.setup_ics_fluid_tab()
-        elif tab==SOLIDS_TAB:
-            self.setup_ics_solids_tab(self.ics_current_solid)
-        elif tab==SCALAR_TAB:
-            self.setup_ics_scalar_tab()
+        self.ics_setup_current_tab()
 
         # change stackedwidget contents
         self.animate_stacked_widget(
@@ -656,7 +656,6 @@ class ICS(object):
             val = self.project.get_value(key, args=[IC0, P, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
-            # register_widget ? TODO FIXME
             le.value_updated.connect(self.handle_ics_solids_mass_fraction)
             table.setCellWidget(row, 1, le)
         if species:
@@ -916,7 +915,7 @@ class ICS(object):
             return
 
         if not self.ics_current_indices: # No region selected
-            # TODO clear all widgets
+            # TODO clear all widgets (?)
             return
 
         ui = self.ui.initial_conditions
@@ -924,25 +923,28 @@ class ICS(object):
 
         # issues/121
         self.ics_set_volume_fraction_limit()
-        widget = ui.lineedit_keyword_ic_ep_s_args_IC_P
-        # Have to do this after project manager has registered widgets
-        widget.value_updated.disconnect()
-        widget.value_updated.connect(self.handle_ics_volume_fraction)
 
         # Generic!
         def get_widget(key):
-            widget = getattr(ui, 'lineedit_keyword_%s_args_IC_P' % key, None)
-            if widget:
-                return widget
-            widget = getattr(ui, 'lineedit_keyword_%s_args_IC' % key, None)
+            for pat in ('lineedit_keyword_%s_args_IC_P',
+                        'lineedit_keyword_%s_args_IC',
+                        'lineedit_%s_args_IC_P',
+                        'lineedit_%s_args_IC_P'):
+
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
             if not widget:
                 self.error('no widget for key %s' % key)
             return widget
 
+
         def setup_key_widget(key, default=None, enabled=True):
             for name in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_IC_P',
-                         'lineedit_keyword_%s_args_IC'):
+                         'lineedit_keyword_%s_args_IC',
+                         'lineedit_%s_args_IC_P',
+                         'lineedit_%s_args_IC'):
                 item = getattr(ui, name%key, None)
                 if item:
                     item.setEnabled(enabled)
