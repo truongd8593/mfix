@@ -432,10 +432,18 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
         self.context_menu = QtWidgets.QMenu
+        self.dtype = bool
 
     @property
     def value(self):
-        return bool(self.isChecked())
+        if self.dtype == int:
+            return int(self.isChecked())
+        elif self.dtype == float:
+            return float(self.isChecked())
+        elif self.dtype == bool:
+            return bool(self.isChecked())
+        else:
+            raise TypeError("Invalid dtype %s" % self.dtype)
 
     def updateValue(self, key, new_value, args=None):
         assert not isinstance(new_value, Keyword)  # value should not be keyword!
