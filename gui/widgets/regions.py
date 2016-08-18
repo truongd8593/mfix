@@ -146,9 +146,12 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
+    def reset_regions(self):
+        self.tablewidget_regions.value.clear()
+        self.parameter_key_map = {}
+
     def get_visibility_image(self, visible=True):
         return self.visibility_image[visible]
-
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -206,8 +209,9 @@ class RegionsWidget(QtWidgets.QWidget):
                 if self.check_region_in_use(name):
                     self.parent.message(text="Region %s is in use" % name)
                     return
-                data.pop(name)
+                deleted_region = data.pop(name)
                 self.vtkwidget.delete_region(name)
+                self.remove_from_parameter_map(name, deleted_region)
 
             self.tablewidget_regions.set_value(data)
             self.vtkwidget.render()
@@ -438,7 +442,6 @@ class RegionsWidget(QtWidgets.QWidget):
                                              self.parent.bcs_check_region_in_use))
                                              # any more places region can be used?
 
-
     def regions_to_str(self):
         """ convert regions data to a string for saving """
         data = {'order': list(self.tablewidget_regions.value.keys()),
@@ -545,9 +548,23 @@ class RegionsWidget(QtWidgets.QWidget):
     def __len__(self):
         return len(self.tablewidget_regions.value)
 
+    def get_value(self, name, key):
+        """given a region name and value key, return the value"""
+
+        data = self.tablewidget_regions.value.get(name)
+        # safe to assume key is always in data?
+        if data is None:
+            val = None
+        elif 'to' in key or 'from' in key or 'filter' in key:
+            item = key.split('_')
+            index = ['x', 'y', 'z'].index(item[1])
+            val = data[item[0]][index]
+        else:
+            val = data[key]
+        return val
+
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
-        data = self.tablewidget_regions.value
         name_key = ','.join([name, key])
 
         # new params
@@ -556,18 +573,7 @@ class RegionsWidget(QtWidgets.QWidget):
             new_params = new_value.get_used_parameters()
 
         # old params
-        old_value = None
-        if data:
-            if 'to' in key or 'from' in key:
-                item = key.split('_')
-                index = ['x', 'y', 'z'].index(item[1])
-                old_value = data[name][item[0]][index]
-            elif 'filter' in key:
-                item = key.split('_')
-                index = ['x', 'y', 'z'].index(item[1])
-                old_value = data[name][item[0]][index]
-            else:
-                old_value = data[name][key]
+        old_value = self.get_value(name, key)
 
         old_params = []
         if isinstance(old_value, Equation):
@@ -587,25 +593,28 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def update_parameters(self, params):
         """parameters have changed, update regions"""
-        data = self.tablewidget_regions.value
         for param in params:
             if param in self.parameter_key_map:
                 for var in self.parameter_key_map[param]:
                     name, key = var.split(',')
-                    if 'to' in key or 'from' in key:
-                        item = key.split('_')
-                        index = ['x', 'y', 'z'].index(item[1])
-                        val = data[name][item[0]][index]
-                    elif 'filter' in key:
-                        item = key.split('_')
-                        index = ['x', 'y', 'z'].index(item[1])
-                        val = data[name][item[0]][index]
-                    else:
-                        val = data[name][key]
-                    value = {key: val}
-                    self.region_value_changed(None, value, None, name=name,
-                                              update_param=False)
+                    self.region_value_changed(
+                        None, {key: self.get_value(name, key)}, None,
+                        name=name, update_param=False)
 
+    def remove_from_parameter_map(self, name, del_region):
+        """a region was deleted, make sure to remove from parameter map"""
+        for key, value in del_region.items():
+            name_key = ','.join([name, key])
+            if isinstance(value, list):
+                for xyz, item in zip(['x', 'y', 'z'], value):
+                    self._remove_key('_'.join([name_key, xyz]), item)
+            else:
+                self._remove_key(key, value)
 
-    def reset_regions(self):
-        self.tablewidget_regions.value.clear()
+    def _remove_key(self, name_key, value):
+        if not isinstance(value, Equation): return
+
+        for param in value.get_used_parameters():
+            self.parameter_key_map[param].remove(name_key)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
