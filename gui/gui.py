@@ -2037,7 +2037,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('chk_batchq_end', True)
 
     def get_runname(self, default='new_file'):
-        name = self.project.get_value('run_name', default=default)
+        name = str(self.project.get_value('run_name', default=default))
         for char in ('.', '"', "'", '/', '\\', ':'):
             name = name.replace(char, '_')
         return name
