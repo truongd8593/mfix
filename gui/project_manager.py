@@ -126,7 +126,7 @@ class ProjectManager(Project):
         # 'Parameters' are user-defined variables
         # TODO: methods to handle these ('is_param', etc)
         if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            self.gui.update_parameters([key.replace('length', 'max')])
+            self.gui.update_parameters([key.replace('length', 'max')]) #??  length==max-min?
 
 
     def args_match(self, args, target):
