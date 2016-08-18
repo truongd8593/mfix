@@ -1782,6 +1782,9 @@ class MfixGui(QtWidgets.QMainWindow,
             project_dir = self.get_project_dir()
             project_file = self.get_project_file()
 
+        if project_dir is None or project_file is None:
+            return
+
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
