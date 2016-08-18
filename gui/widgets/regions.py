@@ -143,7 +143,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 elif 'deviation_angle' in name:
                     widget.key = 'deviation_angle'
                     widget.dtype = float
-
+        self.error = self.parent.error
+        self.warning = self.warn = self.parent.warn
 
     def get_visibility_image(self, visible=True):
         return self.visibility_image[visible]
@@ -303,8 +304,11 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         if name is None:
             name = list(data.keys())[rows[-1]]
+        elif name not in data:
+            self.error("region %s not defined" % name)
+            return
         key = list(value.keys())[0]
-        row_data = data[name] # guaranteed to be present
+        row_data = data[name]
 
         if self.check_region_in_use(name):
             if key == 'type':
@@ -601,3 +605,7 @@ class RegionsWidget(QtWidgets.QWidget):
                     value = {key: val}
                     self.region_value_changed(None, value, None, name=name,
                                               update_param=False)
+
+
+    def reset_regions(self):
+        self.tablewidget_regions.value.clear()

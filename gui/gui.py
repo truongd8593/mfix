@@ -512,6 +512,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.reset_fluids()
         self.reset_solids()
+        self.ui.regions.reset_regions()
         self.reset_ics()
         self.reset_bcs()
 
