@@ -223,7 +223,8 @@ class BCS(object):
 
 
     def bcs_delete_regions(self):
-        tw = self.ui.boundary_conditions.tablewidget_regions
+        ui = self.ui.boundary_conditions
+        tw = ui.tablewidget_regions
         row = get_selected_row(tw)
         if row is None: # No selection
             return

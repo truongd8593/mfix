@@ -78,8 +78,8 @@ class ICS(object):
             return
         IC0 = self.ics_current_indices[0]
         P = self.ics_current_solid
+        ui = self.ui.initial_conditions
         key = 'ic_ep_s'
-        widget = self.ui.initial_conditions.lineedit_keyword_ic_ep_s_args_IC_P
 
         s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
                 for s in range(1, len(self.solids)+1) if s != P)
@@ -87,6 +87,7 @@ class ICS(object):
         lim = max(0, 1.0 - s)
         lim = round(lim, 10) # avoid problem with 1 - 0.9 != 0.1
 
+        widget = ui.lineedit_keyword_ic_ep_s_args_IC_P
         widget.min = 0.0
         widget.max = lim
 
@@ -214,7 +215,8 @@ class ICS(object):
 
 
     def ics_delete_regions(self):
-        tw = self.ui.initial_conditions.tablewidget_regions
+        ui = self.ui.initial_conditions
+        tw = ui.tablewidget_regions
         row = get_selected_row(tw)
         if row is None: # No selection
             return
@@ -392,10 +394,11 @@ class ICS(object):
             self.update_keyword(key, val, args=[idx])
 
     def ics_change_region_name(self, old_name, new_name):
+        ui = self.ui.initial_conditions
         for (key, val) in self.ics.items():
             if val.get('region') == old_name:
                 self.ics[key]['region'] = new_name
-                tw = self.ui.initial_conditions.tablewidget_regions
+                tw = ui.tablewidget_regions
                 for i in range(tw.rowCount()):
                     data = tw.item(i,0).data(UserRole)
                     indices, names = data
