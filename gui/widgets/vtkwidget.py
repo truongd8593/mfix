@@ -848,6 +848,8 @@ class VtkWidget(QtWidgets.QWidget):
                 value = widget.value
             elif isinstance(widget, QtWidgets.QCheckBox):
                 value = widget.isChecked()
+        else:
+            geo_data = self.geometrydict.get(name)
 
         if value is not None:
             self.update_parameter_map(value, name, key)
