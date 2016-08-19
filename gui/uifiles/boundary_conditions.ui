@@ -286,7 +286,7 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page_fluid">
            <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -824,7 +824,7 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
                 <number>5</number>
                </property>
                <item row="0" column="0" colspan="2">
-                <widget class="CheckBox" name="checkbox_keyword_bc_jj_ps_args_BC">
+                <widget class="CheckBox" name="checkbox_bc_jj_ps_args_BC">
                  <property name="text">
                   <string>Jackson-Johnson partial slip boundary</string>
                  </property>
@@ -1033,7 +1033,7 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="comboBox_2">
+                  <widget class="QComboBox" name="combobox_solids_energy_eq_type">
                    <item>
                     <property name="text">
                      <string>No-Flux (adiabatic)</string>
@@ -1072,68 +1072,68 @@ QPushButton:checked { font: bold; background-color: transparent;}</string>
                 </layout>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="label_10">
+                <widget class="QLabel" name="label_bc_tw_s">
                  <property name="text">
                   <string>Wall temperature</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="LineEdit" name="lineEdit_9"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_tw_s_args_BC_P"/>
                </item>
                <item row="1" column="2">
-                <widget class="QLabel" name="label_21">
+                <widget class="QLabel" name="label_bc_tw_s_units">
                  <property name="text">
                   <string>K</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_18">
+                <widget class="QLabel" name="label_bc_c_t_s">
                  <property name="text">
                   <string>Constant flux</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="LineEdit" name="lineEdit_10"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_c_t_s_args_BC_P"/>
                </item>
                <item row="2" column="2">
-                <widget class="QLabel" name="label_22">
+                <widget class="QLabel" name="label_bc_c_t_s_units">
                  <property name="text">
                   <string>TBD</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_19">
+                <widget class="QLabel" name="label_bc_hw_t_s">
                  <property name="text">
                   <string>Transfer coefficient</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="LineEdit" name="lineEdit_11"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_hw_t_s_args_BC_P"/>
                </item>
                <item row="3" column="2">
-                <widget class="QLabel" name="label_23">
+                <widget class="QLabel" name="label_bc_hw_t_s_units">
                  <property name="text">
                   <string>TBD</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_20">
+                <widget class="QLabel" name="label_bc_tw_s_2">
                  <property name="text">
                   <string>Free stream temp.</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="LineEdit" name="lineEdit_12"/>
+                <widget class="LineEdit" name="lineedit_keyword_bc_tw_s_2_args_BC_P"/>
                </item>
                <item row="4" column="2">
-                <widget class="QLabel" name="label_24">
+                <widget class="QLabel" name="label_bc_tw_s_2_units">
                  <property name="text">
                   <string>K</string>
                  </property>

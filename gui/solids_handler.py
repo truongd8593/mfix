@@ -332,6 +332,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
+        ui = self.ui.solids
         if not enabled:
             self.set_solids_density_model(CONSTANT)
             #ui.combobox_solids_density_model.setCurrentIndex(CONSTANT)
@@ -339,6 +340,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                                                 VARIABLE), enabled)
         self.update_solids_species_groupbox() # availability
 
+        # TODO integrate with BCs
+        #When solving solids species equations:
+        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
+        #    Set keyword BC_C_X_S(#,#,#) to 0.0
+        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
+        # getting this right is tricky - how about when we add phases & species?
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""

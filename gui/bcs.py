@@ -11,6 +11,8 @@ UserRole = QtCore.Qt.UserRole
 from widgets.regions_popup import RegionsPopup
 from widgets.base import LineEdit
 
+from project import Equation # used for default phi_w
+
 from tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, widget_iter)
 
@@ -80,10 +82,18 @@ class BCS(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
+        # Fluid
         ui.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
         ui.combobox_fluid_species_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_species_eq_type)
 
-        ui.checkbox_keyword_bc_jj_ps_args_BC.dtype = int
+        # Solid
+        ui.checkbox_bc_jj_ps_args_BC.dtype = int
+        ui.checkbox_bc_jj_ps_args_BC.clicked.connect(self.set_bc_jj_ps)
+        ui.combobox_bc_jj_ps_type.currentIndexChanged.connect(self.set_bc_jj_ps_type)
+        ui.combobox_solids_energy_eq_type.currentIndexChanged.connect(self.set_bcs_solids_energy_eq_type)
+
+        # Scalar
+
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
@@ -191,10 +201,7 @@ class BCS(object):
             if idx is None:
                 idx = self.bcs_find_index()
                 indices[i] = idx
-            self.bcs[idx] = {'region': region_name,
-                             'energy_eq_type': NO_FLUX,
-                             'species_eq_type': NO_FLUX,
-            } # set defaults for new regions
+            self.bcs[idx] = {'region': region_name}
 
             region_data = self.bcs_region_dict.get(region_name)
             if region_data is None: # ?
@@ -358,14 +365,7 @@ class BCS(object):
 
         self.bcs_current_tab = tab
         self.bcs_current_solid = self.P = solid if tab==SOLIDS_TAB else None
-
-        #update tab contents
-        if tab==FLUID_TAB:
-            self.setup_bcs_fluid_tab()
-        elif tab==SOLIDS_TAB:
-            self.setup_bcs_solids_tab(self.bcs_current_solid)
-        elif tab==SCALAR_TAB:
-            self.setup_bcs_scalar_tab()
+        self.bcs_setup_current_tab()
 
         # change stackedwidget contents
         self.animate_stacked_widget(
@@ -537,7 +537,6 @@ class BCS(object):
             self.setup_bcs_scalar_tab()
 
 
-
     def bcs_set_volume_fraction_limit(self):
         pass
 
@@ -661,7 +660,6 @@ class BCS(object):
             return
 
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['energy_eq_type'] = eq_type
             for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
                 if val is True:
                     pass # 'required'
@@ -713,14 +711,93 @@ class BCS(object):
             self.error("Invalid species_eq type %s" % eq_type)
 
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['species_eq_type'] = eq_type
             for (key, val) in (('bc_hw_x_g', hw), ('bc_c_x_g', c), ('bc_xw_g', xw)):
                 if val is True:
                     pass # 'required'
                 else:
                     self.update_keyword(key, val, args=[BC])
-
         self.setup_bcs_fluid_tab()
+
+
+    def set_bc_jj_ps(self, val):
+        if not self.bcs_current_indices:
+            return
+        key = 'bc_jj_ps'
+        for BC in self.bcs_current_indices:
+            self.update_keyword(key, val, args=BC)
+        self.setup_bcs_solids_tab(self.bcs_current_solid)
+
+    def set_bcs_solids_energy_eq_type(self, eq_type):
+        if not self.bcs_current_indices:
+            return
+        P = self.bcs_current_solid
+        if P is None:
+            return
+        # Available selections:
+        #  No-Flux (adiabatic) [DEFAULT]
+        if eq_type == NO_FLUX:
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            hw = 0.0
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            c = 0.0
+            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+            tw = 0.0
+        #  Specified Temperature
+        elif eq_type == SPECIFIED_TEMPERATURE:
+            #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+            hw = None
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            c = 0.0
+            #    Requires BC_TW_S(#,#)
+            tw = True
+        #  Specified Flux
+        elif eq_type == SPECIFIED_FLUX:
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            hw = 0.0
+            #    Requires BC_C_T_S(#)
+            c = True
+            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+            tw = None
+        #  Convective Flux
+        elif eq_type == CONVECTIVE_FLUX:
+            #    Requires BC_HW_T_S(#,#)
+            hw = True
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            c = 0.0
+            #    Requires BC_TW_S(#,#)
+            tw = True
+        else:
+            self.error("Invalid energy_eq type %s" % eq_type)
+            return
+
+        for BC in self.bcs_current_indices:
+            for (key, val) in (('bc_hw_t_s', hw), ('bc_c_t_s', c), ('bc_tw_s', tw)):
+                if val is True:
+                    pass # 'required'
+                else:
+                    self.update_keyword(key, val, args=[BC,P])
+
+        self.setup_bcs_solids_tab(self.bcs_current_solid)
+
+
+    def set_bc_jj_ps_type(self, val):
+                # Available selections:
+        #  Default Jackson-Johnson BC [DEFAULT]
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Variable specularity coefficient
+        #    Sets keyword BC_JJ_M to .TRUE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Jenkins small frictional boundary
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .TRUE.
+        if val < 0 or val > 2:
+            self.warn("Invalid bc_jj_ps_type % val")
+            return
+        jenkins, bc_jj_m = int(val/2), val%2
+        self.update_keyword('bc_jj_m', bool(bc_jj_m))
+        self.update_keyword('jenkins', bool(jenkins))
+        self.setup_bcs_solids_tab(self.bcs_current_solid)
 
 
     def setup_bcs_fluid_tab(self):
@@ -744,10 +821,12 @@ class BCS(object):
         # as generic as possible - see comments in ics.py
 
         def get_widget(key):
-            widget = getattr(ui, 'lineedit_keyword_%s_args_BC' % key, None)
-            if not widget:
-                self.error('no widget for key %s' % key)
-            return widget
+            for pat in ('lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+            self.error('no widget for key %s' % key)
 
         def setup_key_widget(key, default=None, enabled=True, suffix=''):
             for name in ('label_%s', 'label_%s_units',
@@ -755,12 +834,7 @@ class BCS(object):
                 item = getattr(ui, name%(key+suffix), None)
                 if item:
                     item.setEnabled(enabled)
-                elif not name.startswith('label'):
-                    self.error("no widget for " + (name%(key+suffix)))
-                    return
-            #if not enabled:
-            #    get_widget(key+suffix).setText('') # Is this a good idea?
-            #    return
+
             val = self.project.get_value(key, args=[BC0])
             if val is None:
                 val = default
@@ -803,26 +877,21 @@ class BCS(object):
         ui.groupbox_fluid_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            eq_type = self.bcs[BC0].get('energy_eq_type')
-             # If not in dict, attempt to guess it based on keywords
-            if eq_type is None:
-                hw = self.project.get_value('bc_hw_t_g', args=[BC0])
-                c = self.project.get_value('bc_c_t_g', args=[BC0])
-                tw = self.project.get_value('bc_tw_g', args=[BC0])
-                if hw==0.0 and c==0.0 and tw is None:
-                    eq_type = NO_FLUX
-                elif hw is None and c==0.0 and tw is not None:
-                    eq_type = SPECIFIED_TEMPERATURE
-                elif hw==0.0 and c!=0.0 and tw is None:
-                    eq_type = SPECIFIED_FLUX
-                elif hw is not None and c==0.0 and tw is not None:
-                    eq_type = CONVECTIVE_FLUX
-                else:
-                    self.error("Cannot determine type for energy boundary equation %s" % BC0)
-            if eq_type is not None:
-                ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
+            hw = self.project.get_value('bc_hw_t_g', args=[BC0])
+            c = self.project.get_value('bc_c_t_g', args=[BC0])
+            tw = self.project.get_value('bc_tw_g', args=[BC0])
+            if hw==0.0 and c==0.0 and tw is None:
+                eq_type = NO_FLUX
+            elif hw is None and c==0.0 and tw is not None:
+                eq_type = SPECIFIED_TEMPERATURE
+            elif hw==0.0 and c!=0.0 and tw is None:
+                eq_type = SPECIFIED_FLUX
+            elif hw is not None and c==0.0 and tw is not None:
+                eq_type = CONVECTIVE_FLUX
             else:
+                self.error("Cannot determine type for energy boundary equation %s" % BC0)
                 eq_type = NO_FLUX # default
+            ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
 
         if energy_eq:
             #Define wall temperature
@@ -948,144 +1017,303 @@ class BCS(object):
 
 
     def setup_bcs_solids_tab(self, P):
-        pass
+        #Solids-# (tab) - (Replace with phase name defined by the user)
+        # Note, solids phases are numbered 1-N
+        self.bcs_current_solid = self.P = P
+        if P is None: # Nothing to do
+            return
+
+        if not self.bcs_current_indices: # No region selected
+            # TODO clear all widgets (?)
+            return
+
+        ui = self.ui.boundary_conditions
+        BC0 = self.bcs_current_indices[0]
+
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC_P',
+                        'lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC_P',
+                        'lineedit_%s_args_BC',
+                        'lineedit_keyword_%s',
+                        'lineedit_%s'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for name in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC_P',
+                         'lineedit_keyword_%s_args_BC',
+                         'lineedit_%s_args_BC_P',
+                         'lineedit_%s_args_BC',
+                         'lineedit_keyword_%s',
+                         'lineedit_%s'):
+                item = getattr(ui, name%(key+suffix), None)
+                if item:
+                    item.setEnabled(enabled)
+
+            no_p_keys =  () # use keyword_args db here
+            args = [BC0] if key in no_p_keys else [BC0,P]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for BC in self.ics_current_indices:
+                self.update_keyword(key, val, args=[BC] if key in no_p_keys
+                                    else [BC,P])
+            get_widget(key+suffix).updateValue(key, val, args=args)
+
+
+        #    Enable Jackson-Johnson partial slip boundary
+        # Disabled (0.0) for CARTESIAN_GRID = .TRUE.
+        # Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
+        # Disabled (0.0) for KT_TYPE = 'GHD_2007'
+        # Sets keyword BC_JJ_PS(#)
+        # DEFAULT value of 1.0 when not disabled
+        #
+        # Note, according to doc it's an int, not float
+        cartesian_grid = bool(self.project.get_value('cartesian_grid', default=False))
+        kt_type = self.project.get_value('kt_type')
+        enabled = not cartesian_grid and kt_type not in ('ALGEBRAIC', 'GHD_2007')
+        key = 'bc_jj_ps'
+        default = 1 if enabled else 0
+        widget = ui.checkbox_bc_jj_ps_args_BC
+        val = self.project.get_value(key, default, args=BC0) if enabled else 0
+        if val and not enabled:
+            val = 0
+            for BC in self.bcs_current_indices:
+                self.update_keyword('bc_jj_ps', 0, args=[BC])
+        widget.setChecked(val)
+        widget.setEnabled(enabled)
+
+        #    Select type of Jackson and Johnson BC:
+        # Selection only available BC_JJ_PS(#) = 1.0
+        bc_jj_ps = self.project.get_value('bc_jj_ps', args=BC0)
+        enabled = (bc_jj_ps==1)
+        for widget in (ui.label_bc_jj_ps_type, ui.combobox_bc_jj_ps_type):
+            widget.setEnabled(enabled)
+
+        # Available selections:
+        #  Default Jackson-Johnson BC [DEFAULT]
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Variable specularity coefficient
+        #    Sets keyword BC_JJ_M to .TRUE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Jenkins small frictional boundary
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .TRUE.
+        bc_jj_m = self.project.get_value('bc_jj_m', default=False)
+        jenkins = self.project.get_value('jenkins', default=False)
+        val = 2*jenkins + bc_jj_m
+        if val > 2:
+            self.warn("boundary condition %s: invalid combination of bc_jj_m=%s, jenkins=%s" %
+                      (BC0, bc_jj_m, jenkins))
+        else:
+            widget.setCurrentIndex(val)
+
+        #Define restitution coefficient
+        # Specification only available with BC_JJ_PS(#) = 1.0
+        # Sets keyword E_W
+        # DEFAULT value of 1.0
+        # Required when available # TODO implement 'required'
+        enabled = (bc_jj_ps==1)
+        key = 'e_w'
+        default = 1.0
+        setup_key_widget(key, default, enabled)
+
+        #Define specularity coefficient
+        # Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
+        # Sets keyword PHIP
+        # DEFAULT value of 0.6
+        # Required when available
+        jenkins = self.project.get_value('jenkins', default=False)
+        enabled = bc_jj_ps==1 and jenkins==False
+        key = 'phip'
+        default = 0.6
+        setup_key_widget(key, default, enabled)
+
+        #Define specularity coefficient at zero slip
+        # Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
+        # Sets keyword PHIP0
+        # DEFAULT -blank
+        # Optional when available
+        bc_jj_m = self.project.get_value('bc_jj_m')
+        enabled = bc_jj_ps==1 and bc_jj_m
+        key = 'phip0'
+        default = None
+        setup_key_widget(key, default, enabled)
+
+        #Define angle of internal friction
+        # Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE. FRICTION_MODEL=SRIVASTAVA) # ??? or ?
+        friction_model = self.project.get_value('friction_model')
+        enabled = (bc_jj_ps==1) and (jenkins or friction_model=='SRIVASTAVA') #? correct reading of srs?
+        # DEFAULT value of 11.31 = atan(0.2) * (180/pi)
+        default = Equation('atan(0.2) * (180/pi)') # 11.31
+        # Sets keyword PHI_W # ?
+        key = 'phi_w'
+        # Required when available
+        setup_key_widget(key, default, enabled)
+
+        #Define transfer coefficient
+        # Specification only available with PSW
+        # Sets keyword BC_HW_S(#,#)
+        # DEFAULT value of 0.0
+        enabled = (bc_type=='PSW')
+        key = 'bc_hw_s'
+        default = 0.0 if enabled else None
+        setup_key_widget(key, default, enabled)
+
+        #Define Wall U-velocity
+        # Specification only available with PSW or BC_JJ_PS(#) = 1.0
+        # Sets keyword BC_UW_S(#,#)
+        # DEFAULT value of 0.0
+        #
+        #Define Wall V-velocity
+        # Specification only available with PSW or BC_JJ_PS(#) = 1.0
+        # Sets keyword BC_VW_S(#,#)
+        # DEFAULT value of 0.0
+        #
+        #Define Wall W-velocity
+        # Specification only available with PSW or BC_JJ_PS(#) = 1.0
+        # Sets keyword BC_WW_S(#,#)
+        # DEFAULT value of 0.0
+        enabled = (bc_type=='PSW') or (bc_jj_ps==1)
+        default = 0 if enabled else None
+        for c in 'uvw':
+            key = 'bc_%sw_s' % c
+            setup_key_widget(key, default, enabled)
+
+        #Select energy equation boundary type:
+        # Selection only available when solving energy equations
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        enabled = bool(energy_eq)
+        ui.groupbox_solids_energy_eq.setEnabled(enabled)
+        eq_type = None
+        if enabled:
+            hw = self.project.get_value('bc_hw_t_s', args=[BC0,P])
+            c =  self.project.get_value('bc_c_t_s', args=[BC0,P])
+            tw = self.project.get_value('bc_tw_s', args=[BC0,P])
+            # Available selections:
+            #  No-Flux (adiabatic) [DEFAULT]
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+            if hw==0.0 and c==0.0 and tw==None:
+                eq_type = NO_FLUX
+            #  Specified Temperature
+            #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            #    Requires BC_TW_S(#,#)
+            elif hw is None and c==0.0 and tw is not None:
+                eq_type = SPECIFIED_TEMPERATURE
+            #  Specified Flux
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            #    Requires BC_C_T_S(#)
+            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+            elif hw==0.0 and c is not None and tw is None:
+                eq_type = SPECIFIED_FLUX
+            #  Convective Flux
+            #    Requires BC_HW_T_S(#,#)
+            #    Sets keyword BC_C_T_S(#,#) to 0.0
+            #    Requires BC_TW_S(#,#)
+            elif hw is not None and c==0.0 and tw is None:
+                eq_type = CONVECTIVE_FLUX
+            else:
+                self.error("Cannot determine type for energy boundary equation %s" % BC0)
+                eq_type = NO_FLUX # default
+            ui.combobox_solids_energy_eq_type.setCurrentIndex(eq_type)
+
+        if energy_eq:
+            #Define wall temperature
+            # Specification only available with 'Specified Temperature' BC type
+            # Sets keyword BC_TW_S(#,#)
+            # DEFAULT value of 293.15
+            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+            key = 'bc_tw_s'
+            default = 293.15 if enabled else None
+            setup_key_widget(key, default, enabled)
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
+            else:
+                ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
+
+            #Define constant flux
+            # Specification only available with 'Specified Flux' BC type
+            # Sets keyword BC_C_T_S(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_FLUX)
+            key = 'bc_c_t_s'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
+
+            #Define transfer coefficient
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_HW_T_S(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_hw_t_s'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
+
+            #Define free stream temperature
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_TW_S(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_tw_s'
+            default = 0.0 if enabled else None
+            setup_key_widget(key, default, enabled, suffix='_2')
+            # Hack to prevent dup. display
+            if enabled:
+                ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
+            else:
+                ui.lineedit_keyword_bc_tw_s_2_args_BC_P.setText('')
+
+
+        #Select granular energy equation boundary type:
+        # Selection only available with BC_JJ_PS(#)=0.0 and KT_TYPE /= 'ALGEBRAIC'
+        # Available selections:
+        #  No-Flux [DEFAULT]
+        #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+        #    Sets keyword BC_C_THETA_M (#,#) to 0.0
+        #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+        #  Specified Temperature
+        #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
+        #    Sets keyword BC_C_THETA_M(#,#) to 0.0
+        #    Requires BC_THETAW_M(#,#)
+        #  Specified Flux
+        #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+        #    Requires BC_C_THETA_M(#)
+        #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+
+        #Define granular temperature
+        # Specification only available with 'Specified Temperature' BC type
+        # Sets keyword BC_THETAW_M(#,#)
+        # DEFAULT value of 0.0
+
+        #Define constant flux
+        # Specification only available with 'Specified Flux' BC type
+        # Sets keyword BC_C_THETA_M(#,#)
+        # DEFAULT value of 0.0
+
+        #When solving solids species equations:
+        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
+        #    Set keyword BC_C_X_S(#,#,#) to 0.0
+        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
+
 
     def setup_bcs_scalar_tab(self):
         pass
 
-
 """
-#Solids-# (tab) - (Replace with phase name defined by the user)
-#    Enable Jackson-Johnson partial slip boundary
-# Disabled (0.0) for CARTESIAN_GRID = .TRUE.
-# Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
-# Disabled (0.0) for KT_TYPE = 'GHD_2007'
-# Sets keyword BC_JJ_PS(#)
-# DEFAULT value of 1.0 when not disabled
-
-#    Select type of Jackson and Johnson BC:
-# Selection only available BC_JJ_PS(#) = 1.0
-# Available selections:
-#  Default Jackson-Johnson BC [DEFAULT]
-#    Sets keyword BC_JJ_M to .FALSE.
-#    Sets keyword JENKINS to .FALSE.
-#  Variable specularity coefficient
-#    Sets keyword BC_JJ_M to .TRUE.
-#    Sets keyword JENKINS to .FALSE.
-#  Jenkins small frictional boundary
-#    Sets keyword BC_JJ_M to .FALSE.
-#    Sets keyword JENKINS to .TRUE.
-
-Define restitution coefficient
-# Specification only available with BC_JJ_PS(#) = 1.0
-# Sets keyword E_W
-# DEFAULT value of 1.0
-# Required when available
-
-Define specularity coefficient
-# Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
-# Sets keyword PHIP
-# DEFAULT value of 0.6
-# Required when available
-
-Define specularity coefficient at zero slip
-# Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
-# Sets keyword PHIP0
-# DEFAULT -blank
-# Optional when available
-
-Define angle of internal friction
-# Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE. FRICTION_MODEL=SRIVASTAVA)
-# DEFAULT value of 11.31 = atan(0.2) * (180/pi)
-# Sets keyword PHI_W # ?
-# Required when available
-
-Define transfer coefficient
-# Specification only available with PSW
-# Sets keyword BC_HW_S(#,#)
-# DEFAULT value of 0.0
-
-Define Wall U-velocity
-# Specification only available with PSW or BC_JJ_PS(#) = 1.0
-# Sets keyword BC_UW_S(#,#)
-# DEFAULT value of 0.0
-
-Define Wall V-velocity
-# Specification only available with PSW or BC_JJ_PS(#) = 1.0
-# Sets keyword BC_VW_S(#,#)
-# DEFAULT value of 0.0
-
-Define Wall W-velocity
-# Specification only available with PSW or BC_JJ_PS(#) = 1.0
-# Sets keyword BC_WW_S(#,#)
-# DEFAULT value of 0.0
-
-Select energy equation boundary type:
-# Selection only available when solving energy equations
-# Available selections:
-#  No-Flux (adiabatic) [DEFAULT]
-#    Sets keyword BC_HW_T_S(#,#) to 0.0
-#    Sets keyword BC_C_T_S(#,#) to 0.0
-#    Sets keyword BC_TW_S(#,#) to UNDEFINED
-#  Specified Temperature
-#    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
-#    Sets keyword BC_C_T_S(#,#) to 0.0
-#    Requires BC_TW_S(#,#)
-#  Specified Flux
-#    Sets keyword BC_HW_T_S(#,#) to 0.0
-#    Requires BC_C_T_S(#)
-#    Sets keyword BC_TW_S(#,#) to UNDEFINED
-#  Convective Flux
-#    Requires BC_HW_T_S(#,#)
-#    Sets keyword BC_C_T_S(#,#) to 0.0
-#    Requires BC_TW_S(#,#)
-Define wall temperature
-# Specification only available with 'Specified Temperature' BC type
-# Sets keyword BC_TW_S(#,#)
-# DEFAULT value of 293.15
-Define constant flux
-# Specification only available with 'Specified Flux' BC type
-# Sets keyword BC_C_T_S(#,#)
-# DEFAULT value of 0.0
-Define transfer coefficient
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_HW_T_S(#,#)
-# DEFAULT value of 0.0
-Define free stream temperature
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_TW_S(#,#)
-# DEFAULT value of 0.0
-Select granular energy equation boundary type:
-# Selection only available with BC_JJ_PS(#)=0.0 and KT_TYPE /= 'ALGEBRAIC'
-# Available selections:
-#  No-Flux [DEFAULT]
-#    Sets keyword BC_HW_THETA_M(#,#) to 0.0
-#    Sets keyword BC_C_THETA_M (#,#) to 0.0
-#    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
-#  Specified Temperature
-#    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
-#    Sets keyword BC_C_THETA_M(#,#) to 0.0
-#    Requires BC_THETAW_M(#,#)
-#  Specified Flux
-#    Sets keyword BC_HW_THETA_M(#,#) to 0.0
-#    Requires BC_C_THETA_M(#)
-#    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
-
-Define granular temperature
-# Specification only available with 'Specified Temperature' BC type
-# Sets keyword BC_THETAW_M(#,#)
-# DEFAULT value of 0.0
-
-Define constant flux
-# Specification only available with 'Specified Flux' BC type
-# Sets keyword BC_C_THETA_M(#,#)
-# DEFAULT value of 0.0
-
-When solving solids species equations:
-#    Set keyword BC_HW_X_S(#,#,#) to 0.0
-#    Set keyword BC_C_X_S(#,#,#) to 0.0
-#    Set keyword BC_XW_S(#,#,#) to UNDEFINED
-
 Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
 
 Scalar (tab) - Tab only available if scalar equations are solved
