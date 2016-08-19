@@ -1016,7 +1016,7 @@ class ICS(object):
         # Some of the KT_TYPES also include a mass unit (kg) -
         # but the default model (Lun) will have units of m^s/sec^2
         solids_model = self.project.get_value('solids_model', args=[P])
-        kt_type = self.project.get_value('kt_type')
+        kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
         enabled = ( (solids_model=='TFM' and kt_type != 'ALGEBRAIC')
                     or solids_model=='DEM'
                     or solids_model=='PIC')

@@ -36,7 +36,7 @@ class SolidsTFM(object):
         #    item.setEnabled(enabled)
 
         # SRS p18 - enable/disable menu items in viscous stress model
-        kt_type = self.project.get_value('kt_type')
+        kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
         cb = ui.combobox_kt_type
         if kt_type:
             if kt_type not in kt_types:
