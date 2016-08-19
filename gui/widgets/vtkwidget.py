@@ -1,23 +1,25 @@
-# VTK widget
+"""
+This is the vtk widget. It handles displaying the 3D graphics in the GUI as
+well as a simple geometry creation tool and region selection.
+"""
 from __future__ import print_function, absolute_import, unicode_literals, division
 import os
-import shutil
 import copy
 import logging
 from functools import partial
 import numpy as np
 from qtpy import QtCore, QtGui, QtWidgets
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 # VTK imports
 VTK_AVAILABLE = True
 try:
     import vtk
-    log.info('VTK version: %s' % vtk.vtkVersion.GetVTKVersion())
+    LOG.info('VTK version: %s' % vtk.vtkVersion.GetVTKVersion())
     VTK_MAJOR_VERSION = vtk.VTK_MAJOR_VERSION
 except ImportError:
     VTK_AVAILABLE = False
-    log.info("can't import vtk")
+    LOG.info("can't import vtk")
 try:
     # Try Qt 5.x
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -27,7 +29,7 @@ except ImportError:
         from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
     except ImportError:
         VTK_AVAILABLE = False
-        log.info("Can't import QVTKRenderWindowInteractor ")
+        LOG.info("Can't import QVTKRenderWindowInteractor ")
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
@@ -39,68 +41,77 @@ from widgets.reactor_popup import ReactorPopUp
 from project import Equation, ExtendedJSON
 from widgets.vtk_constants import *
 
-gui = None
+GUI = None
 
 
-def safe_float(x):
+def safe_float(value):
+    """try to convert the value to a float, if ValueError, send error to gui
+    and rturn 0"""
     try:
-        return float(x)
-    except ValueError as e:
-        if gui:
-            gui.error(str(e))
+        return float(value)
+    except ValueError as error:
+        if GUI:
+            GUI.error(str(error))
         else:
-            log.error(str(e))
+            LOG.error(str(error))
         return 0.0
 
-def safe_int(x):
+
+def safe_int(value):
+    """try to convert the value to a int, if ValueError, send error to gui
+    and rturn 0"""
     try:
-        return int(x)
-    except ValueError as e:
-        if gui:
-            gui.error(str(e))
+        return int(value)
+    except ValueError as error:
+        if GUI:
+            GUI.error(str(error))
         else:
-            log.error(e)
+            LOG.error(error)
         return 0
 
 
-def clean_geo_dict(d):
+def clean_geo_dict(dirty_dict):
+    """clean the geometry dictionary so it can be saved"""
     clean_dict = {}
-    for geo, geo_dict in d.items():
-        clean_dict[geo] = {}
+    for geo, geo_dict in dirty_dict.items():
+        geo_dict = clean_dict[geo] = {}
         geo_type = None
         if 'geo_type' in geo_dict:
             geo_type = geo_dict['geo_type']
-        clean_dict[geo]['geo_type'] = geo_type
+        geo_dict['geo_type'] = geo_type
         for key, value in geo_dict.items():
             # filter out vtk objects/default values
             if not isinstance(value, vtk.vtkObject) and (isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]):
-                clean_dict[geo][key] = value
+                geo_dict[key] = value
     return clean_dict
 
-def remove_vtk_objects(d):
+
+def remove_vtk_objects(dirty_dict):
+    """given a dictionary, remove vtkObjects from it"""
     clean_dict = {}
-    for key, value in d.items():
+    for key, value in dirty_dict.items():
         if not isinstance(value, vtk.vtkObject):
             clean_dict[key] = value
-
     return clean_dict
 
-def clean_visual_dict(d):
+
+def clean_visual_dict(dirty_dict):
+    """remove qcolor objects from visual dict and save the rgb values"""
     clean_dict = {}
-    for geo, geo_dict in d.items():
-        clean_dict[geo] = {}
+    for geo, geo_dict in dirty_dict.items():
+        clean_geo = clean_dict[geo] = {}
         for key, value in geo_dict.items():
             if key in ['color', 'edge']:
-                clean_dict[geo][key] = d[geo][key].getRgb()
+                clean_geo[key] = geo_dict[key].getRgb()
             else:
-                clean_dict[geo][key] = d[geo][key]
+                clean_geo[key] = geo_dict[key]
 
     return clean_dict
 
 
 def is_stl_ascii(fname):
+    """see if the stl file is ASCII by checkign the first line for solid"""
     with open(fname, 'rb') as stlFile:
-        # Check first line if ASCII, should start with "solid"
         try:
             solid = stlFile.readline().strip().lower().startswith(b'solid')
         except:
@@ -109,9 +120,7 @@ def is_stl_ascii(fname):
 
 
 def purge_multi_solids(fname):
-    """
-    Remove multiple solids from an stl file, only works with ascii
-    """
+    """Remove multiple solids from an stl file, only works with ascii"""
     # if it already ends in .onesolid.stl, assume cleaned
     if fname.endswith('.onesolid.stl'):
         return fname
@@ -129,7 +138,7 @@ def purge_multi_solids(fname):
                     multi_solid += 1
             output.write('endsolid\n')
     if multi_solid > 2:
-        log.warn('the stl file: %s has multiple solids, removing' % fname)
+        LOG.warn('the stl file: %s has multiple solids, removing' % fname)
         return newfile
     else:
         os.remove(newfile)
@@ -137,57 +146,61 @@ def purge_multi_solids(fname):
 
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
-
+    """custom vtkInteractorStyleTrackballCamera to highlight selected
+    objects"""
     def __init__(self, parent=None):
         self.AddObserver("LeftButtonPressEvent", self.left_button_press_event)
 
-        self.LastPickedActor = None
-        self.LastPickedProperty = vtk.vtkProperty()
+        self.last_picked_actor = None
+        self.last_picked_property = vtk.vtkProperty()
 
     def left_button_press_event(self, obj, event):
+        """on a left mouse press event, see if there is an actor and highlight
+        it"""
         clickPos = self.GetInteractor().GetEventPosition()
 
         picker = vtk.vtkPropPicker()
         picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
 
         # get the new actor
-        self.NewPickedActor = picker.GetActor()
+        self.new_picked_actor = picker.GetActor()
 
         # If something was selected
-        if self.NewPickedActor:
+        if self.new_picked_actor:
             # If we picked something before, reset its property
-            if self.LastPickedActor:
-                self.LastPickedActor.GetProperty().DeepCopy(
-                    self.LastPickedProperty)
+            if self.last_picked_actor:
+                self.last_picked_actor.GetProperty().DeepCopy(
+                    self.last_picked_property)
 
             # Save the property of the picked actor so that we can
             # restore it next time
-            self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+            self.last_picked_property.DeepCopy(self.new_picked_actor.GetProperty())
             # Highlight the picked actor by changing its properties
-            self.NewPickedActor.GetProperty().SetColor(255/255.0, 140/255.0, 0)
-            self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-            self.NewPickedActor.GetProperty().SetSpecular(0.0)
+            self.new_picked_actor.GetProperty().SetColor(255/255.0, 140/255.0, 0)
+            self.new_picked_actor.GetProperty().SetDiffuse(1.0)
+            self.new_picked_actor.GetProperty().SetSpecular(0.0)
 
             # save the last picked actor
-            self.LastPickedActor = self.NewPickedActor
+            self.last_picked_actor = self.new_picked_actor
 
         # clear selection
-        elif self.LastPickedActor:
-            self.LastPickedActor.GetProperty().DeepCopy(
-                self.LastPickedProperty)
-            self.LastPickedActor = None
+        elif self.last_picked_actor:
+            self.last_picked_actor.GetProperty().DeepCopy(
+                self.last_picked_property)
+            self.last_picked_actor = None
 
         self.OnLeftButtonDown()
         return
 
 
 class VtkWidget(QtWidgets.QWidget):
+    """the vtk widget"""
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, project, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
-        global gui
-        gui = parent
+        global GUI
+        GUI = parent
 
         self.project = project
         self.parent = parent
@@ -306,6 +319,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.__connect_events()
         self.__add_tool_buttons()
+        self.__setup_wizards()
 
     # --- setup ---
     def __connect_events(self):
@@ -326,7 +340,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.ui.geometry.toolbutton_add_geometry.setMenu(
             self.add_geometry_menu)
 
-        action = QtWidgets.QAction('STL File',  self.add_geometry_menu)
+        action = QtWidgets.QAction('STL File', self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
         self.add_geometry_menu.addAction(action)
 
@@ -343,23 +357,6 @@ class VtkWidget(QtWidgets.QWidget):
             action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
             action.triggered.connect(partial(self.add_parametric, paramtype=geo))
             self.add_geometry_menu.addAction(action)
-
-        # --- wizards ---
-        wizard_menu = QtWidgets.QMenu('wizards', self)
-
-        action = QtWidgets.QAction('distributed', wizard_menu)
-        action.triggered.connect(self.distributed_wizard)
-        wizard_menu.addAction(action)
-
-        action = QtWidgets.QAction('cyclone', wizard_menu)
-        action.triggered.connect(self.cyclone_wizard)
-        wizard_menu.addAction(action)
-
-        action = QtWidgets.QAction('reactor', wizard_menu)
-        action.triggered.connect(self.reactor_wizard)
-        wizard_menu.addAction(action)
-
-        self.ui.geometry.toolbutton_wizard.setMenu(wizard_menu)
 
         # --- filter button ---
         self.add_filter_menu = QtWidgets.QMenu(self)
@@ -400,7 +397,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # connect mesher
         self.ui.mesh.combobox_mesher.currentIndexChanged.connect(
-                    self.change_mesher_options)
+            self.change_mesher_options)
 
         self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
         self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
@@ -447,7 +444,7 @@ class VtkWidget(QtWidgets.QWidget):
                                  'Regions', ]):
             geo_name = geo
             geo = geo.lower().replace(' ', '_')
-            btns=self.visual_btns[geo]={}
+            btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton()
             toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
@@ -456,7 +453,7 @@ class VtkWidget(QtWidgets.QWidget):
             toolbutton.setAutoRaise(True)
             toolbutton.setIcon(get_icon('visibility.png'))
             layout.addWidget(toolbutton, i, 0)
-            btns['visible']=toolbutton
+            btns['visible'] = toolbutton
 
             # style
             combobox = QtWidgets.QComboBox()
@@ -466,12 +463,12 @@ class VtkWidget(QtWidgets.QWidget):
             btns['rep'] = combobox
 
             # color
-            if not geo=='regions':
+            if not geo == 'regions':
                 toolbutton = QtWidgets.QToolButton()
                 toolbutton.pressed.connect(partial(self.change_color, geo, toolbutton))
                 toolbutton.setAutoRaise(True)
                 layout.addWidget(toolbutton, i, 2)
-                btns['color']=toolbutton
+                btns['color'] = toolbutton
 
             # opacity
             slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
@@ -479,7 +476,7 @@ class VtkWidget(QtWidgets.QWidget):
             slider.setFixedWidth(40)
             slider.sliderReleased.connect(partial(self.change_opacity, geo, slider))
             layout.addWidget(slider, i, 3)
-            btns['opacity']=slider
+            btns['opacity'] = slider
 
             # label
             label = QtWidgets.QLabel(geo_name)
@@ -498,33 +495,60 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.button_bar_layout.addStretch()
 
+    def __setup_wizards(self):
+
+        self.cyclone_popup = None
+        self.distribution_popup = None
+        self.reactor_popup = None
+
+        # --- wizards ---
+        wizard_menu = QtWidgets.QMenu('wizards', self)
+
+        action = QtWidgets.QAction('distributed', wizard_menu)
+        action.triggered.connect(self.handle_distributed_wizard)
+        wizard_menu.addAction(action)
+
+        action = QtWidgets.QAction('cyclone', wizard_menu)
+        action.triggered.connect(self.handle_cyclone_wizard)
+        wizard_menu.addAction(action)
+
+        action = QtWidgets.QAction('reactor', wizard_menu)
+        action.triggered.connect(self.handle_reactor_wizard)
+        wizard_menu.addAction(action)
+
+        self.ui.geometry.toolbutton_wizard.setMenu(wizard_menu)
+
     def set_visual_btn_values(self):
+        """change the visual btns to be in sync with self.visual_props"""
         for geo, info in self.visual_props.items():
             for key, value in info.items():
                 if geo in self.visual_btns and key in self.visual_btns[geo]:
                     wid = self.visual_btns[geo][key]
-                    if key=='rep':
+                    if key == 'rep':
                         wid.setCurrentIndex(wid.findText(value))
-                    elif key=='visible':
+                    elif key == 'visible':
                         wid.setChecked(value)
                         self.set_visible_btn_image(wid, value)
-                    elif key=='color':
+                    elif key == 'color':
                         wid.setStyleSheet("QToolButton{{ background: {};}}".format(value.name()))
-                    elif key=='opacity':
+                    elif key == 'opacity':
                         wid.setValue(value*100)
 
     def emitUpdatedValue(self, key, value, args=None):
+        """emit an updates value"""
         self.value_updated.emit(self, {key: value}, args)
 
     def updateValue(self, key, newValue, args=None):
+        """receive keyword changed from project manager"""
         if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
                    'imax', 'jmax', 'kmax']:
-            self.update_mesh()
+            self.update_background_mesh()
         elif key == 'no_k':
             self.ui.geometry.lineedit_keyword_zlength.setEnabled(not newValue)
             self.ui.mesh.lineedit_keyword_kmax.setEnabled(not newValue)
 
     def objectName(self):
+        """return the name of this object"""
         return 'VTK Widget'
 
     def default(self):
@@ -583,10 +607,10 @@ class VtkWidget(QtWidgets.QWidget):
                     elif geo_type == 'filter':
                         self.add_filter(name=node, data=geo_data,
                                         child=tree[node].pop())
-                    elif geo_type =='boolean':
+                    elif geo_type == 'boolean':
                         self.boolean_operation(boolname=node, data=geo_data,
                                                children=tree[node])
-                    elif geo_type =='stl':
+                    elif geo_type == 'stl':
                         self.add_stl(None, filename=geo_data['filename'],
                                      name=node, data=geo_data)
                 else:
@@ -608,7 +632,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
         self.visual_props.update(data)
-        if not self.mesh_actor is None:
+        if self.mesh_actor is not None:
             self.set_mesh_actor_props()
 
         self.set_visual_btn_values()
@@ -617,6 +641,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):
+        """render the vtk scene, checks for defer_render"""
         if defer_render is not None:
             self.defer_render = defer_render
         if not self.defer_render or force_render:
@@ -624,9 +649,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- geometry ---
     def selected_geometry_changed(self):
-        """
-        The selected geometry changed, update UI
-        """
+        """The selected geometry changed, update UI"""
         current_selection = self.geometrytree.selectedItems()
         top_level_items = [self.geometrytree.indexOfTopLevelItem(select) > -1
                            for select in current_selection]
@@ -702,13 +725,12 @@ class VtkWidget(QtWidgets.QWidget):
             itr += 1
 
     def geometry_clicked(self, item):
-        """
-        Hide/Show the clicked geometry
-        """
+        """Hide/Show the clicked geometry"""
 
         name = str(item.text(0)).lower()
         geo = self.geometrydict.get(name)
-        if geo is None: return
+        if geo is None:
+            return
         if item.checkState(0) == QtCore.Qt.Checked:
             if self.visual_props['geometry']['visible']:
                 geo['actor'].VisibilityOn()
@@ -720,9 +742,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def add_stl(self, widget, filename=None, name=None, data=None):
-        """
-        Open browse dialog and load selected stl file
-        """
+        """Open browse dialog and load selected stl file"""
 
         if filename is None:
             filename = QtWidgets.QFileDialog.getOpenFileName(
@@ -806,9 +826,7 @@ class VtkWidget(QtWidgets.QWidget):
             return name
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
-        """
-        Update the value of edited parameter in the geometrydict
-        """
+        """Update the value of edited parameter in the geometrydict"""
         if name is None:
             current_selection = self.geometrytree.selectedItems()
 
@@ -848,9 +866,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.render()
 
     def update_primitive(self, name):
-        """
-        Update the specified primitive
-        """
+        """Update the specified primitive"""
         primtype = self.geometrydict[name]['type']
         geo = self.geometrydict.get(name)
 
@@ -895,9 +911,7 @@ class VtkWidget(QtWidgets.QWidget):
         return source
 
     def update_transform(self, name):
-        """
-        Update the specified object's transform filter.
-        """
+        """Update the specified object's transform filter."""
         geo = self.geometrydict.get(name)
         transform = geo['transform']
         transform_filter = geo['transformfilter']
@@ -935,9 +949,7 @@ class VtkWidget(QtWidgets.QWidget):
         return transform_filter
 
     def add_primitive(self, primtype='sphere', name=None, data=None):
-        """
-        Add the specified primitive
-        """
+        """Add the specified primitive"""
         if name is None:
             name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
@@ -1003,12 +1015,10 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.setCurrentItem(item)
 
         self.parent.set_unsaved_flag()
-        return  name
+        return name
 
     def update_parametric(self, name):
-        """
-        Update the specified parameteric object.
-        """
+        """Update the specified parameteric object."""
         geo = self.geometrydict.get(name)
         paratype = geo['type']
         para_object = geo['parametric_object']
@@ -1066,9 +1076,7 @@ class VtkWidget(QtWidgets.QWidget):
         return source
 
     def add_parametric(self, paramtype=None, name=None, data=None):
-        """
-        Add the specified parametric object
-        """
+        """Add the specified parametric object"""
 
         if paramtype is None:
             paramtype = data['type']
@@ -1138,9 +1146,8 @@ class VtkWidget(QtWidgets.QWidget):
         return name
 
     def boolean_operation(self, booltype=None, boolname=None, data=None, children=None):
-        """
-        Apply a boolean operation with the currently selected toplevel items.
-        """
+        """Apply a boolean operation with the currently selected toplevel
+        items."""
 
         if children is not None:
             current_selection = []
@@ -1222,13 +1229,12 @@ class VtkWidget(QtWidgets.QWidget):
         return boolname
 
     def clear_all_geometry(self):
-        """ remove all geometry """
+        """remove all geometry"""
         self.geometrytree.clear()
         self.geometrydict = {}
 
     def remove_geometry(self):
-        """
-        Remove the currently selected geometry, filter, or boolean operation
+        """Remove the currently selected geometry, filter, or boolean operation
         """
         currentSelection = self.geometrytree.selectedItems()
         for selection in currentSelection:
@@ -1255,14 +1261,15 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def handle_copy_geometry(self):
-        """ duplicate the selected geometry """
+        """duplicate the selected geometry"""
         currentSelection = self.geometrytree.selectedItems()
         if currentSelection:
             text = str(currentSelection[-1].text(0)).lower()
             self.copy_geometry(text)
 
     def copy_geometry(self, name, center=None, rotation=None):
-
+        """given a geometry name, copy it and optionaly change the center or
+        rotation"""
         data = copy.deepcopy(remove_vtk_objects(self.geometrydict[name]))
 
         if center is not None:
@@ -1288,9 +1295,7 @@ class VtkWidget(QtWidgets.QWidget):
         return name
 
     def update_filter(self, name):
-        """
-        Update the currently selected filter
-        """
+        """Update the currently selected filter"""
         geo = self.geometrydict.get(name)
         filtertype = geo['type']
         vtkfilter = geo['filter']
@@ -1336,10 +1341,8 @@ class VtkWidget(QtWidgets.QWidget):
         vtkfilter.Update()
 
     def add_filter(self, filtertype=None, name=None, data=None, child=None):
-        """
-        add the selected filter with the input being the currently selected
-        toplevel item
-        """
+        """add the selected filter with the input being the currently selected
+        toplevel item"""
 
         if child is not None:
             selection_text = child
@@ -1420,7 +1423,7 @@ class VtkWidget(QtWidgets.QWidget):
         return name
 
     def get_input_data(self, name):
-        """ based on the type of geometry, return the data """
+        """based on the type of geometry, return the data"""
         geo = self.geometrydict.get(name)
         if 'trianglefilter' in geo:
             inputdata = geo['trianglefilter']
@@ -1433,7 +1436,7 @@ class VtkWidget(QtWidgets.QWidget):
         return inputdata
 
     def collect_toplevel_geometry(self):
-        """ collect and append visible toplevel polydata """
+        """collect and append visible toplevel polydata"""
 
         append_filter = vtk.vtkAppendPolyData()
         item_count = self.geometrytree.topLevelItemCount()
@@ -1458,7 +1461,7 @@ class VtkWidget(QtWidgets.QWidget):
         return geo
 
     def get_geometry_extents(self):
-        """ determine the extents of the visible geometry """
+        """determine the extents of the visible geometry"""
 
         geometry = self.collect_toplevel_geometry()
 
@@ -1469,7 +1472,7 @@ class VtkWidget(QtWidgets.QWidget):
         return bounds
 
     def set_geometry_actor_props(self, actor, name):
-        """ set the geometry proprerties to the others in the scene """
+        """set the geometry proprerties to the others in the scene"""
 
         props = self.visual_props['geometry']
 
@@ -1527,9 +1530,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- regions ---
     def update_region_source(self, name):
-        """
-        Update the specified primitive
-        """
+        """Update the specified primitive"""
         primtype = self.region_dict[name]['type']
         props = self.region_dict[name]
 
@@ -1538,13 +1539,11 @@ class VtkWidget(QtWidgets.QWidget):
         else:
             source = None
 
-
         lengths = [abs(safe_float(to) - safe_float(from_)) for
                    from_, to in zip(props['from'], props['to'])]
         center = [min(map(safe_float, ft)) + l / 2.0 for ft, l in
                   zip(zip(props['from'], props['to']),
                       lengths)]
-
 
         # update source
         if primtype == 'sphere':
@@ -1586,6 +1585,7 @@ class VtkWidget(QtWidgets.QWidget):
         return source
 
     def new_region(self, name, region):
+        """create a new region"""
         self.region_dict[name] = copy.deepcopy(region)
 
         if region['type'] == 'point':
@@ -1617,19 +1617,21 @@ class VtkWidget(QtWidgets.QWidget):
             name, self.region_dict[name]['visibility'],)
 
     def delete_region(self, name):
+        """delete a region"""
         region = self.region_dict.pop(name)
         self.vtkrenderer.RemoveActor(region['actor'])
         if 'clip_actor' in region:
             self.vtkrenderer.RemoveActor(region['clip_actor'])
 
     def update_region(self, name, region):
+        """update a region"""
         self.region_dict[name].update(copy.deepcopy(region))
         self.update_region_source(name)
         self.select_facets(name)
         self.render()
 
     def change_region_color(self, name, color):
-        """ change the color of a region """
+        """change the color of a region"""
         reg = self.region_dict.get(name)
         reg['color'] = copy.deepcopy(color)
 
@@ -1643,7 +1645,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def change_region_type(self, name, region):
-        """ change the type of a region """
+        """change the type of a region"""
 
         self.region_dict[name].update(copy.deepcopy(region))
 
@@ -1653,23 +1655,21 @@ class VtkWidget(QtWidgets.QWidget):
             shape = 'box'
 
         source = PRIMITIVE_DICT[shape]()
-        self.region_dict[name]['source'] = source
+        region_data = self.region_dict.get(name)
+        region_data['source'] = source
         self.update_region_source(name)
         self.select_facets(name)
-
-        self.region_dict[name]['mapper'].SetInputConnection(
-            source.GetOutputPort())
+        region_data['mapper'].SetInputConnection(source.GetOutputPort())
 
         self.render()
 
     def change_region_name(self, old_name, new_name):
-        """ change the name of a region """
-
+        """change the name of a region"""
         region = self.region_dict.pop(old_name)
         self.region_dict[new_name] = region
 
     def change_region_visibility(self, name, visible):
-        """ change the visibility of a region """
+        """change the visibility of a region"""
         reg = self.region_dict.get(name)
         if visible and self.visual_props['regions']['visible']:
             reg['actor'].VisibilityOn()
@@ -1684,7 +1684,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def set_region_actor_props(self, actor, name, color=None):
-        """ set the geometry properties to the others in the scene """
+        """set the geometry properties to the others in the scene"""
 
         props = self.visual_props['regions']
         self.set_representation(actor, props['rep'])
@@ -1700,13 +1700,13 @@ class VtkWidget(QtWidgets.QWidget):
             actor.VisibilityOff()
 
     def select_facets(self, name):
-        """ select facets with an implicit function """
+        """select facets with an implicit function"""
 
         region = self.region_dict[name]
         # remove old objects
         if 'clip_actor' in region:
             self.vtkrenderer.RemoveActor(region['clip_actor'])
-            for key in ['clip_actor',  'clip_mapper', 'clipper', 'implicit']:
+            for key in ['clip_actor', 'clip_mapper', 'clipper', 'implicit']:
                 region.pop(key)
 
         if region['type'].lower() != 'stl':
@@ -1769,7 +1769,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- output files ---
     def export_stl(self, file_name):
-        """ export visible toplevel geometry """
+        """export visible toplevel geometry"""
 
         basename = os.path.splitext(os.path.basename(file_name))[0]
         basename = os.path.join(os.path.dirname(file_name), basename)
@@ -1797,14 +1797,14 @@ class VtkWidget(QtWidgets.QWidget):
                     i += 1
 
     def export_unstructured(self, fname, grid):
-        """ export an unstructured grid """
+        """export an unstructured grid"""
         gw = vtk.vtkXMLUnstructuredGridWriter()
         gw.SetFileName(fname)
         gw.SetInputConnection(grid)
         gw.Write()
 
     def screenshot(self, fname=None):
-
+        """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 
         if fname is None:
@@ -1816,7 +1816,7 @@ class VtkWidget(QtWidgets.QWidget):
                            "JPEG (*.jpg)",
                            "PostScript (*.ps)",
                            "All Files (*.*)",
-                           ]),
+                          ]),
                 ))
 
         if not fname:
@@ -1845,7 +1845,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- mesh ---
     def change_mesh_tab(self, tabnum, btn):
-        """ switch mesh stacked widget based on selected """
+        """switch mesh stacked widget based on selected"""
         self.parent.animate_stacked_widget(
             self.ui.mesh.stackedwidget_mesh,
             self.ui.mesh.stackedwidget_mesh.currentIndex(),
@@ -1857,7 +1857,7 @@ class VtkWidget(QtWidgets.QWidget):
             )
 
     def change_mesher_options(self):
-        """ switch the mesh options stacked widget """
+        """switch the mesh options stacked widget"""
 
         mesher = str(self.ui.mesh.combobox_mesher.currentText()).lower()
 
@@ -1876,7 +1876,7 @@ class VtkWidget(QtWidgets.QWidget):
             )
 
     def auto_size_mesh_extents(self):
-        """ collect and set the extents of the visible geometry """
+        """collect and set the extents of the visible geometry"""
         extents = self.get_geometry_extents()
 
         if extents:
@@ -1886,18 +1886,17 @@ class VtkWidget(QtWidgets.QWidget):
                 if 'min' not in key:  # mfix doesn't support mins yet
                     self.emitUpdatedValue(key, extent)
 
-            self.update_mesh()
+            self.update_background_mesh()
 
-    def update_mesh(self):
-
+    def update_background_mesh(self):
+        """update the background mesh"""
         extents = []
         for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
             extents.append(safe_float(self.project.get_value(key, default=0.0)))
 
         cells = []
         for key in ['imax', 'jmax', 'kmax']:
-            cells.append(safe_int(self.project.get_value(key, default=0)) +1)
-
+            cells.append(safe_int(self.project.get_value(key, default=0)) + 1)
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
@@ -1962,6 +1961,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def set_background_mesh_actor_props(self, actor):
+        """set the background mesh properties"""
         props = self.visual_props['background_mesh']
         self.set_representation(actor, props['rep'])
         actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
@@ -1970,7 +1970,8 @@ class VtkWidget(QtWidgets.QWidget):
         actor.SetVisibility(int(props['visible']))
 
     def vtk_calc_distance_from_geometry(self):
-
+        """for every point in the mesh, calculate the distance from the
+        toplevel geometry"""
         source = self.collect_toplevel_geometry()
 
         if source:
@@ -1991,7 +1992,8 @@ class VtkWidget(QtWidgets.QWidget):
             self.rectilinear_grid.GetPointData().SetScalars(signed_distances)
 
     def vtk_mesher_table_based(self):
-
+        """use vtkTableBasedClipDataSet to slice the background mesh with the
+        toplevel geometry"""
         self.vtk_calc_distance_from_geometry()
 
         clipper = vtk.vtkTableBasedClipDataSet()
@@ -2013,7 +2015,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.mesh_stats()
 
     def vtk_mesher_threshold(self):
-
+        """use vtkThreshold to slice the background mesh with the
+        toplevel geometry"""
         self.vtk_calc_distance_from_geometry()
 
         thresh = vtk.vtkThreshold()
@@ -2037,13 +2040,13 @@ class VtkWidget(QtWidgets.QWidget):
         self.mesh_stats()
 
     def export_mesh(self, mesh, name=DEFAULT_MESH_NAME):
-        # export geometry
+        """export the mesh"""
         project_dir = self.parent.get_project_dir()
         self.export_unstructured(os.path.join(project_dir, name),
                                  mesh.GetOutputPort())
 
     def mesh_stats(self):
-
+        """calculate mesh statistics"""
         cell_count = self.mesh.GetNumberOfCells()
         cell_types = self.mesh.GetCellTypesArray()
 
@@ -2062,11 +2065,11 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.ui.mesh.plaintextedit_mesh_cell_types.setPlainText(
             '\n'.join([':\t'.join([str(cell_type), str(cells)])
-                      for cell_type, cells in cell_type_counts])
+                       for cell_type, cells in cell_type_counts])
             )
 
     def mesher(self):
-
+        """mesh the geometry"""
         mesher = str(self.ui.mesh.combobox_mesher.currentText())
 
         if mesher == 'vtkTableBasedClipDataSet':
@@ -2075,11 +2078,14 @@ class VtkWidget(QtWidgets.QWidget):
             self.vtk_mesher_threshold()
 
     def remove_mesh(self, name=DEFAULT_MESH_NAME):
+        """remove the mesh from the vtk scene as well as the file"""
         project_dir = self.parent.get_project_dir()
         path = os.path.join(project_dir, name)
-        if not os.path.exists(path): return
-        key = gui.message(text='Remove %s?' % name, buttons=['yes', 'no'], default='no')
-        if key == 'no': return
+        if not os.path.exists(path):
+            return
+        key = GUI.message(text='Remove %s?' % name, buttons=['yes', 'no'], default='no')
+        if key == 'no':
+            return
 
         os.remove(path)
 
@@ -2088,6 +2094,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.mesh_actor = None
 
     def set_mesh_actor_props(self):
+        """change the actor properties of the mesh"""
         props = self.visual_props['mesh']
         self.set_representation(self.mesh_actor, props['rep'])
         self.mesh_actor.GetProperty().SetColor(props['color'].getRgbF()[:3])
@@ -2095,9 +2102,11 @@ class VtkWidget(QtWidgets.QWidget):
         self.mesh_actor.SetVisibility(int(props['visible']))
 
     def show_mesh(self):
-        if self.mesh is None: return
+        """show the mesh"""
+        if self.mesh is None:
+            return
 
-        if not self.mesh_actor is None:
+        if self.mesh_actor is not None:
             self.vtkrenderer.RemoveActor(self.mesh_actor)
         self.mesh_mapper = vtk.vtkDataSetMapper()
         self.mesh_mapper.ScalarVisibilityOff()
@@ -2110,6 +2119,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     # --- view ---
     def perspective(self, parallel=None):
+        """change the perspective of the vtk scene"""
         camera = self.vtkrenderer.GetActiveCamera()
 
         if parallel is None:
@@ -2125,6 +2135,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def set_view(self, view='xy'):
+        """set the 2D view of the scene"""
         self.perspective(parallel=True)
         camera = self.vtkrenderer.GetActiveCamera()
         if view == 'xy':
@@ -2149,10 +2160,12 @@ class VtkWidget(QtWidgets.QWidget):
         self.reset_view()
 
     def reset_view(self):
+        """reset the camera so that the geometry is visible in the scene"""
         self.vtkrenderer.ResetCamera()
         self.render()
 
     def change_visibility(self, name, toolbutton):
+        """change the visibility of one of the scene objects"""
         actors = None
         if name == 'mesh':
             actors = [self.mesh_actor]
@@ -2180,6 +2193,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.render()
 
     def get_actors(self, name):
+        """given a scene actor type, return the actors"""
         actors = []
         if name == 'mesh':
             actors = [self.mesh_actor]
@@ -2195,6 +2209,7 @@ class VtkWidget(QtWidgets.QWidget):
             yield actor
 
     def set_representation(self, actor, rep):
+        """set the representation of an actor"""
         if rep == 'wire':
             actor.GetProperty().SetRepresentationToWireframe()
         elif rep == 'solid':
@@ -2207,6 +2222,7 @@ class VtkWidget(QtWidgets.QWidget):
             actor.GetProperty().SetRepresentationToPoints()
 
     def change_representation(self, name, combobox):
+        """given a scene actor type, change the representation"""
         representation = str(combobox.currentText())
 
         self.visual_props[name]['rep'] = representation
@@ -2217,8 +2233,10 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def change_color(self, name, button):
+        """given a scene actor type, change the color"""
         col = QtWidgets.QColorDialog.getColor()
-        if not col.isValid(): return
+        if not col.isValid():
+            return
 
         button.setStyleSheet("QToolButton{{ background: {};}}".format(
             col.name()))
@@ -2233,6 +2251,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def change_opacity(self, name, slider):
+        """given a scene actor type, change the opacity"""
         value = slider.value()/100.0
         self.visual_props[name]['opacity'] = value
 
@@ -2241,21 +2260,27 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     def set_visible_btn_image(self, btn, checked):
+        """given a button, change the icon"""
         if not checked:
-            btn.setIcon(
-                        get_icon('visibilityofftransparent.png'))
+            btn.setIcon(get_icon('visibilityofftransparent.png'))
         else:
             btn.setIcon(get_icon('visibility.png'))
 
     # --- wizards ---
-    def cyclone_wizard(self):
-        popup = CyclonePopUp(self)
-        popup.popup()
+    def handle_cyclone_wizard(self):
+        """show the cyclone wizard"""
+        if self.cyclone_popup is None:
+            self.cyclone_popup = CyclonePopUp(self)
+        self.cyclone_popup.popup()
 
-    def distributed_wizard(self):
-        popup = DistributionPopUp(self)
-        popup.popup()
+    def handle_distributed_wizard(self):
+        """show the distributed wizard"""
+        if self.distribution_popup is None:
+            self.distribution_popup = DistributionPopUp(self)
+        self.distribution_popup.popup()
 
-    def reactor_wizard(self):
-        popup = ReactorPopUp(self)
-        popup.popup()
+    def handle_reactor_wizard(self):
+        """show the reactor wizard"""
+        if self.reactor_popup is None:
+            self.reactor_popup = ReactorPopUp(self)
+        self.reactor_popup.popup()
