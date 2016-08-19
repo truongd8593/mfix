@@ -82,17 +82,17 @@ class BCS(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
-        # Fluid
-        ui.combobox_fluid_energy_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_energy_eq_type)
-        ui.combobox_fluid_species_eq_type.currentIndexChanged.connect(self.set_bcs_fluid_species_eq_type)
-
-        # Solid
+        # Checkbox callbacks
         ui.checkbox_bc_jj_ps_args_BC.dtype = int
         ui.checkbox_bc_jj_ps_args_BC.clicked.connect(self.set_bc_jj_ps)
-        ui.combobox_bc_jj_ps_type.currentIndexChanged.connect(self.set_bc_jj_ps_type)
-        ui.combobox_solids_energy_eq_type.currentIndexChanged.connect(self.set_bcs_solids_energy_eq_type)
 
-        # Scalar
+        # Combobox callbacks
+        for name in ('fluid_energy_eq', 'fluid_species_eq',
+                     'bc_jj_ps',
+                     'solids_energy_eq', 'solids_granular_energy_eq'): # no solids_species_eq?
+            item = getattr(ui, 'combobox_%s_type' % name)
+            setter = getattr(self, 'set_bcs_%s_type' % name)
+            item.currentIndexChanged.connect(setter)
 
 
     def bcs_show_regions_popup(self):
@@ -407,6 +407,7 @@ class BCS(object):
                         break
                 break
 
+
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the box-shaped region the BC applies to
         if bc_type is not None:
@@ -656,13 +657,14 @@ class BCS(object):
             #    Requires BC_TW_G(#)
             tw = True
         else:
-            self.error("Invalid energy_eq type %s" % eq_type)
+            self.error("Invalid fluid energy_eq type %s" % eq_type)
             return
 
         for BC in self.bcs_current_indices:
+            self.bcs[BC]['fluid_energy_eq_type'] = eq_type
             for (key, val) in (('bc_hw_t_g', hw), ('bc_c_t_g', c), ('bc_tw_g', tw)):
                 if val is True:
-                    pass # 'required'
+                    pass
                 else:
                     self.update_keyword(key, val, args=[BC])
 
@@ -708,14 +710,17 @@ class BCS(object):
             #    Requires BC_XW_G(#)
             xw = True
         else:
-            self.error("Invalid species_eq type %s" % eq_type)
+            self.error("Invalid fluid species_eq type %s" % eq_type)
+            return
 
         for BC in self.bcs_current_indices:
+            self.bcs[BC]['fluid_species_eq_type'] = eq_type
             for (key, val) in (('bc_hw_x_g', hw), ('bc_c_x_g', c), ('bc_xw_g', xw)):
                 if val is True:
                     pass # 'required'
                 else:
                     self.update_keyword(key, val, args=[BC])
+
         self.setup_bcs_fluid_tab()
 
 
@@ -726,6 +731,27 @@ class BCS(object):
         for BC in self.bcs_current_indices:
             self.update_keyword(key, val, args=BC)
         self.setup_bcs_solids_tab(self.bcs_current_solid)
+
+
+    def set_bcs_bc_jj_ps_type(self, val):
+        # Available selections:
+        #  Default Jackson-Johnson BC [DEFAULT]
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Variable specularity coefficient
+        #    Sets keyword BC_JJ_M to .TRUE.
+        #    Sets keyword JENKINS to .FALSE.
+        #  Jenkins small frictional boundary
+        #    Sets keyword BC_JJ_M to .FALSE.
+        #    Sets keyword JENKINS to .TRUE.
+        if val < 0 or val > 2:
+            self.warn("Invalid bc_jj_ps_type % val")
+            return
+        jenkins, bc_jj_m = int(val/2), val%2
+        self.update_keyword('bc_jj_m', bool(bc_jj_m))
+        self.update_keyword('jenkins', bool(jenkins))
+        self.setup_bcs_solids_tab(self.bcs_current_solid)
+
 
     def set_bcs_solids_energy_eq_type(self, eq_type):
         if not self.bcs_current_indices:
@@ -767,10 +793,12 @@ class BCS(object):
             #    Requires BC_TW_S(#,#)
             tw = True
         else:
-            self.error("Invalid energy_eq type %s" % eq_type)
+            self.error("Invalid solid %s energy_eq type %s" % (P, eq_type))
             return
 
         for BC in self.bcs_current_indices:
+            # FIXME this won't survive index remapping when solids are deleted!
+            self.bcs[BC]['solid_%s_energy_eq_type'%P] = eq_type
             for (key, val) in (('bc_hw_t_s', hw), ('bc_c_t_s', c), ('bc_tw_s', tw)):
                 if val is True:
                     pass # 'required'
@@ -780,23 +808,50 @@ class BCS(object):
         self.setup_bcs_solids_tab(self.bcs_current_solid)
 
 
-    def set_bc_jj_ps_type(self, val):
-                # Available selections:
-        #  Default Jackson-Johnson BC [DEFAULT]
-        #    Sets keyword BC_JJ_M to .FALSE.
-        #    Sets keyword JENKINS to .FALSE.
-        #  Variable specularity coefficient
-        #    Sets keyword BC_JJ_M to .TRUE.
-        #    Sets keyword JENKINS to .FALSE.
-        #  Jenkins small frictional boundary
-        #    Sets keyword BC_JJ_M to .FALSE.
-        #    Sets keyword JENKINS to .TRUE.
-        if val < 0 or val > 2:
-            self.warn("Invalid bc_jj_ps_type % val")
+    def set_bcs_solids_granular_energy_eq_type(self, eq_type):
+        if not self.bcs_current_indices:
             return
-        jenkins, bc_jj_m = int(val/2), val%2
-        self.update_keyword('bc_jj_m', bool(bc_jj_m))
-        self.update_keyword('jenkins', bool(jenkins))
+        P = self.bcs_current_solid
+        if P is None:
+            return
+        # Available selections:
+        #  No-Flux [DEFAULT]
+
+        if eq_type == NO_FLUX:
+            #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+            hw = 0.0
+            #    Sets keyword BC_C_THETA_M (#,#) to 0.0
+            c = 0.0
+            #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+            theta = None
+        #  Specified Temperature
+        elif eq_type == SPECIFIED_TEMPERATURE:
+            #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
+            hw = None
+            #    Sets keyword BC_C_THETA_M(#,#) to 0.0
+            c = 0.0
+            #    Requires BC_THETAW_M(#,#)
+            theta = True
+        #  Specified Flux
+        elif eq_type == SPECIFIED_FLUX:
+            #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+            hw = 0.0
+            #    Requires BC_C_THETA_M(#)
+            c = True
+            #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+            theta = None
+        else:
+            self.error("Invalid solid %s granualar energy_eq type %s" % (P, eq_type))
+            return
+
+        for BC in self.bcs_current_indices:
+            self.bcs[BC]['solid_%s_granular_energy_eq_type'%P] = eq_type
+            for (key, val) in (('bc_hw_theta_m', hw), ('bc_c_theta_m', c), ('bc_thetaw_m', theta)):
+                if val is True:
+                    pass # 'required'
+                else:
+                    self.update_keyword(key, val, args=[BC,P])
+
         self.setup_bcs_solids_tab(self.bcs_current_solid)
 
 
@@ -877,30 +932,37 @@ class BCS(object):
         ui.groupbox_fluid_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            hw = self.project.get_value('bc_hw_t_g', args=[BC0])
-            c = self.project.get_value('bc_c_t_g', args=[BC0])
-            tw = self.project.get_value('bc_tw_g', args=[BC0])
-            if hw==0.0 and c==0.0 and tw is None:
-                eq_type = NO_FLUX
-            elif hw is None and c==0.0 and tw is not None:
-                eq_type = SPECIFIED_TEMPERATURE
-            elif hw==0.0 and c!=0.0 and tw is None:
-                eq_type = SPECIFIED_FLUX
-            elif hw is not None and c==0.0 and tw is not None:
-                eq_type = CONVECTIVE_FLUX
-            else:
-                self.error("Cannot determine type for energy boundary equation %s" % BC0)
-                eq_type = NO_FLUX # default
-            ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
+            eq_type = self.bcs[BC0].get('fluid_energy_eq_type')
+            if eq_type is None: # Attempt to infer from keywords
+                hw = self.project.get_value('bc_hw_t_g', args=[BC0])
+                c = self.project.get_value('bc_c_t_g', args=[BC0])
+                tw = self.project.get_value('bc_tw_g', args=[BC0])
+                if hw==0.0 and c==0.0 and tw is None:
+                    eq_type = NO_FLUX
+                elif hw is None and c==0.0 and tw is not None:
+                    eq_type = SPECIFIED_TEMPERATURE
+                elif hw==0.0 and c!=0.0 and tw is None:
+                    eq_type = SPECIFIED_FLUX
+                elif hw is not None and c==0.0 and tw is not None:
+                    eq_type = CONVECTIVE_FLUX
+                else:
+                    self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
+                    eq_type = NO_FLUX # Default
+                    self.set_bcs_fluid_energy_eq_type(eq_type)
+
+            if eq_type is not None:
+                ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
 
         if energy_eq:
             #Define wall temperature
             # Specification only available with 'Specified Temperature' BC type
             # Sets keyword BC_TW_G(#)
             # DEFAULT value of 293.15
-            enabled = (bc_type==SPECIFIED_TEMPERATURE)
+            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+
             key = 'bc_tw_g'
             default = 293.15 if enabled else None
+            self.print_internal("%s %s %s" % (key, default, enabled))
             setup_key_widget(key, default, enabled)
             # Hack to prevent dup. display
             if enabled:
@@ -946,9 +1008,8 @@ class BCS(object):
         ui.groupbox_fluid_species_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            eq_type = self.bcs[BC0].get('species_eq_type')
-             # If not in dict, attempt to guess it based on keywords
-            if eq_type is None:
+            eq_type = self.bcs[BC0].get('fluid_species_eq_type')
+            if eq_type is None: # Attempt to infer from keywords
                 hw = self.project.get_value('bc_hw_x_g', args=[BC0])
                 c = self.project.get_value('bc_c_x_g', args=[BC0])
                 xw = self.project.get_value('bc_xw_g', args=[BC0])
@@ -961,11 +1022,12 @@ class BCS(object):
                 elif hw is not None and c==0.0 and xw is not None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for species boundary equation %s" % BC0)
+                    self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
+                    eq_type = NO_FLUX # Default
+                    self.set_bcs_fluid_species_eq_type(eq_type)
+
             if eq_type is not None:
                 ui.combobox_fluid_species_eq_type.setCurrentIndex(eq_type)
-            else:
-                eq_type = NO_FLUX # default
 
         if species_eq:
             #Define wall mass fraction
@@ -1013,7 +1075,6 @@ class BCS(object):
                 ui.lineedit_keyword_bc_xw_g_args_BC.setText('')
             else:
                 ui.lineedit_keyword_bc_xw_g_2_args_BC.setText('')
-
 
 
     def setup_bcs_solids_tab(self, P):
@@ -1079,7 +1140,7 @@ class BCS(object):
         #
         # Note, according to doc it's an int, not float
         cartesian_grid = bool(self.project.get_value('cartesian_grid', default=False))
-        kt_type = self.project.get_value('kt_type')
+        kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
         enabled = not cartesian_grid and kt_type not in ('ALGEBRAIC', 'GHD_2007')
         key = 'bc_jj_ps'
         default = 1 if enabled else 0
@@ -1089,12 +1150,18 @@ class BCS(object):
             val = 0
             for BC in self.bcs_current_indices:
                 self.update_keyword('bc_jj_ps', 0, args=[BC])
+        if enabled: # Default value of 1.0 when not disabled
+            for BC in self.bcs_current_indices:
+                self.update_keyword('bc_jj_ps', val, args=[BC])
         widget.setChecked(val)
+
         widget.setEnabled(enabled)
+        # TODO should this also depend on energy_eq ?
+        ui.groupbox_solids_momentum_eq.setEnabled(enabled or bc_type=='PSW')
 
         #    Select type of Jackson and Johnson BC:
         # Selection only available BC_JJ_PS(#) = 1.0
-        bc_jj_ps = self.project.get_value('bc_jj_ps', args=BC0)
+        bc_jj_ps = int(self.project.get_value('bc_jj_ps', default=0, args=BC0))
         enabled = (bc_jj_ps==1)
         for widget in (ui.label_bc_jj_ps_type, ui.combobox_bc_jj_ps_type):
             widget.setEnabled(enabled)
@@ -1197,38 +1264,43 @@ class BCS(object):
         ui.groupbox_solids_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            hw = self.project.get_value('bc_hw_t_s', args=[BC0,P])
-            c =  self.project.get_value('bc_c_t_s', args=[BC0,P])
-            tw = self.project.get_value('bc_tw_s', args=[BC0,P])
-            # Available selections:
-            #  No-Flux (adiabatic) [DEFAULT]
-            #    Sets keyword BC_HW_T_S(#,#) to 0.0
-            #    Sets keyword BC_C_T_S(#,#) to 0.0
-            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
-            if hw==0.0 and c==0.0 and tw==None:
-                eq_type = NO_FLUX
-            #  Specified Temperature
-            #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
-            #    Sets keyword BC_C_T_S(#,#) to 0.0
-            #    Requires BC_TW_S(#,#)
-            elif hw is None and c==0.0 and tw is not None:
-                eq_type = SPECIFIED_TEMPERATURE
-            #  Specified Flux
-            #    Sets keyword BC_HW_T_S(#,#) to 0.0
-            #    Requires BC_C_T_S(#)
-            #    Sets keyword BC_TW_S(#,#) to UNDEFINED
-            elif hw==0.0 and c is not None and tw is None:
-                eq_type = SPECIFIED_FLUX
-            #  Convective Flux
-            #    Requires BC_HW_T_S(#,#)
-            #    Sets keyword BC_C_T_S(#,#) to 0.0
-            #    Requires BC_TW_S(#,#)
-            elif hw is not None and c==0.0 and tw is None:
-                eq_type = CONVECTIVE_FLUX
-            else:
-                self.error("Cannot determine type for energy boundary equation %s" % BC0)
-                eq_type = NO_FLUX # default
-            ui.combobox_solids_energy_eq_type.setCurrentIndex(eq_type)
+            eq_type = self.bcs[BC0].get('solid_%s_energy_eq_type' % P)
+            if eq_type is None: # Attempt to infer from keywords
+                hw = self.project.get_value('bc_hw_t_s', args=[BC0,P])
+                c =  self.project.get_value('bc_c_t_s', args=[BC0,P])
+                tw = self.project.get_value('bc_tw_s', args=[BC0,P])
+                # Available selections:
+                #  No-Flux (adiabatic) [DEFAULT]
+                #    Sets keyword BC_HW_T_S(#,#) to 0.0
+                #    Sets keyword BC_C_T_S(#,#) to 0.0
+                #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+                if hw==0.0 and c==0.0 and tw==None:
+                    eq_type = NO_FLUX
+                #  Specified Temperature
+                #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+                #    Sets keyword BC_C_T_S(#,#) to 0.0
+                #    Requires BC_TW_S(#,#)
+                elif hw is None and c==0.0 and tw is not None:
+                    eq_type = SPECIFIED_TEMPERATURE
+                #  Specified Flux
+                #    Sets keyword BC_HW_T_S(#,#) to 0.0
+                #    Requires BC_C_T_S(#)
+                #    Sets keyword BC_TW_S(#,#) to UNDEFINED
+                elif hw==0.0 and c is not None and tw is None:
+                    eq_type = SPECIFIED_FLUX
+                #  Convective Flux
+                #    Requires BC_HW_T_S(#,#)
+                #    Sets keyword BC_C_T_S(#,#) to 0.0
+                #    Requires BC_TW_S(#,#)
+                elif hw is not None and c==0.0 and tw is None:
+                    eq_type = CONVECTIVE_FLUX
+                else:
+                    self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
+                    eq_type = NO_FLUX # Default
+                    self.set_bcs_solids_energy_eq_type(eq_type)
+
+            if eq_type is not None:
+                ui.combobox_solids_energy_eq_type.setCurrentIndex(eq_type)
 
         if energy_eq:
             #Define wall temperature
@@ -1277,38 +1349,71 @@ class BCS(object):
             else:
                 ui.lineedit_keyword_bc_tw_s_2_args_BC_P.setText('')
 
-
+        # FIXME should this also depend on 'granular_energy' keyword ?
         #Select granular energy equation boundary type:
         # Selection only available with BC_JJ_PS(#)=0.0 and KT_TYPE /= 'ALGEBRAIC'
-        # Available selections:
-        #  No-Flux [DEFAULT]
-        #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
-        #    Sets keyword BC_C_THETA_M (#,#) to 0.0
-        #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
-        #  Specified Temperature
-        #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
-        #    Sets keyword BC_C_THETA_M(#,#) to 0.0
-        #    Requires BC_THETAW_M(#,#)
-        #  Specified Flux
-        #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
-        #    Requires BC_C_THETA_M(#)
-        #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+        enabled = (bc_jj_ps==0) and (kt_type != 'ALGEBRAIC')
+        ui.groupbox_solids_granular_energy_eq.setEnabled(enabled)
+        eq_type = None
+        if enabled:
+            eq_type = self.bcs[BC0].get('solid_%d_granular_energy_eq_type'%P)
+            if eq_type is None:
+                hw = self.project.get_value('bc_hw_theta_m', args=[BC0,P])
+                c =  self.project.get_value('bc_c_theta_m', args=[BC0,P])
+                theta =  self.project.get_value('bc_thetaw_m', args=[BC0,P])
+                #  No-Flux [DEFAULT]
+                #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+                #    Sets keyword BC_C_THETA_M (#,#) to 0.0
+                #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+                if (hw==0.0) and (c==0.0) and (theta is None):
+                    eq_type = NO_FLUX
+                #  Specified Temperature
+                #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
+                #    Sets keyword BC_C_THETA_M(#,#) to 0.0
+                #    Requires BC_THETAW_M(#,#)
+                elif (hw is None) and (c==0.0) and theta is not None:
+                    eq_type == SPECIFIED_TEMPERATURE
+                #  Specified Flux
+                #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
+                #    Requires BC_C_THETA_M(#)
+                #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+                elif (hw==0.0) and (c is not None) and (theta is None):
+                    eq_type = SPECIFIED_FLUX
+                else:
+                    self.error("Cannot determine type for solid %s granular energy boundary equation %s" % (P,BC0))
+                    eq_type = NO_FLUX # Default
+                    self.set_bcs_solids_granular_energy_eq_type(eq_type)
 
-        #Define granular temperature
-        # Specification only available with 'Specified Temperature' BC type
-        # Sets keyword BC_THETAW_M(#,#)
-        # DEFAULT value of 0.0
+            if eq_type is not None:
+                ui.combobox_solids_granular_energy_eq_type.setCurrentIndex(eq_type)
 
-        #Define constant flux
-        # Specification only available with 'Specified Flux' BC type
-        # Sets keyword BC_C_THETA_M(#,#)
-        # DEFAULT value of 0.0
+        if enabled:
+            #Define granular temperature
+            # Specification only available with 'Specified Temperature' BC type
+            # Sets keyword BC_THETAW_M(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+            key = 'bc_thetaw_m'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
+
+            #Define constant flux
+            # Specification only available with 'Specified Flux' BC type
+            # Sets keyword BC_C_THETA_M(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_FLUX)
+            key = 'bc_c_theta_m'
+
 
         #When solving solids species equations:
         #    Set keyword BC_HW_X_S(#,#,#) to 0.0
         #    Set keyword BC_C_X_S(#,#,#) to 0.0
         #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
-
+        #
+        # TODO:  Where do we set this?
+        #  1:  when toggling solids species eq
+        #  2:  when adding a new species
+        #  3:  when adding a new BC
 
     def setup_bcs_scalar_tab(self):
         pass
