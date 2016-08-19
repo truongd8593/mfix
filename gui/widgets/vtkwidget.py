@@ -74,15 +74,15 @@ def clean_geo_dict(dirty_dict):
     """clean the geometry dictionary so it can be saved"""
     clean_dict = {}
     for geo, geo_dict in dirty_dict.items():
-        geo_dict = clean_dict[geo] = {}
+        new_dict = clean_dict[geo] = {}
         geo_type = None
         if 'geo_type' in geo_dict:
             geo_type = geo_dict['geo_type']
-        geo_dict['geo_type'] = geo_type
+        new_dict['geo_type'] = geo_type
         for key, value in geo_dict.items():
             # filter out vtk objects/default values
             if not isinstance(value, vtk.vtkObject) and (isinstance(value, Equation) or value != DEFAULT_PARAMS[geo_type][key]):
-                geo_dict[key] = value
+                new_dict[key] = value
     return clean_dict
 
 
