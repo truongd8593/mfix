@@ -318,7 +318,7 @@ class VtkWidget(QtWidgets.QWidget):
                get_image_path('visibility.png'))
             )
         self.geometrytree.itemSelectionChanged.connect(
-            self.tree_widget_geometry_changed)
+            self.selected_geometry_changed)
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
 
         # --- geometry button ---
@@ -623,7 +623,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.vtkRenderWindow.Render()
 
     # --- geometry ---
-    def tree_widget_geometry_changed(self):
+    def selected_geometry_changed(self):
         """
         The selected geometry changed, update UI
         """
@@ -640,8 +640,11 @@ class VtkWidget(QtWidgets.QWidget):
 
         # enable/disable delete/copy/filter button
         enables = [False]*3
-        if len(current_selection) == 1 and all(top_level_items):
-            enables = [True]*3
+        if len(current_selection) == 1:
+            if all(top_level_items):
+                enables = [True]*3
+            else:
+                enables[2] = True
         elif any(top_level_items):
             enables[0] = True
 
