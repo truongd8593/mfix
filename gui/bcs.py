@@ -257,6 +257,7 @@ class BCS(object):
         self.bcs_current_indices = []
 
         tw.removeRow(row)
+        self.fixup_bcs_table(tw)
         self.bcs_setup_current_tab()
 
 
@@ -311,6 +312,9 @@ class BCS(object):
         tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
+        ui = self.ui.boundary_conditions
+        ui.top_frame.setMaximumHeight(height+(40 if nrows==0 else 32))
+        ui.top_frame.updateGeometry()
 
     def bcs_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
