@@ -189,7 +189,7 @@ class Mfix(object):
         MAIN.get_data(self.mfix_dat)
 
         print("was it GOOD?")
-        while not MAIN.good_config:
+        while not DEBUG.good_config:
             print("NOT GOOD")
             self.paused = True
             self.check_requests()

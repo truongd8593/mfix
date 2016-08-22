@@ -10,6 +10,9 @@
 
         logical :: is_pymfix = .false.
 
+        ! Flag to indicate whether the configuration is good
+        LOGICAL :: GOOD_CONFIG = .FALSE.
+
         interface assert
         module procedure assert_i, assert_d, assert_i2, assert_d2
         end interface
@@ -20,7 +23,6 @@
         module procedure write_debug_0i, write_debug_0d, write_debug_0, &
         write_debug_1i, write_debug_1d, write_debug_0l
         end interface
-
 
         contains
 
