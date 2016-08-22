@@ -126,14 +126,14 @@
 ! East face (i+1/2, j+1/2, k)
             U(IJK) = (Theta_V_se(IJK) * U_S(IJK,M) + &
                       Theta_V_ne(IJK) * U_S(IJPK,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'U_MOMENTUM', &
+            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'V_MOMENTUM', &
                ALPHA_Ve_c(IJK), AW, HW, VELW)
             U(IJK) = U(IJK) * AW
 
 ! North face (i, j+1, k)
             V(IJK) = (Theta_Vn_bar(IJK) * V_s(IJK,M) + &
                       Theta_Vn(IJK) * V_s(IJPK,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'U_MOMENTUM',&
+            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'V_MOMENTUM',&
                alpha_Vn_c(IJK), AW, HW, VELW)
             V(IJK) = V(IJK) * AW
 
@@ -141,7 +141,7 @@
             IF (DO_K) THEN
                WW(IJK) = (Theta_V_nt(IJK) * W_s(IJK,M) + &
                           Theta_V_st(IJK) * W_s(IJPK,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'U_MOMENTUM',&
+               CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'V_MOMENTUM',&
                   ALPHA_Vt_c(IJK), AW, HW, VELW)
                WW(IJK) = WW(IJK) * AW
             ENDIF
