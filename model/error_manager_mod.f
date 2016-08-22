@@ -9,6 +9,7 @@
 
       use, intrinsic :: ISO_C_BINDING
       use exit, only: mfix_exit
+      use debug, only: is_pymfix
 
       implicit none
 
@@ -39,8 +40,6 @@
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
 
-      LOGICAL :: IS_PYMFIX = .FALSE.
-
 ! Error Flag.
       INTEGER :: IER_EM
 
@@ -53,6 +52,8 @@
 ! .LOG file(s) based on user input settings.                           !
 !......................................................................!
       SUBROUTINE INIT_ERROR_MANAGER
+
+      use, intrinsic :: iso_fortran_env, only: output_unit
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -142,8 +143,12 @@
 ! error messages (at a minimum) in the .LOG file.
       IF(DMP_LOG) THEN
          NB = len_trim(LOGFILE)+1
+         IF (IS_PYMFIX) THEN
+            unit_log = output_unit
+         ELSE
          CALL OPEN_FILE(LOGFILE, NB, UNIT_LOG, '.LOG', FILE_NAME,      &
             'APPEND', 'SEQUENTIAL', 'FORMATTED', 132,  IER(myPE))
+         ENDIF
       ENDIF
 
 ! Verify that the .LOG file was successfully opened. Otherwise, flag the

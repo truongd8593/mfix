@@ -20,7 +20,7 @@
       INTEGER, PARAMETER :: UNIT_OUT = 52
 
 ! RUN_NAME.LOG file unit number. (DEFAULT/Serial 53)
-      INTEGER, PARAMETER :: UNIT_LOG = 53
+      INTEGER :: UNIT_LOG = 53
 
 ! Temporary (scratch) file unit number
       INTEGER, PARAMETER :: UNIT_TMP = 54

@@ -30,6 +30,7 @@ our %opts = (
 		     },
 	'ignore'  => ['dflib',
 		      'iso_c_binding',
+		      'iso_fortran_env',
 		     ],
 	'include' => [],
 	'recursive' => 0,

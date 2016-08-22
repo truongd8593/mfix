@@ -42,7 +42,7 @@ from mfix import des_time_march as DES_TIME_MARCH
 from mfix import discretelement as DEM
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
-from mfix import error_manager as ERROR_MANAGER
+from mfix import debug as DEBUG
 from mfix import parallel_mpi as PARALLEL_MPI
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
@@ -56,7 +56,7 @@ FLASK_APP.config['SECRET_KEY'] = \
             ''.join([random.choice(string.digits + string.ascii_letters)
             for x in range(0,64)])
 FLASK_APP.config['TOKEN_NAME'] = 'x-pymfix-auth'
-DEBUG = True
+DEBUG_FLAG = True
 
 log = logging.getLogger('werkzeug')
 logformat = logging.Formatter('pymfix: %(levelname)s %(message)s')
@@ -129,14 +129,14 @@ def main():
             os.remove(pidfile)
             log.exception('cannot bind to port %d' % port)
             _start_flask(host=host,
-                         port=find_free_port(), debug=DEBUG,
+                         port=find_free_port(), debug=DEBUG_FLAG,
                          use_reloader=use_reloader)
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
         try:
             _start_flask(host='0.0.0.0',
-                         port=port, debug=DEBUG,
+                         port=port, debug=DEBUG_FLAG,
                          use_reloader=False)
         except KeyboardInterrupt:
             traceback.print_exc()
@@ -190,7 +190,7 @@ class Mfix(object):
             MAIN.add_command_line_keyword(arg)
 
         PARALLEL_MPI.parallel_init()
-        ERROR_MANAGER.is_pymfix = True
+        DEBUG.is_pymfix = True
 
         # Read input data, check data, do computations for IC and BC locations
         # and flows, and set geometry parameters such as X, X_E, DToDX, etc.
