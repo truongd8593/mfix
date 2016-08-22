@@ -1200,13 +1200,14 @@
       if(allocated(FLAG_T  )) deallocate(FLAG_T  )
 
 ! Text flags for scalar grid.
-     if(associated(  ICBC_FLAG  )) nullify(  ICBC_FLAG  )
+     ! if(associated(  ICBC_FLAG  )) nullify(  ICBC_FLAG  )
 !     deallocate(ICBC_FLAG  )
 
-     if(associated(  ICBC_FLAG  )) then
-        deallocate(ICBC_FLAG  )
-        nullify(  ICBC_FLAG  )
-     endif
+     ! if(associated(  ICBC_FLAG  )) then
+     !    deallocate(ICBC_FLAG  )
+     !    nullify(  ICBC_FLAG  )
+     ! endif
+      error stop
 
 !gridmap
      if(allocated(IJK_ARRAY_OF)) deallocate(IJK_ARRAY_OF)

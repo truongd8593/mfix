@@ -1426,6 +1426,10 @@ contains
        enddo
     enddo
 #else
+    print *,"siz lbuf = ", SIZE(lbuf)
+    print *,"siz gbuf = ", SIZE(gbuf)
+    ! print *,"lbuf = ", lbuf
+    ! print *,"gbuf = ", gbuf
     gbuf = lbuf
 #endif
 
@@ -1503,6 +1507,10 @@ contains
     deallocate(gbuf_pack)
     deallocate(lbuf1)
 #else
+    PRINT *,"SIZ LBUF = ", SIZE(LBUF)
+    PRINT *,"SIZ GBUF = ", SIZE(GBUF)
+    ! PRINT *,"LBUF = ", LBUF
+    ! PRINT *,"GBUF = ", GBUF
     gbuf = lbuf
 #endif
 

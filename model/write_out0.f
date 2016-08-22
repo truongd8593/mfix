@@ -1003,6 +1003,8 @@
 
 !//SP Filling the processor ghost layer with the correct values
 
+      print *,"SIZE(icbc_flag) = ",size(icbc_flag)
+      print *,"SIZE(array1) = ",size(array1)
       call gather (icbc_flag,array1,PE_IO)
       call scatter (icbc_flag,array1,PE_IO)
 

@@ -196,11 +196,15 @@ class Mfix(object):
         # and flows, and set geometry parameters such as X, X_E, DToDX, etc.
         MAIN.get_data(self.mfix_dat)
 
+        print("was it GOOD?")
         while not MAIN.good_config:
+            print("NOT GOOD")
             self.paused = True
             self.check_requests()
             MAIN.get_data(self.mfix_dat)
             time.sleep(0.1)
+
+        print("GOOD!!!!")
 
         MAIN.initialize()
 
