@@ -2320,7 +2320,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
         self.update_nav_tree()
-        self.clear_unsaved_flag()
+        #self.clear_unsaved_flag() # why is unsaved_flag set?
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
