@@ -8,14 +8,6 @@ import json
 import logging
 import numpy.core
 import os
-try:
-    import packaging
-    import packaging.requirements
-    import packaging.specifiers
-    import packaging.version
-    import six
-except ImportError:
-    print("warning: can't import the module packaging")
 import random
 import socket
 import string
