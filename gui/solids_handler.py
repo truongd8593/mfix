@@ -453,14 +453,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         """update the solids detail pane for currently selected solids phase.
         if no solid phase # selected, pane is cleared and disabled"""
         ui = self.ui.solids
-        sa = ui.scrollarea_solids_detail
         phase = self.P = self.solids_current_phase
         if phase is None: #name is None or phase is None: # current solid phase name.
             # Disable all inputs
             self.update_solids_species_table()
             self.fixup_solids_table(ui.tablewidget_solids)
-            sa.setEnabled(False)
-            for item in widget_iter(sa):
+            ui.detail_pane.setEnabled(False)
+            for item in widget_iter(ui.detail_pane):
                 if isinstance(item, QtWidgets.QCheckBox):
                     item.setChecked(False)
                 if isinstance(item, QtWidgets.QLineEdit):
@@ -475,7 +474,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         model = solid['model']
 
         # Enable the input areas, initialize to values for current solid
-        sa.setEnabled(True)
+        ui.detail_pane.setEnabled(True)
         ui.lineedit_solids_phase_name.setText(self.solids_current_phase_name)
         self.setup_combobox_solids_model()
 
