@@ -258,8 +258,6 @@ class MfixGuiTests(TestQApplication):
         # Stop mfix, check for log.
         QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
         waitFor(100)
-        logfile = os.path.join(self.rundir, '%s.LOG' % self.runname)
-        self.assertTrue(os.path.exists(logfile))
 
     def test_description_ascii(self):
         self.open_tree_item('run')
