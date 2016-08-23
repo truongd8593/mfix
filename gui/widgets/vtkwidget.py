@@ -129,7 +129,7 @@ def purge_multi_solids(fname):
     newfile = os.path.join(dir, name + '.onesolid.stl')
     multi_solid = 0
     with open(fname, "r") as input:
-        with open(newfile, "wb") as output:
+        with open(newfile, "w") as output:
             output.write('solid ascii\n')
             for line in input:
                 if 'solid' not in line:
