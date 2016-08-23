@@ -964,7 +964,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and tw is not None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
+                    #self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
                     self.set_bcs_fluid_energy_eq_type(eq_type)
 
@@ -1039,7 +1039,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and xw is not None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
+                    #self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
                     self.set_bcs_fluid_species_eq_type(eq_type)
 
@@ -1332,7 +1332,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and tw is None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
+                    #self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
                     eq_type = NO_FLUX # Default
                     self.set_bcs_solids_energy_eq_type(eq_type)
 
@@ -1417,7 +1417,7 @@ class BCS(object):
                 elif (hw==0.0) and (c is not None) and (theta is None):
                     eq_type = SPECIFIED_FLUX
                 else:
-                    self.error("Cannot determine type for solid %s granular energy boundary equation %s" % (P,BC0))
+                    #self.error("Cannot determine type for solid %s granular energy boundary equation %s" % (P,BC0))
                     eq_type = NO_FLUX # Default
                     self.set_bcs_solids_granular_energy_eq_type(eq_type)
 
