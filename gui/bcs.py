@@ -866,12 +866,22 @@ class BCS(object):
         if self.fluid_solver_disabled:
             # we shouldn't be on this tab!
             return
+        if not self.bcs_current_indices:
+            return # Disable inputs?
+        BC0 = self.bcs_current_indices[0]
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+        if bc_type.endswith('W'):
+            self.setup_bcs_fluid_wall_tab()
+
+
+    def setup_bcs_fluid_wall_tab(self):
         ui = self.ui.boundary_conditions
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
         #
         if not self.bcs_current_indices:
-            return # Nothing selected.  What can we do? (Clear out all lineedits?)
-
+            return # Nothing selected.  (Clear out all lineedits?)
         BC0 = self.bcs_current_indices[0]
 
         bc_type = self.project.get_value('bc_type', args=[BC0])
@@ -1083,6 +1093,26 @@ class BCS(object):
 
 
     def setup_bcs_solids_tab(self, P):
+        #Solids-# (tab) - (Replace with phase name defined by the user)
+        # Note, solids phases are numbered 1-N
+        self.bcs_current_solid = self.P = P
+        if P is None: # Nothing to do
+            return
+
+        if not self.bcs_current_indices: # No region selected
+            # TODO clear all widgets (?)
+            return
+        BC0 = self.bcs_current_indices[0]
+
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+        if bc_type.endswith('W'):
+            self.setup_bcs_solids_wall_tab(P)
+
+
+    def setup_bcs_solids_wall_tab(self, P):
         #Solids-# (tab) - (Replace with phase name defined by the user)
         # Note, solids phases are numbered 1-N
         self.bcs_current_solid = self.P = P
@@ -1409,7 +1439,6 @@ class BCS(object):
             enabled = (eq_type==SPECIFIED_FLUX)
             key = 'bc_c_theta_m'
 
-
         #When solving solids species equations:
         #    Set keyword BC_HW_X_S(#,#,#) to 0.0
         #    Set keyword BC_C_X_S(#,#,#) to 0.0
@@ -1420,53 +1449,75 @@ class BCS(object):
         #  2:  when adding a new species
         #  3:  when adding a new BC
 
+
     def setup_bcs_scalar_tab(self):
+        #Scalar (tab) - Tab only available if scalar equations are solved
+        nscalar = self.project.get_value('nscalar', default=0)
+        if nscalar==0: # We shouldn't be here
+            # Clear out pane?
+            return
+        if not self.bcs_current_indices: # nothing selected
+            return
+        BC0 = self.bcs_current_indices[0]
+        bc_type = self.project.get_value('bc_type', args=BC0)
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+        if bc_type.endswith('W'):
+            self.setup_bcs_scalar_wall_tab()
+
+    def setup_bcs_scalar_wall_tab(self):
+        #Note that this tab should only be available if scalar
+        #equations are being solved.  Furthermore, the number of
+        #scalars requiring input (here 2) comes from the number of
+        #scalar equations specified by the user.
+        nscalar = self.project.get_value('nscalar', default=0)
+        if nscalar == 0:
+            # Clear contents?
+            return
+
+        #    Select scalar boundary type:
+        # Available selections:
+        #  No-Flux [DEFAULT]
+        #    Sets keyword BC_HW_SCALAR(#,#) to 0.0
+        #    Sets keyword BC_C_SCALAR(#,#) to 0.0
+        #    Sets keyword BC_SCALARW(#,#) to UNDEFINED
+        #  Specified Temperature
+        #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+        #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+        #    Requires BC_SCALARW (#,#)
+        #  Specified Flux
+        #    Sets keyword BC_HW_T_S(#,#) to 0.0
+        #    Requires BC_C_SCALAR (#)
+        #    Sets keyword BC_SCALARW (#,#) to UNDEFINED
+        #  Convective Flux
+        #    Requires BC_HW_T_S(#,#)
+        #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+        #    Requires BC_SCALARW (#,#)
+        #    Define wall temperature
+        # Specification only available with 'Specified Temperature' BC type
+        # Sets keyword BC_SCALARW (#,#)
+        # DEFAULT value of 0.0
+        #    Define constant flux
+        # Specification only available with 'Specified Flux' BC type
+        # Sets keyword BC_C_SCALAR (#,#)
+        # DEFAULT value of 0.0
+        #    Define transfer coefficient
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_HW_SCALAR(#,#)
+        # DEFAULT value of 0.0
+        #    Define free stream temperature
+
+        # Specification only available with 'Convective Flux' BC type
+        # Sets keyword BC_SCALARW (#,#)
+        # DEFAULT value of 0.0
+
+
+
         pass
 
+
 """
-Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
-
-Scalar (tab) - Tab only available if scalar equations are solved
-#    Select scalar boundary type:
-# Available selections:
-#  No-Flux [DEFAULT]
-#    Sets keyword BC_HW_SCALAR(#,#) to 0.0
-#    Sets keyword BC_C_SCALAR(#,#) to 0.0
-#    Sets keyword BC_SCALARW(#,#) to UNDEFINED
-#  Specified Temperature
-#    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
-#    Sets keyword BC_C_SCALAR (#,#) to 0.0
-#    Requires BC_SCALARW (#,#)
-#  Specified Flux
-#    Sets keyword BC_HW_T_S(#,#) to 0.0
-#    Requires BC_C_SCALAR (#)
-#    Sets keyword BC_SCALARW (#,#) to UNDEFINED
-#  Convective Flux
-#    Requires BC_HW_T_S(#,#)
-#    Sets keyword BC_C_SCALAR (#,#) to 0.0
-#    Requires BC_SCALARW (#,#)
-#    Define wall temperature
-# Specification only available with 'Specified Temperature' BC type
-# Sets keyword BC_SCALARW (#,#)
-# DEFAULT value of 0.0
-#    Define constant flux
-# Specification only available with 'Specified Flux' BC type
-# Sets keyword BC_C_SCALAR (#,#)
-# DEFAULT value of 0.0
-#    Define transfer coefficient
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_HW_SCALAR(#,#)
-# DEFAULT value of 0.0
-#    Define free stream temperature
-
-# Specification only available with 'Convective Flux' BC type
-# Sets keyword BC_SCALARW (#,#)
-# DEFAULT value of 0.0
-
-Mockup of Task pane for specifying the Scalar properties for WALL boundary condition regions.
-Note that this tab should only be available if scalar equations are being solved. Furthermore, the
-number of scalars requiring input (here 2) comes from the number of scalar equations specified by
-the user.
 Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
 Fluid (tab)
 #    Define volume fraction
