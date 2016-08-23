@@ -548,27 +548,6 @@ class BCS(object):
             self.setup_bcs_scalar_tab()
 
 
-    def bcs_set_volume_fraction_limit(self):
-        pass
-
-    def handle_bcs_volume_fraction(self, widget, val, args):
-        pass
-
-    def update_bcs_fluid_mass_fraction_table(self):
-        pass
-
-    def handle_bcs_fluid_mass_fraction(self, widget, value_dict, args):
-        pass
-    def update_bcs_fluid_mass_fraction_total(self):
-        pass
-    def update_bcs_solids_mass_fraction_table(self):
-        pass
-
-    def handle_bcs_solids_mass_fraction(self, widget, value_dict, args):
-        pass
-    def update_bcs_solids_mass_fraction_total(self):
-        pass
-
     def bcs_extract_regions(self):
         if self.bcs:
             # We assume that bc regions have been initialized correctly
