@@ -508,7 +508,8 @@ class ProjectManager(Project):
         if updates:
             self.registered_widgets[key] = updates
         else:
-            del self.registered_widgets[key]
+            if key in self.registered_widgets:
+                del self.registered_widgets[key]
             if key in self.registered_keywords:
                 self.registered_keywords.remove(key)
 
