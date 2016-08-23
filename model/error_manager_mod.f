@@ -9,7 +9,7 @@
 
       use, intrinsic :: ISO_C_BINDING
       use exit, only: mfix_exit
-      use debug, only: is_pymfix
+      use debug, only: is_pymfix, good_config
 
       implicit none
 
@@ -653,6 +653,7 @@
 
       CALL GLOBAL_ALL_SUM(IER_EM)
       REINIT_ERROR = (IER_EM /= 0)
+      GOOD_CONFIG = .NOT.REINIT_ERROR
       IER_EM = 0
       RETURN
       END FUNCTION REINIT_ERROR
