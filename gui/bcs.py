@@ -308,12 +308,13 @@ class BCS(object):
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
-        tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
+        tw.setMaximumHeight(height)
+        tw.setMinimumHeight(header_height)
         tw.updateGeometry() #? needed?
 
         ui = self.ui.boundary_conditions
-        ui.top_frame.setMaximumHeight(height+(40 if nrows==0 else 32))
+        ui.top_frame.setMaximumHeight(height+40)
+        ui.top_frame.setMinimumHeight(header_height+40)
         ui.top_frame.updateGeometry()
 
 
@@ -607,7 +608,8 @@ class BCS(object):
             #    continue
             for (region_name, data) in self.bcs_region_dict.items():
 
-                ext2 = data.get('from',[]) + data.get('to',[])
+                ext2 = [0 if x is None else x for x in
+                        data.get('from',[]) + data.get('to',[])]
 
                 # TODO this only works for a single STL
                 if (is_stl and data.get('type')=='STL'
