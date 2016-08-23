@@ -285,7 +285,7 @@ class BCS(object):
 
 
     def fixup_bcs_table(self, tw, stretch_column=0):
-        # TODO fix and unify all the fixup_*_table functions
+        ui = self.ui.boundary_conditions
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -308,14 +308,17 @@ class BCS(object):
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height)
-        tw.setMinimumHeight(header_height)
-        tw.updateGeometry() #? needed?
 
-        ui = self.ui.boundary_conditions
-        ui.top_frame.setMaximumHeight(height+40)
-        ui.top_frame.setMinimumHeight(header_height+40)
-        ui.top_frame.updateGeometry()
+        if tw == ui.tablewidget_regions:
+            ui.top_frame.setMaximumHeight(height+40)
+            ui.top_frame.setMinimumHeight(header_height+40)
+            ui.top_frame.updateGeometry()
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+        else:
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(height)
+        tw.updateGeometry() #? needed?
 
 
     def bcs_update_enabled(self):

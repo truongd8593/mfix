@@ -276,7 +276,7 @@ class ICS(object):
 
 
     def fixup_ics_table(self, tw, stretch_column=0):
-        # TODO fix and unify all the fixup_*_table functions
+        ui = self.ui.initial_conditions
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -293,20 +293,22 @@ class ICS(object):
         # outside of this function.  We need to call this everytime window geometry changes
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
-
         if nrows==0:
             height = header_height+scrollbar_height
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
-        tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
-        tw.updateGeometry() #? needed?
 
-        ui = self.ui.initial_conditions
-        if tw == ui.tablewidget_regions: # Adjust top splitter
-            ui.top_frame.setMaximumHeight(height+(40 if nrows==0 else 32))
+        if tw == ui.tablewidget_regions: # main table, adjust top splitter
+            ui.top_frame.setMaximumHeight(height+40)
+            ui.top_frame.setMinimumHeight(header_height+40)
             ui.top_frame.updateGeometry()
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+        else: # mass fraction tables
+            tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+            tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
+        tw.updateGeometry() #? needed?
 
 
     def ics_update_enabled(self):

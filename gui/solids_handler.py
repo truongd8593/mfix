@@ -327,8 +327,15 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
-        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
+        if tw == ui.tablewidget_solids: # In a splitter
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+            ui.top_frame.setMaximumHeight(height+40)
+            ui.top_frame.setMinimumHeight(header_height+40)
+            ui.top_frame.updateGeometry()
+        else:
+            tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+            tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
