@@ -412,6 +412,11 @@ class MfixGui(QtWidgets.QMainWindow,
         tree.setMaximumWidth(tree.fontMetrics().width('Boundary Conditions') + 10)
         tree.setMinimumWidth(tree.fontMetrics().width('Chemistry') + 10)
 
+        # Make splitters non-collapsing
+        for widget in widget_iter(self):
+            if isinstance(widget, QtWidgets.QSplitter):
+                widget.setChildrenCollapsible(False)
+
         # Job manager / monitor
         self.job_manager = JobManager(self)
         self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
