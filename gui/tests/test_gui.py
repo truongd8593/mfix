@@ -174,7 +174,6 @@ class MfixGuiTests(TestQApplication):
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
-            print("DEBUG: the run button is ", self.mfix.ui.run.button_run_mfix.text())
             retry('running/paused', delay=500)
         self.attempts = 0
         print("PAUSED")
