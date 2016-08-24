@@ -1423,6 +1423,7 @@ class Project(object):
         for name in dir(self):
             attr = getattr(self, name)
             if isinstance(attr, Collection):
+                # Should be a 'reset' or 'clear' method for collections
                 Collection.__init__(attr)
 
     def __deepcopy__(self, memo):
