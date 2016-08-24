@@ -399,9 +399,14 @@ class ICS(object):
 
     def ics_set_region_keys(self, name, idx, data ):
         # Update the keys which define the box-shaped region the IC applies to
-        for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+
+        no_k = self.project.get_value('no_k')
+        for (key, val) in zip(('ic_x_w', 'ic_y_s', 'ic_z_b',
+                               'ic_x_e', 'ic_y_n', 'ic_z_t'),
                               data['from']+data['to']):
-            key = 'ic_' + key
+            # ic_z_t and ic_z_b keywords should not be added when no_k=True
+            if no_k and key in ('ic_z_t', 'ic_z_b'):
+                continue
             self.update_keyword(key, val, args=[idx])
 
     def ics_change_region_name(self, old_name, new_name):
