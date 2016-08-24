@@ -17,7 +17,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE PHYSICAL_PROP(IER, LEVEL)
+      SUBROUTINE PHYSICAL_PROP(MFIX_DAT, IER, LEVEL)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -36,6 +36,8 @@
 ! Global error Flag.
       INTEGER, intent(inout) :: IER
       INTEGER, intent(in) :: LEVEL
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -56,7 +58,7 @@
 ! Calculate density only. This is invoked several times within iterate,
 ! making it the most frequently called.
       if(LEVEL == 0) then
-         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg(MFIX_DAT)
            DO M=1,SMAX
               if(DENSITY(M)) CALL PHYSICAL_PROP_ROs(M)
            ENDDO
@@ -75,7 +77,7 @@
 ! the initialization (before starting the time march) and at the start
 ! of each step step thereafter.
       elseif(LEVEL == 2) then
-         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg(MFIX_DAT)
          if(SP_HEAT(0)) CALL PHYSICAL_PROP_CPg
          DO M=1,SMAX
             if(DENSITY(M)) CALL PHYSICAL_PROP_ROs(M)
@@ -120,7 +122,7 @@
 !  Author: J. Musser                                  Date: 28-JUN-13  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE PHYSICAL_PROP_ROg
+      SUBROUTINE PHYSICAL_PROP_ROg(MFIX_DAT)
 
 ! Global variables:
 !---------------------------------------------------------------------//
@@ -154,6 +156,9 @@
       USE usr_prop, only: gas_density
       IMPLICIT NONE
 
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Average molecular weight
@@ -166,7 +171,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) call read_database0
+      IF(.NOT.database_read) call read_database0(mfix_dat)
 
 ! User-defined function
       IF(USR_ROg) THEN

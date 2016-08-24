@@ -140,7 +140,7 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DO_ITERATION
+      SUBROUTINE DO_ITERATION(MFIX_DAT)
 
       USE cont, only: solve_continuity
          USE cutcell, only: cartesian_grid
@@ -162,6 +162,9 @@
          use turb, only: k_epsilon
 
       IMPLICIT NONE
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER :: M
 
@@ -187,7 +190,7 @@
       IF (CALL_USR) CALL USR2
 
 ! Calculate coefficients, excluding density and reactions.
-      CALL CALC_COEFF(IER, 1)
+      CALL CALC_COEFF(MFIX_DAT, IER, 1)
       IF (IER_MANAGER()) return
 
 ! Diffusion coefficient and source terms for user-defined scalars
@@ -207,7 +210,7 @@
       IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
 
 ! Calculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
+      CALL PHYSICAL_PROP(MFIX_DAT, IER, 0)
       IF (IER_MANAGER()) return
 
 ! Calculate chemical reactions.
@@ -279,7 +282,7 @@
       ENDIF
 
 ! Recalculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
+      CALL PHYSICAL_PROP(MFIX_DAT, IER, 0)
       IF (IER_MANAGER()) return
 
 ! Update wall velocities:

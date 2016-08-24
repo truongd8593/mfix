@@ -34,7 +34,7 @@
 
       CONTAINS
 
-      SUBROUTINE INITIALIZE
+      SUBROUTINE INITIALIZE(MFIX_DAT)
 !f2py threadsafe
 
 #ifdef MPI
@@ -80,13 +80,15 @@
 
       IMPLICIT NONE
 
+      ! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
       ! Temporary storage for DT
      DOUBLE PRECISION :: DT_tmp
       ! Save TIME in input file for RESTART_2
      DOUBLE PRECISION :: TIME_SAVE
 
      INTEGER :: LL, MM
-
 
      !--------------------------  ARRAY ALLOCATION -----------------------!
 
@@ -349,7 +351,7 @@
       CALL RRATES_INIT()
 
 ! Calculate all the coefficients once before entering the time loop
-      CALL INIT_COEFF(IER)
+      CALL INIT_COEFF(MFIX_DAT, IER)
 
       DO MM=1, MMAX
          F_gs(:,MM) = ZERO

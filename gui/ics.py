@@ -743,14 +743,15 @@ class ICS(object):
             d = ic.keyword_dict
             extent = [d.get(k,None) for k in ('ic_x_w', 'ic_y_s', 'ic_z_b',
                                               'ic_x_e', 'ic_y_n', 'ic_z_t')]
-            extent = [None if x is None else x.value for x in extent]
-            if any (x is None for x in extent):
-                self.warn("initial condition %s: invalid extents %s" %
-                           (ic.ind, extent))
-                continue
+            extent = [0 if x is None else x.value for x in extent]
+            #if any (x is None for x in extent):
+            #    self.warn("initial condition %s: invalid extents %s" %
+            #               (ic.ind, extent))
+            #    continue
             for (region_name, data) in self.ics_region_dict.items():
-                ext2 = data.get('from',[]) + data.get('to',[])
-                if data.get('from',[]) + data.get('to',[]) == extent:
+                ext2 = [0 if x is None else x for x in
+                        (data.get('from',[]) + data.get('to',[]))]
+                if ext2 == extent:
                     if data.get('available', True):
                         self.ics_add_regions_1([region_name], [ic.ind])
                         break

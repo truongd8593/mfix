@@ -9,7 +9,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RESET_NEW
+      SUBROUTINE RESET_NEW(MFIX_DAT)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -20,6 +20,9 @@
       USE trace, only: trd_s_c, trd_s_co
       use turb, only: k_epsilon
       IMPLICIT NONE
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -75,8 +78,7 @@
       END DO
 
 ! Recalculate all coefficients
-      CALL CALC_COEFF_ALL (0, IER)
+      CALL CALC_COEFF_ALL(MFIX_DAT, 0, IER)
 
       RETURN
       END SUBROUTINE RESET_NEW
-
