@@ -129,7 +129,7 @@ def purge_multi_solids(fname):
     newfile = os.path.join(dir, name + '.onesolid.stl')
     multi_solid = 0
     with open(fname, "r") as input:
-        with open(newfile, "wb") as output:
+        with open(newfile, "w") as output:
             output.write('solid ascii\n')
             for line in input:
                 if 'solid' not in line:
@@ -471,12 +471,12 @@ class VtkWidget(QtWidgets.QWidget):
                 btns['color'] = toolbutton
 
             # opacity
-            slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-            slider.setRange(0, 100)
-            slider.setFixedWidth(40)
-            slider.sliderReleased.connect(partial(self.change_opacity, geo, slider))
-            layout.addWidget(slider, i, 3)
-            btns['opacity'] = slider
+            opacity = QtWidgets.QDoubleSpinBox()
+            opacity.setRange(0, 1)
+            opacity.setSingleStep(0.1)
+            opacity.valueChanged.connect(partial(self.change_opacity, geo, opacity))
+            layout.addWidget(opacity, i, 3)
+            btns['opacity'] = opacity
 
             # label
             label = QtWidgets.QLabel(geo_name)
@@ -532,7 +532,7 @@ class VtkWidget(QtWidgets.QWidget):
                     elif key == 'color':
                         wid.setStyleSheet("QToolButton{{ background: {};}}".format(value.name()))
                     elif key == 'opacity':
-                        wid.setValue(value*100)
+                        wid.setValue(value)
 
     def emitUpdatedValue(self, key, value, args=None):
         """emit an updates value"""
@@ -2252,13 +2252,14 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.render()
 
-    def change_opacity(self, name, slider):
+    def change_opacity(self, name, opacity):
         """given a scene actor type, change the opacity"""
-        value = slider.value()/100.0
+        value = opacity.value()
         self.visual_props[name]['opacity'] = value
 
         for actor in self.get_actors(name):
-            actor.GetProperty().SetOpacity(value)
+            if actor is not None:
+                actor.GetProperty().SetOpacity(value)
         self.render()
 
     def set_visible_btn_image(self, btn, checked):

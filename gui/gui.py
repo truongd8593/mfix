@@ -530,10 +530,8 @@ class MfixGui(QtWidgets.QMainWindow,
         PARAMETER_DICT.clear()
         PARAMETER_DICT.update(base_parameters)
 
-        self.unsaved_flag = False
-
         self.update_nav_tree()
-        #self.clear_unsaved_flag() - sets window title to MFIX - $project_file
+        self.clear_unsaved_flag()
         #self.set_project_file(None)  - do we want to do this?
 
 
@@ -1899,21 +1897,18 @@ class MfixGui(QtWidgets.QMainWindow,
         project_file = self.get_project_file()
         if project_file:
             title += " - " + os.path.basename(project_file)
-        if self.unsaved_flag:
-            title += '*'
+            if self.unsaved_flag:
+                title += '*'
 
-        if self.job_manager.job:
-            if not self.job_manager.job.is_paused():
-                title += ', RUNNING'
-                if self.job_manager.job.mfix_pid is not None:
-                    title += ', process %s'% self.job_manager.job.mfix_pid
-            elif self.job_manager.job.is_paused():
-                title += ', PAUSED'
-            elif self.monitor.get_res_files():
-                title += ', STOPPED, resumable'
-        else:
-            pass
-            #title += ', EDITING'
+            if self.job_manager.job:
+                if not self.job_manager.job.is_paused():
+                    title += ', RUNNING'
+                    if self.job_manager.job.mfix_pid is not None:
+                        title += ', process %s'% self.job_manager.job.mfix_pid
+                elif self.job_manager.job.is_paused():
+                    title += ', PAUSED'
+                elif self.monitor.get_res_files():
+                    title += ', STOPPED, resumable'
         self.setWindowTitle(title)
 
     def set_save_button(self, enabled):
@@ -2325,6 +2320,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
         self.update_nav_tree()
+        #self.clear_unsaved_flag() # why is unsaved_flag set?
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]

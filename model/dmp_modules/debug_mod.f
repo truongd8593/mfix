@@ -1,10 +1,17 @@
+! -*- f90 -*-
         module debug
 !//BUGFIX 0904 added funits module here for declaration of UNIT_LOG
+        use, intrinsic :: iso_fortran_env, only: output_unit
         USE funits
 !       USE dbg_util
         implicit none
 
         integer :: idebug = 0
+
+        logical :: is_pymfix = .false.
+
+        ! Flag to indicate whether the configuration is good
+        LOGICAL :: GOOD_CONFIG = .TRUE.
 
         interface assert
         module procedure assert_i, assert_d, assert_i2, assert_d2
@@ -16,7 +23,6 @@
         module procedure write_debug_0i, write_debug_0d, write_debug_0, &
         write_debug_1i, write_debug_1d, write_debug_0l
         end interface
-
 
         contains
 
@@ -30,8 +36,12 @@
         write(filename,'("debug",f6.3)') dble(myPE)/dble(1000)
         print*,'filename ', filename
 
-        open(unit_log, file=filename, access='sequential',form='formatted')
-        rewind(unit_log)
+        if (IS_PYMFIX) then
+           unit_log = output_unit
+        else
+           open(unit_log, file=filename, access='sequential',form='formatted')
+           rewind(unit_log)
+        endif
 
         return
         end subroutine debug_init

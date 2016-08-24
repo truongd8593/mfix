@@ -29,9 +29,6 @@
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
 
-! Flag to indicate whether the configuration is good
-      LOGICAL :: GOOD_CONFIG = .FALSE.
-
       CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
       INTEGER :: CMD_LINE_ARGS_COUNT = 0
 
@@ -94,6 +91,7 @@
      !--------------------------  ARRAY ALLOCATION -----------------------!
 
      ! Allocate array storage.
+     CALL ALLOCATE_ARRAYS
      CALL ALLOCATE_ARRAYS
      IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
      IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
@@ -405,6 +403,7 @@
 !-----------------------------------------------
 
       USE compar, only: adjust_partition, mype, nodesi, nodesj, nodesk, pe_io
+      USE debug, only: good_config
       USE error_manager, only: init_error_manager, reinit_error
       USE mpi_utility, only: bcast
       USE param1, only: n_spx
@@ -418,7 +417,7 @@
 
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
-      GOOD_CONFIG = .FALSE.
+      GOOD_CONFIG = .TRUE.
 
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
@@ -467,8 +466,6 @@
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
       CALL CHECK_DATA
-
-      GOOD_CONFIG = .NOT.REINIT_ERROR()
 
       RETURN
 
@@ -576,8 +573,6 @@
          CALL DESMPI_INIT; IF(REINIT_ERROR()) RETURN
          CALL DES_STL_PREPROCESSING; IF(REINIT_ERROR()) RETURN
       ENDIF
-
-      GOOD_CONFIG = .TRUE.
 
       END SUBROUTINE CHECK_DATA
 

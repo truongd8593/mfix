@@ -138,7 +138,7 @@ class ICS(object):
         rp.save.connect(self.ics_add_regions)
         rp.cancel.connect(self.ics_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.scrollarea_detail,
+                     ui.detail_pane,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -153,7 +153,7 @@ class ICS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.scrollarea_detail,
+            for item in (ui.detail_pane,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -210,6 +210,7 @@ class ICS(object):
         tw.setItem(nrows, 0, item)
 
         self.fixup_ics_table(tw)
+
         if autoselect:
             tw.setCurrentCell(nrows, 0)
 
@@ -264,10 +265,10 @@ class ICS(object):
         self.ics_current_indices, self.ics_current_regions = indices, regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.scrollarea_detail.setEnabled(enabled)
+        ui.detail_pane.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ui.scrollarea_detail):
+            for widget in widget_iter(ui.detail_pane):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -301,6 +302,11 @@ class ICS(object):
         tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
         tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
+
+        ui = self.ui.initial_conditions
+        if tw == ui.tablewidget_regions: # Adjust top splitter
+            ui.top_frame.setMaximumHeight(height+(40 if nrows==0 else 32))
+            ui.top_frame.updateGeometry()
 
 
     def ics_update_enabled(self):
@@ -454,7 +460,7 @@ class ICS(object):
         row = get_selected_row(ui.tablewidget_regions)
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.scrollarea_detail.setEnabled(enabled)
+        ui.detail_pane.setEnabled(enabled)
 
         #Tabs group initial condition parameters for phases and additional equations.
         # Tabs are unavailable if no input is required from the user.

@@ -163,7 +163,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEPRECATED(LINE_NO, INPUT, RELEASE)
 
-         use error_manager, only: is_pymfix
+         use debug, only: is_pymfix
 
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT
@@ -197,7 +197,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE UNKNOWN_KEYWORD(LINE_NO, INPUT)
 
-         use error_manager, only: is_pymfix
+      use debug, only: is_pymfix
 
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT

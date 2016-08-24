@@ -112,7 +112,7 @@ class BCS(object):
         rp.save.connect(self.bcs_add_regions)
         rp.cancel.connect(self.bcs_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.scrollarea_detail,
+                     ui.detail_pane,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -127,7 +127,7 @@ class BCS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.scrollarea_detail,
+            for item in (ui.detail_pane,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -274,10 +274,10 @@ class BCS(object):
         self.bcs_current_regions = regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.scrollarea_detail.setEnabled(enabled)
+        ui.detail_pane.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ui.scrollarea_detail):
+            for widget in widget_iter(ui.detail_pane):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -315,6 +315,7 @@ class BCS(object):
         ui = self.ui.boundary_conditions
         ui.top_frame.setMaximumHeight(height+(40 if nrows==0 else 32))
         ui.top_frame.updateGeometry()
+
 
     def bcs_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
@@ -469,7 +470,8 @@ class BCS(object):
         row = get_selected_row(ui.tablewidget_regions)
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.scrollarea_detail.setEnabled(enabled)
+        ui.detail_pane.setEnabled(enabled)
+
         # Tabs group boundary condition parameters for phases and additional equations. Tabs are
         # unavailable if no input is required from the user.
         #
@@ -966,7 +968,6 @@ class BCS(object):
 
             key = 'bc_tw_g'
             default = 293.15 if enabled else None
-            self.print_internal("%s %s %s" % (key, default, enabled))
             setup_key_widget(key, default, enabled)
             # Hack to prevent dup. display
             if enabled:

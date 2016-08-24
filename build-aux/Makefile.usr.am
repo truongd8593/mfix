@@ -159,6 +159,7 @@ pymfix_src = \
 	$(top_srcdir)/../model/param_mod.f \
 	$(top_srcdir)/../model/param1_mod.f \
 	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/../model/dmp_modules/debug_mod.f \
 	$(top_srcdir)/../model/dmp_modules/parallel_mpi_mod.f \
 	$(top_srcdir)/../model/fldvar_mod.f \
 	$(top_srcdir)/../model/des/discretelement_mod.f \
@@ -167,7 +168,6 @@ pymfix_src = \
 	$(top_srcdir)/../model/residual_mod.f \
 	$(top_srcdir)/../model/time_step.f \
 	$(top_srcdir)/../model/main.f \
-	$(top_srcdir)/../model/error_manager_mod.f \
 	$(top_srcdir)/../model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
