@@ -624,6 +624,7 @@
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("ALLOCATE_ARRAYS_INCREMENTS")
+      IER = 0
 
 ! ALLOC increment arrays and report an allocation errors.
       if (allocated(I_OF)) deallocate(I_OF); allocate( I_OF (DIMENSION_3))

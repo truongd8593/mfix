@@ -135,7 +135,7 @@
       CALL GET_DATA(MFIX_DAT)
 
 ! Initialize the simulation
-      CALL INITIALIZE
+      CALL INITIALIZE(MFIX_DAT)
 
 ! Time march loop.
 
@@ -156,12 +156,12 @@
 
 ! Transient or steady state simulation
          DO WHILE (TIME + 0.1d0*DT < TSTOP .AND. .NOT. EXIT_SIGNAL)
-            CALL TIME_STEP_INIT
+            CALL TIME_STEP_INIT(MFIX_DAT)
             DO
                CALL ITERATE_INIT
                DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
                   NIT = NIT + 1
-                  CALL DO_ITERATION
+                  CALL DO_ITERATION(MFIX_DAT)
                ENDDO
 
                CALL POST_ITERATE

@@ -30,7 +30,7 @@ MODULE REINIT
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(2, filename)
 
-      CALL REINITIALIZE0(IER)
+      CALL REINITIALIZE0(filename, IER)
 
       REINITIALIZING = .FALSE.
 
@@ -46,7 +46,7 @@ MODULE REINIT
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REINITIALIZE0(pIER)
+      SUBROUTINE REINITIALIZE0(MFIX_DAT, pIER)
 
       USE cutcell, only: CARTESIAN_GRID
       use coeff, only: INIT_COEFF
@@ -54,6 +54,9 @@ MODULE REINIT
       use error_manager
 
       IMPLICIT NONE
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER, INTENT(OUT) :: pIER
       INTEGER :: IER
@@ -139,7 +142,7 @@ MODULE REINIT
       IF(REINIT_ERROR()) RETURN
 
 ! Calculate all the coefficients once before entering the time loop
-      CALL INIT_COEFF(IER)
+      CALL INIT_COEFF(MFIX_DAT, IER)
       IF(REINIT_ERROR()) RETURN
 
 ! After reinitialization, the field vars should pass these checks too

@@ -14,7 +14,7 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE TIME_STEP_INIT
+      SUBROUTINE TIME_STEP_INIT(MFIX_DAT)
 !f2py threadsafe
 
       USE discretelement, only: des_continuum_hybrid, discrete_element
@@ -29,6 +29,9 @@
       USE utilities, only: max_vel_inlet
 
       IMPLICIT NONE
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
@@ -65,7 +68,7 @@
       CALL UPDATE_OLD
 
 ! Calculate coefficients
-      CALL CALC_COEFF_ALL (0, IER)
+      CALL CALC_COEFF_ALL (MFIX_DAT, 0, IER)
 
 ! Calculate the stress tensor trace and cross terms for all phases.
       CALL CALC_TRD_AND_TAU()

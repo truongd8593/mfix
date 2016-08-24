@@ -37,7 +37,7 @@
 !  Purpose: Initialize logical flags.                                  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE INIT_COEFF(IER)
+      SUBROUTINE INIT_COEFF(MFIX_DAT, IER)
 
 ! Global Variables:
 !-----------------------------------------------------------------------
@@ -87,6 +87,8 @@
 ! Error flag.
       INTEGER, intent(inout) :: IER
 
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables.
 !-----------------------------------------------------------------------
@@ -207,17 +209,17 @@
 
 ! Invoke calc_coeff.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) THEN
-         CALL CALC_COEFF(IER, 2)
+         CALL CALC_COEFF(MFIX_DAT, IER, 2)
 
 ! If gas viscosity is undefined and the flag for calculating gas
 ! viscosity is turned off: Turn it on and make the call to calc_coeff.
 ! Once viscosity values have been calculated (i.e., an initial value
 ! is calculated), turn the flag off again so it isn't recalculated.
 !         IF(MU_g0 == UNDEFINED .AND. .NOT.VISC(0)) THEN
-!            VISC(0) = .TRUE.; CALL CALC_COEFF(IER, 2)
+!            VISC(0) = .TRUE.; CALL CALC_COEFF(MFIX_DAT, IER, 2)
 !            VISC(0) = .FALSE.
 !         ELSE
-!            CALL CALC_COEFF(IER, 2)
+!            CALL CALC_COEFF(MFIX_DAT, IER, 2)
 !         ENDIF
       ENDIF
 

@@ -14,7 +14,7 @@
 !  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_COEFF_ALL(FLAG, IER)
+      SUBROUTINE CALC_COEFF_ALL(MFIX_DAT, FLAG, IER)
 
 ! Global variables:
 !-----------------------------------------------------------------------
@@ -30,6 +30,9 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
       implicit none
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Dummy arguments
 !-----------------------------------------------------------------------
@@ -58,7 +61,7 @@
 
 ! Calculate all physical properties, transport properties, and exchange
 ! rates.
-      CALL CALC_COEFF(IER, 2)
+      CALL CALC_COEFF(MFIX_DAT, IER, 2)
 
 ! Calculate reaction rates and interphase mass transfer.
       CALL CALC_RRATE(IER)
@@ -95,7 +98,7 @@
 !  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_COEFF(IER, pLevel)
+      SUBROUTINE CALC_COEFF(MFIX_DAT, IER, pLevel)
 
 ! Flag for DES coupled simulation
       use discretelement, only: DES_CONTINUUM_COUPLED
@@ -103,6 +106,9 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
       implicit none
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Dummy arguments
 !-----------------------------------------------------------------------
@@ -116,7 +122,7 @@
 !-----------------------------------------------------------------------
 
 ! Calculate physical properties: (density, specific heat, diameter)
-      CALL PHYSICAL_PROP(IER, pLevel)
+      CALL PHYSICAL_PROP(MFIX_DAT, IER, pLevel)
 
 ! Calculate transport properties: (conductivity, diffusivity, ect)
       CALL TRANSPORT_PROP
