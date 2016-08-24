@@ -1641,13 +1641,9 @@ class MfixGui(QtWidgets.QMainWindow,
         if not message_text:
             message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
-        confirm = self.message(title="Info",
-                               icon="info",
-                               text=message_text,
-                               buttons=['ok','cancel'],
-                               default='cancel')
+        ok_to_delete = self.check_if_ok_to_delete_files(message_text)
 
-        if confirm != 'ok':
+        if not ok_to_delete:
             return False
 
         for path in output_files:
@@ -2106,25 +2102,12 @@ class MfixGui(QtWidgets.QMainWindow,
             self.job_manager.try_to_connect(runname_pid)
 
         if auto_rename and not project_path.endswith(runname_mfx):
-            ok_to_write = False
-            save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
-            response = self.message(title='Info',
-                                    icon='question',
-                                    text=save_msg,
-                                    buttons=['ok', 'cancel'],
-                                    default='ok')
-            if response == 'ok':
-                ok_to_write = True
+            ok_to_write = self.check_if_ok_to_write(project_file, runname_mfx)
+            if ok_to_write:
                 renamed_project_file = os.path.join(project_dir, runname_mfx)
                 if os.path.exists(renamed_project_file):
-                    clobber_msg = '%s exists, replace?' % renamed_project_file
-                    response = self.message(title='Warning',
-                                    icon='question',
-                                    text=clobber_msg,
-                                    buttons=['yes', 'no'],
-                                    default='no')
-                    if response == 'no':
-                        ok_to_write = False
+                    ok_to_write = self.check_if_ok_to_rename(renamed_project_file)
+                    if not ok_to_write:
                         log.info("Rename cancelled at user request")
 
             if ok_to_write:
@@ -2328,6 +2311,32 @@ class MfixGui(QtWidgets.QMainWindow,
         self.signal_update_runbuttons.emit('')
         self.update_nav_tree()
         #self.clear_unsaved_flag() # why is unsaved_flag set?
+
+    def check_if_ok_to_write(self, project_file, runname_mfx):
+        save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
+        response = self.message(title='Info',
+                                icon='question',
+                                text=save_msg,
+                                buttons=['ok', 'cancel'],
+                                default='ok')
+
+        return response == 'ok'
+
+    def check_if_ok_to_rename(self, renamed_project_file):
+        clobber_msg = '%s exists, replace?' % renamed_project_file
+        response = self.message(title='Warning',
+                        icon='question',
+                        text=clobber_msg,
+                        buttons=['yes', 'no'],
+                        default='no')
+
+    def check_if_ok_to_delete_files(self, message_text):
+        confirm = self.message(title="Info",
+                               icon="info",
+                               text=message_text,
+                               buttons=['ok','cancel'],
+                               default='cancel')
+        return confirm == 'ok'
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]

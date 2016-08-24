@@ -26,24 +26,6 @@ import gui
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
-    def click_ok(self):
-        retry = 0
-        while not (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
-            waitFor(10)
-            retry += 1
-        self.assertTrue(self.mfix.message_box and self.mfix.message_box.isVisible(), "message box not shown in 1s")
-        button = self.mfix.message_box.button(QtWidgets.QMessageBox.Ok)
-        if not button:
-            button = self.mfix.message_box.escapeButton()
-        QTest.mouseClick(button, Qt.LeftButton)
-
-        retry = 0
-        while (self.mfix.message_box and self.mfix.message_box.isVisible()) and retry < 100:
-            waitFor(10)
-            retry += 1
-        self.assertFalse(self.mfix.message_box.isVisible(), 'dialog box not closed within 1s')
-
-
     def setUp(self):
         """open FluidBed_DES for testing"""
         #self.xvfb = Xvfb(width=1280, height=720)
@@ -83,7 +65,9 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(waitForWindow(self.mfix), "main mfix app not open")
 
         self.mfix.get_open_filename = lambda: mfix_dat
-        QTimer.singleShot(500, self.click_ok)
+        self.mfix.check_if_ok_to_write = lambda *args: True
+        self.mfix.check_if_ok_to_rename = lambda *args: True
+        self.mfix.check_if_ok_to_delete_files = lambda *args: True
         QTest.mouseClick(self.mfix.ui.toolbutton_open, Qt.LeftButton)
 
         # We will get a confirmer for auto-rename
@@ -255,13 +239,11 @@ class MfixGuiTests(TestQApplication):
         QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
         waitFor(100)
 
-        QTimer.singleShot(3000, self.click_ok)
         # Press OK in run dialog
         QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
         waitFor(5000)
 
         # Press OK to delete output files
-        QTimer.singleShot(3000, self.click_ok)
 
         while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
             retry('resumed/paused', delay=500)
