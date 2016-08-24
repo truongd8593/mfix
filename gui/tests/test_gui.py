@@ -81,7 +81,7 @@ class MfixGuiTests(TestQApplication):
 
         # used to break out of waitFor state tests in test_run_mfix
         self.attempts = 0
-        self.maxattempts = 30
+        self.maxattempts = 100
 
 
     def tearDown(self):
