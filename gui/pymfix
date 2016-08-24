@@ -343,7 +343,7 @@ class Mfix(object):
 
     def unpause(self, _):
         " unpause "
-        if MAIN.good_config:
+        if DEBUG.good_config:
             self.paused = False
             return 200, "UNPAUSING MFIX"
         else:
