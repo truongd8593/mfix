@@ -2319,7 +2319,6 @@ class MfixGui(QtWidgets.QMainWindow,
                                 text=save_msg,
                                 buttons=['ok', 'cancel'],
                                 default='ok')
-
         return response == 'ok'
 
     def check_if_ok_to_rename(self, renamed_project_file):
@@ -2329,14 +2328,15 @@ class MfixGui(QtWidgets.QMainWindow,
                         text=clobber_msg,
                         buttons=['yes', 'no'],
                         default='no')
+        return response == 'ok'
 
     def check_if_ok_to_delete_files(self, message_text):
-        confirm = self.message(title="Info",
+        response = self.message(title="Info",
                                icon="info",
                                text=message_text,
                                buttons=['ok','cancel'],
                                default='cancel')
-        return confirm == 'ok'
+        return response == 'ok'
 
 def Usage(name):
     print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
