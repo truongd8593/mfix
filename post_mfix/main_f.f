@@ -4,7 +4,7 @@
 
       DO_XFORMS = .FALSE.
 
-      CALL F_INIT
+      CALL F_INIT('mfix.dat')
 
       STOP
     END PROGRAM POST_MFIX

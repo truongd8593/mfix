@@ -8,7 +8,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE F_INIT
+      SUBROUTINE F_INIT(MFIX_DAT)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -160,7 +160,7 @@
       ELSEIF (SELECTION.EQ.2) THEN
         CALL RES_FROM_SPX(AT_EOF,READ_SPX,REC_POINTER, TIME_REAL)
       ELSEIF (SELECTION.EQ.3) THEN
-        CALL INTERP_RES
+        CALL INTERP_RES(MFIX_DAT)
       ELSEIF (SELECTION.EQ.4) THEN
         CALL CALC_QUANTITIES
       ELSEIF (SELECTION.EQ.5) THEN

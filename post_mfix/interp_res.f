@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE INTERP_RES
+      SUBROUTINE INTERP_RES(MFIX_DAT)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -33,6 +33,9 @@
       use turb, only: k_epsilon
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Function subroutines
 !---------------------------------------------------------------------//
@@ -242,7 +245,7 @@
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
 
-      CALL CHECK_GAS_PHASE
+      CALL CHECK_GAS_PHASE(MFIX_DAT)
       CALL CHECK_SOLIDS_PHASES
       CALL SET_PARAMETERS
 ! Basic geometry checks.
