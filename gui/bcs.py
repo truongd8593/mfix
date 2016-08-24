@@ -429,13 +429,12 @@ class BCS(object):
 
         no_k = self.project.get_value('no_k')
 
-        for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+        for (key, val) in zip(('bc_x_w', 'bc_y_s', 'bc_z_b',
+                               'bc_x_e', 'bc_y_n', 'bc_z_t'),
                               data['from']+data['to']):
             # bc_z_t and bc_z_b keywords should not be added when no_k=True
-            if no_k and key in ('z_t', 'z_b'):
+            if no_k and key in ('bc_z_t', 'bc_z_b'):
                 continue
-
-            key = 'bc_' + key
             self.update_keyword(key, val, args=[idx])
 
 
