@@ -2379,8 +2379,8 @@ def main(args):
         project_file = args[0]
     if new_project and project_file: # Should we allow this - create new proj. by name?
         Usage(name)
-    if project_file and not os.path.exists(project_file):
-        print("%s: no such file or directory" % project_file)
+    if project_file and not os.path.isfile(project_file):
+        print("%s: is not a file " % project_file)
         Usage(name)
 
     qapp = QtWidgets.QApplication([])
