@@ -1006,8 +1006,10 @@ class MfixGui(QtWidgets.QMainWindow,
         while i <= prev_nscalar:
             self.unset_keyword("phase4scalar", i)
             # TODO implement a way to unset keys with wildcard
-            for ic in range(1, 1+len(self.ics)):
-                self.unset_keyword('ic_scalar', args=[ic, i])
+            for IC in range(1, 1+len(self.ics)):
+                self.unset_keyword('ic_scalar', args=[IC, i])
+            for BC in range(1, 1+len(self.bcs)):
+                self.unset_keyword('bc_scalar', args=[BC, i])
 
             i += 1
 
