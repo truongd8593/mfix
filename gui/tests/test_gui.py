@@ -92,7 +92,6 @@ class MfixGuiTests(TestQApplication):
         self.assertEqual(self.runname, self.mfix.project.get_value('run_name'))
         mfxfile = os.path.join(self.rundir, '%s.mfx' % self.runname)
         self.assertTrue(os.path.exists(mfxfile))
-        self.assertTrue('*' not in self.mfix.windowTitle())
 
     def tearDown(self):
         patterns = [
