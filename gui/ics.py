@@ -805,13 +805,14 @@ class ICS(object):
             self.error('no widget for key %s' % key)
 
         def setup_key_widget(key, default=None, enabled=True):
-            for name in ('label_%s', 'label_%s_units',
-                         'lineedit_keyword_%s_args_IC'):
-                item = getattr(ui, name%key, None)
+            for pat in ('label_%s', 'label_%s_units',
+                        'lineedit_keyword_%s_args_IC'):
+                name = pat%key
+                item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
             if not enabled:
-                get_widget(key).setText('')
+                get_widget(key).setText('') #?
                 return
 
             val = self.project.get_value(key, args=[IC0])
@@ -956,16 +957,17 @@ class ICS(object):
             self.error('no widget for key %s' % key)
 
         def setup_key_widget(key, default=None, enabled=True):
-            for name in ('label_%s', 'label_%s_units',
+            for pat in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_IC_P',
                          'lineedit_keyword_%s_args_IC',
                          'lineedit_%s_args_IC_P',
                          'lineedit_%s_args_IC'):
-                item = getattr(ui, name%key, None)
+                name = pat%key
+                item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
             if not enabled:
-                get_widget(key).setText('')
+                get_widget(key).setText('') #?
                 return
 
             no_p_keys =  ('ic_p_star',) # use keyword_args db here
@@ -1074,8 +1076,8 @@ class ICS(object):
         if val is None:
             val = default
             if enabled:
-                for ic in self.ics_current_indices:
-                    self.update_keyword(key, val, args=ic)
+                for IC in self.ics_current_indices:
+                    self.update_keyword(key, val, args=[IC])
         item.setChecked(val)
         # TODO: popup dialog to warn that this apples to all phases
 
@@ -1103,15 +1105,24 @@ class ICS(object):
         #Furthermore, the number of scalars requiring input comes from the number of
         #scalar equations specified by the user.
 
-        # Note - there's a bunch of widget registration/unregistration/creation/deletion
-        # here that could be avoided - we really only need to do this when nscalar changes
-
         if not self.ics_current_indices:
             return # No selection
         IC0 = self.ics_current_indices[0]
 
         ui = self.ui.initial_conditions
         nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar', None)
+        ui.nscalar = nscalar
+
+        key = 'ic_scalar'
+        if nscalar == old_nscalar:
+            # What do we have to do?  Just make the lineedits reflect current vals
+            for i in range(1, nscalar+1):
+                le = getattr(ui, "lineedit_ic_scalar_%s" % i, None)
+                val = self.project.get_value(key, args=[IC0, i])
+                if le:
+                    le.updateValue(key, val)
+            return
 
         page =  ui.page_scalar
         layout = page.layout()
@@ -1136,25 +1147,37 @@ class ICS(object):
 
         #Define initial scalar value
         #Sets keyword IC_SCALAR(#,#)
-        #DEFAULT value of 0.0
-        key = 'ic_scalar'
-        for i in range(nscalar):
-            label = QLabel('Scalar %s' % (i+1))
-            layout.addWidget(label, i, 0)
-            le = LineEdit()
-            le.key = key
-            le.args = ['IC', (i+1)]
-            self.project.register_widget(le, [key], ['IC', (i+1)])
-            le.setdtype('dp')
-            le.default_value = 0.0
+            #DEFAULT value of 0.0
+            key = 'ic_scalar'
+            row = 0
+            for i in range(1, nscalar+1):
+                label = QLabel('Scalar %s' % i)
+                layout.addWidget(label, row, 0)
+                le = LineEdit()
+                le.key = key
+                le.args = ['IC', i]
+                le.dtype = float
+                le.default_value = 0.0
+                self.project.register_widget(le, [key], ['IC', i])
+                setattr(ui, 'lineedit_ic_scalar_%s'%i, le)
 
-            val = self.project.get_value(key, args=[IC0, (i+1)])
-            if val is None:
-                val = 0.0
-                for ic in self.ics_current_indices:
-                    self.update_keyword(key, val, args=[ic, (i+1)])
-            le.setText(str(val))
-            layout.addWidget(le, i, 1)
+                doc =  self.keyword_doc.get(key)
+                description = doc.get('description')
+                if description is not None:
+                    description = description.replace("Scalar n", "Scalar %s"%i)
+                    msg = '<b>%s</b>: %s</br>' % (key, description)
+                    le.setToolTip(msg)
+                    le.help_text = msg # TODO: can we get more info here, so help_text
+                    # is not just a repeat of the tooltip?
 
-        if spacer:
-            layout.addItem(spacer, i+1, 0)
+                val = self.project.get_value(key, args=[IC0, i])
+                if val is None:
+                    val = 0.0
+                    for IC in self.ics_current_indices:
+                        self.update_keyword(key, val, args=[IC, i])
+                le.updateValue(key, val)
+                layout.addWidget(le, row, 1)
+                row += 1
+
+            if spacer:
+                layout.addItem(spacer, row, 0)
