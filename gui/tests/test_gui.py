@@ -26,6 +26,13 @@ import gui
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
 
+    def __init__(self, *args, **kwargs):
+        super(TestQApplication, self).__init__(*args, **kwargs)
+        self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.mfix_home = os.path.dirname(self.rundir)
+        self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
+        self.runname = 'DES_FB1'
+
     def setUp(self):
         """open FluidBed_DES for testing"""
         #self.xvfb = Xvfb(width=1280, height=720)
@@ -34,10 +41,6 @@ class MfixGuiTests(TestQApplication):
         log = logging.getLogger()
         log.root.setLevel(logging.INFO)
 
-        self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.mfix_home = os.path.dirname(self.rundir)
-        self.rundir = os.path.join(self.mfix_home, 'tutorials', 'FluidBed_DES')
-        self.runname = 'DES_FB1'
         mfix_dat = os.path.join(self.rundir, 'mfix.dat')
 
         patterns = ['*.LOG', '*.OUT', '*.RES', '*.SP?', self.runname+'*', '*.mfx', 'MFIX.STOP',
@@ -339,3 +342,12 @@ class MfixGuiTests(TestQApplication):
     #def test_stop_mfix(self):
     # TODO:  write more tests: tests for kill job, select different mfix exe,
     # close window with job running, failure to start job, etc
+
+class MfixGuiTests2(MfixGuiTests):
+
+    def __init__(self, *args, **kwargs):
+        super(MfixGuiTests, self).__init__(*args, **kwargs)
+        self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.mfix_home = os.path.dirname(self.rundir)
+        self.rundir = os.path.join(self.mfix_home, 'benchmarks', 'dem', 'mini-cfb')
+        self.runname = 'MINI-CFB'
