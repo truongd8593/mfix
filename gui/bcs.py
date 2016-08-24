@@ -323,13 +323,16 @@ class BCS(object):
 
     def bcs_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
-        regions = self.ui.regions.get_region_dict()
-        nregions = len([r for r in regions.values()
-                       if r.get('type')=='STL' or 'plane' in r.get('type')])
-        disabled = (nregions==0
-                    or (self.fluid_solver_disabled
-                        and self.project.get_value('nscalar',default=0)==0
-                        and len(self.solids)==0))
+        if self.bcs:
+            disabled = False
+        else:
+            regions = self.ui.regions.get_region_dict()
+            nregions = len([r for r in regions.values()
+                            if r.get('type')=='STL' or 'plane' in r.get('type')])
+            disabled = (nregions==0
+                        or (self.fluid_solver_disabled
+                            and self.project.get_value('nscalar',default=0)==0
+                            and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
 
