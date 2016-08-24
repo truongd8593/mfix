@@ -1779,14 +1779,12 @@
 !    rdtn2.inc to change the source term.
 !  </description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_GAMA_RG(LC) = ZERO
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Gas phase radiation temperature in the IC region.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_RG(LC) = UNDEFINED
 !</keyword>
 
