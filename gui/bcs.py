@@ -427,8 +427,14 @@ class BCS(object):
                 return
             self.update_keyword('bc_type', val, args=[idx])
 
+        no_k = self.project.get_value('no_k')
+
         for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
+            # bc_z_t and bc_z_b keywords should not be added when no_k=True
+            if no_k and key in ('z_t', 'z_b'):
+                continue
+
             key = 'bc_' + key
             self.update_keyword(key, val, args=[idx])
 
