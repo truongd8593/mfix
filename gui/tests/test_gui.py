@@ -81,7 +81,7 @@ class MfixGuiTests(TestQApplication):
 
         # used to break out of waitFor state tests in test_run_mfix
         self.attempts = 0
-        self.maxattempts = 10
+        self.maxattempts = 30
 
 
     def tearDown(self):
@@ -131,7 +131,7 @@ class MfixGuiTests(TestQApplication):
             print('retrying test of "%s" state' % msg)
             self.attempts += 1
             # timed waits don't work well when testing system is loaded
-            if False and self.attempts >= self.maxattempts:
+            if self.attempts >= self.maxattempts:
                 self.fail('FAIL in %s test' % msg)
             waitFor(delay)
 
