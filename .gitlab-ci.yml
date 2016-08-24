@@ -43,8 +43,7 @@ build_job3:
     - make -C gui ../mfix
   artifacts:
     paths:
-    - mfix
-    - *.so
+    - mfix*
   only:
     - branches
   tags:
