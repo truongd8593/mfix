@@ -30,6 +30,9 @@
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Local Variables
 !---------------------------------------------------------------------//
       INTEGER L

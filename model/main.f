@@ -467,13 +467,13 @@
 
 ! Check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL CHECK_DATA
+      CALL CHECK_DATA(MFIX_DAT)
 
       RETURN
 
     END SUBROUTINE GET_DATA
 
-      SUBROUTINE CHECK_DATA
+      SUBROUTINE CHECK_DATA(MFIX_DAT)
 !f2py threadsafe
          USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
          USE constant, only: set_constants
@@ -491,6 +491,8 @@
          USE run, ONLY: run_name, run_type, time
          USE stl_preproc_des, only: DES_STL_PREPROCESSING
          IMPLICIT NONE
+
+         CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
          !-----------------------------------------------
          ! Local variables
@@ -522,8 +524,8 @@
       CALL CHECK_NUMERICS; IF(REINIT_ERROR()) RETURN
       CALL CHECK_OUTPUT_CONTROL; IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_GAS_PHASE; IF(REINIT_ERROR()) RETURN
-      CALL CHECK_SOLIDS_PHASES; IF(REINIT_ERROR()) RETURN
+      CALL CHECK_GAS_PHASE(MFIX_DAT); IF(REINIT_ERROR()) RETURN
+      CALL CHECK_SOLIDS_PHASES(MFIX_DAT); IF(REINIT_ERROR()) RETURN
       CALL SET_PARAMETERS; IF(REINIT_ERROR()) RETURN
 
 ! Basic geometry checks.
