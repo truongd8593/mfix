@@ -2,9 +2,11 @@
 
       INCLUDE 'xforms.inc'
 
+      CHARACTER(LEN=80) :: MFIX_DAT = 'mfix.dat'
+
       DO_XFORMS = .FALSE.
 
-      CALL F_INIT('mfix.dat')
+      CALL F_INIT(MFIX_DAT)
 
       STOP
     END PROGRAM POST_MFIX
