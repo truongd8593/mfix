@@ -970,7 +970,6 @@ class BCS(object):
             # Sets keyword BC_TW_G(#)
             # DEFAULT value of 293.15
             enabled = (eq_type==SPECIFIED_TEMPERATURE)
-
             key = 'bc_tw_g'
             default = 293.15 if enabled else None
             setup_key_widget(key, default, enabled)
@@ -1504,7 +1503,6 @@ class BCS(object):
         if cb is None:
             self.error("Invalid scalar_eq %s" % i)
             return
-        self.print_internal("SET BC %s EQ_TYPE %s" % (i, eq_type))
         # Available selections
         #  No-Flux [DEFAULT]
         if eq_type == NO_FLUX:
@@ -1723,7 +1721,7 @@ class BCS(object):
             # DEFAULT value of 0.0
             enabled = (eq_type==SPECIFIED_TEMPERATURE)
             key = 'bc_scalarw'
-            default = 0.0
+            default = 0.0 if enabled else None
             setup_key_widget(key, i,  default, enabled)
             # Hack to prevent dup. display
             if enabled:
@@ -1757,7 +1755,7 @@ class BCS(object):
             # DEFAULT value of 0.0
             enabled = (eq_type==CONVECTIVE_FLUX)
             key = 'bc_scalarw'
-            default = 0.0
+            default = 0.0 if enabled else None
             setup_key_widget(key, i, default, enabled, suffix='_2')
             # Hack to prevent dup. display
             if enabled:
