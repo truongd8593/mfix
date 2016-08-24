@@ -241,7 +241,7 @@
       CALL SET_IC
 
 ! Set point sources.
-      CALL SET_PS
+      CALL SET_PS(MFIX_DAT)
 
 ! Set boundary conditions
       CALL ZERO_NORM_VEL

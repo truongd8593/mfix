@@ -167,7 +167,7 @@
                CALL POST_ITERATE
 
                IF(STEADY_STATE) EXIT
-               IF(.NOT.ADJUSTDT()) EXIT
+               IF(.NOT.ADJUSTDT(MFIX_DAT)) EXIT
             ENDDO
 
 ! Exit if DT < DT_MIN

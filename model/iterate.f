@@ -163,7 +163,6 @@
 
       IMPLICIT NONE
 
-! Path to input file
       CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER :: M
@@ -820,7 +819,7 @@
 !  Purpose: Automatically adjust time step.                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION ADJUSTDT()
+      LOGICAL FUNCTION ADJUSTDT(MFIX_DAT)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -852,6 +851,8 @@
       IMPLICIT NONE
 
 ! Dummy Arguments:
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -957,7 +958,7 @@
             WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G12.5,' :-)')") DT
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-            CALL RESET_NEW
+            CALL RESET_NEW(MFIX_DAT)
 
 ! Iterate again with new dt
             ADJUSTDT = .TRUE.
