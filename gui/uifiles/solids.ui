@@ -38,6 +38,9 @@
    <property name="bottomMargin">
     <number>5</number>
    </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <item row="0" column="0">
     <widget class="QFrame" name="top_frame">
      <property name="styleSheet">
@@ -1688,7 +1691,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>626</width>
+            <width>353</width>
             <height>1281</height>
            </rect>
           </property>
@@ -2264,7 +2267,7 @@ background-color:white;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>
@@ -2302,7 +2305,7 @@ background-color:white;
               <enum>QAbstractItemView::NoSelection</enum>
              </property>
              <attribute name="horizontalHeaderVisible">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderCascadingSectionResizes">
               <bool>true</bool>

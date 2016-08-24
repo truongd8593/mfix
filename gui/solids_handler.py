@@ -14,6 +14,9 @@ from qtpy.QtCore import Qt
 QT_MAX = 16777215
 UserRole = QtCore.Qt.UserRole
 
+# ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
+DIM_M = 10
+
 #local imports
 from constants import *
 from tools.general import (set_item_noedit, get_selected_row,
@@ -327,8 +330,15 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
-        tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
+        if tw == ui.tablewidget_solids: # In a splitter
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+            ui.top_frame.setMaximumHeight(height+40)
+            ui.top_frame.setMinimumHeight(header_height+40)
+            ui.top_frame.updateGeometry()
+        else:
+            tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
+            tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
     def handle_solids_species_eq(self, enabled):
@@ -435,7 +445,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.update_nav_tree()
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
-
+        if len(self.solids) >= DIM_M:
+            ui.toolbutton_solids_add.setEnabled(False)
 
     def handle_solids_table_selection(self):
         ui = self.ui.solids
@@ -703,6 +714,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             name = tw.item(row, 0).text()
             tw.removeRow(row)
             del self.solids[name] # This is an ordered dict, keyed by name - no 'hole' problem
+
+            if len(self.solids) < DIM_M:
+                ui.toolbutton_solids_add.setEnabled(True)
 
             self.update_keyword('mmax', len(self.solids))
 

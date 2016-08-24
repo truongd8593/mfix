@@ -202,7 +202,7 @@ class Mfix(object):
             MAIN.get_data(self.mfix_dat)
             time.sleep(0.1)
 
-        MAIN.initialize()
+        MAIN.initialize(self.mfix_dat)
 
         self.t0 = float(RUN.time)
 
@@ -234,7 +234,7 @@ class Mfix(object):
     def do_step(self):
         "Run one timestep"
         start = timer()
-        STEP.time_step_init()
+        STEP.time_step_init(self.mfix_dat)
         self.time_step_init_walltime = float(timer() - start)
 
         step_incomplete = True
@@ -243,7 +243,7 @@ class Mfix(object):
             while ITERATE.nit < ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged):
                 ITERATE.nit = ITERATE.nit + 1
                 start = timer()
-                ITERATE.do_iteration()
+                ITERATE.do_iteration(self.mfix_dat)
                 self.do_iteration_walltime = float(timer() - start)
                 self.check_requests()
 
@@ -343,7 +343,7 @@ class Mfix(object):
 
     def unpause(self, _):
         " unpause "
-        if MAIN.good_config:
+        if DEBUG.good_config:
             self.paused = False
             return 200, "UNPAUSING MFIX"
         else:

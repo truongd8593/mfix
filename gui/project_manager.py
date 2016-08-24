@@ -500,7 +500,7 @@ class ProjectManager(Project):
 
     def unregister_widget(self, widget):
         key = widget.key
-        widget.disconnect()
+        widget.value_updated.disconnect()
 
         updates = self.registered_widgets.get(widget.key,[])
         updates = [(a,w) for (a,w) in updates if w != widget]

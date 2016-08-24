@@ -31,23 +31,23 @@ Assumptions and Dependencies ...................................................
 
 3. External Interface Requirements ...........................................................................................3
 User Interfaces .......................................................................................................................................... 3
-Hardware Interfaces ................................................................................................................................ 61
-0Software Interfaces ............................................................................................................................... 61
-Communications Interfaces .................................................................................................................... 61
+Hardware Interfaces ................................................................................................................................ 62
+0Software Interfaces ............................................................................................................................... 62
+Communications Interfaces .................................................................................................................... 62
 
-4. System Features .....................................................................................................................62
-5. Other Nonfunctional Requirements .....................................................................................67
-Performance Requirements ..................................................................................................................... 67
-Safety Requirements ............................................................................................................................... 67
-Security Requirements ............................................................................................................................ 67
-Software Quality Attributes .................................................................................................................... 67
-Code Style Guide .................................................................................................................................... 68
-Business Rules ........................................................................................................................................ 68
+4. System Features .....................................................................................................................63
+5. Other Nonfunctional Requirements .....................................................................................68
+Performance Requirements ..................................................................................................................... 68
+Safety Requirements ............................................................................................................................... 68
+Security Requirements ............................................................................................................................ 68
+Software Quality Attributes .................................................................................................................... 68
+Code Style Guide .................................................................................................................................... 69
+Business Rules ........................................................................................................................................ 69
 
-6. Other Requirements ..............................................................................................................68
-Appendix A: Glossary..................................................................................................................68
-Appendix B: Analysis Models .....................................................................................................68
-Appendix C: To Be Determined List ..........................................................................................68
+6. Other Requirements ..............................................................................................................69
+Appendix A: Glossary..................................................................................................................69
+Appendix B: Analysis Models .....................................................................................................69
+Appendix C: To Be Determined List ..........................................................................................69
 
 Revision History
 Name
@@ -1015,7 +1015,10 @@ Icons to add/remove/duplicate regions are given at the top
 Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
 the region to apply the initial condition.
 # Users cannot select inapplicable regions.
-# IC regions must be volumes (not planes, points, or STLs)
+# IC regions must be volumes or planes (not points or STLs)
+#  Volumes are always valid IC regions
+#  XY-Planes are valid IC regions for 2D simulations (NO_K=.TRUE.)
+#  XZ- and YZ Planes are never valid IC regions
 # No region can define more than one initial condition.
 
 Implementation Idea: Allow the user to select multiple regions in the popup window so that they can
@@ -1071,7 +1074,7 @@ Turbulence: Define k-ε turbulent dissipation
 # DEFAULT value of 0.0
 Advanced: Define radiation coefficient
 # Specification only available when solving energy equations
-# Sets keyword IC_GAMA_RG(#)
+# Sets keyword IC_GAMA_RG(#, #)
 # DEFAULT value of 0.0
 Advanced: Define radiation temperature
 # Specification only available when solving energy equations
@@ -1084,19 +1087,27 @@ Solid-# (tab) - Rename tab to user provided solids name.
 # Specification always available
 # Sets keyword IC_EP_S(#,#)
 # DEFAULT value of 0.0
+# Some input decks may or may not contain IC_EP_S keyword:
+#  Volume fraction is specified using the solids bulk density
+#    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
+#    Solids density IC_ROs is determined by the solids density model
+# IC_ROs(#) = RO_S0(#)
+# IC_ROs(#) = -- FINISH LATER -#  Volume fraction may be inferred from IC_EP_G
+#    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
+#    Only valid for one solids phase (MMAX=1)
 #    Define temperature
 # Specification always available
 # Input required when solving energy equations
+
 # Sets keyword IC_T_S(#,#)
 # DEFAULT value of 293.15
-#    Define velocity components (required)
+Define velocity components (required)
 # Specification always available
 # Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
 # DEFAULT value of 0.0
-#    Define pressure (optional)
+Define pressure (optional)
 # Specification only available for SOLIDS_MODEL(#)='TFM'
 # Sets keyword IC_P_STAR(#)
-
 # DEFAULT of 0.0
 # Common to all phases - Warn user if changed.
 Define granular temperature
@@ -1127,12 +1138,12 @@ Advanced: Define radiation coefficient
 Advanced: Define radiation temperature
 # Specification only available when solving energy equations
 # Sets keyword IC_T_RS(#,#)
+
 # DEFAULT value of 293.15
 
 Mockup of Task pane for specifying solids-# initial condition parameters.
 Scalar (tab) - Tab only available if scalar equations are solved
 #    Define initial scalar value
-
 # Sets keyword IC_SCALAR(#,#)
 # DEFAULT value of 0.0
 
@@ -1141,13 +1152,14 @@ this tab should only be available if scalar equations are being solved. Furtherm
 scalars requiring input (here 2) comes from the number of scalar equations specified by the user.
 Boundary Conditions Task Pane Window: This section allows a user to define the boundary
 conditions for the described model. This section relies on regions named in the Regions section.
+
 The top of the task pane is where users define/select BC regions
 
 Icons to add/remove/duplicate boundary conditions are given at the top
 Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
 a region to apply the boundary condition.
 # Users cannot select inapplicable regions.
-# BC regions must be planes or STLs (not volumes or points)
+# BC regions must be planes, volumes, or STLs (not points)
 # No region can define more than one boundary condition.
 Select boundary type
 # Selection is required
@@ -1155,26 +1167,28 @@ Select boundary type
 #  Mass Inflow
 #    Plane regions set keyword BC_TYPE(#) to 'MI'
 #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
+#    Not available for volume regions
 #  Pressure Outflow
 #    Plane regions set keyword BC_TYPE(#) to 'PO'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
+#    Not available for volume regions
 #  No Slip Wall
-#    Plane regions set keyword BC_TYPE(#) to 'NSW'
+#    Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
 #  Free Slip Wall
-#    Plane regions set keyword BC_TYPE(#) to 'FSW'
+#    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
 #  Partial Slip Wall
-
-#    Plane regions set keyword BC_TYPE(#) to 'PSW'
+#    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-Pressure Inflow
+#  Pressure Inflow
 #    Plane regions set keyword BC_TYPE(#) to 'PI'
+#    Not available for volume regions
 #    Not available for STL regions
-Mass Outflow
+#  Mass Outflow
 #    Plane regions set keyword BC_TYPE(#) to 'MO'
 #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
-
+#    Not available for volume regions
 # Specification always available
 # DEFAULT - No slip wall
 # Error check: mass fractions must sum to one
@@ -1204,8 +1218,7 @@ Fluid (tab)
 # Specification only available with PSW
 # Sets keyword BC_WW_G(#)
 # DEFAULT value of 0.0
-
-Select energy equation boundary type:
+#    Select energy equation boundary type:
 # Selection only available when solving energy equations
 # Available selections:
 #  No-Flux (adiabatic) [DEFAULT]
@@ -1224,12 +1237,13 @@ Select energy equation boundary type:
 #    Requires BC_HW_T_G(#)
 #    Sets keyword BC_C_T_G(#) to 0.0
 #    Requires BC_TW_G(#)
-Define wall temperature
+#    Define wall temperature
 # Specification only available with 'Specified Temperature' BC type
 # Sets keyword BC_TW_G(#)
 # DEFAULT value of 293.15
-Define constant flux
+#    Define constant flux
 # Specification only available with 'Specified Flux' BC type
+
 # Sets keyword BC_C_T_G(#)
 # DEFAULT value of 0.0
 Define transfer coefficient
@@ -1248,7 +1262,7 @@ Select species equation boundary type:
 #    Sets keyword BC_C_X_G(#) to 0.0
 #    Sets keyword BC_XW_G(#) to UNDEFINED
 #  Specified Mass Fraction
-#    Sets keyword BC_XW_T_G(#) to UNDEFINED
+#    Sets keyword BC_HW_X_G(#) to UNDEFINED
 #    Sets keyword BC_C_X_G(#) to 0.0
 #    Requires BC_XW_G(#)
 #  Specified Flux
@@ -1259,7 +1273,6 @@ Select species equation boundary type:
 #    Requires BC_HW_X_G(#)
 #    Sets keyword BC_C_X_G(#) to 0.0
 #    Requires BC_XW_G(#)
-
 Define wall mass fraction
 # Specification only available with 'Specified Mass Fraction' BC type
 # Sets keyword BC_XW_G(#)
@@ -1284,7 +1297,7 @@ Solids-# (tab) - (Replace with phase name defined by the user)
 # Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
 # Disabled (0.0) for KT_TYPE = 'GHD_2007'
 # Sets keyword BC_JJ_PS(#)
-# DEFALUT value of 1.0 when not disabled
+# DEFAULT value of 1.0 when not disabled
 #    Select type of Jackson and Johnson BC:
 # Selection only available BC_JJ_PS(#) = 1.0
 # Available selections:
@@ -1292,23 +1305,23 @@ Solids-# (tab) - (Replace with phase name defined by the user)
 #    Sets keyword BC_JJ_M to .FALSE.
 #    Sets keyword JENKINS to .FALSE.
 #  Variable specularity coefficient
-
 #    Sets keyword BC_JJ_M to .TRUE.
 #    Sets keyword JENKINS to .FALSE.
 #  Jenkins small frictional boundary
 #    Sets keyword BC_JJ_M to .FALSE.
 #    Sets keyword JENKINS to .TRUE.
-Define restitution coefficient
+#    Define restitution coefficient
 # Specification only available with BC_JJ_PS(#) = 1.0
 # Sets keyword E_W
 # DEFAULT value of 1.0
 # Required when available
-Define specularity coefficient
+#    Define specularity coefficient
 # Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
 # Sets keyword PHIP
 # DEFAULT value of 0.6
 # Required when available
-Define specularity coefficient at zero slip
+#    Define specularity coefficient at zero slip
+
 # Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
 # Sets keyword PHIP0
 # DEFAULT -blanko Optional when available
@@ -1346,7 +1359,6 @@ Select energy equation boundary type:
 #    Requires BC_TW_S(#,#)
 #  Specified Flux
 #    Sets keyword BC_HW_T_S(#,#) to 0.0
-
 #    Requires BC_C_T_S(#)
 #    Sets keyword BC_TW_S(#,#) to UNDEFINED
 #  Convective Flux
@@ -1363,6 +1375,7 @@ Define constant flux
 # DEFAULT value of 0.0
 Define transfer coefficient
 # Specification only available with 'Convective Flux' BC type
+
 # Sets keyword BC_HW_T_S(#,#)
 # DEFAULT value of 0.0
 Define free stream temperature
@@ -1399,6 +1412,7 @@ When solving solids species equations:
 #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
 
 Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
+
 Scalar (tab) - Tab only available if scalar equations are solved
 #    Select scalar boundary type:
 # Available selections:
@@ -1431,7 +1445,6 @@ Scalar (tab) - Tab only available if scalar equations are solved
 # Sets keyword BC_HW_SCALAR(#,#)
 # DEFAULT value of 0.0
 #    Define free stream temperature
-
 # Specification only available with 'Convective Flux' BC type
 # Sets keyword BC_SCALARW (#,#)
 # DEFAULT value of 0.0
@@ -1463,11 +1476,11 @@ Region orientation (e.g., XZ-Plane)
 # Sets keyword BC_MASSFLOW_G(#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
-
-Define X-Axial Velocity
+#    Define X-Axial Velocity
 # Sets keyword BC_U_G(#)
 # DEFAULT value of 0.0
-#    Define Z-Axial Velocity
+
+Define Z-Axial Velocity
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
 # For BC_TYPE='MI' and YZ-Plane region
@@ -1518,10 +1531,10 @@ Define X-Axial Velocity
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
 # Sets keyword BC_V_G(#)
-
 # DEFAULT value of 0.0
 Define temperature
 # Specification always available
+
 # Input required for any of the following
 #  Fluid density model: Ideal Gas Law
 #  Fluid viscosity model: Sutherland's Law
@@ -1551,16 +1564,24 @@ Turbulence: Define k-ε turbulent dissipation
 # DEFAULT value of 0.0
 
 Mockup of Task pane for specifying the Fluid properties for MI, boundary condition regions.
-
 Solid-# (tab) - Rename tab to user provided solids name.
 
 Define volume fraction
+
 # Specification always available
 # Sets keyword BC_EP_S(#,#)
-#  DEFAULT value of 1.0 - (sum of previous tabs) for MI and CG_MI; leave
-[UNDEFINED] for PI
+#  DEFAULT value of 1.0 - (sum of previous tabs) for MI and CG_MI;
+leave [UNDEFINED] for PI
 #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
 #  Error Check: For PI - either all are defined and sum to 1, or all are undefined
+#  Some input decks may or may not contain BC_EP_S keyword:
+#    Volume fraction is specified using the solids bulk density
+# BC_EP_S(#,#) == BC_ROP_S(#,#) / BC_ROs(#)
+# Solids density BC_ROs is determined by solids density model
+#  BC_ROs(#) = RO_S0(#)
+#  BC_ROs(#) = -- FINISH LATER -#    Volume fraction may be inferred from BC_EP_G
+# BC_EP_S(#,#) = 1.0 - BC_EP_G(#)
+# Only valid for one solids phase (MMAX=1)
 Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
 Region orientation (e.g., XZ-Plane)
 # For BC_TYPE='MI' and XZ-Plane region
@@ -1599,6 +1620,7 @@ Region orientation (e.g., XZ-Plane)
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
+
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 # For BC_TYPE='MI' and XY-Plane region
@@ -1606,9 +1628,8 @@ Region orientation (e.g., XZ-Plane)
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
 # Sets keyword BC_W_S(#,#)
-
 # DEFAULT value of 0.0
-Volumetric Flowrate (m3/s)
+#    Volumetric Flowrate (m3/s)
 # Sets keyword BC_VOLFLOW_S(#,#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)

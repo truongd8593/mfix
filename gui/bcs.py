@@ -3,13 +3,15 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget
+from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
+                            QHBoxLayout, QWidget, QGroupBox)
+
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
 from widgets.regions_popup import RegionsPopup
-from widgets.base import LineEdit
+from widgets.base import LineEdit, ComboBox
 
 from project import Equation # used for default phi_w
 
@@ -285,7 +287,7 @@ class BCS(object):
 
 
     def fixup_bcs_table(self, tw, stretch_column=0):
-        # TODO fix and unify all the fixup_*_table functions
+        ui = self.ui.boundary_conditions
         hv = QtWidgets.QHeaderView
         if PYQT5:
             resize = tw.horizontalHeader().setSectionResizeMode
@@ -308,25 +310,31 @@ class BCS(object):
         else:
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
-        tw.setMaximumHeight(height)
-        tw.setMinimumHeight(header_height)
-        tw.updateGeometry() #? needed?
 
-        ui = self.ui.boundary_conditions
-        ui.top_frame.setMaximumHeight(height+40)
-        ui.top_frame.setMinimumHeight(header_height+40)
-        ui.top_frame.updateGeometry()
+        if tw == ui.tablewidget_regions:
+            ui.top_frame.setMaximumHeight(height+40)
+            ui.top_frame.setMinimumHeight(header_height+40)
+            ui.top_frame.updateGeometry()
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+        else:
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(height)
+        tw.updateGeometry() #? needed?
 
 
     def bcs_update_enabled(self):
         # If there are no solids, no scalar equations, and the fluid solver is disabled,
-        regions = self.ui.regions.get_region_dict()
-        nregions = len([r for r in regions.values()
-                       if r.get('type')=='STL' or 'plane' in r.get('type')])
-        disabled = (nregions==0
-                    or (self.fluid_solver_disabled
-                        and self.project.get_value('nscalar',default=0)==0
-                        and len(self.solids)==0))
+        if self.bcs:
+            disabled = False
+        else:
+            regions = self.ui.regions.get_region_dict()
+            nregions = len([r for r in regions.values()
+                            if r.get('type')=='STL' or 'plane' in r.get('type')])
+            disabled = (nregions==0
+                        or (self.fluid_solver_disabled
+                            and self.project.get_value('nscalar',default=0)==0
+                            and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
 
@@ -424,9 +432,14 @@ class BCS(object):
                 return
             self.update_keyword('bc_type', val, args=[idx])
 
-        for (key, val) in zip(('x_w', 'y_s', 'z_b', 'x_e', 'y_n', 'z_t'),
+        no_k = self.project.get_value('no_k')
+
+        for (key, val) in zip(('bc_x_w', 'bc_y_s', 'bc_z_b',
+                               'bc_x_e', 'bc_y_n', 'bc_z_t'),
                               data['from']+data['to']):
-            key = 'bc_' + key
+            # bc_z_t and bc_z_b keywords should not be added when no_k=True
+            if no_k and key in ('bc_z_t', 'bc_z_b'):
+                continue
             self.update_keyword(key, val, args=[idx])
 
 
@@ -544,27 +557,6 @@ class BCS(object):
         elif self.bcs_current_tab == SCALAR_TAB:
             self.setup_bcs_scalar_tab()
 
-
-    def bcs_set_volume_fraction_limit(self):
-        pass
-
-    def handle_bcs_volume_fraction(self, widget, val, args):
-        pass
-
-    def update_bcs_fluid_mass_fraction_table(self):
-        pass
-
-    def handle_bcs_fluid_mass_fraction(self, widget, value_dict, args):
-        pass
-    def update_bcs_fluid_mass_fraction_total(self):
-        pass
-    def update_bcs_solids_mass_fraction_table(self):
-        pass
-
-    def handle_bcs_solids_mass_fraction(self, widget, value_dict, args):
-        pass
-    def update_bcs_solids_mass_fraction_total(self):
-        pass
 
     def bcs_extract_regions(self):
         if self.bcs:
@@ -801,7 +793,7 @@ class BCS(object):
             #    Requires BC_TW_S(#,#)
             tw = True
         else:
-            self.error("Invalid solid %s energy_eq type %s" % (P, eq_type))
+            self.error("Invalid solid energy_eq type %s" % eq_type)
             return
 
         for BC in self.bcs_current_indices:
@@ -849,7 +841,7 @@ class BCS(object):
             #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
             theta = None
         else:
-            self.error("Invalid solid %s granualar energy_eq type %s" % (P, eq_type))
+            self.error("Invalid granualar energy_eq type %s" % eq_type)
             return
 
         for BC in self.bcs_current_indices:
@@ -902,9 +894,10 @@ class BCS(object):
             self.error('no widget for key %s' % key)
 
         def setup_key_widget(key, default=None, enabled=True, suffix=''):
-            for name in ('label_%s', 'label_%s_units',
+            for pat in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_BC'):
-                item = getattr(ui, name%(key+suffix), None)
+                name = pat%(key+suffix)
+                item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
 
@@ -964,7 +957,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and tw is not None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
+                    #self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
                     self.set_bcs_fluid_energy_eq_type(eq_type)
 
@@ -977,7 +970,6 @@ class BCS(object):
             # Sets keyword BC_TW_G(#)
             # DEFAULT value of 293.15
             enabled = (eq_type==SPECIFIED_TEMPERATURE)
-
             key = 'bc_tw_g'
             default = 293.15 if enabled else None
             setup_key_widget(key, default, enabled)
@@ -1039,7 +1031,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and xw is not None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
+                    #self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
                     self.set_bcs_fluid_species_eq_type(eq_type)
 
@@ -1146,14 +1138,15 @@ class BCS(object):
             self.error('no widget for key %s' % key)
 
         def setup_key_widget(key, default=None, enabled=True, suffix=''):
-            for name in ('label_%s', 'label_%s_units',
+            for pat in ('label_%s', 'label_%s_units',
                          'lineedit_keyword_%s_args_BC_P',
                          'lineedit_keyword_%s_args_BC',
                          'lineedit_%s_args_BC_P',
                          'lineedit_%s_args_BC',
                          'lineedit_keyword_%s',
                          'lineedit_%s'):
-                item = getattr(ui, name%(key+suffix), None)
+                name = pat % (key+suffix)
+                item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
 
@@ -1162,7 +1155,7 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.ics_current_indices:
+            for BC in self.bcs_current_indices:
                 self.update_keyword(key, val, args=[BC] if key in no_p_keys
                                     else [BC,P])
             get_widget(key+suffix).updateValue(key, val, args=args)
@@ -1332,7 +1325,7 @@ class BCS(object):
                 elif hw is not None and c==0.0 and tw is None:
                     eq_type = CONVECTIVE_FLUX
                 else:
-                    self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
+                    #self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
                     eq_type = NO_FLUX # Default
                     self.set_bcs_solids_energy_eq_type(eq_type)
 
@@ -1417,7 +1410,7 @@ class BCS(object):
                 elif (hw==0.0) and (c is not None) and (theta is None):
                     eq_type = SPECIFIED_FLUX
                 else:
-                    self.error("Cannot determine type for solid %s granular energy boundary equation %s" % (P,BC0))
+                    #self.error("Cannot determine type for solid %s granular energy boundary equation %s" % (P,BC0))
                     eq_type = NO_FLUX # Default
                     self.set_bcs_solids_granular_energy_eq_type(eq_type)
 
@@ -1467,56 +1460,314 @@ class BCS(object):
             return
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
+        else:
+            self.print_internal("not ready for %s" % bc_type)
+
+    def clear_bcs_scalar_tab(self):
+        ui = self.ui.boundary_conditions
+        nscalar = self.project.get_value('nscalar', default=0)
+        if nscalar == 0:
+            # Clear contents?
+            return
+
+        page = ui.page_scalar
+        layout = page.layout()
+
+        spacer = None
+        for i in range(layout.count()-1, -1, -1):
+            item = layout.itemAt(i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                spacer = item
+                continue
+            if isinstance(widget, LineEdit):
+                self.project.unregister_widget(widget)
+            widget.setParent(None)
+            for w2 in widget_iter(widget):
+                if isinstance(w2, (LineEdit, ComboBox)):
+                    self.project.unregister_widget(w2)
+            widget.deleteLater()
+
+        if spacer:
+            layout.removeItem(spacer)
+        return spacer
+
+    def set_bcs_scalar_eq_type(self, eq_type, i):
+        if not self.bcs_current_indices:
+            return
+
+        ui = self.ui.boundary_conditions
+        cb = getattr(ui, 'combobox_scalar_%s_eq_type' % i, None)
+        if cb is None:
+            self.error("Invalid scalar_eq %s" % i)
+            return
+        # Available selections
+        #  No-Flux [DEFAULT]
+        if eq_type == NO_FLUX:
+            #    Sets keyword BC_HW_SCALAR(#,#) to 0.0
+            hw = 0.0
+            #    Sets keyword BC_C_SCALAR(#,#) to 0.0
+            c = 0.0
+            #    Sets keyword BC_SCALARW(#,#) to UNDEFINED
+            sw = None
+        #  Specified Temperature
+        elif eq_type == SPECIFIED_TEMPERATURE:
+            #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+            #                 ^^^^ presumably BC_HW_SCALAR
+            hw = None
+            #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+            c = 0.0
+            #    Requires BC_SCALARW (#,#)
+            sw = True
+        #  Specified Flux
+        elif eq_type == SPECIFIED_FLUX:
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            #                 ^^^^ presumably BC_HW_SCALAR
+            hw = 0.0
+            #    Requires BC_C_SCALAR (#)
+            c = True
+            #    Sets keyword BC_SCALARW (#,#) to UNDEFINED
+            sw = None
+        #  Convective Flux
+        elif eq_type == CONVECTIVE_FLUX:
+            #    Requires BC_HW_T_S(#,#)
+            #                 ^^^^ presumably BC_HW_SCALAR
+            hw = True
+            #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+            c = 0.0
+            #    Requires BC_SCALARW (#,#)
+            sw = True
+        else:
+            self.error("Invalid scalar energy_eq type %s" % eq_type)
+            return
+
+        for BC in self.bcs_current_indices:
+            # FIXME this won't survive index remapping when solids are deleted!
+            self.bcs[BC]['scalar_%s_eq_type'%i] = eq_type
+            for (key, val) in (('bc_hw_scalar', hw), ('bc_c_scalar', c), ('bc_scalarw', sw)):
+                if val is True:
+                    pass # 'required'
+                else:
+                    self.update_keyword(key, val, args=[BC,i])
+
+        self.setup_bcs_scalar_tab()
+
 
     def setup_bcs_scalar_wall_tab(self):
         #Note that this tab should only be available if scalar
         #equations are being solved.  Furthermore, the number of
         #scalars requiring input (here 2) comes from the number of
         #scalar equations specified by the user.
+        if not self.bcs_current_indices:
+            return # No selection
+        BC0 = self.bcs_current_indices[0]
+
+        ui = self.ui.boundary_conditions
         nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar', None)
+        ui.nscalar = nscalar
+
         if nscalar == 0:
             # Clear contents?
             return
 
-        #    Select scalar boundary type:
-        # Available selections:
-        #  No-Flux [DEFAULT]
-        #    Sets keyword BC_HW_SCALAR(#,#) to 0.0
-        #    Sets keyword BC_C_SCALAR(#,#) to 0.0
-        #    Sets keyword BC_SCALARW(#,#) to UNDEFINED
-        #  Specified Temperature
-        #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
-        #    Sets keyword BC_C_SCALAR (#,#) to 0.0
-        #    Requires BC_SCALARW (#,#)
-        #  Specified Flux
-        #    Sets keyword BC_HW_T_S(#,#) to 0.0
-        #    Requires BC_C_SCALAR (#)
-        #    Sets keyword BC_SCALARW (#,#) to UNDEFINED
-        #  Convective Flux
-        #    Requires BC_HW_T_S(#,#)
-        #    Sets keyword BC_C_SCALAR (#,#) to 0.0
-        #    Requires BC_SCALARW (#,#)
-        #    Define wall temperature
-        # Specification only available with 'Specified Temperature' BC type
-        # Sets keyword BC_SCALARW (#,#)
-        # DEFAULT value of 0.0
-        #    Define constant flux
-        # Specification only available with 'Specified Flux' BC type
-        # Sets keyword BC_C_SCALAR (#,#)
-        # DEFAULT value of 0.0
-        #    Define transfer coefficient
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_HW_SCALAR(#,#)
-        # DEFAULT value of 0.0
-        #    Define free stream temperature
+        page = ui.page_scalar
+        page_layout = page.layout()
 
-        # Specification only available with 'Convective Flux' BC type
-        # Sets keyword BC_SCALARW (#,#)
-        # DEFAULT value of 0.0
+        spacer = None
+        if nscalar != old_nscalar:
+            spacer = self.clear_bcs_scalar_tab()
+
+            for i in range(1, nscalar+1):
+                groupbox = QGroupBox('Scalar %s' % i)
+                groupbox.setFlat(True)
+                # TODO adjust margins/spacing
+                page_layout.addWidget(groupbox)
+                groupbox_layout = QGridLayout()
+                groupbox.setLayout(groupbox_layout)
+                #    Select scalar boundary type:
+                hbox = QHBoxLayout()
+                label = QLabel("Type")
+                hbox.addWidget(label)
+                cb = ComboBox()
+                setattr(ui, "combobox_scalar_%s_eq_type"%i, cb)
+                # Available selections:
+                cb.addItem("No-Flux")
+                cb.addItem("Specified Temperature")
+                cb.addItem("Specified Flux")
+                cb.addItem("Convective Flux")
+                cb.setCurrentIndex(NO_FLUX)
+                cb.currentIndexChanged.connect(lambda eq_type, i=i: self.set_bcs_scalar_eq_type(eq_type, i))
+                hbox.addWidget(cb)
+                hbox.addStretch()
+
+                groupbox_layout.addLayout(hbox, 0, 0, 1, -1)
+
+                row = 0
+                for (key, label_text, suffix) in (('bc_scalarw', 'Wall value', ''),
+                                          ('bc_c_scalar', 'Constant flux', ''),
+                                          ('bc_hw_scalar', 'Transfer coefficient', ''),
+                                          ('bc_scalarw', 'Free stream value', '_2')):
+                    row += 1 # Skip over "type"
+                    args = ['BC', i]
+                    label = QLabel(label_text)
+                    setattr(ui, 'label_%s_args_BC_%s' % (key+suffix, i), label)
+                    groupbox_layout.addWidget(label, row, 0)
+
+                    le = LineEdit()
+                    le.dtype = float
+                    le.key = key
+                    le.args = ['BC', i]
+                    le.default_value = 0.0 #?
+                    groupbox_layout.addWidget(le, row, 1)
+                    self.project.register_widget(le, [key], ['BC', i])
+                    setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
+
+                    # Set tooltip/help text
+                    doc =  self.keyword_doc.get(key)
+                    description = doc.get('description')
+                    if description is not None:
+                        #description = description.replace("Scalar n", "Scalar %s"%(i+1))
+                        msg = '<b>%s</b>: %s</br>' % (key, description)
+                        le.setToolTip(msg)
+                        le.help_text = msg # TODO: can we get more info here, so help_text
+                        # is not just a repeat of the tooltip?
+
+                    # Right column is the stretchy one
+                    for col in (0, 1):
+                        groupbox_layout.setColumnStretch(col, col)
+
+        # Clear memoized data above current nscalar if nscalar decreased
+        if old_nscalar is None:
+            old_nscalar = 0
+        for i in range(nscalar+1, old_nscalar+2):
+            for bc in self.bcs.values():
+                for k in list(bc.keys()):
+                    if k.startswith('scalar_%s' % i):
+                        del bc[k]
 
 
+        def get_widget(key, i):
+            for pat in ('lineedit_keyword_%s_args_BC_%s',
+                        'lineedit_%s_args_BC_%s'):
+                name = pat % (key, i)
+                widget = getattr(ui, name, None)
+                if widget:
+                    return widget
+            self.error('no widget for key %s' % key)
 
-        pass
+        def setup_key_widget(key, i, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s_args_BC_%s',
+                         'lineedit_keyword_%s_args_BC_%s'):
+                name = pat%(key+suffix, i)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            val = self.project.get_value(key, args=[BC0, i])
+            if val is None:
+                val = default
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC, i])
+            get_widget(key+suffix, i).updateValue(key, val, args=[BC0, i])
+
+        for i in range(1, nscalar+1):
+            hw = self.project.get_value('bc_hw_scalar', args=[BC0,i])
+            c = self.project.get_value('bc_c_scalar', args=[BC0,i])
+            sw = self.project.get_value('bc_scalarw', args=[BC0,i])
+            eq_type = self.bcs[BC0].get('scalar_%s_eq_type'%i)
+            cb = getattr(ui, 'combobox_scalar_%s_eq_type'%i)
+            if eq_type is None:
+                #  No-Flux [DEFAULT]
+                #    Sets keyword BC_HW_SCALAR(#,#) to 0.0
+                #    Sets keyword BC_C_SCALAR(#,#) to 0.0
+                #    Sets keyword BC_SCALARW(#,#) to UNDEFINED
+                if (hw==0) and (c==0) and (sw is None):
+                    eq_type = NO_FLUX
+                #  Specified Temperature
+                #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
+                #                 ^^^^ presumably BC_HW_SCALAR
+                #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+                #    Requires BC_SCALARW (#,#)
+                elif (hw is None) and (c==0.0) and (sw is not None):
+                    eq_type = SPECIFIED_TEMPERATURE
+                #  Specified Flux
+                #    Sets keyword BC_HW_T_S(#,#) to 0.0
+                #                 ^^^^ presumably BC_HW_SCALAR
+                #    Requires BC_C_SCALAR (#)
+                #    Sets keyword BC_SCALARW (#,#) to UNDEFINED
+                elif (hw==0.0) and (c is not None) and (sw is None):
+                    eq_type = SPECIFIED_FLUX
+                #  Convective Flux
+                #    Requires BC_HW_T_S(#,#)
+                #                 ^^^^ presumably BC_HW_SCALAR
+                #    Sets keyword BC_C_SCALAR (#,#) to 0.0
+                #    Requires BC_SCALARW (#,#)
+                elif (hw is not None) and (c==0.0) and (sw is not None):
+                    eq_type = CONVECTIVE_FLUX
+
+                if eq_type is None:
+                    eq_type = NO_FLUX # default
+                    self.set_bcs_scalar_eq_type(eq_type, i)
+                    # Message?
+
+            cb.setCurrentIndex(eq_type)
+
+            #    Define wall temperature
+            # Specification only available with 'Specified Temperature' BC type
+            # Sets keyword BC_SCALARW (#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+            key = 'bc_scalarw'
+            default = 0.0 if enabled else None
+            setup_key_widget(key, i,  default, enabled)
+            # Hack to prevent dup. display
+            if enabled:
+                le = getattr(ui, 'lineedit_keyword_bc_scalarw_2_args_BC_%s' %i)
+                le.setText('')
+            else:
+                le = getattr(ui, 'lineedit_keyword_bc_scalarw_args_BC_%s' %i)
+                le.setText('')
+
+            #    Define constant flux
+            # Specification only available with 'Specified Flux' BC type
+            # Sets keyword BC_C_SCALAR (#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==SPECIFIED_FLUX)
+            key = 'bc_c_scalar'
+            default = 0.0
+            setup_key_widget(key, i, default, enabled)
+
+            #    Define transfer coefficient
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_HW_SCALAR(#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_hw_scalar'
+            default = 0.0
+            setup_key_widget(key, i, default, enabled)
+
+            #    Define free stream temperature
+            # Specification only available with 'Convective Flux' BC type
+            # Sets keyword BC_SCALARW (#,#)
+            # DEFAULT value of 0.0
+            enabled = (eq_type==CONVECTIVE_FLUX)
+            key = 'bc_scalarw'
+            default = 0.0 if enabled else None
+            setup_key_widget(key, i, default, enabled, suffix='_2')
+            # Hack to prevent dup. display
+            if enabled:
+                le = getattr(ui, 'lineedit_keyword_bc_scalarw_args_BC_%s' %i)
+                le.setText('')
+            else:
+                le = getattr(ui, 'lineedit_keyword_bc_scalarw_2_args_BC_%s' %i)
+                le.setText('')
+
+        if spacer:
+            page_layout.addItem(spacer)
+
 
 
 """
