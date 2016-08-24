@@ -55,7 +55,7 @@
 
 
 ! CHECK MU_g0
-      IF (MU_G0 <= ZERO) THEN
+      IF (MU_G0 < ZERO) THEN
          WRITE(ERR_MSG,1001) 'MU_G0', iVal(MU_G0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
