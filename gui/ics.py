@@ -312,11 +312,12 @@ class ICS(object):
 
 
     def ics_update_enabled(self):
-        # If there are no solids, no scalar equations, and the fluid solver is disabled,
-        # then we have no input tabs on the ICs pane, so disable it completely
         if self.ics:
+            # Never disable if there are ICs defined
             disabled = False
         else:
+            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # then we have no input tabs on the ICs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = len([r for r in regions.values()
                             if r.get('type')=='box'])
