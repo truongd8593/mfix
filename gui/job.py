@@ -240,15 +240,19 @@ class JobManager(QObject):
     def mfix_proc_is_alive(self):
         """Handles process existence checks"""
         # TODO: handle queued job polling
+        if not self.job:
+            return False
         pid_contents = get_dict_from_pidfile(self.job.pidfile)
         # if local process
         pid = pid_contents.get('pid')
         if pid:
             try:
-                return os.kill(int(pid), 0)
-            except:
-                pass
-        return False
+                os.kill(int(pid), 0)
+                return True
+            except OSError:
+                return False
+        else:
+            return False
         # else check queue process (TODO)
 
     def reset_api_error_count(self):
