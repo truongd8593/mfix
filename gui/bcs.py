@@ -35,6 +35,7 @@ SCALAR_TAB = 4
 
 # Move to "constants"?
 BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+
 BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
             'Free Slip Wall', 'Partial Slip Wall',
             'Pressure Inflow', 'Mass Outflow']
@@ -42,6 +43,8 @@ BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
 (MASS_INFLOW, PRESSURE_OUTFLOW,
  NO_SLIP_WALL, FREE_SLIP_WALL, PARTIAL_SLIP_WALL,
  PRESSURE_INFLOW, MASS_OUTFLOW) = range(7)
+
+PAGE_WALL, PAGE_INFLOW, PAGE_PO, PAGE_MO = range(4) #page indices in stackedwidget
 
 (NO_FLUX, SPECIFIED_TEMPERATURE, SPECIFIED_FLUX, CONVECTIVE_FLUX) = range(4)
 SPECIFIED_MASS_FRACTION = 1
@@ -868,12 +871,20 @@ class BCS(object):
             self.error("bc_type not set for region %s" % BC0)
         if bc_type.endswith('W'):
             self.setup_bcs_fluid_wall_tab()
-
+        elif bc_type.endswith('I'):
+            self.setup_bcs_fluid_inflow_tab()
+        elif bc_type == 'PO':
+            self.setup_bcs_fluid_po_tab()
+        elif bc_type == 'MO':
+            self.setup_bcs_fluid_mo_tab()
+        else:
+            self.error("Invalid bc_type %s" % bc_type)
 
     def setup_bcs_fluid_wall_tab(self):
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
         #Fluid (tab)
         ui = self.ui.boundary_conditions
+        ui.page_fluid.setCurrentIndex(PAGE_WALL)
 
         if not self.bcs_current_indices:
             return # Nothing selected.  (Clear out all lineedits?)
@@ -1773,17 +1784,61 @@ class BCS(object):
             page_layout.addItem(spacer)
 
 
-
     def setup_bcs_fluid_inflow_tab(self):
         #Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
         #Fluid (tab)
+        ui = self.ui.boundary_conditions
+        ui.page_fluid.setCurrentIndex(PAGE_INFLOW)
+
+        if not self.bcs_current_indices:
+            return # Nothing selected.  (Clear out all lineedits?)
+        BC0 = self.bcs_current_indices[0]
+
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+
+        # as generic as possible - see comments in ics.py
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC'):
+                name = pat%(key+suffix)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC])
+            get_widget(key+suffix).updateValue(key, val, args=[BC0])
+
         #    Define volume fraction
         # Specification always available
         # Sets keyword BC_EP_G(#)
         #  DEFAULT value of 1.0 for MI and CG_MI; leave [UNDEFINED] for PI
         #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
         #  Error Check: For PI - either all are defined and sum to 1, or all are undefined
-        #    Define inflow properties: Mass inflow specification changes based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
+        enabled = True
+        key = 'bc_ep_g'
+        default = 1.0 if bc_type in ('MI', 'CG_MI') else None
+        setup_key_widget(key, default, enabled)
+
+        #    Define inflow properties: Mass inflow specification changes based on the BC_TYPE
+        # and Region orientation (e.g., XZ-Plane)
+
         # For BC_TYPE='MI' and XZ-Plane region
         #  Select mass inflow specification type:
         #    Available selections:
@@ -1796,63 +1851,22 @@ class BCS(object):
         #    Mass Flowrate (kg/s)
         # Sets keyword BC_MASSFLOW_G(#)
         # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
 
+        #  Define Tangential Velocities:
         #Define X-Axial Velocity
         # Sets keyword BC_U_G(#)
         # DEFAULT value of 0.0
         #    Define Z-Axial Velocity
         # Sets keyword BC_W_G(#)
         # DEFAULT value of 0.0
+        #
         # For BC_TYPE='MI' and YZ-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    X-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_G(#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_G(#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_W_G(#)
-        # DEFAULT value of 0.0
+        # (same as above, axial=X, tangential=Y,Z)
+
         # For BC_TYPE='MI' and XY-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    Z-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_W_G(#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_G(#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_G(#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
-        # For BC_TYPE='CG_MI' or 'PI'
-        #  Specify all velocity components:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
+        # (same as above, axial=Z, tangential=X,Y)
+        #
+        # for BC_TYPE='CG_MI' - specify all 3 as per solids inflow?
 
         #Define temperature
         # Specification always available
@@ -1887,7 +1901,7 @@ class BCS(object):
         # Specification only available with K-Epsilon turbulence model
         # Sets keywords BC_E_TURB_G(#)
         # DEFAULT value of 0.0
-        pass
+
 
 
     def setup_bcs_solids_inflow_tab(self):
@@ -1900,6 +1914,7 @@ class BCS(object):
         #  DEFAULT value of 1.0 - (sum of previous tabs) for MI and CG_MI; leave [UNDEFINED] for PI
         #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
         #  Error Check: For PI - either all are defined and sum to 1, or all are undefined
+        #
         #Define inflow properties: Mass inflow specification changes based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
         # For BC_TYPE='MI' and XZ-Plane region
         #  Select mass inflow specification type:
@@ -1920,44 +1935,11 @@ class BCS(object):
         #    Define Z-Axial Velocity
         # Sets keyword BC_W_G(#,#)
         # DEFAULT value of 0.0
+        #
         # For BC_TYPE='MI' and YZ-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    X-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_U_S(#,#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_S(#,#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_S#, (#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_S(#,#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_W_S(#,#)
-        # DEFAULT value of 0.0
         # For BC_TYPE='MI' and XY-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    Z-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_W_S(#,#)
-        # DEFAULT value of 0.0
-        #Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_S(#,#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_S(#,#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_S(#,#)
-        # DEFAULT value of 0.0
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_S(#,#)
-        # DEFAULT value of 0.0
+        # (same as above, axial/tangential changes)
+        #
         # For BC_TYPE='CG_MI' or 'PI'
         #  Specify all velocity components:
         #    Define X-Axial Velocity
