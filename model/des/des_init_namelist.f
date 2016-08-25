@@ -419,7 +419,7 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Normal spring constant [dyne/cm in CGS] for inter-particle collisions.
+!    Normal spring constant [N/m in SI] for inter-particle collisions.
 !    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN = UNDEFINED
@@ -441,7 +441,7 @@
 
 !<keyword category="Discrete Element Model" required="false" dem=.true.>
 !  <description>
-!    Normal spring constant [dyne/cm in CGS] for particle-wall collisions.
+!    Normal spring constant [N/m in SI] for particle-wall collisions.
 !    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN_W = UNDEFINED
@@ -562,7 +562,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Youngs modulus for the wall [barye in CGS]. Required when using the
+!    Youngs modulus for the wall [Pa in SI]. Required when using the
 !    Hertzian spring-dashpot model.
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
@@ -581,7 +581,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Youngs modulus for the particle [barye in CGS]. Required when using
+!    Youngs modulus for the particle [Pa in SI]. Required when using
 !    the Hertzian spring-dashpot model.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
@@ -726,7 +726,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Actual Youngs modulus for the particle [barye in CGS]. Used for
+!    Actual Youngs modulus for the particle [Pa in SI]. Used for
 !    computing correction terms for DEM conduction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
@@ -735,7 +735,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Actual Youngs modulus for the walls [barye in CGS]. Used for
+!    Actual Youngs modulus for the walls [Pa in SI]. Used for
 !    computing correction terms for DEM conduction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
