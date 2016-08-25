@@ -16,7 +16,8 @@ from widgets.base import LineEdit, ComboBox
 from project import Equation # used for default phi_w
 
 from tools.general import (set_item_noedit, set_item_enabled,
-                           get_selected_row, widget_iter)
+                           get_combobox_item, get_selected_row,
+                           widget_iter)
 
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
@@ -50,6 +51,8 @@ PAGE_WALL, PAGE_INFLOW, PAGE_PO, PAGE_MO = range(4) #page indices in stackedwidg
 SPECIFIED_MASS_FRACTION = 1
 
 DEFAULT_BC_TYPE = NO_SLIP_WALL
+
+xmap = {'X':'u', 'Y':'v', 'Z': 'w'}
 
 class BCS(object):
     #Boundary Conditions Task Pane Window: This section allows a user to define the boundary
@@ -98,6 +101,10 @@ class BCS(object):
             item = getattr(ui, 'combobox_%s_type' % name)
             setter = getattr(self, 'set_bcs_%s_type' % name)
             item.currentIndexChanged.connect(setter)
+        # Inflow pane has some special inputs
+        ui.lineedit_inflow.value_updated.connect(self.bcs_handle_inflow_input)
+        ui.combobox_fluid_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
+        ui.combobox_fluid_inflow_type.key = 'fluid_inflow'
 
 
     def bcs_show_regions_popup(self):
@@ -327,10 +334,12 @@ class BCS(object):
 
 
     def bcs_update_enabled(self):
-        # If there are no solids, no scalar equations, and the fluid solver is disabled,
         if self.bcs:
+            # Never disable if there are BCs defined
             disabled = False
         else:
+            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # then we have no input tabs on the BCs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = len([r for r in regions.values()
                             if r.get('type')=='STL' or 'plane' in r.get('type')])
@@ -1779,9 +1788,50 @@ class BCS(object):
             else:
                 le = getattr(ui, 'lineedit_keyword_bc_scalarw_2_args_BC_%s' %i)
                 le.setText('')
-
         if spacer:
             page_layout.addItem(spacer)
+
+
+    def bcs_handle_inflow_input(self, widget, data, ignore_key):
+        key, val = data.popitem()
+        for BC in self.bcs_current_indices:
+            self.update_keyword(widget.key, val, args=[BC])
+
+
+    def bcs_handle_inflow_type(self, widget, data, ignore_key):
+        ui = self.ui.boundary_conditions
+        if not self.bcs_current_indices:
+            return
+        index = widget.currentIndex()
+        for BC in self.bcs_current_indices:
+            self.bcs[BC]['inflow_type'] = index
+        BC0 = self.bcs_current_indices[0]
+
+        type_key, val = data.popitem()
+
+        if type_key == 'fluid_inflow':
+            #    Available selections:
+            #    Y-Axial Velocity (m/s) [DEFAULT]
+            if index == 0:
+                # Sets keyword BC_V_G(#)
+                # DEFAULT value of 0.0
+                axis = val[0]
+                key = 'bc_%s_g' % xmap[axis]
+                default = 0.0
+            #    Volumetric Flowrate (m3/s)
+            elif index == 1:
+                # Sets keyword BC_VOLFLOW_G(#)
+                # DEFAULT value of 0.0
+                key = 'bc_volflow_g'
+                default = 0.0
+            #    Mass Flowrate (kg/s)
+            elif index == 2:
+                # Sets keyword BC_MASSFLOW_G(#)
+                # DEFAULT value of 0.0
+                key = 'bc_massflow_g'
+                default = 0.0
+            ui.lineedit_inflow.key = key
+            self.setup_bcs_fluid_inflow_tab()
 
 
     def setup_bcs_fluid_inflow_tab(self):
@@ -1799,7 +1849,7 @@ class BCS(object):
             self.error("bc_type not set for region %s" % BC0)
             return
 
-        # as generic as possible - see comments in ics.py
+        # as generic as possible!!
 
         def get_widget(key):
             for pat in ('lineedit_keyword_%s_args_BC',
@@ -1829,8 +1879,8 @@ class BCS(object):
         # Specification always available
         # Sets keyword BC_EP_G(#)
         #  DEFAULT value of 1.0 for MI and CG_MI; leave [UNDEFINED] for PI
-        #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
-        #  Error Check: For PI - either all are defined and sum to 1, or all are undefined
+        #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0  # TODO
+        #  Error Check: For PI - either all are defined and sum to 1, or all are undefined # TODO
         enabled = True
         key = 'bc_ep_g'
         default = 1.0 if bc_type in ('MI', 'CG_MI') else None
@@ -1838,35 +1888,79 @@ class BCS(object):
 
         #    Define inflow properties: Mass inflow specification changes based on the BC_TYPE
         # and Region orientation (e.g., XZ-Plane)
+        #
+        #   (labels/keywords depend on normal and tangential directions)
+        region_name = self.bcs[BC0].get('region')
+        if not region_name:  # should not happen!
+            self.error("No region defined for BC %s" % BC0)
+            return
+        region_info = self.bcs_region_dict.get(region_name)
+        if not region_info:
+            self.error("No definition for region %s" % region_name)
+            return
+        region_type = region_info.get('type')
+        if not region_type:
+            self.error("No type for region %s" % region_name)
+            return
+        if 'plane' in region_type:
+            tangents = [C for C in 'XYZ' if C in region_type]
+            normal = [C for C in 'XYZ' if C not in region_type]
+            if len(normal) != 1 or len(tangents) != 2:
+                self.error("Invalid type %s for region" % (region_type, region_name))
+            normal = normal[0]
 
         # For BC_TYPE='MI' and XZ-Plane region
         #  Select mass inflow specification type:
-        #    Available selections:
-        #    Y-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_G(#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_G(#)
-        # DEFAULT value of 0.0
+        if bc_type == 'MI':
+            cb = ui.combobox_fluid_inflow_type
+            item = get_combobox_item(cb, 0)
+            item.setText('%s-axial velocity' % normal)
 
-        #  Define Tangential Velocities:
-        #Define X-Axial Velocity
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_W_G(#)
-        # DEFAULT value of 0.0
-        #
-        # For BC_TYPE='MI' and YZ-Plane region
-        # (same as above, axial=X, tangential=Y,Z)
+            inflow_type = self.bcs[BC0].get('inflow_type')
+            if inflow_type is None:
+                vel_flow = self.project.get_value('bc_%s_g'%xmap[normal], args=[BC0])
+                vol_flow = self.project.get_value('bc_volflow_g', args=[BC0])
+                mass_flow = self.project.get_value('bc_massflow_g', args=[BC0])
+                if (vel_flow is not None) and (vol_flow is None) and (mass_flow is None):
+                    inflow_type = 0
+                elif (vel_flow is None) and (vol_flow is not None) and (mass_flow is None):
+                    inflow_type = 1
+                elif (vel_flow is None) and (vol_flow is None) and (mass_flow is not None):
+                    inflow_type = 2
+                else:
+                    inflow_type = 0 # TODO FIXME
 
-        # For BC_TYPE='MI' and XY-Plane region
-        # (same as above, axial=Z, tangential=X,Y)
-        #
-        # for BC_TYPE='CG_MI' - specify all 3 as per solids inflow?
+            cb.setCurrentIndex(inflow_type)
+
+            #  Define Tangential Velocities:
+            #Define X-Axial Velocity
+            # Sets keyword BC_U_G(#)1
+            # DEFAULT value of 0.0
+            #    Define Z-Axial Velocity
+            # Sets keyword BC_W_G(#)
+            # DEFAULT value of 0.0
+            #
+            ui.label_fluid_tangential_velocity_1.setText('  %s-axial velocity' % tangents[0])
+            ui.label_fluid_tangential_velocity_2.setText('  %s-axial velocity' % tangents[1])
+
+            # For BC_TYPE='MI' and YZ-Plane region
+            # (same as above, axial=X, tangential=Y,Z)
+            # For BC_TYPE='MI' and XY-Plane region
+            # (same as above, axial=Z, tangential=X,Y)
+
+        # For BC_TYPE='CG_MI' or 'PI'
+        elif bc_type in ('CG_MI', 'PI'):
+            #  Specify all velocity components:
+            #    Define X-Axial Velocity
+            # Sets keyword BC_U_G(#)
+            # DEFAULT value of 0.0
+            #    Define Y-Axial Velocity
+            # Sets keyword BC_V_G(#)
+            # DEFAULT value of 0.0
+            #    Define Z-Axial Velocity
+            # Sets keyword BC_V_G(#)
+            # DEFAULT value of 0.0
+            pass
 
         #Define temperature
         # Specification always available

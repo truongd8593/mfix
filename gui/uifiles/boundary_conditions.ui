@@ -901,7 +901,7 @@
                     </widget>
                    </item>
                    <item row="1" column="0">
-                    <widget class="QComboBox" name="combobox_inflow_type">
+                    <widget class="ComboBox" name="combobox_fluid_inflow_type">
                      <property name="font">
                       <font>
                        <weight>50</weight>
@@ -936,7 +936,7 @@
                     </widget>
                    </item>
                    <item row="2" column="0">
-                    <widget class="QLabel" name="label_tangential_velocities">
+                    <widget class="QLabel" name="label_fluid_tangential_velocities">
                      <property name="font">
                       <font>
                        <weight>50</weight>
@@ -969,14 +969,14 @@
                     <widget class="LineEdit" name="lineedit_fluid_tangential_velocity_2"/>
                    </item>
                    <item row="3" column="2">
-                    <widget class="QLabel" name="label_fluid_tangential_velocity_1_units">
+                    <widget class="QLabel" name="label_tangential_velocity_1_units">
                      <property name="text">
                       <string>m/s</string>
                      </property>
                     </widget>
                    </item>
                    <item row="4" column="2">
-                    <widget class="QLabel" name="label_fluid_tangential_velocity_2_units">
+                    <widget class="QLabel" name="label_tangential_velocity_2_units">
                      <property name="text">
                       <string>m/s</string>
                      </property>
@@ -1011,11 +1011,11 @@
                    </item>
                   </layout>
                   <zorder>lineedit_keyword_bc_ep_g_args_BC</zorder>
-                  <zorder>combobox_inflow_type</zorder>
+                  <zorder>combobox_fluid_inflow_type</zorder>
                   <zorder>label_bc_ep_g</zorder>
                   <zorder>lineedit_inflow</zorder>
                   <zorder>lineedit_inflow_units</zorder>
-                  <zorder>label_tangential_velocities</zorder>
+                  <zorder>label_fluid_tangential_velocities</zorder>
                   <zorder>label_fluid_tangential_velocity_1</zorder>
                   <zorder>label_fluid_tangential_velocity_2</zorder>
                   <zorder>lineedit_fluid_tangential_velocity_1</zorder>
@@ -1680,6 +1680,11 @@
   <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
