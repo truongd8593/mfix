@@ -30,7 +30,7 @@ from functools import wraps
 from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
-pidfile = None
+pidfilename = None
 
 # append the path of the symlink __file__ (not its realpath)
 sys.path.append(os.path.dirname(__file__))
@@ -108,12 +108,12 @@ def main():
 
     def _start_flask(host, port, debug, use_reloader):
         try:
-            global pidfile
+            global pidfilename
             while not get_run_name():
                 # wait for mfix thread to initialize RUN_NAME
                 pass
-            pidfile = '%s.pid' % get_run_name()
-            with open(pidfile, 'w') as pid:
+            pidfilename = '%s.pid' % get_run_name()
+            with open(pidfilename, 'w') as pid:
                 pid.write('pid=%s\n' % (os.getpid(),))
                 pid.write('url=%s://%s:%s\n' % (
                                     protocol, socket.gethostname(), port))
@@ -126,7 +126,7 @@ def main():
                           use_reloader=use_reloader)
 
         except OSError:
-            os.remove(pidfile)
+            os.remove(pidfilename)
             log.exception('cannot bind to port %d' % port)
             _start_flask(host=host,
                          port=find_free_port(), debug=DEBUG_FLAG,
@@ -142,7 +142,7 @@ def main():
             traceback.print_exc()
             # If we get here, the user hit Ctrl-C to shutdown the server,
             # so we call _exit() to kill the run_mfix thread.
-            os.remove(pidfile)
+            os.remove(pidfilename)
             os._exit(0)
 
     else:
@@ -334,6 +334,21 @@ class Mfix(object):
                     self.responses[req_id] = getattr(self, cmd)(args)
                 else:
                     self.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
+
+            # exit if pidfile is missing
+            try:
+                pidfile = open(pidfilename)
+                pid = pidfile.readline()[4:]
+                url = pidfile.readline()[4:]
+                token = pidfile.readline()[6:]
+                if int(pid) != os.getpid():
+                    log.error('did not find pidfile containing PID %d', os.getpid())
+                    os._exit(status=-1)
+                pidfile.close()
+            except:
+                log.error('did not find pidfile containing PID %d', os.getpid())
+                os._exit(status=-1)
+
             self.update_status()
             if not self.paused:
                 return
@@ -629,8 +644,8 @@ def exit_mfix():
     "exits the main loop in run_mfix"
     status_code, command_output = mfix_thread.do_command("EXIT")
     mfix_thread.thread.join()
-    global pidfile
-    os.remove(pidfile)
+    global pidfilename
+    os.remove(pidfilename)
     shutdown = request.environ.get('werkzeug.server.shutdown')
     if shutdown is None:
         raise RuntimeError('Not running with the Werkzeug Server')
