@@ -343,11 +343,11 @@ class Mfix(object):
                 token = pidfile.readline()[6:]
                 if int(pid) != os.getpid():
                     log.error('did not find pidfile containing PID %d', os.getpid())
-                    os._exit(status=-1)
+                    os._exit(-1)
                 pidfile.close()
             except:
                 log.error('did not find pidfile containing PID %d', os.getpid())
-                os._exit(status=-1)
+                os._exit(-1)
 
             self.update_status()
             if not self.paused:
