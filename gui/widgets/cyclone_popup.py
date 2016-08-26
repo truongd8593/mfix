@@ -1,8 +1,6 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 import logging
 import os
-import vtk
-import numpy as np
 import copy
 import math
 
@@ -11,6 +9,7 @@ from tools.general import get_pixmap, widget_iter, get_unique_string
 from widgets.vtk_constants import *
 
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
+
 
 class CyclonePopUp(QtWidgets.QDialog):
     def __init__(self, parent):
@@ -27,7 +26,6 @@ class CyclonePopUp(QtWidgets.QDialog):
         ui.pushbutton_close.clicked.connect(self.close)
         pixmap = get_pixmap('cyclone_sketch.png')
         ui.label_image.setPixmap(pixmap)
-        ui.label_image.setMask(pixmap.mask())
         ui.lineedit_dc.setFocus()
 
         ui.pushbutton_apply.clicked.connect(self.apply_)

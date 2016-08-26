@@ -1778,11 +1778,14 @@ class VtkWidget(QtWidgets.QWidget):
 
         geometry = self.collect_toplevel_geometry()
         if geometry:
+            GUI.update_keyword('cartesian_grid', True)
             # write file
             stl_writer = vtk.vtkSTLWriter()
             stl_writer.SetFileName(file_name)
             stl_writer.SetInputConnection(geometry.GetOutputPort())
             stl_writer.Write()
+        else:
+            GUI.update_keyword('cartesian_grid', False)
 
         if self.region_dict:
             i = 0
