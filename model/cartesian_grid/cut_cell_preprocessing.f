@@ -152,6 +152,7 @@ MODULE CUT_CELL_PREPROC
 
          ENDIF
       ENDIF
+      CALL FINL_ERR_MSG
 
       RETURN
 
