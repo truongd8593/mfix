@@ -38,6 +38,7 @@ from widgets.base import LineEdit
 from widgets.distributed_popup import DistributionPopUp
 from widgets.cyclone_popup import CyclonePopUp
 from widgets.reactor_popup import ReactorPopUp
+from widgets.hopper_popup import HopperPopUp
 from project import Equation, ExtendedJSON
 from widgets.vtk_constants import *
 
@@ -500,6 +501,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.cyclone_popup = None
         self.distribution_popup = None
         self.reactor_popup = None
+        self.hopper_popup = None
 
         # --- wizards ---
         wizard_menu = QtWidgets.QMenu('wizards', self)
@@ -514,6 +516,10 @@ class VtkWidget(QtWidgets.QWidget):
 
         action = QtWidgets.QAction('reactor', wizard_menu)
         action.triggered.connect(self.handle_reactor_wizard)
+        wizard_menu.addAction(action)
+
+        action = QtWidgets.QAction('hopper', wizard_menu)
+        action.triggered.connect(self.handle_hopper_wizard)
         wizard_menu.addAction(action)
 
         self.ui.geometry.toolbutton_wizard.setMenu(wizard_menu)
@@ -2290,3 +2296,9 @@ class VtkWidget(QtWidgets.QWidget):
         if self.reactor_popup is None:
             self.reactor_popup = ReactorPopUp(self)
         self.reactor_popup.popup()
+
+    def handle_hopper_wizard(self):
+        """show the hopper wizard"""
+        if self.hopper_popup is None:
+            self.hopper_popup = HopperPopUp(self)
+        self.hopper_popup.popup()
