@@ -71,7 +71,9 @@ class ICS(object):
 
         # Not auto-registered with project manager
         widget = ui.lineedit_ic_ep_s_args_IC_P
-        widget.key = 'ic_ep_s'
+        key = 'ic_ep_s'
+        widget.key = key
+        self.add_tooltip(widget, key)
         widget.args = ['IC', 'P']
         widget.dtype = float
         widget.value_updated.connect(self.handle_ics_volume_fraction)
@@ -575,6 +577,7 @@ class ICS(object):
             le.setValInfo(min=0.0, max=1.0)
             key = 'ic_x_g'
             le.key = key
+            self.add_tooltip(le, key)
             le.args = [self.ics_current_indices, row+1]
             val = self.project.get_value(key, args=[IC0, row+1], default=None)
             if val is not None:
@@ -669,6 +672,7 @@ class ICS(object):
             le.setValInfo(min=0.0, max=1.0)
             key = 'ic_x_s'
             le.key = key
+            self.add_tooltip(le, key)
             le.args = [self.ics_current_indices, P, row+1]
             val = self.project.get_value(key, args=[IC0, P, row+1], default=None)
             if val is not None:
@@ -1156,21 +1160,14 @@ class ICS(object):
                 layout.addWidget(label, row, 0)
                 le = LineEdit()
                 le.key = key
+                self.add_tooltip(le, key)
                 le.args = ['IC', i]
                 le.dtype = float
                 le.default_value = 0.0
                 self.project.register_widget(le, [key], ['IC', i])
                 setattr(ui, 'lineedit_ic_scalar_%s'%i, le)
 
-                doc =  self.keyword_doc.get(key)
-                description = doc.get('description')
-                if description is not None:
-                    description = description.replace("Scalar n", "Scalar %s"%i)
-                    msg = '<b>%s</b>: %s</br>' % (key, description)
-                    le.setToolTip(msg)
-                    le.help_text = msg # TODO: can we get more info here, so help_text
-                    # is not just a repeat of the tooltip?
-
+                self.add_tooltip(le, key)
                 val = self.project.get_value(key, args=[IC0, i])
                 if val is None:
                     val = 0.0

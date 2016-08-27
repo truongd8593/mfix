@@ -1112,15 +1112,11 @@ class MfixGui(QtWidgets.QMainWindow,
                     if default is not None:
                         widget.default(default)
 
-                    description = doc.get('description')
-                    if description is not None:
-                        msg = '<b>%s</b>: %s</br>' % (key, description)
-                        widget.setToolTip(msg)
-                        widget.help_text = msg # TODO: can we get more info here, so help_text
-                        # is not just a repeat of the tooltip?
+                    self.add_tooltip(widget, key)
 
-                    if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in [int, float]:
+                    if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in (int, float):
                         widget.allow_parameters = True
+                        # NB not all widgets get set up this way
 
                     if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
@@ -2312,6 +2308,21 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_nav_tree()
         #self.clear_unsaved_flag() # why is unsaved_flag set?
 
+
+    def add_tooltip(self, widget, key):
+        doc = self.keyword_doc.get(key)
+        if not doc:
+            return
+        description = doc.get('description')
+        if description is None:
+            return
+        msg = '<b>%s</b>: %s</br>' % (key, description)
+        widget.setToolTip(msg)
+        widget.help_text = msg # TODO: can we get more info here, so help_text
+        # is not just a repeat of the tooltip?
+
+
+    # Following functions are overrideable for test runner
     def check_if_ok_to_write(self, project_file, runname_mfx):
         save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
         response = self.message(title='Info',
