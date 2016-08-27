@@ -102,9 +102,11 @@ class BCS(object):
             setter = getattr(self, 'set_bcs_%s_type' % name)
             item.currentIndexChanged.connect(setter)
         # Inflow pane has some special inputs
-        ui.lineedit_inflow.value_updated.connect(self.bcs_handle_inflow_input)
+        ui.lineedit_fluid_inflow.value_updated.connect(self.bcs_handle_inflow_input)
+        ui.lineedit_fluid_inflow.key = 'Unset' # diagnostic
         ui.combobox_fluid_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
         ui.combobox_fluid_inflow_type.key = 'fluid_inflow'
+        ui.combobox_fluid_inflow_type.help_text = 'Select inflow specification type'
 
 
     def bcs_show_regions_popup(self):
@@ -1643,21 +1645,14 @@ class BCS(object):
                     le = LineEdit()
                     le.dtype = float
                     le.key = key
+                    self.add_tooltip(le, key)
                     le.args = ['BC', i]
                     le.default_value = 0.0 #?
                     groupbox_layout.addWidget(le, row, 1)
                     self.project.register_widget(le, [key], ['BC', i])
                     setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
 
-                    # Set tooltip/help text
-                    doc =  self.keyword_doc.get(key)
-                    description = doc.get('description')
-                    if description is not None:
-                        #description = description.replace("Scalar n", "Scalar %s"%(i+1))
-                        msg = '<b>%s</b>: %s</br>' % (key, description)
-                        le.setToolTip(msg)
-                        le.help_text = msg # TODO: can we get more info here, so help_text
-                        # is not just a repeat of the tooltip?
+                    self.add_tooltip(le, key)
 
                     # Right column is the stretchy one
                     for col in (0, 1):
@@ -1807,30 +1802,41 @@ class BCS(object):
             self.bcs[BC]['inflow_type'] = index
         BC0 = self.bcs_current_indices[0]
 
-        type_key, val = data.popitem()
-
-        if type_key == 'fluid_inflow':
+        key, val = data.popitem()
+        axis = get_combobox_item(widget, 0).text()[0]
+        subkeys = ['bc_%s_g' % xmap[axis], 'bc_volflow_g', 'bc_massflow_g']
+        subkey = subkeys[index]
+        #ui.lineedit_fluid_inflow.key = subkey
+        #self.add_tooltip(ui.lineedit_fluid_inflow, subkey)
+        #units = ['m/s', 'm³/s', 'kg/s'][index]
+        #ui.label_fluid_inflow_units.setText(units)
+        if widget.key == 'fluid_inflow':
             #    Available selections:
             #    Y-Axial Velocity (m/s) [DEFAULT]
-            if index == 0:
-                # Sets keyword BC_V_G(#)
-                # DEFAULT value of 0.0
-                axis = val[0]
-                key = 'bc_%s_g' % xmap[axis]
-                default = 0.0
+            # Sets keyword BC_V_G(#)
+            # DEFAULT value of 0.0
             #    Volumetric Flowrate (m3/s)
-            elif index == 1:
-                # Sets keyword BC_VOLFLOW_G(#)
-                # DEFAULT value of 0.0
-                key = 'bc_volflow_g'
-                default = 0.0
+            # Sets keyword BC_VOLFLOW_G(#)
+            # DEFAULT value of 0.0
             #    Mass Flowrate (kg/s)
-            elif index == 2:
-                # Sets keyword BC_MASSFLOW_G(#)
-                # DEFAULT value of 0.0
-                key = 'bc_massflow_g'
-                default = 0.0
-            ui.lineedit_inflow.key = key
+            # Sets keyword BC_MASSFLOW_G(#)
+            # DEFAULT value of 0.0
+
+            prev_val = ui.lineedit_fluid_inflow.value
+            ui.lineedit_fluid_inflow.key = subkey
+            self.add_tooltip(ui.lineedit_fluid_inflow, subkey)
+
+            for (i, k) in enumerate(subkeys):
+                if i == index:
+                    continue
+                for BC in self.bcs_current_indices:
+                    self.unset_keyword(k, args=[BC])
+
+            val = self.project.get_value(subkeys[index], args=[BC0])
+            default = val if val is not None else prev_val if prev_val is not None else 0.0
+            for BC in self.bcs_current_indices:
+                self.update_keyword(subkey, default, args=[BC])
+            ui.lineedit_fluid_inflow.updateValue(subkey, default)
             self.setup_bcs_fluid_inflow_tab()
 
 
@@ -1889,7 +1895,7 @@ class BCS(object):
         #    Define inflow properties: Mass inflow specification changes based on the BC_TYPE
         # and Region orientation (e.g., XZ-Plane)
         #
-        #   (labels/keywords depend on normal and tangential directions)
+        #  Note: labels/keywords depend on normal and tangential directions
         region_name = self.bcs[BC0].get('region')
         if not region_name:  # should not happen!
             self.error("No region defined for BC %s" % BC0)
@@ -1902,65 +1908,114 @@ class BCS(object):
         if not region_type:
             self.error("No type for region %s" % region_name)
             return
-        if 'plane' in region_type:
+
+        # For BC_TYPE='MI' and XZ-Plane region
+        # For BC_TYPE='MI' and YZ-Plane region
+        # For BC_TYPE='MI' and XY-Plane region
+
+        #  Select mass inflow specification type:
+        if bc_type == 'MI':
+            ui.stackedwidget_fluid_inflow.setCurrentIndex(0) # page_fluid_inflow_MI
+            ui.label_fluid_tangential_velocities.show()
+            if not region_type.endswith('plane'):
+                self.error("Invalid type %s for region %s" % (region_type, region_name))
+
             tangents = [C for C in 'XYZ' if C in region_type]
             normal = [C for C in 'XYZ' if C not in region_type]
             if len(normal) != 1 or len(tangents) != 2:
                 self.error("Invalid type %s for region" % (region_type, region_name))
             normal = normal[0]
 
-        # For BC_TYPE='MI' and XZ-Plane region
-        #  Select mass inflow specification type:
-        if bc_type == 'MI':
             cb = ui.combobox_fluid_inflow_type
             item = get_combobox_item(cb, 0)
             item.setText('%s-axial velocity' % normal)
-
             inflow_type = self.bcs[BC0].get('inflow_type')
+            keys = ['bc_%s_g'%xmap[normal], 'bc_volflow_g', 'bc_massflow_g']
+            vals = [self.project.get_value(k, args=[BC0]) for k in keys]
             if inflow_type is None:
-                vel_flow = self.project.get_value('bc_%s_g'%xmap[normal], args=[BC0])
-                vol_flow = self.project.get_value('bc_volflow_g', args=[BC0])
-                mass_flow = self.project.get_value('bc_massflow_g', args=[BC0])
+                vel_flow, vol_flow, mass_flow = vals
                 if (vel_flow is not None) and (vol_flow is None) and (mass_flow is None):
                     inflow_type = 0
                 elif (vel_flow is None) and (vol_flow is not None) and (mass_flow is None):
                     inflow_type = 1
                 elif (vel_flow is None) and (vol_flow is None) and (mass_flow is not None):
                     inflow_type = 2
-                else:
-                    inflow_type = 0 # TODO FIXME
+                else: # warn?
+                    inflow_type = 0 # default
 
             cb.setCurrentIndex(inflow_type)
-
+            key = keys[inflow_type]
+            val = vals[inflow_type]
+            ui.lineedit_fluid_inflow.key = key
+            self.add_tooltip(ui.lineedit_fluid_inflow, key)
+            ui.lineedit_fluid_inflow.updateValue(keys, 0.0 if val is None else val)
+            units = ['m/s', 'm³/s', 'kg/s'][inflow_type]
+            ui.label_fluid_inflow_units.setText(units)
             #  Define Tangential Velocities:
             #Define X-Axial Velocity
-            # Sets keyword BC_U_G(#)1
+            # Sets keyword BC_U_G(#)
             # DEFAULT value of 0.0
+            label = ui.label_fluid_tangential_velocity_1
+            label.setText('  %s-axial velocity' % tangents[0])
+            key = 'bc_%s_g'%xmap[tangents[0]]
+            val = self.project.get_value(key, default=0.0, args=[BC0])
+            widget = ui.lineedit_fluid_tangential_velocity_1
+            widget.key = key
+            widget.updateValue(key, val)
+            self.add_tooltip(widget, key)
+
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_G(#)
             # DEFAULT value of 0.0
-            #
-            ui.label_fluid_tangential_velocity_1.setText('  %s-axial velocity' % tangents[0])
-            ui.label_fluid_tangential_velocity_2.setText('  %s-axial velocity' % tangents[1])
-
-            # For BC_TYPE='MI' and YZ-Plane region
-            # (same as above, axial=X, tangential=Y,Z)
-            # For BC_TYPE='MI' and XY-Plane region
-            # (same as above, axial=Z, tangential=X,Y)
+            label = ui.label_fluid_tangential_velocity_2
+            label.setText('  %s-axial velocity' % tangents[1])
+            key = 'bc_%s_g'%xmap[tangents[1]]
+            default = 0.0
+            val = self.project.get_value(key, default, args=[BC0])
+            widget = ui.lineedit_fluid_tangential_velocity_2
+            widget.key = key
+            widget.updateValue(key, val)
+            self.add_tooltip(widget, key)
 
         # For BC_TYPE='CG_MI' or 'PI'
         elif bc_type in ('CG_MI', 'PI'):
             #  Specify all velocity components:
+            ui.stackedwidget_fluid_inflow.setCurrentIndex(1) # page_fluid_inflow_CG_MI
+            ui.label_fluid_tangential_velocities.hide()
             #    Define X-Axial Velocity
             # Sets keyword BC_U_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_u_g'
+            default = 0.0
+            widget = ui.lineedit_fluid_inflow
+            val = self.project.get_value(key, default, args=[BC0])
+            widget.updateValue(key, val)
+            widget.key = key
+            self.add_tooltip(widget, key)
+
             #    Define Y-Axial Velocity
             # Sets keyword BC_V_G(#)
             # DEFAULT value of 0.0
+            label =  ui.label_fluid_tangential_velocity_1
+            label.setText('Y-axial velocity')
+            key = 'bc_v_g'
+            default = 0.0
+            widget = ui.lineedit_fluid_tangential_velocity_1
+            val = self.project.get_value(key, default, args=[BC0])
+            widget.key = key
+            self.add_tooltip(widget, key)
+
             #    Define Z-Axial Velocity
-            # Sets keyword BC_V_G(#)
+            # Sets keyword BC_V_G(#) # fixed, BC_W_G
             # DEFAULT value of 0.0
-            pass
+            label =  ui.label_fluid_tangential_velocity_2
+            label.setText('Z-axial velocity')
+            key = 'bc_w_g'
+            default = 0.0
+            widget = ui.lineedit_fluid_tangential_velocity_2
+            val = self.project.get_value(key, default, args=[BC0])
+            widget.key = key
+            self.add_tooltip(widget, key)
 
         #Define temperature
         # Specification always available
@@ -2031,7 +2086,7 @@ class BCS(object):
         # DEFAULT value of 0.0
         #
         # For BC_TYPE='MI' and YZ-Plane region
-        # For BC_TYPE='MI' and XY-Plane region
+
         # (same as above, axial/tangential changes)
         #
         # For BC_TYPE='CG_MI' or 'PI'
