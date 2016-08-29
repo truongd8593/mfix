@@ -891,7 +891,11 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC"/>
+                     <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC"/>
+                     <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_ep_g">
@@ -1760,7 +1764,7 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_ep_s_args_BC_P"/>
+                    <widget class="LineEdit" name="lineedit_bc_ep_s_args_BC_P"/>
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_ep_s">

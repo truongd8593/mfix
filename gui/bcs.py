@@ -120,6 +120,59 @@ class BCS(object):
         ui.combobox_solids_inflow_type.key = 'solids_inflow'
         ui.combobox_solids_inflow_type.help_text = 'Select inflow specification type'
 
+        # Not auto-registered with project manager
+        widget = ui.lineedit_bc_ep_s_args_BC_P
+        key = 'bc_ep_s'
+        widget.key = key
+        widget.args = ['BC', 'P']
+        self.add_tooltip(widget, key)
+        widget.dtype = float
+        widget.value_updated.connect(self.handle_bcs_volume_fraction)
+
+
+    def bcs_set_volume_fraction_limit(self):
+        # Set bc_ep_g from bc_ep_s, like we do for ICs
+        if not self.bcs_current_indices:
+            return
+        if not self.bcs_current_solid:
+            return
+        BC0 = self.bcs_current_indices[0]
+        P = self.bcs_current_solid
+        ui = self.ui.boundary_conditions
+        key = 'bc_ep_s'
+
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, p]))
+                for p in range(1, len(self.solids)+1) if p != P)
+
+        lim = max(0, 1.0 - s)
+        lim = round(lim, 10) # avoid problem with 1 - 0.9 != 0.1
+
+        widget = ui.lineedit_bc_ep_s_args_BC_P
+        widget.min = 0.0
+        widget.max = lim
+
+
+    def handle_bcs_volume_fraction(self, widget, val, args):
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        if not self.bcs_current_solid:
+            return
+        P = self.bcs_current_solid
+        ui = self.ui.boundary_conditions
+        key = 'bc_ep_s'
+        self.project.submit_change(widget, val, args)
+
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, s]))
+                for s in range(1, len(self.solids)+1))
+        if s > 1.0:
+            self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
+                         popup=True)
+            return # ?
+        val = round(1.0 - s, 10)
+        for BC in self.bcs_current_indices:
+            self.update_keyword('bc_ep_g', val, args=[BC])
+
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
@@ -2044,17 +2097,18 @@ class BCS(object):
         # Specification always available
         # Sets keyword BC_EP_G(#)
         #  DEFAULT value of 1.0 for MI and CG_MI; leave [UNDEFINED] for PI
-        #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0  # TODO
-        #  Error Check: For PI - either all are defined and sum to 1, or all are undefined # TODO
+        #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0 #(see bcs_set_volume_fraction_limit)
+        # TODO  Error Check: For PI - either all are defined and sum to 1, or all are undefined
         enabled = True
         key = 'bc_ep_g'
         default = 1.0 if bc_type in ('MI', 'CG_MI') else None
         setup_key_widget(key, default, enabled)
+        get_widget(key).setReadOnly(True)
+        get_widget(key).setEnabled(False) # better way to indicate read-only?
 
         #    Define inflow properties: Mass inflow specification changes based on the BC_TYPE
         # and Region orientation (e.g., XZ-Plane)
-        #
-        #  Note: labels/keywords depend on normal and tangential directions
+        # (labels/keywords depend on normal and tangential directions)
         region_name = self.bcs[BC0].get('region')
         if not region_name:  # should not happen!
             self.error("No region defined for BC %s" % BC0)
@@ -2354,6 +2408,8 @@ class BCS(object):
         if bc_type is None:
             self.error("bc_type not set for region %s" % BC0)
             return
+
+        self.bcs_set_volume_fraction_limit()
 
         def get_widget(key):
             for pat in ('lineedit_keyword_%s_args_BC_P',
