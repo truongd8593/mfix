@@ -944,14 +944,14 @@
                     <widget class="LineEdit" name="lineedit_fluid_tangential_velocity_2"/>
                    </item>
                    <item row="3" column="2">
-                    <widget class="QLabel" name="label_tangential_velocity_1_units">
+                    <widget class="QLabel" name="label_fluid_tangential_velocity_1_units">
                      <property name="text">
                       <string>m/s</string>
                      </property>
                     </widget>
                    </item>
                    <item row="4" column="2">
-                    <widget class="QLabel" name="label_tangential_velocity_2_units">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_2_units">
                      <property name="text">
                       <string>m/s</string>
                      </property>
@@ -1714,7 +1714,323 @@
                 </item>
                </layout>
               </widget>
-              <widget class="QWidget" name="page_solid_blank"/>
+              <widget class="QWidget" name="page_solids_inflow">
+
+
+
+               <layout class="QVBoxLayout" name="verticalLayout_4">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frame_solids_inflow">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_13">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_2">
+                     <property name="text">
+                      <string>  Z-axial velocity</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="LineEdit" name="lineedit_keyword_bc_ep_s_args_BC_P"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_bc_ep_s">
+                     <property name="text">
+                      <string>Volume fraction</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_inflow"/>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLabel" name="label_solids_inflow_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocities">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Tangential velocities:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_1">
+                     <property name="text">
+                      <string>  Y-axial velocity</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_tangential_velocity_1"/>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_tangential_velocity_2"/>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_1_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_2_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_bc_t_s">
+                     <property name="text">
+                      <string>Temperature</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="2">
+                    <widget class="QLabel" name="label_bc_t_s_units">
+                     <property name="text">
+                      <string>K</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="LineEdit" name="lineedit_keyword_bc_t_s_args_BC_P"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QStackedWidget" name="stackedwidget_solids_inflow">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="currentIndex">
+                      <number>0</number>
+                     </property>
+                     <widget class="QWidget" name="subpage_solids_inflow_MI">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout_19">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="ComboBox" name="combobox_solids_inflow_type">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <weight>50</weight>
+                           <bold>false</bold>
+                          </font>
+                         </property>
+                         <item>
+                          <property name="text">
+                           <string>X-axial velocity</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>Volumetric flowrate</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>Mass flowrate</string>
+                          </property>
+                         </item>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_solids_inflow_CG_MI">
+                      <layout class="QGridLayout" name="gridLayout_20">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_bc_u_g">
+                         <property name="text">
+                          <string>X-axial velocity</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </widget>
+                   </item>
+                  </layout>
+                  <zorder>label_solids_inflow_units</zorder>
+                  <zorder>label_solids_tangential_velocity_1_units</zorder>
+                  <zorder>label_solids_tangential_velocity_2_units</zorder>
+                  <zorder>lineedit_keyword_bc_ep_s_args_BC_P</zorder>
+                  <zorder>label_bc_ep_s</zorder>
+                  <zorder>lineedit_solids_inflow</zorder>
+                  <zorder>label_solids_tangential_velocities</zorder>
+                  <zorder>label_solids_tangential_velocity_1</zorder>
+                  <zorder>label_solids_tangential_velocity_2</zorder>
+                  <zorder>lineedit_solids_tangential_velocity_1</zorder>
+                  <zorder>lineedit_solids_tangential_velocity_2</zorder>
+                  <zorder>label_bc_t_s</zorder>
+                  <zorder>label_bc_t_s_units</zorder>
+                  <zorder>lineedit_keyword_bc_t_s_args_BC_P</zorder>
+                  <zorder>stackedwidget_solids_inflow</zorder>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupbox_solids_composition">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="title">
+                   <string>Composition</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_18">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item row="0" column="0">
+                    <widget class="QTableWidget" name="tablewidget_solids_mass_fraction">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>35</height>
+                      </size>
+                     </property>
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::NoSelection</enum>
+                     </property>
+                     <attribute name="verticalHeaderVisible">
+                      <bool>false</bool>
+                     </attribute>
+                     <column>
+                      <property name="text">
+                       <string>Species</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>Mass fraction</string>
+                      </property>
+                     </column>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
+
+
+
+
+              <widget class="QWidget" name="page_solids_blank"/>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_R">
               <layout class="QGridLayout" name="gridLayout_11">

@@ -94,6 +94,9 @@ class BCS(object):
         # Checkbox callbacks
         ui.checkbox_bc_jj_ps_args_BC.dtype = int
         ui.checkbox_bc_jj_ps_args_BC.clicked.connect(self.set_bc_jj_ps)
+        ui.checkbox_bc_jj_ps_args_BC.key = 'bc_jj_ps'
+        ui.checkbox_bc_jj_ps_args_BC.args = ['BC']
+        self.add_tooltip(ui.checkbox_bc_jj_ps_args_BC, 'bc_jj_ps')
 
         # Combobox callbacks
         for name in ('fluid_energy_eq', 'fluid_species_eq',
@@ -105,9 +108,17 @@ class BCS(object):
         # Inflow pane has some special inputs
         ui.lineedit_fluid_inflow.value_updated.connect(self.bcs_handle_inflow_input)
         ui.lineedit_fluid_inflow.key = 'Unset' # diagnostic
+        ui.lineedit_fluid_inflow.args = ['BC']
         ui.combobox_fluid_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
         ui.combobox_fluid_inflow_type.key = 'fluid_inflow'
         ui.combobox_fluid_inflow_type.help_text = 'Select inflow specification type'
+
+        ui.lineedit_solids_inflow.value_updated.connect(self.bcs_handle_inflow_input)
+        ui.lineedit_solids_inflow.key = 'Unset' # diagnostic
+        ui.lineedit_solids_inflow.args = ['BC', 'P']
+        ui.combobox_solids_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
+        ui.combobox_solids_inflow_type.key = 'solids_inflow'
+        ui.combobox_solids_inflow_type.help_text = 'Select inflow specification type'
 
 
     def bcs_show_regions_popup(self):
@@ -181,7 +192,7 @@ class BCS(object):
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
-        bc_type = rp.combobox_boundary_type.currentIndex()
+        bc_type = rp.combobox_bc_type.currentIndex()
         if not selections:
             return
         self.bcs_add_regions_1(selections, bc_type) # Indices will be assigned
@@ -1129,6 +1140,8 @@ class BCS(object):
             return
         if bc_type.endswith('W'):
             self.setup_bcs_solids_wall_tab(P)
+        elif bc_type.endswith('I'):
+            self.setup_bcs_solids_inflow_tab(P)
         else:
             self.setup_bcs_solids_blank_tab()
 
@@ -1136,13 +1149,13 @@ class BCS(object):
     def setup_bcs_solids_blank_tab(self):
         # Temp. placeholder
         ui = self.ui.boundary_conditions
-        ui.page_solids.setCurrentIndex(1)
+        ui.page_solids.setCurrentIndex(2)
+
 
     def setup_bcs_solids_wall_tab(self, P):
         #Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
         #Solids-# (tab) - (Replace with phase name defined by the user)
         # Note, solids phases are numbered 1-N
-
         ui = self.ui.boundary_conditions
         ui.page_solids.setCurrentIndex(PAGE_WALL)
 
@@ -1195,7 +1208,6 @@ class BCS(object):
                 self.update_keyword(key, val, args=[BC] if key in no_p_keys
                                     else [BC,P])
             get_widget(key+suffix).updateValue(key, val, args=args)
-
 
         #    Enable Jackson-Johnson partial slip boundary
         # Disabled (0.0) for CARTESIAN_GRID = .TRUE.
@@ -1663,14 +1675,12 @@ class BCS(object):
                     le = LineEdit()
                     le.dtype = float
                     le.key = key
-                    self.add_tooltip(le, key)
                     le.args = ['BC', i]
+                    self.add_tooltip(le, key)
                     le.default_value = 0.0 #?
                     groupbox_layout.addWidget(le, row, 1)
                     self.project.register_widget(le, [key], ['BC', i])
                     setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
-
-                    self.add_tooltip(le, key)
 
                     # Right column is the stretchy one
                     for col in (0, 1):
@@ -1816,19 +1826,21 @@ class BCS(object):
         if not self.bcs_current_indices:
             return
         index = widget.currentIndex()
+        if widget.key == 'fluid_inflow':
+            bc_key = 'inflow_type'
+        elif widget.key == 'solids_inflow':
+            #FIXME will not survive index remapping when solids deleted
+            bc_key = 'inflow_type_%s' % self.bcs_current_solid
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['inflow_type'] = index
+            self.bcs[BC][bc_key] = index
         BC0 = self.bcs_current_indices[0]
 
         key, val = data.popitem()
         axis = get_combobox_item(widget, 0).text()[0]
-        subkeys = ['bc_%s_g' % xmap[axis], 'bc_volflow_g', 'bc_massflow_g']
-        subkey = subkeys[index]
-        #ui.lineedit_fluid_inflow.key = subkey
-        #self.add_tooltip(ui.lineedit_fluid_inflow, subkey)
-        #units = ['m/s', 'm³/s', 'kg/s'][index]
-        #ui.label_fluid_inflow_units.setText(units)
         if widget.key == 'fluid_inflow':
+            subkeys = ['bc_%s_g' % xmap[axis], 'bc_volflow_g', 'bc_massflow_g']
+            subkey = subkeys[index]
+
             #    Available selections:
             #    Y-Axial Velocity (m/s) [DEFAULT]
             # Sets keyword BC_V_G(#)
@@ -1842,6 +1854,7 @@ class BCS(object):
 
             prev_val = ui.lineedit_fluid_inflow.value
             ui.lineedit_fluid_inflow.key = subkey
+            ui.lineedit_fluid_inflow.args = ['BC']
             self.add_tooltip(ui.lineedit_fluid_inflow, subkey)
 
             for (i, k) in enumerate(subkeys):
@@ -1856,6 +1869,43 @@ class BCS(object):
                 self.update_keyword(subkey, default, args=[BC])
             ui.lineedit_fluid_inflow.updateValue(subkey, default)
             self.setup_bcs_fluid_inflow_tab()
+
+        elif widget.key == 'solids_inflow':
+            P = self.bcs_current_solid
+            if P is None:
+                return
+
+            #    Available selections:
+            #    Y-Axial Velocity (m/s) [DEFAULT]
+            # Sets keyword BC_V_S(#,#)
+            # DEFAULT value of 0.0
+            #    Volumetric Flowrate (m3/s)
+            # Sets keyword BC_VOLFLOW_S(#,#)
+            # DEFAULT value of 0.0
+            #    Mass Flowrate (kg/s)
+            # Sets keyword BC_MASSFLOW_S(#,#)
+            # DEFAULT value of 0.0
+
+            subkeys = ['bc_%s_s' % xmap[axis], 'bc_volflow_s', 'bc_massflow_s']
+            subkey = subkeys[index]
+            self.setup_bcs_solids_inflow_tab(self.bcs_current_solid)
+            prev_val = ui.lineedit_solids_inflow.value
+            ui.lineedit_solids_inflow.key = subkey
+            ui.lineedit_solids_inflow.args = ['BC', 'P']
+            self.add_tooltip(ui.lineedit_solids_inflow, subkey)
+
+            for (i, k) in enumerate(subkeys):
+                if i == index:
+                    continue
+                for BC in self.bcs_current_indices:
+                    self.unset_keyword(k, args=[BC, P])
+
+            val = self.project.get_value(subkeys[index], args=[BC0, P])
+            default = val if val is not None else prev_val if prev_val is not None else 0.0
+            for BC in self.bcs_current_indices:
+                self.update_keyword(subkey, default, args=[BC, P])
+            ui.lineedit_solids_inflow.updateValue(subkey, default)
+            self.setup_bcs_solids_inflow_tab(self.bcs_current_solid)
 
 
     def update_bcs_fluid_mass_fraction_table(self):
@@ -1888,8 +1938,8 @@ class BCS(object):
             le.setValInfo(min=0.0, max=1.0) # TODO adjust max dynamically
             key = 'bc_x_g'
             le.key = key
-            self.add_tooltip(le, key)
             le.args = [self.bcs_current_indices, row+1]
+            self.add_tooltip(le, key)
             val = self.project.get_value(key, args=[BC0, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
@@ -1942,7 +1992,7 @@ class BCS(object):
         # (only enforce this if no mass fractions are set)
 
         if total == 0.0 and self.fluid_species:
-            for BC in self.bcs_current_indbces:
+            for BC in self.bcs_current_indices:
                 for i in range(1, len(self.fluid_species)):
                     self.update_keyword('bc_x_g', 0.0, args=[BC, i])
                 self.update_keyword('bc_x_g', 1.0, args=[BC, len(self.fluid_species)]) # Last defined species
@@ -2021,7 +2071,6 @@ class BCS(object):
         # For BC_TYPE='MI' and XZ-Plane region
         # For BC_TYPE='MI' and YZ-Plane region
         # For BC_TYPE='MI' and XY-Plane region
-
         #  Select mass inflow specification type:
         if bc_type == 'MI':
             ui.stackedwidget_fluid_inflow.setCurrentIndex(0) # subpage_fluid_inflow_MI
@@ -2030,7 +2079,7 @@ class BCS(object):
                 self.error("Invalid type %s for region %s" % (region_type, region_name))
 
             tangents = [C for C in 'XYZ' if C in region_type]
-            normal = [C for C in 'XYZ' if C not in region_type]
+            normal = [C for C in 'XYZ' if C not in tangents]
             if len(normal) != 1 or len(tangents) != 2:
                 self.error("Invalid type %s for region" % (region_type, region_name))
             normal = normal[0]
@@ -2051,6 +2100,8 @@ class BCS(object):
                     inflow_type = 2
                 else: # warn?
                     inflow_type = 0 # default
+                for BC in self.bcs_current_indices:
+                    self.bcs[BC]['inflow_type'] = inflow_type
 
             cb.setCurrentIndex(inflow_type)
             key = keys[inflow_type]
@@ -2070,6 +2121,7 @@ class BCS(object):
             val = self.project.get_value(key, default=0.0, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_1
             widget.key = key
+            widget.args = ['BC']
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -2083,6 +2135,7 @@ class BCS(object):
             val = self.project.get_value(key, default, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_2
             widget.key = key
+            widget.args = ['BC']
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -2100,6 +2153,7 @@ class BCS(object):
             val = self.project.get_value(key, default, args=[BC0])
             widget.updateValue(key, val)
             widget.key = key
+            widget.args = ['BC']
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
@@ -2112,6 +2166,7 @@ class BCS(object):
             widget = ui.lineedit_fluid_tangential_velocity_1
             val = self.project.get_value(key, default, args=[BC0])
             widget.key = key
+            widget.args = ['BC']
             self.add_tooltip(widget, key)
 
             #    Define Z-Axial Velocity
@@ -2124,6 +2179,7 @@ class BCS(object):
             widget = ui.lineedit_fluid_tangential_velocity_2
             val = self.project.get_value(key, default, args=[BC0])
             widget.key = key
+            widget.args = ['BC']
             self.add_tooltip(widget, key)
 
         #Define temperature
@@ -2156,13 +2212,12 @@ class BCS(object):
 
         #Select species and set mass fractions (table format)
         # Specification always available
-        # Input required for species equations
+        # TODO Input required for species equations
         # Drop down menu of fluid species
         # Sets keyword BC_X_G(#,#)
         # DEFAULT - last defined species has mass fraction of 1.0
-        # Error check: mass fractions must sum to one TODO
+        # TODO Error check: mass fractions must sum to one
         self.update_bcs_fluid_mass_fraction_table()
-
 
         #Turbulence: Define k-ε turbulent kinetic energy
         enabled = (self.project.get_value('turbulence_model') == 'K_EPSILON')
@@ -2184,67 +2239,319 @@ class BCS(object):
         setup_key_widget(key, default, enabled)
 
 
-    def setup_bcs_solids_inflow_tab(self):
+    # DRY out fluid/solids code
+    def update_bcs_solids_mass_fraction_table(self):
+        ui = self.ui.boundary_conditions
+        table = ui.tablewidget_solids_mass_fraction
+        table.clearContents()
+        table.setRowCount(0)
+        P = self.bcs_current_solid
+        if not (P and self.solids_species.get(P) and self.bcs_current_indices):
+            self.fixup_bcs_table(table)
+            table.setEnabled(False)
+            ui.groupbox_solids_composition.setEnabled(False)
+            return
+        ui.groupbox_solids_composition.setEnabled(True)
+        table.setEnabled(True)
+        BC0 = self.bcs_current_indices[0]
+        species = self.solids_species[P]
+        if species:
+            nrows = len(species) + 1 # 'Total' row at end
+        else:
+            nrows = 0
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        for (row, (species,data)) in enumerate(species.items()):
+            alias = data.get('alias', species) # default to species if no alias
+            table.setItem(row, 0, make_item(alias))
+            # mass fraction
+            le = LineEdit()
+            le.setdtype('dp')
+            le.setValInfo(min=0.0, max=1.0)
+            key = 'bc_x_s'
+            le.key = key
+            le.args = [self.bcs_current_indices, P, row+1]
+            self.add_tooltip(le, key)
+            val = self.project.get_value(key, args=[BC0, P, row+1], default=None)
+            if val is not None:
+                le.updateValue(key, val)
+            le.value_updated.connect(self.handle_bcs_solids_mass_fraction)
+            table.setCellWidget(row, 1, le)
+        if species:
+            table.setItem(nrows-1, 0, make_item("Total"))
+            table.setItem(nrows-1, 1, make_item(''))
+            item = table.item(nrows-1, 0)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
+            self.update_bcs_solids_mass_fraction_total()
+
+        self.fixup_bcs_table(table)
+
+
+    def handle_bcs_solids_mass_fraction(self, widget, value_dict, args):
+        ui = self.ui.boundary_conditions
+        key = 'bc_x_s'
+        val = value_dict[key]
+        table = ui.tablewidget_fluid_mass_fraction
+        widget.updateValue(key, val)
+        if val == '':
+            self.unset_keyword(key, args=args)
+        else:
+            self.update_keyword(key, val, args=args)
+        self.update_bcs_solids_mass_fraction_total()
+
+
+    def update_bcs_solids_mass_fraction_total(self):
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        P = self.bcs_current_solid
+        if P is None:
+            return
+        species = self.solids_species.get(P)
+        if not P:
+            return
+        ui = self.ui.boundary_conditions
+        key = 'bc_x_s'
+        table = ui.tablewidget_solids_mass_fraction
+        if table.rowCount() == 0:
+            return
+        total = sum(float(self.project.get_value(key, default=0.0, args=[BC0,P,i]))
+                    for i in range(1,len(species)+1))
+        item = table.item(table.rowCount()-1, 1)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
+        item.setText(str(total))
+
+        # DEFAULT - last defined species has mass fraction of 1.0
+        # (only enforce this if no mass fractions are set)
+        if total == 0.0 and species:
+            for BC in self.bcs_current_indices:
+                for i in range(1, len(species)):
+                    self.update_keyword('bc_x_s', 0.0, args=[BC, P, i])
+                self.update_keyword('bc_x_s', 1.0, args=[BC, P, len(species)]) # Last defined species
+            self.update_bcs_solids_mass_fraction_table()
+
+
+    def setup_bcs_solids_inflow_tab(self, P):
         #Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
         #Solid-# (tab) - Rename tab to user provided solids name.
+        ui = self.ui.boundary_conditions
+        ui.page_solids.setCurrentIndex(PAGE_INFLOW)
+
+        self.bcs_current_solid = self.P = P
+        if P is None: # Nothing to do
+            return
+        if not self.bcs_current_indices:
+            return # Nothing selected.  (Clear out all lineedits?)
+        BC0 = self.bcs_current_indices[0]
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC_P',
+                        'lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC_P',
+                        'lineedit_%s_args_BC',
+                        'lineedit_keyword_%s',
+                        'lineedit_%s'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC_P',
+                         'lineedit_keyword_%s_args_BC',
+                         'lineedit_%s_args_BC_P',
+                         'lineedit_%s_args_BC',
+                         'lineedit_keyword_%s',
+                         'lineedit_%s'):
+                name = pat % (key+suffix)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            no_p_keys =  () # use keyword_args db here
+            args = [BC0] if key in no_p_keys else [BC0,P]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC] if key in no_p_keys
+                                    else [BC,P])
+            get_widget(key+suffix).updateValue(key, val, args=args)
 
         #Define volume fraction
         # Specification always available
         # Sets keyword BC_EP_S(#,#)
         #  DEFAULT value of 1.0 - (sum of previous tabs) for MI and CG_MI; leave [UNDEFINED] for PI
-        #  Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
-        #  Error Check: For PI - either all are defined and sum to 1, or all are undefined
-        #
-        #Define inflow properties: Mass inflow specification changes based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
-        # For BC_TYPE='MI' and XZ-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    Y-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_V_S(#,#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_S(#,#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_S(#,#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_S(#,#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_W_G(#,#)
-        # DEFAULT value of 0.0
-        #
-        # For BC_TYPE='MI' and YZ-Plane region
+        # TODO Error Check: For MI and CG_MI, BC_EP_G(#) + BC_EP_S(#,:) = 1.0
+        # TODO Error Check: For PI - either all are defined and sum to 1, or all are undefined
+        enabled = True
+        key = 'bc_ep_s'
+        s = sum(self.project.get_value(key, default=0, args=[BC0, p]) for p in range(1, P))
+        default = (1.0 - s) if bc_type in ('MI', 'CG_MI') else None
+        setup_key_widget(key, default, enabled)
 
-        # (same as above, axial/tangential changes)
-        #
+        #Define inflow properties: Mass inflow specification changes
+        #based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
+
+        region_name = self.bcs[BC0].get('region')
+        if not region_name:  # should not happen!
+            self.error("No region defined for BC %s" % BC0)
+            return
+        region_info = self.bcs_region_dict.get(region_name)
+        if not region_info:
+            self.error("No definition for region %s" % region_name)
+            return
+        region_type = region_info.get('type')
+        if not region_type:
+            self.error("No type for region %s" % region_name)
+            return
+
+        # For BC_TYPE='MI' and XZ-Plane region
+        # For BC_TYPE='MI' and YZ-Plane region
+        # For BC_TYPE='MI' and XY-Plane region
+        #  Select mass inflow specification type:
+        if bc_type == 'MI':
+            ui.stackedwidget_solids_inflow.setCurrentIndex(0) # subpage_solids_inflow_MI
+            ui.label_solids_tangential_velocities.show()
+            if not region_type.endswith('plane'):
+                self.error("Invalid type %s for region %s" % (region_type, region_name))
+
+            tangents = [C for C in 'XYZ' if C in region_type]
+            normal = [C for C in 'XYZ' if C not in tangents]
+            if len(normal) != 1 or len(tangents) != 2:
+                self.error("Invalid type %s for region" % (region_type, region_name))
+            normal = normal[0]
+
+            cb = ui.combobox_solids_inflow_type
+            item = get_combobox_item(cb, 0)
+            item.setText('%s-axial velocity' % normal)
+            inflow_type = self.bcs[BC0].get('inflow_type_%s'%P)
+            keys = ['bc_%s_s'%xmap[normal], 'bc_volflow_s', 'bc_massflow_s']
+            vals = [self.project.get_value(k, args=[BC0, P]) for k in keys]
+            if inflow_type is None:
+                vel_flow, vol_flow, mass_flow = vals
+                if (vel_flow is not None) and (vol_flow is None) and (mass_flow is None):
+                    inflow_type = 0
+                elif (vel_flow is None) and (vol_flow is not None) and (mass_flow is None):
+                    inflow_type = 1
+                elif (vel_flow is None) and (vol_flow is None) and (mass_flow is not None):
+                    inflow_type = 2
+                else: # warn?
+                    inflow_type = 0 # default
+                for BC in self.bcs_current_indices:
+                    self.bcs[BC]['inflow_type_%s'%P] = inflow_type
+
+            cb.setCurrentIndex(inflow_type)
+            key = keys[inflow_type]
+            val = vals[inflow_type]
+            ui.lineedit_solids_inflow.key = key
+            self.add_tooltip(ui.lineedit_solids_inflow, key)
+            ui.lineedit_solids_inflow.updateValue(keys, 0.0 if val is None else val)
+            units = ['m/s', 'm³/s', 'kg/s'][inflow_type]
+            ui.label_solids_inflow_units.setText(units)
+
+            #  Define Tangential Velocities:
+            #    Define X-Axial Velocity
+            # Sets keyword BC_U_S(#,#)
+            # DEFAULT value of 0.0
+            label = ui.label_solids_tangential_velocity_1
+            label.setText('  %s-axial velocity' % tangents[0])
+            key = 'bc_%s_s'%xmap[tangents[0]]
+            val = self.project.get_value(key, default=0.0, args=[BC0])
+            widget = ui.lineedit_solids_tangential_velocity_1
+            widget.key = key
+            widget.args = ['BC', 'P']
+            widget.updateValue(key, val)
+            self.add_tooltip(widget, key)
+
+            #    Define Z-Axial Velocity
+            # Sets keyword BC_W_G(#)
+            # DEFAULT value of 0.0
+            label = ui.label_solids_tangential_velocity_2
+            label.setText('  %s-axial velocity' % tangents[1])
+            key = 'bc_%s_s'%xmap[tangents[1]]
+            default = 0.0
+            val = self.project.get_value(key, default, args=[BC0])
+            widget = ui.lineedit_solids_tangential_velocity_2
+            widget.key = key
+            widget.args = ['BC', 'P']
+            widget.updateValue(key, val)
+            self.add_tooltip(widget, key)
+
         # For BC_TYPE='CG_MI' or 'PI'
-        #  Specify all velocity components:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_S(#,#)
-        # DEFAULT value of 0.0
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_S(#,#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_V_S(#,#)
-        # DEFAULT value of 0.0
+        elif bc_type in ('CG_MI', 'PI'):
+            #  Specify all velocity components:
+            ui.stackedwidget_solids_inflow.setCurrentIndex(1) # subpage_solids_inflow_CG_MI
+            ui.label_solids_tangential_velocities.hide()
+            #    Define X-Axial Velocity
+            # Sets keyword BC_U_G(#)
+            # DEFAULT value of 0.0
+            key = 'bc_u_g'
+            default = 0.0
+            widget = ui.lineedit_solids_inflow
+            val = self.project.get_value(key, default, args=[BC0])
+            widget.updateValue(key, val)
+            widget.key = key
+            widget.args = ['BC', 'P']
+            self.add_tooltip(widget, key)
+
+            #    Define Y-Axial Velocity
+            # Sets keyword BC_V_S(#,#)
+            # DEFAULT value of 0.0
+            label =  ui.label_solids_tangential_velocity_1
+            label.setText('Y-axial velocity')
+            key = 'bc_v_s'
+            default = 0.0
+            widget = ui.lineedit_solids_tangential_velocity_1
+            val = self.project.get_value(key, default, args=[BC0, P])
+            widget.key = key
+            widget.args = ['BC', 'P']
+            self.add_tooltip(widget, key)
+
+            #    Define Z-Axial Velocity
+            # Sets keyword BC_W_S(#,#)
+            # DEFAULT value of 0.0
+            label =  ui.label_solids_tangential_velocity_2
+            label.setText('Z-axial velocity')
+            key = 'bc_w_s'
+            default = 0.0
+            widget = ui.lineedit_solids_tangential_velocity_2
+            val = self.project.get_value(key, default, args=[BC0, P])
+            widget.key = key
+            widget.args = ['BC', 'P']
+            self.add_tooltip(widget, key)
 
         #Define temperature
         # Specification always available
-        # Input required when energy equations are solved
+        # TODO Input required when energy equations are solved
         # Sets keyword BC_T_S(#,#)
         # DEFAULT value of 293.15
+        enabled = True
+        key = 'bc_t_s'
+        default = 293.15
+        setup_key_widget(key, default, enabled)
+
         #Select species and set mass fractions (table format)
         # Specification always available
         # Input required for species equations
-        # Drop down menu of fluid species
+        # Drop down menu of solids species
         # Sets keyword BC_X_S(#,#,#)
         # DEFAULT - last defined species has mass fraction of 1.0
-        # Error check: mass fractions must sum to one
-        pass
+        # TODO Error check: mass fractions must sum to one
+        self.update_bcs_solids_mass_fraction_table()
 
 
     def setup_bcs_scalar_inflow_tab(self):
