@@ -109,7 +109,7 @@ class ICS(object):
             return
         P = self.ics_current_solid
         ui = self.ui.initial_conditions
-        key =  'ic_ep_s'
+        key = 'ic_ep_s'
         self.project.submit_change(widget, val, args)
 
         s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
