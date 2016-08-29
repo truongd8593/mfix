@@ -574,7 +574,7 @@ class ICS(object):
             # mass fraction
             le = LineEdit()
             le.setdtype('dp')
-            le.setValInfo(min=0.0, max=1.0)
+            le.setValInfo(min=0.0, max=1.0) # TODO adjust max dynamically
             key = 'ic_x_g'
             le.key = key
             self.add_tooltip(le, key)
