@@ -37,6 +37,8 @@ class ProjectManager(Project):
     def __init__(self, gui=None, keyword_doc=None):
         Project.__init__(self, keyword_doc=keyword_doc)
         self.gui = gui
+        self.error = self.gui.error
+        self.warn = self.warning = self.gui.warning
 
         self.registered_widgets = {} # Map: key: keyword,  val:  list of [(args,widget),...]
 
@@ -498,9 +500,13 @@ class ProjectManager(Project):
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
+
     def unregister_widget(self, widget):
         key = widget.key
-        widget.value_updated.disconnect()
+        try:
+            widget.value_updated.disconnect()
+        except Exception as e:
+            self.error(str(e))
 
         updates = self.registered_widgets.get(widget.key,[])
         updates = [(a,w) for (a,w) in updates if w != widget]
