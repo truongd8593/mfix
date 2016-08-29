@@ -858,11 +858,11 @@ class Project(object):
         # variablegrid
         self.variablegrid = VariableGridCollection()
 
-    def __getattr__(self, name):
-        raise DeprecationWarning('__getattr__(%s)' % name)
-
-    def __getitem__(self, key):
-        raise DeprecationWarning('__getitem__(%s)' % key)
+#    def __getattr__(self, name):
+#        raise DeprecationWarning('__getattr__(%s)' % name)
+#
+#    def __getitem__(self, key):
+#        raise DeprecationWarning('__getitem__(%s)' % key)
 
     def get(self, key, args=None):
         """get(key, args=None): returns a keyword object, if defined, else None"""
