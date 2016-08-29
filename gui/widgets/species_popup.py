@@ -59,6 +59,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.comments[phase] = dict((k, v[2])
                                         for (k,v) in self.db[phase].items())
 
+
     def do_search(self, string):
         lineedit = self.ui.lineedit_search
         if string != lineedit.text():
@@ -97,6 +98,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.search_results[i] = (key, phase)
         table.model().blockSignals(False);
 
+
     def get_species_data(self, key, phase):
         """exposes species database to external clients"""
         db = self.db.get(phase)
@@ -122,13 +124,16 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'a_low': a_low,
                         'a_high': a_high}
 
+
     def handle_search_selection(self):
         row = get_selected_row(self.tablewidget_search)
         self.ui.pushbutton_import.setEnabled(row is not None)
 
+
     def handle_include_comments(self, val):
         self.include_comments = val
         self.do_search(self.ui.lineedit_search.text())
+
 
     def clear_species_panel(self):
         for item in self.species_panel_items:
@@ -142,6 +147,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                 if w:
                     w.setText('')
                     #table.cellWidget(i,j).setText('')
+
 
     def enable_species_panel(self):
         for item in self.species_panel_items:
@@ -214,6 +220,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         else:
             self.species_panel_items.append(ui.lineedit_density)
 
+
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
         table = self.tablewidget_defined_species
@@ -229,8 +236,10 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.current_species = table.item(row, 0).data(UserRole)
             self.enable_species_panel()
 
+
     def make_alias(self, species):
         return species.split(' ', 1)[0]
+
 
     def make_user_species_name(self):
         n=1
@@ -240,10 +249,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.user_species_names.add(name)
         return name
 
+
     def do_import(self):
         rows = get_selected_rows(self.tablewidget_search)
         for row in rows:
             self.do_import_row(row)
+
 
     def do_import_row(self, row):
         self.ui.combobox_phase.setEnabled(False)
@@ -276,11 +287,13 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.add_defined_species_row(species, select=True)
         self.set_save_button(True)
 
+
     def update_defined_species(self):
         self.tablewidget_defined_species.clearSelection()
         self.tablewidget_defined_species.setRowCount(0)
         for s in self.defined_species.keys():
             self.add_defined_species_row(s, select=False)
+
 
     def add_defined_species_row(self, species, select=False):
         species_data = self.defined_species[species]
@@ -300,6 +313,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         if select:
             table.setCurrentCell(nrows, 0) # Cause the new row to be selected
+
 
     def handle_delete(self):
         table = self.ui.tablewidget_defined_species
@@ -383,7 +397,6 @@ class SpeciesPopup(QtWidgets.QDialog):
                 sig.disconnect()
             except:
                 pass # isSignalConnected only exists in qt5.
-
 
     def handle_phase(self):
         phases = ''
@@ -502,6 +515,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         self.set_save_button(False) # nothing to Save
         self.clear_species_panel()
+
 
     def set_phases(self, phases):
         if phases == self.phases:
