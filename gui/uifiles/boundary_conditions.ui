@@ -995,7 +995,7 @@
                                        <property name="currentIndex">
                                          <number>0</number>
                                        </property>
-                                       <widget class="QWidget" name="page_fluid_inflow_MI">
+                                       <widget class="QWidget" name="subpage_fluid_inflow_MI">
                                          <property name="sizePolicy">
                                            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
                                              <horstretch>0</horstretch>
@@ -1048,7 +1048,7 @@
                                            </item>
                                          </layout>
                                        </widget>
-                                       <widget class="QWidget" name="page_fluid_inflow_CG_MI">
+                                       <widget class="QWidget" name="subpage_fluid_inflow_CG_MI">
                                          <layout class="QGridLayout" name="gridLayout_16">
                                            <property name="leftMargin">
                                              <number>0</number>
@@ -1666,6 +1666,7 @@
                              </item>
                            </layout>
                          </widget>
+                         <widget class="QWidget" name="page_solid_blank"/>
                        </widget>
                        <widget class="QWidget" name="page_dummy_solids_R">
                          <layout class="QGridLayout" name="gridLayout_11">

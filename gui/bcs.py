@@ -1127,12 +1127,23 @@ class BCS(object):
             return
         if bc_type.endswith('W'):
             self.setup_bcs_solids_wall_tab(P)
+        else:
+            self.setup_bcs_solids_blank_tab()
 
+
+    def setup_bcs_solids_blank_tab(self):
+        # Temp. placeholder
+        ui = self.ui.boundary_conditions
+        ui.page_solids.setCurrentIndex(1)
 
     def setup_bcs_solids_wall_tab(self, P):
         #Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
         #Solids-# (tab) - (Replace with phase name defined by the user)
         # Note, solids phases are numbered 1-N
+
+        ui = self.ui.boundary_conditions
+        ui.page_solids.setCurrentIndex(PAGE_WALL)
+
         self.bcs_current_solid = self.P = P
         if P is None: # Nothing to do
             return
@@ -1141,7 +1152,6 @@ class BCS(object):
             # TODO clear all widgets (?)
             return
 
-        ui = self.ui.boundary_conditions
         BC0 = self.bcs_current_indices[0]
 
         bc_type = self.project.get_value('bc_type', args=[BC0])
@@ -1485,7 +1495,13 @@ class BCS(object):
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
         else:
-            self.print_internal("not ready for %s" % bc_type)
+            self.setup_bcs_scalar_blank_tab()
+
+
+    def setup_bcs_scalar_blank_tab(self):
+        # Temp. placeholder
+        self.clear_bcs_scalar_tab()
+
 
     def clear_bcs_scalar_tab(self):
         ui = self.ui.boundary_conditions
@@ -1915,7 +1931,7 @@ class BCS(object):
 
         #  Select mass inflow specification type:
         if bc_type == 'MI':
-            ui.stackedwidget_fluid_inflow.setCurrentIndex(0) # page_fluid_inflow_MI
+            ui.stackedwidget_fluid_inflow.setCurrentIndex(0) # subpage_fluid_inflow_MI
             ui.label_fluid_tangential_velocities.show()
             if not region_type.endswith('plane'):
                 self.error("Invalid type %s for region %s" % (region_type, region_name))
@@ -1980,7 +1996,7 @@ class BCS(object):
         # For BC_TYPE='CG_MI' or 'PI'
         elif bc_type in ('CG_MI', 'PI'):
             #  Specify all velocity components:
-            ui.stackedwidget_fluid_inflow.setCurrentIndex(1) # page_fluid_inflow_CG_MI
+            ui.stackedwidget_fluid_inflow.setCurrentIndex(1) # subpage_fluid_inflow_CG_MI
             ui.label_fluid_tangential_velocities.hide()
             #    Define X-Axial Velocity
             # Sets keyword BC_U_G(#)
@@ -2050,7 +2066,6 @@ class BCS(object):
         # Specification only available with K-Epsilon turbulence model
         # Sets keywords BC_E_TURB_G(#)
         # DEFAULT value of 0.0
-
 
 
     def setup_bcs_solids_inflow_tab(self):
