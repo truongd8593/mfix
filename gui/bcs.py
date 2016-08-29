@@ -1500,7 +1500,7 @@ class BCS(object):
 
     def setup_bcs_scalar_blank_tab(self):
         # Temp. placeholder
-        self.clear_bcs_scalar_tab()
+        pass
 
 
     def clear_bcs_scalar_tab(self):
