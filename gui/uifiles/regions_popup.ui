@@ -55,14 +55,14 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label_boundary_type">
+      <widget class="QLabel" name="label_bc_type">
        <property name="text">
         <string>Boundary type</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="combobox_boundary_type">
+      <widget class="QComboBox" name="combobox_bc_type">
        <property name="currentIndex">
         <number>2</number>
        </property>

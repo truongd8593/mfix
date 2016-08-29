@@ -24,9 +24,9 @@ else:
         table.horizontalHeader().setResizeMode(col, flags)
 
 # move to "constants"
-# must match order in combobox_boundary_type
-boundary_types = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
-default_boundary_type = boundary_types.index('NSW')  # No Slip Wall
+# must match order in combobox_bc_type
+bc_types = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+default_bc_type = bc_types.index('NSW')  # No Slip Wall
 
 class RegionsPopup(QtWidgets.QDialog):
 
@@ -35,11 +35,11 @@ class RegionsPopup(QtWidgets.QDialog):
 
     def handle_regions_selection(self):
         tw = self.ui.table
-        cb = self.ui.combobox_boundary_type
+        cb = self.ui.combobox_bc_type
 
         if self.boundary:
             #  Pressure Inflow: Not available for STL regions
-            pi_index = boundary_types.index('PI')
+            pi_index = bc_types.index('PI')
             pi_item = get_combobox_item(cb, pi_index)
             disable = any(tw.item(x,1).text()=='STL'
                           for x in get_selected_rows(tw))
@@ -47,26 +47,26 @@ class RegionsPopup(QtWidgets.QDialog):
 
             # Don't stay on disabled item
             if disable and cb.currentIndex() == pi_index:
-                cb.setCurrentIndex(default_boundary_type)
+                cb.setCurrentIndex(default_bc_type)
         self.update_available_regions()
 
 
-    def handle_boundary_type(self, val):
+    def handle_bc_type(self, val):
         self.update_available_regions()
 
 
     def update_available_regions(self):
         tw = self.ui.table
-        cb = self.ui.combobox_boundary_type
-        boundary_type = boundary_types[cb.currentIndex()]
+        cb = self.ui.combobox_bc_type
+        bc_type = bc_types[cb.currentIndex()]
         selections = get_selected_rows(tw)
         if self.boundary:
             # Wall type boundary
-            if boundary_type.endswith('W'):
+            if bc_type.endswith('W'):
                 self.reset_available()
 
             # For inflows, only allow compatible orientation
-            elif boundary_type.endswith('I'):
+            elif bc_type.endswith('I'):
                 if len(selections) == 1:
                     region_type = tw.item(selections[0],1).text()
                     for i in range(0, tw.rowCount()):
@@ -115,7 +115,7 @@ class RegionsPopup(QtWidgets.QDialog):
         #self.ui.table.doubleClicked.connect(self.save.emit) # Too easy to double-click accidentally
         #self.ui.table.doubleClicked.connect(self.accept)
         self.ui.table.itemSelectionChanged.connect(self.handle_regions_selection)
-        self.ui.combobox_boundary_type.currentIndexChanged.connect(self.handle_boundary_type)
+        self.ui.combobox_bc_type.currentIndexChanged.connect(self.handle_bc_type)
         self.rejected.connect(self.cancel.emit)
 
 
@@ -145,12 +145,12 @@ class RegionsPopup(QtWidgets.QDialog):
         # Widget is shared by ICs and BCs pane
         text = "Select region(s) for %s coundition" % ('boundary' if boundary else 'initial')
         self.boundary = boundary
-        for item in (self.ui.combobox_boundary_type, self.ui.label_boundary_type):
+        for item in (self.ui.combobox_bc_type, self.ui.label_bc_type):
             if boundary:
                 item.show()
             else:
                 item.hide()
-        self.ui.combobox_boundary_type.setCurrentIndex(default_boundary_type)
+        self.ui.combobox_bc_type.setCurrentIndex(default_bc_type)
         self.ui.label.setText(text)
         self.show()
         self.raise_()
