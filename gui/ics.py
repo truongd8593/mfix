@@ -73,8 +73,8 @@ class ICS(object):
         widget = ui.lineedit_ic_ep_s_args_IC_P
         key = 'ic_ep_s'
         widget.key = key
-        self.add_tooltip(widget, key)
         widget.args = ['IC', 'P']
+        self.add_tooltip(widget, key)
         widget.dtype = float
         widget.value_updated.connect(self.handle_ics_volume_fraction)
 
@@ -577,8 +577,8 @@ class ICS(object):
             le.setValInfo(min=0.0, max=1.0) # TODO adjust max dynamically
             key = 'ic_x_g'
             le.key = key
-            self.add_tooltip(le, key)
             le.args = [self.ics_current_indices, row+1]
+            self.add_tooltip(le, key)
             val = self.project.get_value(key, args=[IC0, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
@@ -638,7 +638,7 @@ class ICS(object):
             self.update_ics_fluid_mass_fraction_table()
 
 
-    # TODO DRY out fluid/solids code
+    # DRY out fluid/solids code
     def update_ics_solids_mass_fraction_table(self):
         ui = self.ui.initial_conditions
         table = ui.tablewidget_solids_mass_fraction
@@ -672,8 +672,8 @@ class ICS(object):
             le.setValInfo(min=0.0, max=1.0)
             key = 'ic_x_s'
             le.key = key
-            self.add_tooltip(le, key)
             le.args = [self.ics_current_indices, P, row+1]
+            self.add_tooltip(le, key)
             val = self.project.get_value(key, args=[IC0, P, row+1], default=None)
             if val is not None:
                 le.updateValue(key, val)
@@ -729,7 +729,6 @@ class ICS(object):
 
         # DEFAULT - last defined species has mass fraction of 1.0
         # (only enforce this if no mass fractions are set)
-        # TODO set ic_x_g = 1 - sum(ic_x_s)
         if total == 0.0 and species:
             for IC in self.ics_current_indices:
                 for i in range(1, len(species)):
@@ -1160,8 +1159,8 @@ class ICS(object):
                 layout.addWidget(label, row, 0)
                 le = LineEdit()
                 le.key = key
-                self.add_tooltip(le, key)
                 le.args = ['IC', i]
+                self.add_tooltip(le, key)
                 le.dtype = float
                 le.default_value = 0.0
                 self.project.register_widget(le, [key], ['IC', i])

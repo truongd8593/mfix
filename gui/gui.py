@@ -2316,6 +2316,12 @@ class MfixGui(QtWidgets.QMainWindow,
         description = doc.get('description')
         if description is None:
             return
+        args = widget.args
+        if isinstance(args, int):
+            key = '%s(%s)' % (key, args)
+        elif args:
+            key = '%s(%s)' % (key, ','.join(map(
+                lambda x: str(x[0] if isinstance(x, (tuple, list)) else str(x)), args)))
         msg = '<b>%s</b>: %s</br>' % (key, description)
         widget.setToolTip(msg)
         widget.help_text = msg # TODO: can we get more info here, so help_text
