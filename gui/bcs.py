@@ -10,10 +10,11 @@ from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
+from constants import *
 from widgets.regions_popup import RegionsPopup
 from widgets.base import LineEdit, ComboBox
 
-from project import Equation # used for default phi_w
+from project import Equation, FloatExp
 
 from tools.general import (set_item_noedit, set_item_enabled,
                            get_combobox_item, get_selected_row,
@@ -890,6 +891,7 @@ class BCS(object):
             self.setup_bcs_fluid_mo_tab()
         else:
             self.error("Invalid bc_type %s" % bc_type)
+
 
     def setup_bcs_fluid_wall_tab(self):
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
@@ -1856,6 +1858,97 @@ class BCS(object):
             self.setup_bcs_fluid_inflow_tab()
 
 
+    def update_bcs_fluid_mass_fraction_table(self):
+        ui = self.ui.boundary_conditions
+        table = ui.tablewidget_fluid_mass_fraction
+        table.clearContents()
+        table.setRowCount(0)
+        if not (self.fluid_species and self.bcs_current_indices):
+            self.fixup_bcs_table(table)
+            ui.groupbox_fluid_composition.setEnabled(False)
+            return
+        ui.groupbox_fluid_composition.setEnabled(True)
+        BC0 = self.bcs_current_indices[0]
+        species = self.fluid_species
+        if species:
+            nrows = len(species) + 1 # 'Total' row at end
+        else:
+            nrows = 0
+        table.setRowCount(nrows)
+        def make_item(val):
+            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            set_item_noedit(item)
+            return item
+        for (row, (species,data)) in enumerate(species.items()):
+            alias = data.get('alias', species) # default to species if no alias
+            table.setItem(row, 0, make_item(alias))
+            # mass fraction
+            le = LineEdit()
+            le.setdtype('dp')
+            le.setValInfo(min=0.0, max=1.0) # TODO adjust max dynamically
+            key = 'bc_x_g'
+            le.key = key
+            self.add_tooltip(le, key)
+            le.args = [self.bcs_current_indices, row+1]
+            val = self.project.get_value(key, args=[BC0, row+1], default=None)
+            if val is not None:
+                le.updateValue(key, val)
+            le.value_updated.connect(self.handle_bcs_fluid_mass_fraction)
+            table.setCellWidget(row, 1, le)
+        if species:
+            table.setItem(nrows-1, 0, make_item("Total"))
+            table.setItem(nrows-1, 1, make_item(''))
+            item = table.item(nrows-1, 0)
+            font = item.font()
+            font.setBold(True)
+            item.setFont(font)
+            self.update_bcs_fluid_mass_fraction_total()
+        self.fixup_bcs_table(table)
+
+
+    def handle_bcs_fluid_mass_fraction(self, widget, value_dict, args):
+        ui = self.ui.boundary_conditions
+        key = 'bc_x_g'
+        val = value_dict[key]
+        table = ui.tablewidget_fluid_mass_fraction
+        widget.updateValue(key, val)
+        if val == '':
+            self.unset_keyword(key, args=args)
+        else:
+            self.update_keyword(key, val, args=args)
+        self.update_bcs_fluid_mass_fraction_total()
+
+
+    def update_bcs_fluid_mass_fraction_total(self):
+        if not self.bcs_current_indices:
+            return
+        if not self.fluid_species:
+            return
+        BC0 = self.bcs_current_indices[0]
+        ui = self.ui.boundary_conditions
+        key = 'bc_x_g'
+        table = ui.tablewidget_fluid_mass_fraction
+        if table.rowCount() == 0:
+            return
+        total = sum(float(self.project.get_value(key, default=0.0, args=[BC0,i]))
+                    for i in range(1,len(self.fluid_species)+1))
+        item =  table.item(table.rowCount()-1, 1)
+        font = item.font()
+        font.setBold(True)
+        item.setFont(font)
+        item.setText(str(total))
+
+        # DEFAULT - last defined species has mass fraction of 1.0
+        # (only enforce this if no mass fractions are set)
+
+        if total == 0.0 and self.fluid_species:
+            for BC in self.bcs_current_indbces:
+                for i in range(1, len(self.fluid_species)):
+                    self.update_keyword('bc_x_g', 0.0, args=[BC, i])
+                self.update_keyword('bc_x_g', 1.0, args=[BC, len(self.fluid_species)]) # Last defined species
+            self.update_bcs_fluid_mass_fraction_table()
+
+
     def setup_bcs_fluid_inflow_tab(self):
         #Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
         #Fluid (tab)
@@ -2041,13 +2134,25 @@ class BCS(object):
         #  Energy equations are solved
         # Sets keyword BC_T_G(#)
         # DEFAULT value of 293.15
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        enabled = (self.fluid_density_model==OTHER
+                   or self.fluid_viscosity_model==OTHER
+                   or bool(energy_eq))
+        key = 'bc_t_g'
+        default = 293.15
+        setup_key_widget(key, default, enabled)
 
         #Define pressure
         # Specification always available
         # Input required when combining ideal gas law and specified mass inflow rate
         # Input required for BC_TYPE = PI
+        # TODO "required"
         # Sets keyword BC_P_G(#)
         # DEFAULT 101.325d3
+        enabled = True
+        key = 'bc_p_g'
+        default = FloatExp('101.325e3')
+        setup_key_widget(key, default, enabled)
 
         #Select species and set mass fractions (table format)
         # Specification always available
@@ -2055,17 +2160,28 @@ class BCS(object):
         # Drop down menu of fluid species
         # Sets keyword BC_X_G(#,#)
         # DEFAULT - last defined species has mass fraction of 1.0
-        # Error check: mass fractions must sum to one
+        # Error check: mass fractions must sum to one TODO
+        self.update_bcs_fluid_mass_fraction_table()
+
 
         #Turbulence: Define k-ε turbulent kinetic energy
+        enabled = (self.project.get_value('turbulence_model') == 'K_EPSILON')
+        ui.groupbox_inflow_turbulence.setEnabled(enabled)
+
         # Specification only available with K-Epsilon turbulence model
         # Sets keyword BC_K_TURB_G(#)
         # DEFAULT value of 0.0
+        default = 0.0 if enabled else None
+        key = 'bc_k_turb_g'
+        setup_key_widget(key, default, enabled)
 
         #Turbulence: Define k-ε turbulent dissipation
         # Specification only available with K-Epsilon turbulence model
         # Sets keywords BC_E_TURB_G(#)
         # DEFAULT value of 0.0
+        key = 'bc_e_turb_g'
+        default = 0.0 if enabled else None
+        setup_key_widget(key, default, enabled)
 
 
     def setup_bcs_solids_inflow_tab(self):
