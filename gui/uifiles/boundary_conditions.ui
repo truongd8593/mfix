@@ -1371,6 +1371,9 @@
               </layout>
              </widget>
              <widget class="QStackedWidget" name="page_solids">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
               <widget class="QWidget" name="page_solids_wall">
                <layout class="QVBoxLayout" name="verticalLayout_3">
                 <property name="leftMargin">
@@ -2144,7 +2147,86 @@
                 </item>
                </layout>
               </widget>
-              <widget class="QWidget" name="page_solids_blank"/>
+              <widget class="QWidget" name="page_solids_po">
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <widget class="QGroupBox" name="groupbox_solids_po_optional">
+                  <property name="title">
+                   <string>Optional</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_23">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item row="1" column="1">
+                    <widget class="LineEdit" name="lineedit_bc_ep_s_2_args_BC_P"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_bc_ep_s_2">
+                     <property name="text">
+                      <string>Volume fraction</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="label_solids_po_optional">
+                     <property name="font">
+                      <font>
+                       <italic>true</italic>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>MFIX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</string>
+                     </property>
+                     <property name="wordWrap">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="LineEdit" name="lineedit_bc_t_s_2_args_BC_P"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_bc_t_s_2">
+                     <property name="text">
+                      <string>Temperature</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_bc_t_s_2_units">
+                     <property name="text">
+                      <string>K</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_R">
               <layout class="QGridLayout" name="gridLayout_11">
