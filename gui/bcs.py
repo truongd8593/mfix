@@ -121,13 +121,13 @@ class BCS(object):
         ui.combobox_solids_inflow_type.help_text = 'Select inflow specification type'
 
         # Not auto-registered with project manager
-        widget = ui.lineedit_bc_ep_s_args_BC_P
-        key = 'bc_ep_s'
-        widget.key = key
-        widget.args = ['BC', 'P']
-        self.add_tooltip(widget, key)
-        widget.dtype = float
-        widget.value_updated.connect(self.handle_bcs_volume_fraction)
+        for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
+            key = 'bc_ep_s'
+            widget.key = key
+            widget.args = ['BC', 'P']
+            self.add_tooltip(widget, key)
+            widget.dtype = float
+            widget.value_updated.connect(self.handle_bcs_volume_fraction)
 
 
     def bcs_set_volume_fraction_limit(self):
@@ -147,9 +147,9 @@ class BCS(object):
         lim = max(0, 1.0 - s)
         lim = round(lim, 10) # avoid problem with 1 - 0.9 != 0.1
 
-        widget = ui.lineedit_bc_ep_s_args_BC_P
-        widget.min = 0.0
-        widget.max = lim
+        for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
+            widget.min = 0.0
+            widget.max = lim
 
 
     def handle_bcs_volume_fraction(self, widget, val, args):
@@ -1195,14 +1195,12 @@ class BCS(object):
             self.setup_bcs_solids_wall_tab(P)
         elif bc_type.endswith('I'):
             self.setup_bcs_solids_inflow_tab(P)
+        elif bc_type == 'PO':
+            self.setup_bcs_solids_po_tab(P)
+        elif bc_type == 'MO':
+            self.setup_bcs_solids_mo_tab()
         else:
-            self.setup_bcs_solids_blank_tab()
-
-
-    def setup_bcs_solids_blank_tab(self):
-        # Temp. placeholder
-        ui = self.ui.boundary_conditions
-        ui.page_solids.setCurrentIndex(2)
+            self.error("Invalid bc_type %s" % bc_type)
 
 
     def setup_bcs_solids_wall_tab(self, P):
@@ -1562,12 +1560,7 @@ class BCS(object):
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
         else:
-            self.setup_bcs_scalar_blank_tab()
-
-
-    def setup_bcs_scalar_blank_tab(self):
-        # Temp. placeholder
-        pass
+            pass # TODO implement
 
 
     def clear_bcs_scalar_tab(self):
@@ -2413,6 +2406,7 @@ class BCS(object):
             return
         if not self.bcs_current_indices:
             return # Nothing selected.  (Clear out all lineedits?)
+
         BC0 = self.bcs_current_indices[0]
         bc_type = self.project.get_value('bc_type', args=[BC0])
         if bc_type is None:
@@ -2680,10 +2674,9 @@ class BCS(object):
         default = FloatExp('101.325e3')
         setup_key_widget(key, default, enabled, suffix='_2')
 
-
         #The remaining inputs are "optional." They do not have default values, because MFIX will calculate
         #appropriate values if they are unspecified and 'backflow' occurs at the outlet.
-
+        #
         #    Define volume fraction
         # Specification always available
         # Sets keyword BC_EP_G(#)
@@ -2725,31 +2718,96 @@ class BCS(object):
             layout = ui.page_fluid_po.layout() #Underneath - nested groupbox looks weird
             layout.insertWidget(layout.count()-1, comp)
             comp.show()
-
         self.update_bcs_fluid_mass_fraction_table()
 
 
-    def setup_bcs_solids_po_tab(self):
+    def setup_bcs_solids_po_tab(self, P):
         #Subtask Pane Tab for PRESSURE OUTFLOW type (PO) Boundary Condition Regions
         #    Solids-# (tab)
+        ui = self.ui.boundary_conditions
+        ui.page_solids.setCurrentIndex(PAGE_PO)
+
+        self.bcs_current_solid = self.P = P
+        if P is None:
+            return
+        if not self.bcs_current_indices:
+            return # Nothing selected.  (Clear out all lineedits?)
+
+        BC0 = self.bcs_current_indices[0]
+
+        self.bcs_set_volume_fraction_limit()
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC_P',
+                        'lineedit_%s_args_BC_P',
+                        'lineedit_keyword_%s',
+                        'lineedit_%s'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC_P',
+                         'lineedit_%s_args_BC_P',
+                         'lineedit_keyword_%s',
+                         'lineedit_%s'):
+                name = pat % (key+suffix)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            args = [BC0, P]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC, P])
+            get_widget(key+suffix).updateValue(key, val, args=args)
+
         #All inputs are optional. They do not have default values, because MFIX will calculate
         #appropriate values if they are unspecified and 'backflow' occurs at the outlet.
+        #  (label in UI indicates this)
+
         #    Define volume fraction
         # Specification always available
         # Sets keyword BC_EP_S(#,#)
         # No DEFAULT value
         # Error Check: If any volume fraction for the BC region is specified, then all
         # volume fractions for the BC region must be specified and must sum to one.
+        key = 'bc_ep_s'
+        default = None
+        enabled= True
+        setup_key_widget(key, default, enabled, suffix='_2')
+
         #    Define temperature
         # Specification always available
         # NO DEFAULT value
         # Sets keyword BC_T_S(#,#)
+        key = 'bc_t_s'
+        default = None
+        enabled= True
+        setup_key_widget(key, default, enabled, suffix='_2')
+
         #    Select species and set mass fractions (table format)
         # Specification always available
         # NO DEFAULT value
         # Sets keyword BC_X_S(#,#,#)
-        # Error check: if specified, mass fractions must sum to one_
-        pass
+        # Error check: if specified, mass fractions must sum to one
+        #
+        # We already have a mass fraction table - just steal it and move it here
+        comp = ui.groupbox_solids_composition
+        parent = comp.parent()
+        if parent.objectName() != 'page_solids_po':
+            comp.hide()
+            parent.layout().removeWidget(comp)
+            # (Should we put it inside the 'optional' box?  or underneath?)
+            layout = ui.page_solids_po.layout() #Underneath - nested groupbox looks weird
+            layout.insertWidget(layout.count()-1, comp)
+            comp.show()
+        self.update_bcs_solids_mass_fraction_table()
 
 
     def setup_bcs_scalar_po_tab(self):
@@ -2766,9 +2824,11 @@ class BCS(object):
     def setup_bcs_fluid_mo_tab(self):
         #Subtask Pane Tab for MASS OUTFLOW type (MO) Boundary Condition Regions
         #Fluid (tab)
-        #    Define inflow properties: Mass inflow specification changes based on the
-        # BC_TYPE and Region orientation (e.g., XZ-Plane)
+        #    Define inflow properties: Mass inflow specification changes based
+        # on the BC_TYPE and Region orientation (e.g., XZ-Plane)
         # For BC_TYPE='MO' and XZ-Plane region
+        # For BC_TYPE='MO' and YZ-Plane region
+        # For BC_TYPE='MO' and XY-Plane region
         #  Select mass inflow specification type:
         #    Available selections:
         #    Y-Axial Velocity (m/s) [DEFAULT]
@@ -2787,43 +2847,8 @@ class BCS(object):
         #    Define Z-Axial Velocity
         # Sets keyword BC_W_G(#)
         # DEFAULT value of 0.0
-        # For BC_TYPE='MO' and YZ-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    X-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_G(#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_G(#)
-        # DEFAULT value of 0.0
-        #  Define Tangential Velocities:
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_G(#)
-        # DEFAULT value of 0.0
-        #    Define Z-Axial Velocity
-        # Sets keyword BC_W_G(#)
-        # DEFAULT value of 0.0
-        # For BC_TYPE='MO' and XY-Plane region
-        #  Select mass inflow specification type:
-        #    Available selections:
-        #    Z-Axial Velocity (m/s) [DEFAULT]
-        # Sets keyword BC_W_G(#)
-        # DEFAULT value of 0.0
-        #    Volumetric Flowrate (m3/s)
-        # Sets keyword BC_VOLFLOW_G(#)
-        # DEFAULT value of 0.0
-        #    Mass Flowrate (kg/s)
-        # Sets keyword BC_MASSFLOW_G(#)
-        # DEFAULT value of 0.0
-        #Define Tangential Velocities:
-        #    Define X-Axial Velocity
-        # Sets keyword BC_U_G(#)
-        # DEFAULT value of 0.0
-        #    Define Y-Axial Velocity
-        # Sets keyword BC_V_G(#)
+
+
         # DEFAULT value of 0.0
         # For BC_TYPE='CG_MO'
         #  Specify all velocity components:
