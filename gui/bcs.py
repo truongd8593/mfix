@@ -2616,17 +2616,60 @@ class BCS(object):
         #    Define initial scalar value
         # Sets keyword BC_SCALAR(#,#)
         # DEFAULT value of 0.0
+        # TODO implement this tab
         pass
 
 
     def setup_bcs_fluid_po_tab(self):
         #Subtask Pane Tab for PRESSURE OUTFLOW type (PO) Boundary Condition Regions
         #Fluid (tab)
+        ui = self.ui.boundary_conditions
+        ui.page_fluid.setCurrentIndex(PAGE_PO)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC',
+                        'lineedit_keyword_%s',
+                        'lineedit_%s'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC',
+                         'lineedit_%s_args_BC',
+                         'lineedit_keyword_%s',
+                         'lineedit_%s'):
+                name = pat % (key+suffix)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            args = [BC0]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC])
+            get_widget(key+suffix).updateValue(key, val, args=args)
+
         #    Define pressure
         # Specification always available
-        # Input required
+        # TODO Input required
         # Sets keyword BC_P_G(#)
         # DEFAULT 101.325d3
+        enabled = True
+        key = 'bc_p_g'
+        default = FloatExp('101.325e3')
+        setup_key_widget(key, default, enabled, suffix='_2')
+
 
         #The remaining inputs are "optional." They do not have default values, because MFIX will calculate
         #appropriate values if they are unspecified and 'backflow' occurs at the outlet.
@@ -2636,16 +2679,30 @@ class BCS(object):
         # No DEFAULT value
         # Error Check: If any volume fraction for the BC region is specified, then all volume fractions
         # for the BC region must be specified and must sum to one.
+        # TODO implement the above error check.  Note that not all fractions will be set during the
+        #  setup phase.
+        enabled = True
+        key = 'bc_ep_g'
+        default = None
+        setup_key_widget(key, default, enabled, suffix='_2')
+        get_widget(key+'_2').setReadOnly(True)
+        get_widget(key+'_2').setEnabled(False) # better way to indicate read-only?
+
         #    Define temperature
         # Specification always available
         # NO DEFAULT value
         # Sets keyword BC_T_G(#)
+        enabled = True
+        default = None
+        key = 'bc_t_g'
+        setup_key_widget(key, default, enabled, suffix='_2')
+
+        return
         #    Select species and set mass fractions (table format)
         # Specification always available
         # NO DEFAULT value
         # Sets keyword BC_X_G(#,#)
         # Error check: if specified, mass fractions must sum to one
-        pass
 
 
     def setup_bcs_solids_po_tab(self):

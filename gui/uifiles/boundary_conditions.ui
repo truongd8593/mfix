@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
+    <width>329</width>
     <height>1026</height>
    </rect>
   </property>
@@ -327,7 +327,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>702</width>
+            <width>320</width>
             <height>858</height>
            </rect>
           </property>
@@ -357,7 +357,7 @@
              </property>
              <widget class="QStackedWidget" name="page_fluid">
               <property name="currentIndex">
-               <number>1</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="page_fluid_wall">
                <layout class="QVBoxLayout" name="verticalLayout_1">
@@ -891,11 +891,11 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_ep_g_args_BC">
                      <property name="readOnly">
-                     <bool>true</bool>
-                    </property>
-
+                      <bool>true</bool>
+                     </property>
+                    </widget>
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_ep_g">
@@ -1078,9 +1078,9 @@
                     </widget>
                    </item>
                   </layout>
+                  <zorder>label_fluid_tangential_velocity_1_units</zorder>
+                  <zorder>label_solids_tangential_velocity_2_units</zorder>
                   <zorder>label_fluid_inflow_units</zorder>
-                  <zorder>label_tangential_velocity_1_units</zorder>
-                  <zorder>label_tangential_velocity_2_units</zorder>
                   <zorder>lineedit_keyword_bc_ep_g_args_BC</zorder>
                   <zorder>label_bc_ep_g</zorder>
                   <zorder>lineedit_fluid_inflow</zorder>
@@ -1236,7 +1236,103 @@
                 </item>
                </layout>
               </widget>
-              <widget class="QWidget" name="page_fluid_po"/>
+              <widget class="QWidget" name="page_fluid_po">
+               <layout class="QVBoxLayout" name="verticalLayout_5">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frame">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_21">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item row="0" column="1">
+                    <widget class="LineEdit" name="lineedit_keyword_bc_p_g_2_args_BC"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_bc_p_g_2">
+                     <property name="text">
+                      <string>Pressure</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_bc_pg_2_units">
+                     <property name="text">
+                      <string>Pa</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <spacer name="verticalSpacer_6">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_bc_ep_g_2">
+                     <property name="text">
+                      <string>Volume fraction</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_bc_t_g_2">
+                     <property name="text">
+                      <string>Temperature</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_bc_t_g_2_units">
+                     <property name="text">
+                      <string>K</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="LineEdit" name="lineedit_bc_ep_g_2_args_BC"/>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="LineEdit" name="lineedit_bc_t_g_2_args_BC"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
               <widget class="QWidget" name="page_fluid_mo"/>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_L">
@@ -1719,9 +1815,6 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_solids_inflow">
-
-
-
                <layout class="QVBoxLayout" name="verticalLayout_4">
                 <property name="leftMargin">
                  <number>0</number>
@@ -1930,10 +2023,10 @@
                     </widget>
                    </item>
                   </layout>
+                  <zorder>lineedit_bc_ep_s_args_BC_P</zorder>
                   <zorder>label_solids_inflow_units</zorder>
                   <zorder>label_solids_tangential_velocity_1_units</zorder>
                   <zorder>label_solids_tangential_velocity_2_units</zorder>
-                  <zorder>lineedit_keyword_bc_ep_s_args_BC_P</zorder>
                   <zorder>label_bc_ep_s</zorder>
                   <zorder>lineedit_solids_inflow</zorder>
                   <zorder>label_solids_tangential_velocities</zorder>
@@ -2030,10 +2123,6 @@
                 </item>
                </layout>
               </widget>
-
-
-
-
               <widget class="QWidget" name="page_solids_blank"/>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_R">
