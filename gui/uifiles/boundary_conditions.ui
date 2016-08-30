@@ -357,7 +357,7 @@
              </property>
              <widget class="QStackedWidget" name="page_fluid">
               <property name="currentIndex">
-               <number>2</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="page_fluid_wall">
                <layout class="QVBoxLayout" name="verticalLayout_1">
@@ -1251,7 +1251,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QFrame" name="frame">
+                 <widget class="QFrame" name="frame_fluid_po">
                   <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
                   </property>
@@ -1269,10 +1269,14 @@
                     <number>0</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>0</number>
+                    <number>10</number>
                    </property>
-                   <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_p_g_2_args_BC"/>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_bc_pg_2_units">
+                     <property name="text">
+                      <string>Pa</string>
+                     </property>
+                    </widget>
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_p_g_2">
@@ -1281,55 +1285,72 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="2">
-                    <widget class="QLabel" name="label_bc_pg_2_units">
-                     <property name="text">
-                      <string>Pa</string>
-                     </property>
-                    </widget>
+                   <item row="0" column="1">
+                    <widget class="LineEdit" name="lineedit_keyword_bc_p_g_2_args_BC"/>
                    </item>
-                   <item row="3" column="1">
-                    <spacer name="verticalSpacer_6">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_bc_ep_g_2">
-                     <property name="text">
-                      <string>Volume fraction</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_bc_t_g_2">
-                     <property name="text">
-                      <string>Temperature</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupbox_fluid_po_optional">
+                  <property name="title">
+                   <string>Optional</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_22">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>10</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item row="1" column="2">
                     <widget class="QLabel" name="label_bc_t_g_2_units">
                      <property name="text">
                       <string>K</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_bc_t_g_2">
+                     <property name="text">
+                      <string>Temperature</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
                     <widget class="LineEdit" name="lineedit_bc_ep_g_2_args_BC"/>
                    </item>
-                   <item row="2" column="1">
-                    <widget class="LineEdit" name="lineedit_bc_t_g_2_args_BC"/>
+                   <item row="1" column="1">
+                    <widget class="LineEdit" name="lineedit_keyword_bc_t_g_2_args_BC"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_bc_ep_g_2">
+                     <property name="text">
+                      <string>Volume fraction</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                </layout>
               </widget>

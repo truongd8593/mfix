@@ -2271,6 +2271,16 @@ class BCS(object):
         # Sets keyword BC_X_G(#,#)
         # DEFAULT - last defined species has mass fraction of 1.0
         # TODO Error check: mass fractions must sum to one
+        #
+        # Move back the table, in case it got stolen
+        comp = ui.groupbox_fluid_composition
+        parent = comp.parent()
+        if parent.objectName() != 'page_fluid_inflow':
+            comp.hide()
+            parent.layout().removeWidget(comp)
+            layout = ui.page_fluid_inflow.layout()
+            layout.insertWidget(layout.count()-2, comp)
+            comp.show()
         self.update_bcs_fluid_mass_fraction_table()
 
         #Turbulence: Define k-ε turbulent kinetic energy
@@ -2673,6 +2683,7 @@ class BCS(object):
 
         #The remaining inputs are "optional." They do not have default values, because MFIX will calculate
         #appropriate values if they are unspecified and 'backflow' occurs at the outlet.
+
         #    Define volume fraction
         # Specification always available
         # Sets keyword BC_EP_G(#)
@@ -2697,12 +2708,25 @@ class BCS(object):
         key = 'bc_t_g'
         setup_key_widget(key, default, enabled, suffix='_2')
 
-        return
         #    Select species and set mass fractions (table format)
         # Specification always available
         # NO DEFAULT value
         # Sets keyword BC_X_G(#,#)
         # Error check: if specified, mass fractions must sum to one
+
+        # We already have a mass fraction table - just steal it and move it here
+        comp = ui.groupbox_fluid_composition
+        parent = comp.parent()
+        if parent.objectName() != 'page_fluid_po':
+            comp.hide()
+            parent.layout().removeWidget(comp)
+            # (Should we put it inside the 'optional' box?  or underneath?)
+            #ui.groupbox_fluid_po_optional.layout().addWidget(comp, 2, 0, 1, 3)
+            layout = ui.page_fluid_po.layout() #Underneath - nested groupbox looks weird
+            layout.insertWidget(layout.count()-1, comp)
+            comp.show()
+
+        self.update_bcs_fluid_mass_fraction_table()
 
 
     def setup_bcs_solids_po_tab(self):
