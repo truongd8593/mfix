@@ -106,19 +106,24 @@ class BCS(object):
             setter = getattr(self, 'set_bcs_%s_type' % name)
             item.currentIndexChanged.connect(setter)
         # Inflow pane has some special inputs
-        ui.lineedit_fluid_inflow.value_updated.connect(self.bcs_handle_inflow_input)
-        ui.lineedit_fluid_inflow.key = 'Unset' # diagnostic
-        ui.lineedit_fluid_inflow.args = ['BC']
-        ui.combobox_fluid_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
-        ui.combobox_fluid_inflow_type.key = 'fluid_inflow'
-        ui.combobox_fluid_inflow_type.help_text = 'Select inflow specification type'
 
-        ui.lineedit_solids_inflow.value_updated.connect(self.bcs_handle_inflow_input)
-        ui.lineedit_solids_inflow.key = 'Unset' # diagnostic
-        ui.lineedit_solids_inflow.args = ['BC', 'P']
-        ui.combobox_solids_inflow_type.value_updated.connect(self.bcs_handle_inflow_type)
-        ui.combobox_solids_inflow_type.key = 'solids_inflow'
-        ui.combobox_solids_inflow_type.help_text = 'Select inflow specification type'
+        le = ui.lineedit_fluid_inflow
+        cb = ui.combobox_fluid_inflow_type
+        le.value_updated.connect(self.bcs_handle_inflow_input)
+        le.key = 'Unset' # diagnostic
+        le.args = ['BC']
+        # Tooltip added dynamically
+        cb.value_updated.connect(self.bcs_handle_inflow_type)
+        cb.key = 'fluid_inflow'
+
+        le = ui.lineedit_solids_inflow
+        cb = ui.combobox_solids_inflow_type
+        le.value_updated.connect(self.bcs_handle_inflow_input)
+        le.key = 'Unset' # diagnostic
+        le.args = ['BC', 'P']
+        # Tooltip added dynamically
+        cb.value_updated.connect(self.bcs_handle_inflow_type)
+        cb.key = 'solids_inflow'
 
         # Not auto-registered with project manager
         for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
@@ -2132,6 +2137,8 @@ class BCS(object):
             normal = normal[0]
 
             cb = ui.combobox_fluid_inflow_type
+            cb.help_text = 'Select fluid inflow specification type'
+            cb.setToolTip(cb.help_text)
             item = get_combobox_item(cb, 0)
             item.setText('%s-axial velocity' % normal)
             inflow_type = self.bcs[BC0].get('inflow_type')
@@ -2496,6 +2503,8 @@ class BCS(object):
             normal = normal[0]
 
             cb = ui.combobox_solids_inflow_type
+            cb.help_text = 'Select solids inflow specification type'
+            cb.setToolTip(cb.help_text)
             item = get_combobox_item(cb, 0)
             item.setText('%s-axial velocity' % normal)
             inflow_type = self.bcs[BC0].get('inflow_type_%s'%P)
@@ -2824,12 +2833,50 @@ class BCS(object):
     def setup_bcs_fluid_mo_tab(self):
         #Subtask Pane Tab for MASS OUTFLOW type (MO) Boundary Condition Regions
         #Fluid (tab)
-        #    Define inflow properties: Mass inflow specification changes based
+        ui = self.ui.boundary_conditions
+        ui.page_fluid.setCurrentIndex(PAGE_MO)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_BC',
+                        'lineedit_%s_args_BC',
+                        'lineedit_keyword_%s',
+                        'lineedit_%s'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_BC',
+                         'lineedit_%s_args_BC',
+                         'lineedit_keyword_%s',
+                         'lineedit_%s'):
+                name = pat % (key+suffix)
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+
+            args = [BC0]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for BC in self.bcs_current_indices:
+                self.update_keyword(key, val, args=[BC])
+            get_widget(key+suffix).updateValue(key, val, args=args)
+
+
+        #    Define outflow properties: Mass outflow specification changes based
         # on the BC_TYPE and Region orientation (e.g., XZ-Plane)
         # For BC_TYPE='MO' and XZ-Plane region
         # For BC_TYPE='MO' and YZ-Plane region
         # For BC_TYPE='MO' and XY-Plane region
-        #  Select mass inflow specification type:
+        #  Select mass outflow specification type:
         #    Available selections:
         #    Y-Axial Velocity (m/s) [DEFAULT]
         # Sets keyword BC_V_G(#)
@@ -2849,7 +2896,6 @@ class BCS(object):
         # DEFAULT value of 0.0
 
 
-        # DEFAULT value of 0.0
         # For BC_TYPE='CG_MO'
         #  Specify all velocity components:
         #    Define X-Axial Velocity
@@ -2861,6 +2907,9 @@ class BCS(object):
         #    Define Z-Axial Velocity
         # Sets keyword BC_V_G(#)
         # DEFAULT value of 0.0
+
+
+
         #Define duration to average outflow rate.
         # Specification always available
         # Input required
@@ -2886,12 +2935,13 @@ class BCS(object):
         # Specification only available with mass or volumetric flowrates and R_G0 is UNDEFINED
         # DEFAULT value 293.15
         # Sets keyword BC_T_G(#)
+
         #Select species and set mass fractions (table format)
         # Specification only available with mass or volumetric flowrates and R_G0 is UNDEFINED
         # DEFAULT value 1.0 of last defined species
         # Sets keyword BC_X_G(#,#)
         # Error check: if specified, mass fractions must sum to one
-        pass
+
 
 
     def setup_bcs_solids_mo_tab(self):
