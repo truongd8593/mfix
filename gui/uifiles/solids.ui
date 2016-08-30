@@ -3164,7 +3164,7 @@ background-color:white;
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_des_interp_width_units_2">
+                <widget class="QLabel" name="label_des_interp_width_2_units">
                  <property name="text">
                   <string>m</string>
                  </property>

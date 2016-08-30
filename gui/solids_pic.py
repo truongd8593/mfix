@@ -176,7 +176,7 @@ class SolidsPIC(object):
         key = 'des_interp_width'
         enabled = interp_enabled and (des_interp_scheme=='SQUARE_DPVM') #?
         for item in (ui.label_des_interp_width_2, ui.lineedit_keyword_des_interp_width_2,
-                     ui.label_des_interp_width_units_2):
+                     ui.label_des_interp_width_2_units):
             item.setEnabled(enabled)
         if des_interp_scheme != 'SQUARE_DPVM':
             self.unset_keyword(key)
