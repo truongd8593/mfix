@@ -2030,7 +2030,6 @@ class BCS(object):
         ui = self.ui.boundary_conditions
         key = 'bc_x_g'
         val = value_dict[key]
-        table = ui.tablewidget_fluid_mass_fraction
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=args)
@@ -2373,7 +2372,6 @@ class BCS(object):
         ui = self.ui.boundary_conditions
         key = 'bc_x_s'
         val = value_dict[key]
-        table = ui.tablewidget_fluid_mass_fraction
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=args)
