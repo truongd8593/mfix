@@ -1498,7 +1498,7 @@
                     <widget class="LineEdit" name="lineedit_bc_dt_0"/>
                    </item>
                    <item row="1" column="0">
-                    <widget class="QStackedWidget" name="stackedwidget_fluid_mo">
+                    <widget class="QStackedWidget" name="stackedwidget_fluid_outflow">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                        <horstretch>0</horstretch>

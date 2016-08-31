@@ -2904,7 +2904,7 @@ class BCS(object):
         # For BC_TYPE='MO' and XY-Plane region
         #  Select mass outflow specification type:
         if bc_type == 'MO':
-            ui.stackedwidget_fluid_mo.setCurrentIndex(0) # subpage_fluid_outflow_MO
+            ui.stackedwidget_fluid_outflow.setCurrentIndex(0) # subpage_fluid_outflow_MO
             ui.label_fluid_tangential_velocities_3.show()
             if not region_type.endswith('plane'):
                 self.error("Invalid type %s for region %s" % (region_type, region_name))
@@ -3055,7 +3055,9 @@ class BCS(object):
         # DEFAULT value 293.15
         # Sets keyword BC_T_G(#)
         ro_g0 = self.project.get_value('ro_g0')
-        enabled = (ro_g0 is None) and outflow_type > 0
+        mass_flow = self.project.get_value('bc_massflow_g', args=[BC0])
+        vol_flow = self.project.get_value('bc_volflow_g', args=[BC0])
+        enabled = (ro_g0 is None) and (mass_flow is not None or vol_flow is not None)
         default = 293.15 if enabled else None
         key = 'bc_t_g'
         setup_key_widget(key, default, enabled, suffix='_3')
@@ -3065,6 +3067,8 @@ class BCS(object):
         # DEFAULT value 1.0 of last defined species
         # Sets keyword BC_X_G(#,#)
         # Error check: if specified, mass fractions must sum to one
+        #
+        enabled = (ro_g0 is None) and (mass_flow is not None or vol_flow is not None)
         comp = ui.groupbox_fluid_composition
         parent = comp.parent()
         if enabled:
@@ -3084,6 +3088,18 @@ class BCS(object):
     def setup_bcs_solids_mo_tab(self):
         #Subtask Pane Tab for MASS OUTFLOW type (MO) Boundary Condition Regions
         #Solids-# (tab)
+        ui = self.ui.boundary_conditions
+        ui.page_solids.setCurrentIndex(PAGE_MO)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+
+        bc_type = self.project.get_value('bc_type', args=[BC0])
+        if bc_type is None:
+            self.error("bc_type not set for region %s" % BC0)
+            return
+
         #Define outflow properties: Mass outflow specification changes
         #based on the BC_TYPE and Region orientation (e.g., XZ-Plane)
         #
@@ -3130,7 +3146,10 @@ class BCS(object):
         #BC_DT_0 specification should persist across the gas and solids tabs.
         #If the user sets it in the gas phase tab, but then changes it under a solids tab,
         # a warning message indicating that this value is'constant' across all phases should be given.
+
+        # TODO: No mass fraction table?
         pass
+
 
     def setup_bcs_scalar_mo_tab(self):
         pass # ? not mentioned in SRS
