@@ -695,7 +695,7 @@ class ICS(object):
         ui = self.ui.initial_conditions
         key = 'ic_x_s'
         val = value_dict[key]
-        table = ui.tablewidget_fluid_mass_fraction
+        table = ui.tablewidget_solids_mass_fraction
         widget.updateValue(key, val)
         if val == '':
             self.unset_keyword(key, args=args)
