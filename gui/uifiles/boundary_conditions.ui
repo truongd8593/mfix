@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>329</width>
-    <height>1026</height>
+    <height>861</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Boundary Conditions</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_1">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -83,7 +83,7 @@
          <property name="frameShadow">
           <enum>QFrame::Plain</enum>
          </property>
-         <layout class="QGridLayout" name="gridLayout_9" columnstretch="0">
+         <layout class="QGridLayout" name="gridLayout_1" columnstretch="0">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -97,7 +97,7 @@
            <number>0</number>
           </property>
           <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout_1">
             <item>
              <widget class="QToolButton" name="toolbutton_add">
               <property name="toolTip">
@@ -186,7 +186,7 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <layout class="QGridLayout" name="gridLayout_10">
+      <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
         <number>5</number>
        </property>
@@ -200,7 +200,7 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QFrame" name="tab_frame">
            <property name="styleSheet">
@@ -328,10 +328,10 @@
             <x>0</x>
             <y>0</y>
             <width>320</width>
-            <height>858</height>
+            <height>693</height>
            </rect>
           </property>
-          <layout class="QGridLayout" name="gridLayout_2">
+          <layout class="QGridLayout" name="gridLayout_3">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -353,14 +353,14 @@
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>2</number>
              </property>
              <widget class="QStackedWidget" name="page_fluid">
               <property name="currentIndex">
-               <number>3</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="page_fluid_wall">
-               <layout class="QVBoxLayout" name="verticalLayout_1">
+               <layout class="QVBoxLayout" name="verticalLayout_2">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -387,7 +387,7 @@
                   <property name="flat">
                    <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_3">
+                  <layout class="QGridLayout" name="gridLayout_4">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -509,7 +509,7 @@
                   <property name="flat">
                    <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_6">
+                  <layout class="QGridLayout" name="gridLayout_5">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -526,7 +526,7 @@
                     <widget class="LineEdit" name="lineedit_keyword_bc_tw_g_args_BC"/>
                    </item>
                    <item row="0" column="0" colspan="2">
-                    <layout class="QHBoxLayout" name="horizontalLayout_2">
+                    <layout class="QHBoxLayout" name="horizontalLayout_3">
                      <item>
                       <widget class="QLabel" name="label_fluid_energy_eq_type">
                        <property name="font">
@@ -697,7 +697,7 @@
                   <property name="flat">
                    <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_7">
+                  <layout class="QGridLayout" name="gridLayout_6">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -714,7 +714,7 @@
                     <number>6</number>
                    </property>
                    <item row="0" column="0" colspan="3">
-                    <layout class="QHBoxLayout" name="horizontalLayout_3">
+                    <layout class="QHBoxLayout" name="horizontalLayout_4">
                      <item>
                       <widget class="QLabel" name="label">
                        <property name="font">
@@ -834,7 +834,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_2">
+                 <spacer name="verticalSpacer_1">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -849,7 +849,7 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_fluid_inflow">
-               <layout class="QVBoxLayout" name="verticalLayout_2">
+               <layout class="QVBoxLayout" name="verticalLayout_3">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -870,7 +870,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Plain</enum>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_25">
+                  <layout class="QGridLayout" name="gridLayout_7">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1006,7 +1006,7 @@
                         <verstretch>0</verstretch>
                        </sizepolicy>
                       </property>
-                      <layout class="QGridLayout" name="gridLayout_15">
+                      <layout class="QGridLayout" name="gridLayout_8">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -1053,7 +1053,7 @@
                       </layout>
                      </widget>
                      <widget class="QWidget" name="subpage_fluid_inflow_CG_MI">
-                      <layout class="QGridLayout" name="gridLayout_16">
+                      <layout class="QGridLayout" name="gridLayout_9">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -1118,7 +1118,7 @@
                   <property name="flat">
                    <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_17">
+                  <layout class="QGridLayout" name="gridLayout_10">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1171,7 +1171,7 @@
                   <property name="title">
                    <string>Turbulence</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_14">
+                  <layout class="QGridLayout" name="gridLayout_11">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -1222,7 +1222,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_4">
+                 <spacer name="verticalSpacer_2">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -1237,7 +1237,7 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_fluid_po">
-               <layout class="QVBoxLayout" name="verticalLayout_5">
+               <layout class="QVBoxLayout" name="verticalLayout_4">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1258,7 +1258,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Plain</enum>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_21">
+                  <layout class="QGridLayout" name="gridLayout_12">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -1296,7 +1296,7 @@
                   <property name="title">
                    <string>Optional</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_22">
+                  <layout class="QGridLayout" name="gridLayout_13">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1340,7 +1340,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_6">
+                 <spacer name="verticalSpacer_3">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -1355,7 +1355,7 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_fluid_mo">
-               <layout class="QVBoxLayout" name="verticalLayout_7">
+               <layout class="QVBoxLayout" name="verticalLayout_5">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1376,7 +1376,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Plain</enum>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_24">
+                  <layout class="QGridLayout" name="gridLayout_14">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1515,7 +1515,7 @@
                         <verstretch>0</verstretch>
                        </sizepolicy>
                       </property>
-                      <layout class="QGridLayout" name="gridLayout_27">
+                      <layout class="QGridLayout" name="gridLayout_15">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -1562,7 +1562,7 @@
                       </layout>
                      </widget>
                      <widget class="QWidget" name="subpage_fluid_outflow_CG_MO">
-                      <layout class="QGridLayout" name="gridLayout_26">
+                      <layout class="QGridLayout" name="gridLayout_16">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -1604,7 +1604,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_14">
+                 <spacer name="verticalSpacer_4">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -1620,7 +1620,7 @@
               </widget>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_L">
-              <layout class="QGridLayout" name="gridLayout_12">
+              <layout class="QGridLayout" name="gridLayout_17">
                <item row="0" column="0">
                 <widget class="QLabel" name="label_dummy_solids_L">
                  <property name="styleSheet">
@@ -1638,7 +1638,7 @@
                <number>0</number>
               </property>
               <widget class="QWidget" name="page_solids_wall">
-               <layout class="QVBoxLayout" name="verticalLayout_3">
+               <layout class="QVBoxLayout" name="verticalLayout_6">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -1656,7 +1656,7 @@
                   <property name="title">
                    <string>Momentum Equations</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_4">
+                  <layout class="QGridLayout" name="gridLayout_18">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -1856,7 +1856,7 @@
                   <property name="title">
                    <string>Energy Equation</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_5">
+                  <layout class="QGridLayout" name="gridLayout_19">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -1870,7 +1870,7 @@
                     <number>5</number>
                    </property>
                    <item row="0" column="0" colspan="2">
-                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <layout class="QHBoxLayout" name="horizontalLayout_6">
                      <item>
                       <widget class="QLabel" name="label_solids_energy_eq_type">
                        <property name="text">
@@ -1993,7 +1993,7 @@
                   <property name="title">
                    <string>Granular Energy Equation</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_8">
+                  <layout class="QGridLayout" name="gridLayout_20">
                    <property name="leftMargin">
                     <number>5</number>
                    </property>
@@ -2007,7 +2007,7 @@
                     <number>5</number>
                    </property>
                    <item row="0" column="0" colspan="2">
-                    <layout class="QHBoxLayout" name="horizontalLayout_6">
+                    <layout class="QHBoxLayout" name="horizontalLayout_7">
                      <item>
                       <widget class="QLabel" name="label_solids_granular_energy_eq_type">
                        <property name="text">
@@ -2087,7 +2087,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_3">
+                 <spacer name="verticalSpacer_5">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -2102,7 +2102,7 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_solids_inflow">
-               <layout class="QVBoxLayout" name="verticalLayout_4">
+               <layout class="QVBoxLayout" name="verticalLayout_7">
                 <property name="leftMargin">
                  <number>0</number>
                 </property>
@@ -2123,7 +2123,7 @@
                   <property name="frameShadow">
                    <enum>QFrame::Plain</enum>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_13">
+                  <layout class="QGridLayout" name="gridLayout_21">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -2238,7 +2238,7 @@
                         <verstretch>0</verstretch>
                        </sizepolicy>
                       </property>
-                      <layout class="QGridLayout" name="gridLayout_19">
+                      <layout class="QGridLayout" name="gridLayout_22">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -2285,7 +2285,7 @@
                       </layout>
                      </widget>
                      <widget class="QWidget" name="subpage_solids_inflow_CG_MI">
-                      <layout class="QGridLayout" name="gridLayout_20">
+                      <layout class="QGridLayout" name="gridLayout_23">
                        <property name="leftMargin">
                         <number>0</number>
                        </property>
@@ -2347,7 +2347,7 @@
                   <property name="flat">
                    <bool>true</bool>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_18">
+                  <layout class="QGridLayout" name="gridLayout_24">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -2396,7 +2396,7 @@
                  </widget>
                 </item>
                 <item>
-                 <spacer name="verticalSpacer_5">
+                 <spacer name="verticalSpacer_6">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
                   </property>
@@ -2411,13 +2411,13 @@
                </layout>
               </widget>
               <widget class="QWidget" name="page_solids_po">
-               <layout class="QVBoxLayout" name="verticalLayout_6">
+               <layout class="QVBoxLayout" name="verticalLayout_8">
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_po_optional">
                   <property name="title">
                    <string>Optional</string>
                   </property>
-                  <layout class="QGridLayout" name="gridLayout_23">
+                  <layout class="QGridLayout" name="gridLayout_25">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -2490,9 +2490,225 @@
                 </item>
                </layout>
               </widget>
+              <widget class="QWidget" name="page_solids_mo">
+               <layout class="QVBoxLayout" name="verticalLayout_9">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QFrame" name="frame_solids_outflow">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_26">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_2_4">
+                     <property name="text">
+                      <string>  Z-axial velocity</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_outflow"/>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_solids_outflow_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocities_4">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Tangential velocities:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_1_4">
+                     <property name="text">
+                      <string>  Y-axial velocity</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_tangential_velocity_1_4"/>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="LineEdit" name="lineedit_solids_tangential_velocity_2_4"/>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_1_4_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QLabel" name="label_solids_tangential_velocity_2_4_units">
+                     <property name="text">
+                      <string>m/s</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="LineEdit" name="lineedit_bc_dt_0_4"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QStackedWidget" name="stackedwidget_solids_outflow">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="currentIndex">
+                      <number>0</number>
+                     </property>
+                     <widget class="QWidget" name="subpage_solids_outflow_MO">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <layout class="QGridLayout" name="gridLayout_27">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="ComboBox" name="combobox_solids_outflow_type">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <weight>50</weight>
+                           <bold>false</bold>
+                          </font>
+                         </property>
+                         <item>
+                          <property name="text">
+                           <string>X-axial velocity</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>Volumetric flowrate</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>Mass flowrate</string>
+                          </property>
+                         </item>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_solids_outflow_CG_MO">
+                      <layout class="QGridLayout" name="gridLayout_28">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_bc_u_s_4">
+                         <property name="text">
+                          <string>X-axial velocity</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_bc_dt_0_4">
+                     <property name="text">
+                      <string>Time to average outflow</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QLabel" name="label_bc_dt_0_4_units">
+                     <property name="text">
+                      <string>s</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_8">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
              </widget>
              <widget class="QWidget" name="page_dummy_solids_R">
-              <layout class="QGridLayout" name="gridLayout_11">
+              <layout class="QGridLayout" name="gridLayout_29">
                <item row="0" column="0">
                 <widget class="QLabel" name="label_dummy_solids_R">
                  <property name="styleSheet">
@@ -2506,7 +2722,7 @@
               </layout>
              </widget>
              <widget class="QWidget" name="page_scalar">
-              <layout class="QGridLayout" name="gridLayout">
+              <layout class="QGridLayout" name="gridLayout_30">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -2537,7 +2753,7 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <spacer name="verticalSpacer">
+            <spacer name="verticalSpacer_9">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
