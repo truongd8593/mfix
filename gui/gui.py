@@ -1951,7 +1951,6 @@ class MfixGui(QtWidgets.QMainWindow,
             return False
 
     def new_project(self):
-        # Why not use get_save_filename here?
         project_file = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Create Project File',
             "", "MFX files (*.mfx)")
@@ -2379,7 +2378,7 @@ def main(args):
 
     quit_after_loading = False
     project_file = None
-    new_project = False
+    noload = False
     log_level = 'WARN'
     mfix_exe_option = None
 
@@ -2390,8 +2389,8 @@ def main(args):
             Usage(name)
         elif opt in ("-q", "--quit"):
             quit_after_loading = True
-        elif opt in ("-n", "--new"):
-            new_project = True
+        elif opt in ("-n", "--noload"):
+            noload = True
         elif opt in ("-e", "--exe"):
             mfix_exe_option = arg
         else:
@@ -2405,13 +2404,13 @@ def main(args):
         Usage(name)
     if args:
         project_file = args[0]
-    if new_project and project_file: # Should we allow this - create new proj. by name?
+    if noload and project_file:
         Usage(name)
     if project_file and not os.path.isfile(project_file):
         print("%s: is not a file " % project_file)
         Usage(name)
 
-    qapp = QtWidgets.QApplication([])
+    qapp = QtWidgets.QApplication([]) # TODO pass args to qt
     #qapp.setStyle("fusion") #Changing the style
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
@@ -2420,7 +2419,7 @@ def main(args):
         #print('exe option passed: %s' % mfix_exe_option)
         gui.commandline_option_exe = mfix_exe_option
 
-    if project_file is None and not new_project:
+    if project_file is None and not noload:
         # autoload last project
         project_file = gui.get_project_file()
 
