@@ -65,8 +65,8 @@ class RegionsPopup(QtWidgets.QDialog):
             if bc_type.endswith('W'):
                 self.reset_available()
 
-            # For inflows, only allow compatible orientation
-            elif bc_type.endswith('I'):
+            # For inflows/outflows, only allow compatible orientation
+            elif bc_type.endswith('I') or bc_type.endswith('O'):
                 if len(selections) == 1:
                     region_type = tw.item(selections[0],1).text()
                     for i in range(0, tw.rowCount()):
@@ -78,9 +78,6 @@ class RegionsPopup(QtWidgets.QDialog):
                             tw.item(i,2).setText('Yes' if enable else 'No')
                 elif len(selections) == 0:
                     self.reset_available()
-
-                else:
-                    pass
 
     def reset_available(self):
         tw = self.ui.table
