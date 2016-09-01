@@ -55,6 +55,7 @@ from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
 from ics import ICS
 from bcs import BCS
+from pss import PSS
 
 from interpreter import Interpreter
 
@@ -71,11 +72,13 @@ from constants import *
 
 if PRECOMPILE_UI:
     try:
+        from uifiles.boundary_conditions import Ui_boundary_conditions
         from uifiles.fluid import Ui_fluid
         from uifiles.geometry import Ui_geometry
+        from uifiles.initial_conditions import Ui_initial_conditions
         from uifiles.gui import Ui_MainWindow
         from uifiles.mesh import Ui_mesh
-        from uifiles.model import Ui_model
+        from uifiles.model_setup import Ui_model_setup
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
@@ -83,8 +86,9 @@ if PRECOMPILE_UI:
         from uifiles.run import Ui_run
         from uifiles.solids import Ui_solids
         from uifiles.vtk import Ui_vtk
-    except ImportError:
-        print("You must compile ui files! (run 'make'")
+    except ImportError as e:
+        print(e)
+        print("You must compile ui files! (run 'make')")
         sys.exit(1)
 
 # --- Main Gui ---
@@ -94,6 +98,7 @@ class MfixGui(QtWidgets.QMainWindow,
               SolidsHandler,
               ICS,
               BCS,
+              PSS,
               Interpreter):
     """Main window class for MFIX-GUI"""
     settings = QSettings('MFIX', 'MFIX')
@@ -174,8 +179,8 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_geometry,
                         Ui_mesh,
                         RegionsWidget,
-                        Ui_Fluid,
-                        Ui_Solids,
+                        Ui_fluid,
+                        Ui_solids,
                         Ui_initial_conditions,
                         Ui_boundary_conditions,
                         # Ui_point_sources,
