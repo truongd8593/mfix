@@ -1356,7 +1356,7 @@ class BCS(object):
         # DEFAULT -blank
         # Optional when available
         bc_jj_m = self.project.get_value('bc_jj_m')
-        enabled = bc_jj_ps==1 and bc_jj_m
+        enabled = bc_jj_ps==1 and bc_jj_m==True
         key = 'phip0'
         default = None
         setup_key_widget(key, default, enabled)
