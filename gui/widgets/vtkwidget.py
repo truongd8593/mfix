@@ -1888,6 +1888,10 @@ class VtkWidget(QtWidgets.QWidget):
             direction='horizontal',
             )
 
+        enable = mesher != 'cutcell'
+        self.ui.mesh.pushbutton_generate_mesh.setEnabled(enable)
+        self.ui.mesh.pushbutton_remove_mesh.setEnabled(enable)
+
     def auto_size_mesh_extents(self):
         """collect and set the extents of the visible geometry"""
         extents = self.get_geometry_extents()

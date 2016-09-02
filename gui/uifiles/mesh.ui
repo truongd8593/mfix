@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>473</height>
+    <height>713</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -48,6 +48,9 @@
    </item>
    <item row="5" column="4">
     <widget class="QPushButton" name="pushbutton_remove_mesh">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Remove Mesh</string>
      </property>
@@ -55,6 +58,9 @@
    </item>
    <item row="5" column="3">
     <widget class="QPushButton" name="pushbutton_generate_mesh">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Generate Mesh</string>
      </property>
@@ -491,6 +497,117 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
+            <widget class="QWidget" name="cutcell">
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Facet angle tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_stl"/>
+              </item>
+              <item row="5" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_fac_dim_max_cut_cell"/>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string>Snap tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>Intersection tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_itermax_int"/>
+              </item>
+              <item row="2" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_small_area"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Small area tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_snap"/>
+              </item>
+              <item row="1" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_small_cell"/>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>Allocation Factor</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Small cell tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>Maximum iterations</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_stl_small_angle"/>
+              </item>
+              <item row="3" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_merge"/>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Merge tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Max facets per cell</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>Dot product tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_tol_stl_dp"/>
+              </item>
+              <item row="10" column="1">
+               <widget class="LineEdit" name="lineedit_keyword_dim_facets_per_cell"/>
+              </item>
+              <item row="0" column="0" colspan="2">
+               <widget class="CheckBox" name="checkbox_keyword_out_stl_value">
+                <property name="text">
+                 <string>Internal mesh</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
             <widget class="QWidget" name="vtkTableBasedClipDataSet">
              <layout class="QGridLayout" name="gridLayout_56">
               <property name="topMargin">
@@ -655,6 +772,11 @@
         <widget class="QComboBox" name="combobox_mesher">
          <item>
           <property name="text">
+           <string>cutcell</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>vtkTableBasedClipDataSet</string>
           </property>
          </item>
@@ -777,6 +899,11 @@ QPushButton:checked {
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
