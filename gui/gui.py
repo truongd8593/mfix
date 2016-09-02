@@ -293,8 +293,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Point Sources',
-                     'Internal Surfaces',
+        for name in ('Internal Surfaces',
                      'Chemistry',
                      'Monitors',
                      'Points',
