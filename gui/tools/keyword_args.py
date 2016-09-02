@@ -24,3 +24,10 @@ keys_by_type = {}
 for t in arg_types:
     keys_by_type[t] = [k for (k,v) in keyword_args.items() if t in v]
     keys_by_type[t].sort()
+
+def mkargs(key, **value_dict):
+    args = keyword_args.get(key)
+    if args is None:
+        return
+    r = [value_dict.get(a, a) for a in args]
+    return r
