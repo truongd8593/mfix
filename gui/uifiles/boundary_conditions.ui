@@ -47,6 +47,12 @@
         <height>100</height>
        </size>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
       <layout class="QVBoxLayout" name="top_frame_layout">
        <property name="spacing">
         <number>0</number>
@@ -186,6 +192,12 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
         <number>0</number>
@@ -207,6 +219,12 @@
             <string notr="true">QPushButton:hover {color:#64B5F6; background-color: transparent;}
                      QPushButton:pressed {color: #64B5F6; background-color: transparent;}
                      QPushButton:checked { font: bold; background-color: transparent;}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
            </property>
            <layout class="QGridLayout" name="tab_layout">
             <property name="leftMargin">

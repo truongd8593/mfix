@@ -210,6 +210,12 @@ QPushButton:pressed { color: #64B5F6; background-color: transparent; }
 QPushButton:checked { font: bold; background-color: transparent; }
       </string>
            </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
            <layout class="QGridLayout" name="tab_layout">
             <property name="leftMargin">
              <number>0</number>
@@ -378,11 +384,26 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <property name="spacing">
                 <number>6</number>
                </property>
-               <property name="margin">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
                 <number>0</number>
                </property>
                <item>
                 <widget class="QFrame" name="frame_fluid_parameters">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
                  <layout class="QGridLayout" name="gridLayout_3">
                   <property name="leftMargin">
                    <number>5</number>

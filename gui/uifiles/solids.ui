@@ -2792,6 +2792,12 @@ background-color:white;
        </property>
        <item>
         <widget class="QFrame" name="frame_14">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_10">
           <property name="leftMargin">
            <number>5</number>
