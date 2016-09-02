@@ -14,6 +14,8 @@ from widgets.base import LineEdit
 from tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, widget_iter)
 
+from tools.keyword_args import mkargs
+
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
 
@@ -791,7 +793,7 @@ class ICS(object):
             return
 
         IC0 = self.ics_current_indices[0]
-        # Note - value may not be consistent acros grouped regions
+        # Note - value may not be consistent across grouped regions
         #  For now we're going to assume that it is, and just check
         #  first subregion of IC group
 
@@ -816,14 +818,13 @@ class ICS(object):
             if not enabled:
                 get_widget(key).setText('') #?
                 return
-
-            val = self.project.get_value(key, args=[IC0])
+            args = mkargs(key, ic=IC0)
+            val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-
             for IC in self.ics_current_indices:
-                self.update_keyword(key, val, args=[IC])
-                get_widget(key).updateValue(key, val, args=[IC0])
+                self.update_keyword(key, val, args=mkargs(key, ic=IC))
+            get_widget(key).updateValue(key, val, args=args)
 
         #Define volume fraction
         # Specification always available
@@ -971,17 +972,13 @@ class ICS(object):
             if not enabled:
                 get_widget(key).setText('') #?
                 return
-
-            no_p_keys =  ('ic_p_star',) # use keyword_args db here
-            args = [IC0] if key in no_p_keys else [IC0,P]
+            args = mkargs(key, ic=IC0, phase=P)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for IC in self.ics_current_indices:
-                self.update_keyword(key, val, args=[IC] if key in no_p_keys
-                                    else [IC,P])
+                self.update_keyword(key, val, args=mkargs(key, ic=IC, phase=P))
             get_widget(key).updateValue(key, val, args=args)
-
 
         #Group tab inputs by equation type (e.g., momentum, energy, species).
         # Making the grouped inputs a 'collapsible list' may make navigation easier.

@@ -20,6 +20,8 @@ from tools.general import (set_item_noedit, set_item_enabled,
                            get_combobox_item, get_selected_row,
                            widget_iter)
 
+from tools.keyword_args import mkargs
+
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
 
@@ -1007,12 +1009,13 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            val = self.project.get_value(key, args=[BC0])
+            args = mkargs(key, bc=BC0)
+            val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC])
-            get_widget(key+suffix).updateValue(key, val, args=[BC0])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC))
+            get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define transfer coefficient
         # Specification only available with PSW
@@ -1265,14 +1268,12 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            no_p_keys =  () # use keyword_args db here
-            args = [BC0] if key in no_p_keys else [BC0,P]
+            args = mkargs(key, bc=BC0, phase=P)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC] if key in no_p_keys
-                                    else [BC,P])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Enable Jackson-Johnson partial slip boundary
@@ -1773,12 +1774,13 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            val = self.project.get_value(key, args=[BC0, i])
+            args = mkargs(key, bc=BC0, scalar=i)
+            val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC, i])
-            get_widget(key+suffix, i).updateValue(key, val, args=[BC0, i])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, scalar=i))
+            get_widget(key+suffix, i).updateValue(key, val, args=args)
 
         for i in range(1, nscalar+1):
             hw = self.project.get_value('bc_hw_scalar', args=[BC0,i])
@@ -2103,12 +2105,13 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            val = self.project.get_value(key, args=[BC0])
+            args = mkargs(key, bc=BC0)
+            val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC])
-            get_widget(key+suffix).updateValue(key, val, args=[BC0])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC))
+            get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define volume fraction
         # Specification always available
@@ -2463,14 +2466,13 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            no_p_keys =  () # use keyword_args db here
-            args = [BC0] if key in no_p_keys else [BC0,P]
+
+            args = mkargs(key, bc=BC0, phase=P)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC] if key in no_p_keys
-                                    else [BC,P])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #Define volume fraction
@@ -2676,12 +2678,12 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            args = [BC0]
+            args = mkargs(key, bc=BC0)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define pressure
@@ -2777,12 +2779,12 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            args = [BC0, P]
+            args = mkargs(key, bc=BC0, phase=P)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC, P])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #All inputs are optional. They do not have default values, because MFIX will calculate
@@ -3116,13 +3118,13 @@ class BCS(object):
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            no_p_keys = ('bc_dt_0',)
-            args = [BC0] if key in no_p_keys else [BC0, P]
+
+            args = mkargs(key, bc=BC0, phase=P)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC] if key in no_p_keys else [BC, P])
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         bc_type = self.project.get_value('bc_type', args=[BC0])
