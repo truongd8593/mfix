@@ -1662,6 +1662,9 @@
                   <property name="title">
                    <string>Momentum Equations</string>
                   </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
                   <layout class="QGridLayout" name="gridLayout_18">
                    <property name="leftMargin">
                     <number>5</number>
@@ -1862,6 +1865,9 @@
                   <property name="title">
                    <string>Energy Equation</string>
                   </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
                   <layout class="QGridLayout" name="gridLayout_19">
                    <property name="leftMargin">
                     <number>5</number>
@@ -1998,6 +2004,9 @@
                  <widget class="QGroupBox" name="groupbox_solids_granular_energy_eq">
                   <property name="title">
                    <string>Granular Energy Equation</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_20">
                    <property name="leftMargin">
@@ -2422,6 +2431,9 @@
                  <widget class="QGroupBox" name="groupbox_solids_po_optional">
                   <property name="title">
                    <string>Optional</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_25">
                    <property name="leftMargin">

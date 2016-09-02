@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
-    <height>1089</height>
+    <width>600</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1273,6 +1273,9 @@ QPushButton:checked {
          <property name="title">
           <string>Parameters</string>
          </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <property name="leftMargin">
            <number>5</number>
@@ -2511,6 +2514,9 @@ background-color:white;
             <widget class="QGroupBox" name="groupbox_dem_advanced">
              <property name="title">
               <string>Advanced</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <property name="leftMargin">
