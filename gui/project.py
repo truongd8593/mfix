@@ -70,6 +70,18 @@ NaN = float('NaN')
 PYTHON_TYPE_DICT = {'float':float, 'int':int, 'bool':bool}
 PYTHON_TYPE_DICT_REVERSE = dict([(val, key) for key,val in PYTHON_TYPE_DICT.items()])
 
+# Canonicalize long BC_TYPE to short form about long/short versions later
+BC_TYPE_DICT = {
+    #"DUMMY": None,
+    "MASS_INFLOW": "MI",
+    "MASS_OUTFLOW": "MO",
+    "P_INFLOW": "PI",
+    "P_OUTFLOW": "PO",
+    "FREE_SLIP_WALL": "FSW",
+    "NO_SLIP_WALL": "NSW",
+    "PAR_SLIP_WALL": "PSW" }
+
+
 class FloatExp(float):
     fmt = '4'
     def __repr__(self):
@@ -1222,6 +1234,10 @@ class Project(object):
                 cond = self.ics
             elif key.startswith('bc_') and not key.endswith('_q'):
                 cond = self.bcs
+                if key == 'bc_type':
+                    # Normalize names NO_SLIP_WALL -> NSW, etc
+                    value = value.upper()
+                    value = BC_TYPE_DICT.get(value, value)
             elif key.startswith('ps_'):
                 cond = self.pss
             elif key.startswith('is_'):
