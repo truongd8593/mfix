@@ -1171,6 +1171,9 @@
                   <property name="title">
                    <string>Turbulence</string>
                   </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
                   <layout class="QGridLayout" name="gridLayout_11">
                    <property name="leftMargin">
                     <number>5</number>
@@ -1295,6 +1298,9 @@
                  <widget class="QGroupBox" name="groupbox_fluid_po_optional">
                   <property name="title">
                    <string>Optional</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_13">
                    <property name="leftMargin">
