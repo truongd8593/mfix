@@ -117,7 +117,7 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>Delete boundary conditions for region</string>
+               <string>Delete boundary condition for region</string>
               </property>
               <property name="text">
                <string>Delete</string>

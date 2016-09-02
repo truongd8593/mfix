@@ -90,7 +90,7 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>Delete initial conditions for region</string>
+               <string>Delete initial condition for region</string>
               </property>
               <property name="text">
                <string>Delete</string>
