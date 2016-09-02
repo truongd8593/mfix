@@ -29,7 +29,7 @@ class SolidsTFM(object):
 
         # Select Viscous Stress Model (KTGS):
         # Selection is unavailable for constant solids viscosity (MU_S0 defined)
-        # FIXME This is not right, solids visc. model is phase-dependent
+        # FIXME This is not right, solids viscosity model is phase-dependent
         #enabled = (self.solids_viscosity_model != CONSTANT) # SRS p18
         #for item in (ui.label_kt_type, ui.combobox_kt_type,
         #             ui.label_friction_model, ui.combobox_friction_model):
