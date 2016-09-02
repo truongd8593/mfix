@@ -402,6 +402,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
         self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
+        self.ui.mesh.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
     def __add_tool_buttons(self):
 
@@ -552,6 +553,8 @@ class VtkWidget(QtWidgets.QWidget):
         elif key == 'no_k':
             self.ui.geometry.lineedit_keyword_zlength.setEnabled(not newValue)
             self.ui.mesh.lineedit_keyword_kmax.setEnabled(not newValue)
+        elif key == 'out_stl_value':
+            self.ui.mesh.checkbox_internal_external_flow.setChecked(newValue == 1.0)
 
     def objectName(self):
         """return the name of this object"""
@@ -1857,6 +1860,12 @@ class VtkWidget(QtWidgets.QWidget):
         writer.Write()
 
     # --- mesh ---
+    def toggle_out_stl_value(self, wid, value, args):
+        val = -1.0
+        if list(value.values())[0]:
+            val = 1.0
+        GUI.update_keyword('out_stl_value', val)
+
     def change_mesh_tab(self, tabnum, btn):
         """switch mesh stacked widget based on selected"""
         self.parent.animate_stacked_widget(
