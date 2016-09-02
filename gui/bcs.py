@@ -594,7 +594,7 @@ class BCS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.bcs_current_tab == 0: # Don't stay on disabled tab
-                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None))
+                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None)) # what if nscalar==0?
         font = b.font()
         font.setBold(self.bcs_current_tab == 0)
         b.setFont(font)
