@@ -183,7 +183,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_solids,
                         Ui_initial_conditions,
                         Ui_boundary_conditions,
-                        # Ui_point_sources,
+                        Ui_point_sources,
                         # Ui_internal_surfaces,
                         # Ui_chemistry,
                         Ui_numerics,
@@ -218,7 +218,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'solids',
                          'initial_conditions',
                          'boundary_conditions',
-                         #'point_sources',
+                         'point_sources',
                          #'internal_surfaces',
                          #'chemistry',
                          'numerics',
@@ -923,7 +923,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
-        # since this has to change availabilty of several other GUI items
+        # since this has to change availability of several other GUI items
 
         # TODO : move this to fluids_handler, like the way we do for solids
 
@@ -1135,7 +1135,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def __setup_vtk_widget(self):
         """initialize the vtk widget"""
         disable_vtk = False
-        if not 'MFIX_NO_VTK' in os.environ: # Aovoid importing vtkwidget if MFIX_NO_VTK set
+        if not 'MFIX_NO_VTK' in os.environ: # Avoid importing vtkwidget if MFIX_NO_VTK set
             from widgets.vtkwidget import VTK_AVAILABLE
             disable_vtk = not VTK_AVAILABLE
         else: # env var set
