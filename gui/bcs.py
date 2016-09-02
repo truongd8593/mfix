@@ -114,6 +114,7 @@ class BCS(object):
                 #le = ui.lineedit_fluid_inflow
                 le = getattr(ui, 'lineedit_%s_%s' % (phase_type, flow_direction), None)
                 le.value_updated.connect(self.bcs_handle_flow_input)
+                le.dtype = float
                 le.key = 'Unset' # diagnostic
                 le.args = ['BC'] if phase_type=='fluid' else ['BC', 'P']
                 # Tooltip added dynamically
