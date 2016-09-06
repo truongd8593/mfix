@@ -2147,11 +2147,15 @@ class MfixGui(QtWidgets.QMainWindow,
         geometry_file = os.path.abspath(os.path.join(project_dir, 'geometry.stl'))
         if os.path.exists(geometry_file) and 'geometry' not in self.project.mfix_gui_comments:
             self.vtkwidget.add_stl(None, filename=geometry_file)
-        # Do this warning at save-time FIXME
-        #    msg = '%s will be overwritten when the project is saved' % os.path.basename(geometry_file)
-        #    self.message(title='Warning', text=msg)
-
-        # TODO: load more geometry
+        else:
+            # order needs to be visual_props -> geometry -> regions (loaded below)
+            # load props first
+            props = self.project.mfix_gui_comments.get('visual_props')
+            if props:
+                self.vtkwidget.visual_props_from_str(props)
+            geo = self.project.mfix_gui_comments.get('geometry')
+            if geo:
+                self.vtkwidget.geometry_from_str(geo)
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
@@ -2194,19 +2198,14 @@ class MfixGui(QtWidgets.QMainWindow,
                     solids_phase_names[n] = val
                 elif key == 'regions_dict':
                     self.ui.regions.regions_from_str(val)
-                elif key == 'geometry':
-                    # load props first
-                    props = self.project.mfix_gui_comments.get('visual_props')
-                    if props:
-                        self.vtkwidget.visual_props_from_str(props)
-                    if val:
-                        self.vtkwidget.geometry_from_str(val)
                 elif key == 'ic_regions':
                     self.ics_regions_from_str(val)
+                elif key == 'geometry':
+                    pass # handled in 'geometry' section above
                 elif key == 'visual_props':
                     pass # handled in 'geometry' section above
                 elif key == 'parameters':
-                    pass # Where is this handled?
+                    pass # handled in project
                 # Add more here
                 #else:  # Too many warnings!
                 #    self.warn("Unknown mfix-gui setting '%s'" % key)
@@ -2416,7 +2415,7 @@ def main(args):
         Usage(name)
 
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
-    #qapp.setStyle("fusion") #Changing the style
+#    qapp.setStyle("fusion") # Change style for qt5 on ubuntu
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 

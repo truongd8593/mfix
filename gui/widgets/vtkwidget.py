@@ -1785,6 +1785,7 @@ class VtkWidget(QtWidgets.QWidget):
         basename = os.path.splitext(os.path.basename(file_name))[0]
         basename = os.path.join(os.path.dirname(file_name), basename)
 
+        # Export geometry
         geometry = self.collect_toplevel_geometry()
         if geometry:
             GUI.update_keyword('cartesian_grid', True)
@@ -1798,9 +1799,16 @@ class VtkWidget(QtWidgets.QWidget):
             GUI.update_keyword('cartesian_grid', False)
             GUI.update_keyword('use_stl', False)
 
-        if self.region_dict:
-            i = 0
-            for region, data in self.region_dict.items():
+        # write name_000n.stl for stl regions
+        if GUI.bcs:
+            for i, bc_data in GUI.bcs.items():
+                region = bc_data['region']
+                data = {}
+
+                if region in self.region_dict:
+                    data = self.region_dict[region]
+                else:
+                    continue
                 if data['type'] == 'STL' and 'clipper' in data:
                     fname = basename + '_{0:04d}.stl'.format(i)
                     stl_writer = vtk.vtkSTLWriter()
@@ -1810,7 +1818,6 @@ class VtkWidget(QtWidgets.QWidget):
                     else:
                         stl_writer.SetInputConnection(data['clipper'].GetOutputPort())
                     stl_writer.Write()
-                    i += 1
 
     def export_unstructured(self, fname, grid):
         """export an unstructured grid"""
