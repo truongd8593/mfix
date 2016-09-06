@@ -531,8 +531,8 @@ class ProjectManager(Project):
         Unmatching entries are not modified"""
 
         changed = False
-        update_dict =  dict((species, format_burcat(species, data))
-                            for (species, data) in species_dict.items())
+        update_dict = dict((species, format_burcat(species, data))
+                           for (species, data) in species_dict.items())
         for (k,v) in update_dict.items():
             if self.thermo_data.get(k) != v:
                 changed = True
@@ -582,5 +582,5 @@ def format_burcat(species, data):
     lines.append( (fmt%row) + '    3')
     row = tuple(a_high[3:] + [data['h_f']])
     lines.append( (fmt%row) + '    4')
-    lines.append('') # blank line
+    #lines.append('') # blank line
     return lines
