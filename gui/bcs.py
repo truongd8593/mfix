@@ -573,9 +573,11 @@ class BCS(object):
 
 
     def setup_bcs(self):
+        ui = self.ui.boundary_conditions
+
         # Grab a fresh copy, may have been updated
         self.bcs_region_dict = self.ui.regions.get_region_dict()
-        ui = self.ui.boundary_conditions
+
         # Mark regions which are in use (this gets reset each time we get here)
         for (i, data) in self.bcs.items():
             region = data['region']
@@ -2186,6 +2188,7 @@ class BCS(object):
             ui.lineedit_fluid_inflow.updateValue(keys, 0.0 if val is None else val)
             units = ['m/s', 'm³/s', 'kg/s'][inflow_type]
             ui.label_fluid_inflow_units.setText(units)
+
             #  Define Tangential Velocities:
             #Define X-Axial Velocity
             # Sets keyword BC_U_G(#)
@@ -3080,7 +3083,8 @@ class BCS(object):
             self.update_bcs_fluid_mass_fraction_table()
         elif parent == ui.page_fluid_mo:
             # Table widget is here, but we don't want it
-            comp.hide()
+            #comp.hide()
+            comp.setEnabled(False)
 
 
     def setup_bcs_solids_mo_tab(self, P):
