@@ -138,10 +138,10 @@ class RegionsPopup(QtWidgets.QDialog):
         table.item(nrows, 2).setData(UserRole, available)
 
 
-    def popup(self, boundary=False):
-        # Widget is shared by ICs and BCs pane
-        text = "Select region(s) for %s coundition" % ('boundary' if boundary else 'initial')
-        self.boundary = boundary
+    def popup(self, label):
+        # Widget is shared by ICs/BCs/PSs
+        text = "Select region(s) for %s" % label
+        self.boundary = boundary = (label == 'boundary conditions')
         for item in (self.ui.combobox_bc_type, self.ui.label_bc_type):
             if boundary:
                 item.show()
