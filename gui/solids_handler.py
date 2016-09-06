@@ -169,8 +169,13 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         tw_solids_species.itemSelectionChanged.connect(self.handle_solids_species_selection)
 
         # Advanced
-        ui.checkbox_disable_close_pack.clicked.connect(self.disable_close_pack)
-        ui.checkbox_enable_added_mass_force.clicked.connect(self.enable_added_mass_force)
+        cb = ui.checkbox_disable_close_pack
+        cb.clicked.connect(self.disable_close_pack)
+        self.add_tooltip(cb, 'close_packed')
+
+        cb = ui.checkbox_enable_added_mass_force
+        cb.clicked.connect(self.enable_added_mass_force)
+        self.add_tooltip(cb, 'added_mass')
 
         # connect solid tab buttons
         for i, btn in enumerate((ui.pushbutton_solids_materials,
