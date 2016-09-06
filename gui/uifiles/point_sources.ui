@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>478</width>
+    <width>314</width>
     <height>942</height>
    </rect>
   </property>
@@ -266,16 +266,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="pushbutton_scalar">
-              <property name="text">
-               <string>Scalar</string>
-              </property>
-              <property name="flat">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QPushButton" name="pushbutton_fluid">
               <property name="font">
@@ -335,7 +325,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>474</width>
+            <width>310</width>
             <height>774</height>
            </rect>
           </property>
@@ -418,101 +408,87 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <number>5</number>
                   </property>
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_ic_ep_g">
+                   <widget class="QLabel" name="label_ps_massflow_g">
                     <property name="text">
-                     <string>Volume fraction</string>
+                     <string>Mass flowrate</string>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_ep_g_args_IC">
-                    <property name="readOnly">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
+                   <widget class="LineEdit" name="lineedit_keyword_ps_massflow_g_args_PS"/>
                   </item>
                   <item row="1" column="0">
-                   <widget class="QLabel" name="label_ic_t_g">
+                   <widget class="QLabel" name="label_ps_t_g">
                     <property name="text">
                      <string>Temperature</string>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_t_g_args_IC"/>
+                   <widget class="LineEdit" name="lineedit_keyword_ps_t_g_args_PS"/>
                   </item>
                   <item row="1" column="2">
-                   <widget class="QLabel" name="label_ic_t_g_units">
+                   <widget class="QLabel" name="label_ps_t_g_units">
                     <property name="text">
                      <string>K</string>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
-                   <widget class="QLabel" name="label_ic_p_g">
-                    <property name="text">
-                     <string>Pressure</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_p_g_args_IC"/>
-                  </item>
-                  <item row="2" column="2">
-                   <widget class="QLabel" name="label_ic_p_g_units">
-                    <property name="text">
-                     <string>Pa</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="label_ic_u_g">
+                   <widget class="QLabel" name="label_ps_u_g">
                     <property name="text">
                      <string>U-velocity</string>
                     </property>
                    </widget>
                   </item>
+                  <item row="2" column="1">
+                   <widget class="LineEdit" name="lineedit_keyword_ps_u_g_args_PS"/>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QLabel" name="label_ps_u_g_units">
+                    <property name="text">
+                     <string>m/s</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="label_ps_v_g">
+                    <property name="text">
+                     <string>V-velocity</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="3" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_u_g_args_IC"/>
+                   <widget class="LineEdit" name="lineedit_keyword_ps_v_g_args_PS"/>
+                  </item>
+                  <item row="4" column="1">
+                   <widget class="LineEdit" name="lineedit_keyword_ps_w_g_args_PS"/>
                   </item>
                   <item row="3" column="2">
-                   <widget class="QLabel" name="label_ic_u_g_units">
+                   <widget class="QLabel" name="label_ps_v_g_units">
                     <property name="text">
                      <string>m/s</string>
                     </property>
                    </widget>
                   </item>
                   <item row="4" column="0">
-                   <widget class="QLabel" name="label_ic_v_g">
-                    <property name="text">
-                     <string>V-velocity</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_v_g_args_IC"/>
-                  </item>
-                  <item row="4" column="2">
-                   <widget class="QLabel" name="label_ic_v_g_units">
-                    <property name="text">
-                     <string>m/s</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_ic_v_w">
+                   <widget class="QLabel" name="label_ps_v_w">
                     <property name="text">
                      <string>W-velocity</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_w_g_args_IC"/>
-                  </item>
-                  <item row="5" column="2">
-                   <widget class="QLabel" name="label_ic_v_w_units">
+                  <item row="4" column="2">
+                   <widget class="QLabel" name="label_ps_v_w_units">
                     <property name="text">
                      <string>m/s</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="label_ps_massflow_g_units">
+                    <property name="text">
+                     <string>kg/s</string>
                     </property>
                    </widget>
                   </item>
@@ -568,190 +544,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
                      </property>
                     </column>
                    </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="groupbox_turbulence">
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="title">
-                  <string>Turbulence</string>
-                 </property>
-                 <property name="flat">
-                  <bool>true</bool>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_9">
-                  <property name="leftMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item row="0" column="0">
-                   <layout class="QGridLayout" name="gridLayout_6">
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_ic_l_scale">
-                      <property name="font">
-                       <font>
-                        <weight>50</weight>
-                        <italic>false</italic>
-                        <bold>false</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Mixing length model scale</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_l_scale_args_IC"/>
-                    </item>
-                    <item row="0" column="2">
-                     <widget class="QLabel" name="label_ic_l_scale_units">
-                      <property name="text">
-                       <string>m</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label_ic_k_turb_g">
-                      <property name="font">
-                       <font>
-                        <weight>50</weight>
-                        <bold>false</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>K-ε turbulent kinetic energy</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_k_turb_g_args_IC"/>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QLabel" name="label_ic_k_turb_g_units">
-                      <property name="text">
-                       <string>???</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="label_ic_e_turb_g">
-                      <property name="font">
-                       <font>
-                        <weight>50</weight>
-                        <bold>false</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>K-ε turbulent dissipation</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_e_turb_g_args_IC"/>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="QLabel" name="label_ic_e_turb_g_units">
-                      <property name="text">
-                       <string>???</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QGroupBox" name="groupbox_fluid_advanced">
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="title">
-                  <string>Advanced</string>
-                 </property>
-                 <property name="flat">
-                  <bool>true</bool>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_8">
-                  <property name="leftMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item row="0" column="0">
-                   <layout class="QGridLayout" name="gridLayout_7">
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_ic_gama_rg">
-                      <property name="font">
-                       <font>
-                        <weight>50</weight>
-                        <bold>false</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Radiation coefficient</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_gama_rg_args_IC"/>
-                    </item>
-                    <item row="0" column="2">
-                     <widget class="QLabel" name="label_ic_gama_rg_units">
-                      <property name="text">
-                       <string>W/m² .K</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label_ic_t_rg">
-                      <property name="font">
-                       <font>
-                        <weight>50</weight>
-                        <bold>false</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Radiation temperature</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_t_rg_args_IC"/>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QLabel" name="label_ic_t_rg_units">
-                      <property name="text">
-                       <string>K</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
                   </item>
                  </layout>
                 </widget>
@@ -832,120 +624,90 @@ QPushButton:checked { font: bold; background-color: transparent; }
                   <property name="bottomMargin">
                    <number>5</number>
                   </property>
+                  <item row="0" column="1">
+                   <widget class="LineEdit" name="lineedit_keyword_ps_massflow_s_args_PS_P"/>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="LineEdit" name="lineedit_keyword_ps_u_s_args_PS_P"/>
+                  </item>
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_ic_ep_s">
+                   <widget class="QLabel" name="label_ps_massflow_s_args_PS_P">
                     <property name="text">
-                     <string>Volume fraction</string>
+                     <string>Mass flowrate</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="LineEdit" name="lineedit_ic_ep_s_args_IC_P"/>
-                  </item>
                   <item row="1" column="0">
-                   <widget class="QLabel" name="label_ic_t_s">
+                   <widget class="QLabel" name="label_ps_t_s">
                     <property name="text">
                      <string>Temperature</string>
                     </property>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_t_s_args_IC_P"/>
+                   <widget class="LineEdit" name="lineedit_keyword_ps_t_s_args_PS_P"/>
                   </item>
                   <item row="1" column="2">
-                   <widget class="QLabel" name="label_ic_t_s_units">
+                   <widget class="QLabel" name="label_ps_t_s_units">
                     <property name="text">
                      <string>K</string>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="0">
-                   <widget class="QLabel" name="label_ic_u_s">
+                   <widget class="QLabel" name="label_ps_u_s">
                     <property name="text">
                      <string>U-velocity</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_u_s_args_IC_P"/>
+                  <item row="3" column="1">
+                   <widget class="LineEdit" name="lineedit_keyword_ps_v_s_args_PS_P"/>
                   </item>
                   <item row="2" column="2">
-                   <widget class="QLabel" name="label_ic_u_s_units">
+                   <widget class="QLabel" name="label_ps_u_s_units">
                     <property name="text">
                      <string>m/s</string>
                     </property>
                    </widget>
                   </item>
                   <item row="3" column="0">
-                   <widget class="QLabel" name="label_ic_v_s">
+                   <widget class="QLabel" name="label_ps_v_s">
                     <property name="text">
                      <string>V-velocity</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="3" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_v_s_args_IC_P"/>
-                  </item>
                   <item row="3" column="2">
-                   <widget class="QLabel" name="label_ic_v_s_units">
+                   <widget class="QLabel" name="label_ps_v_s_units">
                     <property name="text">
                      <string>m/s</string>
                     </property>
                    </widget>
                   </item>
                   <item row="4" column="0">
-                   <widget class="QLabel" name="label_ic_w_s">
+                   <widget class="QLabel" name="label_ps_w_s">
                     <property name="text">
                      <string>W-velocity</string>
                     </property>
                    </widget>
                   </item>
                   <item row="4" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_w_s_args_IC_P"/>
+                   <widget class="LineEdit" name="lineedit_keyword_ps_w_s_args_PS_P"/>
                   </item>
                   <item row="4" column="2">
-                   <widget class="QLabel" name="label_ic_w_s_units">
+                   <widget class="QLabel" name="label_ps_w_s_units">
                     <property name="text">
                      <string>m/s</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="label_ic_p_star">
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="label_ps_massflow_s">
                     <property name="text">
-                     <string>Pressure (optional)</string>
+                     <string>kg/s</string>
                     </property>
                    </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_p_star_args_IC_P"/>
-                  </item>
-                  <item row="5" column="2">
-                   <widget class="QLabel" name="label_ic_p_star_units">
-                    <property name="text">
-                     <string>Pa</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="0">
-                   <widget class="QLabel" name="label_ic_theta_m">
-                    <property name="text">
-                     <string>Granular temperature</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_theta_m_args_IC_P"/>
-                  </item>
-                  <item row="7" column="0">
-                   <widget class="QLabel" name="label_ic_pic_const_statwt">
-                    <property name="text">
-                     <string>Particles per parcel</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="1">
-                   <widget class="LineEdit" name="lineedit_keyword_ic_pic_const_statwt_args_IC_P"/>
                   </item>
                  </layout>
                 </widget>
@@ -1010,84 +772,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
                 </widget>
                </item>
                <item>
-                <widget class="QGroupBox" name="groupbox_solids_advanced">
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="title">
-                  <string>Advanced</string>
-                 </property>
-                 <property name="flat">
-                  <bool>true</bool>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_10">
-                  <property name="leftMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>5</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="horizontalSpacing">
-                   <number>6</number>
-                  </property>
-                  <item row="0" column="0">
-                   <widget class="CheckBox" name="checkbox_keyword_ic_des_fit_to_region_args_IC">
-                    <property name="text">
-                     <string>Fit particles to region</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <layout class="QGridLayout" name="gridLayout_5">
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_ic_gama_rs">
-                      <property name="text">
-                       <string>Radiation coefficient</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_gama_rs_args_IC_P"/>
-                    </item>
-                    <item row="0" column="2">
-                     <widget class="QLabel" name="label_ic_gama_rs_units">
-                      <property name="text">
-                       <string>W/m² .K</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="label_ic_t_rs">
-                      <property name="text">
-                       <string>Radiation temperature</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="LineEdit" name="lineedit_keyword_ic_t_rs_args_IC_P"/>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="QLabel" name="label_ic_t_rs_units">
-                      <property name="text">
-                       <string>K</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
                 <spacer name="verticalSpacer_3">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -1122,35 +806,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
                </item>
               </layout>
              </widget>
-             <widget class="QWidget" name="page_scalar">
-              <layout class="QGridLayout" name="gridLayout">
-               <property name="leftMargin">
-                <number>5</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item row="0" column="0">
-                <spacer name="spacer_scalar">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
             </widget>
            </item>
           </layout>
@@ -1169,11 +824,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets/base</header>
-  </customwidget>
-  <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>

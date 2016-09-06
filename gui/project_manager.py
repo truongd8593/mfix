@@ -151,6 +151,11 @@ class ProjectManager(Project):
                 if b not in self.gui.bcs_current_indices:
                     return False
 
+            elif a=='PS':
+                if b not in self.gui.pss_current_indices:
+                    return False
+
+
             elif a != b:
                 return False
 
@@ -162,6 +167,7 @@ class ProjectManager(Project):
         return [(self.gui.P if a=='P'
                  else self.gui.ics_current_indices if a == 'IC'
                  else self.gui.bcs_current_indices if a == 'BC'
+                 else self.gui.pss_current_indices if a == 'PS'
                  else a)
                 for a in args_in]
 
@@ -469,7 +475,8 @@ class ProjectManager(Project):
                         solids phase (the one the user is editing)
                        '*' : described above
                        'IC' : current initial condition index
-                       'BC' : current initial condition index """
+                       'BC' : current initial condition index
+                       'PS' : current point source index """
 
         if isinstance(args, int):
             args = [args]
@@ -480,14 +487,14 @@ class ProjectManager(Project):
         d = self.registered_widgets
         for key in keys:
             key = key.lower()
-            # The BC and IC panes set themselves up and do not rely on the
+            # The BC/IC/PS panes set themselves up and do not rely on the
             # project manager for widget updates.  We still need to register
             # these widgets so that keyword updating works.
             # Note, most widgets don't really need the callback from the
             # project manager, especially after the file is initially loaded.
             # Maybe remove project manager -> widget callbacks completely
             # and follow the IC/BC model everywhere
-            if any(key.startswith(x) for x in ('ic_', 'bc_')):
+            if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_')):
                 continue
             if key not in d:
                 d[key] = []

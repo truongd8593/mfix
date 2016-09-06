@@ -132,6 +132,7 @@ class ICS(object):
         ui = self.ui.initial_conditions
         rp = self.regions_popup
         rp.clear()
+
         for (name,data) in self.ics_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
@@ -146,7 +147,7 @@ class ICS(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup(boundary=False)
+        rp.popup('initial conditions')
 
 
     def ics_cancel_add(self):
@@ -176,11 +177,11 @@ class ICS(object):
 
     def ics_add_regions_1(self, selections, indices=None):
         # Used by both interactive and load-time add-region handlers
+        ui = self.ui.initial_conditions
 
         if self.ics_region_dict is None:
             self.ics_region_dict = self.ui.regions.get_region_dict()
 
-        ui = self.ui.initial_conditions
         tw = ui.tablewidget_regions
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
@@ -395,24 +396,19 @@ class ICS(object):
             if ic.get('region') == name:
                 self.ics_set_region_keys(name, i, data)
 
-    def ics_change_region_name(self, old_name, new_name):
-        # TODO preserve order, update table
-        if old_name in self.ics:
-            self.ics[new_name] = self.ics[old_name]
-            del self.ics[old_name]
-
 
     def ics_set_region_keys(self, name, idx, data ):
         # Update the keys which define the box-shaped region the IC applies to
 
         no_k = self.project.get_value('no_k')
-        for (key, val) in zip(('ic_x_w', 'ic_y_s', 'ic_z_b',
-                               'ic_x_e', 'ic_y_n', 'ic_z_t'),
+        for (key, val) in zip(('x_w', 'y_s', 'z_b',
+                               'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
             # ic_z_t and ic_z_b keywords should not be added when no_k=True
-            if no_k and key in ('ic_z_t', 'ic_z_b'):
+            if no_k and key in ('z_t', 'z_b'):
                 continue
-            self.update_keyword(key, val, args=[idx])
+            self.update_keyword('ic_'+key, val, args=[idx])
+
 
     def ics_change_region_name(self, old_name, new_name):
         ui = self.ui.initial_conditions
@@ -461,9 +457,10 @@ class ICS(object):
 
 
     def setup_ics(self):
+        ui = self.ui.initial_conditions
+
         # Grab a fresh copy, may have been updated
         self.ics_region_dict = self.ui.regions.get_region_dict()
-        ui = self.ui.initial_conditions
 
         # Mark regions which are in use (this gets reset each time we get here)
         for (i, data) in self.ics.items():

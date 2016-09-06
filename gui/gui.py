@@ -322,6 +322,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_solids_handler()
         self.init_ics()
         self.init_bcs()
+        self.init_pss()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -1283,7 +1284,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_ics()
         elif text in ('boundary_conditions', 'bcs'):
             self.setup_bcs()
-
+        elif text in ('point_sources', 'points'):
+            self.setup_pss()
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
