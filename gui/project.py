@@ -1133,7 +1133,9 @@ class Project(object):
         fobject.seek(0)
 
         for i, line in enumerate(fobject):
-            line = to_unicode_from_fs(line).strip()
+            line = to_unicode_from_fs(line)
+            line0 = line
+            line = line.strip()
             if line.startswith("#!MFIX-GUI"):
                 # these should be already parsed
                 continue
@@ -1146,7 +1148,7 @@ class Project(object):
                 thermoSection = True
                 # Don't save 'THERMO SECTION' line - we'll regenerate it.
             elif thermoSection:
-                thermo_lines.append(line)
+                thermo_lines.append(line0.rstrip()) # keep left padding
             elif not reactionSection and not thermoSection:
                 equation_str = None
                 # remove comments
@@ -1192,7 +1194,7 @@ class Project(object):
                 if species is None and 79<=len(line)<=80 and line.endswith('1'):
                     species = line[:18].strip()
                     self.thermo_data[species] = []
-                if species:
+                if species and line:
                     self.thermo_data[species].append(line)
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):
@@ -1409,7 +1411,7 @@ class Project(object):
             for key in sorted(self.thermo_data.keys()):
                 for line in self.thermo_data[key]:
                     yield line + '\n'
-                yield '\n'
+                yield '\n' # blank line
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
