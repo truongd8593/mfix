@@ -2363,8 +2363,9 @@ def Usage(name):
     directory: open mfix.dat file in specified directory
     file: open mfix.dat or <RUN_NAME>.mfx project file
     -h, --help: display this help message
-    -e, --exe:  specify MFIX executable (full path)
-    -l, --log=LEVEL: set logging level (error,warning,info,debug)
+    -e, --exe=EXE:  specify MFIX executable (full path)
+    -l, --log=LEVEL: set logging level (error, warning, info, debug)
+    -s, --style=STYLE: specify app style (windowsvista, fusion, cleanlooks,...)
     -n, --noload:  do not autoload previous project
     -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
     sys.exit(1)
@@ -2375,7 +2376,7 @@ def main(args):
     args = sys.argv
     name = args[0]
     try:
-        opts, args = getopt.getopt(args[1:], "hqnl:e:", ["help", "quit", "noload", "log=", "exe="])
+        opts, args = getopt.getopt(args[1:], "hqnl:e:s:", ["help", "quit", "noload", "log=", "exe=", "style="])
     except getopt.GetoptError as err:
         print(err)
         Usage(name)
@@ -2385,6 +2386,7 @@ def main(args):
     noload = False
     log_level = 'WARN'
     mfix_exe_option = None
+    app_style = None
 
     for opt, arg in opts:
         if opt in ("-l", "--log"):
@@ -2397,6 +2399,8 @@ def main(args):
             noload = True
         elif opt in ("-e", "--exe"):
             mfix_exe_option = arg
+        elif opt in ("-s", "--style"):
+            app_style = arg
         else:
             Usage(name)
 
@@ -2414,8 +2418,16 @@ def main(args):
         print("%s: is not a file " % project_file)
         Usage(name)
 
+    # create the QApplication
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
-#    qapp.setStyle("fusion") # Change style for qt5 on ubuntu
+    # set style
+    if app_style is not None:
+        av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
+        app_style = app_style.lower()
+        if app_style in av_styles: # set style if it is available
+            qapp.setStyle(app_style)
+        else: # print available styles
+            print("'%s' is not a valid style. Using default style: %s.\nValid Styles: %s " % (app_style, qapp.style().objectName(), ', '.join(av_styles)))
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 
