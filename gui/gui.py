@@ -67,6 +67,7 @@ from tools.general import (get_icon, get_mfix_home,
 set_script_directory(SCRIPT_DIRECTORY)
 
 from tools.namelistparser import buildKeywordDoc
+from tools.keyword_args import keyword_args
 
 from constants import *
 
@@ -2321,7 +2322,18 @@ class MfixGui(QtWidgets.QMainWindow,
         description = doc.get('description')
         if description is None:
             return
-        args = widget.args
+        description = description.strip()
+        args = widget.args if hasattr(widget, 'args') else None
+        if args is None:
+            nargs = 0
+        elif isinstance(args, int):
+            nargs = 1
+        else:
+            nargs = len(args)
+        if len(keyword_args.get(key, [])) != nargs:
+            self.error("keyword args mismatch: key=%s: expected %s, got %s" %
+                       (key, keyword_args.get(key), args))
+
         if isinstance(args, int):
             key = '%s(%s)' % (key, args)
         elif args:
