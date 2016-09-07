@@ -631,7 +631,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <widget class="LineEdit" name="lineedit_keyword_ps_u_s_args_PS_P"/>
                   </item>
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_ps_massflow_s_args_PS_P">
+                   <widget class="QLabel" name="label_ps_massflow_s">
                     <property name="text">
                      <string>Mass flowrate</string>
                     </property>
