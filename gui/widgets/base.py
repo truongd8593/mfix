@@ -535,8 +535,9 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
         BaseWidget.__init__(self)
-        # Would be nice to distinguish user input from programmatic setting
-        self.valueChanged.connect(self.emitUpdatedValue)
+        # Distinguish user input from programmatic setting
+        #self.valueChanged.connect(self.emitUpdatedValue)
+        self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = float
         self.context_menu = QtWidgets.QMenu
 
@@ -558,9 +559,10 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         if min:
             self.setMinimum(float(min))
 
-    #def default(self, val=None):
-    #    if BaseWidget.default(self,val) is None:
-    #    self.setValue(0.0) #? clobbers tstop
+    def default(self, val=None):
+        if BaseWidget.default(self,val) is None:
+            self.setValue(0.0) #?
+
 
 # --- Table ---
 class Table(QtWidgets.QTableView, BaseWidget):
