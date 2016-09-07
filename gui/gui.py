@@ -2461,8 +2461,10 @@ def main(args):
     # print number of keywords
     reg_keys = len(gui.project.registered_keywords)
     mfix_keys = len(gui.keyword_doc.keys())
-    gui.print_internal('Registered %d keywords out of %d, %d %%' %
-                       (reg_keys, mfix_keys, reg_keys/mfix_keys*100))
+
+    # Note, a lot of keywords are handled dynamically and are not registered yet
+    #gui.print_internal('Registered %d keywords out of %d, %d %%' %
+    #                   (reg_keys, mfix_keys, reg_keys/mfix_keys*100))
 
     # have to initialize vtk after the widget is visible!
     gui.vtkwidget.vtkiren.Initialize()
