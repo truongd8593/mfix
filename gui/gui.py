@@ -1613,7 +1613,9 @@ class MfixGui(QtWidgets.QMainWindow,
         elif lower.startswith("warning:"):
             log.warning(logmsg[8:])
         elif lower.startswith("info:"):
-            log.info(logmsg[5:])
+            logmsg = logmsg[5:].strip()
+            line = line[5:].strip() # Supress 'Info:' in console window (?)
+            log.info(logmsg)
             color='blue'
         else:
             log.info(logmsg)
