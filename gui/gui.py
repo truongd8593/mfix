@@ -2322,7 +2322,17 @@ class MfixGui(QtWidgets.QMainWindow,
         description = doc.get('description')
         if description is None:
             return
+
+        # Clean it up a little
         description = description.strip()
+        description = description.replace('-', '&#8209;') # non-breaking hyphen
+        # don't split diff. eq's over multiple lines
+        pat = re.compile('boundary condition: *([^,]*, )')
+        match = pat.search(description)
+        if match:
+            text = match.group(1)
+            description = description.replace(text, '<br/>%s<br/>'%text[:-2].replace(' ', '&nbsp;'))
+
         args = widget.args if hasattr(widget, 'args') else None
         if args is None:
             nargs = 0
