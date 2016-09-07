@@ -831,7 +831,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
 
-            self.parent.set_unsaved_flag()
+            self.parent.set_unsaved_flag() # FIXME do not do this on loading
             return name
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
