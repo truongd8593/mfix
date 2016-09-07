@@ -181,12 +181,13 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
 
-        data[name] = copy.deepcopy(DEFAULT_REGION_DATA)
+        reg_dat = data[name] = copy.deepcopy(DEFAULT_REGION_DATA)
         if rtype is not None and extents is not None:
-            data[name]['type'] = rtype
-            data[name]['from'] = extents[0]
-            data[name]['to'] = extents[1]
-        data[name]['visible'] = self.get_visibility_image()
+            reg_dat['type'] = rtype
+            reg_dat['from'] = extents[0]
+            reg_dat['to'] = extents[1]
+        reg_dat['visible'] = self.get_visibility_image()
+        reg_dat['color'].rand()
 
         self.vtkwidget.new_region(name, data[name])
         self.tablewidget_regions.set_value(data)

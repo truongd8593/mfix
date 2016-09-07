@@ -14,6 +14,7 @@ import locale
 import logging
 import shlex
 import copy
+import random
 
 log = logging.getLogger(__name__)
 
@@ -316,6 +317,9 @@ def to_unicode_from_fs(string):
 def to_fs_from_unicode(string):
     return string.encode(encoding=FS_ENCODING, errors='replace')
 
+def random_pastel_color():
+    return [(random.randint(0, 128) + 100)/255.0 for i in range(3)]
+
 class CellColor(object):
     """
     A class to store color information and return '' if str or print is called
@@ -340,6 +344,9 @@ class CellColor(object):
 
     def __repr__(self):
         return self.text
+
+    def rand(self):
+        self.color = random_pastel_color()
 
 
 def insert_append_action(menu, action, insert=None):
