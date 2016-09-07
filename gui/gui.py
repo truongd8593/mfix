@@ -1081,7 +1081,13 @@ class MfixGui(QtWidgets.QMainWindow,
         for widget in widget_iter(self):
             name_list = str(widget.objectName()).split('_')
 
-            if 'keyword' in name_list:
+            if name_list[0] == 'label':
+                if name_list[-1].isdigit(): # strip suffix
+                    name_list = name_list[:-1]
+                key = '_'.join(name_list[1:])
+                self.add_tooltip(widget, key)
+
+            elif 'keyword' in name_list:
                 key_idx = name_list.index('keyword')
                 args = None
                 # Look for _args_ following <keyword>
