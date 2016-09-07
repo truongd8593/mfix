@@ -52,7 +52,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Factor to normalize gas continuity</string>
+         <string>Factor to normalize fluid continuity</string>
         </property>
        </widget>
       </item>
