@@ -568,7 +568,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_keyword(self, key, value, args=None):
         """convenience function to set keyword"""
-        self.set_unsaved_flag()#?
+        self.set_unsaved_flag()
         self.project.submit_change(None, {key:value}, args)
 
     def update_keyword(self, key, value, args=None):
@@ -581,6 +581,8 @@ class MfixGui(QtWidgets.QMainWindow,
             v = self.project.get_value(key, args=args)
             if v==value:
                 return
+        else:
+            print("KEY=%s isequation" % key)
         self.set_keyword(key, value, args=args)
 
     def unset_keyword(self, key, args=None):
@@ -1614,6 +1616,7 @@ class MfixGui(QtWidgets.QMainWindow,
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
         char_format = QtGui.QTextCharFormat()
+
         # HACK is this going too far?  we should define message types, not infer from messages
         if any(x in lower for x in ('error', 'warn', 'fail')) and not 'error%' in lower:
             color='red'
@@ -1636,9 +1639,8 @@ class MfixGui(QtWidgets.QMainWindow,
     def remove_output_files(self, output_files=None, message_text=None):
         """ remove MFIX output files from current project directory
 
-        :param output_files: List of patterns to be matched for file removal
-        :type output_files: list
-        :return: True for success, False for user cancel"""
+        output_files: List of patterns to be matched for file removal
+        return: True for success, False for user cancel"""
 
         if not output_files:
             output_files = self.monitor.get_outputs()
@@ -1777,9 +1779,8 @@ class MfixGui(QtWidgets.QMainWindow,
     def save_project(self, filename=None):
         """save project, optionally as a new project.
 
-        :param project_file: Filename of project (including path)
-        :type project_file: str
-        :return: None"""
+        project_file: string, full filename of project (including path)
+        return: None"""
 
         if filename:
             project_dir = os.path.dirname(filename)
@@ -2293,6 +2294,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Boundary conditions
         self.bcs_extract_regions()
+
+        # Point sources
+        self.pss_extract_regions()
 
         # Chemistry
 
