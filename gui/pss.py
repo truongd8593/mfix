@@ -457,6 +457,8 @@ class PSS(object):
         if change_tab:
             pass
 
+        self.P = self.pss_current_solid
+        self.pss_setup_current_tab()
 
     def pss_setup_current_tab(self):
         if self.pss_current_tab == FLUID_TAB:
@@ -606,7 +608,6 @@ class PSS(object):
             font.setBold(True)
             item.setFont(font)
             self.update_pss_solids_mass_fraction_total()
-
         self.fixup_pss_table(table)
 
 
@@ -655,6 +656,43 @@ class PSS(object):
             self.update_pss_solids_mass_fraction_table()
 
 
+    def pss_extract_regions(self):
+        if self.pss:
+            # We assume that ic regions have been initialized correctly
+            # from mfix_gui_comments.
+            # TODO: verify that there is an PS region for each PS
+            return
+
+        if self.pss_region_dict is None:
+            self.pss_region_dict = self.ui.regions.get_region_dict()
+
+        # TODO: if we wanted to be fancy, we could find regions where
+        # PS values matched, and merge into a new PS region.  That
+        # is only needed for projects created outside the GUI (otherwise
+        # we have already stored the PS regions).  Also would be nice
+        # to offer a way to split compound regions.
+        for ps in self.project.pss:
+
+            d = ps.keyword_dict
+            extent = [d.get('ps_'+k,None) for k in ('x_w', 'y_s', 'z_b',
+                                                    'x_e', 'y_n', 'z_t')]
+            extent = [0 if x is None else x.value for x in extent]
+            #if any (x is None for x in extent):
+            #    self.warn("point source %s: invalid extents %s" %
+            #               (ps.ind, extent))
+            #    continue
+            for (region_name, data) in self.pss_region_dict.items():
+                ext2 = [0 if x is None else x for x in
+                        (data.get('from',[]) + data.get('to',[]))]
+                if ext2 == extent:
+                    if data.get('available', True):
+                        self.pss_add_regions_1([region_name], [ps.ind])
+                        break
+            else:
+                self.warn("point source %s: could not match defined region %s" %
+                          (ps.ind, extent))
+
+
     def setup_pss_fluid_tab(self):
         #Fluid (tab)
         if self.fluid_solver_disabled:
@@ -698,7 +736,7 @@ class PSS(object):
             if val is None:
                 val = default
             for PS in self.pss_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, ic=PS))
+                self.update_keyword(key, val, args=mkargs(key, ps=PS))
             get_widget(key).updateValue(key, val, args=args)
 
 
@@ -752,23 +790,70 @@ class PSS(object):
             #comp.hide() #?
             comp.setEnabled(False)
 
+
     def setup_pss_solids_tab(self, P):
         #Solids-# (tab)
+        # Note, solids phases are numbered 1-N
+        self.pss_current_solid = self.P = P
+        if P is None: # Nothing to do
+            return
+
+        if not self.pss_current_indices: # No region selected
+            # TODO clear all widgets (?)
+            return
+
+        ui = self.ui.point_sources
+        PS0 = self.pss_current_indices[0]
+
+        # Generic!
+        def get_widget(key):
+            for pat in ('lineedit_keyword_%s_args_PS_P',
+                        'lineedit_keyword_%s_args_PS',
+                        'lineedit_%s_args_PS_P',
+                        'lineedit_%s_args_PS'):
+                widget = getattr(ui, pat % key, None)
+                if widget:
+                    return widget
+            self.error('no widget for key %s' % key)
+
+        def setup_key_widget(key, default=None, enabled=True):
+            for pat in ('label_%s', 'label_%s_units',
+                         'lineedit_keyword_%s_args_PS_P',
+                         'lineedit_keyword_%s_args_PS',
+                         'lineedit_%s_args_PS',
+                         'lineedit_%s_args_PS'):
+                name = pat%key
+                item = getattr(ui, name, None)
+                if item:
+                    item.setEnabled(enabled)
+            if not enabled:
+                get_widget(key).setText('') #?
+                return
+            args = mkargs(key, ps=PS0, phase=P)
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            for PS in self.pss_current_indices:
+                self.update_keyword(key, val, args=mkargs(key, ps=PS, phase=P))
+            get_widget(key).updateValue(key, val, args=args)
 
         #Define mass flowrate:
         # Sets keyword PS_MASSFLOW_S(#,#)
         # DEFAULT value of 0.0
+        enabled = True
+        key = 'ps_massflow_s'
+        default = 0.0
+        setup_key_widget(key, default, enabled)
 
         #Define temperature
         # Specification only available when solving energy equations
         # DEFAULT value 293.15
         # Sets keyword PS_T_S(#,#)
-
-        #Select species and set mass fractions (table format)
-        # Specification only available when solving species equations
-        # DEFAULT value 1.0 of last defined species
-        # Sets keyword PS_X_S(#,#,#)
-        # Error check: if specified, mass fractions must sum to one
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        enabled = bool(energy_eq)
+        default = 293.15 if enabled else None
+        key = 'ps_t_s'
+        setup_key_widget(key, default, enabled)
 
         #Define X-axial velocity:
         # Specification always
@@ -784,7 +869,26 @@ class PSS(object):
         # Specification always
         # No DEFAULT value (blank)
         # Sets keyword PS_W_S(#,#)
-        pass
+        enabled = True
+        default = None
+        for c in 'uvw':
+            key = 'ps_%s_s' % c
+            setup_key_widget(key, default, enabled)
+
+        #Select species and set mass fractions (table format)
+        # Specification only available when solving species equations
+        # DEFAULT value 1.0 of last defined species
+        # Sets keyword PS_X_S(#,#,#)
+        # Error check: if specified, mass fractions must sum to one
+
+        species_eq = self.project.get_value('species_eq', default=True, args=[P])
+        enabled = bool(species_eq)
+        print("P=%s ENABLED=%s" % (P, enabled))
+        comp = ui.groupbox_solids_composition
+        if enabled:
+            self.update_pss_solids_mass_fraction_table()
+        else:
+            comp.setEnabled(False)
 
 
     #def setup_pss_scalar_tab():

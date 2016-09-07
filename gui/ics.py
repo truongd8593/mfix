@@ -752,8 +752,8 @@ class ICS(object):
         for ic in self.project.ics:
 
             d = ic.keyword_dict
-            extent = [d.get(k,None) for k in ('ic_x_w', 'ic_y_s', 'ic_z_b',
-                                              'ic_x_e', 'ic_y_n', 'ic_z_t')]
+            extent = [d.get('ic_'+k,None) for k in ('x_w', 'y_s', 'z_b',
+                                                    'x_e', 'y_n', 'z_t')]
             extent = [0 if x is None else x.value for x in extent]
             #if any (x is None for x in extent):
             #    self.warn("initial condition %s: invalid extents %s" %

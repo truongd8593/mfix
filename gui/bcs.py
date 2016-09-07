@@ -679,8 +679,8 @@ class BCS(object):
         # to offer a way to split compound regions.
         for bc in self.project.bcs:
             d = bc.keyword_dict
-            extent = [d.get(k, None) for k in ('bc_x_w', 'bc_y_s', 'bc_z_b',
-                                              'bc_x_e', 'bc_y_n', 'bc_z_t')]
+            extent = [d.get('bc_'+k, None) for k in ('x_w', 'y_s', 'z_b',
+                                                     'x_e', 'y_n', 'z_t')]
             # should we distinguish 0 from unset?  in the region_dict we get
             #  from the regions_widget, the values are 0, while in the project,
             #  keywords are simply unset (value None) rather than set to 0
