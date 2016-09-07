@@ -558,9 +558,9 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
         if min:
             self.setMinimum(float(min))
 
-    def default(self, val=None):
-        if BaseWidget.default(self,val) is None:
-            self.setValue(0.0) #?
+    #def default(self, val=None):
+    #    if BaseWidget.default(self,val) is None:
+    #    self.setValue(0.0) #? clobbers tstop
 
 # --- Table ---
 class Table(QtWidgets.QTableView, BaseWidget):
