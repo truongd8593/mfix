@@ -472,7 +472,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.signal_update_runbuttons.emit('')
 
         # Reset everything to default values
-        self.reset() # Clear command_output too?
+        # This is done in 'load_project'.  so why do it now?
+        #self.reset() # Clear command_output too?
+
         # end of __init__ (hooray!)
 
     def add_extra_keyword_doc(self):
@@ -649,7 +651,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
-        self.print_internal(message, color='blue')
+        if message != 'Ready': # Don't clutter the console with unimportant msgs
+            self.print_internal(message, color='blue')
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -794,7 +797,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.change_pane('run')
 
         else: # Not running, ready for input
-            self.status_message("Ready" if project_open else "Loading %s"%project_file)
+            self.status_message("Ready")
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
