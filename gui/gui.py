@@ -2380,7 +2380,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         text=clobber_msg,
                         buttons=['yes', 'no'],
                         default='no')
-        return response == 'ok'
+        return response == 'yes'
 
     def check_if_ok_to_delete_files(self, message_text):
         response = self.message(title="Info",
