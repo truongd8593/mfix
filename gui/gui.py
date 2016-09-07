@@ -2110,34 +2110,32 @@ class MfixGui(QtWidgets.QMainWindow,
             self.job_manager.try_to_connect(runname_pid)
 
         if auto_rename and not project_path.endswith(runname_mfx):
-            ok_to_write = self.check_if_ok_to_write(project_file, runname_mfx)
+            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
             if ok_to_write:
                 renamed_project_file = os.path.join(project_dir, runname_mfx)
                 if os.path.exists(renamed_project_file):
-                    ok_to_write = self.check_if_ok_to_rename(renamed_project_file)
-                    if not ok_to_write:
-                        log.info("Rename cancelled at user request")
-
-            if ok_to_write:
-                project_file = renamed_project_file
-                try:
-                    self.force_default_settings()
-                    self.print_internal("Info: Saving %s" % project_file)
-                    self.project.writeDatFile(project_file) #XX
-                    #self.print_internal(save_msg, color='blue')
-                    self.clear_unsaved_flag()
-                except Exception as e:
-                    msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
-                    self.print_internal("Error: %s" % msg, color='red')
-                    self.message(title='Error',
-                                 icon='error',
-                                 text=msg,
-                                 buttons=['ok'],
-                                 default='ok')
-                    traceback.print_exception(*sys.exc_info())
-                    return
-            else:
+                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
+            if not ok_to_write:
                 self.print_internal("Rename canceled at user request")
+                return
+
+            project_file = renamed_project_file
+            try:
+                self.force_default_settings() #?
+                self.print_internal("Info: Saving %s" % project_file)
+                self.project.writeDatFile(project_file) #XX
+                #self.print_internal(save_msg, color='blue')
+                self.clear_unsaved_flag()
+            except Exception as e:
+                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                self.print_internal("Error: %s" % msg, color='red')
+                self.message(title='Error',
+                             icon='error',
+                             text=msg,
+                             buttons=['ok'],
+                             default='ok')
+                traceback.print_exception(*sys.exc_info())
+                return
 
         self.set_project_file(project_file)
         self.clear_unsaved_flag()
@@ -2366,16 +2364,16 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     # Following functions are overrideable for test runner
-    def check_if_ok_to_write(self, project_file, runname_mfx):
-        save_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
+    def check_if_ok_to_rename(self, project_file, runname_mfx):
+        rename_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
         response = self.message(title='Info',
                                 icon='question',
-                                text=save_msg,
+                                text=rename_msg,
                                 buttons=['ok', 'cancel'],
                                 default='ok')
         return response == 'ok'
 
-    def check_if_ok_to_rename(self, renamed_project_file):
+    def check_if_ok_to_clobber(self, renamed_project_file):
         clobber_msg = '%s exists, replace?' % renamed_project_file
         response = self.message(title='Warning',
                         icon='question',
