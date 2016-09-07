@@ -576,13 +576,14 @@ class MfixGui(QtWidgets.QMainWindow,
         if value is None or value=='':
             self.unset_keyword(key, args)
             return
-        if not isinstance(value, Equation):  # Always update equations (why?)
-            # Note, not all keyword updates use this function (should they?)
-            v = self.project.get_value(key, args=args)
-            if v==value:
+
+        #check whether it's actually changed
+        v = self.project.get_value(key, args=args)
+
+        #we might have updated 3 with 3.0 or with @(2+1), or @(1+2) with @(1+1+1)
+        if type(v)==type(value) and str(v)==str(value):
                 return
-        else:
-            print("KEY=%s isequation" % key)
+
         self.set_keyword(key, value, args=args)
 
     def unset_keyword(self, key, args=None):
