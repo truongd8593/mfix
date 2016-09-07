@@ -2348,7 +2348,9 @@ class MfixGui(QtWidgets.QMainWindow,
             nargs = 1
         else:
             nargs = len(args)
-        if len(keyword_args.get(key, [])) != nargs:
+
+        # This is arguably a weird place to be doing this check
+        if getattr(widget, 'key', None) == key and len(keyword_args.get(key, [])) != nargs:
             self.error("keyword args mismatch: key=%s: expected %s, got %s" %
                        (key, keyword_args.get(key), args))
 
