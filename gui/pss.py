@@ -883,7 +883,6 @@ class PSS(object):
 
         species_eq = self.project.get_value('species_eq', default=True, args=[P])
         enabled = bool(species_eq)
-        print("P=%s ENABLED=%s" % (P, enabled))
         comp = ui.groupbox_solids_composition
         if enabled:
             self.update_pss_solids_mass_fraction_table()
