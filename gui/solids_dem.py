@@ -387,11 +387,12 @@ class SolidsDEM(object):
                     if col < row:
                         tw.setItem(row, col, make_item('--'))
                     else:
-                        le = LineEdit()#FIXME.  lineedit in table works but looks a bit odd
+                        le = LineEdit() # lineedit in table works but looks a bit odd
                         le.setMaximumWidth(150)
                         le.key = key
                         le.args = [arg]
                         le.setdtype('dp')
+                        self.add_tooltip(le, key)
                         tw.setCellWidget(row, col, le)
                         val = self.project.get_value(key, args=[arg])
                         if val is not None:
@@ -407,6 +408,7 @@ class SolidsDEM(object):
                 le.key = key
                 le.args = [arg]
                 le.setdtype('dp')
+                self.add_tooltip(le, key)
                 tw.setCellWidget(row, col, le)
                 val = self.project.get_value(key, args=[arg])
                 if val is not None:
@@ -463,11 +465,12 @@ class SolidsDEM(object):
                         if col < row:
                             tw.setItem(row, col, make_item('--'))
                         else:
-                            le = LineEdit()#FIXME.  lineedit in table works but looks a bit odd
+                            le = LineEdit()#lineedit in table works but looks a bit odd
                             le.setMaximumWidth(150)
                             le.key = key
                             le.args = [arg]
                             le.setdtype('dp')
+                            self.add_tooltip(le, key)
                             tw.setCellWidget(row, col, le)
                             val = self.project.get_value(key, args=[arg])
                             if val is not None:
