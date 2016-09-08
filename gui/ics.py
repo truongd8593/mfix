@@ -778,7 +778,7 @@ class ICS(object):
             return
         ui = self.ui.initial_conditions
         tw = ui.tablewidget_fluid_mass_fraction
-        enabled = (self.fluid_species is not None)
+        enabled = bool(self.fluid_species)
         if not enabled:
             tw.clearContents()
             tw.setRowCount(0)

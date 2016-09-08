@@ -700,7 +700,7 @@ class PSS(object):
             return
         ui = self.ui.point_sources
         tw = ui.tablewidget_fluid_mass_fraction
-        enabled = (self.fluid_species is not None)
+        enabled = bool(self.fluid_species)
         if not enabled:
             tw.clearContents()
             tw.setRowCount(0)
@@ -794,16 +794,26 @@ class PSS(object):
     def setup_pss_solids_tab(self, P):
         #Solids-# (tab)
         # Note, solids phases are numbered 1-N
+        ui = self.ui.point_sources
+        tw = ui.tablewidget_solids_mass_fraction
         self.pss_current_solid = self.P = P
-        if P is None: # Nothing to do
+        if P is None: # Shouldn't be here
             return
+        enabled = bool(self.solids_species.get(P))
+        if not enabled:
+            tw.clearContents()
+            tw.setRowCount(0)
+        self.fixup_pss_table(tw)
+        tw.setEnabled(enabled)
 
         if not self.pss_current_indices: # No region selected
             # TODO clear all widgets (?)
             return
 
-        ui = self.ui.point_sources
+
         PS0 = self.pss_current_indices[0]
+
+
 
         # Generic!
         def get_widget(key):
