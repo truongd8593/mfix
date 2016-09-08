@@ -1139,7 +1139,7 @@ class BCS(object):
                 else:
                     #self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
-                    self.set_bcs_fluid_energy_eq_type(eq_type, i)
+                    self.set_bcs_fluid_energy_eq_type(eq_type)
 
             if eq_type is not None:
                 ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
