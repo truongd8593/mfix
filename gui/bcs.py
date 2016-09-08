@@ -352,7 +352,6 @@ class BCS(object):
         kwlist = list(self.project.keywordItems())
         for kw in kwlist:
             key, args = kw.key, kw.args
-            # TODO use keyword_args here instead of startswith
             if key.startswith('bc_') and args and args[0] in self.bcs_current_indices:
                 self.unset_keyword(key, args=args)
 

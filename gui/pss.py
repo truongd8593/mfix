@@ -183,7 +183,6 @@ class PSS(object):
         kwlist = list(self.project.keywordItems())
         for kw in kwlist:
             key, args = kw.key, kw.args
-            # TODO use keyword_args here instead of startswith
             if key.startswith('ps_') and args and args[0] in self.pss_current_indices:
                 self.unset_keyword(key, args=args)
 
