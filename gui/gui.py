@@ -2371,8 +2371,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # This is arguably a weird place to be doing this check
         # TODO:  remove _args from widget names completely, use keyword_args DB
         if getattr(widget, 'key', None) == key and len(keyword_args.get(key, [])) != nargs:
-            self.error("keyword args mismatch: key=%s: expected %s, got %s" %
-                       (key, keyword_args.get(key), args))
+            if not key.startswith('des_'):
+                self.error("keyword args mismatch: key=%s: expected %s, got %s" %
+                           (key, keyword_args.get(key), args))
 
         # Use the argument list from the DB in preference to the widget args (which are deprecated)
         args = keyword_args.get(key)
