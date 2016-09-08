@@ -2369,7 +2369,7 @@ class MfixGui(QtWidgets.QMainWindow,
             nargs = len(args)
 
         # This is arguably a weird place to be doing this check
-        # TODO:  remove _args from widget names completely, use keyword_args DB qqq
+        # TODO:  remove _args from widget names completely, use keyword_args DB
         if getattr(widget, 'key', None) == key and len(keyword_args.get(key, [])) != nargs:
             self.error("keyword args mismatch: key=%s: expected %s, got %s" %
                        (key, keyword_args.get(key), args))
