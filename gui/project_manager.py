@@ -17,6 +17,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from collections import OrderedDict
 import sys
+import os
 import traceback
 import logging
 log = logging.getLogger(__name__)
@@ -163,7 +164,7 @@ class ProjectManager(Project):
 
     def expand_args(self, args_in):
         if any (a == 'S' for a in args_in):
-            raise DeprecationWarning("keyword argument S is deprectated, use P")
+            raise DeprecationWarning("keyword argument S is deprecated, use P")
         return [(self.gui.P if a=='P'
                  else self.gui.ics_current_indices if a == 'IC'
                  else self.gui.bcs_current_indices if a == 'BC'
@@ -462,8 +463,8 @@ class ProjectManager(Project):
                 self.gui.print_internal("Warning: %s loading %s" %
                                            (plural(n_errs, "error") , project_file),
                                            color='red')
-            else:
-                self.gui.print_internal("Loaded %s" % project_file, color='blue')
+            else: # Why don't we do this in gui.py?
+                self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
         """ Register a widget with the project manager. The widget must have a

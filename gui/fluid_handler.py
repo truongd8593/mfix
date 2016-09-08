@@ -27,6 +27,7 @@ class FluidHandler(object):
         self.fluid_conductivity_model = AIR
         self.fluid_diffusion_model = AIR
 
+
     ## Fluid phase methods
     def enable_fluid_species_eq(self, enabled):
         ui = self.ui.fluid
@@ -38,13 +39,14 @@ class FluidHandler(object):
         # dif_g0 == diffusion coeff model
         items = (ui.lineedit_keyword_dif_g0,
                  ui.label_dif_g0_units)
-
         for item in items:
             item.setEnabled(enabled and (self.fluid_diffusion_model == CONSTANT))
 
+
     def enable_fluid_scalar_eq(self, state):
-        self.ui.fluid.checkbox_enable_scalar_eq.setChecked(state)
-        spinbox = self.ui.fluid.spinbox_nscalar_eq
+        ui = self.ui.fluid
+        ui.checkbox_enable_scalar_eq.setChecked(state)
+        spinbox = ui.spinbox_nscalar_eq
         spinbox.setEnabled(state)
         if state:
             val = spinbox.value()
@@ -55,6 +57,7 @@ class FluidHandler(object):
             self.fluid_nscalar_eq = 0
             self.update_scalar_equations(prev_nscalar)
 
+
     def set_fluid_nscalar_eq(self, value):
         # This *sums into* nscalar - not a simple keyword
         prev_nscalar = self.fluid_nscalar_eq + self.solids_nscalar_eq
@@ -63,6 +66,7 @@ class FluidHandler(object):
         if value != spinbox.value():
             spinbox.setValue(value)
         self.update_scalar_equations(prev_nscalar)
+
 
     def init_fluid_handler(self):
         self.fluid_species = OrderedDict()
@@ -105,7 +109,6 @@ class FluidHandler(object):
                     self.unset_keyword(key_usr)
                     # anything else to do in this case? validation?
             return setter
-
 
         # Create setters for the cases which are similar (mol. wt. handled separately)
         for (name, key) in (
@@ -195,9 +198,11 @@ class FluidHandler(object):
             # TODO: validate, require mw for all component species
             self.unset_keyword("mw_avg")
 
+
     def handle_fluid_phase_name(self): # editingFinished signal does not include value
         value = self.ui.fluid.lineedit_fluid_phase_name.text()
         self.set_fluid_phase_name(value)
+
 
     def set_fluid_phase_name(self, value):
         self.fluid_phase_name = value
@@ -215,9 +220,11 @@ class FluidHandler(object):
         self.species_popup.defined_species = deepcopy(self.fluid_species)
         self.update_fluid_species_table()
 
+
     def fluid_species_save(self):
         self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.update_fluid_species_table()
+
 
     def update_fluid_species_table(self):
         """Update table in fluids pane.  Also set nmax_g, species_g and species_alias_g keywords,
@@ -261,12 +268,14 @@ class FluidHandler(object):
         self.project.update_thermo_data(self.fluid_species)
         self.fixup_fluids_table()
 
+
     def handle_fluid_species_selection(self):
-        table = self.ui.fluid.tablewidget_fluid_species
+        ui = self.ui.fluid
+        table = ui.tablewidget_fluid_species
         row = get_selected_row(table)
         enabled = (row is not None)
-        self.ui.fluid.toolbutton_fluid_species_delete.setEnabled(enabled)
-        self.ui.fluid.toolbutton_fluid_species_copy.setEnabled(enabled)
+        ui.toolbutton_fluid_species_delete.setEnabled(enabled)
+        ui.toolbutton_fluid_species_copy.setEnabled(enabled)
         if enabled:
             table.doubleClicked.connect(self.fluid_species_edit)
         else:
@@ -274,6 +283,7 @@ class FluidHandler(object):
                 table.doubleClicked.disconnect() #self.fluids_species_edit)
             except:
                 pass
+
 
     def fluid_species_add(self):
         sp = self.species_popup
@@ -291,6 +301,7 @@ class FluidHandler(object):
         sp.enable_density(False)
         sp.popup()
 
+
     def fluid_make_extra_aliases(self):
         # Construct the 'extra_aliases' set to pass to the species popup
         # Exclude the fluid phase
@@ -298,6 +309,7 @@ class FluidHandler(object):
         for ss in self.solids_species.values():
             aliases.update(set(s['alias'] for s in ss.values()))
         return aliases
+
 
     def fluid_species_delete(self):
         # XXX FIXME this is potentially a big problem since
@@ -341,6 +353,11 @@ class FluidHandler(object):
         sp.setWindowTitle("Fluid Species")
         sp.enable_density(False)
         sp.popup()
+
+
+    def setup_fluid(self):
+        # Called whenever we switch to fluid tab
+        self.P = 0
 
 
     def reset_fluids(self):

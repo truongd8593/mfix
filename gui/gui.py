@@ -248,7 +248,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.ui.panes.append(widget)
         # end of ui loading
 
-        #self.status_message("Loading")
         # build keyword documentation from namelist docstrings
         # TODO: pregenerate this?
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
@@ -700,6 +699,9 @@ class MfixGui(QtWidgets.QMainWindow,
         for pane in self.ui.panes:
             pane.setEnabled(enabled)
 
+        return
+        # Is this really necessary??
+
         # Selected rows look bad with input disabled
         if not enabled:
             self.ui.fluid.tablewidget_fluid_species.clearSelection()
@@ -709,6 +711,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.update_fluid_species_table() # reenable sel?
             self.update_solids_table() # ?
             #self.update_solids_detail_pane()
+        # How about all the other panes?
+
 
     def slot_update_residuals(self):
         """Get job status from JobManager and update residuals pane"""
@@ -814,13 +818,14 @@ class MfixGui(QtWidgets.QMainWindow,
                             color='blue')
 
     def get_version(self):
-        return "0.2x" # placeholder
+        return "0.2y" # placeholder
 
     def closeEvent(self, event):
         if not self.confirm_close():
             event.ignore()
             return
         event.accept()
+
 
     def find_navigation_tree_item(self, item_name):
         tree = self.ui.treewidget_navigation
@@ -901,6 +906,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #self.update_solids_detail_pane()
         self.update_window_title()
 
+
     def disable_fluid_solver(self, disabled):
         # Option to disable the fluid phase
         # Disables the Fluid task pane menu
@@ -927,6 +933,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.update_nav_tree()
         # TODO update nscalar
+
 
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
@@ -966,6 +973,7 @@ class MfixGui(QtWidgets.QMainWindow,
         groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
         groupbox_subgrid_params.setEnabled(index > 0)
 
+
     def enable_turbulence(self, enabled):
         m = self.ui.model_setup
         if enabled != m.checkbox_enable_turbulence.isChecked():
@@ -981,6 +989,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.unset_keyword('mu_gmax')
         else:
             self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
+
 
     def set_turbulence_model(self, val):
         m = self.ui.model_setup
@@ -1027,6 +1036,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # ICs enabled/disabled depends on nscalar
         self.update_nav_tree()
+
 
     # helper functions for __init__
     def __setup_other_widgets(self): # rename/refactor
@@ -1289,10 +1299,11 @@ class MfixGui(QtWidgets.QMainWindow,
             return
         text = str(current_selection[-1].text(0))
         text = '_'.join(text.lower().split(' '))
-        if text == 'solids': # Special helper for setting up subpanes,
+        if text == 'fluid' : #
+            self.setup_fluid()
+        elif text == 'solids': # Special helper for setting up subpanes,
             # since params may have changed
             self.setup_solids_tab(self.solids_current_tab)
-        # TODO: improve handling of long/short names
         elif text in ('initial_conditions', 'ics'):
             self.setup_ics()
         elif text in ('boundary_conditions', 'bcs'):
@@ -2091,7 +2102,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # --- read the mfix.dat or *.mfx file
         self.reset() # resets gui, keywords, file system watchers, etc
 
-        self.print_internal("Loading %s" % project_file, color='blue')
+        basename, pathname = os.path.split(project_file)
+
+        self.print_internal("Loading %s from %s" % (pathname, basename), color='blue')
         try:
             self.project.load_project_file(project_file)
         except Exception as e:
@@ -2356,13 +2369,18 @@ class MfixGui(QtWidgets.QMainWindow,
             nargs = len(args)
 
         # This is arguably a weird place to be doing this check
+        # TODO:  remove _args from widget names completely, use keyword_args DB qqq
         if getattr(widget, 'key', None) == key and len(keyword_args.get(key, [])) != nargs:
             self.error("keyword args mismatch: key=%s: expected %s, got %s" %
                        (key, keyword_args.get(key), args))
 
+        # Use the argument list from the DB in preference to the widget args (which are deprecated)
+        args = keyword_args.get(key)
+
         if isinstance(args, int):
             key = '%s(%s)' % (key, args)
-        elif args:
+        elif args: # make BC, IC etc upper-case
+            args = [a.upper() if len(a)==2 else a for a in args]
             key = '%s(%s)' % (key, ','.join(map(
                 lambda x: str(x[0] if isinstance(x, (tuple, list)) else str(x)), args)))
         msg = '<b>%s</b>: %s</br>' % (key, description)

@@ -3,8 +3,9 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
-                            QHBoxLayout, QWidget, QGroupBox)
+from qtpy.QtWidgets import (QComboBox, QGridLayout, QGroupBox, QHBoxLayout,
+                            QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget)
+
 
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
@@ -68,6 +69,7 @@ class BCS(object):
         self.bcs_current_indices = [] # List of BC indices
         self.bcs_current_regions = [] # And the names of the regions which define them
         self.bcs_region_dict = None
+        self.bcs_fluid_species_boxes = OrderedDict() # In the 'wall' tab each species needs a groupbox
 
         # The top of the task pane is where users define/select BC regions
         # (see handle_bcs_region_selection)
@@ -101,7 +103,7 @@ class BCS(object):
         self.add_tooltip(ui.checkbox_bc_jj_ps_args_BC, 'bc_jj_ps')
 
         # Combobox callbacks
-        for name in ('fluid_energy_eq', 'fluid_species_eq',
+        for name in ('fluid_energy_eq', #'fluid_species_eq',
                      'bc_jj_ps',
                      'solids_energy_eq', 'solids_granular_energy_eq'): # no solids_species_eq?
             item = getattr(ui, 'combobox_%s_type' % name)
@@ -775,7 +777,7 @@ class BCS(object):
         self.setup_bcs_fluid_tab()
 
 
-    def set_bcs_fluid_species_eq_type(self, eq_type):
+    def set_bcs_fluid_species_eq_type(self, eq_type, species_index):
         if not self.bcs_current_indices:
             return
         #Select species equation boundary type:
@@ -783,47 +785,48 @@ class BCS(object):
         # Available selections:
         #  No-Flux [DEFAULT]
         if eq_type == NO_FLUX:
-            #    Sets keyword BC_HW_X_G(#) to 0.0
+            #    Sets keyword BC_HW_X_G(#,#) to 0.0
             hw = 0.0
-            #    Sets keyword BC_C_X_G(#) to 0.0
+            #    Sets keyword BC_C_X_G(#,#) to 0.0
             c = 0
-            #    Sets keyword BC_XW_G(#) to UNDEFINED
+            #    Sets keyword BC_XW_G(#,#) to UNDEFINED
             xw = None
         #  Specified Mass Fraction
         elif eq_type == SPECIFIED_MASS_FRACTION:
-            #    Sets keyword BC_XW_T_G(#) to UNDEFINED # should be BC_H_X_G ?
+            #    Sets keyword BC_XW_T_G(#,#) to UNDEFINED # should be BC_H_X_G ?
             hw = None
-            #    Sets keyword BC_C_X_G(#) to 0.0
+            #    Sets keyword BC_C_X_G(#,#) to 0.0
             c = 0.0
-            #    Requires BC_XW_G(#)
+            #    Requires BC_XW_G(#,#)
             xw = True
         #  Specified Flux
         elif eq_type == SPECIFIED_FLUX:
-            #    Sets keyword BC_HW_X_G(#) to 0.0
+            #    Sets keyword BC_HW_X_G(#,#) to 0.0
             hw = 0.0
-            #    Requires BC_C_X_G(#)
+            #    Requires BC_C_X_G(#,#)
             c = True
-            #    Sets keyword BC_XW_G(#) to UNDEFINED
+            #    Sets keyword BC_XW_G(#,#) to UNDEFINED
             xw = None
         #  Convective Flux
         elif eq_type == CONVECTIVE_FLUX:
-            #    Requires BC_HW_X_G(#)
+            #,#    Requires BC_HW_X_G(#,#)
             hw = True
-            #    Sets keyword BC_C_X_G(#) to 0.0
+            #    Sets keyword BC_C_X_G(#,#) to 0.0
             c = 0.0
-            #    Requires BC_XW_G(#)
+            #    Requires BC_XW_G(#,#)
             xw = True
         else:
             self.error("Invalid fluid species_eq type %s" % eq_type)
             return
 
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['fluid_species_eq_type'] = eq_type
+            #FIXME will not survive species deletion
+            self.bcs[BC]['fluid_species_%s_eq_type'%species_index] = eq_type
             for (key, val) in (('bc_hw_x_g', hw), ('bc_c_x_g', c), ('bc_xw_g', xw)):
                 if val is True:
                     pass # 'required'
                 else:
-                    self.update_keyword(key, val, args=[BC])
+                    self.update_keyword(key, val, args=[BC, species_index])
 
         self.setup_bcs_fluid_tab()
 
@@ -984,7 +987,6 @@ class BCS(object):
 
     def setup_bcs_fluid_wall_tab(self):
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary Condition Regions
-        #Fluid (tab)
         ui = self.ui.boundary_conditions
         ui.page_fluid.setCurrentIndex(PAGE_WALL)
 
@@ -997,48 +999,108 @@ class BCS(object):
             self.error("bc_type not set for region %s" % BC0)
             return
 
-        def get_widget(key):
+        def get_widget(key, ui):
             for pat in ('lineedit_keyword_%s_args_BC',
-                        'lineedit_%s_args_BC'):
+                        'lineedit_keyword_%s_args_BC_species',
+                        'lineedit_%s_args_BC',
+                        'lineedit_%s_args_BC_species'):
                 widget = getattr(ui, pat % key, None)
                 if widget:
                     return widget
             self.error('no widget for key %s' % key)
 
-        def setup_key_widget(key, default=None, enabled=True, suffix=''):
+        def setup_key_widget(key, default=None, enabled=True,
+                             species_index=None, box=None, suffix=''):
+            ui = box or self.ui.boundary_conditions # widgets nested into groupboxes
             for pat in ('label_%s', 'label_%s_units',
-                         'lineedit_keyword_%s_args_BC'):
+                        'lineedit_keyword_%s_args_BC',
+                        'lineedit_keyword_%s_args_BC_species'):
                 name = pat%(key+suffix)
                 item = getattr(ui, name, None)
                 if item:
                     item.setEnabled(enabled)
-            args = mkargs(key, bc=BC0)
+            args = mkargs(key, bc=BC0, species=species_index)
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
             for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC))
-            get_widget(key+suffix).updateValue(key, val, args=args)
+                args = mkargs(key, bc=BC, species=species_index)
+                self.update_keyword(key, val, args=mkargs(key, bc=BC, species=species_index))
+            get_widget(key+suffix, ui).updateValue(key, val, args=args)
+
+
+        def make_fluid_species_box(title, species_index):
+            box = QGroupBox(title, parent=ui.page_fluid_wall)
+            box_layout = QGridLayout()
+            #margins = ui.groupbox_fluid_energy_eq.getContentsMargins()
+            box.setFlat(True)
+            margins = (5, 10, 0, 5) #left top right bottom
+            box_layout.setContentsMargins(*margins)
+            box.setLayout(box_layout)
+            cb = box.combobox_fluid_species_eq_type = QComboBox()
+            for item in ('No-Flux', 'Specified Mass Fraction',
+                         'Specified Flux', 'Convective Flux'):
+                cb.addItem(item)
+            cb.setCurrentIndex(NO_FLUX)
+            cb.currentIndexChanged.connect(
+                lambda index, species_index=species_index: self.set_bcs_fluid_species_eq_type(index, species_index))
+            hbox = QHBoxLayout()
+            label = QLabel('Type')
+            # TODO: tooltips
+            hbox.addWidget(label)
+            hbox.addWidget(cb)
+            hbox.addStretch()
+            box_layout.addLayout(hbox, 0, 0, 1, 3)
+            row = 0
+            for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
+                                             ('Constant flux', 'bc_c_x_g', 'TBD'),
+                                             ('Transfer coefficient', 'bc_hw_x_g', 'TBD'),
+                                             ('Free stream mass frac.', 'bc_xw_g', None)):
+                row += 1
+                suffix = '_2' if label_text.startswith('Free') else ''
+                label = QLabel(label_text)
+                self.add_tooltip(label, key)
+                box_layout.addWidget(label, row, 0, 1, 1)
+                setattr(box, 'label_%s'%(key+suffix), label)
+                le = LineEdit()
+                le.key = key
+                le.args = ['BC', species_index]
+                le.dtype = float
+                # TODO: LIMITS
+                self.add_tooltip(le, key)
+                box_layout.addWidget(le, row, 1)
+                setattr(box, 'lineedit_keyword_%s_args_BC_species'%(key+suffix), le)
+                self.project.register_widget(le, [key], ['BC', species_index])
+                if units:
+                    label = QLabel(units)
+                    box_layout.addWidget(label, row, 2)
+                    setattr(box, 'label_%s_units'%(key+suffix), label)
+            page_layout = ui.page_fluid_wall.layout()
+            page_layout.insertWidget(page_layout.count()-1, box)
+            return box
+
+        #Fluid (tab)
 
         #    Define transfer coefficient
         # Specification only available with PSW
         # Sets keyword BC_HW_G(#)
         # DEFAULT value of 0.0
-        #
+
         #    Define Wall U-velocity
         # Specification only available with PSW
         # Sets keyword BC_UW_G(#)
         # DEFAULT value of 0.0
-        #
+
         #    Define Wall V-velocity
         # Specification only available with PSW
         # Sets keyword BC_VW_G(#)
         # DEFAULT value of 0.0
-        #
+
         #    Define Wall W-velocity
         # Specification only available with PSW
         # Sets keyword BC_WW_G(#)
         # DEFAULT value of 0.0
+
         enabled = (bc_type=='PSW')
         default = 0.0 if enabled else None
         for c in 'huvw':
@@ -1070,7 +1132,7 @@ class BCS(object):
                 else:
                     #self.error("Cannot determine type for fluid energy boundary equation %s" % BC0)
                     eq_type = NO_FLUX # Default
-                    self.set_bcs_fluid_energy_eq_type(eq_type)
+                    self.set_bcs_fluid_energy_eq_type(eq_type, i)
 
             if eq_type is not None:
                 ui.combobox_fluid_energy_eq_type.setCurrentIndex(eq_type)
@@ -1123,78 +1185,113 @@ class BCS(object):
 
         #Select species equation boundary type:
         # Selection only available when solving species equations
-        species_eq = self.project.get_value('species_eq', default=True, args=[0])
+        species_eq = self.project.get_value('species_eq', default=True, args=[0])#0 for fluid-phase
         enabled = bool(species_eq)
-        ui.groupbox_fluid_species_eq.setEnabled(enabled)
-        eq_type = None
-        if enabled:
-            eq_type = self.bcs[BC0].get('fluid_species_eq_type')
-            if eq_type is None: # Attempt to infer from keywords
-                hw = self.project.get_value('bc_hw_x_g', args=[BC0])
-                c = self.project.get_value('bc_c_x_g', args=[BC0])
-                xw = self.project.get_value('bc_xw_g', args=[BC0])
-                if hw==0.0 and c==0.0 and xw is None:
-                    eq_type = NO_FLUX
-                elif hw is None and c==0.0 and xw is not None:
-                    eq_type = SPECIFIED_MASS_FRACTION
-                elif hw==0.0 and c!=0.0 and xw is None:
-                    eq_type = SPECIFIED_FLUX
-                elif hw is not None and c==0.0 and xw is not None:
-                    eq_type = CONVECTIVE_FLUX
-                else:
-                    #self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
-                    eq_type = NO_FLUX # Default
-                    self.set_bcs_fluid_species_eq_type(eq_type)
+
+        #  Note - we need a copy of this groupbox for each fluid species
+        # Let's only do this when the species have changed
+        box_keys = list(self.bcs_fluid_species_boxes.keys())
+        species_names = list(self.fluid_species.keys())
+        species_keys = [self.project.get_value('species_alias_g', default=name, args=[i])
+                           for (i, name) in enumerate(species_names, 1)]
+        if box_keys != species_keys:
+            n_boxes = len(box_keys)
+            n_species = len(species_keys)
+            if n_boxes > n_species:
+                for i in range(n_boxes-1, n_species-1, -1):
+                    box_key = box_keys[i]
+                    box = self.bcs_fluid_species_boxes[box_key]
+                    for w in widget_iter(box):
+                        self.unregister_widget(w)
+                        del w
+                    box.hide()
+                    box = None
+                    del self.bcs_fluid_species_boxes[box_key]
+
+            elif n_boxes < n_species:
+                for i in range(n_boxes, n_species):
+                    species_key = species_keys[i]
+                    box = make_fluid_species_box(species_key, i+1)
+                    self.bcs_fluid_species_boxes[species_key] = box
+
+            tmp_dict = OrderedDict()
+            for (key, box) in zip(species_keys, self.bcs_fluid_species_boxes.values()):
+                tmp_dict[key] = box
+                box.setTitle("Species Equation: %s" % key)
+            self.bcs_fluid_species_boxes = tmp_dict
+
+        for (species_index, box) in enumerate(self.bcs_fluid_species_boxes.values(), 1):
+            enabled = bool(species_eq)
+            box.setEnabled(enabled)
+            eq_type = None
+            if enabled:
+                eq_type = self.bcs[BC0].get('fluid_species_%s_eq_type'%species_index)
+                if eq_type is None: # Attempt to infer from keywords
+                    hw = self.project.get_value('bc_hw_x_g', args=[BC0, species_index])
+                    c = self.project.get_value('bc_c_x_g', args=[BC0, species_index])
+                    xw = self.project.get_value('bc_xw_g', args=[BC0, species_index])
+                    if hw==0.0 and c==0.0 and xw is None:
+                        eq_type = NO_FLUX
+                    elif hw is None and c==0.0 and xw is not None:
+                        eq_type = SPECIFIED_MASS_FRACTION
+                    elif hw==0.0 and c!=0.0 and xw is None:
+                        eq_type = SPECIFIED_FLUX
+                    elif hw is not None and c==0.0 and xw is not None:
+                        eq_type = CONVECTIVE_FLUX
+                    else:
+                        #self.error("Cannot determine type for fluid species boundary equation %s" % BC0)
+                        eq_type = NO_FLUX # Default
+                    self.set_bcs_fluid_species_eq_type(eq_type, species_index)
 
             if eq_type is not None:
-                ui.combobox_fluid_species_eq_type.setCurrentIndex(eq_type)
+                box.combobox_fluid_species_eq_type.setCurrentIndex(eq_type)
 
-        if species_eq:
-            #Define wall mass fraction
-            # Specification only available with 'Specified Mass Fraction' BC type
-            # Sets keyword BC_XW_G(#)
-            # DEFAULT value of 0.0
-            enabled = (eq_type==SPECIFIED_MASS_FRACTION)
-            key = 'bc_xw_g'
-            default = 0.0 if enabled else None
-            setup_key_widget(key, default, enabled)
-            # Hack to prevent dup. display
-            if enabled:
-                ui.lineedit_keyword_bc_xw_g_2_args_BC.setText('')
-            else:
-                ui.lineedit_keyword_bc_xw_g_args_BC.setText('')
+            if species_eq:
+                #Define wall mass fraction
+                # Specification only available with 'Specified Mass Fraction' BC type
+                # Sets keyword BC_XW_G(#)
+                # DEFAULT value of 0.0
+                enabled = (eq_type==SPECIFIED_MASS_FRACTION)
+                key = 'bc_xw_g'
+                default = 0.0 if enabled else None
+                setup_key_widget(key, default, enabled, species_index=species_index, box=box)
+                # Hack to prevent dup. display
+                if enabled:
+                    box.lineedit_keyword_bc_xw_g_2_args_BC_species.setText('')
+                else:
+                    box.lineedit_keyword_bc_xw_g_args_BC_species.setText('')
 
-            #Define constant flux
-            # Specification only available with 'Specified Flux' BC type
-            # Sets keyword BC_C_X_G(#)
-            # DEFAULT value of 0.0
-            enabled = (eq_type==SPECIFIED_FLUX)
-            key = 'bc_c_x_g'
-            default = 0.0
-            setup_key_widget(key, default, enabled)
+                #Define constant flux
+                # Specification only available with 'Specified Flux' BC type
+                # Sets keyword BC_C_X_G(#)
+                # DEFAULT value of 0.0
+                enabled = (eq_type==SPECIFIED_FLUX)
+                key = 'bc_c_x_g'
+                default = 0.0
+                setup_key_widget(key, default, enabled, species_index=species_index, box=box)
 
-            #Define transfer coefficient
-            # Specification only available with 'Convective Flux' BC type
-            # Sets keyword BC_HW_X_G(#)
-            # DEFAULT value of 0.0
-            enabled = (eq_type==CONVECTIVE_FLUX)
-            key = 'bc_hw_x_g'
-            default = 0.0
-            setup_key_widget(key, default, enabled)
+                #Define transfer coefficient
+                # Specification only available with 'Convective Flux' BC type
+                # Sets keyword BC_HW_X_G(#)
+                # DEFAULT value of 0.0
+                enabled = (eq_type==CONVECTIVE_FLUX)
+                key = 'bc_hw_x_g'
+                default = 0.0
+                setup_key_widget(key, default, enabled, species_index=species_index, box=box)
 
-            #Define free stream mass fraction
-            # Specification only available with 'Convective Flux' BC type
-            # Sets keyword BC_XW_G(#)
-            # DEFAULT value of 0.0
-            enabled = (eq_type==CONVECTIVE_FLUX)
-            key = 'bc_xw_g'
-            default = 0.0 if enabled else None
-            setup_key_widget(key, default, enabled, suffix='_2')
-            # Hack to prevent dup. display
-            if enabled:
-                ui.lineedit_keyword_bc_xw_g_args_BC.setText('')
-            else:
-                ui.lineedit_keyword_bc_xw_g_2_args_BC.setText('')
+                #Define free stream mass fraction
+                # Specification only available with 'Convective Flux' BC type
+                # Sets keyword BC_XW_G(#)
+                # DEFAULT value of 0.0
+                enabled = (eq_type==CONVECTIVE_FLUX)
+                key = 'bc_xw_g'
+                default = 0.0 if enabled else None
+                setup_key_widget(key, default, enabled, species_index=species_index, box=box, suffix='_2')
+                # Hack to prevent dup. display
+                if enabled:
+                    box.lineedit_keyword_bc_xw_g_args_BC_species.setText('')
+                else:
+                    box.lineedit_keyword_bc_xw_g_2_args_BC_species.setText('')
 
 
     def setup_bcs_solids_tab(self, P):

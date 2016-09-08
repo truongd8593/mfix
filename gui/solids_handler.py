@@ -455,6 +455,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
     def handle_solids_table_selection(self):
         ui = self.ui.solids
+        self.P = self.solids_current_phase # should already be set
         tw = ui.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
@@ -462,7 +463,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         #ui.toolbutton_solids_copy.setEnabled(enabled) - removed from ui
         self.solids_current_phase_name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
-        self.P = self.solids_current_phase
         self.update_solids_detail_pane()
 
     def update_solids_detail_pane(self):
