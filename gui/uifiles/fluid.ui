@@ -36,7 +36,7 @@
     <number>5</number>
    </property>
    <item row="1" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupbox_options">
      <property name="title">
       <string>Options</string>
      </property>
@@ -45,7 +45,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
        <number>5</number>
@@ -146,7 +146,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <property name="leftMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
        <number>5</number>
@@ -405,7 +405,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
       <property name="leftMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
        <number>5</number>
