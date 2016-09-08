@@ -2160,7 +2160,7 @@ background-color:white;
              <item row="6" column="0">
               <widget class="QLabel" name="label_v_poisson">
                <property name="text">
-                <string>Poisson ratio</string>
+                <string>Poisson's ratio</string>
                </property>
               </widget>
              </item>
