@@ -340,13 +340,22 @@ class SolidsDEM(object):
         # Sets keyword V_POISSON (VW_POISSON)
         enabled = (des_coll_model=='HERTZIAN')
         for item in (ui.label_e_young,
-                     ui.lineedit_keyword_e_young,
+                     ui.lineedit_keyword_e_young_args_P,
                      ui.lineedit_keyword_ew_young,
                      ui.label_e_young_units,
                      ui.label_v_poisson,
-                     ui.lineedit_keyword_v_poisson,
+                     ui.lineedit_keyword_v_poisson_args_P,
                      ui.lineedit_keyword_vw_poisson):
             item.setEnabled(enabled)
+
+        if enabled:
+            P = self.solids_current_phase
+            if P is not None:
+                for key in 'e_young', 'v_poisson':
+                    val = self.project.get_value(key, args=[P])
+                    widget = getattr(ui, 'lineedit_keyword_%s_args_P' % key)
+                    if widget:
+                        widget.updateValue(key, val)
 
         #Specify normal restitution coefficient
         # Specification always required
