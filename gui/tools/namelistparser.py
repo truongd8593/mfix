@@ -71,7 +71,11 @@ def buildKeywordDoc(mfixSourcePath):
             return v
         d = v.get('description')
         if d:
-            v['description'] = cgs_re.sub('', d)
+            d = cgs_re.sub('', d)
+            d = d.replace("Youngs", "Young's")
+            d = d.replace("Poissons", "Poisson's")
+            d = d.replace("Poisson ratio", "Poisson's ratio")
+            v['description'] = d
         return v
 
     return dict((k.lower(),redact(v)) for k, v in mfixKeywordDict.items())
