@@ -110,6 +110,15 @@ class BCS(object):
             setter = getattr(self, 'set_bcs_%s_type' % name)
             item.currentIndexChanged.connect(setter)
 
+        # Tangential velocities are not auto-registered
+        for suffix in ('1', '2', '1_3', '2_3'):
+            widget = getattr(ui, 'lineedit_fluid_tangential_velocity_'+suffix)
+            widget.value_updated.connect(self.project.submit_change)
+        for suffix in ('1', '2', '1_4', '2_4'):
+            widget = getattr(ui, 'lineedit_solids_tangential_velocity_'+suffix)
+            widget.value_updated.connect(self.project.submit_change)
+
+
         # Inflow/outflow pane has some special inputs
         for phase_type in 'fluid', 'solids': # type
             for flow_direction in 'inflow', 'outflow': #direction
@@ -1831,9 +1840,9 @@ class BCS(object):
                     row += 1 # Skip over "type"
                     args = ['BC', i]
                     label = QLabel(label_text)
+                    self.add_tooltip(label, key)
                     setattr(ui, 'label_%s_args_BC_%s' % (key+suffix, i), label)
                     groupbox_layout.addWidget(label, row, 0)
-
                     le = LineEdit()
                     le.dtype = float
                     le.key = key
@@ -2290,9 +2299,10 @@ class BCS(object):
             #Define X-Axial Velocity
             # Sets keyword BC_U_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_g'%xmap[tangents[0]]
             label = ui.label_fluid_tangential_velocity_1
             label.setText('  %s-axial velocity' % tangents[0])
-            key = 'bc_%s_g'%xmap[tangents[0]]
+            self.add_tooltip(label, key)
             val = self.project.get_value(key, default=0.0, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_1
             widget.key = key
@@ -2303,15 +2313,17 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_g'%xmap[tangents[1]]
             label = ui.label_fluid_tangential_velocity_2
             label.setText('  %s-axial velocity' % tangents[1])
-            key = 'bc_%s_g'%xmap[tangents[1]]
+            self.add_tooltip(label, key)
             default = 0.0
             val = self.project.get_value(key, default, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_2
             widget.key = key
             widget.args = ['BC']
             widget.updateValue(key, val)
+
             self.add_tooltip(widget, key)
 
         # For BC_TYPE='CG_MI' or 'PI'
@@ -2334,9 +2346,10 @@ class BCS(object):
             #    Define Y-Axial Velocity
             # Sets keyword BC_V_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_v_g'
             label =  ui.label_fluid_tangential_velocity_1
             label.setText('Y-axial velocity')
-            key = 'bc_v_g'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_1
             val = self.project.get_value(key, default, args=[BC0])
@@ -2347,9 +2360,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_V_G(#) # fixed, BC_W_G
             # DEFAULT value of 0.0
+            key = 'bc_w_g'
             label =  ui.label_fluid_tangential_velocity_2
             label.setText('Z-axial velocity')
-            key = 'bc_w_g'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_2
             val = self.project.get_value(key, default, args=[BC0])
@@ -2652,9 +2666,10 @@ class BCS(object):
             #    Define X-Axial Velocity
             # Sets keyword BC_U_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_s'%xmap[tangents[0]]
             label = ui.label_solids_tangential_velocity_1
             label.setText('  %s-axial velocity' % tangents[0])
-            key = 'bc_%s_s'%xmap[tangents[0]]
+            self.add_tooltip(label, key)
             val = self.project.get_value(key, default=0.0, args=[BC0])
             widget = ui.lineedit_solids_tangential_velocity_1
             widget.key = key
@@ -2665,9 +2680,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_s'%xmap[tangents[1]]
             label = ui.label_solids_tangential_velocity_2
             label.setText('  %s-axial velocity' % tangents[1])
-            key = 'bc_%s_s'%xmap[tangents[1]]
+            self.add_tooltip(label, key)
             default = 0.0
             val = self.project.get_value(key, default, args=[BC0])
             widget = ui.lineedit_solids_tangential_velocity_2
@@ -2696,9 +2712,10 @@ class BCS(object):
             #    Define Y-Axial Velocity
             # Sets keyword BC_V_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_v_s'
             label =  ui.label_solids_tangential_velocity_1
             label.setText('Y-axial velocity')
-            key = 'bc_v_s'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_1
             val = self.project.get_value(key, default, args=[BC0, P])
@@ -2709,9 +2726,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_w_s'
             label =  ui.label_solids_tangential_velocity_2
             label.setText('Z-axial velocity')
-            key = 'bc_w_s'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_2
             val = self.project.get_value(key, default, args=[BC0, P])
@@ -3051,9 +3069,10 @@ class BCS(object):
             #    Define X-Axial Velocity
             # Sets keyword BC_U_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_g'%xmap[tangents[0]]
             label = ui.label_fluid_tangential_velocity_1_3
             label.setText('  %s-axial velocity' % tangents[0])
-            key = 'bc_%s_g'%xmap[tangents[0]]
+            self.add_tooltip(label, key)
             val = self.project.get_value(key, default=0.0, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_1_3
             widget.key = key
@@ -3064,9 +3083,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_g'%xmap[tangents[1]]
             label = ui.label_fluid_tangential_velocity_2_3
             label.setText('  %s-axial velocity' % tangents[1])
-            key = 'bc_%s_g'%xmap[tangents[1]]
+            self.add_tooltip(label, key)
             default = 0.0
             val = self.project.get_value(key, default, args=[BC0])
             widget = ui.lineedit_fluid_tangential_velocity_2_3
@@ -3096,9 +3116,10 @@ class BCS(object):
             #    Define Y-Axial Velocity
             # Sets keyword BC_V_G(#)
             # DEFAULT value of 0.0
+            key = 'bc_v_g'
             label =  ui.label_fluid_tangential_velocity_1_3
             label.setText('Y-axial velocity')
-            key = 'bc_v_g'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_1_3
             val = self.project.get_value(key, default, args=[BC0])
@@ -3109,9 +3130,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_V_G(#) # fixed, BC_W_G
             # DEFAULT value of 0.0
+            key = 'bc_w_g'
             label =  ui.label_fluid_tangential_velocity_2_3
             label.setText('Z-axial velocity')
-            key = 'bc_w_g'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_2
             val = self.project.get_value(key, default, args=[BC0])
@@ -3297,9 +3319,10 @@ class BCS(object):
             #    Define X-Axial Velocity
             # Sets keyword BC_U_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_s'%xmap[tangents[0]]
             label = ui.label_solids_tangential_velocity_1_4
             label.setText('  %s-axial velocity' % tangents[0])
-            key = 'bc_%s_s'%xmap[tangents[0]]
+            self.add_tooltip(label, key)
             val = self.project.get_value(key, default=0.0, args=[BC0,P])
             widget = ui.lineedit_solids_tangential_velocity_1_4
             widget.key = key
@@ -3310,9 +3333,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_%s_s'%xmap[tangents[1]]
             label = ui.label_solids_tangential_velocity_2_4
             label.setText('  %s-axial velocity' % tangents[1])
-            key = 'bc_%s_s'%xmap[tangents[1]]
+            self.add_tooltip(label, key)
             default = 0.0
             val = self.project.get_value(key, default, args=[BC0,P])
             widget = ui.lineedit_solids_tangential_velocity_2_4
@@ -3342,9 +3366,10 @@ class BCS(object):
             #    Define Y-Axial Velocity
             # Sets keyword BC_V_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_v_s'
             label =  ui.label_solids_tangential_velocity_1_4
             label.setText('Y-axial velocity')
-            key = 'bc_v_s'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_1_4
             val = self.project.get_value(key, default, args=[BC0,P])
@@ -3355,9 +3380,10 @@ class BCS(object):
             #    Define Z-Axial Velocity
             # Sets keyword BC_W_S(#,#)
             # DEFAULT value of 0.0
+            key = 'bc_w_s'
             label =  ui.label_solids_tangential_velocity_2_4
             label.setText('Z-axial velocity')
-            key = 'bc_w_s'
+            self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_2_4
             val = self.project.get_value(key, default, args=[BC0,P])
