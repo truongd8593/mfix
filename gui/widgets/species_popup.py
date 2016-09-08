@@ -372,7 +372,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         row = get_selected_row(table)
         if row is None: # No selection
             return
-        #NB making a new item here, instead of changing item inplace
+        #note, making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
         set_item_noedit(item)
