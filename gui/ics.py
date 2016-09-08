@@ -398,8 +398,7 @@ class ICS(object):
 
 
     def ics_set_region_keys(self, name, idx, data ):
-        # Update the keys which define the box-shaped region the IC applies to
-
+        # Update the keys which define the region the IC applies to
         no_k = self.project.get_value('no_k')
         for (key, val) in zip(('x_w', 'y_s', 'z_b',
                                'x_e', 'y_n', 'z_t'),

@@ -81,7 +81,6 @@ class BCS(object):
         ui.toolbutton_delete.clicked.connect(self.bcs_delete_regions)
         # TODO implement 'duplicate' (what does this do?)
         ui.toolbutton_delete.setEnabled(False) # Need a selection
-
         ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_bcs_region_selection)
 
         self.bcs_current_tab = FLUID_TAB # #  If fluid is disabled, we will switch
@@ -536,7 +535,7 @@ class BCS(object):
 
 
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
-        # Update the keys which define the box-shaped region the BC applies to
+        # Update the keys which define the region the BC applies to
         if bc_type is not None:
             val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
                            BC_TYPES[bc_type])
