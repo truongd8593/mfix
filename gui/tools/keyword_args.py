@@ -29,5 +29,7 @@ def mkargs(key, **value_dict):
     args = keyword_args.get(key)
     if args is None:
         return
+    if 'is_' in value_dict:
+        value_dict['is'] = value_dict['is_']
     r = [value_dict.get(a, a) for a in args]
     return r
