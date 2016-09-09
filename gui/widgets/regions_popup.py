@@ -13,6 +13,8 @@ from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
 UserRole = QtCore.Qt.UserRole
 
+from constants import *
+
 from tools.general import (set_item_noedit, set_item_enabled,
                            get_combobox_item, get_selected_rows)
 
@@ -23,10 +25,6 @@ else:
     def resize_column(table, col, flags):
         table.horizontalHeader().setResizeMode(col, flags)
 
-# move to "constants"
-# must match order in combobox_bc_type
-bc_types = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
-default_bc_type = bc_types.index('NSW')  # No Slip Wall
 
 class RegionsPopup(QtWidgets.QDialog):
 

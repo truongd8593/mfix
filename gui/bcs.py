@@ -38,23 +38,10 @@ SOLIDS_TAB = 2
 SOLIDS_TAB_DUMMY_R = 3
 SCALAR_TAB = 4
 
-# Move to "constants"?
-BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
-
-BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
-            'Free Slip Wall', 'Partial Slip Wall',
-            'Pressure Inflow', 'Mass Outflow']
-
-(MASS_INFLOW, PRESSURE_OUTFLOW,
- NO_SLIP_WALL, FREE_SLIP_WALL, PARTIAL_SLIP_WALL,
- PRESSURE_INFLOW, MASS_OUTFLOW) = range(7)
-
 PAGE_WALL, PAGE_INFLOW, PAGE_PO, PAGE_MO = range(4) #page indices in stackedwidget
 
-(NO_FLUX, SPECIFIED_TEMPERATURE, SPECIFIED_FLUX, CONVECTIVE_FLUX) = range(4)
 SPECIFIED_MASS_FRACTION = 1
 
-DEFAULT_BC_TYPE = NO_SLIP_WALL
 
 xmap = {'X':'u', 'Y':'v', 'Z': 'w'}
 
@@ -536,8 +523,9 @@ class BCS(object):
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the region the BC applies to
         if bc_type is not None:
-            val = "%s%s" %('CG_' if data.get('type') == 'STL' else '',
-                           BC_TYPES[bc_type])
+            val = BC_TYPES[bc_type]
+            if data.get('type') == 'STL':
+                val = 'CG_' + val
             if val== 'CG_PI': # Shouldn't happen!
                 self.error("Invalid bc_type %s" % val)
                 return
