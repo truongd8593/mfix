@@ -199,6 +199,7 @@ class PSS(object):
         self.pss_current_indices = []
 
         tw.removeRow(row)
+        self.fixup_pss_table(tw)
         self.pss_setup_current_tab()
 
 
