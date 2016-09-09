@@ -56,14 +56,43 @@ class ISS(object):
         # IS regions can be planes or volumes (not points or STLs)
         # No region can define more than one internal surface.
 
+        #Select internal surface type
+        # Selection is required
+        # Available selections:
+        #  Impermeable
+        #    Selection only available for plane regions
+        #    set keyword IS_TYPE(#) to 'IMPERMEABLE'
+        #  X-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'X_IMPERMEABLE'
+        #  Y-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
+        #  z-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
+        #  Semi-permeable
+        #    Selection only available for plane regions
+        #    set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
+        #  X-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'X_SEMIPERMEABLE'
+        #  Y-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Y_SEMIPERMEABLE'
+        #  Z-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
+        # DEFAULT - Impermeable
+        # (selection logic implemented in regions_popup.py)
+
         ui = self.ui.internal_surfaces
         rp = self.regions_popup
         rp.clear()
         for (name,data) in self.iss_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
-            available = data.get('available', True) and (shape in ('point', 'box')
-                                                         or 'plane' in shape)
+            available = data.get('available', True) and (shape=='box' or 'plane' in shape)
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
@@ -241,8 +270,11 @@ class ISS(object):
             tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
-    def iss_set_region_keys(self, name, idx, data ):
-        # Update the keys which define the box-shaped region the IS applies to
+    def iss_set_region_keys(self, name, idx, data, is_type=None):
+        # Update the keys which define the region the IS applies to
+        if is_type is not None:
+            val = IS_TYPES[is_type]
+            self.update_keyword('is_type', val, args=[idx])
 
         no_k = self.project.get_value('no_k')
         for (key, val) in zip(('x_w', 'y_s', 'z_b',
@@ -354,36 +386,6 @@ class ISS(object):
 
 
 
-#Select internal surface type
-# Selection is required
-# Available selections:
-#  Impermeable
-#    Selection only available for plane regions
-#    set keyword IS_TYPE(#) to 'IMPERMEABLE'
-#  X-Axis Impermeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'X_IMPERMEABLE'
-#  Y-Axis Impermeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
-#  z-Axis Impermeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
-
-#  Semi-permeable
-#    Selection only available for plane regions
-#    set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
-#  X-Axis semi-permeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'X_SEMIPERMEABLE'
-#  Y-Axis semi-permeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'Y_SEMIPERMEABLE'
-#  Z-Axis semi-permeable
-#    Selection only available for volume regions
-#    set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
-# Input required for species equations
-# DEFAULT - Impermeable
 
 #Input is only needed for semi-permeable surfaces.
 #Gas permeability:
