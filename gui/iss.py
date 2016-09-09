@@ -125,13 +125,15 @@ class ISS(object):
         rp = self.regions_popup
         self.iss_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
+        is_type = rp.combobox.currentIndex()
         if not selections:
             return
-        self.iss_add_regions_1(selections) # Indices will be assigned
+        self.iss_add_regions_1(selections, is_type) # Indices will be assigned
         self.iss_setup_current_tab() # Update the widgets
 
 
-    def iss_add_regions_1(self, selections, indices=None):
+    def iss_add_regions_1(self, selections,
+                          is_type=DEFAULT_IS_TYPE, indices=None):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.internal_surfaces
 
@@ -164,11 +166,14 @@ class ISS(object):
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
-            self.iss_set_region_keys(region_name, idx, region_data)
+            self.iss_set_region_keys(region_name, idx, region_data, is_type)
             self.iss_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
+
+        item = make_item(IS_NAMES[is_type])
+        tw.setItem(nrows, 1, item)
 
         self.fixup_iss_table(tw)
 
@@ -210,6 +215,7 @@ class ISS(object):
         self.iss_current_indices = []
 
         tw.removeRow(row)
+        self.fixup_iss_table(tw)
         self.iss_setup_current_tab()
 
 
@@ -232,7 +238,7 @@ class ISS(object):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
-        self.iss_setup_current_tab() # reinitialize all widgets in current tab
+        self.setup_iss() # reinitialize all widgets in current tab
 
 
     def fixup_iss_table(self, tw, stretch_column=0):
@@ -332,25 +338,6 @@ class ISS(object):
             self.iss_add_regions_1(regions, indices)
 
 
-    def setup_iss(self):
-        ui = self.ui.internal_surfaces
-
-        # Grab a fresh copy, may have been updated
-        self.iss_region_dict = self.ui.regions.get_region_dict()
-
-        # Mark regions which are in use (this gets reset each time we get here)
-        for (i, data) in self.iss.items(): # Should we also consider BCs/ICs?
-            region = data['region']
-            if region in self.iss_region_dict:
-                self.iss_region_dict[region]['available'] = False
-
-        self.fixup_iss_table(ui.tablewidget_regions)
-        row = get_selected_row(ui.tablewidget_regions)
-        enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
-
-
     def iss_extract_regions(self):
         if self.iss:
             # We assume that ic regions have been initialized correctly
@@ -382,22 +369,38 @@ class ISS(object):
                           (is_.ind, extent))
 
 
+    def setup_iss(self):
+        ui = self.ui.internal_surfaces
+
+        # Grab a fresh copy, may have been updated
+        self.iss_region_dict = self.ui.regions.get_region_dict()
+
+        # Mark regions which are in use (this gets reset each time we get here)
+        for (i, data) in self.iss.items(): # Should we also consider BCs/ICs?
+            region = data['region']
+            if region in self.iss_region_dict:
+                self.iss_region_dict[region]['available'] = False
+
+        self.fixup_iss_table(ui.tablewidget_regions)
+        row = get_selected_row(ui.tablewidget_regions)
+        enabled = (row is not None)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.detail_pane.setEnabled(enabled)
+        self.iss_setup_current_tab()
 
 
-
-
-
-#Input is only needed for semi-permeable surfaces.
-#Gas permeability:
-# Specification only available for semipermeable regions
-# DEFAULT value 1.0d32
-# Sets keyword IS_PC(#,1)
-#Internal resistance coefficient:
-# Specification only available for semipermeable regions
-# DEFAULT value 0.0
-# Sets keyword IS_PC(#,2)
-#Solids velocity through surface:
-# Specification only available for semipermeable regions
-# DEFAULT value 0.0
-# Sets keyword IS_VEL_s(#,PHASE)
-# There should be a line for each solids phase. Use the user provided solids name.
+    def iss_setup_current_tab(self):
+        #Input is only needed for semi-permeable surfaces.
+        #Gas permeability:
+        # Specification only available for semipermeable regions
+        # DEFAULT value 1.0d32
+        # Sets keyword IS_PC(#,1)
+        #Internal resistance coefficient:
+        # Specification only available for semipermeable regions
+        # DEFAULT value 0.0
+        # Sets keyword IS_PC(#,2)
+        #Solids velocity through surface:
+        # Specification only available for semipermeable regions
+        # DEFAULT value 0.0
+        # Sets keyword IS_VEL_s(#,PHASE)
+        # There should be a line for each solids phase. Use the user provided solids name.

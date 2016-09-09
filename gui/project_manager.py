@@ -156,6 +156,12 @@ class ProjectManager(Project):
                 if b not in self.gui.pss_current_indices:
                     return False
 
+            elif a=='IS':
+                if b not in self.gui.iss_current_indices:
+                    return False
+
+            elif a=='IDX':
+                continue
 
             elif a != b:
                 return False
@@ -169,6 +175,7 @@ class ProjectManager(Project):
                  else self.gui.ics_current_indices if a == 'IC'
                  else self.gui.bcs_current_indices if a == 'BC'
                  else self.gui.pss_current_indices if a == 'PS'
+                 else self.gui.iss_current_indices if a == 'IS'
                  else a)
                 for a in args_in]
 
@@ -477,7 +484,9 @@ class ProjectManager(Project):
                        '*' : described above
                        'IC' : current initial condition index
                        'BC' : current initial condition index
-                       'PS' : current point source index """
+                       'PS' : current point source index
+                       'IS' : current internal surface index """
+        # Species? Scalar index?
 
         if isinstance(args, int):
             args = [args]
@@ -495,7 +504,7 @@ class ProjectManager(Project):
             # project manager, especially after the file is initially loaded.
             # Maybe remove project manager -> widget callbacks completely
             # and follow the IC/BC model everywhere
-            if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_')):
+            if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_', 'is_')):
                 continue
             if key not in d:
                 d[key] = []

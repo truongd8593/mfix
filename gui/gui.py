@@ -56,6 +56,7 @@ from solids_handler import SolidsHandler
 from ics import ICS
 from bcs import BCS
 from pss import PSS
+from iss import ISS
 
 from interpreter import Interpreter
 
@@ -97,11 +98,10 @@ if PRECOMPILE_UI:
 class MfixGui(QtWidgets.QMainWindow,
               FluidHandler,
               SolidsHandler,
-              ICS,
-              BCS,
-              PSS,
+              ICS, BCS, PSS, ISS,
               Interpreter):
-    """Main window class for MFIX-GUI"""
+    # Main window class for MFIX-GUI
+
     settings = QSettings('MFIX', 'MFIX')
 
     stdout_signal = Signal(str)
@@ -113,12 +113,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.message(title='Error', text=str(exc))
 
     def error(self, msg, popup=False):
-        """Convenience function to show the user a warning & log it"""
+        # Show the user a warning & log it - use this instead of log.error
         self.print_internal('Error: %s' % msg)
         # No popup
 
     def warn(self, msg, popup=False):
-        """Convenience function to show the user a warning & log it"""
+        # Show the user a warning & log it - use instead of log.warn
         if not popup:
             self.print_internal("Warning: %s" % msg)
             # print_internal will call log.warn if message starts with "Warning"
@@ -126,6 +126,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.message(text=msg)
             # Will also print-internal and log
     warning = warn
+
 
     def __init__(self, app, parent=None, project_file=None):
         # load settings early so get_project_file returns the right thing.
@@ -185,7 +186,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_initial_conditions,
                         Ui_boundary_conditions,
                         Ui_point_sources,
-                        # Ui_internal_surfaces,
+                        Ui_internal_surfaces,
                         # Ui_chemistry,
                         Ui_numerics,
                         Ui_output,
@@ -220,7 +221,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'initial_conditions',
                          'boundary_conditions',
                          'point_sources',
-                         #'internal_surfaces',
+                         'internal_surfaces',
                          #'chemistry',
                          'numerics',
                          'output',
@@ -293,8 +294,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Internal Surfaces',
-                     'Chemistry',
+        for name in ('Chemistry',
                      'Monitors',
                      'Points',
                      'Planes',
@@ -323,6 +323,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_ics()
         self.init_bcs()
         self.init_pss()
+        self.init_iss()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -1310,6 +1311,9 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_bcs()
         elif text in ('point_sources', 'points'):
             self.setup_pss()
+        elif text in ('internal_surfaces', 'surfaces'):
+            self.setup_iss()
+
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
@@ -2320,6 +2324,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Point sources
         self.pss_extract_regions()
+
+        # Internal surfaces
+        self.iss_extract_regions()
 
         # Chemistry
 

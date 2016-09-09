@@ -81,7 +81,7 @@ class RegionsPopup(QtWidgets.QDialog):
                     pass
 
         elif self.surface:
-            surface_type = surface_types[cb.currentIndex()]
+            is_type = IS_TYPES[cb.currentIndex()]
 
 
 
