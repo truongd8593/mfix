@@ -519,13 +519,15 @@ class ProjectManager(Project):
 
 
     def unregister_widget(self, widget):
-        key = widget.key
+        key = getattr(widget, 'key', None)
+        if key is None:
+            return
         try:
             widget.value_updated.disconnect()
         except Exception as e:
-            self.error(str(e))
+            self.error("%s: widget=%s key=%s" % (str(e), widget.objectName(), key))
 
-        updates = self.registered_widgets.get(widget.key,[])
+        updates = self.registered_widgets.get(key, [])
         updates = [(a,w) for (a,w) in updates if w != widget]
 
         if updates:
