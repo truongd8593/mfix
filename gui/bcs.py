@@ -1199,10 +1199,10 @@ class BCS(object):
                     box = self.bcs_fluid_species_boxes[box_key]
                     for w in widget_iter(box):
                         self.unregister_widget(w)
-                        del w
+                        w.deleteLater()
                     box.hide()
                     box = None
-                    del self.bcs_fluid_species_boxes[box_key]
+                    self.bcs_fluid_species_boxes[box_key].deleteLater()
 
             elif n_boxes < n_species:
                 for i in range(n_boxes, n_species):

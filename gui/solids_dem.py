@@ -376,7 +376,7 @@ class SolidsDEM(object):
                     w = tw.cellWidget(row, col)
                     if w:
                         self.project.unregister_widget(w)
-                        del w
+                        w.deleteLater()
             tw.clearContents()
 
             # Make a new batch
@@ -442,7 +442,7 @@ class SolidsDEM(object):
                     w = tw.cellWidget(row, col)
                     if w:
                         self.project.unregister_widget(w)
-                        del w
+                        w.deleteLater()
             tw.clearContents()
             tw.setRowCount(0)
             tw.setColumnCount(0)
@@ -457,7 +457,7 @@ class SolidsDEM(object):
                         w = tw.cellWidget(row, col)
                         if w:
                             self.project.unregister_widget(w)
-                            del w
+                            w.deleteLater()
                 tw.clearContents()
                 # Make a new batch
                 tw.setRowCount(mmax+1) # extra row for "Wall"
