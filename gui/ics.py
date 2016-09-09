@@ -763,7 +763,7 @@ class ICS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.ics_add_regions_1([region_name], [ic.ind])
+                        self.ics_add_regions_1([region_name], indices=[ic.ind])
                         break
             else:
                 self.warn("initial condition %s: could not match defined region %s" %

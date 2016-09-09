@@ -269,7 +269,7 @@ class BCS(object):
         bc_type = rp.combobox.currentIndex()
         if not selections:
             return
-        self.bcs_add_regions_1(selections, bc_type) # Indices will be assigned
+        self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None) # Indices will be assigned
         self.bcs_setup_current_tab() # Update the widgets
 
 
@@ -567,7 +567,7 @@ class BCS(object):
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
             # bc_type keyword should be set already when we call this
-            self.bcs_add_regions_1(regions, indices)
+            self.bcs_add_regions_1(regions, bc_type=None, indices=indices)
 
 
     def setup_bcs(self):
@@ -715,7 +715,7 @@ class BCS(object):
                         if bc_type not in BC_TYPES:
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
-                            self.bcs_add_regions_1([region_name], BC_TYPES.index(bc_type), [bc.ind])
+                            self.bcs_add_regions_1([region_name], bc_type=BC_TYPES.index(bc_type), indices=[bc.ind])
                             break
             else:
                 self.warn("boundary condition %s: could not match defined region %s" %

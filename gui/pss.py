@@ -685,7 +685,7 @@ class PSS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.pss_add_regions_1([region_name], [ps.ind])
+                        self.pss_add_regions_1([region_name], indices=[ps.ind])
                         break
             else:
                 self.warn("point source %s: could not match defined region %s" %

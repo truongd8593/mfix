@@ -128,7 +128,7 @@ class ISS(object):
         is_type = rp.combobox.currentIndex()
         if not selections:
             return
-        self.iss_add_regions_1(selections, is_type) # Indices will be assigned
+        self.iss_add_regions_1(selections, is_type=is_type, indices=None) # Indices will be assigned
         self.iss_setup_current_tab() # Update the widgets
 
 
@@ -335,7 +335,8 @@ class ISS(object):
             return
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
-            self.iss_add_regions_1(regions, indices)
+            # is_type should already be set
+            self.iss_add_regions_1(regions, is_type=None, indices=indices)
 
 
     def iss_extract_regions(self):
@@ -362,7 +363,7 @@ class ISS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.iss_add_regions_1([region_name], [is_.ind])
+                        self.iss_add_regions_1([region_name], indices=[is_.ind])
                         break
             else:
                 self.warn("internal surface %s: could not match defined region %s" %
@@ -390,6 +391,8 @@ class ISS(object):
 
 
     def iss_setup_current_tab(self):
+        pass
+
         #Input is only needed for semi-permeable surfaces.
         #Gas permeability:
         # Specification only available for semipermeable regions
