@@ -254,6 +254,7 @@ class ICS(object):
         self.ics_current_indices = []
 
         tw.removeRow(row)
+        self.fixup_ics_table(tw)
         self.ics_setup_current_tab()
 
 
