@@ -431,6 +431,7 @@ class PSS(object):
             widget.setParent(None)
             widget.deleteLater()
         # And make new ones
+        change_tab = False
         for (i, solid_name) in enumerate(self.solids.keys(),1):
             mod = self.project.get_value('solids_model', args=[i])
             #At this time, only TFM solids can be defined with point sources.
@@ -443,7 +444,6 @@ class PSS(object):
             font.setBold(self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid)
             b.setFont(font)
             ui.tab_layout.addWidget(b, 0, i)
-            change_tab = False
             if mod == 'TFM':
                 b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
             else:
