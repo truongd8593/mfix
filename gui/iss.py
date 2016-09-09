@@ -387,11 +387,43 @@ class ISS(object):
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
+
+        # There should be a line for each solids phase. Use the user provided solids name.
+        if not self.solids:
+            ui.groupbox_solids_velocities.hide()
+        else:
+            # Clear out the old ones
+            for w in widget_iter(ui.groupbox_solids_velocities):
+                if not isinstance(w, (LineEdit, QLabel)):
+                    continue
+                self.project.unregister_widget(w)
+                w.setParent(None)
+                w.deleteLater()
+
+            layout = ui.groupbox_solids_velocities.layout()
+            row = 0
+            key = 'is_vel_s'
+            for s in self.solids.keys():
+                label = QLabel(s)
+                self.add_tooltip(label, key)
+                layout.addWidget(label, row, 0)
+                le = LineEdit()
+                le.key = key
+                le.args = ['IS', 'P']
+                le.dtype = float
+                self.project.register_widget(le, key, le.args)
+                self.add_tooltip(le, key)
+                layout.addWidget(le, row, 1)
+                units_label = QLabel('m/s')
+                layout.addWidget(units_label , row, 2)
+                row += 1
+            ui.groupbox_solids_velocities.show()
+
         self.iss_setup_current_tab()
 
 
     def iss_setup_current_tab(self):
-        pass
+        ui = self.ui.internal_surfaces
 
         #Input is only needed for semi-permeable surfaces.
         #Gas permeability:
@@ -406,4 +438,3 @@ class ISS(object):
         # Specification only available for semipermeable regions
         # DEFAULT value 0.0
         # Sets keyword IS_VEL_s(#,PHASE)
-        # There should be a line for each solids phase. Use the user provided solids name.
