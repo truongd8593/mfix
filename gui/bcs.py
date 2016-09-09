@@ -1973,6 +1973,9 @@ class BCS(object):
 
 
     def bcs_handle_flow_input(self, widget, data, ignore_key):
+        if not data:
+            log.error('bcs_handle_flow_input: no data')
+            return
         key, val = data.popitem()
         P = self.bcs_current_solid
         P_arg = [] if key.endswith('_g') else [P]
@@ -2011,6 +2014,9 @@ class BCS(object):
         # This handles inflow and outflow for fluid and solids phases
         #  The combobox has a (non-keyword) 'key' set to distinguish where
         #  this is being called from
+        if not data:
+            log.error('bcs_handle_flow_type: no data')
+            return
         ui = self.ui.boundary_conditions
         if not self.bcs_current_indices:
             return
