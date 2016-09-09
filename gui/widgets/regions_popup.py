@@ -33,11 +33,11 @@ class RegionsPopup(QtWidgets.QDialog):
 
     def handle_regions_selection(self):
         tw = self.ui.table
-        cb = self.ui.combobox_bc_type
+        cb = self.ui.combobox
 
         if self.boundary:
             #  Pressure Inflow: Not available for STL regions
-            pi_index = bc_types.index('PI')
+            pi_index = BC_TYPES.index('PI')
             pi_item = get_combobox_item(cb, pi_index)
             disable = any(tw.item(x,1).text()=='STL'
                           for x in get_selected_rows(tw))
@@ -49,22 +49,23 @@ class RegionsPopup(QtWidgets.QDialog):
         self.update_available_regions()
 
 
-    def handle_bc_type(self, val):
+    def handle_type(self, val):
         self.update_available_regions()
 
 
     def update_available_regions(self):
         tw = self.ui.table
-        cb = self.ui.combobox_bc_type
-        bc_type = bc_types[cb.currentIndex()]
+        cb = self.ui.combobox
+
         selections = get_selected_rows(tw)
         if self.boundary:
+            bc_type = BC_TYPES[cb.currentIndex()]
             # Wall type boundary
             if bc_type.endswith('W'):
                 self.reset_available()
 
             # For inflows/outflows, only allow compatible orientation
-            elif bc_type.endswith('I') or bc_type.endswith('O'):
+            else:
                 if len(selections) == 1:
                     region_type = tw.item(selections[0],1).text()
                     for i in range(0, tw.rowCount()):
@@ -76,6 +77,13 @@ class RegionsPopup(QtWidgets.QDialog):
                             tw.item(i,2).setText('Yes' if enable else 'No')
                 elif len(selections) == 0:
                     self.reset_available()
+                else:
+                    pass
+
+        elif self.surface:
+            surface_type = surface_types[cb.currentIndex()]
+
+
 
     def reset_available(self):
         tw = self.ui.table
@@ -110,7 +118,7 @@ class RegionsPopup(QtWidgets.QDialog):
         #self.ui.table.doubleClicked.connect(self.save.emit) # Too easy to double-click accidentally
         #self.ui.table.doubleClicked.connect(self.accept)
         self.ui.table.itemSelectionChanged.connect(self.handle_regions_selection)
-        self.ui.combobox_bc_type.currentIndexChanged.connect(self.handle_bc_type)
+        self.ui.combobox.currentIndexChanged.connect(self.handle_type)
         self.rejected.connect(self.cancel.emit)
 
 
@@ -136,17 +144,28 @@ class RegionsPopup(QtWidgets.QDialog):
         table.item(nrows, 2).setData(UserRole, available)
 
 
-    def popup(self, label):
-        # Widget is shared by ICs/BCs/PSs
-        text = "Select region(s) for %s" % label
-        self.boundary = boundary = (label == 'boundary conditions')
-        for item in (self.ui.combobox_bc_type, self.ui.label_bc_type):
-            if boundary:
-                item.show()
-            else:
-                item.hide()
-        self.ui.combobox_bc_type.setCurrentIndex(default_bc_type)
-        self.ui.label.setText(text)
+    def popup(self, label_text):
+        # Widget is shared by ICs/BCs/PSs/ISs
+        ui = self.ui
+
+        text = "Select region(s) for %s" % label_text
+        self.ui.label_top.setText(text)
+
+        self.boundary = boundary = ('boundary condition' in label_text)
+        self.surface = surface = ('internal surface' in label_text)
+
+        # setup the combobox appropriately
+        cb = ui.combobox
+        label = ui.label_type
+        if boundary or surface:
+            cb.clear()
+            cb.addItems(BC_NAMES if boundary else IS_NAMES)
+            cb.setCurrentIndex(DEFAULT_BC_TYPE if boundary else DEFAULT_IS_TYPE)
+            label.setText('Boundary type' if boundary else 'Surface type')
+            ui.frame_object_type.show()
+        else:
+            ui.frame_object_type.hide()
+
         self.show()
         self.raise_()
         self.activateWindow()

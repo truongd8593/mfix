@@ -259,13 +259,14 @@ class BCS(object):
         # Specification always available
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
+        # (selection logic implemented in regions_popup.py)
 
         # Interactively add regions to define BCs
         ui = self.ui.boundary_conditions
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
-        bc_type = rp.combobox_bc_type.currentIndex()
+        bc_type = rp.combobox.currentIndex()
         if not selections:
             return
         self.bcs_add_regions_1(selections, bc_type) # Indices will be assigned

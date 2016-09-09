@@ -15,77 +15,56 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_top">
      <property name="text">
       <string>Select regions for</string>
      </property>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_bc_type">
-       <property name="text">
-        <string>Boundary type</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="combobox_bc_type">
-       <property name="currentIndex">
-        <number>2</number>
-       </property>
-       <item>
+    <widget class="QFrame" name="frame_object_type">
+     <layout class="QHBoxLayout" name="hbox">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_type">
         <property name="text">
-         <string>Mass Inflow</string>
+         <string>object type</string>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Pressure Outflow</string>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="combobox">
+        <property name="currentIndex">
+         <number>-1</number>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>No Slip Wall</string>
+       </widget>
+      </item>
+      <item>
+       <spacer name="spacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Free Slip Wall</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Partial Slip Wall</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Pressure Inflow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Mass Outflow</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item>
-      <spacer name="spacer_boundary_type">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QTableWidget" name="table">
