@@ -403,13 +403,13 @@ class ISS(object):
             layout = ui.groupbox_solids_velocities.layout()
             row = 0
             key = 'is_vel_s'
-            for s in self.solids.keys():
-                label = QLabel(s)
+            for phase, solid_name in enumerate(self.solids.keys(), 1):
+                label = QLabel(solid_name)
                 self.add_tooltip(label, key)
                 layout.addWidget(label, row, 0)
                 le = LineEdit()
                 le.key = key
-                le.args = ['IS', 'P']
+                le.args = ['IS', phase]
                 le.dtype = float
                 self.project.register_widget(le, key, le.args)
                 self.add_tooltip(le, key)
