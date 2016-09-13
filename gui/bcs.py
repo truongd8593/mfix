@@ -358,7 +358,7 @@ class BCS(object):
         tw.removeRow(row)
         self.fixup_bcs_table(tw)
         self.bcs_setup_current_tab()
-
+        self.update_nav_tree()
 
     def handle_bcs_region_selection(self):
         ui = self.ui.boundary_conditions
@@ -433,7 +433,7 @@ class BCS(object):
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0
-                     n       and len(self.solids)==0))
+                            and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
 

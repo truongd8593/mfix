@@ -200,6 +200,7 @@ class PSS(object):
         tw.removeRow(row)
         self.fixup_pss_table(tw)
         self.pss_setup_current_tab()
+        self.update_nav_tree()
 
 
     def handle_pss_region_selection(self):

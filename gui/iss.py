@@ -218,6 +218,7 @@ class ISS(object):
         tw.removeRow(row)
         self.fixup_iss_table(tw)
         self.iss_setup_current_tab()
+        self.update_nav_tree()
 
 
     def handle_iss_region_selection(self):

@@ -256,6 +256,7 @@ class ICS(object):
         tw.removeRow(row)
         self.fixup_ics_table(tw)
         self.ics_setup_current_tab()
+        self.update_nav_tree()
 
 
     def handle_ics_region_selection(self):
