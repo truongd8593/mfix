@@ -315,6 +315,9 @@
                <property name="title">
                 <string>Velocities through surface</string>
                </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
                <layout class="QGridLayout" name="gridLayout_5">
                 <property name="leftMargin">
                  <number>0</number>
