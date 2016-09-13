@@ -1242,6 +1242,8 @@ class VtkWidget(QtWidgets.QWidget):
     def clear_all_geometry(self):
         """remove all geometry"""
         self.geometrytree.clear()
+        for name, geo in self.geometrydict.items():
+            self.remove_from_parameter_map(name, geo)
         self.geometrydict = {}
 
     def remove_geometry(self):
@@ -1267,6 +1269,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             # remove graphics
             geo = self.geometrydict.pop(text)
+            self.remove_from_parameter_map(text, geo)
             self.vtkrenderer.RemoveActor(geo['actor'])
 
         self.render()
@@ -1538,6 +1541,19 @@ class VtkWidget(QtWidgets.QWidget):
                     value = data[name][key]
                     self.parameter_edited(None, name, value, key)
         self.render(defer_render=False)
+
+    def remove_from_parameter_map(self, name, del_geo):
+        for key, value in del_geo.items():
+            name_key = ','.join([name, key])
+            self._remove_key(name_key, value)
+
+    def _remove_key(self, name_key, value):
+        if not isinstance(value, Equation): return
+
+        for param in value.get_used_parameters():
+            self.parameter_key_map[param].remove(name_key)
+            if len(self.parameter_key_map[param]) == 0:
+                self.parameter_key_map.pop(param)
 
     # --- regions ---
     def update_region_source(self, name):

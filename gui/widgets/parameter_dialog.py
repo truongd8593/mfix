@@ -138,7 +138,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
         if rows:
             data = self.table.value
-            
+
             for row in rows:
                 index = list(data.keys())[row]
                 name = data[index]['parameter']
@@ -154,7 +154,7 @@ class ParameterDialog(QtWidgets.QDialog):
                                    'type': copy.deepcopy(data[index]['type']),
                                    'value': copy.deepcopy(data[index]['value'])}
             self.update_table(data)
-            
+
         self.toolbutton_remove.setDown(False)
 
     def load_parameters(self):
@@ -260,7 +260,7 @@ class ParameterDialog(QtWidgets.QDialog):
 
     def change_parameter_name(self, old_name, new_name):
         """a parameter was renamed, update equations"""
-        
+
         # update project keywords
         proj = self.parent().project
         p_map = proj.parameter_key_map
@@ -274,12 +274,12 @@ class ParameterDialog(QtWidgets.QDialog):
 
             p_map[new_name] = p_map.pop(old_name)
             self.changed_parameters.add(new_name)
-        
+
         # update regions
         regions = self.parent().ui.regions
         p_map = regions.parameter_key_map
         data = regions.tablewidget_regions.value
-        
+
         if old_name in p_map.keys():
             for keyword in p_map[old_name]:
                 name, key = keyword.split(',')
@@ -293,21 +293,21 @@ class ParameterDialog(QtWidgets.QDialog):
                     val = data[name][item[0]][index]
                 else:
                     val = data[name][key]
-                
+
                 val.eq = val.eq.replace(old_name, new_name)
             p_map[new_name] = p_map.pop(old_name)
             regions.update_region_parameters()
-            
+
         # update geometry
         geo = self.parent().vtkwidget
         p_map = geo.parameter_key_map
         data = geo.geometrydict
-        
+
         if old_name in p_map.keys():
             for keyword in p_map[old_name]:
                 name, key = keyword.split(',')
                 val = data[name][key]
-                
+
                 val.eq = val.eq.replace(old_name, new_name)
             p_map[new_name] = p_map.pop(old_name)
-            geo.tree_widget_geometry_changed()
+            geo.selected_geometry_changed()
