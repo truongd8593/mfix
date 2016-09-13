@@ -47,7 +47,7 @@ build_job3:
   only:
     - branches
   tags:
-    - python3
+    - python2
 
 test_job3:
   stage: test
@@ -56,4 +56,4 @@ test_job3:
   only:
     - branches
   tags:
-    - python3
+    - python2
