@@ -433,7 +433,7 @@ class BCS(object):
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0
-                            and len(self.solids)==0))
+                     n       and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
 
@@ -597,7 +597,7 @@ class BCS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.bcs_current_tab == 0: # Don't stay on disabled tab
-                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None)) # what if nscalar==0?
+                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR_TAB,None)) # what if nscalar==0?
         font = b.font()
         font.setBold(self.bcs_current_tab == 0)
         b.setFont(font)

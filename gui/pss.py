@@ -35,7 +35,6 @@ FLUID_TAB = 0
 SOLIDS_TAB_DUMMY_L = 1
 SOLIDS_TAB = 2
 SOLIDS_TAB_DUMMY_R = 3
-#SCALAR_TAB = 4
 
 class PSS(object):
     #Point Source Task Pane Window: This section allows a user to define point sources for the
@@ -261,6 +260,25 @@ class PSS(object):
         tw.updateGeometry() #? needed?
 
 
+    def pss_update_enabled(self):
+        if self.pss:
+            # Never disable if there are PSs defined
+            disabled = False
+        else:
+            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # then we have no input tabs on the BCs pane, so disable it completely
+            #At this time, only TFM solids can be defined with point sources.
+            regions = self.ui.regions.get_region_dict()
+            nregions = len([r for r in regions.values()
+                            if r.get('type')=='STL' or 'plane' in r.get('type')])
+            tfm_solids = [s for (i,s) in enumerate(self.solids,1)
+                          if self.project.get_value('solids_model', args=[i])=='TFM']
+            disabled = (nregions==0
+                        or (self.fluid_solver_disabled
+                            and len(tfm_solids)==0))
+        self.find_navigation_tree_item("Point Sources").setDisabled(disabled)
+
+
     def pss_change_tab(self, tab, solid):
         ui = self.ui.point_sources
         index = (0 if tab==FLUID_TAB
@@ -433,7 +451,7 @@ class PSS(object):
         # And make new ones
         change_tab = False
         for (i, solid_name) in enumerate(self.solids.keys(),1):
-            mod = self.project.get_value('solids_model', args=[i])
+            model = self.project.get_value('solids_model', args=[i])
             #At this time, only TFM solids can be defined with point sources.
             #At some point in the future, this could be extended to PIC solids, but never DEM.
             b = QPushButton(text=solid_name)
@@ -444,7 +462,7 @@ class PSS(object):
             font.setBold(self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid)
             b.setFont(font)
             ui.tab_layout.addWidget(b, 0, i)
-            if mod == 'TFM':
+            if model == 'TFM':
                 b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
             else:
                 b.setEnabled(False)

@@ -412,6 +412,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         data['model'] = model
         self.update_solids_table()
         self.update_solids_detail_pane()
+        self.update_nav_tree() # PSs depends on solids_model
+
 
     def make_solids_name(self, n):
         while True:
@@ -791,7 +793,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             self.set_unsaved_flag()
 
 
-
     def enable_solids_scalar_eq(self, state):
         ui = self.ui.solids
         spinbox = ui.spinbox_nscalar_eq
@@ -812,6 +813,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             solid['nscalar_eq'] = 0
             self.solids_nscalar_eq = sum(s.get('nscalar_eq', 0) for s in self.solids.values())
             self.update_scalar_equations(prev_nscalar)
+
 
     def update_solids_species_groupbox(self):
         """enable/disable species tables based on state"""

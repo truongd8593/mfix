@@ -41,7 +41,7 @@ class ISS(object):
         self.iss_region_dict = None
 
         #The top of the task pane is where users define/select IS regions
-        #Icons to add/remove/duplicate boundary conditions are given at the top
+        #Icons to add/remove/duplicate internal surfaces are given at the top
         #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
         #a region to apply the internal surface.
         ui.toolbutton_add.clicked.connect(self.iss_show_regions_popup)
@@ -276,6 +276,22 @@ class ISS(object):
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
+
+
+    def iss_update_enabled(self):
+        if self.iss:
+            # Never disable if there are ISs defined
+            disabled = False
+        else:
+            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # then we have no input tabs on the BCs pane, so disable it completely
+            regions = self.ui.regions.get_region_dict()
+            nregions = len([r for r in regions.values()
+                            if r.get('type')=='box' or 'plane' in r.get('type')])
+            disabled = (nregions==0
+                        or (self.fluid_solver_disabled and len(self.solids)==0))
+        self.find_navigation_tree_item("Internal Surfaces").setDisabled(disabled)
+
 
     def iss_set_region_keys(self, name, idx, data, is_type=None):
         # Update the keys which define the region the IS applies to

@@ -613,8 +613,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.short_labels()
         else:
             self.long_labels()
-
         g = ui.treewidget_navigation.geometry()
+
 
     def short_labels(self):
         tree = self.ui.treewidget_navigation
@@ -625,6 +625,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 if item.data(UserRole, 0): # Avoid toggling
                     continue
                 item.setText(0, short)
+
 
     def long_labels(self):
         tree = self.ui.treewidget_navigation
@@ -644,15 +645,20 @@ class MfixGui(QtWidgets.QMainWindow,
     def update_nav_tree(self):
         self.ics_update_enabled()
         self.bcs_update_enabled()
+        self.pss_update_enabled()
+        self.iss_update_enabled()
+
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
 
+
     def status_message(self, message=''):
         self.ui.label_status.setText(message)
         if message != 'Ready': # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
+
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -666,6 +672,7 @@ class MfixGui(QtWidgets.QMainWindow,
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             self.job_manager.try_to_connect(full_runname_pid)
 
+
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
             self.ui.run.button_run_mfix.setText(text)
@@ -674,6 +681,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if enabled is not None:
             for b in (self.ui.run.button_run_mfix, self.ui.toolbutton_run_mfix):
                 b.setEnabled(enabled)
+
 
     def set_pause_button(self, text=None, enabled=None, visible=None):
         buttons = (self.ui.run.button_pause_mfix, self.ui.toolbutton_pause_mfix)
@@ -688,9 +696,11 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.run.button_pause_mfix.setText(text)
             self.ui.toolbutton_pause_mfix.setToolTip(text + ' MFIX')
 
+
     def set_stop_button(self, enabled):
         for b in (self.ui.run.button_stop_mfix, self.ui.toolbutton_stop_mfix):
             b.setEnabled(enabled)
+
 
     def set_reset_button(self, enabled, visible=None):
         for b in (self.ui.run.button_reset_mfix, self.ui.toolbutton_reset_mfix):
@@ -699,20 +709,21 @@ class MfixGui(QtWidgets.QMainWindow,
         if visible is not None:
             self.ui.run.button_reset_mfix.setVisible(visible)
 
+
     def set_reinit_button(self, enabled, visible=None):
         self.ui.run.button_reinit_mfix.setEnabled(enabled)
         # run.ui reset and reinit buttons share same location
         if visible:
             self.ui.run.button_reinit_mfix.setVisible(visible)
 
+
     def enable_input(self, enabled):
         # Enable/disable all inputs (while job running, etc)
         # Stop/reset buttons are left enabled
         for pane in self.ui.panes:
             pane.setEnabled(enabled)
-
         return
-        # Is this really necessary??
+        # Is the rest of this really necessary??
 
         # Selected rows look bad with input disabled
         if not enabled:
@@ -846,6 +857,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def find_navigation_tree_item(self, item_name):
+        print("ITEM NAME", item_name)
         tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
@@ -857,6 +869,12 @@ class MfixGui(QtWidgets.QMainWindow,
                     items = tree.findItems(short, flags, 0)
                     if len(items) == 1:
                         return items[0]
+                    # clean this up!
+                    if len(items) == 2: # "Points"
+                        for item in items:
+                            data = bool(item.data(UserRole, 0))
+                            if data == (item_name == 'Points'): # Monitors/Points
+                                return item
 
 
     # Top-level "Model"
@@ -923,6 +941,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.setup_combobox_solids_model()
         #self.update_solids_detail_pane()
         self.update_window_title()
+        self.update_nav_tree()
 
 
     def disable_fluid_solver(self, disabled):
