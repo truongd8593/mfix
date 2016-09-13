@@ -435,6 +435,19 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QPushButton" name="button_reinit_mfix">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Reinitialize paused job</string>
+              </property>
+              <property name="text">
+               <string extracomment="Reinitialize paused job">Reinitialize</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>

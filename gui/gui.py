@@ -436,7 +436,7 @@ class MfixGui(QtWidgets.QMainWindow,
         run = ui.run
         run.button_run_mfix.clicked.connect(self.handle_run)
         run.button_pause_mfix.clicked.connect(self.handle_pause)
-        run.button_pause_mfix.setVisible(True)
+        run.button_reinit_mfix.clicked.connect(self.handle_reinit)
         run.button_stop_mfix.clicked.connect(self.handle_stop)
         run.button_reset_mfix.clicked.connect(self.remove_output_files)
         run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
@@ -657,8 +657,10 @@ class MfixGui(QtWidgets.QMainWindow,
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
+        log.debug("entering slot_rundir_changed")
         runname = self.get_runname()
         runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
+        log.debug('job_manager.job: %s' % self.job_manager.job)
         if self.get_project_dir() and not self.job_manager.job:
             log.debug("slot_rundir_changed was called")
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
@@ -690,9 +692,18 @@ class MfixGui(QtWidgets.QMainWindow,
         for b in (self.ui.run.button_stop_mfix, self.ui.toolbutton_stop_mfix):
             b.setEnabled(enabled)
 
-    def set_reset_button(self, enabled):
+    def set_reset_button(self, enabled, visible=None):
         for b in (self.ui.run.button_reset_mfix, self.ui.toolbutton_reset_mfix):
             b.setEnabled(enabled)
+        # run.ui reset and reinit buttons share same location
+        if visible is not None:
+            self.ui.run.button_reset_mfix.setVisible(visible)
+
+    def set_reinit_button(self, enabled, visible=None):
+        self.ui.run.button_reinit_mfix.setEnabled(enabled)
+        # run.ui reset and reinit buttons share same location
+        if visible:
+            self.ui.run.button_reinit_mfix.setVisible(visible)
 
     def enable_input(self, enabled):
         # Enable/disable all inputs (while job running, etc)
@@ -770,35 +781,40 @@ class MfixGui(QtWidgets.QMainWindow,
         if pending:
             self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
-            self.set_reset_button(enabled=False)
+            self.set_reset_button(enabled=False, visible=True)
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=True)
+            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         elif unpaused:
             self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
-            self.set_reset_button(enabled=False)
+            self.set_reset_button(enabled=False, visible=False)
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=True, visible=pause_visible)
             self.set_stop_button(enabled=True)
+            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
-            self.set_reset_button(enabled=False)
+            self.set_reset_button(enabled=False, visible=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_reinit_button(enabled=(self.unsaved_flag and editable), visible=True)
             self.set_stop_button(enabled=True)
-            self.change_pane('run')
+            # FIXME support reinit: edits can be made while paused
+            #self.change_pane('run')
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            self.set_reset_button(enabled=True)
+            self.set_reset_button(enabled=True, visible=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=False)
+            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         else: # Not running, ready for input
@@ -807,10 +823,11 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(text="Run", enabled=project_open)
             self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
             self.set_stop_button(enabled=False)
+            self.set_reinit_button(enabled=False, visible=False)
 
         ui.run.use_spx_checkbox.setEnabled(resumable)
         ui.run.use_spx_checkbox.setChecked(resumable)
-        ui.run.checkbox_pymfix_output.setEnabled(True)
+        ui.run.checkbox_pymfix_output.setEnabled(bool(paused or unpaused))
 
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
@@ -1727,6 +1744,42 @@ class MfixGui(QtWidgets.QMainWindow,
             log.exception('problem in handle_pause')
             self.print_internal('problem in handle_pause')
 
+    def handle_reinit(self):
+        """Save current project with copy <run_name>.reinit.NN, then
+        reinitialize through job manager"""
+        if ( self.unsaved_flag
+             and self.job_manager.job
+             and self.job_manager.job.is_paused()
+             and not self.job_manager.is_job_pending()):
+
+            project_dir = self.get_project_dir()
+            project_file = self.get_project_file()
+            run_name = self.get_runname()
+            # save reinit.X version
+            try:
+                rfiles = glob.glob(os.path.join(
+                           project_dir, run_name+'.reinit.[0-9]*'))
+                rfiles.sort()
+                filenum = rfiles[-1].split('.')
+                filenum = int(filenum[-1]) + 1
+            except:
+                filenum = 1
+            newname = "%s.reinit.%s" % (run_name, filenum)
+            reinit_file = os.path.join(project_dir, newname)
+            self.project.writeDatFile(reinit_file)
+            self.print_internal('reinitialize file saved %s' % reinit_file)
+
+            try:
+                self.job_manager.job.reinit(''.join(self.project.to_string()).encode('utf-8'))
+                log.debug('gui returned from job reinit call')
+                #TODO: save project file upon reinit success
+            except Exception:
+                log.exception('problem in handle_reinit')
+                self.print_internal('problem in handle_reinit')
+        else:
+            log.debug("reinitialize called while in an unsupported state")
+        log.debug('gui leaving handle_reinit')
+
     def handle_stop(self):
         try:
             self.job_manager.stop_mfix()
@@ -1963,8 +2016,9 @@ class MfixGui(QtWidgets.QMainWindow,
         if self.unsaved_flag:
             log.info("Project is saved")
         self.unsaved_flag = False
-        self.update_window_title()
         self.set_save_button(enabled=False)
+        # reinit support
+        self.signal_update_runbuttons.emit('')
 
     def check_writable(self, directory):
         """check whether directory is writable """

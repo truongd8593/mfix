@@ -56,7 +56,7 @@ FLASK_APP.config['SECRET_KEY'] = \
             ''.join([random.choice(string.digits + string.ascii_letters)
             for x in range(0,64)])
 FLASK_APP.config['TOKEN_NAME'] = 'x-pymfix-auth'
-DEBUG_FLAG = True
+DEBUG_FLAG = False
 
 log = logging.getLogger('werkzeug')
 logformat = logging.Formatter('pymfix: %(levelname)s %(message)s')
@@ -67,6 +67,34 @@ log.addHandler(loghandler)
 log.disabled = True
 
 mfix_thread = None
+
+class WSGICopyBody(object):
+    """Copy wsgi request body into environment variable for
+    logging within Flask"""
+    def __init__(self, application):
+        self.application = application
+
+    def __call__(self, environ, start_response):
+        from cStringIO import StringIO
+        length = environ.get('CONTENT_LENGTH', '0')
+        length = 0 if length == '' else int(length)
+        body = environ['wsgi.input'].read(length)
+        meta = "WSGI INPUT\nLENGTH\t%s\nBODY\n%s" % (length, body)
+        environ['wsgi_req_copy'] = meta
+        environ['wsgi.input'] = StringIO(body)
+        # Call the wrapped application
+        app_iter = self.application(environ,
+                                    self._sr_callback(start_response))
+        # Return modified response
+        return app_iter
+
+    def _sr_callback(self, start_response):
+        def callback(status, headers, exc_info=None):
+            # Call upstream start_response
+            start_response(status, headers, exc_info)
+        return callback
+
+FLASK_APP.wsgi_app = WSGICopyBody(FLASK_APP.wsgi_app)
 
 def find_free_port():
     # find free port
@@ -195,10 +223,15 @@ class Mfix(object):
         # Read input data, check data, do computations for IC and BC locations
         # and flows, and set geometry parameters such as X, X_E, DToDX, etc.
         MAIN.get_data(self.mfix_dat)
+        # DEBUG.good_config is not instantaneously set correctly
+        time.sleep(0.25)
 
         while not DEBUG.good_config:
+            # loaded project file can't be run, enter loop to wait for good
+            # config to be uploaded
             self.paused = True
             self.check_requests()
+            print('reading data from %s' % self.mfix_dat)
             MAIN.get_data(self.mfix_dat)
             time.sleep(0.1)
 
@@ -352,7 +385,8 @@ class Mfix(object):
             self.update_status()
             if not self.paused:
                 return
-
+            if not DEBUG.good_config:
+                return
             # loop until unpaused
             time.sleep(0.1)
 
@@ -381,10 +415,8 @@ class Mfix(object):
 
     def reinit(self, _):
         " reinitialize "
-        tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
-        tmp.write(_.get('mfix_dat'))
-        MAIN.do_reinit(tmp.name)
-        os.unlink(tmp.name)
+        self.mfix_dat = _.get('mfix_dat')
+        MAIN.do_reinit(self.mfix_dat)
         return 200, 'REINITIALIZING MFIX\n'
 
     def exit(self, _):
@@ -542,35 +574,38 @@ def api_response(status_code, command_output):
       status_code,
       {'Content-Type': 'application/json; charset=utf-8'})
 
-# Route that will process the file upload
-@FLASK_APP.route('/upload', methods=['POST'])
+@FLASK_APP.before_request
+def debug_before():
+    if DEBUG_FLAG:
+        print('REQUEST HEADERS')
+        print(request.headers)
+        print('REQUEST BODY')
+        print(request.get_data())
+        print('WSGI REQUEST')
+        print(request.environ['wsgi_req_copy'])
+
+@FLASK_APP.route('/reinitialize', methods=['POST'])
 @token_required
-def upload():
-    "upload a new mfix.dat file and then reinitialize"
-    # Get the name of the uploaded file
+def reinitialize():
+    """Save submitted project file and pass it to mfix_thread.do_reinit"""
 
-    if not request.files['file']:
-        return "Error, need to upload file when doing reinit.", \
-            400, {'Content-Type': 'text/plain; charset=utf-8'}
+    # request content type should be "application/json",
+    # request body must be a JSON formatted string with one
+    # key, "project_file", containing the project file text
 
-    # mfix.dat.upload.* files are not used by pymfix, but are for the user's
-    # benefit to keep track of mfix.dat changes when doing multiple reinits
-    # during a run
-    upload_file = open('mfix.dat.upload.%s' % int(time.time()), 'w')
-    request.files['file'].save(upload_file)
-    upload_file.close()
-
-    tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
-    request.files['file'].save(tmp)
-    mfix_dat = tmp.read()
-    os.unlink(tmp.name)
-    status_code, command_output = mfix_thread.do_command("REINIT", args={'mfix_dat':mfix_dat})
-
-    if status_code != 200:
-        return command_output
-
-    return redirect(url_for('index'))
-
+    project_file = request.get_json(force=True)
+    project_str = project_file.get('project_file')
+    try:
+        prefix = '%s.' % get_run_name()
+        with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=os.getcwd()) as tmp:
+            tmp.write(project_str)
+            tmp.flush()
+            status_code, command_output = \
+              mfix_thread.do_command("REINIT", args={'mfix_dat': tmp.name})
+    except:
+        status_code = 500
+        command_output = "Error saving submitted project file"
+    return api_response(status_code, command_output)
 
 @FLASK_APP.route('/')
 @token_required
@@ -708,7 +743,7 @@ def parse_command_line_arguments():
     try:
         opts, keyword_args = getopt.getopt(sys.argv[1:],
                                            "f:hspP:",
-                                           ["port=", "file=", "help", "start", "print-flags"])
+                                           ["file=", "help", "start", "print-flags", "port="])
     except getopt.GetoptError:
         print(usage_string)
         sys.exit(1)

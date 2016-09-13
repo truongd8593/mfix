@@ -5,7 +5,9 @@ import logging
 import os
 import pprint
 import signal
+import sys
 import tempfile
+import time
 import uuid
 from functools import partial
 
@@ -19,6 +21,7 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkRequest)
 
 from tools.general import get_mfix_home
+from tools.general import debug_trace
 
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
@@ -52,19 +55,19 @@ class PymfixAPI(QNetworkAccessManager):
         super(PymfixAPI, self).__init__()
         log.debug('New PymfixAPI object %s', self)
         self.pidfile = pidfile
-        self.methods = {'put': super(PymfixAPI, self).put,
-                        'get': super(PymfixAPI, self).get,
-                        'post': super(PymfixAPI, self).post,
-                        'delete': super(PymfixAPI, self).deleteResource}
         self.pid_contents = get_dict_from_pidfile(self.pidfile)
         for k, v in self.pid_contents.items():
             setattr(self, k, v)
         self.requests = set()
         self.def_response_handler = def_response_handler
         self.api_available = False
+        self.methods = {'put': super(PymfixAPI, self).put,
+                        'get': super(PymfixAPI, self).get,
+                        'post': super(PymfixAPI, self).post,
+                        'delete': super(PymfixAPI, self).deleteResource}
         log.debug('API object created for job %s', self.pidfile)
 
-    def test_connection(self, response, error):
+    def test_connection(self, response, error=None):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
         log.debug('test_connection called %s', self)
@@ -73,27 +76,43 @@ class PymfixAPI(QNetworkAccessManager):
             raise Exception
         self.get('status', handlers={'response': response, 'error': error})
 
-    def api_request(self, method, endpoint, data=None, handlers={}):
+    def api_request(self, method, endpoint, data=None, headers=None, handlers=None):
+        if not headers:
+            headers = {}
+        if not handlers:
+            handlers = {}
         url = self.pid_contents.get('url')
         token = self.pid_contents.get('token')
         req = QNetworkRequest(QUrl('%s/%s' % (url, endpoint)))
-        method = str(method).lower()
-        method = self.methods[method]
+        api_method = self.methods[str(method).lower()]
         req_id = str(uuid.uuid4())
         self.requests.add(req_id)
-        for param in (('url', url),
+        # assemble headers
+        if 'content-type' not in [x.lower for x in headers.keys() if type(x) == str]:
+            headers['content-type'] = 'text/plain'
+        headers['x-pymfix-requestid'] = req_id
+        headers['content-length'] = str(len(data if data else ''))
+        if token:
+            (name, value) = token.split(':')
+            headers[name] = value
+        for k,v in headers.items():
+            log.debug("setting header %s to %s" % (k,v))
+            req.setRawHeader(k,v)
+        for param in (('request id', req_id),
+                      ('url', url),
                       ('endpoint', endpoint),
                       ('token', token),
                       ('data', data),
-                      ('method', method)):
-            log.debug("API request %s: %s=%s" % \
-              (req_id, param[0], param[1]))
-        # authentication header
-        if token:
-            (name, value) = token.split(':')
-            req.setRawHeader(bytearray(name,'utf-8'), bytearray(value,'utf-8'))
-        request_object = method(req) if data == None else method(req, data)
-        # connect response and error handlers
+                      ('request handers', handlers)):
+            log.debug("API %s request: %s=%s" % \
+              (str(method).upper(), param[0], param[1]))
+        if data is not None:
+            log.debug('"data" arg in request %s is type %s' % (req_id, type(data)))
+            log.debug("calling api_method %s: %s %s" % (api_method, req, data))
+            request_object = api_method(req, data)
+        else:
+            log.debug("calling api_method %s", api_method)
+            request_object = api_method(req)
         response_handler = handlers.get('response', self.def_response_handler)
         error_handler = handlers.get('error')
         request_object.finished.connect(
@@ -112,6 +131,7 @@ class PymfixAPI(QNetworkAccessManager):
         :arg signal: Signal to emit
         :type signal: QtCore.Signal
         """
+        log.debug("processing %s for %s" % (req_id, signal))
         try:
             response = response_object.readAll()
             response_json = response.data().decode('utf-8')
@@ -131,8 +151,8 @@ class PymfixAPI(QNetworkAccessManager):
             log.debug("processed response:\n%s", json.loads(response_json))
         finally:
             self.requests.discard(req_id)
-            response_object.close()
             signal.emit(req_id, response_json)
+            response_object.deleteLater()
 
     def slot_protocol_error(self, req_id, response_object, signal):
         log.debug('API protocol error %s', req_id)
@@ -146,7 +166,9 @@ class PymfixAPI(QNetworkAccessManager):
             log.exception('unhandled API error %s', self)
         finally:
             if signal is not None:
-                signal.emit(req_id, response_object)
+                #signal.emit(req_id, response_object)
+                pass
+            response_object.deleteLater()
 
     def slot_ssl_error(self, reply):
         """ Handler for SSL connection errors. Check self.ignore_ssl_errors
@@ -161,19 +183,23 @@ class PymfixAPI(QNetworkAccessManager):
             # find appropriate Qt exception or make this meaningful
             raise Exception
 
-    def get(self, endpoint, handlers={}):
+    def get(self, endpoint, handlers=None):
+        if not handlers:
+            handlers = {}
         req_id = self.api_request(
                     'get', endpoint, data=None, handlers=handlers)
         return req_id
 
-    def put(self, endpoint, data=b'', handlers={}):
+    def put(self, endpoint, data=b'', handlers=None):
+        if not handlers:
+            handlers = {}
         req_id = self.api_request(
                     'put', endpoint, data=data, handlers=handlers)
         return req_id
 
-    def post(self, endpoint, data=b'', handlers={}):
+    def post(self, endpoint, data=b'', headers=None, handlers=None):
         req_id = self.api_request(
-                    'post', endpoint, data=data, handlers=handlers)
+                    'post', endpoint, data=data, headers=headers, handlers=handlers)
         return req_id
 
 
@@ -267,7 +293,7 @@ class JobManager(QObject):
         log.debug('API error count incremented: %s', self.api_error_count)
         if count >= self.API_ERROR_SOFT_LIMIT:
             if count == self.API_ERROR_SOFT_LIMIT:
-                log.warning("Soft error limit reached")
+                log.error("Soft error limit reached")
             if count < self.API_ERROR_HARD_LIMIT:
                 log.error('MFIX process is unresponsive, retry %s (of %s)' %\
                     (self.api_error_count, self.API_ERROR_HARD_LIMIT))
@@ -284,6 +310,9 @@ class JobManager(QObject):
 
     def is_job_pending(self):
         return self.job and not self.job.api_available
+
+    def is_job_ready(self):
+        return self.job and self.job.api_available
 
     def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
@@ -407,6 +436,8 @@ class Job(QObject):
                         self.sig_api_response,
                         ignore_ssl_errors=True)
 
+        self.mfix_pid = self.api.pid
+
         # test API before starting status loop
         # Timer will be stopped by slot_handle_api_test
         self.api_test_timer = QTimer()
@@ -436,9 +467,7 @@ class Job(QObject):
         count and signal job exit if timeout has been exceeded."""
         log.debug('api_test_connection called %s', self)
         try:
-            self.api.test_connection(
-              self.sig_handle_api_test,
-              self.sig_handle_api_test_error)
+            self.api.get('status', handlers={'response':self.sig_handle_api_test})
         except Exception:
             log.exception('API connection test failed (test_api_connection)')
             self.sig_api_error.emit()
@@ -501,7 +530,6 @@ class Job(QObject):
             log.debug("API response data: %s" % \
               json.dumps(response_json))
             self.sig_api_error.emit()
-            #self.status.clear()
             return
         self.sig_api_success.emit()
         handlers = self.requests.get(req_id, set())
@@ -515,6 +543,21 @@ class Job(QObject):
             # do we care?
             pass
 
+    def reinit(self, project_file_contents):
+        """reinitialize job. Sanity checks (paused, gui.unsaved_flag, etc)
+        must be handled by caller"""
+        req_id = self.api.post(
+                    'reinitialize',
+                    data=json.dumps({"project_file": project_file_contents}),
+                    headers={'content-type': 'application/json'})
+        self.register_request(req_id, self.handle_reinit)
+        log.debug('reinitialize request made %s' % req_id)
+
+    def handle_reinit(self, req_id, response_string):
+        log.debug("reinitialize response recieved %s: %s" % \
+                    (req_id, response_string))
+        self.handle_status(req_id, response_string)
+
     def is_paused(self):
         """indicate whether pymfix is paused"""
         return self.status.get('paused')
@@ -522,8 +565,6 @@ class Job(QObject):
     def pause(self):
         req_id = self.api.put('pause')
         self.register_request(req_id, self.handle_pause)
-        #req_id = self.api.get('foo')
-        #self.register_request(req_id, self.handle_status)
 
     def handle_pause(self, req_id, response_string):
         self.handle_status(req_id, response_string)
