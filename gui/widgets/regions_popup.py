@@ -3,6 +3,8 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 """Regions popup for MFIX-GUI
 used for initial & boundary conditions"""
 
+# Note, throughout this module, the abbreviation 'is_' means "internal surface", not "is"
+
 import os
 import sys
 import signal
@@ -34,22 +36,56 @@ class RegionsPopup(QtWidgets.QDialog):
     def handle_regions_selection(self):
         tw = self.ui.table
         cb = self.ui.combobox
-
+        selections = get_selected_rows(tw)
         if self.boundary:
+            #  (would be nicer if this were in bcs.py)
             #  Pressure Inflow: Not available for STL regions
-            pi_index = BC_TYPES.index('PI')
-            pi_item = get_combobox_item(cb, pi_index)
-            disable = any(tw.item(x,1).text()=='STL'
-                          for x in get_selected_rows(tw))
-            set_item_enabled(pi_item, not disable)
+
+            disable = any(tw.item(x,1).text()=='STL' for x in selections)
+            item = get_combobox_item(cb, PRESSURE_INFLOW)
+            set_item_enabled(item, not disable)
 
             # Don't stay on disabled item
             if disable and cb.currentIndex() == pi_index:
                 cb.setCurrentIndex(default_bc_type)
+
+        elif self.surface:
+            #  (would be nicer if this were in iss.py)
+            # IS regions can be planes or volumes (not points or STLs)
+            # *-Axis permeable/semipermeable not available for planes
+            disable = selections and any('plane' in tw.item(x,1).text()
+                                         for x in selections)
+            for index in (X_SEMIPERMEABLE, Y_SEMIPERMEABLE, Z_SEMIPERMEABLE,
+                          X_IMPERMEABLE, Y_IMPERMEABLE, Z_IMPERMEABLE):
+                item = get_combobox_item(cb, index)
+                set_item_enabled(item, (not selections) or (not disable))
+            for index in (SEMIPERMEABLE, IMPERMEABLE):
+                item = get_combobox_item(cb, index)
+                set_item_enabled(item, (not selections) or disable)
+
         self.update_available_regions()
 
 
     def handle_type(self, val):
+        tw = self.ui.table
+        cb = self.ui.combobox
+
+        if self.boundary:
+            pass
+        elif self.surface:
+            is_type = IS_TYPES[val]
+            plane =  is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
+            #enable planes, disable boxes
+            for i in range(tw.rowCount()):
+                text = tw.item(i, 1).text()
+                enable = ( (text=='box' or 'plane' in text)
+                           and (('plane' in tw.item(i, 1).text()) == plane)
+                           and tw.item(i,2).data(UserRole))
+                for j in (0,1,2):
+                    set_item_enabled(tw.item(i,j), enable)
+                    tw.item(i,2).setText('Yes' if enable else 'No')
+        else:
+            pass
         self.update_available_regions()
 
 
@@ -59,11 +95,26 @@ class RegionsPopup(QtWidgets.QDialog):
 
         selections = get_selected_rows(tw)
         if self.boundary:
+            # Available selections:
+            #  Mass Inflow
+            #    Not available for volume regions
+            #  Pressure Outflow
+            #    Not available for volume regions
+            #  No Slip Wall
+            #  Free Slip Wall
+            #  Partial Slip Wall
+            #  Pressure Inflow
+            #    Not available for volume regions
+            #    Not available for STL regions
+            #  Mass Outflow
+            #    Not available for volume regions
+            # Specification always available
+            # DEFAULT - No slip wall
+
             bc_type = BC_TYPES[cb.currentIndex()]
             # Wall type boundary
             if bc_type.endswith('W'):
                 self.reset_available()
-
             # For inflows/outflows, only allow compatible orientation
             else:
                 if len(selections) == 1:
@@ -71,7 +122,7 @@ class RegionsPopup(QtWidgets.QDialog):
                     for i in range(0, tw.rowCount()):
                         if i == selections[0]:
                             continue
-                        enable = (tw.item(i,1).text() == region_type)
+                        enable = (tw.item(i,1).text() == region_type) and tw.item(1,2).data(UserRole)
                         for j in (0,1,2):
                             set_item_enabled(tw.item(i,j), enable)
                             tw.item(i,2).setText('Yes' if enable else 'No')
@@ -81,8 +132,42 @@ class RegionsPopup(QtWidgets.QDialog):
                     pass
 
         elif self.surface:
+            # Available selections:
+            #  Impermeable
+            #    Selection only available for plane regions
+            #  X-Axis Impermeable
+            #    Selection only available for volume regions
+            #  Y-Axis Impermeable
+            #    Selection only available for volume regions
+            #  z-Axis Impermeable
+            #    Selection only available for volume regions
+
+            #  Semi-permeable
+            #    Selection only available for plane regions
+            #  X-Axis semi-permeable
+            #    Selection only available for volume regions
+            #  Y-Axis semi-permeable
+            #    Selection only available for volume regions
+            #  Z-Axis semi-permeable
+            #    Selection only available for volume regions
+            # DEFAULT - Impermeable
+
             is_type = IS_TYPES[cb.currentIndex()]
 
+            if len(selections) == 1:
+                region_type = tw.item(selections[0],1).text()
+                plane = 'plane' in region_type
+                for i in range(0, tw.rowCount()):
+                    if i == selections[0]:
+                        continue
+                    text = tw.item(i,1).text()
+                    enable = ('plane' in text or text=='box') and (('plane' in tw.item(i,1).text()) == plane)
+                    for j in (0,1,2):
+                        set_item_enabled(tw.item(i,j), enable)
+                        tw.item(i,2).setText('Yes' if enable else 'No')
+            elif len(selections) == 0:
+
+                pass
 
 
     def reset_available(self):
@@ -93,6 +178,7 @@ class RegionsPopup(QtWidgets.QDialog):
                 set_item_enabled(tw.item(i,j), enable)
                 tw.item(i,2).setText('Yes' if enable else 'No')
 
+
     def reset_signals(self):
         # todo:  fix this so it's not the caller's responsibility
         #  (make a util function that calls this & pops up dialog)
@@ -101,6 +187,7 @@ class RegionsPopup(QtWidgets.QDialog):
                 sig.disconnect()
             except:
                 pass # isSignalConnected only exists in qt5.
+
 
     def __init__(self, app, parent=None):
         super(RegionsPopup, self).__init__(parent)
@@ -158,10 +245,12 @@ class RegionsPopup(QtWidgets.QDialog):
         cb = ui.combobox
         label = ui.label_type
         if boundary or surface:
+            label.setText('Boundary type' if boundary else 'Surface type')
             cb.clear()
             cb.addItems(BC_NAMES if boundary else IS_NAMES)
-            cb.setCurrentIndex(DEFAULT_BC_TYPE if boundary else DEFAULT_IS_TYPE)
-            label.setText('Boundary type' if boundary else 'Surface type')
+            index = DEFAULT_BC_TYPE if boundary else DEFAULT_IS_TYPE
+            cb.setCurrentIndex(index)
+            self.handle_type(index)
             ui.frame_object_type.show()
         else:
             ui.frame_object_type.hide()

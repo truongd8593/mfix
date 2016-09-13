@@ -52,10 +52,6 @@ class ISS(object):
 
 
     def iss_show_regions_popup(self):
-        # Users cannot select inapplicable regions.
-        # IS regions can be planes or volumes (not points or STLs)
-        # No region can define more than one internal surface.
-
         #Select internal surface type
         # Selection is required
         # Available selections:
@@ -92,6 +88,11 @@ class ISS(object):
         for (name,data) in self.iss_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
+
+            # Users cannot select inapplicable regions.
+            # IS regions can be planes or volumes (not points or STLs)
+            # No region can define more than one internal surface.
+
             available = data.get('available', True) and (shape=='box' or 'plane' in shape)
             row = (name, shape, available)
             rp.add_row(row)

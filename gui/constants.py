@@ -22,7 +22,6 @@ BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
 DEFAULT_BC_TYPE = NO_SLIP_WALL
 
 
-
 IS_NAMES = ['Impermeable', 'X-Axis Impermeable', 'Y-Axis Impermeable', 'Z-Axis Impermeable',
             'Semi-permeable', 'X-Axis semi-permeable','Y-Axis semi-permeable','Z-Axis semi-permeable']
 
