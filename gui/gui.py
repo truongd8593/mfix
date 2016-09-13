@@ -857,7 +857,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def find_navigation_tree_item(self, item_name):
-        print("ITEM NAME", item_name)
         tree = self.ui.treewidget_navigation
         flags =  Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
