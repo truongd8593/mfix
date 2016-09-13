@@ -388,21 +388,11 @@ class VtkWidget(QtWidgets.QWidget):
                 widget.stateChanged.connect(partial(self.parameter_edited, widget))
 
         # --- mesh ---
-        # connect mesh tab btns
-        for i, btn in enumerate([self.ui.mesh.pushbutton_mesh_uniform,
-                                 self.ui.mesh.pushbutton_mesh_mesher]):
-            btn.pressed.connect(partial(self.change_mesh_tab, i, btn))
-
         self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
             self.auto_size_mesh_extents)
 
-        # connect mesher
-        self.ui.mesh.combobox_mesher.currentIndexChanged.connect(
-            self.change_mesher_options)
-
         self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
         self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
-        self.ui.mesh.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
     def __add_tool_buttons(self):
 
@@ -547,10 +537,8 @@ class VtkWidget(QtWidgets.QWidget):
 
     def updateValue(self, key, newValue, args=None):
         """receive keyword changed from project manager"""
-        if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
-                   'imax', 'jmax', 'kmax']:
-            self.update_background_mesh()
-        elif key == 'no_k':
+
+        if key == 'no_k':
             self.ui.geometry.lineedit_keyword_zlength.setEnabled(not newValue)
             self.ui.mesh.lineedit_keyword_kmax.setEnabled(not newValue)
         elif key == 'out_stl_value':
@@ -1883,47 +1871,6 @@ class VtkWidget(QtWidgets.QWidget):
         writer.Write()
 
     # --- mesh ---
-    def toggle_out_stl_value(self, wid, value, args):
-        val = -1.0
-        if list(value.values())[0]:
-            val = 1.0
-        GUI.update_keyword('out_stl_value', val)
-
-    def change_mesh_tab(self, tabnum, btn):
-        """switch mesh stacked widget based on selected"""
-        self.parent.animate_stacked_widget(
-            self.ui.mesh.stackedwidget_mesh,
-            self.ui.mesh.stackedwidget_mesh.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=self.ui.mesh.line_mesh,
-            to_btn=btn,
-            btn_layout=self.ui.mesh.gridlayout_mesh_tab_btns,
-            )
-
-    def change_mesher_options(self):
-        """switch the mesh options stacked widget"""
-
-        mesher = str(self.ui.mesh.combobox_mesher.currentText()).lower()
-
-        current_index = 0
-        for i in range(self.ui.mesh.stackedwidget_mesher_options.count()):
-            widget = self.ui.mesh.stackedwidget_mesher_options.widget(i)
-            if mesher == str(widget.objectName()).lower():
-                current_index = i
-                break
-
-        self.parent.animate_stacked_widget(
-            self.ui.mesh.stackedwidget_mesher_options,
-            self.ui.mesh.stackedwidget_mesher_options.currentIndex(),
-            current_index,
-            direction='horizontal',
-            )
-
-        enable = mesher != 'cutcell'
-        self.ui.mesh.pushbutton_generate_mesh.setEnabled(enable)
-        self.ui.mesh.pushbutton_remove_mesh.setEnabled(enable)
-
     def auto_size_mesh_extents(self):
         """collect and set the extents of the visible geometry"""
         extents = self.get_geometry_extents()
@@ -1937,36 +1884,21 @@ class VtkWidget(QtWidgets.QWidget):
 
             self.update_background_mesh()
 
-    def update_background_mesh(self):
+    def update_background_mesh(self, spacing):
         """update the background mesh"""
-        extents = []
-        for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            extents.append(safe_float(self.project.get_value(key, default=0.0)))
-
-        cells = []
-        for key in ['imax', 'jmax', 'kmax']:
-            cells.append(safe_int(self.project.get_value(key, default=0)) + 1)
-
-        # average cell width
-        for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
-            if c-1 > 0:
-                w = (t-f)/(c-1)
-            else:
-                w = t-f
-            wid.setText('{0:.2e}'.format(w))
+        cells = [len(c) for c in spacing]
         self.rectilinear_grid.SetDimensions(*cells)
 
-        # determine cell spacing
         x_coords = vtk.vtkFloatArray()
-        for i in np.linspace(extents[0], extents[1], cells[0]):
+        for i in spacing[0]:
             x_coords.InsertNextValue(i)
 
         y_coords = vtk.vtkFloatArray()
-        for i in np.linspace(extents[2], extents[3], cells[1]):
+        for i in spacing[1]:
             y_coords.InsertNextValue(i)
 
         z_coords = vtk.vtkFloatArray()
-        for i in np.linspace(extents[4], extents[5], cells[2]):
+        for i in spacing[2]:
             z_coords.InsertNextValue(i)
 
         self.rectilinear_grid.SetXCoordinates(x_coords)

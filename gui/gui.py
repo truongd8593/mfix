@@ -57,6 +57,7 @@ from ics import ICS
 from bcs import BCS
 from pss import PSS
 from iss import ISS
+from mesh import Mesh
 
 from interpreter import Interpreter
 
@@ -98,7 +99,7 @@ if PRECOMPILE_UI:
 class MfixGui(QtWidgets.QMainWindow,
               FluidHandler,
               SolidsHandler,
-              ICS, BCS, PSS, ISS,
+              ICS, BCS, PSS, ISS, Mesh,
               Interpreter):
     # Main window class for MFIX-GUI
 
@@ -320,6 +321,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # after we create ProjectManager, because widgets get registered
         self.init_fluid_handler()
         self.init_solids_handler()
+        self.init_mesh()
         self.init_ics()
         self.init_bcs()
         self.init_pss()
