@@ -392,7 +392,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
             self._completer.complete()
         if not completionPrefix:
             self._update_completion_list(allow_blank=True)
-            self._updateCompleterPopupItems(None)
+            self._updateCompleterPopupItems('')
 
     def _update_completion_list(self, allow_blank=False):
         comp_list = copy.deepcopy(VALID_EXP_NAMES)
@@ -415,12 +415,10 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         Filters the completer's popup items to only show items
         with the given prefix.
         """
-        if completionPrefix is None:
-            self._completer.complete()
-        else:
-            self._completer.setCompletionPrefix(completionPrefix)
-            self._completer.popup().setCurrentIndex(
-                    self._completer.completionModel().index(0, 0))
+        self._completer.setCompletionPrefix(completionPrefix)
+        self._completer.popup().setCurrentIndex(
+                self._completer.completionModel().index(0, 0))
+
 
 class CheckBox(QtWidgets.QCheckBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
