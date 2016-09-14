@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
-import numpy as np
+from itertools import groupby
 
 from qtpy import QtCore, QtWidgets, PYQT5
 
@@ -26,6 +26,36 @@ def safe_int(value):
     except ValueError:
         return 0
 
+
+def ctrl_pts_to_loc(ctrl):
+    """given control points, convert to location"""
+    loc = [0]
+    last = 0
+    for pt in ctrl.values():
+        er = pt['stretch']
+        cp = pt['position']
+        nc = pt['cells']
+
+        dx = (cp-last)/nc
+        for i in range(nc):
+            # no expansion
+            if er == 1:
+                loc.append(loc[-1] + dx)
+        last = loc[-1]
+    return loc
+
+
+def linspace(f, t, c):
+    """copy of numpy's linspace,"""
+    if c == 1:
+        return [f, t]
+    dx = (t-f)/float(c-1)
+    l = [0]
+    for i in range(c-1):
+        l.append(l[-1]+dx)
+    return l
+
+
 class KeyHandler(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
     update_mesh_extents = QtCore.Signal(object, object, object)
@@ -43,9 +73,11 @@ class Mesh(object):
     def init_mesh(self):
         self.mesh_extents = []
         self.mesh_cells = []
+        self.mesh_spacing = [[],[],[]]
         ui = self.ui.mesh
         self.cell_spacing_widgets = [ui.lineedit_mesh_cells_size_x, ui.lineedit_mesh_cells_size_y,
             ui.lineedit_mesh_cells_size_z]
+        self.mesh_spacing_tables = [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]
 
         # key hadler
         self.mesh_key_handler = KeyHandler()
@@ -62,7 +94,7 @@ class Mesh(object):
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
         # setup tables
-        for table in [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]:
+        for table in self.mesh_spacing_tables:
             table.dtype = OrderedDict
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
@@ -118,15 +150,45 @@ class Mesh(object):
         ui.pushbutton_remove_mesh.setEnabled(enable)
 
     def init_background_mesh(self):
+        prj = self.project
         self.mesh_extents = []
+        self.mesh_spacing = [[],[],[]]
         for key in MESH_EXTENT_KEYS:
-            self.mesh_extents.append(safe_float(self.project.get_value(key, default=0.0)))
+            self.mesh_extents.append(safe_float(prj.get_value(key, default=0.0)))
 
         self.mesh_cells = []
         for key in MESH_CELL_KEYS:
-            self.mesh_cells.append(safe_int(self.project.get_value(key, default=0)) + 1)
+            self.mesh_cells.append(safe_int(prj.get_value(key, default=0)) + 1)
+
+        # collect dx, dy, dx
+        for i, (s, c, e) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS, MESH_EXTENT_KEYS[1::2])):
+            d = [prj.get_value(s, args=args) for args in sorted(prj.get_key_indices(s))]
+            l = len(d)
+
+            # if there are spacing, update the keywords.
+            if l>0:
+                self.mesh_cells[i] = l
+                self.update_keyword(c, l)
+                m = sum(d)
+                self.mesh_extents[i*2+1] = m
+                self.update_keyword(e, m)
+                self.mesh_spacing[i] = d
+                self.extract_mesh_spacing(i, d)
 
         self.update_background_mesh()
+
+    def extract_mesh_spacing(self, index, spacing):
+        """given a list of cell spacing, convert to control points"""
+
+        start = 0
+        table_dic = OrderedDict()
+
+        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
+            loc = count*val + start
+            start = loc
+            table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1}
+
+        self.mesh_spacing_tables[index].set_value(table_dic)
 
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
@@ -162,12 +224,12 @@ class Mesh(object):
             wid.setText('{0:.2e}'.format(w))
 
         # determine cell spacing
-        spacing = [
-            np.linspace(extents[0], extents[1], cells[0]),
-            np.linspace(extents[2], extents[3], cells[1]),
-            np.linspace(extents[4], extents[5], cells[2])
-            ]
+        spacing = []
+        for i, table in enumerate(self.mesh_spacing_tables):
+            val = table.value
+            if val:
+                spacing.append(ctrl_pts_to_loc(val))
+            else:
+                spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
 
         self.vtkwidget.update_background_mesh(spacing)
-
-
