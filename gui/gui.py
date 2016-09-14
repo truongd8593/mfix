@@ -565,10 +565,12 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             return True
 
+
     def set_keyword(self, key, value, args=None):
         """convenience function to set keyword"""
         self.set_unsaved_flag()
         self.project.submit_change(None, {key:value}, args)
+
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
@@ -584,6 +586,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.set_keyword(key, value, args=args)
+
 
     def unset_keyword(self, key, args=None):
         """Undefine keyword.  Report to user, also catch and report any errors"""
@@ -638,6 +641,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def unimplemented(self):
         self.message(title='Unimplemented',
                      text='Feature not implemented')
+
 
     def update_nav_tree(self):
         self.ics_update_enabled()

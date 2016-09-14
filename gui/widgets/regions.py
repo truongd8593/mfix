@@ -67,7 +67,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.combobox_regions_type.addItems([
             'point', 'XY-plane', 'XZ-plane', 'YZ-plane', 'box', 'STL', ])
 
-        # Where is 'help_text' used?
         self.combobox_regions_type.help_text = 'The type of region.'
         self.lineedit_regions_name.help_text = 'Name of the region. Used througout the gui to reference the region'
         self.combobox_stl_shape.help_text = 'Shape to be used to select facets.'
@@ -90,7 +89,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         tablewidget = self.tablewidget_regions
         tablewidget.dtype = OrderedDict
-        tablewidget._setModel() # FIXME: Should be in __init__
+        tablewidget._setModel()
         tablewidget.set_selection_model()
         tablewidget.set_value(OrderedDict())
         tablewidget.set_columns(['visible', 'color', 'type'])
@@ -162,6 +161,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
+
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
         # This is used both as a signal callback and an API function,
@@ -191,6 +191,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
+
 
     def delete_region(self):
         'remove the currently selected region'
@@ -224,6 +225,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
 
+
     def copy_region(self):
         'copy the currently selected region'
         rows = self.tablewidget_regions.current_rows()
@@ -245,6 +247,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.fit_to_contents()
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
+
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -294,6 +297,7 @@ class RegionsWidget(QtWidgets.QWidget):
                                   self.lineedit_filter_z],
                                  data['filter']):
             widget.updateValue(None, value)
+
 
     def region_value_changed(self, widget, value, args, name=None,
                              update_param=True):
@@ -387,6 +391,7 @@ class RegionsWidget(QtWidgets.QWidget):
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
 
+
     def table_value_changed(self, name, key, value):
         # When is this called?
         data = self.tablewidget_regions.value
@@ -395,6 +400,7 @@ class RegionsWidget(QtWidgets.QWidget):
         elif key == 'color':
             self.vtkwidget.change_region_color(name, data[name]['color'])
         self.parent.set_unsaved_flag()
+
 
     def enable_disable_widgets(self, name):
         data = self.tablewidget_regions.value
@@ -413,6 +419,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         for widget, enable in zip(self.extent_lineedits, enable_list):
             widget.setEnabled(enable)
+
 
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
@@ -443,6 +450,7 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in data['order']:
             data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
         return ExtendedJSON.dumps(data)
+
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
@@ -477,16 +485,16 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
 
-    def extract_regions(self, proj):
-        """ extract regions from IC, BC, PS """
 
-        for condtype, conds in [('ic', proj.ics), ('bc', proj.bcs),
-                                ('is', proj.iss), ('ps', proj.pss)]:
+    def extract_regions(self, proj):
+        """ extract regions from IC, BC, PS, IS """
+
+        for condtype, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
+                                ('is_', proj.iss), ('ps_', proj.pss)):
             for cond in conds:
                 extents = []
-                for key in ['{}_x_w', '{}_x_e', '{}_y_s', '{}_y_n', '{}_z_b',
-                            '{}_z_t']:
-                    key = key.format(condtype)
+                for key in ('x_w', 'x_e', 'y_s', 'y_n', 'z_b', 'z_t'):
+                    key = condtype + key
                     if key in cond:
                         extents.append(float(cond[key]))
                     else:
@@ -505,7 +513,8 @@ class RegionsWidget(QtWidgets.QWidget):
                     else:
                         rtype = self.get_region_type(extents)
 
-                    name = '{}_{}'.format(condtype.upper(), cond.ind)
+                    name = condtype.upper() + str(cond.ind) # "BC_1"
+
                     self.new_region(name, extents, rtype, defer_update=True)
 
     def check_extents_in_regions(self, extents):
