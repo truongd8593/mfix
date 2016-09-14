@@ -272,8 +272,8 @@ class MfixGui(QtWidgets.QMainWindow,
                            ("Post-processing", "Post"),
                            ("Boundary Conditions", "BCs"),
                            ("Initial Conditions", "ICs"),
-                           ("Point Sources", "Points"), ### Only under "Model Setup", not "Monitors"
-                           ("Internal Surfaces", "Surfaces")]
+                           ("Point Sources", "PSs"),
+                           ("Internal Surfaces", "ISs")]
 
         # Set tooltips for nav tree & set a data property on
         # Monitors / Points to distinguish it
@@ -284,8 +284,8 @@ class MfixGui(QtWidgets.QMainWindow,
             for j in range(item.childCount()):
                 subitem = item.child(j)
                 subitem.setToolTip(0, subitem.text(0))
-                if item.text(0)=='Monitors' and subitem.text(0) == 'Points':
-                    subitem.setData(UserRole, 0, True) # Mark this item
+                #if item.text(0)=='Monitors' and subitem.text(0) == 'Points':
+                #    subitem.setData(UserRole, 0, True) # Mark this item
 
         # Intercept the resize event
         tw.resizeEvent = (lambda old_method:
@@ -622,8 +622,8 @@ class MfixGui(QtWidgets.QMainWindow,
         for (long, short) in self.nav_labels:
             items = tree.findItems(long, flags, 0)
             for item in items:
-                if item.data(UserRole, 0): # Avoid toggling
-                    continue
+                #if item.data(UserRole, 0): # Avoid toggling
+                #    continue
                 item.setText(0, short)
 
 
@@ -633,8 +633,8 @@ class MfixGui(QtWidgets.QMainWindow,
         for (long, short) in self.nav_labels:
             items = tree.findItems(short, flags, 0)
             for item in items:
-                if item.data(UserRole,0): # Avoid toggling
-                    continue
+                #if item.data(UserRole,0): # Avoid toggling
+                #    continue
                 item.setText(0, long)
 
 
@@ -869,11 +869,11 @@ class MfixGui(QtWidgets.QMainWindow,
                     if len(items) == 1:
                         return items[0]
                     # clean this up!
-                    if len(items) == 2: # "Points"
-                        for item in items:
-                            data = bool(item.data(UserRole, 0))
-                            if data == (item_name == 'Points'): # Monitors/Points
-                                return item
+                    #if len(items) == 2: # "Points"
+                    #    for item in items:
+                    #        data = bool(item.data(UserRole, 0))
+                    #        if data == (item_name == 'Points'): # Monitors/Points
+                    #            return item
 
 
     # Top-level "Model"
