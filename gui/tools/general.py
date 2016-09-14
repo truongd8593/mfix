@@ -18,19 +18,14 @@ import random
 
 log = logging.getLogger(__name__)
 
+SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
 # TODO: factor out util funcs which don't require Qt
 # import qt
 from qtpy import QtGui, QtWidgets, QtCore
 
-SCRIPT_DIRECTORY = './'
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
-
-
-def set_script_directory(script):
-    global SCRIPT_DIRECTORY
-    SCRIPT_DIRECTORY = script
 
 
 # Helper functions
@@ -136,15 +131,19 @@ def num_to_time(time, unit='s', outunit='time'):
 def get_image_path(name):
     """"get path to images"""
     path = os.path.join(SCRIPT_DIRECTORY, 'icons', name)
-
     if os.name == 'nt':
         path = path.replace('\\', '//')
-
     return path
 
 
-def get_pixmap(name):
-    return QtGui.QPixmap(get_image_path(name))
+pixmap_cache = {}
+def get_pixmap(name, width, height):
+    pixmap = pixmap_cache.get((name, width, height))
+    if pixmap is None:
+        pixmap = QtGui.QPixmap(get_image_path(name)).scaled(
+            width, height, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pixmap_cache[(name, width, height)] = pixmap
+    return pixmap
 
 
 icon_cache = {}

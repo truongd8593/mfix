@@ -16,10 +16,11 @@ import traceback
 from collections import OrderedDict
 
 # Initialize logger early
-SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
-sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
-log.debug(SCRIPT_DIRECTORY)
+
+from tools.general import SCRIPT_DIRECTORY
+sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
+
 
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT5
@@ -60,12 +61,8 @@ from iss import ISS
 
 from interpreter import Interpreter
 
-from tools.general import (get_icon, get_mfix_home,
-                           widget_iter, set_script_directory,
+from tools.general import (get_icon, get_mfix_home, widget_iter,
                            format_key_with_args, to_unicode_from_fs)
-
-
-set_script_directory(SCRIPT_DIRECTORY)
 
 from tools.namelistparser import buildKeywordDoc
 from tools.keyword_args import keyword_args

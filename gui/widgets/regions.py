@@ -11,8 +11,8 @@ from qtpy import QtWidgets, QtGui, QtCore
 from qtpy import uic
 
 # local imports
-from tools.general import (get_unique_string, widget_iter, CellColor,
-                           get_image_path)
+from tools.general import (get_unique_string, widget_iter, CellColor, get_pixmap)
+
 from project import Equation, ExtendedJSON
 
 DEFAULT_REGION_DATA = {
@@ -52,17 +52,6 @@ class RegionsWidget(QtWidgets.QWidget):
         uifiles = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                'uifiles')
         uic.loadUi(os.path.join(uifiles, 'regions.ui'), self)
-
-        def get_visibility_image(visible):
-            image = QtGui.QPixmap(get_image_path(
-                'visibility.png' if visible
-                else 'visibilityofftransparent.png'))
-            return image.scaled(16, 16, QtCore.Qt.KeepAspectRatio,
-                                QtCore.Qt.SmoothTransformation)
-
-        # Cache pixmaps
-        self.visibility_image = {True: get_visibility_image(True),
-                                 False: get_visibility_image(False)}
 
         self.extent_lineedits = [self.lineedit_regions_from_x,
                                  self.lineedit_regions_to_x,
@@ -146,12 +135,16 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
+
     def reset_regions(self):
         self.tablewidget_regions.value.clear()
         self.parameter_key_map = {}
 
+
     def get_visibility_image(self, visible=True):
-        return self.visibility_image[visible]
+        return get_pixmap('visibility.png' if visible else 'visibilityofftransparent.png',
+                          16, 16)
+
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -186,7 +179,7 @@ class RegionsWidget(QtWidgets.QWidget):
             reg_dat['type'] = rtype
             reg_dat['from'] = extents[0]
             reg_dat['to'] = extents[1]
-        reg_dat['visible'] = self.get_visibility_image()
+        reg_dat['visible'] = self.get_visibility_image(True)
         reg_dat['color'].rand()
 
         self.vtkwidget.new_region(name, data[name])
