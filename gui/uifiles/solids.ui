@@ -1834,13 +1834,6 @@ background-color:white;
             </layout>
            </item>
            <item>
-            <widget class="CheckBox" name="checkbox_keyword_des_explicitly_coupled">
-             <property name="text">
-              <string>Enable explicit coupling of interphase quantities</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QLabel" name="label_des_interp">
@@ -1890,6 +1883,13 @@ background-color:white;
            </item>
            <item>
             <layout class="QGridLayout" name="gridLayout_15">
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_des_diffuse_width">
+               <property name="text">
+                <string>Width</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="0" colspan="2">
               <widget class="QCheckBox" name="checkbox_enable_des_diffuse_width">
                <property name="text">
@@ -1976,10 +1976,10 @@ background-color:white;
                </property>
               </widget>
              </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="label_des_diffuse_width">
+             <item row="2" column="0" colspan="5">
+              <widget class="CheckBox" name="checkbox_keyword_des_explicitly_coupled">
                <property name="text">
-                <string>Width</string>
+                <string>Enable explicit coupling of interphase quantities</string>
                </property>
               </widget>
              </item>
