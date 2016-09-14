@@ -224,16 +224,16 @@ class SolidsDEM(object):
         #Select interpolation scheme:
         # Selection available except when no-interpolation framework is selected
         # Available selections:
-        # None [locked default for no-interpolation framework]
-        # Selection not available
-        # Sets keyword DES_INTERP_SCHEME='NONE' # Todo, update SRS
+        #  None [locked default for no-interpolation framework]
+        #  Selection always available
+        #  Sets keyword DES_INTERP_SCHEME='NONE'
         # Garg 2012
-        # Selection not available with explicit coupling enabled
-        # Sets keyword DES_INTERP_SCHEME='GARG_2012'
+        #  Selection not available with explicit coupling enabled
+        #  Sets keyword DES_INTERP_SCHEME='GARG_2012'
         # Square DPVM
-        # Selection always available
-        # Requires an interpolation width, DES_INTERP_WIDTH
-        # Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
+        #  Selection always available
+        #  Requires an interpolation width, DES_INTERP_WIDTH
+        #  Sets keyword DES_INTERP_SCHEME='SQUARE_DPVM'
         #
         cb = ui.combobox_des_interp_scheme
         label = ui.label_des_interp_scheme
@@ -249,7 +249,7 @@ class SolidsDEM(object):
             des_interp_scheme = des_interp_schemes[cb.currentIndex()]
         #
         # per-item enable flags
-        enabled = (not interp_enabled, not des_explicity_coupled, True)
+        enabled = (True, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
             set_item_enabled(get_combobox_item(cb,i), e)
         # Make sure we don't leave the combobox on an invalid item!
