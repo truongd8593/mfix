@@ -439,9 +439,8 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
     def check_region_in_use(self, name):
-        return any(check(name) for check in (self.parent.ics_check_region_in_use,
-                                             self.parent.bcs_check_region_in_use))
-                                             # any more places region can be used?
+        return self.parent.check_region_in_use(name)
+
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """

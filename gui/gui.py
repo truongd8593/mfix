@@ -649,6 +649,14 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_update_enabled()
 
 
+    def check_region_in_use(self):
+        return any(check(name) for check in (self.ics_check_region_in_use,
+                                             self.bcs_check_region_in_use,
+                                             self.pss_check_region_in_use,
+                                             self.iss_check_region_in_use))
+                                             # any more places region can be used?
+
+
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
         nav_menu.setVisible(not nav_menu.isVisible())
