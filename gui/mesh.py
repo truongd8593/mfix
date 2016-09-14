@@ -5,6 +5,10 @@ import numpy as np
 
 from qtpy import QtCore, QtWidgets, PYQT5
 
+
+MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
+MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
+
 def safe_float(value):
     """try to convert the value to a float, if ValueError, send error to gui
     and rturn 0"""
@@ -24,37 +28,52 @@ def safe_int(value):
 
 class KeyHandler(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
-    update_mesh = QtCore.Signal(bool)
+    update_mesh_extents = QtCore.Signal(object, object, object)
+    update_mesh_cells = QtCore.Signal(object, object, object)
     def updateValue(self, key, val, args):
-        self.update_mesh.emit(True)
+        if key in MESH_EXTENT_KEYS:
+            self.update_mesh_extents.emit(key, val, args)
+        elif key in MESH_CELL_KEYS:
+            self.update_mesh_cells.emit(key, val, args)
+
 
 class Mesh(object):
     # Mesh Task Pane Window: This section allows a user to define the mesh
     # Methods that need vtk are in the vtkwidget
     def init_mesh(self):
+        self.mesh_extents = []
+        self.mesh_cells = []
         ui = self.ui.mesh
+        self.cell_spacing_widgets = [ui.lineedit_mesh_cells_size_x, ui.lineedit_mesh_cells_size_y,
+            ui.lineedit_mesh_cells_size_z]
 
-        self.cell_spacing_widgets = [
-            ui.lineedit_mesh_cells_size_x,
-            ui.lineedit_mesh_cells_size_y,
-            ui.lineedit_mesh_cells_size_z
-            ]
-
-        self._meshhandler = KeyHandler()
-        self.project.register_widget(
-            self._meshhandler, ['xmin', 'xlength', 'ymin', 'ylength', 'zmin',
-            'zlength', 'imax', 'jmax', 'kmax'], [])
-        self._meshhandler.update_mesh.connect(self.update_background_mesh)
+        # key hadler
+        self.mesh_key_handler = KeyHandler()
+        self.project.register_widget(self.mesh_key_handler, MESH_EXTENT_KEYS + MESH_CELL_KEYS, [])
+        self.mesh_key_handler.update_mesh_extents.connect(self.update_background_mesh_extents)
+        self.mesh_key_handler.update_mesh_cells.connect(self.update_background_mesh_cells)
 
         # connect mesh tab btns
-        for i, btn in enumerate([ui.pushbutton_mesh_uniform,
-                                 ui.pushbutton_mesh_mesher]):
+        for i, btn in enumerate([ui.pushbutton_mesh_uniform, ui.pushbutton_mesh_mesher]):
             btn.clicked.connect(lambda ignore, i=i, btn=btn:self.change_mesh_tab(i, btn))
 
         ui.combobox_mesher.currentIndexChanged.connect(
             self.change_mesher_options)
-
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
+
+        # setup tables
+        for table in [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]:
+            table.dtype = OrderedDict
+            table._setModel() # FIXME: Should be in __init__
+            table.set_selection_model()
+            table.set_value(OrderedDict())
+            table.set_columns(['position', 'cells', 'stretch'])
+            table.show_vertical_header(True)
+            table.auto_update_rows(True)
+#            table.new_selection.connect(self.update_region_parameters)
+#            table.clicked.connect(self.cell_clicked)
+            table.default_value = OrderedDict()
+#            table.value_changed.connect(self.table_value_changed)
 
     def toggle_out_stl_value(self, wid, value, args):
         val = -1.0
@@ -98,15 +117,41 @@ class Mesh(object):
         ui.pushbutton_generate_mesh.setEnabled(enable)
         ui.pushbutton_remove_mesh.setEnabled(enable)
 
+    def init_background_mesh(self):
+        self.mesh_extents = []
+        for key in MESH_EXTENT_KEYS:
+            self.mesh_extents.append(safe_float(self.project.get_value(key, default=0.0)))
+
+        self.mesh_cells = []
+        for key in MESH_CELL_KEYS:
+            self.mesh_cells.append(safe_int(self.project.get_value(key, default=0)) + 1)
+
+        self.update_background_mesh()
+
+    def update_background_mesh_cells(self, key, val, args):
+        """collect cells changes, check if value is different"""
+        if not self.mesh_cells: return
+        val = safe_int(val)
+        ind = MESH_CELL_KEYS.index(key)
+        old_val = self.mesh_cells[ind]
+        if old_val != val:
+            self.mesh_cells[ind] = val
+            self.update_background_mesh()
+
+    def update_background_mesh_extents(self, key, val, args):
+        """collect extents changes, check if value is different"""
+        if not self.mesh_extents: return
+        val = safe_float(val)
+        ind = MESH_EXTENT_KEYS.index(key)
+        old_val = self.mesh_extents[ind]
+        if old_val != val:
+            self.mesh_extents[ind] = val
+            self.update_background_mesh()
+
     def update_background_mesh(self):
         """update the background mesh"""
-        extents = []
-        for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            extents.append(safe_float(self.project.get_value(key, default=0.0)))
-
-        cells = []
-        for key in ['imax', 'jmax', 'kmax']:
-            cells.append(safe_int(self.project.get_value(key, default=0)) + 1)
+        extents = self.mesh_extents
+        cells = self.mesh_cells
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
@@ -124,3 +169,5 @@ class Mesh(object):
             ]
 
         self.vtkwidget.update_background_mesh(spacing)
+
+

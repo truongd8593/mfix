@@ -1882,7 +1882,7 @@ class VtkWidget(QtWidgets.QWidget):
                 if 'min' not in key:  # mfix doesn't support mins yet
                     self.emitUpdatedValue(key, extent)
 
-            self.update_background_mesh()
+#            self.update_background_mesh()
 
     def update_background_mesh(self, spacing):
         """update the background mesh"""

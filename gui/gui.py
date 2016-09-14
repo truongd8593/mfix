@@ -2372,6 +2372,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # Take care of updates we deferred during extract_region
         self.ui.regions.tablewidget_regions.fit_to_contents()
 
+        # background mesh
+        self.init_background_mesh()
+
         # Initial conditions
         self.ics_extract_regions()
 
