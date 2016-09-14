@@ -984,8 +984,6 @@ class MfixGui(QtWidgets.QMainWindow,
         # Additional callback on top of automatic keyword update,
         # since this has to change availability of several other GUI items
 
-        # TODO : move this to fluids_handler, like the way we do for solids
-
         self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(enabled)
 
         # It might not be necessary to do all this - will the fluid or
