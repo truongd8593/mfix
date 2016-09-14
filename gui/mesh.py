@@ -99,13 +99,14 @@ class Mesh(object):
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
             table.set_value(OrderedDict())
-            table.set_columns(['position', 'cells', 'stretch'])
+            table.set_columns(['position', 'cells', 'stretch', 'first', 'last'])
             table.show_vertical_header(True)
             table.auto_update_rows(True)
 #            table.new_selection.connect(self.update_region_parameters)
 #            table.clicked.connect(self.cell_clicked)
             table.default_value = OrderedDict()
 #            table.value_changed.connect(self.table_value_changed)
+#            table.fit_to_contents()
 
     def toggle_out_stl_value(self, wid, value, args):
         val = -1.0
@@ -175,6 +176,21 @@ class Mesh(object):
                 self.mesh_spacing[i] = d
                 self.extract_mesh_spacing(i, d)
 
+        # collect variable grid spacing keywords
+        for i, k in enumerate(['x', 'y', 'z']):
+            indices = prj.get_key_indices('cp' + k)
+            if indices:
+                table_dic = OrderedDict()
+                for j, ind in enumerate(sorted(indices)):
+                    table_dic[j] = {
+                        'position': prj.get_value('cp' + k, 0, args=ind),
+                        'cells': prj.get_value('nc' + k, 1, args=ind),
+                        'stretch': prj.get_value('er' + k, 1, args=ind),
+                        'first': prj.get_value('first_d' + k, 0, args=ind),
+                        'last': prj.get_value('last_d' + k, 0, args=ind)}
+                self.mesh_spacing_tables[i].set_value(table_dic)
+                self.mesh_spacing_tables[i].fit_to_contents()
+
         self.update_background_mesh()
 
     def extract_mesh_spacing(self, index, spacing):
@@ -182,13 +198,20 @@ class Mesh(object):
 
         start = 0
         table_dic = OrderedDict()
+        d = ['x','y','z'][index]
 
         for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
             loc = count*val + start
             start = loc
-            table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1}
+            self.update_keyword('cp' + d, loc, args=i)
+            self.update_keyword('nc' + d, count, args=i)
+            table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1,
+                            'first': 0, 'last': 0}
+        for i in range(len(spacing)):
+            self.update_keyword('d' + d, None, args=i)
 
         self.mesh_spacing_tables[index].set_value(table_dic)
+        self.mesh_spacing_tables[index].fit_to_contents()
 
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
