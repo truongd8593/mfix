@@ -10,6 +10,7 @@ MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
 TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
                      'first': 'first_d', 'last': 'last_d'}
+CELL_MFIX_KEYS = ['imax', 'jmax', 'kmax']
 
 def safe_float(value, default=0.0):
     """try to convert the value to a float, if ValueError, return default"""
@@ -31,8 +32,7 @@ def ctrl_pts_to_loc(ctrl):
     """given control points, convert to location"""
     loc = [0]
     last = 0
-    keys = ctrl.keys()
-    for n, pt in enumerate(ctrl.values()):
+    for pt in ctrl.values():
         er = safe_float(pt['stretch'], 1.0)
         cp = safe_float(pt['position'], 0.0)
         nc = safe_int(pt['cells'], 1)
@@ -50,7 +50,8 @@ def ctrl_pts_to_loc(ctrl):
         prev_cell_w = dx
         if nc > 1 and er != 1:
             ratio = er**(1/(nc-1))
-            prev_cell_w = (cp-loc[-1])*(1-ratio)/(1-ratio**nc)/ratio
+            prev_cell_w = (cp-loc[-1])*(1-ratio)/(1-ratio**nc)  # current cell width
+            prev_cell_w /= ratio  # backup one cell for the loop below
 
         # add cell positions to list
         for i in range(nc):
@@ -60,6 +61,7 @@ def ctrl_pts_to_loc(ctrl):
             loc.append(loc[-1] + cell_w)
             prev_cell_w = cell_w
         last = loc[-1]
+
     return loc
 
 
@@ -72,6 +74,16 @@ def linspace(f, t, c):
     for i in range(c-1):
         l.append(l[-1]+dx)
     return l
+
+
+def build_context_menu(actions):
+    """given a list of (text, method), generate a menu"""
+    menu = QtWidgets.QMenu()
+    for s, method in actions:
+        action = QtWidgets.QAction(s, menu)
+        action.triggered.connect(method)
+        menu.addAction(action)
+    return menu
 
 
 class KeyHandler(QtCore.QObject):
@@ -96,6 +108,9 @@ class Mesh(object):
         self.cell_spacing_widgets = [ui.lineedit_mesh_cells_size_x, ui.lineedit_mesh_cells_size_y,
             ui.lineedit_mesh_cells_size_z]
         self.mesh_spacing_tables = [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]
+        self.cell_count_widgets = [ui.lineedit_keyword_imax, ui.lineedit_keyword_jmax, ui.lineedit_keyword_kmax]
+        self.mesh_delete_btns = [ui.toolbutton_mesh_remove_x, ui.toolbutton_mesh_remove_y, ui.toolbutton_mesh_remove_z]
+        self.mesh_add_btns = [ui.toolbutton_mesh_add_x, ui.toolbutton_mesh_add_y, ui.toolbutton_mesh_add_z]
 
         # key hadler
         self.mesh_key_handler = KeyHandler()
@@ -112,7 +127,7 @@ class Mesh(object):
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
         # setup tables
-        for d, table in zip(['x', 'y', 'z'], self.mesh_spacing_tables):
+        for i, (d, table) in enumerate(zip(['x', 'y', 'z'], self.mesh_spacing_tables)):
             table.dtype = OrderedDict
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
@@ -120,11 +135,14 @@ class Mesh(object):
             table.set_columns(['position', 'cells', 'stretch', 'first', 'last'])
             table.show_vertical_header(True)
             table.auto_update_rows(True)
-#            table.new_selection.connect(self.update_region_parameters)
+            table.new_selection.connect(lambda f, t, i=i, d=d, table=table: self.mesh_new_selection(f, t, i, d, table))
 #            table.clicked.connect(self.cell_clicked)
             table.default_value = OrderedDict()
             table.value_changed.connect(lambda row, col, val, d=d, t=table: self.mesh_table_changed(row, col, val, d, t))
 #            table.fit_to_contents()
+            table.menu = build_context_menu([
+                ('split', lambda ignore, t=table, d=d: self.mesh_split(t, d))])
+            table.auto_update_rows(True)
 
     def toggle_out_stl_value(self, wid, value, args):
         val = -1.0
@@ -168,10 +186,20 @@ class Mesh(object):
         ui.pushbutton_generate_mesh.setEnabled(enable)
         ui.pushbutton_remove_mesh.setEnabled(enable)
 
+    def mesh_new_selection(self, from_, to, index, dir_, table):
+        """handle a new selection"""
+        self.mesh_delete_btns[index].setEnabled(len(to)>0)
+
     def init_background_mesh(self):
+        """init the background mesh"""
         prj = self.project
         self.mesh_extents = []
-        self.mesh_spacing = [[],[],[]]
+        self.mesh_spacing = [[], [], []]
+
+        # disable delete btns
+        for btn in self.mesh_delete_btns:
+            btn.setEnabled(False)
+
         for key in MESH_EXTENT_KEYS:
             self.mesh_extents.append(safe_float(prj.get_value(key, default=0.0)))
 
@@ -216,7 +244,7 @@ class Mesh(object):
 
         start = 0
         table_dic = OrderedDict()
-        d = ['x','y','z'][index]
+        d = ['x', 'y', 'z'][index]
 
         for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
             loc = count*val + start
@@ -237,6 +265,42 @@ class Mesh(object):
         self.update_keyword(mfix_key, val, args=row)
 
         self.update_background_mesh()
+
+    def mesh_split(self, table, d):
+        """split the selected control point"""
+        row, col = table.get_clicked_cell()
+        data = table.value
+        split_data = data[row]
+        prev_data = data[row-1]
+
+        midpoint = (split_data['position'] - prev_data['position'])/2.0 + prev_data['position']
+        cells = max(int(split_data['cells']/2), 1)
+        split_data['cells'] = cells
+
+        # insert the cell
+        # TODO: better way?
+        new = OrderedDict()
+        for i, data in data.items():
+            if i < row:
+                new[i] = data
+            elif i == row:
+                new[i] = {'position': midpoint, 'cells': cells, 'stretch': 1,
+                          'first': 0, 'last': 0}
+                self.mesh_update_mfixkeys(new[i], i, d)
+                new[i+1] = data
+                self.mesh_update_mfixkeys(data, i+1, d)
+            else:
+                new[i+1] = data
+                self.mesh_update_mfixkeys(data, i+1, d)
+
+        table.set_value(new)
+        table.fit_to_contents()
+        self.update_background_mesh()
+
+    def mesh_update_mfixkeys(self, ctrl, index, dir_):
+        for key, value in ctrl.items():
+            mfix_key = TABLE_MFIXKEY_MAP[key] + dir_
+            self.update_keyword(mfix_key, value, args=index)
 
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
@@ -262,6 +326,7 @@ class Mesh(object):
         """update the background mesh"""
         extents = self.mesh_extents
         cells = self.mesh_cells
+        prj = self.project
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
@@ -276,8 +341,15 @@ class Mesh(object):
         for i, table in enumerate(self.mesh_spacing_tables):
             val = table.value
             if val:
-                spacing.append(ctrl_pts_to_loc(val))
+                s = ctrl_pts_to_loc(val)
+                spacing.append(s)
+                # disable imax, jmax, kmax
+                self.cell_count_widgets[i].setEnabled(False)
+                # update imax, jmax, kmax
+                self.update_keyword(CELL_MFIX_KEYS[i], len(s)-1)
             else:
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
+                # enable imax, jmax, kmax
+                self.cell_count_widgets[i].setEnabled(not prj.get_value('no_k', False))
 
         self.vtkwidget.update_background_mesh(spacing)

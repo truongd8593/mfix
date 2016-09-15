@@ -796,14 +796,18 @@ class Table(QtWidgets.QTableView, BaseWidget):
 #                    self.setRowHidden(i-1, False)
 
     def contextMenuEvent(self, event):
+        """Qt context menu over-ride"""
         self.mouse_pos = QtGui.QCursor.pos()
         # popup context menu
         self.menu.popup(self.mouse_pos)
 
-    def apply_val_to_column(self):
+    def get_clicked_cell(self):
+        """get the cell of the contectMenuEvent, return row, col"""
         local_pos = self.viewport().mapFromGlobal(self.mouse_pos)
-        column = self.columnAt(local_pos.x())
-        row = self.rowAt(local_pos.y())
+        return (self.rowAt(local_pos.y()), self.columnAt(local_pos.x()))
+
+    def apply_val_to_column(self):
+        row, column  = self.get_clicked_cell()
         value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
         self.model().apply_to_column(column, value)
 
