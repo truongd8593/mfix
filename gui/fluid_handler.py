@@ -358,6 +358,11 @@ class FluidHandler(object):
     def setup_fluid(self):
         # Called whenever we switch to fluid tab
         self.P = 0
+        ui = self.ui.fluid
+        tw = ui.tablewidget_fluid_species
+        # Autoselect if unique row
+        if get_selected_row(tw) is None and tw.rowCount() == 1:
+            tw.setCurrentCell(0,0)
 
 
     def reset_fluids(self):

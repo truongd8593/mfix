@@ -584,6 +584,10 @@ class BCS(object):
 
         self.fixup_bcs_table(ui.tablewidget_regions)
         row = get_selected_row(ui.tablewidget_regions)
+        # Autoselect if only 1 row
+        if row is None and ui.tablewidget_regions.rowCount() == 1:
+            row = 0
+            ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
