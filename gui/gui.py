@@ -1787,7 +1787,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 rfiles.sort()
                 filenum = rfiles[-1].split('.')
                 filenum = int(filenum[-1]) + 1
-            except:
+            except IndexError:
                 filenum = 1
             newname = "%s.reinit.%s" % (run_name, filenum)
             reinit_file = os.path.join(project_dir, newname)

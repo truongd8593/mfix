@@ -597,11 +597,14 @@ def reinitialize():
     project_str = project_file.get('project_file')
     try:
         prefix = '%s.' % get_run_name()
-        with tempfile.NamedTemporaryFile(prefix=prefix, delete=False, dir=os.getcwd()) as tmp:
+        with tempfile.NamedTemporaryFile(prefix=prefix, delete=DEBUG_FLAG, dir=os.getcwd()) as tmp:
             tmp.write(project_str)
             tmp.flush()
+            # MFIX truncates path to 80 characters, so try to keep it short.
+            # split tmp name (defaults to absolute) on cwd, remove leading slash
+            relative_name = tmp.name.split(os.getcwdu())[-1].lstrip('/')
             status_code, command_output = \
-              mfix_thread.do_command("REINIT", args={'mfix_dat': tmp.name})
+              mfix_thread.do_command("REINIT", args={'mfix_dat': relative_name})
     except:
         status_code = 500
         command_output = "Error saving submitted project file"
