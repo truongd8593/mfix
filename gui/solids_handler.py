@@ -43,6 +43,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_specific_heat_model = CONSTANT
         self.solids_conductivity_model = OTHER
 
+
     def init_solids_handler(self):
         self.solids = OrderedDict()
         self.solids_current_phase = None
@@ -245,6 +246,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             font = btn.font()
             font.setBold(btn==to_btn)
             btn.setFont(font)
+
+
+    def setup_solids(self):
+        self.setup_solids_tab(self.solids_current_tab)
+
 
     def setup_solids_tab(self, tabnum):
         if tabnum == 1:
@@ -455,6 +461,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         if len(self.solids) >= DIM_M:
             ui.toolbutton_solids_add.setEnabled(False)
 
+
     def handle_solids_table_selection(self):
         ui = self.ui.solids
         self.P = self.solids_current_phase # should already be set
@@ -466,6 +473,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_current_phase_name = None if row is None else tw.item(row,0).text()
         self.solids_current_phase = (row+1) if row is not None else None
         self.update_solids_detail_pane()
+
 
     def update_solids_detail_pane(self):
         """update the solids detail pane for currently selected solids phase.
@@ -660,7 +668,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             for (col, key) in enumerate(('model', 'diameter', 'density'), 1):
                 table.setItem(row, col, make_item(v[key]))
 
-        if nrows == 1: # If there's only 1 let's select it for the user's convenience
+        if nrows == 1: # If there's only 1 let's auto-select it for the user's convenience
             table.setCurrentCell(0,0)
 
         # trim excess horizontal space - can't figure out how to do this in designer
@@ -1068,6 +1076,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
+        # Autoselect unique row
+        for tw in (ui.tablewidget_solids_species, ui.tablewidget_solids_baseline):
+            if tw.rowCount()==1 and get_selected_row(tw) is None:
+                tw.setCurrentCell(0, 0)
+
     def handle_solids_species_selection(self):
         ui = self.ui.solids
         table = self.ui.solids.tablewidget_solids_species
@@ -1232,6 +1245,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
 
 
     def reset_solids(self):
+        ui = self.ui.solids
         # Set all solid-related state back to default
         self.solids_current_phase = self.P = None
         self.solids_current_phase_name = None
@@ -1240,4 +1254,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_species.clear()
         self.update_solids_table()
         self.update_solids_detail_pane()
+        self.solids_current_tab = 0
+        self.solids_change_tab(0, ui.pushbutton_solids_materials)
         # TODO (?)  reset THERMO_DATA ?
