@@ -650,7 +650,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_update_enabled()
 
 
-    def check_region_in_use(self):
+    def check_region_in_use(self, name):
         return any(check(name) for check in (self.ics_check_region_in_use,
                                              self.bcs_check_region_in_use,
                                              self.pss_check_region_in_use,

@@ -438,6 +438,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
+
     def check_region_in_use(self, name):
         return self.parent.check_region_in_use(name)
 
