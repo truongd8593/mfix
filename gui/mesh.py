@@ -42,7 +42,7 @@ def ctrl_pts_to_loc(ctrl):
 
         # first dx?
         fdx = safe_float(pt['first'], 0.0)
-        if fdx < 0:
+        if fdx < 0 and len(loc) > 2:
             fdx = loc[-1] - loc[-2]
 
         # expansion ratio
@@ -107,10 +107,18 @@ class Mesh(object):
         ui = self.ui.mesh
         self.cell_spacing_widgets = [ui.lineedit_mesh_cells_size_x, ui.lineedit_mesh_cells_size_y,
             ui.lineedit_mesh_cells_size_z]
-        self.mesh_spacing_tables = [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]
+        self.mesh_tables = [ui.table_mesh_control_points_x, ui.table_mesh_control_points_y, ui.table_mesh_control_points_z]
         self.cell_count_widgets = [ui.lineedit_keyword_imax, ui.lineedit_keyword_jmax, ui.lineedit_keyword_kmax]
         self.mesh_delete_btns = [ui.toolbutton_mesh_remove_x, ui.toolbutton_mesh_remove_y, ui.toolbutton_mesh_remove_z]
         self.mesh_add_btns = [ui.toolbutton_mesh_add_x, ui.toolbutton_mesh_add_y, ui.toolbutton_mesh_add_z]
+
+        # connect delete btns
+        for i, btn in enumerate(self.mesh_delete_btns):
+            btn.clicked.connect(lambda ignore, i=i: self.mesh_delete(i))
+
+        # connect add btns
+        for i, btn in enumerate(self.mesh_add_btns):
+            btn.clicked.connect(lambda ignore, i=i: self.mesh_add(i))
 
         # key hadler
         self.mesh_key_handler = KeyHandler()
@@ -127,7 +135,7 @@ class Mesh(object):
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
         # setup tables
-        for i, (d, table) in enumerate(zip(['x', 'y', 'z'], self.mesh_spacing_tables)):
+        for i, (d, table) in enumerate(zip(['x', 'y', 'z'], self.mesh_tables)):
             table.dtype = OrderedDict
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
@@ -234,8 +242,8 @@ class Mesh(object):
                         'stretch': prj.get_value('er' + k, 1, args=ind),
                         'first': prj.get_value('first_d' + k, 0, args=ind),
                         'last': prj.get_value('last_d' + k, 0, args=ind)}
-                self.mesh_spacing_tables[i].set_value(table_dic)
-                self.mesh_spacing_tables[i].fit_to_contents()
+                self.mesh_tables[i].set_value(table_dic)
+                self.mesh_tables[i].fit_to_contents()
 
         self.update_background_mesh()
 
@@ -256,8 +264,8 @@ class Mesh(object):
         for i in range(len(spacing)):
             self.update_keyword('d' + d, None, args=i)
 
-        self.mesh_spacing_tables[index].set_value(table_dic)
-        self.mesh_spacing_tables[index].fit_to_contents()
+        self.mesh_tables[index].set_value(table_dic)
+        self.mesh_tables[index].fit_to_contents()
 
     def mesh_table_changed(self, row, col, val, d, table):
         """a table was edited, update"""
@@ -265,6 +273,50 @@ class Mesh(object):
         self.update_keyword(mfix_key, val, args=row)
 
         self.update_background_mesh()
+
+    def mesh_delete(self, index):
+        """delete the selected control point"""
+        table = self.mesh_tables[index]
+        data = table.value
+        rows = table.current_rows()
+        if not rows: return
+        max_i = max(data.keys())
+        min_row = min(rows)
+        d = ['x', 'y', 'z'][index]
+
+        # remove rows
+        for row in rows:
+            data.pop(row)
+
+        # rebuild dict
+        # TODO: better way?
+        new = OrderedDict()
+        for i, ctrl in enumerate(data.values()):
+            new[i] = ctrl
+            if i >= min_row:
+                self.mesh_update_mfixkeys(ctrl, i, d)
+        table.set_value(new)
+        table.fit_to_contents()
+        self.update_background_mesh()
+
+        nrows = len(new)
+        if rows[-1] == nrows: # We deleted the last row,
+            if nrows > 0:
+                self.table.selectRow(nrows-1)
+
+        # remove trailing keywords
+        k = new.keys()
+        if k:
+            m = max(k)
+        else:
+            m = 0
+        for i in range(m, max_i):
+            ind = i + 1
+            for key in TABLE_MFIXKEY_MAP.values():
+                self.update_keyword(key+d, None, args=ind)
+
+    def mesh_add(self, index):
+        """add a control point"""
 
     def mesh_split(self, table, d):
         """split the selected control point"""
@@ -280,18 +332,18 @@ class Mesh(object):
         # insert the cell
         # TODO: better way?
         new = OrderedDict()
-        for i, data in data.items():
+        for i, ctrl in data.items():
             if i < row:
-                new[i] = data
+                new[i] = ctrl
             elif i == row:
                 new[i] = {'position': midpoint, 'cells': cells, 'stretch': 1,
                           'first': 0, 'last': 0}
                 self.mesh_update_mfixkeys(new[i], i, d)
-                new[i+1] = data
-                self.mesh_update_mfixkeys(data, i+1, d)
+                new[i+1] = ctrl
+                self.mesh_update_mfixkeys(ctrl, i+1, d)
             else:
-                new[i+1] = data
-                self.mesh_update_mfixkeys(data, i+1, d)
+                new[i+1] = ctrl
+                self.mesh_update_mfixkeys(ctrl, i+1, d)
 
         table.set_value(new)
         table.fit_to_contents()
@@ -338,7 +390,7 @@ class Mesh(object):
 
         # determine cell spacing
         spacing = []
-        for i, table in enumerate(self.mesh_spacing_tables):
+        for i, table in enumerate(self.mesh_tables):
             val = table.value
             if val:
                 s = ctrl_pts_to_loc(val)
@@ -350,6 +402,9 @@ class Mesh(object):
             else:
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
                 # enable imax, jmax, kmax
-                self.cell_count_widgets[i].setEnabled(not prj.get_value('no_k', False))
+                if i == 2:
+                    self.cell_count_widgets[i].setEnabled(not prj.get_value('no_k', False))
+                else:
+                    self.cell_count_widgets[i].setEnabled(True)
 
         self.vtkwidget.update_background_mesh(spacing)
