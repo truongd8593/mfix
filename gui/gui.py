@@ -1344,16 +1344,15 @@ class MfixGui(QtWidgets.QMainWindow,
         text = '_'.join(text.lower().split(' '))
         if text == 'fluid' : #
             self.setup_fluid()
-        elif text == 'solids': # Special helper for setting up subpanes,
-            # since params may have changed
-            self.setup_solids_tab(self.solids_current_tab)
+        elif text == 'solids':
+            self.setup_solids()
         elif text in ('initial_conditions', 'ics'):
             self.setup_ics()
         elif text in ('boundary_conditions', 'bcs'):
             self.setup_bcs()
-        elif text in ('point_sources', 'points'):
+        elif text in ('point_sources', 'pss'):
             self.setup_pss()
-        elif text in ('internal_surfaces', 'surfaces'):
+        elif text in ('internal_surfaces', 'iss'):
             self.setup_iss()
 
 
