@@ -8,45 +8,63 @@ from qtpy import QtCore, QtWidgets, PYQT5
 
 MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
+TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
+                     'first': 'first_d', 'last': 'last_d'}
 
-def safe_float(value):
-    """try to convert the value to a float, if ValueError, send error to gui
-    and rturn 0"""
+def safe_float(value, default=0.0):
+    """try to convert the value to a float, if ValueError, return default"""
     try:
         return float(value)
     except ValueError:
-        return 0.0
+        return default
 
 
-def safe_int(value):
-    """try to convert the value to a int, if ValueError, send error to gui
-    and rturn 0"""
+def safe_int(value, default=0):
+    """try to convert the value to a int, if ValueError, return default"""
     try:
         return int(value)
     except ValueError:
-        return 0
+        return default
 
 
 def ctrl_pts_to_loc(ctrl):
     """given control points, convert to location"""
     loc = [0]
     last = 0
-    for pt in ctrl.values():
-        er = pt['stretch']
-        cp = pt['position']
-        nc = pt['cells']
+    keys = ctrl.keys()
+    for n, pt in enumerate(ctrl.values()):
+        er = safe_float(pt['stretch'], 1.0)
+        cp = safe_float(pt['position'], 0.0)
+        nc = safe_int(pt['cells'], 1)
 
+        # unifrom dx
         dx = (cp-last)/nc
+
+        # first dx?
+        fdx = safe_float(pt['first'], 0.0)
+        if fdx < 0:
+            fdx = loc[-1] - loc[-2]
+
+        # expansion ratio
+        ratio = 1
+        prev_cell_w = dx
+        if nc > 1 and er != 1:
+            ratio = er**(1/(nc-1))
+            prev_cell_w = (cp-loc[-1])*(1-ratio)/(1-ratio**nc)/ratio
+
+        # add cell positions to list
         for i in range(nc):
-            # no expansion
-            if er == 1:
-                loc.append(loc[-1] + dx)
+            cell_w = dx
+            if er != 1:
+                cell_w = prev_cell_w*ratio
+            loc.append(loc[-1] + cell_w)
+            prev_cell_w = cell_w
         last = loc[-1]
     return loc
 
 
 def linspace(f, t, c):
-    """copy of numpy's linspace,"""
+    """copy of numpy's linspace"""
     if c == 1:
         return [f, t]
     dx = (t-f)/float(c-1)
@@ -94,7 +112,7 @@ class Mesh(object):
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
         # setup tables
-        for table in self.mesh_spacing_tables:
+        for d, table in zip(['x', 'y', 'z'], self.mesh_spacing_tables):
             table.dtype = OrderedDict
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
@@ -105,7 +123,7 @@ class Mesh(object):
 #            table.new_selection.connect(self.update_region_parameters)
 #            table.clicked.connect(self.cell_clicked)
             table.default_value = OrderedDict()
-#            table.value_changed.connect(self.table_value_changed)
+            table.value_changed.connect(lambda row, col, val, d=d, t=table: self.mesh_table_changed(row, col, val, d, t))
 #            table.fit_to_contents()
 
     def toggle_out_stl_value(self, wid, value, args):
@@ -212,6 +230,13 @@ class Mesh(object):
 
         self.mesh_spacing_tables[index].set_value(table_dic)
         self.mesh_spacing_tables[index].fit_to_contents()
+
+    def mesh_table_changed(self, row, col, val, d, table):
+        """a table was edited, update"""
+        mfix_key = TABLE_MFIXKEY_MAP[col] + d
+        self.update_keyword(mfix_key, val, args=row)
+
+        self.update_background_mesh()
 
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
