@@ -388,6 +388,10 @@ class ISS(object):
                           (is_.ind, extent))
 
 
+    def iss_check_region_in_use(self, name):
+        return any(data.get('region')==name for data in self.iss.values())
+
+
     def setup_iss(self):
         ui = self.ui.internal_surfaces
 
