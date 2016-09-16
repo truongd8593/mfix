@@ -1085,7 +1085,7 @@ QPushButton:checked {
                  </column>
                  <column>
                   <property name="text">
-                   <string>Cp</string>
+                   <string>Hf</string>
                   </property>
                   <property name="toolTip">
                    <string>Heat of formation</string>
