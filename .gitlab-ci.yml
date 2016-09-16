@@ -1,4 +1,4 @@
-image: python:2.7
+image: mfixgui
 
 # cache:
 #   key: "$CI_BUILD_REF_NAME"
@@ -46,8 +46,6 @@ build_job3:
     - mfix*
   only:
     - branches
-  tags:
-    - python2
 
 test_job3:
   stage: test
@@ -55,5 +53,3 @@ test_job3:
     - make -C gui test
   only:
     - branches
-  tags:
-    - python2
