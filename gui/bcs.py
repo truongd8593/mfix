@@ -428,8 +428,9 @@ class BCS(object):
             # If there are no solids, no scalar equations, and the fluid solver is disabled,
             # then we have no input tabs on the BCs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
-            nregions = len([r for r in regions.values()
-                            if r.get('type')=='STL' or 'plane' in r.get('type')])
+            nregions = sum(1 for (name, r) in regions.items()
+                           if not self.check_region_in_use(name)
+                           and (r.get('type')=='STL' or 'plane' in r.get('type')))
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0

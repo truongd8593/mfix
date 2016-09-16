@@ -325,8 +325,9 @@ class ICS(object):
             # If there are no solids, no scalar equations, and the fluid solver is disabled,
             # then we have no input tabs on the ICs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
-            nregions = len([r for r in regions.values()
-                            if r.get('type')=='box'])
+            nregions = sum(1 for (name, r) in regions.items()
+                           if not self.check_region_in_use(name)
+                           and r.get('type')=='box')
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0

@@ -284,13 +284,15 @@ class ISS(object):
             # Never disable if there are ISs defined
             disabled = False
         else:
-            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # If there are no solids, (no scalar equations), and the fluid solver is disabled,
             # then we have no input tabs on the BCs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
-            nregions = len([r for r in regions.values()
-                            if r.get('type')=='box' or 'plane' in r.get('type')])
+            nregions = sum(1 for (name, r) in regions.items()
+                           if not self.check_region_in_use(name)
+                           and (r.get('type')=='box' or 'plane' in r.get('type')))
             disabled = (nregions==0
-                        or (self.fluid_solver_disabled and len(self.solids)==0))
+                        or (self.fluid_solver_disabled
+                            and len(self.solids)==0))
         self.find_navigation_tree_item("Internal Surfaces").setDisabled(disabled)
 
 

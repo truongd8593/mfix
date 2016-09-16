@@ -266,12 +266,13 @@ class PSS(object):
             # Never disable if there are PSs defined
             disabled = False
         else:
-            # If there are no solids, no scalar equations, and the fluid solver is disabled,
+            # If there are no solids, (no scalar equations), and the fluid solver is disabled,
             # then we have no input tabs on the BCs pane, so disable it completely
-            #At this time, only TFM solids can be defined with point sources.
             regions = self.ui.regions.get_region_dict()
-            nregions = len([r for r in regions.values()
-                            if r.get('type')=='STL' or 'plane' in r.get('type')])
+            nregions = sum(1 for (name, r) in regions.items()
+                           if not self.check_region_in_use(name)
+                           and (r.get('type')=='STL' or 'plane' in r.get('type')))
+            #At this time, only TFM solids can be defined with point sources.
             tfm_solids = [s for (i,s) in enumerate(self.solids,1)
                           if self.project.get_value('solids_model', args=[i])=='TFM']
             disabled = (nregions==0
