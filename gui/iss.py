@@ -446,17 +446,58 @@ class ISS(object):
 
     def iss_setup_current_tab(self):
         ui = self.ui.internal_surfaces
+        if not self.iss_current_indices:
+            return
+        IS0 =  self.iss_current_indices[0]
 
         #Input is only needed for semi-permeable surfaces.
+        is_type = self.project.get_value('is_type', args=[IS0])
+        enabled = 'SEMI' in is_type
+
         #Gas permeability:
         # Specification only available for semipermeable regions
         # DEFAULT value 1.0d32
         # Sets keyword IS_PC(#,1)
+        key = 'is_pc'
+        for widget in ui.label_is_pc_1, ui.label_is_pc_1_units, ui.lineedit_keyword_is_pc_args_IS_1:
+            widget.setEnabled(enabled)
+        default = 1.0e32 if enabled else None
+        args = [IS0, 1]
+        val = self.project.get_value(key, args=args)
+        if val is None:
+            val = default
+        ui.lineedit_keyword_is_pc_args_IS_1.updateValue(key, val, args)
+
         #Internal resistance coefficient:
         # Specification only available for semipermeable regions
         # DEFAULT value 0.0
         # Sets keyword IS_PC(#,2)
+        key = 'is_pc'
+        for widget in ui.label_is_pc_2, ui.label_is_pc_2_units, ui.lineedit_keyword_is_pc_args_IS_2:
+            widget.setEnabled(enabled)
+        default = 0.0 if enabled else None
+        args = [IS0, 2]
+        val = self.project.get_value(key, args=args)
+        if val is None:
+            val = default
+        ui.lineedit_keyword_is_pc_args_IS_2.updateValue(key, val, args)
+
         #Solids velocity through surface:
         # Specification only available for semipermeable regions
+
+        # enable/disable entire groupbox, don't have to do widgets
+        ui.groupbox_solids_velocities.setEnabled(enabled)
+
         # DEFAULT value 0.0
         # Sets keyword IS_VEL_s(#,PHASE)
+        default = 0.0 if enabled else None
+        key = 'is_vel_s'
+        row = 0
+        for le in widget_iter(ui.groupbox_solids_velocities):
+            if not isinstance(le, LineEdit):
+                continue
+            args = mkargs(key, is_=IS0, phase=le.args[1])
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = default
+            le.updateValue(key, val, args)
