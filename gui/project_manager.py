@@ -396,8 +396,8 @@ class ProjectManager(Project):
                         # owned by the species popup.
                         species_data = self.gui.species_popup.get_species_data(species, phase)
                         if not species_data:
-                            # Look for  mismatched phase definition
-                            # This is not really 'mismatched'.  Solids phase may contain fluids and v.v.
+                            # Look for mismatched phase definition
+                            # This is not really 'mismatched'.  Solids phase may contain fluid and v.v.
                             for p in 'SCLG':
                                 if p == phase:
                                     continue

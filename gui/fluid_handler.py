@@ -1,6 +1,4 @@
-# methods to deal with fluids, split off from gui.py
-
-# TODO: factor out common base between solids_ & fluid_handler, reduce code duplication
+# methods to deal with fluid phase
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
@@ -158,10 +156,10 @@ class FluidHandler(object):
         tb.clicked.connect(self.fluid_species_delete)
         tw = ui.tablewidget_fluid_species
         tw.itemSelectionChanged.connect(self.handle_fluid_species_selection)
-        self.fixup_fluids_table()
+        self.fixup_fluid_table()
 
 
-    def fixup_fluids_table(self):
+    def fixup_fluid_table(self):
         hv = QtWidgets.QHeaderView
         ui = self.ui.fluid
         table = ui.tablewidget_fluid_species
@@ -227,12 +225,12 @@ class FluidHandler(object):
 
 
     def update_fluid_species_table(self):
-        """Update table in fluids pane.  Also set nmax_g, species_g and species_alias_g keywords,
+        """Update table in fluid pane.  Also set nmax_g, species_g and species_alias_g keywords,
         which are not tied to a single widget"""
         table = self.ui.fluid.tablewidget_fluid_species
         table.clearContents()
         if self.fluid_species is None:
-            self.fixup_fluids_table()
+            self.fixup_fluid_table()
             return
         nrows = len(self.fluid_species)
         table.setRowCount(nrows)
@@ -266,7 +264,7 @@ class FluidHandler(object):
             #self.unset_keyword('mw_g', i) # TBD
 
         self.project.update_thermo_data(self.fluid_species)
-        self.fixup_fluids_table()
+        self.fixup_fluid_table()
 
 
     def handle_fluid_species_selection(self):
@@ -280,7 +278,7 @@ class FluidHandler(object):
             table.doubleClicked.connect(self.fluid_species_edit)
         else:
             try:
-                table.doubleClicked.disconnect() #self.fluids_species_edit)
+                table.doubleClicked.disconnect() #self.fluid_species_edit)
             except:
                 pass
 
@@ -364,8 +362,12 @@ class FluidHandler(object):
         if get_selected_row(tw) is None and tw.rowCount() == 1:
             tw.setCurrentCell(0,0)
 
+        enabled = (self.fluid_nscalar_eq > 0)
+        ui.checkbox_enable_scalar_eq.setChecked(self.fluid_nscalar_eq>0)
+        ui.spinbox_nscalar_eq.setEnabled(enabled)
 
-    def reset_fluids(self):
+
+    def reset_fluid(self):
         # Set all fluid-related state back to default
         self.fluid_phase_name = 'Fluid'
         self.saved_fluid_species = None

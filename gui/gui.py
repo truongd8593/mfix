@@ -524,7 +524,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.slot_rundir_changed()
 
         self.reset_model_setup()
-        self.reset_fluids()
+        self.reset_fluid()
         self.reset_solids()
         self.ui.regions.reset_regions()
         self.reset_ics()
