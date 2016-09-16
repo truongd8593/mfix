@@ -1,53 +1,61 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-class ModelSetup:
+from constants import *
+
+class ModelSetup(object):
     #    Model Setup Task Pane Window: Select MFIX solver and other conservation equations
 
     def init_model_setup(self):
+        self.subgrid_model = 0
         ui = self.ui.model_setup
+
         ui.combobox_solver.activated.connect(self.set_solver)
+        ui.checkbox_disable_fluid_solver.clicked.connect(self.disable_fluid_solver)
 
-        ui = self.ui
-        model = ui.model_setup
-        combobox = model.combobox_solver
-        # activated: Only on user action, avoid recursive calls in set_solver
-        combobox.activated.connect(self.set_solver)
-
-        checkbox = model.checkbox_disable_fluid_solver
-        checkbox.clicked.connect(self.disable_fluid_solver)
-        self.disable_fluid_solver(self.fluid_solver_disabled)
-
-        checkbox = model.checkbox_keyword_energy_eq
-        checkbox.clicked.connect(self.enable_energy_eq)
-
-        checkbox = model.checkbox_enable_turbulence
-        checkbox.clicked.connect(self.enable_turbulence)
-
-        combobox = model.combobox_turbulence_model
-        combobox.currentIndexChanged.connect(self.set_turbulence_model)
-
-        combobox = model.combobox_subgrid_model
-        combobox.currentIndexChanged.connect(self.set_subgrid_model)
-        self.set_subgrid_model(0)
-
-
+        ui.checkbox_keyword_energy_eq.clicked.connect(self.enable_energy_eq)
+        ui.checkbox_enable_turbulence.clicked.connect(self.enable_turbulence)
+        ui.combobox_turbulence_model.activated.connect(self.set_turbulence_model)
+        ui.combobox_subgrid_model.activated.connect(self.set_subgrid_model)
 
 
     def setup_model_setup(self):
-        pass
+        self.disable_fluid_solver(self.fluid_solver_disabled)
+        self.set_subgrid_model(0)
 
 
-    # Top-level "Model"
+    def reset_model_setup(self):
+        self.subgrid_model = 0
+
+
     def set_solver(self, solver):
-        """handler for "Solver" combobox in Model pane"""
+        #    Select MFIX Solver:
+        # Available selections:
+        #  Single phase
+        #    Selection disables 'Solids' task pane menu
+        #    Selection disables 'Continuum Solids Model' task pane menu
+        #    Selection disables 'Discrete Element Model' task pane menu
+        #    Selection disables 'Particle-in-Cell' task pane menu
+        #  MFIX-TFM
+        #    Selection enables 'Solids' task pane menu
+        #    Selection enables 'Continuum Solids Model' task pane menu
+        #  MFIX-DEM
+        #    Selection enables 'Solids' task pane menu
+        #    Selection enables 'Discrete Element Model' task pane menu
+        #  MFIX-PIC
+        #    Selection enables 'Solids' task pane menu
+        #    Selection enables 'Particle-in-Cell' task pane menu
+        #  MFIX-Hybrid
+        #    Selection enables 'Solids' task pane menu
+        #    Selection enables 'Continuum Solids Model' task pane menu
+        #    Selection enables 'Discrete Element Model' task pane menu
+
         self.project.solver = solver
         if solver is None: #
             return
 
-        ui = self.ui
-        m = ui.model_setup
-        cb = m.combobox_solver
+        ui = self.ui.model_setup
+        cb = ui.combobox_solver
         if cb.currentIndex != solver:
             cb.setCurrentIndex(solver)
 
@@ -67,21 +75,13 @@ class ModelSetup:
 
         # Options which require TFM, DEM, or PIC
         enabled = solver in (TFM, DEM, PIC)
-        #interphase = m.groupbox_interphase
-        #interphase.setEnabled(enabled)
 
         # TFM only
         enabled = (solver == TFM)
-        m.combobox_subgrid_model.setEnabled(enabled)
-        m.label_subgrid_model.setEnabled(enabled)
-        m.groupbox_subgrid_params.setEnabled(enabled and
-                                                       self.subgrid_model > 0)
-
-        enabled = (self.fluid_nscalar_eq > 0)
-        ui.fluid.checkbox_enable_scalar_eq.setChecked(self.fluid_nscalar_eq>0)
-        ui.fluid.spinbox_nscalar_eq.setEnabled(enabled)
-
-        # Equiv for solids is done in update_solids_detail_pane
+        ui.combobox_subgrid_model.setEnabled(enabled)
+        ui.label_subgrid_model.setEnabled(enabled)
+        ui.groupbox_subgrid_params.setEnabled(enabled and
+                                             self.subgrid_model > 0)
 
         # Solids Model selection tied to Solver
         # FIXME XXX What to do about solids that are already defined?
@@ -135,13 +135,12 @@ class ModelSetup:
     def enable_energy_eq(self, enabled):
         # Additional callback on top of automatic keyword update,
         # since this has to change availability of several other GUI items
-
-        self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(enabled)
+        ui = self.ui.model_setup
+        ui.checkbox_keyword_energy_eq.setChecked(enabled)
 
         # It might not be necessary to do all this - will the fluid or
         # solid panes get updated before we display them?
-        ui = self.ui
-        f = ui.fluid
+        f = self.ui.fluid
         for item in (f.label_fluid_specific_heat_model,
                      f.combobox_fluid_specific_heat_model,
                      f.label_fluid_conductivity_model,
@@ -164,75 +163,50 @@ class ModelSetup:
 
 
     def set_subgrid_model(self, index):
+        ui = self.ui.model_setup
         self.subgrid_model = index
-        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
-        groupbox_subgrid_params.setEnabled(index > 0)
+        ui.groupbox_subgrid_params.setEnabled(index > 0)
 
 
     def enable_turbulence(self, enabled):
-        m = self.ui.model_setup
-        if enabled != m.checkbox_enable_turbulence.isChecked():
-            m.checkbox_enable_turbulence.setChecked(enabled)
-        for item in (m.label_turbulence_model,
-                     m.combobox_turbulence_model,
-                     m.label_mu_gmax,
-                     m.lineedit_keyword_mu_gmax,
-                     m.label_mu_gmax_units):
+        ui = self.ui.model_setup
+        cb = ui.checkbox_enable_turbulence
+        if enabled != cb.isChecked():
+            cb.setChecked(enabled)
+        for item in (ui.label_turbulence_model,
+                     ui.combobox_turbulence_model,
+                     ui.label_mu_gmax,
+                     ui.lineedit_keyword_mu_gmax,
+                     ui.label_mu_gmax_units):
             item.setEnabled(enabled)
         if not enabled:
             self.unset_keyword('turbulence_model')
             self.unset_keyword('mu_gmax')
         else:
-            self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
+            self.set_turbulence_model(ui.combobox_turbulence_model.currentIndex())
 
 
     def set_turbulence_model(self, val):
-        m = self.ui.model_setup
-        cb = m.combobox_turbulence_model
+        ui = self.ui.model_setup
+        cb = ui.combobox_turbulence_model
         if cb.currentIndex() != val:
             cb.setCurrentIndex(val)
-            return
         self.update_keyword('turbulence_model',
                             ['MIXING_LENGTH', 'K_EPSILON'][val])
-        val = m.lineedit_keyword_mu_gmax.value
+        val = ui.lineedit_keyword_mu_gmax.value
         if val=='' or val is None:
             val = '1.e+03'
         self.update_keyword('mu_gmax', val)
 
 
 
-
-
-    #    Select MFIX Solver:
-    # Available selections:
-    #  Single phase
-    #    Selection disables 'Solids' task pane menu
-    #    Selection disables 'Continuum Solids Model' task pane menu
-    #    Selection disables 'Discrete Element Model' task pane menu
-    #    Selection disables 'Particle-in-Cell' task pane menu
-    #  MFIX-TFM
-    #    Selection enables 'Solids' task pane menu
-    #    Selection enables 'Continuum Solids Model' task pane menu
-    #  MFIX-DEM
-    #    Selection enables 'Solids' task pane menu
-    #    Selection enables 'Discrete Element Model' task pane menu
-    #  MFIX-PIC
-    #    Selection enables 'Solids' task pane menu
-    #    Selection enables 'Particle-in-Cell' task pane menu
-    #  MFIX-Hybrid
-    #    Selection enables 'Solids' task pane menu
-    #    Selection enables 'Continuum Solids Model' task pane menu
-    #    Selection enables 'Discrete Element Model' task pane menu
-    #    Option to disable the fluid phase
-    # Disables the 'Fluid' task pane menu
-    # Sets keyword RO_G0 to 0.0
     #    Option to enable thermal energy equations
     # This keyword should always be specified in the input deck
     # Sets keyword ENERGY_EQ
     # DEFAULT value of .FALSE.
+
     #    Option to enable turbulence
     # Selection available if fluid phase is enabled
-
     # Available selections:
     #  None; [DEFAULT]
     #  Mixing Length:
@@ -246,19 +220,21 @@ class ModelSetup:
     #    Requires IC_E_TURB_G for all IC regions
     #    Requires BC_K_TURB_G for inflow (MI and PI) BC regions
     #    Requires BC_E_TURB_G for inflow (MI and PI) BC regions
+
     #Specify maximum fluid viscosity (not shown in mockup)
     # Selection available if TURBULENCE_MODEL =/ 'NONE'
     # Sets keyword MU_GMAX
     # DEFAULT value of 1.0e3 (Pa.s)
+
     #Specify drag model
     # Selection requires TFM, DEM, or PIC solver
     # Sets keyword DRAG_TYPE
     # Available selections:
     #  SYAM_OBRIEN (DEFAULT)
     #    Specify model parameter: DRAG_C1
-    # DEFAULT value of 0.8
+    #      DEFAULT value of 0.8
     #    Specify model parameter: DRAG_D1
-    # DEFAULT value of 2.65
+    #      DEFAULT value of 2.65
     #  BVK
     #  GIDASPOW
     #  GIDASPOW_BLEND
@@ -266,15 +242,18 @@ class ModelSetup:
     #  GIDASPOW_BLEND_PCF
     #  HYS
     #    Specify model parameter LAM_HYS
-    # DEFAULT value of 1.0e-6 (meters)
+    #      DEFAULT value of 1.0e-6 (meters)
     #  KOCH_HILL
     #  KOCH_HILL_PCF
     #  WEN_YU
     #  WEN_YU_PCF
     #  USER_DRAG
+
     #Specify heat transfer correlation (requires TFM, DEM, or PIC solver)
     #*This option may be premature as MFIX is limited in heat HTCs.
+
     #Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishi
+
     #Select sub-grid model:
     # Selection requirements:
     #  Only available with MFIX-TFM solver
@@ -289,10 +268,12 @@ class ModelSetup:
     #  NONE (DEFAULT)
     #  IGCI
     #  MILIO
+
     #Specify sub-grid model filter size ratio:
     # Specification requires SUBGRID_TYPE =/ NONE
     # Sets keyword FILTER_SIZE_RATIO
     # DEFAULT value of 2.0
+
     #Enable sub-grid wall correction model:
     # Specification requires SUBGRID_TYPE =/ NONE
     # Sets keyword SUBGRID_WALL

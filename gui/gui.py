@@ -52,6 +52,7 @@ from widgets.run_popup import RunPopup
 from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 from widgets.parameter_dialog import ParameterDialog
 
+from model_setup import ModelSetup
 from fluid_handler import FluidHandler
 from solids_handler import SolidsHandler
 from ics import ICS
@@ -93,6 +94,7 @@ if PRECOMPILE_UI:
 # --- Main Gui ---
 
 class MfixGui(QtWidgets.QMainWindow,
+              ModelSetup,
               FluidHandler,
               SolidsHandler,
               ICS, BCS, PSS, ISS,
@@ -315,6 +317,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Extra setup for fluid & solids panes.  Needs to happen
         # after we create ProjectManager, because widgets get registered
+        self.init_model_setup()
         self.init_fluid_handler()
         self.init_solids_handler()
         self.init_ics()
@@ -447,15 +450,15 @@ class MfixGui(QtWidgets.QMainWindow,
         self.stderr_signal.connect(self.handle_stderr)
         self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
-        # --- setup widgets ---
-        self.__setup_simple_keyword_widgets()
-        self.__setup_other_widgets()  # refactor/rename - cgw
+        # --- Register widgets ---
+        self.register_keyword_widgets()
+        self.register_numerics()
 
         # --- vtk setup ---
-        self.__setup_vtk_widget()
+        self.init_vtk_widget()
 
         # --- workflow setup ---
-        self.__setup_workflow_widget()
+        self.init_workflow_widget()
 
         # --- parameter dialog
         self.parameter_dialog = ParameterDialog(self)
@@ -520,6 +523,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.slot_rundir_changed()
 
+        self.reset_model_setup()
         self.reset_fluids()
         self.reset_solids()
         self.ui.regions.reset_regions()
@@ -885,169 +889,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     #            return item
 
 
-    # Top-level "Model"
-    def set_solver(self, solver):
-        """handler for "Solver" combobox in Model pane"""
-        self.project.solver = solver
-        if solver is None: #
-            return
-
-        ui = self.ui
-        m = ui.model_setup
-        cb = m.combobox_solver
-        if cb.currentIndex != solver:
-            cb.setCurrentIndex(solver)
-
-        solver_name = {SINGLE:"MFIX Single-Phase",
-                       TFM:"MFIX-TFM",
-                       DEM:"MFIX-DEM",
-                       PIC:"MFIX-PIC",
-                       HYBRID:"MFIX-Hybrid"}.get(solver, "MFIX")
-
-        self.print_internal("Solver: %s" % solver_name)
-        self.solver_name = solver_name
-
-        enabled = (solver != SINGLE)
-        self.find_navigation_tree_item("Solids").setDisabled(not enabled)
-        if enabled:
-            self.solids_update_tabs()
-
-        # Options which require TFM, DEM, or PIC
-        enabled = solver in (TFM, DEM, PIC)
-        interphase = m.groupbox_interphase
-        interphase.setEnabled(enabled)
-
-        # TFM only
-        # use a groupbox here, instead of accessing combobox + label?
-        enabled = (solver == TFM)
-        m.combobox_subgrid_model.setEnabled(enabled)
-        m.label_subgrid_model.setEnabled(enabled)
-        m.groupbox_subgrid_params.setEnabled(enabled and
-                                                       self.subgrid_model > 0)
-
-        enabled = (self.fluid_nscalar_eq > 0)
-        ui.fluid.checkbox_enable_scalar_eq.setChecked(self.fluid_nscalar_eq>0)
-        ui.fluid.spinbox_nscalar_eq.setEnabled(enabled)
-
-        # Equiv for solids is done in update_solids_detail_pane
-
-        # Solids Model selection tied to Solver
-        # FIXME XXX What to do about solids that are already defined?
-
-        valid_models = (("DEM",) if solver==DEM
-                        else ("TFM",) if solver==TFM
-                        else ("PIC",) if solver==PIC
-                        else ("TFM", "DEM"))
-
-        for (i,(k,v)) in enumerate(self.solids.items(), 1):
-            model = v.get('model')
-            if model not in valid_models:
-                model = valid_models[0]
-                self.update_keyword('solids_model', model, args=[i])
-                v['model'] = model
-        self.update_solids_table() # some of these settings are dependent on solver
-        self.setup_combobox_solids_model()
-        #self.update_solids_detail_pane()
-        self.update_window_title()
-        self.update_nav_tree()
-
-
-    def disable_fluid_solver(self, disabled):
-        # Option to disable the fluid phase
-        # Disables the Fluid task pane menu
-        # Sets keyword RO_G0 to 0.0
-        self.fluid_solver_disabled = disabled
-        m = self.ui.model_setup
-        enabled = not disabled
-        item = self.find_navigation_tree_item("Fluid")
-        item.setDisabled(disabled)
-        if disabled:
-            self.enable_turbulence(False)
-            self.saved_ro_g0 = self.project.get_value('ro_g0')
-            self.update_keyword('ro_g0', 0) # issues/124
-            if self.saved_ro_g0 is not None:
-                self.ui.fluid.lineedit_keyword_ro_g0.setText(str(self.saved_ro_g0))
-        else:
-            # would be nice to restore turbulence vals
-            val = self.saved_ro_g0 if self.fluid_density_model == CONSTANT else None
-            self.update_keyword('ro_g0', val)
-
-        m.checkbox_enable_turbulence.setEnabled(enabled)
-        m.combobox_turbulence_model.setEnabled(enabled and
-                        m.checkbox_enable_turbulence.isChecked())
-
-        self.update_nav_tree()
-        # TODO update nscalar
-
-
-    def enable_energy_eq(self, enabled):
-        # Additional callback on top of automatic keyword update,
-        # since this has to change availability of several other GUI items
-
-        self.ui.model_setup.checkbox_keyword_energy_eq.setChecked(enabled)
-
-        # It might not be necessary to do all this - will the fluid or
-        # solid panes get updated before we display them?
-        ui = self.ui
-        f = ui.fluid
-        for item in (f.label_fluid_specific_heat_model,
-                     f.combobox_fluid_specific_heat_model,
-                     f.label_fluid_conductivity_model,
-                     f.combobox_fluid_conductivity_model,
-                     # more ?
-                     ):
-            item.setEnabled(enabled)
-
-        # c_pg0 == specific heat for fluid phase
-        lineedit = f.lineedit_keyword_c_pg0
-        label = f.label_c_pg0_units
-        for item in (lineedit, label):
-            item.setEnabled(enabled and (self.fluid_specific_heat_model == CONSTANT))
-
-        # k_g0 == thermal conductivity fluid phase
-        lineedit = f.lineedit_keyword_k_g0
-        label = f.label_k_g0_units
-        for item in (lineedit, label):
-            item.setEnabled(enabled and (self.fluid_conductivity_model == CONSTANT))
-
-
-    def set_subgrid_model(self, index):
-        self.subgrid_model = index
-        groupbox_subgrid_params = self.ui.model_setup.groupbox_subgrid_params
-        groupbox_subgrid_params.setEnabled(index > 0)
-
-
-    def enable_turbulence(self, enabled):
-        m = self.ui.model_setup
-        if enabled != m.checkbox_enable_turbulence.isChecked():
-            m.checkbox_enable_turbulence.setChecked(enabled)
-        for item in (m.label_turbulence_model,
-                     m.combobox_turbulence_model,
-                     m.label_mu_gmax,
-                     m.lineedit_keyword_mu_gmax,
-                     m.label_mu_gmax_units):
-            item.setEnabled(enabled)
-        if not enabled:
-            self.unset_keyword('turbulence_model')
-            self.unset_keyword('mu_gmax')
-        else:
-            self.set_turbulence_model(m.combobox_turbulence_model.currentIndex())
-
-
-    def set_turbulence_model(self, val):
-        m = self.ui.model_setup
-        cb = m.combobox_turbulence_model
-        if cb.currentIndex() != val:
-            cb.setCurrentIndex(val)
-            return
-        self.update_keyword('turbulence_model',
-                            ['MIXING_LENGTH', 'K_EPSILON'][val])
-        val = m.lineedit_keyword_mu_gmax.value
-        if val=='' or val is None:
-            val = '1.e+03'
-        self.update_keyword('mu_gmax', val)
-
-
+    # move to 'scalar_handler.py'
     def update_scalar_equations(self, prev_nscalar):
         """sets nscalar and phase4scalar(#) for all phases"""
         # Used by both fluid & solid han
@@ -1081,33 +923,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_nav_tree()
 
 
-    # helper functions for __init__
-    def __setup_other_widgets(self): # rename/refactor
-        """setup widgets which are not tied to a simple keyword"""
+    # Move to 'numerics.py'
+    def register_numerics(self):
         ui = self.ui
-        model = ui.model_setup
-        combobox = model.combobox_solver
-        # activated: Only on user action, avoid recursive calls in set_solver
-        combobox.activated.connect(self.set_solver)
-
-        checkbox = model.checkbox_disable_fluid_solver
-        checkbox.clicked.connect(self.disable_fluid_solver)
-        self.disable_fluid_solver(self.fluid_solver_disabled)
-
-        checkbox = model.checkbox_keyword_energy_eq
-        checkbox.clicked.connect(self.enable_energy_eq)
-
-        checkbox = model.checkbox_enable_turbulence
-        checkbox.clicked.connect(self.enable_turbulence)
-
-        combobox = model.combobox_turbulence_model
-        combobox.currentIndexChanged.connect(self.set_turbulence_model)
-
-        combobox = model.combobox_subgrid_model
-        combobox.currentIndexChanged.connect(self.set_subgrid_model)
-        self.set_subgrid_model(0)
-
-        # numerics
         ui.linear_eq_table = LinearEquationTable(ui.numerics)
         ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
         self.project.register_widget(ui.linear_eq_table,
@@ -1117,8 +935,8 @@ class MfixGui(QtWidgets.QMainWindow,
                              args='*')
 
 
-    def __setup_simple_keyword_widgets(self):
-        """Look for and connect simple keyword widgets to the project manager.
+    def register_keyword_widgets(self):
+        """Look for and connect keyword widgets to the project manager.
         Keyword information from the namelist doc strings is added to each
         keyword widget. The widget must be named: *_keyword_<keyword> where
         <keyword> is the actual keyword.
@@ -1198,8 +1016,9 @@ class MfixGui(QtWidgets.QMainWindow,
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)
 
-    def __setup_vtk_widget(self):
-        """initialize the vtk widget"""
+
+    def init_vtk_widget(self):
+        #initialize the vtk widget
         disable_vtk = False
         if not 'MFIX_NO_VTK' in os.environ: # Avoid importing vtkwidget if MFIX_NO_VTK set
             from widgets.vtkwidget import VTK_AVAILABLE
@@ -1232,8 +1051,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget
 
-    def __setup_workflow_widget(self):
-        """set up the workflow widgets if pyqtnode is available"""
+
+    def init_workflow_widget(self):
+        # initialize the workflow widgets if pyqtnode is available
         if PYQTNODE_AVAILABLE:
             self.ui.workflow_widget = WorkflowWidget(self.project, self)
             self.ui.verticallayout_workflow_mode.addWidget(
@@ -1242,6 +1062,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.pushButtonWorkflow.setEnabled(False)
             self.ui.pushButtonWorkflow.setToolTip(
                 "Workflow disabled, can't import pyqtnode")
+
 
     @classmethod
     def get_project_file(cls):
@@ -2445,6 +2266,8 @@ class MfixGui(QtWidgets.QMainWindow,
             text = match.group(1)
             description = description.replace(text, '<br/>%s<br/>'%text[:-2].replace(' ', '&nbsp;'))
 
+        description = description.replace(' o ', '<br/>')  # Bullets
+
         args = widget.args if hasattr(widget, 'args') else None
         if args is None:
             nargs = 0
@@ -2460,13 +2283,9 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.error("keyword args mismatch: key=%s: expected %s, got %s" %
                            (key, keyword_args.get(key), args))
 
-        # Use the argument list from the DB in preference to the widget args (which are deprecated)
-        args = keyword_args.get(key)
-
         if isinstance(args, int):
             key = '%s(%s)' % (key, args)
-        elif args: # make BC, IC etc upper-case
-            args = [a.upper() if len(a)==2 else a for a in args]
+        elif args:
             key = '%s(%s)' % (key, ','.join(map(
                 lambda x: str(x[0] if isinstance(x, (tuple, list)) else str(x)), args)))
         msg = '<b>%s</b>: %s</br>' % (key, description)
