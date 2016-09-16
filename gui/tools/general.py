@@ -15,6 +15,8 @@ import logging
 import shlex
 import copy
 import random
+import operator
+from collections import OrderedDict
 
 log = logging.getLogger(__name__)
 
@@ -420,6 +422,14 @@ def append_row_column_triangular(a, n, fill_value = None):
     ret.append(fill_value)
     return ret
 
+def sort_dict(dict_, key):
+    """given an dict of dicts and a key, sort the outside dict based on the
+    value of one of the the internal dict's keys and return the sorted
+    OrderedDict"""
+    return OrderedDict(
+        [(k, dict_[old_k])
+         for k, (old_k, v) in enumerate(sorted([(k, v[key])
+         for k, v in dict_.items()], key=operator.itemgetter(1)))])
 
 if __name__ == '__main__':
     def test_recurse_dict():

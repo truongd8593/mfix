@@ -2,9 +2,12 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 from itertools import groupby
+import operator
 
 from qtpy import QtCore, QtWidgets, PYQT5
 
+# local i,ports
+from tools.general import sort_dict
 
 MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
@@ -70,9 +73,10 @@ def linspace(f, t, c):
     if c == 1:
         return [f, t]
     dx = (t-f)/float(c-1)
-    l = [0]
+    l = [f]
     for i in range(c-1):
         l.append(l[-1]+dx)
+    l[-1] = t # make sure the last value is the one given
     return l
 
 
@@ -134,6 +138,18 @@ class Mesh(object):
             self.change_mesher_options)
         ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
+        column_delegate = {0: {'widget': 'lineedit',
+                               'dtype':  'dp'},
+                           1: {'widget': 'lineedit',
+                               'dtype':  'i'},
+                           2: {'widget': 'lineedit',
+                               'dtype':  'dp'},
+                           3: {'widget': 'lineedit',
+                               'dtype':  'dp'},
+                           4: {'widget': 'lineedit',
+                               'dtype':  'dp'},
+                           }
+
         # setup tables
         for i, (d, table) in enumerate(zip(['x', 'y', 'z'], self.mesh_tables)):
             table.dtype = OrderedDict
@@ -151,6 +167,7 @@ class Mesh(object):
             table.menu = build_context_menu([
                 ('split', lambda ignore, t=table, d=d: self.mesh_split(t, d))])
             table.auto_update_rows(True)
+            table.set_delegate(col=column_delegate, row=None)
 
     def toggle_out_stl_value(self, wid, value, args):
         val = -1.0
@@ -269,8 +286,17 @@ class Mesh(object):
 
     def mesh_table_changed(self, row, col, val, d, table):
         """a table was edited, update"""
-        mfix_key = TABLE_MFIXKEY_MAP[col] + d
-        self.update_keyword(mfix_key, val, args=row)
+        data = table.value
+        if col == 'position':
+            sort = sort_dict(data, 'position')
+            table.set_value(sort, block=False) # unblock because the table is currently in an "edit" state
+            table.fit_to_contents()
+            for i, val in sort.items():
+                self.mesh_update_mfixkeys(val, i, d)
+            self.update_keyword(d + 'length', val['position'])
+        else:
+            mfix_key = TABLE_MFIXKEY_MAP[col] + d
+            self.update_keyword(mfix_key, val, args=row)
 
         self.update_background_mesh()
 
@@ -324,7 +350,7 @@ class Mesh(object):
         i = 0
         if k:
             i = max(k) + 1
-            loc = data.values()[-1]['position'] + 1
+            loc = safe_float(data.values()[-1]['position']) + 1
         else:
             loc = self.project.get_value(d + 'length', 1)
         ctrl = data[i] = {
@@ -426,5 +452,4 @@ class Mesh(object):
                 else:
                     self.cell_count_widgets[i].setEnabled(True)
 
-        print('updating mesh')
         self.vtkwidget.update_background_mesh(spacing)

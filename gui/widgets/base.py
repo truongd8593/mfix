@@ -706,14 +706,14 @@ class Table(QtWidgets.QTableView, BaseWidget):
         else:
             return None
 
-    def set_value(self, value):
+    def set_value(self, value, block=None):
         if self.dtype != type(value):
             # FIXME, this is a problem if you try to mix dict and OrderedDict
             raise TypeError('Selected table model does not support type'
                             '{}'.format(type(value)))
 
         if self.model() is not None:
-            self.model().update(value)
+            self.model().update(value, block)
 
         # reset the selection
         self.block_selection_change_event = True
@@ -966,7 +966,10 @@ class DictTableModel(QtCore.QAbstractTableModel):
         self.blockUpdate = False
         self.update_rows = False
 
-    def update(self, data):
+    def update(self, data, block=None):
+        if block is not None:
+            self.blockUpdate = block
+
         if not self.blockUpdate and data is not None:
             self.beginResetModel()
             self.datatable = data
@@ -1097,7 +1100,9 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         self._rows = rows
         self.blockUpdate = False
 
-    def update(self, data):
+    def update(self, data, block=None):
+        if block is not None:
+            self.blockUpdate = block
         if not self.blockUpdate:
             self.beginResetModel()
             self.datatable = data
