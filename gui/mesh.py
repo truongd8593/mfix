@@ -302,7 +302,7 @@ class Mesh(object):
         nrows = len(new)
         if rows[-1] == nrows: # We deleted the last row,
             if nrows > 0:
-                self.table.selectRow(nrows-1)
+                table.selectRow(nrows-1)
 
         # remove trailing keywords
         k = new.keys()
@@ -316,17 +316,36 @@ class Mesh(object):
                 self.update_keyword(key+d, None, args=ind)
 
     def mesh_add(self, index):
-        """add a control point"""
+        """add a control point to the end"""
+        table = self.mesh_tables[index]
+        data = table.value
+        d = ['x', 'y', 'z'][index]
+        k = data.keys()
+        i = 0
+        if k:
+            i = max(k) + 1
+            loc = data.values()[-1]['position'] + 1
+        else:
+            loc = self.project.get_value(d + 'length', 1)
+        ctrl = data[i] = {
+            'position': loc, 'cells': 1, 'stretch': 1, 'first': 0, 'last': 0}
+
+        self.mesh_update_mfixkeys(ctrl, i, d)
+        table.set_value(data)
+        table.fit_to_contents()
+        self.update_background_mesh()
 
     def mesh_split(self, table, d):
         """split the selected control point"""
         row, col = table.get_clicked_cell()
         data = table.value
         split_data = data[row]
-        prev_data = data[row-1]
+        prev_data_loc = 0
+        if row >= 1:
+            prev_data_loc = safe_float(data[row-1]['position'])
 
-        midpoint = (split_data['position'] - prev_data['position'])/2.0 + prev_data['position']
-        cells = max(int(split_data['cells']/2), 1)
+        midpoint = (safe_float(split_data['position']) - prev_data_loc)/2.0 + prev_data_loc
+        cells = max(int(safe_int(split_data['cells'], 1)/2), 1)
         split_data['cells'] = cells
 
         # insert the cell
@@ -398,7 +417,7 @@ class Mesh(object):
                 # disable imax, jmax, kmax
                 self.cell_count_widgets[i].setEnabled(False)
                 # update imax, jmax, kmax
-                self.update_keyword(CELL_MFIX_KEYS[i], len(s)-1)
+                self.update_keyword(CELL_MFIX_KEYS[i], len(s)-1) # TODO: fix reduentent update calls
             else:
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
                 # enable imax, jmax, kmax
@@ -407,4 +426,5 @@ class Mesh(object):
                 else:
                     self.cell_count_widgets[i].setEnabled(True)
 
+        print('updating mesh')
         self.vtkwidget.update_background_mesh(spacing)
