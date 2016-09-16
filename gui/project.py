@@ -70,17 +70,21 @@ NaN = float('NaN')
 PYTHON_TYPE_DICT = {'float':float, 'int':int, 'bool':bool}
 PYTHON_TYPE_DICT_REVERSE = dict([(val, key) for key,val in PYTHON_TYPE_DICT.items()])
 
-# Canonicalize long BC_TYPE to short form about long/short versions later
+# Canonicalize long BC_TYPE to short form, don't worry about about long/short versions later
 BC_TYPE_DICT = {
-    #"DUMMY": None,
-    "MASS_INFLOW": "MI",
-    "MASS_OUTFLOW": "MO",
-    "P_INFLOW": "PI",
-    "P_OUTFLOW": "PO",
-    "FREE_SLIP_WALL": "FSW",
-    "NO_SLIP_WALL": "NSW",
-    "PAR_SLIP_WALL": "PSW" }
+    #'DUMMY': None,
+    'MASS_INFLOW': 'MI',
+    'MASS_OUTFLOW': 'MO',
+    'P_INFLOW': 'PI',
+    'P_OUTFLOW': 'PO',
+    'FREE_SLIP_WALL': 'FSW',
+    'NO_SLIP_WALL': 'NSW',
+    'PAR_SLIP_WALL': 'PSW' }
 
+# For IS_TYPE, prefer the long form
+IS_TYPE_DICT = {
+    'IP': 'IMPERMEABLE',
+    'SP': 'SEMIPERMEABLE' }
 
 class FloatExp(float):
     fmt = '4'
@@ -1243,6 +1247,10 @@ class Project(object):
             elif key.startswith('ps_'):
                 cond = self.pss
             elif key.startswith('is_'):
+                if key == 'is_type':
+                    # Normalize names
+                    value = value.upper()
+                    value = IS_TYPE_DICT.get(value, value)
                 cond = self.iss
             else:
                 cond = None
