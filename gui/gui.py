@@ -487,7 +487,14 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
+        # Remove mention of 'cylindrical' since we don't support it
+        self.keyword_doc['no_k']['description'] = 'Flag to disable the third dimension (i.e., 2D simulation).'
+
+        # Remove this docstring completely - it refers to cylindrical coordinates (annluar region)
+        del self.keyword_doc['xmin']['description']
+
         # All temperatures > 0 ?
+
 
     def set_no_project(self):
         """setup mode when no project is open"""
@@ -2255,7 +2262,9 @@ class MfixGui(QtWidgets.QMainWindow,
         description = doc.get('description')
         if description is None:
             return
-
+        #if 'cylindrical' in description.lower():
+        #    print('CYLINDRICAL found! key=%s tooltip=%s' % (key, description))
+        #    return
         # Clean it up a little
         description = description.strip()
         description = description.replace('-', '&#8209;') # non-breaking hyphen
