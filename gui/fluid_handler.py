@@ -373,3 +373,124 @@ class FluidHandler(object):
         self.saved_fluid_species = None
         self.fluid_species.clear()
         self.init_fluid_default_models()
+
+
+
+#Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
+#    Option to rename the phase (e.g, air, gas)
+
+#    Option to disable Momentum Equations (enabled by default)
+# Sets keyword: MOMENTUM_X/Y/Z_EQ(0)
+
+#    Option to enable Species Equations
+# Sets keyword: SPECIES_EQ(0)
+
+#    Option to enable scalar equations
+# Define the number of scalar equations
+# Value sums into keyword NSCALAR
+# Sets keyword PHASE4SCALAR(*)=0 for total listed scalars
+
+#    Select Density Model:
+# Selection always available
+# Available selections:
+#  Constant: [DEFAULT]
+#    Selection always available
+#    Specify constant gas density, RO_G0
+#  Ideal gas law:
+#    Selection always available
+#    Keyword RO_G0 must be undefined
+
+#    Requires a fluid phase molecular weight
+#    Requires temperature field for full domain
+#  UDF
+#    Selection is always available
+#    Sets keyword USR_ROg
+#    MFIX runtime check verifies UDF was provided
+
+#Select Viscosity Model:
+# Selection always available
+# Available selections:
+#  Constant: [DEFAULT]
+#    Selection always available
+#    Specify constant gas viscosity, MU_G0
+#  Sutherland's law
+#    Selection always available
+#    Keyword MU_G0 must be undefined
+#    Requires temperature field for full domain
+#  UDF
+#    Selection always available
+#    Sets keyword USR_MUg
+#    MFIX runtime check verifies UDF was provided
+
+#Select Molecular Weight Model:
+# Selection always available
+# Available selections:
+#  Constant; [DEFAULT]
+#    Specification always available
+#    Specify constant molecular weight, MW_AVG
+#  Mixture:
+#    Selection always available
+#    Requires molecular weights for all species components
+
+#Select Specific Heat Model:
+# Selection available only when solving thermal energy equations
+# Available selections:
+#  Constant; [DEFAULT]
+#    Selection always available
+#    Specify constant fluid phase specific heat, C_PG0
+#  Mixture:
+#    Selection always available
+#    Keyword C_PG0 must be undefined
+#    Requires specific heats for all species components
+#  UDF
+#    Selection always available
+#    Sets keyword USR_CPg
+#    MFIX runtime check verifies UDF was provided
+
+#Select Thermal Conductivity Model:
+# Selection only available when solving thermal energy equations
+# Available selections:
+#  Constant
+#    Selection always available
+#    Specify constant thermal conductivity, K_G0
+#  Temperature dependent (air); [DEFAULT]
+#    Selection always available
+#    Keyword K_G0 must be undefined
+#  UDF
+#    Selection always available
+#    Set keyword USR_KG
+#    MFIX runtime check verifies UDF was provided
+
+#Select Diffusion Coefficient Model:
+# Selection only available when solving species equations
+# Available selections:
+#  Constant
+#    Selection always available
+#    Specify a constant diffusion coefficient, DIF_G0
+#  Dilute Mixture Approximation (air); [DEFAULT]
+#    Selection always available
+#    Keyword DIF_G0 must be undefined
+#    Requires temperature field for full domain
+#  UDF
+#    Selection always available
+#    Sets keyword USR_DIFG
+#    MFIX runtime check verifies UDF was provided
+
+#Fluid phase species selection:
+# Species data required under any of the following conditions:
+#  Solving species equations
+#  Density model is the ideal gas law with mixture molecular weight model
+#  Energy equations are solved with mixture specific heat model
+# Specification panel operates as a popup window triggered by an Add/Edit button
+# Summary window provides a list of the species and an overview of some properties
+
+#Fluid phase Material Database window (popup):
+#    Select database (BURCAT); later could link in other databases.
+#    Capability to search selected database for chemical name
+#    Import from database copies the usable information from the database into a new entry in the 'run database'
+#    New creates a new 'blank' species in the 'run database' where the user must supply all the thermochemical data.
+#    Delete removes an entry from the 'run database'
+
+#NOTE: The gas phase species molecular weights, MW_G(#) cannot be directly specified. This
+#keyword is not needed because users can edit the molecular weight in the material database popup
+#window.
