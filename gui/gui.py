@@ -2262,20 +2262,33 @@ class MfixGui(QtWidgets.QMainWindow,
         description = doc.get('description')
         if description is None:
             return
+
         #if 'cylindrical' in description.lower():
         #    print('CYLINDRICAL found! key=%s tooltip=%s' % (key, description))
         #    return
+
         # Clean it up a little
         description = description.strip()
         description = description.replace('-', '&#8209;') # non-breaking hyphen
-        # don't split diff. eq's over multiple lines
+
+        # Don't split diff. eq's over multiple lines
         pat = re.compile('boundary condition: *([^,]*, )')
         match = pat.search(description)
         if match:
             text = match.group(1)
             description = description.replace(text, '<br/>%s<br/>'%text[:-2].replace(' ', '&nbsp;'))
 
-        description = description.replace(' o ', '<br/>')  # Bullets
+        # Default
+        pat = re.compile(r'\[[^]]+\]')
+        while True:
+            match = pat.search(description)
+            if not match:
+                break
+            text = match.group(0)
+            description = description.replace(text, '<i>Default: %s</i>'%text[1:-1])
+
+        # Bullets
+        description = description.replace(' o ', '<br/>')
 
         args = widget.args if hasattr(widget, 'args') else None
         if args is None:

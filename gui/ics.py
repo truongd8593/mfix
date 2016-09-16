@@ -1153,6 +1153,7 @@ class ICS(object):
             row = 0
             for i in range(1, nscalar+1):
                 label = QLabel('Scalar %s' % i)
+                self.add_tooltip(label, key)
                 layout.addWidget(label, row, 0)
                 le = LineEdit()
                 le.key = key
