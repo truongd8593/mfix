@@ -129,6 +129,7 @@ class MfixGuiTests(TestQApplication):
 
     def test_run_mfix(self):
 
+        self.skipTest("temporarily disabling to test the test harness")
         # avoid test hangs in the waitFor loops below
         def retry(msg, delay):
             print('retrying test of "%s" state' % msg)
