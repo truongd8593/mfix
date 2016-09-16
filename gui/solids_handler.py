@@ -454,8 +454,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         tw.setCurrentCell(nrows, 0) # Select new item
 
         # ICs enabled/disabled depends on number of solids
-        self.ics_update_enabled()
         self.update_nav_tree()
+
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
         if len(self.solids) >= DIM_M:
@@ -789,9 +789,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
                         self.unset_keyword(key, args=i)
 
             self.update_solids_table()
+
             # ICs enabled/disabled depends on nscalar & number of solids
-            self.ics_update_enabled()
             self.update_nav_tree()
+
             # Tabs enable/disable depending on number of solids
             self.solids_update_tabs()
         finally:
