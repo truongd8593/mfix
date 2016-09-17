@@ -2,7 +2,6 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 from itertools import groupby
-import operator
 
 from qtpy import QtCore, QtWidgets, PYQT5
 
@@ -271,13 +270,13 @@ class Mesh(object):
         table_dic = OrderedDict()
         d = ['x', 'y', 'z'][index]
 
-        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
+        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)], 1):
             loc = count*val + start
             start = loc
             self.update_keyword('cp' + d, loc, args=i)
             self.update_keyword('nc' + d, count, args=i)
-            table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1,
-                            'first': 0, 'last': 0}
+            table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
+                            'first': 0.0, 'last': 0.0}
         for i in range(len(spacing)):
             self.update_keyword('d' + d, None, args=i)
 
@@ -288,7 +287,7 @@ class Mesh(object):
         """a table was edited, update"""
         data = table.value
         if col == 'position':
-            sort = sort_dict(data, 'position')
+            sort = sort_dict(data, 'position', 1)
             table.set_value(sort, block=False) # unblock because the table is currently in an "edit" state
             table.fit_to_contents()
             for i, val in sort.items():
@@ -304,7 +303,7 @@ class Mesh(object):
         """delete the selected control point"""
         table = self.mesh_tables[index]
         data = table.value
-        rows = table.current_rows()
+        rows = [row+1 for row in table.current_rows()]
         if not rows: return
         max_i = max(data.keys())
         min_row = min(rows)
@@ -317,7 +316,7 @@ class Mesh(object):
         # rebuild dict
         # TODO: better way?
         new = OrderedDict()
-        for i, ctrl in enumerate(data.values()):
+        for i, ctrl in enumerate(data.values(), 1):
             new[i] = ctrl
             if i >= min_row:
                 self.mesh_update_mfixkeys(ctrl, i, d)
@@ -326,7 +325,7 @@ class Mesh(object):
         self.update_background_mesh()
 
         nrows = len(new)
-        if rows[-1] == nrows: # We deleted the last row,
+        if rows[-1] - 1 == nrows: # We deleted the last row,
             if nrows > 0:
                 table.selectRow(nrows-1)
 
@@ -347,14 +346,13 @@ class Mesh(object):
         data = table.value
         d = ['x', 'y', 'z'][index]
         k = data.keys()
-        i = 0
+        i = 1
         if k:
             i = max(k) + 1
             loc = safe_float(data.values()[-1]['position']) + 1
         else:
             loc = self.project.get_value(d + 'length', 1)
-        ctrl = data[i] = {
-            'position': loc, 'cells': 1, 'stretch': 1, 'first': 0, 'last': 0}
+        ctrl = data[i] = {'position': loc, 'cells': 1, 'stretch': 1.0, 'first': 0.0, 'last': 0.0}
 
         self.mesh_update_mfixkeys(ctrl, i, d)
         table.set_value(data)
@@ -364,10 +362,11 @@ class Mesh(object):
     def mesh_split(self, table, d):
         """split the selected control point"""
         row, col = table.get_clicked_cell()
+        row += 1
         data = table.value
         split_data = data[row]
         prev_data_loc = 0
-        if row >= 1:
+        if row >= 2:
             prev_data_loc = safe_float(data[row-1]['position'])
 
         midpoint = (safe_float(split_data['position']) - prev_data_loc)/2.0 + prev_data_loc
@@ -381,8 +380,8 @@ class Mesh(object):
             if i < row:
                 new[i] = ctrl
             elif i == row:
-                new[i] = {'position': midpoint, 'cells': cells, 'stretch': 1,
-                          'first': 0, 'last': 0}
+                new[i] = {'position': midpoint, 'cells': cells, 'stretch': 1.0,
+                          'first': 0.0, 'last': 0.0}
                 self.mesh_update_mfixkeys(new[i], i, d)
                 new[i+1] = ctrl
                 self.mesh_update_mfixkeys(ctrl, i+1, d)

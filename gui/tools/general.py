@@ -422,14 +422,14 @@ def append_row_column_triangular(a, n, fill_value = None):
     ret.append(fill_value)
     return ret
 
-def sort_dict(dict_, key):
+def sort_dict(dict_, key, start=0):
     """given an dict of dicts and a key, sort the outside dict based on the
     value of one of the the internal dict's keys and return the sorted
     OrderedDict"""
     return OrderedDict(
         [(k, dict_[old_k])
          for k, (old_k, v) in enumerate(sorted([(k, v[key])
-         for k, v in dict_.items()], key=operator.itemgetter(1)))])
+         for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
 
 if __name__ == '__main__':
     def test_recurse_dict():
