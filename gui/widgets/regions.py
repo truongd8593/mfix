@@ -334,6 +334,8 @@ class RegionsWidget(QtWidgets.QWidget):
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
             val = list(value.values())[0]
+
+            # check for equation and special parameters max, min
             if isinstance(val, Equation):
                 used = val.get_used_parameters()
                 if 'min' in used or 'max' in used:
@@ -342,8 +344,16 @@ class RegionsWidget(QtWidgets.QWidget):
             if update_param:
                 self.update_parameter_map(value[key], name, key)
 
+            # update data dict
             data[name][item[0]][index] = val
 
+            # check for and update plane extents
+            typ = data[name]['type']
+            if 'plane' in typ and item[1] not in typ.lower():
+                data[name]['to'][index] = val
+                self.extent_lineedits[index*2+1].updateValue(None, val)
+
+            # propagate values
             for update in (self.vtkwidget.update_region,
                            self.parent.ics_update_region,
                            self.parent.bcs_update_region):
