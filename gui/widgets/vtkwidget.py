@@ -47,7 +47,7 @@ GUI = None
 
 def safe_float(value):
     """try to convert the value to a float, if ValueError, send error to gui
-    and rturn 0"""
+    and return 0"""
     try:
         return float(value)
     except ValueError as error:
@@ -60,7 +60,7 @@ def safe_float(value):
 
 def safe_int(value):
     """try to convert the value to a int, if ValueError, send error to gui
-    and rturn 0"""
+    and return 0"""
     try:
         return int(value)
     except ValueError as error:
