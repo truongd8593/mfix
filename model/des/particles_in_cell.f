@@ -44,6 +44,7 @@
 
       use discretelement, only: DES_POS_NEW
       use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      USE discretelement, ONLY: PARTICLE_STATE, NONEXISTENT
 
       IMPLICIT NONE
 
@@ -147,6 +148,10 @@
          PIJK(L,3) = K
          PIJK(L,4) = IJK
 
+         IF(IJK<IJKSTART3.OR.IJK>IJKEND3) THEN
+            PARTICLE_STATE(L)=NONEXISTENT
+            CYCLE
+         ENDIF
 ! Increment the number of particles in cell IJK
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. &
             .NOT.IS_EXITING_GHOST(L)) THEN
