@@ -356,7 +356,7 @@ Specify drag model
 #  USER_DRAG
 Specify heat transfer correlation (requires TFM, DEM, or PIC solver)
 *This option may be premature as MFIX is limited in heat HTCs.
-Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishi
+Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishii
 Select sub-grid model:
 # Selection requirements:
 #  Only available with MFIX-TFM solver
@@ -389,6 +389,7 @@ Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
 # Sets keyword: MOMENTUM_X/Y/Z_EQ(0)
 #    Option to enable Species Equations
 # Sets keyword: SPECIES_EQ(0)
+# Species Equations disabled [DEFAULT]
 #    Option to enable scalar equations
 # Define the number of scalar equations
 # Value sums into keyword NSCALAR
@@ -401,8 +402,8 @@ Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
 #    Specify constant gas density, RO_G0
 #  Ideal gas law:
 #    Selection always available
-#    Keyword RO_G0 must be undefined
 
+#    Keyword RO_G0 must be undefined
 #    Requires a fluid phase molecular weight
 #    Requires temperature field for full domain
 #  UDF
@@ -456,8 +457,8 @@ Select Thermal Conductivity Model:
 #    Selection always available
 #    Keyword K_G0 must be undefined
 #  UDF
-#    Selection always available
 
+#    Selection always available
 #    Set keyword USR_KG
 #    MFIX runtime check verifies UDF was provided
 Select Diffusion Coefficient Model:
