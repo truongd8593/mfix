@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 """MFIX GUI"""
@@ -252,6 +253,12 @@ class MfixGui(QtWidgets.QMainWindow,
         # TODO: pregenerate this?
         self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
                                                         os.pardir, 'model'))
+
+        # Fixes
+        doc = self.keyword_doc['turbulence_model']
+        doc['valids'] = OrderedDict((('NONE', {'note': 'No turbulence model'}),
+                                     (TURBULENCE_MODELS[1], doc['valids'][TURBULENCE_MODELS[1]]),
+                                     (TURBULENCE_MODELS[2], doc['valids'][TURBULENCE_MODELS[2]])))
 
         # A few more ranges etc not mentioned in namelist doc
         self.add_extra_keyword_doc()
@@ -1160,6 +1167,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.setup_current_tab()
 
+
     def setup_current_tab(self):
         # Force any open popup to close
         # (if dialog is modal we don't need this)
@@ -1170,6 +1178,10 @@ class MfixGui(QtWidgets.QMainWindow,
             return
         text = str(current_selection[-1].text(0))
         text = '_'.join(text.lower().split(' '))
+        # Make sure panes are properly initialized as we change to them.  This way
+        # we do not have to worry so much about inter-pane state dependencies
+        if text == 'model_setup':
+            self.setup_model_setup()
         if text == 'fluid' : #
             self.setup_fluid()
         elif text == 'solids':
@@ -2106,7 +2118,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
 
         # Model parameters
-
+        # move this stuff to model_setup.py!
 
         # TODO: set 'disable fluid solver' checkbox if appropriate
 
@@ -2158,7 +2170,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.solids = s
 
         #### Fluid phase
-        # fluid species table
+        # fluid species table # move this stuff to setup_fluid!
         self.update_fluid_species_table()
 
         # fluid momentum and species eq. handled by _keyword_ widget
@@ -2168,6 +2180,7 @@ class MfixGui(QtWidgets.QMainWindow,
                                     if self.project.get_value('phase4scalar', args=i) == 0)
         self.solids_nscalar_eq = sum(1 for i in range(1, nscalar+1)
                                     if self.project.get_value('phase4scalar', args=i) != 0)
+
 
         # solid scalar eq checkbox will be handled in update_solids_detail_pane
         # need to initialize per-solid 'nscalar_eq' so
@@ -2181,8 +2194,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.fluid.spinbox_nscalar_eq.setValue(self.fluid_nscalar_eq)
         self.enable_fluid_scalar_eq(self.fluid_nscalar_eq > 0)
 
-
-        #Move to fluid_handler
+        #Move to fluid_handler!
         # handle a bunch of items which are essentially the same
         for (setter, name) in ((self.set_fluid_density_model, 'ro'),
                                (self.set_fluid_viscosity_model, 'mu'),
@@ -2211,15 +2223,16 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_fluid_mol_weight_model(1)
         # requires molecular weights for all species components, when should we validate?
 
-        ### Solids
+        ### Solids - move to solids_handler.py!
         self.update_solids_table()
         self.solids_update_tabs()
-        #self.update_solids_detail_pane()
+        self.update_solids_detail_pane()
 
         ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
         # Take care of updates we deferred during extract_region
+        # FIXME why not do this when switching panes, like we do with solids/BCs etc?
         self.ui.regions.tablewidget_regions.fit_to_contents()
 
         # Initial conditions
@@ -2255,13 +2268,18 @@ class MfixGui(QtWidgets.QMainWindow,
         #self.clear_unsaved_flag() # why is unsaved_flag set?
 
 
-    def add_tooltip(self, widget, key):
-        doc = self.keyword_doc.get(key)
-        if not doc:
-            return
-        description = doc.get('description')
+    def add_tooltip(self, widget, key, description=None, value=None):
         if description is None:
-            return
+            doc = self.keyword_doc.get(key)
+            if not doc:
+                return
+            description = doc.get('description')
+            if description is None:
+                return
+            if value is not None and 'valids' in doc:
+                vkey = '.FALSE.' if value is False else '.TRUE.' if value is True else str(value)
+                if vkey in doc['valids']:
+                    description = doc['valids'][vkey].get('note', str(value))
 
         #if 'cylindrical' in description.lower():
         #    print('CYLINDRICAL found! key=%s tooltip=%s' % (key, description))
@@ -2270,6 +2288,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # Clean it up a little
         description = description.strip()
         description = description.replace('-', '&#8209;') # non-breaking hyphen
+
+        description = description.replace('epsilon', 'ε')
 
         # Don't split diff. eq's over multiple lines
         pat = re.compile('boundary condition: *([^,]*, )')
@@ -2298,8 +2318,7 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             nargs = len(args)
 
-        # This is arguably a weird place to be doing this check
-        # TODO:  remove _args from widget names completely, use keyword_args DB
+        # This is a weird place to be doing this check
         if getattr(widget, 'key', None) == key and len(keyword_args.get(key, [])) != nargs:
             if not key.startswith('des_'):
                 self.error("keyword args mismatch: key=%s: expected %s, got %s" %
@@ -2310,10 +2329,14 @@ class MfixGui(QtWidgets.QMainWindow,
         elif args:
             key = '%s(%s)' % (key, ','.join(map(
                 lambda x: str(x[0] if isinstance(x, (tuple, list)) else str(x)), args)))
-        msg = '<b>%s</b>: %s</br>' % (key, description)
+        if value is not None:
+            key = '%s=%s' % (key, value)
+        if key is None:
+            msg = '<b></b>%s</br>' % description
+        else:
+            msg = '<b>%s</b>: %s</br>' % (key, description)
         widget.setToolTip(msg)
-        widget.help_text = msg # TODO: can we get more info here, so help_text
-        # is not just a repeat of the tooltip?
+        widget.help_text = msg # Can we get more info here, so help_text is not just repeating tooltip?
 
 
     # Following functions are overrideable for test runner
