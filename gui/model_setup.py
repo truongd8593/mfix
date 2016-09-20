@@ -256,7 +256,12 @@ class ModelSetup(object):
                    bool(blending_stress)==False and
                    friction_model != 'SRIVASTAVA')
         cb = ui.combobox_subgrid_type
-        cb.setEnabled(enabled)
+        for item in (ui.label_subgrid_type, cb,
+                     ui.label_filter_size_ratio, ui.lineedit_keyword_filter_size_ratio,
+                     ui.checkbox_keyword_subgrid_wall):
+            item.setEnabled(enabled)
+        if not enabled:
+            self.unset_keyword(key)
 
         value = self.project.get_value(key, default=DEFAULT_SUBGRID_TYPE)
         if value not in SUBGRID_TYPES:

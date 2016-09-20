@@ -430,16 +430,6 @@
       <property name="bottomMargin">
        <number>10</number>
       </property>
-      <item row="2" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_filter_size_ratio">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_momentum_formulation">
         <property name="layoutDirection">
@@ -467,43 +457,11 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>107</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="3" column="0" colspan="3">
        <widget class="CheckBox" name="checkbox_keyword_subgrid_wall">
         <property name="text">
          <string>Enable subgrid wall correction</string>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="ComboBox" name="combobox_subgrid_type">
-        <item>
-         <property name="text">
-          <string>None</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Igci</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Milioli</string>
-         </property>
-        </item>
        </widget>
       </item>
       <item row="0" column="1" colspan="2">
@@ -526,6 +484,35 @@
         <item>
          <property name="text">
           <string>Ishii</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="LineEdit" name="lineedit_keyword_filter_size_ratio">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="ComboBox" name="combobox_subgrid_type">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Igci</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Milioli</string>
          </property>
         </item>
        </widget>
