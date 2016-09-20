@@ -1093,9 +1093,12 @@ Solid-# (tab) - Rename tab to user provided solids name.
 #    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
 #    Solids density IC_ROs is determined by the solids density model
 # IC_ROs(#) = RO_S0(#)
-# IC_ROs(#) = -- FINISH LATER -#  Volume fraction may be inferred from IC_EP_G
+# IC_ROs(#) = -- FINISH LATER -
+#  Volume fraction may be inferred from IC_EP_G
 #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
 #    Only valid for one solids phase (MMAX=1)
+
+
 #    Define temperature
 # Specification always available
 # Input required when solving energy equations
@@ -2751,4 +2754,3 @@ HELYX-OS
 SimScale
 
 DICEhub
-

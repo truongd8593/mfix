@@ -80,6 +80,32 @@ class ICS(object):
         widget.dtype = float
         widget.value_updated.connect(self.handle_ics_volume_fraction)
 
+        widget = ui.lineedit_ic_p_star_args_IC
+        widget.key = 'ic_p_star'
+        widget.args = ['IC']
+        widget.dtype = float
+        widget.value_updated.connect(self.handle_ic_p_star)
+
+
+    def handle_ic_p_star(self, widget, data, args):
+        if not self.ics_current_indices:
+            return
+        IC0 = self.ics_current_indices[0]
+        key = 'ic_p_star'
+        prev_val = self.project.get_value(key, args=[IC0])
+        new_key, new_val = data.popitem()
+
+        ui = self.ui.initial_conditions
+        if len(self.solids) > 1:
+            resp=self.message(text="Pressure setting applies to all solids phases\nAre you sure?",
+                              buttons=['yes','no'],
+                              default = 'no')
+            if resp != 'yes': # Reject update, set lineedit back to previous value
+                widget.updateValue(self.project.get_value(key, prev_val))
+                return
+        for IC in self.ics_current_indices:
+            self.update_keyword(key, new_val, args=[IC])
+
 
     def ics_set_volume_fraction_limit(self):
         # Set ic_ep_g from ic_ep_s (issues/121)
@@ -127,16 +153,22 @@ class ICS(object):
 
     def ics_show_regions_popup(self):
         #Users cannot select inapplicable regions.
-        #IC regions must be volumes (not planes, points, or STLs)
+        # IC regions must be volumes or planes (not points or STLs)
+        #  Volumes are always valid IC regions
+        #  XY-Planes are valid IC regions for 2D simulations (NO_K=.TRUE.)
+        #  XZ- and YZ Planes are never valid IC regions
         #No region can define more than one initial condition.
         ui = self.ui.initial_conditions
         rp = self.regions_popup
         rp.clear()
+        no_k = self.project.get_value('no_k', default=False)
 
         for (name,data) in self.ics_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
-            available = data.get('available', True) and (shape == 'box')
+            available = (data.get('available', True) and
+                         (shape == 'box')  or (no_k and shape=='XY-plane'))
+
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
@@ -989,10 +1021,27 @@ class ICS(object):
         #Define volume fraction (required)
         # Specification always available
         # Sets keyword IC_EP_S(#,#)
-        # DEFAULT value of (0.0, 1 - SUM)
-        # - spec changed - default 0, set ip_ep_g to 1-sum
+        # DEFAULT value of 0.0
         key = 'ic_ep_s'
         default = 0.0
+        # Some input decks may or may not contain IC_EP_S keyword:
+        #  Volume fraction is specified using the solids bulk density
+        #    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
+        #    Solids density IC_ROs is determined by the solids density model
+        # IC_ROs(#) = RO_S0(#)
+        # IC_ROs(#) = -- FINISH LATER -
+        # (above section of spec NOT IMPLEMENTED)
+
+        #  Volume fraction may be inferred from IC_EP_G
+        #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
+        #    Only valid for one solids phase (MMAX=1)
+
+        ic_ep_s = self.project.get_value(key, args=[IC0, P])
+        ic_ep_g = self.project.get_value('ic_ep_g', args=[IC0])
+        if ic_ep_s is None and ic_ep_g is not None and len(self.solids)==1:
+            for IC in self.ics_current_indices:
+                self.update_keyword(key, 1.0-ic_ep_g, args=[IC, P])
+
         setup_key_widget(key, default)
 
         #Define temperature
@@ -1013,13 +1062,11 @@ class ICS(object):
         for key in 'ic_u_s', 'ic_v_s', 'ic_w_s':
             setup_key_widget(key, default=0.0)
 
-        #Define pressure (optional) # TODO 'optional' in label?
+        #Define pressure (optional)
         # Specification only available for SOLIDS_MODEL(#)='TFM'
         # Sets keyword IC_P_STAR(#)
         # DEFAULT of 0.0
-        # TODO: If a value is entered, then if you edit it on another solids tab,
-        # you get a warning that it applies to all solids in the IC region.
-
+        # Common to all phases - Warn user if changed.
         solids_model = self.project.get_value('solids_model', args=[P])
         enabled = (solids_model=='TFM')
         key = 'ic_p_star'
