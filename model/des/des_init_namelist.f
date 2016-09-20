@@ -889,6 +889,9 @@
 ! Time interval at which particle load is displayed (sec)
       DLB_DT = UNDEFINED
 
+! Eulerian Grid Weight
+      DLB_EGW = 0
+
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !                            UNSUPPORTED KEYWORDS                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!

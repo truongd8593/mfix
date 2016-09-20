@@ -60,5 +60,5 @@
 ! Flag to turn on/off optimizing the list of facets at each des grid cell
          MINIMIZE_DES_FACET_LIST, &
 
-! Time interval at which particle dynamic load balance is called
-         DLB_DT
+! Time interval at which particle dynamic load balance is called, Eulerian Grid Weight 
+         DLB_DT,DLB_EGW

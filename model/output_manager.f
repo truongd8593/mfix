@@ -800,6 +800,8 @@ MODULE output_man
       LOGICAL :: PARTITION_CHANGED
       LOGICAL :: INCLUDE_GHOST_PARTICLES = .TRUE.
 
+      INTEGER :: iDLB_EGW
+
 
 ! Local Parameters:
 !---------------------------------------------------------------------//
@@ -812,6 +814,8 @@ MODULE output_man
 
       IF(NumPEs==1) RETURN  ! Nothing to do in serial
 
+      iDLB_EGW = INT(DLB_EGW)
+
 ! GET A LIST OF NUMBER OF PARTICLES ALONG EACH I-PLANE
 
       DO I = ISTART1, IEND1
@@ -821,6 +825,7 @@ MODULE output_man
                IJK = FUNIJK(I,J,K)
                NP_I(I) = NP_I(I) + PINC(IJK)
                IF(INCLUDE_GHOST_PARTICLES) NP_I(I) = NP_I(I) + GPINC(IJK)
+               NP_I(I) = NP_I(I) + iDLB_EGW
             ENDDO
          ENDDO
       ENDDO
@@ -871,7 +876,8 @@ MODULE output_man
             DO K = KSTART1, KEND1
                IJK = FUNIJK(I,J,K)
                NP_J(J) = NP_J(J) + PINC(IJK)
-               IF(INCLUDE_GHOST_PARTICLES) NP_I(I) = NP_I(I) + GPINC(IJK)
+               IF(INCLUDE_GHOST_PARTICLES) NP_J(J) = NP_J(J) + GPINC(IJK)
+               NP_J(J) = NP_J(J) + iDLB_EGW
             ENDDO
          ENDDO
       ENDDO
@@ -926,7 +932,8 @@ MODULE output_man
             DO I = ISTART1, IEND1
                IJK = FUNIJK(I,J,K)
                NP_K(K) = NP_K(K) + PINC(IJK)
-               IF(INCLUDE_GHOST_PARTICLES) NP_I(I) = NP_I(I) + GPINC(IJK)
+               IF(INCLUDE_GHOST_PARTICLES) NP_K(K) = NP_K(K) + GPINC(IJK)
+               NP_K(K) = NP_K(K) + iDLB_EGW
             ENDDO
          ENDDO
       ENDDO
