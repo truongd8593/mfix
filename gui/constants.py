@@ -7,6 +7,43 @@ SINGLE, TFM, DEM, PIC, HYBRID = range(5)
 CONSTANT, AIR, UDF = 0, 1, 2  # model types
 VARIABLE = MIXTURE = OTHER = AIR  # continuum, etc
 
+DRAG_TYPES = ['SYAM_OBRIEN', # (DEFAULT)
+              'BVK',
+              'GIDASPOW',
+              'GIDASPOW_BLEND',
+              'GIDASPOW_PCF',
+              'GIDASPOW_BLEND_PCF',
+              'HYS',
+              'KOCH_HILL',
+              'KOCH_HILL_PCF',
+              'WEN_YU',
+              'WEN_YU_PCF',
+              'USER_DRAG']
+
+DEFAULT_DRAG_TYPE = 'SYAM_OBRIEN'
+
+TURBULENCE_MODELS = ['NONE', 'MIXING_LENGTH', 'K_EPSILON']
+DEFAULT_TURBULENCE_MODEL = 'NONE'
+
+SUBGRID_TYPES = ['NONE', 'IGCI', 'MILIOLI']
+DEFAULT_SUBGRID_TYPE = 'NONE'
+
+
+KT_TYPES = ['ALGEBRAIC', 'LUN_1984', 'IA_NONEP', 'SIMONIN',
+            'AHMADI', 'GD_99', 'GTSH', 'GHD']
+
+DEFAULT_KT_TYPE = 'ALGEBRAIC'
+
+FRICTION_MODELS = ['SCHAEFFER', 'SRIVASTAVA', 'NONE']
+
+RDF_TYPES = ['LEBOWITZ', 'LEBOWITZ', #sic
+             'MANSOORI', 'MODIFIED_LEBOWITZ', 'MODIFIED_MANSOORI']
+
+DEFAULT_RDF_TYPE='LEBOWITZ'
+
+BLENDING_FUNCTIONS = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
+DEFAULT_BLENDING_FUNCTION = 'NONE'
+
 BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
 
 BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',

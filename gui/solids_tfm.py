@@ -3,15 +3,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from tools.general import get_combobox_item, set_item_enabled
 
-kt_types = ['ALGEBRAIC', 'LUN_1984', 'IA_NONEP', 'SIMONIN',
-            'AHMADI', 'GD_99', 'GTSH', 'GHD']
-
-friction_models = ['SCHAEFFER', 'SRIVASTAVA', 'NONE']
-
-rdf_types = ['LEBOWITZ', 'LEBOWITZ', #sic
-             'MANSOORI', 'MODIFIED_LEBOWITZ', 'MODIFIED_MANSOORI']
-
-blending_functions = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
+from constants import *
 
 class SolidsTFM(object):
     def init_solids_tfm(self):
@@ -36,14 +28,14 @@ class SolidsTFM(object):
         #    item.setEnabled(enabled)
 
         # SRS p18 - enable/disable menu items in viscous stress model
-        kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
+        kt_type = self.project.get_value('kt_type', default=DEFAULT_KT_TYPE)
         cb = ui.combobox_kt_type
         if kt_type:
-            if kt_type not in kt_types:
+            if kt_type not in KT_TYPES:
                 self.warn("Invalid kt_type %s" % kt_type)
                 self.unset_keyword('kt_type')
             else:
-                cb.setCurrentIndex(kt_types.index(kt_type))
+                cb.setCurrentIndex(KT_TYPES.index(kt_type))
         else:
             pass # TODO:  can kt_type be unset?
         mmax = self.project.get_value('mmax', default=1)
@@ -70,16 +62,16 @@ class SolidsTFM(object):
         if kt_type == 'ALGEBRAIC':
             if friction_model == 'SRIVASTAVA': # Forbidden
                 cb.setCurrentIndex(2) # None
-                friction_model = friction_models[2]
+                friction_model = FRICTION_MODELS[2]
                 self.update_keyword('friction_model', friction_model)
 
-        if friction_model not in friction_models:
+        if friction_model not in FRICTION_MODELS:
             self.warn("Unrecogized friction_model %s" % friction_model)
             cb.setCurrentIndex(2) # None
-            friction_model = friction_models[2]
+            friction_model = FRICTION_MODELS[2]
             self.update_keyword('friction_model', friction_model)
         else:
-            cb.setCurrentIndex(friction_models.index(friction_model))
+            cb.setCurrentIndex(FRICTION_MODELS.index(friction_model))
 
         # Specify solids volume fraction at onset of friction
         enabled = (friction_model == 'SRIVASTAVA')
@@ -114,8 +106,8 @@ class SolidsTFM(object):
 
         ### Advanced
         # Select radial distribution function
-        rdf_type = self.project.get_value('rdf_type', default='LEBOWITZ') #default??
-        if rdf_type not in rdf_types:
+        rdf_type = self.project.get_value('rdf_type', default=DEFAULT_RDF_TYPE)
+        if rdf_type not in RDF_TYPES:
             self.warn('Invalid rdf_type %s' % rdf_type)
             rdf_type = 'LEBOWITZ'
             self.update_keyword('rdf_type', rfd_type)
@@ -126,7 +118,7 @@ class SolidsTFM(object):
             else:
                 index = 1
         else:
-            index = rdf_types.index(rdf_type)
+            index = RDF_TYPES.index(rdf_type)
 
         cb = ui.combobox_rdf_type
         cb.setCurrentIndex(index)
@@ -139,13 +131,14 @@ class SolidsTFM(object):
 
         # Select stress blending model
         # Selection only available with FRICTION_MODEL=SCHAEFFER
-        blending_function = self.project.get_value('blending_function', default='NONE')
-        if blending_function not in blending_functions:
+        blending_function = self.project.get_value('blending_function',
+                                                   default=DEFAULT_BLENDING_FUNCTION)
+        if blending_function not in BLENDING_FUNCTIONS:
             self.warn('Invalid blending_function %s' % blending_function)
-            blending_function = 'NONE'
+            blending_function = DEFAULT_BLENDING_FUNCTION
             self.update_keyword('blending_function', blending_function)
 
-        ui.combobox_blending_function.setCurrentIndex(blending_functions.index(blending_function))
+        ui.combobox_blending_function.setCurrentIndex(BLENDING_FUNCTIONS.index(blending_function))
         enabled = (friction_model=='SCHAEFFER')
         for item in (ui.label_blending_function, ui.combobox_blending_function):
                     item.setEnabled(enabled)
@@ -153,7 +146,7 @@ class SolidsTFM(object):
             self.unset_keyword('blending_function') #
         else:
             v = ui.combobox_blending_function.currentIndex()
-            self.update_keyword('blending_function', blending_functions[v])
+            self.update_keyword('blending_function', BLENDING_FUNCTIONS[v])
 
 
         # Specify the segregation slope coefficient
@@ -201,22 +194,22 @@ class SolidsTFM(object):
 
 
     def set_kt_type(self, val):
-        kt_type = kt_types[val]
+        kt_type = KT_TYPES[val]
         self.update_keyword('kt_type', kt_type)
         self.setup_tfm_tab()
 
     def set_friction_model(self, val):
         self.update_keyword('friction_model',
-                            friction_models[val])
+                            FRICTION_MODELS[val])
 
         self.setup_tfm_tab()
 
     def set_rdf_type(self, val):
-        self.update_keyword('rdf_type', rdf_types[val])
+        self.update_keyword('rdf_type', RDF_TYPES[val])
         self.setup_tfm_tab()
 
     def set_blending_function(self, val):
-        self.update_keyword('blending_function', blending_functions[val])
+        self.update_keyword('blending_function', BLENDING_FUNCTIONS[val])
         self.setup_tfm_tab()
 
     def set_max_packing_correlation(self, val):
