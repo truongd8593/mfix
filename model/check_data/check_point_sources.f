@@ -108,6 +108,7 @@
 
 ! Initialize the PS runtime flag.
       POINT_SOURCE = .FALSE.
+      PS_DEFINED(:) = .FALSE.
 
 ! Determine which point source indices have values.
       PSV_LP: do PSV = 1, DIMENSION_PS
