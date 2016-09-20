@@ -2704,7 +2704,7 @@ class BCS(object):
             val = self.project.get_value(key, default, args=[BC0])
             widget.updateValue(key, val)
             widget.key = key
-            widget.args = ['BC', 'P']
+            widget.args = ['BC']
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
