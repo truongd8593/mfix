@@ -554,6 +554,8 @@
       DOUBLE PRECISION :: PREVIOUS_MAX_LOAD = 0.0, CURRENT_MAX_LOAD
 ! Interval at which particle dynamic load balance is called.
       DOUBLE PRECISION :: DLB_DT
+! Eulerian grid weight
+      DOUBLE PRECISION :: DLB_EGW
 
       CONTAINS
 

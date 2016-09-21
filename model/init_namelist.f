@@ -432,7 +432,7 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>Gravitational acceleration. [980.7 in CGS]</description>
+!  <description>Gravitational acceleration. [9.807 m/s^2 in SI]</description>
       GRAVITY = UNDEFINED
 !</keyword>
 
@@ -1081,7 +1081,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas density [g/cm^3 in CGS]. An equation of
+!    Specified constant gas density [kg/m^3 in SI]. An equation of
 !    state -the ideal gas law by default- is used to calculate the gas
 !    density if this parameter is undefined. The value may be set to
 !    zero to make the drag zero and to simulate granular flow in a
@@ -1093,35 +1093,35 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas viscosity [g/(cm.s) in CGS].
+!    Specified constant gas viscosity [kg/(m.s) in SI].
 !  </description>
       MU_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas conductivity [cal/(s.cm.K) in CGS].
+!    Specified constant gas conductivity [J/(s.m.K) in SI].
 !  </description>
       K_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas specific heat [cal/(g.s.K) in CGS].
+!    Specified constant gas specific heat [J/(kg.s.K) in SI].
 !  </description>
       C_PG0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas diffusivity [(cm^2/s) in CGS].
+!    Specified constant gas diffusivity [(m^2/s) in SI].
 !  </description>
       DIF_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Average molecular weight of gas [(g/mol) in CGS]. Used in
+!    Average molecular weight of gas [(kg/kmol) in SI]. Used in
 !    calculating the gas density for non-reacting flows when the gas
 !    composition is not defined.
 !  </description>
@@ -1130,7 +1130,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Molecular weight of gas species [(g/mol) in GCS].
+!    Molecular weight of gas species [(kg/kmol) in SI].
 !  </description>
 !  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       MW_G(:DIM_N_G) = UNDEFINED
@@ -1186,7 +1186,7 @@
 !<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
 !  <description>
-!    Initial particle diameters [cm in CGS].
+!    Initial particle diameters [m in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
@@ -1195,7 +1195,7 @@
 !<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
 !  <description>
-!    Specified constant solids density [g/cm^3 in CGS]. Reacting flows
+!    Specified constant solids density [kg/m^3 in SI]. Reacting flows
 !    may use variable solids density by leaving this parameter
 !    undefined and specifying X_S0 and RO_XS0 as well as the index
 !    of the inert species.
@@ -1220,7 +1220,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids species density [g/cm^3 in CGS].
+!    Specified constant solids species density [kg/m^3 in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1278,7 +1278,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids conductivity [cal/(s.cm.K) in CGS].
+!    Specified constant solids conductivity [J/(s.m.K) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       K_S0(:DIM_M) = UNDEFINED
@@ -1286,7 +1286,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids specific heat [cal/(g.s.K) in CGS].
+!    Specified constant solids specific heat [J/(kg.s.K) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
@@ -1295,7 +1295,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Molecular weight of solids phase species [(g/mol) in CGS].
+!    Molecular weight of solids phase species [(kg/kmol) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1577,7 +1577,7 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Specified constant solids diffusivity [(cm^2)/s in CGS].
+!    Specified constant solids diffusivity [(m^2)/s in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       DIF_S0(:DIM_M) = UNDEFINED
@@ -1779,14 +1779,12 @@
 !    rdtn2.inc to change the source term.
 !  </description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_GAMA_RG(LC) = ZERO
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Gas phase radiation temperature in the IC region.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_RG(LC) = UNDEFINED
 !</keyword>
 

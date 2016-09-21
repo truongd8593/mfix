@@ -8,7 +8,7 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SET_PS
+      SUBROUTINE SET_PS(MFIX_DAT)
 
       use compar
       use exit, only: mfix_exit
@@ -22,6 +22,8 @@
       use run
 
       implicit none
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER :: IJK, I, J, K, M, NN
 
@@ -48,14 +50,14 @@
          CALL CALC_PS_VEL_MAG(PS_VEL_MAG_g(PSV), PS_U_g(PSV),          &
             PS_V_g(PSV), PS_W_g(PSV))
 
-         CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_g(PSV), PS_MASSFLOW_g(PSV), &
+         CALL CALC_PS_CpxMFLOW(MFIX_DAT, PS_CpxMFLOW_g(PSV), PS_MASSFLOW_g(PSV), &
             PS_T_g(PSV), PS_X_g(PSV,:), 0, C_PG0, DIM_N_g, MW_g)
 
          do M=1, MMAX
             CALL CALC_PS_VEL_MAG(PS_VEL_MAG_s(PSV,M), PS_U_s(PSV,M),   &
                PS_V_s(PSV,M), PS_W_s(PSV,M))
 
-            CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_s(PSV,M),                &
+            CALL CALC_PS_CpxMFLOW(MFIX_DAT,PS_CpxMFLOW_s(PSV,M),                &
                PS_MASSFLOW_s(PSV,M), PS_T_s(PSV,M), PS_X_s(PSV,M,:), M,&
                C_PS0(M), DIM_N_s, MW_s(M,:))
          enddo
@@ -146,7 +148,7 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_PS_CpxMFLOW(CpxMFLOW, PS_MFLOW, PS_T, PS_X, lM, &
+      SUBROUTINE CALC_PS_CpxMFLOW(MFIX_DAT, CpxMFLOW, PS_MFLOW, PS_T, PS_X, lM, &
          Cp0, lDIM_N, lMW)
 
       use constant, only: GAS_CONST_cal
@@ -164,6 +166,8 @@
 
       DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! If there is no mass flow for this phase, then there is no need to
 ! calculate a CPxMFLUX. Set it to zero and return.
       if(.NOT.ENERGY_EQ .OR. PS_MFLOW == ZERO) then
@@ -173,7 +177,7 @@
 
 ! Calculate the average specific heat.
       if(Cp0 == UNDEFINED) then
-         IF(.NOT.database_read) call read_database0()
+         IF(.NOT.database_read) call read_database0(MFIX_DAT)
          CpxMFLOW = ZERO
          do nn = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(NN) * (GAS_CONST_cal / lMW(NN)) * &

@@ -1382,6 +1382,8 @@ MODULE CHECK_DATA_CG
 
       ENDDO
 
+      CALL FINL_ERR_MSG
+
       RETURN
 
 

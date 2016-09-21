@@ -357,7 +357,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0
+      IF(.NOT.database_read) CALL read_database0(MFIX_DAT)
 
 ! User defined function
       IF(USR_CPg) THEN
@@ -461,7 +461,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_solids_common_all but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0
+      IF(.NOT.database_read) CALL read_database0(MFIX_DAT)
 
 ! User defined function
       IF(USR_CPs(M)) THEN

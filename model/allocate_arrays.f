@@ -311,53 +311,100 @@
         if (allocated(Flux_nE)) deallocate(Flux_nE); allocate(  Flux_nE  (DIMENSION_3p)  )
         if (allocated(Flux_nN)) deallocate(Flux_nN); allocate(  Flux_nN  (DIMENSION_3p)  )
         if (allocated(Flux_nT)) deallocate(Flux_nT); allocate(  Flux_nT  (DIMENSION_3p)  )
-        if (allocated(Zeta0)) deallocate(Zeta0); allocate(  Zeta0  (DIMENSION_3p)  )   ! zeroth rate of cooling
-        if (allocated(ZetaU)) deallocate(ZetaU); allocate(  ZetaU  (DIMENSION_3p)  )   ! 1st order cooling rate transport coefficient
-        if (allocated(DiT)) deallocate(DiT); allocate(  DiT  (DIMENSION_3p, DIMENSION_M)  )   ! thermal diffusivity
-        if (allocated(DijF)) deallocate(DijF); allocate(  DijF  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! mass mobility
-        if (allocated(Lij)) deallocate(Lij); allocate(  Lij  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! thermal mobility
-        if (allocated(Dij)) deallocate(Dij); allocate(  Dij  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! ordinary diffusion
-        if (allocated(DijQ)) deallocate(DijQ); allocate(  DijQ  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! Dufour coeff.
-        if (allocated(JoiX)) deallocate(JoiX); allocate(  JoiX  (DIMENSION_3p, DIMENSION_M)  )   ! X- species mass flux
-        if (allocated(JoiY)) deallocate(JoiY); allocate(  JoiY  (DIMENSION_3p, DIMENSION_M)  )   ! Y- species mass flux
-        if (allocated(JoiZ)) deallocate(JoiZ); allocate(  JoiZ  (DIMENSION_3p, DIMENSION_M)  )   ! Z- species mass flux
-        if (allocated(FiX)) deallocate(FiX); allocate(  FiX  (DIMENSION_3p, DIMENSION_M)  )   ! X- external force
-        if (allocated(FiY)) deallocate(FiY); allocate(  FiY  (DIMENSION_3p, DIMENSION_M)  )   ! Y- external force
-        if (allocated(FiZ)) deallocate(FiZ); allocate(  FiZ  (DIMENSION_3p, DIMENSION_M)  )   ! Z- external force
-        if (allocated(FiXvel)) deallocate(FiXvel); allocate(  FiXvel  (DIMENSION_3p, DIMENSION_M)  )   ! X- external force
-        if (allocated(FiYvel)) deallocate(FiYvel); allocate(  FiYvel  (DIMENSION_3p, DIMENSION_M)  )   ! Y- external force
-        if (allocated(FiZvel)) deallocate(FiZvel); allocate(  FiZvel  (DIMENSION_3p, DIMENSION_M)  )   ! Z- external force
-        if (allocated(DELTAU)) deallocate(DELTAU); allocate(  DELTAU  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DELTAV)) deallocate(DELTAV); allocate(  DELTAV  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DELTAW)) deallocate(DELTAW); allocate(  DELTAW  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(dragFx)) deallocate(dragFx); allocate(  dragFx  (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
-        if (allocated(dragFy)) deallocate(dragFy); allocate(  dragFy  (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(dragFz)) deallocate(dragFz); allocate(  dragFz  (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
-        if (allocated(dragFxflux)) deallocate(dragFxflux); allocate(  dragFxflux (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
-        if (allocated(dragFyflux)) deallocate(dragFyflux); allocate(  dragFyflux (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(dragFzflux)) deallocate(dragFzflux); allocate(  dragFzflux (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
-        if (allocated(FiMinusDragX)) deallocate(FiMinusDragX); allocate(  FiMinusDragX (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
-        if (allocated(JoiMinusDragX)) deallocate(JoiMinusDragX); allocate(  JoiMinusDragX (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
-        if (allocated(FiMinusDragY)) deallocate(FiMinusDragY); allocate(  FiMinusDragY (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(JoiMinusDragY)) deallocate(JoiMinusDragY); allocate(  JoiMinusDragY (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(FiMinusDragZ)) deallocate(FiMinusDragZ); allocate(  FiMinusDragZ (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
-        if (allocated(JoiMinusDragZ)) deallocate(JoiMinusDragZ); allocate(  JoiMinusDragZ (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
-        if (allocated(beta_cell_X)) deallocate(beta_cell_X); allocate(  beta_cell_X (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
-        if (allocated(beta_cell_Y)) deallocate(beta_cell_Y); allocate(  beta_cell_Y (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(beta_cell_Z)) deallocate(beta_cell_Z); allocate(  beta_cell_Z (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
-        if (allocated(beta_ij_cell_X)) deallocate(beta_ij_cell_X); allocate(  beta_ij_cell_X (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! X- drag force
-        if (allocated(beta_ij_cell_Y)) deallocate(beta_ij_cell_Y); allocate(  beta_ij_cell_Y (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! Y- drag force
-        if (allocated(beta_ij_cell_Z)) deallocate(beta_ij_cell_Z); allocate(  beta_ij_cell_Z (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! Y- drag force
-        if (allocated(DEL_DOT_J)) deallocate(DEL_DOT_J); allocate(  DEL_DOT_J  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DiT_HarmE)) deallocate(DiT_HarmE); allocate(  DiT_HarmE  (DIMENSION_3p)  )
-        if (allocated(DiT_HarmN)) deallocate(DiT_HarmN); allocate(  DiT_HarmN  (DIMENSION_3p)  )
-        if (allocated(DiT_HarmT)) deallocate(DiT_HarmT); allocate(  DiT_HarmT  (DIMENSION_3p)  )
-        if (allocated(Dij_HarmE)) deallocate(Dij_HarmE); allocate(  Dij_HarmE  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(Dij_HarmN)) deallocate(Dij_HarmN); allocate(  Dij_HarmN  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(Dij_HarmT)) deallocate(Dij_HarmT); allocate(  Dij_HarmT  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DijF_HarmE)) deallocate(DijF_HarmE); allocate(  DijF_HarmE  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DijF_HarmN)) deallocate(DijF_HarmN); allocate(  DijF_HarmN  (DIMENSION_3p, DIMENSION_M)  )
-        if (allocated(DijF_HarmT)) deallocate(DijF_HarmT); allocate(  DijF_HarmT  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(Zeta0)) deallocate(Zeta0)
+        allocate(  Zeta0  (DIMENSION_3p)  )   ! zeroth rate of cooling
+        if (allocated(ZetaU)) deallocate(ZetaU)
+        allocate(  ZetaU  (DIMENSION_3p)  )   ! 1st order cooling rate transport coefficient
+        if (allocated(DiT)) deallocate(DiT)
+        allocate(  DiT  (DIMENSION_3p, DIMENSION_M)  )   ! thermal diffusivity
+        if (allocated(DijF)) deallocate(DijF)
+        allocate(  DijF  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! mass mobility
+        if (allocated(Lij)) deallocate(Lij)
+        allocate(  Lij  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! thermal mobility
+        if (allocated(Dij)) deallocate(Dij)
+        allocate(  Dij  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! ordinary diffusion
+        if (allocated(DijQ)) deallocate(DijQ)
+        allocate(  DijQ  (DIMENSION_3p, DIMENSION_M, DIMENSION_M)  )   ! Dufour coeff.
+        if (allocated(JoiX)) deallocate(JoiX)
+        allocate(  JoiX  (DIMENSION_3p, DIMENSION_M)  )   ! X- species mass flux
+        if (allocated(JoiY)) deallocate(JoiY)
+        allocate(  JoiY  (DIMENSION_3p, DIMENSION_M)  )   ! Y- species mass flux
+        if (allocated(JoiZ)) deallocate(JoiZ)
+        allocate(  JoiZ  (DIMENSION_3p, DIMENSION_M)  )   ! Z- species mass flux
+        if (allocated(FiX)) deallocate(FiX)
+        allocate(  FiX  (DIMENSION_3p, DIMENSION_M)  )   ! X- external force
+        if (allocated(FiY)) deallocate(FiY)
+        allocate(  FiY  (DIMENSION_3p, DIMENSION_M)  )   ! Y- external force
+        if (allocated(FiZ)) deallocate(FiZ)
+        allocate(  FiZ  (DIMENSION_3p, DIMENSION_M)  )   ! Z- external force
+        if (allocated(FiXvel)) deallocate(FiXvel)
+        allocate(  FiXvel  (DIMENSION_3p, DIMENSION_M)  )   ! X- external force
+        if (allocated(FiYvel)) deallocate(FiYvel)
+        allocate(  FiYvel  (DIMENSION_3p, DIMENSION_M)  )   ! Y- external force
+        if (allocated(FiZvel)) deallocate(FiZvel)
+        allocate(  FiZvel  (DIMENSION_3p, DIMENSION_M)  )   ! Z- external force
+        if (allocated(DELTAU)) deallocate(DELTAU)
+        allocate(  DELTAU  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DELTAV)) deallocate(DELTAV)
+        allocate(  DELTAV  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DELTAW)) deallocate(DELTAW)
+        allocate(  DELTAW  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(dragFx)) deallocate(dragFx)
+        allocate(  dragFx  (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
+        if (allocated(dragFy)) deallocate(dragFy)
+        allocate(  dragFy  (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(dragFz)) deallocate(dragFz)
+        allocate(  dragFz  (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
+        if (allocated(dragFxflux)) deallocate(dragFxflux)
+        allocate(  dragFxflux (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
+        if (allocated(dragFyflux)) deallocate(dragFyflux)
+        allocate(  dragFyflux (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(dragFzflux)) deallocate(dragFzflux)
+        allocate(  dragFzflux (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
+        if (allocated(FiMinusDragX)) deallocate(FiMinusDragX)
+        allocate(  FiMinusDragX (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
+        if (allocated(JoiMinusDragX)) deallocate(JoiMinusDragX)
+        allocate(  JoiMinusDragX (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
+        if (allocated(FiMinusDragY)) deallocate(FiMinusDragY)
+        allocate(  FiMinusDragY (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(JoiMinusDragY)) deallocate(JoiMinusDragY)
+        allocate(  JoiMinusDragY (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(FiMinusDragZ)) deallocate(FiMinusDragZ)
+        allocate(  FiMinusDragZ (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
+        if (allocated(JoiMinusDragZ)) deallocate(JoiMinusDragZ)
+        allocate(  JoiMinusDragZ (DIMENSION_3p, DIMENSION_M)  )   ! Z- drag force
+        if (allocated(beta_cell_X)) deallocate(beta_cell_X)
+        allocate(  beta_cell_X (DIMENSION_3p, DIMENSION_M)  )   ! X- drag force
+        if (allocated(beta_cell_Y)) deallocate(beta_cell_Y)
+        allocate(  beta_cell_Y (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(beta_cell_Z)) deallocate(beta_cell_Z)
+        allocate(  beta_cell_Z (DIMENSION_3p, DIMENSION_M)  )   ! Y- drag force
+        if (allocated(beta_ij_cell_X)) deallocate(beta_ij_cell_X)
+        allocate(  beta_ij_cell_X (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! X- drag force
+        if (allocated(beta_ij_cell_Y)) deallocate(beta_ij_cell_Y)
+        allocate(  beta_ij_cell_Y (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! Y- drag force
+        if (allocated(beta_ij_cell_Z)) deallocate(beta_ij_cell_Z)
+        allocate(  beta_ij_cell_Z (DIMENSION_3p, DIMENSION_M,DIMENSION_M)  )   ! Y- drag force
+        if (allocated(DEL_DOT_J)) deallocate(DEL_DOT_J)
+        allocate(  DEL_DOT_J  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DiT_HarmE)) deallocate(DiT_HarmE)
+        allocate(  DiT_HarmE  (DIMENSION_3p)  )
+        if (allocated(DiT_HarmN)) deallocate(DiT_HarmN)
+        allocate(  DiT_HarmN  (DIMENSION_3p)  )
+        if (allocated(DiT_HarmT)) deallocate(DiT_HarmT)
+        allocate(  DiT_HarmT  (DIMENSION_3p)  )
+        if (allocated(Dij_HarmE)) deallocate(Dij_HarmE)
+        allocate(  Dij_HarmE  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(Dij_HarmN)) deallocate(Dij_HarmN)
+        allocate(  Dij_HarmN  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(Dij_HarmT)) deallocate(Dij_HarmT)
+        allocate(  Dij_HarmT  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DijF_HarmE)) deallocate(DijF_HarmE)
+        allocate(  DijF_HarmE  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DijF_HarmN)) deallocate(DijF_HarmN)
+        allocate(  DijF_HarmN  (DIMENSION_3p, DIMENSION_M)  )
+        if (allocated(DijF_HarmT)) deallocate(DijF_HarmT)
+        allocate(  DijF_HarmT  (DIMENSION_3p, DIMENSION_M)  )
       ENDIF
 
 
