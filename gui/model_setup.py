@@ -156,7 +156,7 @@ class ModelSetup(object):
             idx = DRAG_TYPES.index(DEFAULT_DRAG_TYPE)
         else:
             if not val in DRAG_TYPES:
-                self.error('Invalid drag_type %s' % drag_type)
+                self.error('Invalid drag_type %s' % val)
                 idx = DRAG_TYPES.index(DEFAULT_DRAG_TYPE)
             else:
                 idx = DRAG_TYPES.index(val)
