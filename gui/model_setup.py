@@ -249,12 +249,12 @@ class ModelSetup(object):
         blending_stress = self.project.get_value('blending_stress') # Note, not set anywhere in GUI
         friction_model = self.project.get_value('friction_model')
 
-        enabled = (solver == TFM and
-                   drag_type.startswith('WEN_YU') and
-                   kt_type=='ALGEBRAIC' and
-                   turbulence_model != 'K_EPSILON' and
-                   bool(blending_stress)==False and
-                   friction_model != 'SRIVASTAVA')
+        enabled = (solver == TFM
+                   and drag_type.startswith('WEN_YU')
+                   and kt_type=='ALGEBRAIC'
+                   and turbulence_model != 'K_EPSILON'
+                   and bool(blending_stress)==False
+                   and friction_model != 'SRIVASTAVA')
         cb = ui.combobox_subgrid_type
         for item in (ui.label_subgrid_type, cb,
                      ui.label_filter_size_ratio, ui.lineedit_keyword_filter_size_ratio,

@@ -166,8 +166,9 @@ class ICS(object):
         for (name,data) in self.ics_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
-            available = (data.get('available', True) and
-                         (shape == 'box')  or (no_k and shape=='XY-plane'))
+            available = (data.get('available', True)
+                         and not self.check_region_in_use(name)
+                         and (shape == 'box') or (no_k and shape=='XY-plane'))
 
             row = (name, shape, available)
             rp.add_row(row)
@@ -856,8 +857,8 @@ class ICS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for IC in self.ics_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, ic=IC))
+                for IC in self.ics_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, ic=IC))
             get_widget(key).updateValue(key, val, args=args)
 
         #Define volume fraction
@@ -1010,8 +1011,8 @@ class ICS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for IC in self.ics_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, ic=IC, phase=P))
+                for IC in self.ics_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, ic=IC, phase=P))
             get_widget(key).updateValue(key, val, args=args)
 
         #Group tab inputs by equation type (e.g., momentum, energy, species).
@@ -1104,6 +1105,7 @@ class ICS(object):
         # Specification always available
         # Input required for species equations
         # Drop down menu of solids species
+        # Sets keyword IC_X_S
         # DEFAULT - last defined species has mass fraction of 1.0
         # Error check: mass fractions must sum to one
         self.update_ics_solids_mass_fraction_table()
