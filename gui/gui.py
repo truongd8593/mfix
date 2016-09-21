@@ -5,6 +5,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 """MFIX GUI"""
 
 import getopt
+import glob
 import logging
 import multiprocessing
 import os
