@@ -593,6 +593,18 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
+
+        expected_args = keyword_args.get(key)
+        if expected_args is not None:
+            if isinstance(args, int):
+                args = [args]
+            elif args is None:
+                args = []
+            if len(args) != len(expected_args):
+                self.error("keyword %s: argument mismatch, expected %s, got %s" %
+                           (key, str(expected_args), str(args)))
+                return
+
         if value is None or value=='':
             self.unset_keyword(key, args)
             return
