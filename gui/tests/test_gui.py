@@ -323,9 +323,9 @@ class MfixGuiTests(TestQApplication):
 
     def test_tstop(self):
         self.open_tree_item('run')
-        dt = self.mfix.ui.run.doublespinbox_keyword_dt.value()
+        dt = self.mfix.project.get_value('dt')
         new_tstop = 5*dt
-        self.mfix.ui.run.doublespinbox_keyword_tstop.setValue(new_tstop)
+        self.mfix.update_keyword('tstop', new_tstop)
         QTest.mouseClick(self.mfix.ui.toolbutton_save, Qt.LeftButton)
 
         found = 0

@@ -38,7 +38,7 @@ class ModelSetup(object):
             item = get_combobox_item(cb, i)
             self.add_tooltip(item, key=key, description=self.keyword_doc[key]['valids'][val]['note'], value=val)
 
-	cb = ui.combobox_momentum_formulation
+        cb = ui.combobox_momentum_formulation
         cb.activated.connect(self.set_momentum_formulation)
         self.add_tooltip(ui.label_momentum_formulation, key=None, description=self.keyword_doc['model_b']['description'])
 
