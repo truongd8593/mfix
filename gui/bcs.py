@@ -111,9 +111,9 @@ class BCS(object):
                 #le = ui.lineedit_fluid_inflow
                 le = getattr(ui, 'lineedit_%s_%s' % (phase_type, flow_direction), None)
                 le.value_updated.connect(self.bcs_handle_flow_input)
-                le.dtype = float
                 le.key = 'Unset' # diagnostic
                 le.args = ['BC'] if phase_type=='fluid' else ['BC', 'P']
+                le.dtype = float
                 # Tooltip added dynamically
                 cb = getattr(ui, 'combobox_%s_%s_type' % (phase_type, flow_direction))
                 cb.value_updated.connect(self.bcs_handle_flow_type)
@@ -126,6 +126,7 @@ class BCS(object):
         le.value_updated.connect(self.bcs_handle_flow_input)
         le.key = 'Unset' # diagnostic
         le.args = ['BC', 'P']
+        le.dtype = float
         # Tooltip added dynamically
         cb.value_updated.connect(self.bcs_handle_flow_type)
         cb.key = 'solids_inflow'
@@ -133,21 +134,21 @@ class BCS(object):
         # Not auto-registered with project manager
         key = 'bc_ep_s'
         for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
+            widget.value_updated.connect(self.handle_bcs_volume_fraction)
             widget.key = key
             widget.args = ['BC', 'P']
-            self.add_tooltip(widget, key)
             widget.dtype = float
-            widget.value_updated.connect(self.handle_bcs_volume_fraction)
+            self.add_tooltip(widget, key)
 
         key = 'bc_dt_0'
         for widget in (ui.lineedit_bc_dt_0, ui.lineedit_bc_dt_0_4):
+            widget.value_updated.connect(self.handle_bc_dt_0)
             widget.key = key
             widget.args = ['BC']
-            self.add_tooltip(widget, key)
             widget.dtype = float
+            self.add_tooltip(widget, key)
             # Error Check: Value should be positive (non-negative)
             widget.min = 0
-            widget.value_updated.connect(self.handle_bc_dt_0)
 
 
     def bcs_set_volume_fraction_limit(self):
@@ -196,15 +197,17 @@ class BCS(object):
 
     def bcs_show_regions_popup(self):
         # Users cannot select inapplicable regions.
-        # BC regions must be planes or STLs (not volumes or points)
+        # BC regions must be planes, volumes, or STLs (not volumes or points)
         # No region can define more than one boundary condition.
         ui = self.ui.boundary_conditions
         rp = self.regions_popup
         rp.clear()
         for (name,data) in self.bcs_region_dict.items():
             shape = data.get('type', '---')
-            # Assume available if unmarked
-            available = data.get('available', True) and (shape=='STL' or 'plane' in shape)
+            available = (data.get('available', True)
+                         and not self.check_region_in_use(name)
+                         and (shape in ('STL','box')
+                              or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
@@ -238,24 +241,29 @@ class BCS(object):
         #  Mass Inflow
         #    Plane regions set keyword BC_TYPE(#) to 'MI'
         #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
+        #    Not available for volume regions
         #  Pressure Outflow
         #    Plane regions set keyword BC_TYPE(#) to 'PO'
         #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
+        #    Not available for volume regions
         #  No Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'NSW'
+        #    Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
         #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
         #  Free Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'FSW'
+        #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
         #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
         #  Partial Slip Wall
-        #    Plane regions set keyword BC_TYPE(#) to 'PSW'
+        #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
         #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
         #  Pressure Inflow
         #    Plane regions set keyword BC_TYPE(#) to 'PI'
+        #    Not available for volume regions
         #    Not available for STL regions
         # Mass Outflow
         #    Plane regions set keyword BC_TYPE(#) to 'MO'
         #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
+        #    Not available for volume regions
+
         # Specification always available
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
@@ -1024,9 +1032,9 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                args = mkargs(key, bc=BC, species=species_index)
-                self.update_keyword(key, val, args=mkargs(key, bc=BC, species=species_index))
+                for BC in self.bcs_current_indices:
+                    args = mkargs(key, bc=BC, species=species_index)
+                    self.update_keyword(key, val, args=args)
             get_widget(key+suffix, ui).updateValue(key, val, args=args)
 
 
@@ -1373,8 +1381,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Enable Jackson-Johnson partial slip boundary
@@ -1836,9 +1844,9 @@ class BCS(object):
                     setattr(ui, 'label_%s_args_BC_%s' % (key+suffix, i), label)
                     groupbox_layout.addWidget(label, row, 0)
                     le = LineEdit()
-                    le.dtype = float
                     le.key = key
                     le.args = ['BC', i]
+                    le.dtype = float
                     self.add_tooltip(le, key)
                     le.default_value = 0.0 #?
                     groupbox_layout.addWidget(le, row, 1)
@@ -1879,8 +1887,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC, scalar=i))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC, scalar=i))
             get_widget(key+suffix, i).updateValue(key, val, args=args)
 
         for i in range(1, nscalar+1):
@@ -1984,9 +1992,8 @@ class BCS(object):
             return
         key, val = data.popitem()
         P = self.bcs_current_solid
-        P_arg = [] if key.endswith('_g') else [P]
         for BC in self.bcs_current_indices:
-            self.update_keyword(widget.key, val, args=[BC]+P_arg)
+            self.update_keyword(widget.key, val, args=mkargs(key, bc=BC, phase=P))
 
 
     def handle_bc_dt_0(self, widget, data, ignore_key):
@@ -2066,20 +2073,20 @@ class BCS(object):
         # DEFAULT value of 0.0
 
         le.key = subkey
-        P_arg = [P] if phase_type=='solids' else []
-        le.args = ['BC'] + P_arg
+        le.args = ['BC', 'P'] if phase_type=='solids' else ['BC']
+        le.dtype = float
         self.add_tooltip(le, subkey)
 
         for (i, k) in enumerate(subkeys):
             if i == index:
                 continue
             for BC in self.bcs_current_indices:
-                self.unset_keyword(k, args=[BC]+P_arg)
+                self.unset_keyword(k, args=mkargs(k, bc=BC, phase=P))
 
-        val = self.project.get_value(subkeys[index], args=[BC0]+P_arg)
+        val = self.project.get_value(subkeys[index], args=mkargs(subkeys[index], bc=BC0, phase=P))
         default = val if val is not None else prev_val if prev_val is not None else 0.0
         for BC in self.bcs_current_indices:
-            self.update_keyword(subkey, default, args=[BC]+P_arg)
+            self.update_keyword(subkey, default, args=mkargs(subkey, bc=BC, phase=P))
         le.updateValue(subkey, default)
 
         if widget.key == 'fluid_inflow':
@@ -2123,6 +2130,7 @@ class BCS(object):
             key = 'bc_x_g'
             le.key = key
             le.args = [self.bcs_current_indices, row+1]
+            le.dtype = float
             self.add_tooltip(le, key)
             val = self.project.get_value(key, args=[BC0, row+1], default=None)
             if val is not None:
@@ -2216,8 +2224,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define volume fraction
@@ -2287,9 +2295,12 @@ class BCS(object):
             cb.setCurrentIndex(inflow_type)
             key = keys[inflow_type]
             val = vals[inflow_type]
-            ui.lineedit_fluid_inflow.key = key
-            self.add_tooltip(ui.lineedit_fluid_inflow, key)
-            ui.lineedit_fluid_inflow.updateValue(keys, 0.0 if val is None else val)
+            le = ui.lineedit_fluid_inflow
+            le.key = key
+            le.args = ['BC']
+            le.dtype = float
+            self.add_tooltip(le, key)
+            le.updateValue(key , 0.0 if val is None else val)
             units = ['m/s', 'm³/s', 'kg/s'][inflow_type]
             ui.label_fluid_inflow_units.setText(units)
 
@@ -2299,12 +2310,18 @@ class BCS(object):
             # DEFAULT value of 0.0
             key = 'bc_%s_g'%xmap[tangents[0]]
             label = ui.label_fluid_tangential_velocity_1
+            default = 0.0
             label.setText('  %s-axial velocity' % tangents[0])
             self.add_tooltip(label, key)
-            val = self.project.get_value(key, default=0.0, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget = ui.lineedit_fluid_tangential_velocity_1
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -2316,10 +2333,15 @@ class BCS(object):
             label.setText('  %s-axial velocity' % tangents[1])
             self.add_tooltip(label, key)
             default = 0.0
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget = ui.lineedit_fluid_tangential_velocity_2
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             widget.updateValue(key, val)
 
             self.add_tooltip(widget, key)
@@ -2335,10 +2357,15 @@ class BCS(object):
             key = 'bc_u_g'
             default = 0.0
             widget = ui.lineedit_fluid_inflow
-            val = self.project.get_value(key, default, args=[BC0])
-            widget.updateValue(key, val)
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
+            widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
@@ -2350,13 +2377,18 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_1
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Z-Axial Velocity
-            # Sets keyword BC_V_G(#) # fixed, BC_W_G
+            # Sets keyword  BC_W_G
             # DEFAULT value of 0.0
             key = 'bc_w_g'
             label =  ui.label_fluid_tangential_velocity_2
@@ -2364,9 +2396,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_2
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
         #Define temperature
@@ -2466,12 +2503,12 @@ class BCS(object):
             alias = data.get('alias', species) # default to species if no alias
             table.setItem(row, 0, make_item(alias))
             # mass fraction
-            le = LineEdit()
-            le.setdtype('dp')
-            le.setValInfo(min=0.0, max=1.0)
             key = 'bc_x_s'
+            le = LineEdit()
             le.key = key
             le.args = [self.bcs_current_indices, P, row+1]
+            le.dtype = float
+            le.setValInfo(min=0.0, max=1.0)
             self.add_tooltip(le, key)
             val = self.project.get_value(key, args=[BC0, P, row+1], default=None)
             if val is not None:
@@ -2654,9 +2691,12 @@ class BCS(object):
             cb.setCurrentIndex(inflow_type)
             key = keys[inflow_type]
             val = vals[inflow_type]
-            ui.lineedit_solids_inflow.key = key
-            self.add_tooltip(ui.lineedit_solids_inflow, key)
-            ui.lineedit_solids_inflow.updateValue(keys, 0.0 if val is None else val)
+            le = ui.lineedit_solids_inflow
+            le.key = key
+            le.args = ['BC', 'P']
+            le.dtype = float
+            self.add_tooltip(le, key)
+            le.updateValue(key, 0.0 if val is None else val)
             units = ['m/s', 'm³/s', 'kg/s'][inflow_type]
             ui.label_solids_inflow_units.setText(units)
 
@@ -2665,13 +2705,19 @@ class BCS(object):
             # Sets keyword BC_U_S(#,#)
             # DEFAULT value of 0.0
             key = 'bc_%s_s'%xmap[tangents[0]]
+            default = 0.0
             label = ui.label_solids_tangential_velocity_1
             label.setText('  %s-axial velocity' % tangents[0])
             self.add_tooltip(label, key)
-            val = self.project.get_value(key, default=0.0, args=[BC0])
+            val = self.project.get_value(key, args=[BC0, P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget = ui.lineedit_solids_tangential_velocity_1
             widget.key = key
             widget.args = ['BC', 'P']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -2683,10 +2729,15 @@ class BCS(object):
             label.setText('  %s-axial velocity' % tangents[1])
             self.add_tooltip(label, key)
             default = 0.0
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget = ui.lineedit_solids_tangential_velocity_2
             widget.key = key
             widget.args = ['BC', 'P']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -2696,15 +2747,20 @@ class BCS(object):
             ui.stackedwidget_solids_inflow.setCurrentIndex(1) # subpage_solids_inflow_CG_MI
             ui.label_solids_tangential_velocities.hide()
             #    Define X-Axial Velocity
-            # Sets keyword BC_U_G(#)
+            # Sets keyword BC_U_S(#,#)
             # DEFAULT value of 0.0
-            key = 'bc_u_g'
+            key = 'bc_u_s'
             default = 0.0
             widget = ui.lineedit_solids_inflow
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.updateValue(key, val)
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
@@ -2716,9 +2772,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_1
-            val = self.project.get_value(key, default, args=[BC0, P])
+            val = self.project.get_value(key, args=[BC0, P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.key = key
             widget.args = ['BC', 'P']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Z-Axial Velocity
@@ -2730,9 +2791,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_2
-            val = self.project.get_value(key, default, args=[BC0, P])
+            val = self.project.get_value(key, args=[BC0, P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.key = key
             widget.args = ['BC', 'P']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
         #Define temperature
@@ -2799,8 +2865,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define pressure
@@ -2900,8 +2966,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #All inputs are optional. They do not have default values, because MFIX will calculate
@@ -2999,8 +3065,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=[BC])
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         #    Define outflow properties: Mass outflow specification changes
@@ -3057,9 +3123,12 @@ class BCS(object):
             cb.setCurrentIndex(outflow_type)
             key = keys[outflow_type]
             val = vals[outflow_type]
-            ui.lineedit_fluid_outflow.key = key
-            self.add_tooltip(ui.lineedit_fluid_outflow, key)
-            ui.lineedit_fluid_outflow.updateValue(keys, 0.0 if val is None else val)
+            le = ui.lineedit_fluid_outflow
+            le.key = key
+            le.args = ['BC']
+            le.dtype = float
+            self.add_tooltip(le, key)
+            le.updateValue(key, 0.0 if val is None else val)
             units = ['m/s', 'm³/s', 'kg/s'][outflow_type]
             ui.label_fluid_outflow_units.setText(units)
 
@@ -3068,13 +3137,19 @@ class BCS(object):
             # Sets keyword BC_U_G(#)
             # DEFAULT value of 0.0
             key = 'bc_%s_g'%xmap[tangents[0]]
+            default = 0.0
             label = ui.label_fluid_tangential_velocity_1_3
             label.setText('  %s-axial velocity' % tangents[0])
             self.add_tooltip(label, key)
-            val = self.project.get_value(key, default=0.0, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget = ui.lineedit_fluid_tangential_velocity_1_3
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -3086,10 +3161,15 @@ class BCS(object):
             label.setText('  %s-axial velocity' % tangents[1])
             self.add_tooltip(label, key)
             default = 0.0
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget = ui.lineedit_fluid_tangential_velocity_2_3
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -3105,10 +3185,15 @@ class BCS(object):
             key = 'bc_u_g'
             default = 0.0
             widget = ui.lineedit_fluid_outflow
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget.updateValue(key, val)
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
@@ -3120,9 +3205,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_1_3
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Z-Axial Velocity
@@ -3134,9 +3224,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_fluid_tangential_velocity_2
-            val = self.project.get_value(key, default, args=[BC0])
+            val = self.project.get_value(key, args=[BC0])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC])
             widget.key = key
             widget.args = ['BC']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
         #Define duration to average outflow rate.
@@ -3245,8 +3340,8 @@ class BCS(object):
             val = self.project.get_value(key, args=args)
             if val is None:
                 val = default
-            for BC in self.bcs_current_indices:
-                self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=mkargs(key, bc=BC, phase=P))
             get_widget(key+suffix).updateValue(key, val, args=args)
 
         bc_type = self.project.get_value('bc_type', args=[BC0])
@@ -3307,9 +3402,12 @@ class BCS(object):
             cb.setCurrentIndex(outflow_type)
             key = keys[outflow_type]
             val = vals[outflow_type]
-            ui.lineedit_solids_outflow.key = key
-            self.add_tooltip(ui.lineedit_solids_outflow, key)
-            ui.lineedit_solids_outflow.updateValue(keys, 0.0 if val is None else val)
+            le = ui.lineedit_solids_outflow
+            le.key = key
+            le.args = ['BC', 'P']
+            le.dtype = float
+            self.add_tooltip(le, key)
+            le.updateValue(key, 0.0 if val is None else val)
             units = ['m/s', 'm³/s', 'kg/s'][outflow_type]
             ui.label_solids_outflow_units.setText(units)
 
@@ -3318,13 +3416,19 @@ class BCS(object):
             # Sets keyword BC_U_S(#,#)
             # DEFAULT value of 0.0
             key = 'bc_%s_s'%xmap[tangents[0]]
+            default = 0.0
             label = ui.label_solids_tangential_velocity_1_4
             label.setText('  %s-axial velocity' % tangents[0])
             self.add_tooltip(label, key)
-            val = self.project.get_value(key, default=0.0, args=[BC0,P])
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget = ui.lineedit_solids_tangential_velocity_1_4
             widget.key = key
             widget.args = ['BC','P']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -3336,10 +3440,15 @@ class BCS(object):
             label.setText('  %s-axial velocity' % tangents[1])
             self.add_tooltip(label, key)
             default = 0.0
-            val = self.project.get_value(key, default, args=[BC0,P])
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget = ui.lineedit_solids_tangential_velocity_2_4
             widget.key = key
             widget.args = ['BC','P']
+            widget.dtype = float
             widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
@@ -3355,10 +3464,15 @@ class BCS(object):
             key = 'bc_u_s'
             default = 0.0
             widget = ui.lineedit_solids_outflow
-            val = self.project.get_value(key, default, args=[BC0,P])
-            widget.updateValue(key, val)
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.key = key
             widget.args = ['BC','P']
+            widget.dtype = float
+            widget.updateValue(key, val)
             self.add_tooltip(widget, key)
 
             #    Define Y-Axial Velocity
@@ -3370,9 +3484,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_1_4
-            val = self.project.get_value(key, default, args=[BC0,P])
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.key = key
             widget.args = ['BC','P']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
             #    Define Z-Axial Velocity
@@ -3384,9 +3503,14 @@ class BCS(object):
             self.add_tooltip(label, key)
             default = 0.0
             widget = ui.lineedit_solids_tangential_velocity_2_4
-            val = self.project.get_value(key, default, args=[BC0,P])
+            val = self.project.get_value(key, args=[BC0,P])
+            if val is None:
+                val = default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC, P])
             widget.key = key
             widget.args = ['BC','P']
+            widget.dtype = float
             self.add_tooltip(widget, key)
 
         #Define duration to average outflow rate.
