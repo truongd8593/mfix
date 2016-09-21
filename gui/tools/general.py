@@ -63,6 +63,7 @@ def plural(n, word):
 def set_item_noedit(item):
     item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
 
+
 def set_item_enabled(item, enabled):
     """Enable/disable items which do not have a setEnabled method, like menu items"""
     flags = item.flags()
@@ -72,10 +73,17 @@ def set_item_enabled(item, enabled):
         flags &= ~QtCore.Qt.ItemIsEnabled
     item.setFlags(flags)
 
+
+def item_enabled(item):
+    flags = item.flags()
+    return bool(flags & QtCore.Qt.ItemIsEnabled)
+
+
 def get_combobox_item(combobox, n):
     """Return the n'th menu item from a combobox"""
     model = combobox.model()
     return model.item(n, 0)
+
 
 def get_selected_row(table):
     """get index of selected row from a QTableWidget"""
@@ -83,11 +91,13 @@ def get_selected_row(table):
     rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
+
 def get_selected_rows(table):
     """get index of selected row from a QTableWidget"""
     # note, currentRow can return  >0 even when there is no selection
     rows = set(i.row() for i in table.selectedIndexes())
     return sorted(list(rows))
+
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
