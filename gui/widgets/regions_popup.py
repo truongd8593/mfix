@@ -17,7 +17,7 @@ UserRole = QtCore.Qt.UserRole
 
 from constants import *
 
-from tools.general import (set_item_noedit, set_item_enabled,
+from tools.general import (set_item_noedit, set_item_enabled, item_enabled,
                            get_combobox_item, get_selected_rows)
 
 if PYQT5:
@@ -45,9 +45,16 @@ class RegionsPopup(QtWidgets.QDialog):
             item = get_combobox_item(cb, PRESSURE_INFLOW)
             set_item_enabled(item, not disable)
 
+            # Volume BCs are only allowed for walls
+            disable = any(tw.item(x,1).text()=='box' for x in selections)
+            for idx in (MASS_INFLOW, PRESSURE_OUTFLOW, PRESSURE_INFLOW, MASS_OUTFLOW):
+                item = get_combobox_item(cb, idx)
+                set_item_enabled(item, not disable)
+
             # Don't stay on disabled item
-            if disable and cb.currentIndex() == pi_index:
-                cb.setCurrentIndex(default_bc_type)
+            if not item_enabled(get_combobox_item(cb, cb.currentIndex())):
+                cb.setCurrentIndex(DEFAULT_BC_TYPE)
+
 
         elif self.surface:
             #  (would be nicer if this were in iss.py)
