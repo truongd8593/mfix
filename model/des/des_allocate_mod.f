@@ -34,7 +34,7 @@ CONTAINS
       USE discretelement
       USE functions
 
-      USE des_thermo_cond, only: DES_Qw_cond 
+      USE des_thermo_cond, only: DES_Qw_cond
 
       USE funits
       USE geometry
@@ -520,8 +520,8 @@ CONTAINS
         integer, intent(in) :: new_max_pip
         integer :: old_size, new_size
 
-        IF (new_max_pip .le. size(des_radius)) RETURN
         max_pip = max(max_pip, new_max_pip)
+        IF (new_max_pip .le. size(des_radius)) RETURN
 
         old_size = size(des_radius)
 
