@@ -206,7 +206,7 @@ class BCS(object):
             shape = data.get('type', '---')
             available = (data.get('available', True)
                          and not self.check_region_in_use(name)
-                         and (shape in ('STL','box')
+                         and (shape in ('STL', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)

@@ -37,23 +37,49 @@ class RegionsPopup(QtWidgets.QDialog):
         tw = self.ui.table
         cb = self.ui.combobox
         selections = get_selected_rows(tw)
+
+        region_types = [tw.item(x,1).text() for x in selections]
+        types_match = len(set(region_types)) < 2
+
         if self.boundary:
             #  (would be nicer if this were in bcs.py)
-            #  Pressure Inflow: Not available for STL regions
+            #  Pressure Inflow
+            #     Not available for STL regions
+            #     Not available for volume regions
+            #  (also, chained regions must match type)
 
-            disable = any(tw.item(x,1).text()=='STL' for x in selections)
+            disable = any(x in ('STL', 'box') for x in region_types) or not types_match
             item = get_combobox_item(cb, PRESSURE_INFLOW)
             set_item_enabled(item, not disable)
 
             # Volume BCs are only allowed for walls
-            disable = any(tw.item(x,1).text()=='box' for x in selections)
-            for idx in (MASS_INFLOW, PRESSURE_OUTFLOW, PRESSURE_INFLOW, MASS_OUTFLOW):
+            disable = any(x=='box' for x in region_types) or not types_match
+            for idx in (MASS_INFLOW, PRESSURE_OUTFLOW, MASS_OUTFLOW):
                 item = get_combobox_item(cb, idx)
                 set_item_enabled(item, not disable)
 
             # Don't stay on disabled item
             if not item_enabled(get_combobox_item(cb, cb.currentIndex())):
                 cb.setCurrentIndex(DEFAULT_BC_TYPE)
+
+            bc_type = BC_TYPES[cb.currentIndex()]
+            # Wall type boundary
+            if bc_type.endswith('W'):
+                self.handle_type(self.ui.combobox.currentIndex())
+            # For inflows/outflows, only allow compatible orientation
+            else:
+                if len(selections) == 1:
+                    region_type = tw.item(selections[0],1).text()
+                    for i in range(0, tw.rowCount()):
+                        if i == selections[0]:
+                            continue
+                        enable = (tw.item(i,1).text() == region_type)
+                        self.enable_row(i, enable)
+                elif len(selections) == 0:
+                    self.handle_type(self.ui.combobox.currentIndex())
+
+                else:
+                    pass
 
 
         elif self.surface:
@@ -70,75 +96,6 @@ class RegionsPopup(QtWidgets.QDialog):
                 item = get_combobox_item(cb, index)
                 set_item_enabled(item, (not selections) or disable)
 
-        self.update_available_regions()
-
-
-    def handle_type(self, val):
-        tw = self.ui.table
-        cb = self.ui.combobox
-
-        if self.boundary:
-            pass
-        elif self.surface:
-            is_type = IS_TYPES[val]
-            plane =  is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
-            #enable planes, disable boxes
-            for i in range(tw.rowCount()):
-                text = tw.item(i, 1).text()
-                enable = ( (text=='box' or 'plane' in text)
-                           and (('plane' in tw.item(i, 1).text()) == plane)
-                           and tw.item(i,2).data(UserRole))
-                for j in (0,1,2):
-                    set_item_enabled(tw.item(i,j), enable)
-                    tw.item(i,2).setText('Yes' if enable else 'No')
-        else:
-            pass
-        self.update_available_regions()
-
-
-    def update_available_regions(self):
-        tw = self.ui.table
-        cb = self.ui.combobox
-
-        selections = get_selected_rows(tw)
-        if self.boundary:
-            # Available selections:
-            #  Mass Inflow
-            #    Not available for volume regions
-            #  Pressure Outflow
-            #    Not available for volume regions
-            #  No Slip Wall
-            #  Free Slip Wall
-            #  Partial Slip Wall
-            #  Pressure Inflow
-            #    Not available for volume regions
-            #    Not available for STL regions
-            #  Mass Outflow
-            #    Not available for volume regions
-            # Specification always available
-            # DEFAULT - No slip wall
-
-            bc_type = BC_TYPES[cb.currentIndex()]
-            # Wall type boundary
-            if bc_type.endswith('W'):
-                self.reset_available()
-            # For inflows/outflows, only allow compatible orientation
-            else:
-                if len(selections) == 1:
-                    region_type = tw.item(selections[0],1).text()
-                    for i in range(0, tw.rowCount()):
-                        if i == selections[0]:
-                            continue
-                        enable = (tw.item(i,1).text() == region_type) and tw.item(1,2).data(UserRole)
-                        for j in (0,1,2):
-                            set_item_enabled(tw.item(i,j), enable)
-                            tw.item(i,2).setText('Yes' if enable else 'No')
-                elif len(selections) == 0:
-                    self.reset_available()
-                else:
-                    pass
-
-        elif self.surface:
             # Available selections:
             #  Impermeable
             #    Selection only available for plane regions
@@ -169,21 +126,57 @@ class RegionsPopup(QtWidgets.QDialog):
                         continue
                     text = tw.item(i,1).text()
                     enable = ('plane' in text or text=='box') and (('plane' in tw.item(i,1).text()) == plane)
-                    for j in (0,1,2):
-                        set_item_enabled(tw.item(i,j), enable)
-                        tw.item(i,2).setText('Yes' if enable else 'No')
+                    self.enable_row(i, enable)
             elif len(selections) == 0:
+                self.handle_type(self.ui.combobox.currentIndex())
 
-                pass
 
-
-    def reset_available(self):
+    def handle_type(self, val):
         tw = self.ui.table
-        for i in range(0, tw.rowCount()):
-            enable = tw.item(i,2).data(UserRole)
-            for j in (0,1,2):
-                set_item_enabled(tw.item(i,j), enable)
-                tw.item(i,2).setText('Yes' if enable else 'No')
+        cb = self.ui.combobox
+        selections = get_selected_rows(tw)
+        target = tw.item(selections[0], 1).text() if selections else None
+
+        if self.boundary:
+            bc_type = BC_TYPES[val]
+            if bc_type.endswith('W'):
+                for i in range(0, tw.rowCount()):
+                    self.enable_row(i, True)
+
+            elif bc_type == 'PI':
+                #    Not available for volume regions
+                #    Not available for STL regions
+                for i in range(tw.rowCount()):
+                    text = tw.item(i, 1).text()
+                    enable = ('plane' in text) and (target is None or text==target)
+                    self.enable_row(i, enable)
+
+            elif bc_type in ('MI', 'PO', 'MO'):
+                #    Not available for volume regions
+                for i in range(tw.rowCount()):
+                    text = tw.item(i, 1).text()
+                    enable = ('plane' in text or text=='STL') and (target is None or text==target)
+                    self.enable_row(i, enable)
+            else:
+                self.error("Unknown bc_type %s" % bc_type)
+
+        elif self.surface:
+            is_type = IS_TYPES[val]
+            plane =  is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
+            #enable planes, disable boxes
+            for i in range(tw.rowCount()):
+                text = tw.item(i, 1).text()
+                enable = ( (text=='box' or 'plane' in text)
+                           and (('plane' in tw.item(i, 1).text()) == plane))
+                self.enable_row(i, enable)
+
+
+    def enable_row(self, i, enable):
+        tw = self.ui.table
+        enable = enable and tw.item(i,2).data(UserRole) # Initial enable setting
+        tw.item(i,2).setText('Yes' if enable else 'No')
+        for j in (0,1,2):
+            set_item_enabled(tw.item(i,j), enable)
 
 
     def reset_signals(self):
