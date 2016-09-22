@@ -322,8 +322,7 @@ class RegionsWidget(QtWidgets.QWidget):
             elif key == 'name':
                 new_name = value.get('name')
                 if new_name:
-                    self.parent.ics_change_region_name(name, new_name)
-                    self.parent.bcs_change_region_name(name, new_name)
+                    self.parent.change_region_name(name, new_name)
                 else:
                     self.parent.error('invalid value %s' % value)
                     return

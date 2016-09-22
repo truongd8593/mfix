@@ -688,6 +688,13 @@ class MfixGui(QtWidgets.QMainWindow,
                                              self.iss_check_region_in_use))
                                              # any more places region can be used?
 
+    def change_region_name(self, name, new_name):
+        self.bcs_change_region_name(name, new_name)
+        self.ics_change_region_name(name, new_name)
+        self.iss_change_region_name(name, new_name)
+        self.pss_change_region_name(name, new_name)
+        # any more places region can be used?
+
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
