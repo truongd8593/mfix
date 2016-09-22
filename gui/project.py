@@ -1234,8 +1234,12 @@ class Project(object):
 
         keyword = None
 
+        # Normalize some values
+        if value == 'USR_DRAG':
+            value = 'USER_DRAG'
+
         if args:
-            # Find condition keywords and separate  (do we need this?)
+            # Find condition keywords and separate
             if key.startswith('ic_'):
                 cond = self.ics
             elif key.startswith('bc_') and not key.endswith('_q'):
