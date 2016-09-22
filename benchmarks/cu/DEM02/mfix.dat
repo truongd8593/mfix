@@ -27,6 +27,9 @@
   MOMENTUM_Y_EQ(0:1) = .T.  .F.
   MOMENTUM_Z_EQ(0:1) = .T.  .F.
 
+  ENERGY_EQ = .F.
+  SPECIES_EQ(0:1) = .F. .F.
+
   DRAG_TYPE = 'BVK'
 
   GRAVITY = 0.0d0
@@ -56,7 +59,7 @@
   XLENGTH = 0.0015   IMAX = 10
   YLENGTH = 0.0015   JMAX = 10
   ZLENGTH = 0.0015   KMAX = 10
- 
+
 
 #_______________________________________________________________________
 # MATERIAL SECTION
@@ -121,6 +124,7 @@
 # OUTPUT CONTROL SECTION
 
   RES_DT = 0.1
+  SPX_DT(1:9) = 9*0.1
 
   FULL_LOG = .T.
   GROUP_RESID = .T.

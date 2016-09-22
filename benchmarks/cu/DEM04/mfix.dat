@@ -27,6 +27,9 @@
   MOMENTUM_Y_EQ(0:1) = .T.  .F.
   MOMENTUM_Z_EQ(0:1) = .T.  .F.
 
+  ENERGY_EQ = .F.
+  SPECIES_EQ(0:1) = .F. .F.
+
   DRAG_TYPE = 'KOCH_HILL'
 
   DES_INTERP_ON = .T.
@@ -120,7 +123,7 @@
 # OUTPUT CONTROL SECTION
 
   RES_DT = 0.10
-  VTP_DT = 0.01
+  SPX_DT(1:9) = 9*0.1
 
   FULL_LOG = .T.
   GROUP_RESID = .T.
