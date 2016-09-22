@@ -1,0 +1,131 @@
+########################################################################
+#                                                                      #
+# Author:                                               Date: xx-xxxx  #
+# Modified: J. Musser                                   Date: 09-2016  #
+#                                                                      #
+# Description: Homogeneous Cooling System.                             #
+#                                                                      #
+########################################################################
+
+  RUN_NAME = 'DEM02'
+  DESCRIPTION = 'Homogeneous Cooling System'
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  RUN_TYPE = 'NEW'
+  UNITS = 'SI'
+
+  TIME =  0.00
+  TSTOP = 0.05
+
+  DT =     1.0d-04
+  DT_MAX = 1.0d-02
+  DT_MIN = 1.0d-10
+
+  MOMENTUM_X_EQ(0:1) = .T.  .F.
+  MOMENTUM_Y_EQ(0:1) = .T.  .F.
+  MOMENTUM_Z_EQ(0:1) = .T.  .F.
+
+  DRAG_TYPE = 'BVK'
+
+  GRAVITY = 0.0d0
+
+  DES_INTERP_ON = .T.
+
+  DES_INTERP_SCHEME = 'GARG_2012'
+
+  GENER_PART_CONFIG = .T.
+  CALL_USR = .T.
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+  TOL_RESID = 1.0E-3
+
+  MAX_NIT = 500
+  DETECT_STALL=.FALSE.
+
+  DISCRETIZE = 9*2
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  COORDINATES = 'cartesian'
+
+  XLENGTH = 0.0015   IMAX = 10
+  YLENGTH = 0.0015   JMAX = 10
+  ZLENGTH = 0.0015   KMAX = 10
+ 
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! Gas Section
+!---------------------------------------------------------------------//
+
+  RO_g0 = 1.0      ! (kg/m3)
+  MU_g0 = 2.0d-5   ! (Pa.sec)
+
+
+! Particle Section
+!---------------------------------------------------------------------//
+  MMAX = 1
+
+! Friction coefficient. (1)
+  MEW =   0.0                ! particle-particle
+  MEW_W = 0.0                ! particle-wall
+
+! Normal collision spring constant. (N/m)
+  KN =   10.0                ! particle-particle
+  KN_W = 10.0                ! particle-wall
+
+! Restitution coefficient. (1)
+  DES_EN_INPUT = 0.8         ! particle-particle
+  DES_EN_WALL_INPUT = 1.0    ! particle-wall
+
+
+! Sold phase 1
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL(1) = 'DEM'
+
+  D_p0(1) =   100.0d-6  ! (m)
+  RO_s0(1) = 1000.0     ! (kg/m3)
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+  IC_X_w(1) =   0.0000  ! (m)
+  IC_X_e(1) =   0.0015  ! (m)
+  IC_Y_s(1) =   0.0000  ! (m)
+  IC_Y_n(1) =   0.0015  ! (m)
+  IC_Z_b(1) =   0.0000  ! (m)
+  IC_Z_t(1) =   0.0015  ! (m)
+
+  IC_EP_g(1) =  1.0000  ! (m)
+
+  IC_U_g(1) =   0.0000  ! (m)
+  IC_V_g(1) =   0.0000  ! (m)
+  IC_W_g(1) =   0.0000  ! (m)
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! Use default No-Slip walls
+
+#_______________________________________________________________________
+# USER OUTPUT CONTROL
+
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  RES_DT = 0.1
+
+  FULL_LOG = .T.
+  GROUP_RESID = .T.
+
+#_______________________________________________________________________
+# DMP SETUP
+
+ NODESI = 1  NODESJ = 1  NODESK = 1
