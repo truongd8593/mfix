@@ -282,7 +282,7 @@ class Mfix(object):
 
             ITERATE.post_iterate()
 
-            step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
+            step_incomplete = ITERATE.adjustdt(self.mfix_dat) and not RUN.steady_state
 
         STEP.check_low_dt()
         STEP.chem_mass()
