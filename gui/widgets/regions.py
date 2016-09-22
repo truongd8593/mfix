@@ -366,6 +366,9 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.change_region_name(name, new_name)
             # TODO FIXME fit table to contents
 
+            # update parameter map
+            self.update_parameter_name(new_name, name, data[new_name])
+
         elif 'type' in key:
             data[name]['type'] = value.values()[0]
             self.vtkwidget.change_region_type(name, data[name])
@@ -553,7 +556,7 @@ class RegionsWidget(QtWidgets.QWidget):
         return rtype
 
     def get_region_dict(self):
-        """ return region dict, for use by clients"""
+        """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
         return copy.deepcopy(region_dict) # Allow clients to modify dict
 
@@ -623,10 +626,25 @@ class RegionsWidget(QtWidgets.QWidget):
             else:
                 self._remove_key(key, value)
 
+    def update_parameter_name(self, new_name, old_name, region):
+        """a region name changed, update map"""
+        self.remove_from_parameter_map(old_name, region)
+        for k, v in region.items():
+            name_key = ','.join([new_name, k])
+            if isinstance(v, list):
+                for xyz, item in zip(['x', 'y', 'z'], v):
+                    self.update_parameter_map('_'.join([name_key, xyz]), item)
+            else:
+                self.update_parameter_map(name_key, v)
+
     def _remove_key(self, name_key, value):
         if not isinstance(value, Equation): return
 
         for param in value.get_used_parameters():
-            self.parameter_key_map[param].remove(name_key)
-            if len(self.parameter_key_map[param]) == 0:
-                self.parameter_key_map.pop(param)
+            keys = self.parameter_key_map.get(param, None)
+            if keys:
+                keys.remove(name_key)
+                if len(self.parameter_key_map[param]) == 0:
+                    self.parameter_key_map.pop(param)
+            else:
+                self.warn("couldn't remove {} from {}".format(param, keys))
