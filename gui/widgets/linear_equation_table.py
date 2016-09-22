@@ -34,9 +34,11 @@ class LinearEquationTable(QtWidgets.QWidget):
         # Build inverse dictionary
         self.key_to_name = dict((v, k) for (k, v) in self.name_to_key.items())
 
-        self.rows = ['Gas Press', 'Vol Frac', 'U', 'V', 'W', 'Energy',
-                     'Mass Frac', 'Gran. T', 'K-Ep, Scl.']
-
+        # Move to constants.py
+        self.rows = ['Gas Pressure', 'Volume Fraction', 'U', 'V', 'W', 'Energy',
+                     'Mass Fraction', 'Granular  Temp', 'K-ε, Scalar', 'Diffusion']
+        (GAS_PRESSURE, VOLUME_FRACTION, U, V, W, ENERGY,
+         MASS_FRACTION, GRANULAR_TEMP, K_E, DIFFUSION) = self.rows
         # build default dictionary
         self.solverdict = {}
         for key in self.rows:
@@ -50,13 +52,13 @@ class LinearEquationTable(QtWidgets.QWidget):
                 'Under Relaxation': 0.8,
                 }
 
-        self.solverdict['Gas Press']['Iterations'] = 20
-        self.solverdict['Vol Frac']['Iterations'] = 20
-        self.solverdict['Vol Frac']['Under Relaxation'] = 0.5
-        self.solverdict['Mass Frac']['Under Relaxation'] = 1.0
-        self.solverdict['Gran. T']['Under Relaxation'] = 0.5
+        self.solverdict[GAS_PRESSURE]['Iterations'] = 20
+        self.solverdict[VOLUME_FRACTION]['Iterations'] = 20
+        self.solverdict[VOLUME_FRACTION]['Under Relaxation'] = 0.5
+        self.solverdict[MASS_FRACTION]['Under Relaxation'] = 1.0
+        self.solverdict[GRANULAR_TEMP]['Under Relaxation'] = 0.5
 
-        for key in ['U', 'V', 'W']:
+        for key in [U, V, W]:
             self.solverdict[key]['Iterations'] = 5
             self.solverdict[key]['Under Relaxation'] = 0.5
 
