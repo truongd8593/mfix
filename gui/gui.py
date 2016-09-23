@@ -61,6 +61,7 @@ from ics import ICS
 from bcs import BCS
 from pss import PSS
 from iss import ISS
+from mesh import Mesh
 
 from interpreter import Interpreter
 
@@ -99,7 +100,7 @@ class MfixGui(QtWidgets.QMainWindow,
               ModelSetup,
               FluidHandler,
               SolidsHandler,
-              ICS, BCS, PSS, ISS,
+              ICS, BCS, PSS, ISS, Mesh,
               Interpreter):
     # Main window class for MFIX-GUI
 
@@ -328,6 +329,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_model_setup()
         self.init_fluid_handler()
         self.init_solids_handler()
+        self.init_mesh()
         self.init_ics()
         self.init_bcs()
         self.init_pss()
@@ -2254,6 +2256,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # Take care of updates we deferred during extract_region
         # FIXME why not do this when switching panes, like we do with solids/BCs etc?
         self.ui.regions.tablewidget_regions.fit_to_contents()
+
+        # background mesh
+        self.init_background_mesh()
 
         # Initial conditions
         self.ics_extract_regions()

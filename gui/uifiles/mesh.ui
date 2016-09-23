@@ -191,7 +191,7 @@
            <number>0</number>
           </property>
           <item row="1" column="0">
-           <widget class="QTableWidget" name="tablewidget_mesh_control_points_x">
+           <widget class="Table" name="table_mesh_control_points_x">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -285,7 +285,7 @@
            <number>0</number>
           </property>
           <item row="1" column="0">
-           <widget class="QTableWidget" name="tablewidget_mesh_control_points_y">
+           <widget class="Table" name="table_mesh_control_points_y">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -379,7 +379,7 @@
            <number>0</number>
           </property>
           <item row="1" column="0">
-           <widget class="QTableWidget" name="tablewidget_mesh_control_points_z">
+           <widget class="Table" name="table_mesh_control_points_z">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -907,6 +907,11 @@ QPushButton:checked {
   <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>Table</class>
+   <extends>QTableWidget</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
