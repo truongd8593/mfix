@@ -1,28 +1,44 @@
-#!/bin/bash -l
+#!/bin/csh
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N VTUNE_TEST
+##
+## Number of cores to request
+#$ -pe mpi 16
+##
+#$ -r n
+##
+## Queue Name
+#$ -q dev
+setenv RUN_NAME "DEM02"
+rm -f $RUN_NAME* >& /dev/null
+rm -f POST_* >& /dev/null
 
-RUN_NAME="DEM02"
-rm -f ${RUN_NAME}* &> /dev/null
+if ( ! $?VTUNE_CMD ) then
+   setenv VTUNE_CMD ""
+endif
 
-MFIX=./mfix
-if [ -n "$1" ]; then
-   MFIX=$1
-fi
+if ( ! $?MFIX ) then
+   setenv MFIX "./mfix"
+endif
 
-LEVEL=1
-if [ -n "$2" ]; then
-   LEVEL=$2
-fi
+if ( ! $?LEVEL ) then
+   setenv LEVEL "1"
+endif
 
-PROCS=$(expr ${LEVEL} \* ${LEVEL})
-CELLS=$(expr 10 \* ${LEVEL})
-LEN=$(awk "BEGIN {printf \"%.10f\n\", 0.0015*${LEVEL}}")
+setenv PROCS `perl -e "print $LEVEL*$LEVEL"`
+setenv CELLS `perl -e "print 10*$LEVEL"`
+setenv LEN `perl -e "print 0.0015*$LEVEL"`
 
-if [ "${LEVEL}" -eq 1 ]; then
-  time -p ${MFIX}
+if ( "$LEVEL" == "1" ) then
+   setenv MPIRUN ""
 else
-  time -p mpirun -np ${PROCS} ${MFIX} \
-    XLENGTH=${LEN} IMAX=${CELLS} NODESI=${LEVEL} \
-    ZLENGTH=${LEN} KMAX=${CELLS} NODESK=${LEVEL} \
-    IC_X_E\(1\)=${LEN} IC_Z_T\(1\)=${LEN}
-fi
+    setenv MPIRUN "mpirun -np $PROCS"
+endif
 
+/usr/bin/time -p $MPIRUN $VTUNE_CMD $MFIX \
+     XLENGTH=$LEN IMAX=$CELLS NODESI=$LEVEL \
+     ZLENGTH=$LEN KMAX=$CELLS NODESK=$LEVEL \
+     IC_X_E\(1\)=$LEN IC_Z_T\(1\)=$LEN
