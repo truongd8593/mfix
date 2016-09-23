@@ -247,7 +247,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
-            self.tablewidget_regions.selectRow(len(data)) # TODO: why doesn't this work?
+            self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
 
