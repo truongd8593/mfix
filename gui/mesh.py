@@ -350,9 +350,11 @@ class Mesh(object):
         if k:
             i = max(k) + 1
             loc = safe_float(data.values()[-1]['position']) + 1
+            c = 1
         else:
             loc = self.project.get_value(d + 'length', 1)
-        ctrl = data[i] = {'position': loc, 'cells': 1, 'stretch': 1.0, 'first': 0.0, 'last': 0.0}
+            c = self.project.get_value(CELL_MFIX_KEYS[index], 1)
+        ctrl = data[i] = {'position': loc, 'cells': c, 'stretch': 1.0, 'first': 0.0, 'last': 0.0}
 
         self.mesh_update_mfixkeys(ctrl, i, d)
         table.set_value(data)
