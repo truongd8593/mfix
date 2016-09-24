@@ -1333,8 +1333,13 @@ class BCS(object):
 
     def setup_bcs_solids_wall_tab(self, P):
         #Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
+        #Comment on Solids Wall BCs: Most of the solids wall BCs are only needed for TFM solids. PIC
+        # does not support ANY of the wall BC specifications. DEM only supports keywords associated with
+        # the energy equations.
+        #
         #Solids-# (tab) - (Replace with phase name defined by the user)
         # Note, solids phases are numbered 1-N
+
         ui = self.ui.boundary_conditions
         ui.page_solids.setCurrentIndex(PAGE_WALL)
 
@@ -1387,6 +1392,7 @@ class BCS(object):
 
         #    Enable Jackson-Johnson partial slip boundary
         # Disabled (0.0) for CARTESIAN_GRID = .TRUE.
+        # Disabled for DEM and PIC solids
         # Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
         # Disabled (0.0) for KT_TYPE = 'GHD_2007'
         # Sets keyword BC_JJ_PS(#)
@@ -1395,7 +1401,10 @@ class BCS(object):
         # Note, according to doc it's an int, not float
         cartesian_grid = bool(self.project.get_value('cartesian_grid', default=False))
         kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
-        enabled = not cartesian_grid and kt_type not in ('ALGEBRAIC', 'GHD_2007')
+        solids_model = self.project.get_value('solids_model', args=[P])
+        enabled = (bool(cartesian_grid)==False
+                   and kt_type not in ('ALGEBRAIC', 'GHD_2007')
+                   and solids_model == 'TFM')
         key = 'bc_jj_ps'
         default = 1 if enabled else 0
         widget = ui.checkbox_bc_jj_ps_args_BC
@@ -1414,9 +1423,10 @@ class BCS(object):
         ui.groupbox_solids_momentum_eq.setEnabled(enabled or bc_type=='PSW')
 
         #    Select type of Jackson and Johnson BC:
+        # Disabled for DEM and PIC solids
         # Selection only available BC_JJ_PS(#) = 1.0
         bc_jj_ps = int(self.project.get_value('bc_jj_ps', default=0, args=BC0))
-        enabled = (bc_jj_ps==1)
+        enabled = (bc_jj_ps==1) and solids_model not in ('DEM', 'PIC')
         for widget in (ui.label_bc_jj_ps_type, ui.combobox_bc_jj_ps_type):
             widget.setEnabled(enabled)
 
@@ -1440,58 +1450,64 @@ class BCS(object):
             widget.setCurrentIndex(val)
 
         #Define restitution coefficient
+        # Disabled for DEM and PIC solids
         # Specification only available with BC_JJ_PS(#) = 1.0
         # Sets keyword E_W
         # DEFAULT value of 1.0
         # Required when available # TODO implement 'required'
-        enabled = (bc_jj_ps==1)
+        enabled = (bc_jj_ps==1) and solids_model not in ('DEM', 'PIC')
         key = 'e_w'
         default = 1.0
         setup_key_widget(key, default, enabled)
 
         #Define specularity coefficient
+        # Disabled for DEM and PIC solids
         # Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
         # Sets keyword PHIP
         # DEFAULT value of 0.6
         # Required when available
         jenkins = self.project.get_value('jenkins', default=False)
-        enabled = bc_jj_ps==1 and jenkins==False
+        enabled = bc_jj_ps==1 and jenkins==False and solids_model not in ('DEM', 'PIC')
         key = 'phip'
         default = 0.6
         setup_key_widget(key, default, enabled)
 
         #Define specularity coefficient at zero slip
+        # Disabled for DEM and PIC solids
         # Specification only available with BC_JJ_PS(#)=1.0 and BC_JJ_M=.TRUE.
         # Sets keyword PHIP0
         # DEFAULT -blank
         # Optional when available
         bc_jj_m = self.project.get_value('bc_jj_m')
-        enabled = bc_jj_ps==1 and bc_jj_m==True
+        enabled = bc_jj_ps==1 and bc_jj_m==True and solids_model not in ('DEM', 'PIC')
         key = 'phip0'
         default = None
         setup_key_widget(key, default, enabled)
 
         #Define angle of internal friction
+        # Disabled for DEM and PIC solids
+        # Sets keyword PHI_W
         # Specification only available with BC_JJ_PS(#)=1.0 and (JENKINS=.TRUE. FRICTION_MODEL=SRIVASTAVA) # ??? or ?
         friction_model = self.project.get_value('friction_model')
-        enabled = (bc_jj_ps==1) and (jenkins or friction_model=='SRIVASTAVA') #? correct reading of srs?
+        enabled = (bc_jj_ps==1) and (jenkins or friction_model=='SRIVASTAVA') and solids_model not in ('DEM', 'PIC')
         # DEFAULT value of 11.31 = atan(0.2) * (180/pi)
-        default = Equation('atan(0.2) * (180/pi)') # 11.31
-        # Sets keyword PHI_W # ?
         key = 'phi_w'
+        default = Equation('atan(0.2) * (180/pi)') # 11.31
         # Required when available
         setup_key_widget(key, default, enabled)
 
         #Define transfer coefficient
+        # Disabled for DEM and PIC solids
         # Specification only available with PSW
         # Sets keyword BC_HW_S(#,#)
         # DEFAULT value of 0.0
-        enabled = (bc_type=='PSW')
         key = 'bc_hw_s'
+        enabled = (bc_type=='PSW') and solids_model not in ('DEM', 'PIC')
         default = 0.0 if enabled else None
         setup_key_widget(key, default, enabled)
 
         #Define Wall U-velocity
+        # Disabled for DEM and PIC solids
         # Specification only available with PSW or BC_JJ_PS(#) = 1.0
         # Sets keyword BC_UW_S(#,#)
         # DEFAULT value of 0.0
@@ -1505,16 +1521,17 @@ class BCS(object):
         # Specification only available with PSW or BC_JJ_PS(#) = 1.0
         # Sets keyword BC_WW_S(#,#)
         # DEFAULT value of 0.0
-        enabled = (bc_type=='PSW') or (bc_jj_ps==1)
+        enabled = ((bc_type=='PSW') or (bc_jj_ps==1)) and solids_model not in ('DEM', 'PIC')
         default = 0 if enabled else None
         for c in 'uvw':
             key = 'bc_%sw_s' % c
             setup_key_widget(key, default, enabled)
 
         #Select energy equation boundary type:
+        # Disabled for PIC solids
         # Selection only available when solving energy equations
         energy_eq = self.project.get_value('energy_eq', default=True)
-        enabled = bool(energy_eq)
+        enabled = bool(energy_eq)==True and solids_model != 'PIC'
         ui.groupbox_solids_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
@@ -1543,25 +1560,35 @@ class BCS(object):
                 elif hw==0.0 and c is not None and tw is None:
                     eq_type = SPECIFIED_FLUX
                 #  Convective Flux
+                #    Disabled for DEM and PIC solids
                 #    Requires BC_HW_T_S(#,#)
                 #    Sets keyword BC_C_T_S(#,#) to 0.0
                 #    Requires BC_TW_S(#,#)
                 elif hw is not None and c==0.0 and tw is None:
                     eq_type = CONVECTIVE_FLUX
+                    if solids_model in ('PIC', 'DEM'):
+                        self.error("Convective flux not allowed for %s solids" % solids_model)
+                        # What to do?
                 else:
                     #self.error("Cannot determine type for solid %s energy boundary equation %s" % (P,BC0))
                     eq_type = NO_FLUX # Default
                     self.set_bcs_solids_energy_eq_type(eq_type)
 
+            cb = ui.combobox_solids_energy_eq_type
             if eq_type is not None:
-                ui.combobox_solids_energy_eq_type.setCurrentIndex(eq_type)
+                cb.setCurrentIndex(eq_type)
+            #  Convective Flux
+            #    Disabled for DEM and PIC solids
+            set_item_enabled(get_combobox_item(cb, CONVECTIVE_FLUX),
+                             solids_model not in ('DEM', 'PIC'))
 
         if energy_eq:
             #Define wall temperature
+            # Disabled for PIC solids
             # Specification only available with 'Specified Temperature' BC type
             # Sets keyword BC_TW_S(#,#)
             # DEFAULT value of 293.15
-            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+            enabled = (eq_type==SPECIFIED_TEMPERATURE) and solids_model != 'PIC'
             key = 'bc_tw_s'
             default = 293.15 if enabled else None
             setup_key_widget(key, default, enabled)
@@ -1572,28 +1599,31 @@ class BCS(object):
                 ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
 
             #Define constant flux
+            # Disabled for PIC solids
             # Specification only available with 'Specified Flux' BC type
             # Sets keyword BC_C_T_S(#,#)
             # DEFAULT value of 0.0
-            enabled = (eq_type==SPECIFIED_FLUX)
+            enabled = (eq_type==SPECIFIED_FLUX) and solids_model != 'PIC'
             key = 'bc_c_t_s'
             default = 0.0
             setup_key_widget(key, default, enabled)
 
             #Define transfer coefficient
+            # Disabled for PIC solids
             # Specification only available with 'Convective Flux' BC type
             # Sets keyword BC_HW_T_S(#,#)
             # DEFAULT value of 0.0
-            enabled = (eq_type==CONVECTIVE_FLUX)
+            enabled = (eq_type==CONVECTIVE_FLUX) and solids_model != 'PIC'
             key = 'bc_hw_t_s'
             default = 0.0
             setup_key_widget(key, default, enabled)
 
             #Define free stream temperature
+            # Disabled for PIC solids
             # Specification only available with 'Convective Flux' BC type
             # Sets keyword BC_TW_S(#,#)
             # DEFAULT value of 0.0
-            enabled = (eq_type==CONVECTIVE_FLUX)
+            enabled = (eq_type==CONVECTIVE_FLUX) and solids_model != 'PIC'
             key = 'bc_tw_s'
             default = 0.0 if enabled else None
             setup_key_widget(key, default, enabled, suffix='_2')
@@ -1605,8 +1635,9 @@ class BCS(object):
 
         # FIXME should this also depend on 'granular_energy' keyword ?
         #Select granular energy equation boundary type:
+        # Disabled for DEM and PIC solids
         # Selection only available with BC_JJ_PS(#)=0.0 and KT_TYPE /= 'ALGEBRAIC'
-        enabled = (bc_jj_ps==0) and (kt_type != 'ALGEBRAIC')
+        enabled = (bc_jj_ps==0) and (kt_type != 'ALGEBRAIC') and solids_model not in ('DEM', 'PIC')
         ui.groupbox_solids_granular_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
@@ -1643,20 +1674,24 @@ class BCS(object):
 
         if enabled:
             #Define granular temperature
+            # Disabled for DEM and PIC solids
             # Specification only available with 'Specified Temperature' BC type
             # Sets keyword BC_THETAW_M(#,#)
             # DEFAULT value of 0.0
-            enabled = (eq_type==SPECIFIED_TEMPERATURE)
+            enabled = (eq_type==SPECIFIED_TEMPERATURE) and solids_model not in ('DEM', 'PIC')
             key = 'bc_thetaw_m'
             default = 0.0
             setup_key_widget(key, default, enabled)
 
             #Define constant flux
+            # Disabled for DEM and PIC solids
             # Specification only available with 'Specified Flux' BC type
             # Sets keyword BC_C_THETA_M(#,#)
             # DEFAULT value of 0.0
-            enabled = (eq_type==SPECIFIED_FLUX)
+            enabled = (eq_type==SPECIFIED_FLUX) and solids_model not in ('DEM', 'PIC')
             key = 'bc_c_theta_m'
+            default = 0.0
+            setup_key_widget(key, default, enabled)
 
         #When solving solids species equations:
         #    Set keyword BC_HW_X_S(#,#,#) to 0.0
