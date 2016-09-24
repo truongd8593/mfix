@@ -700,7 +700,12 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
-        nav_menu.setVisible(not nav_menu.isVisible())
+        if self.mode != 'modeler':
+            self.mode_changed('modeler')
+            self.change_pane('model setup')
+            nav_menu.setVisible(True)
+        else:
+            nav_menu.setVisible(not nav_menu.isVisible())
 
 
     def status_message(self, message=''):
@@ -1117,6 +1122,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def mode_changed(self, mode):
         """change the Modeler, Workflow, Developer tab"""
+        self.mode = mode
         to_index = None
         self.capture_output(mode=='interpreter')
         for i in range(self.ui.stackedwidget_mode.count()):
