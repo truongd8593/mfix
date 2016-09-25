@@ -5,13 +5,8 @@
 ## The name for the job. It will be displayed this way on qstat
 #$ -N VTUNE_TEST
 ##
-## Number of cores to request
-#$ -pe mpi 16
-##
 #$ -r n
 ##
-## Queue Name
-#$ -q dev
 setenv RUN_NAME "DEM03"
 rm -f $RUN_NAME* >& /dev/null
 
