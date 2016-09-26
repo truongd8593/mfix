@@ -175,7 +175,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1034,7 +1034,7 @@ QPushButton:checked {
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
@@ -1642,8 +1642,8 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>353</width>
-            <height>1281</height>
+            <width>571</width>
+            <height>1264</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -1722,7 +1722,7 @@ background-color:white;
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_17">
              <item>
-              <widget class="QLabel" name="label_152">
+              <widget class="QLabel" name="label_des_intg_method">
                <property name="text">
                 <string>Integration method</string>
                </property>
@@ -1760,7 +1760,7 @@ background-color:white;
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_19">
              <item>
-              <widget class="QLabel" name="label_151">
+              <widget class="QLabel" name="label_des_coll_model">
                <property name="text">
                 <string>Collision Model</string>
                </property>
@@ -2279,7 +2279,7 @@ background-color:white;
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
-              <widget class="QLabel" name="label_212">
+              <widget class="QLabel" name="label_cohesion_model">
                <property name="font">
                 <font>
                  <weight>75</weight>
@@ -2329,7 +2329,16 @@ background-color:white;
               <bool>true</bool>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
               <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item row="0" column="0">
@@ -2349,7 +2358,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QLabel" name="label_207">
+                 <widget class="QLabel" name="label_hamaker_constant">
                   <property name="text">
                    <string>Hamaker Constant</string>
                   </property>
@@ -2376,7 +2385,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="label_209">
+                 <widget class="QLabel" name="label_vdw_outer_cutoff">
                   <property name="text">
                    <string>Outer cutoff</string>
                   </property>
@@ -2403,7 +2412,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="3" column="0">
-                 <widget class="QLabel" name="label_210">
+                 <widget class="QLabel" name="label_vdw_inner_cutoff">
                   <property name="text">
                    <string>Inner cutoff</string>
                   </property>
@@ -2430,7 +2439,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="4" column="0">
-                 <widget class="QLabel" name="label_211">
+                 <widget class="QLabel" name="label_asperities">
                   <property name="text">
                    <string>Asperities</string>
                   </property>
@@ -2468,7 +2477,7 @@ background-color:white;
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <property name="leftMargin">
-               <number>5</number>
+               <number>0</number>
               </property>
               <property name="topMargin">
                <number>10</number>
@@ -2588,6 +2597,18 @@ background-color:white;
                  <enum>QFrame::Plain</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_23">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>10</number>
+                 </property>
                  <item>
                   <spacer name="horizontalSpacer_2">
                    <property name="orientation">
@@ -2602,7 +2623,7 @@ background-color:white;
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_221">
+                  <widget class="QLabel" name="label_desgridsearch_imax">
                    <property name="text">
                     <string>IMAX</string>
                    </property>
@@ -2612,7 +2633,7 @@ background-color:white;
                   <widget class="LineEdit" name="lineedit_keyword_desgridsearch_imax"/>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_222">
+                  <widget class="QLabel" name="label_desgridsearch_jmax">
                    <property name="text">
                     <string>JMAX</string>
                    </property>
@@ -2622,7 +2643,7 @@ background-color:white;
                   <widget class="LineEdit" name="lineedit_keyword_desgridsearch_jmax"/>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_223">
+                  <widget class="QLabel" name="label_desgridsearch_kmax">
                    <property name="text">
                     <string>KMAX</string>
                    </property>
