@@ -38,7 +38,7 @@ class ModelSetup(object):
             item = get_combobox_item(cb, i)
             self.add_tooltip(item, key=key, description=self.keyword_doc[key]['valids'][val]['note'], value=val)
 
-	cb = ui.combobox_momentum_formulation
+        cb = ui.combobox_momentum_formulation
         cb.activated.connect(self.set_momentum_formulation)
         self.add_tooltip(ui.label_momentum_formulation, key=None, description=self.keyword_doc['model_b']['description'])
 
@@ -156,7 +156,7 @@ class ModelSetup(object):
             idx = DRAG_TYPES.index(DEFAULT_DRAG_TYPE)
         else:
             if not val in DRAG_TYPES:
-                self.error('Invalid drag_type %s' % drag_type)
+                self.error('Invalid drag_type %s' % val)
                 idx = DRAG_TYPES.index(DEFAULT_DRAG_TYPE)
             else:
                 idx = DRAG_TYPES.index(val)
@@ -249,12 +249,12 @@ class ModelSetup(object):
         blending_stress = self.project.get_value('blending_stress') # Note, not set anywhere in GUI
         friction_model = self.project.get_value('friction_model')
 
-        enabled = (solver == TFM and
-                   drag_type.startswith('WEN_YU') and
-                   kt_type=='ALGEBRAIC' and
-                   turbulence_model != 'K_EPSILON' and
-                   bool(blending_stress)==False and
-                   friction_model != 'SRIVASTAVA')
+        enabled = (solver == TFM
+                   and drag_type.startswith('WEN_YU')
+                   and kt_type=='ALGEBRAIC'
+                   and turbulence_model != 'K_EPSILON'
+                   and bool(blending_stress)==False
+                   and friction_model != 'SRIVASTAVA')
         cb = ui.combobox_subgrid_type
         for item in (ui.label_subgrid_type, cb,
                      ui.label_filter_size_ratio, ui.lineedit_keyword_filter_size_ratio,

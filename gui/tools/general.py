@@ -15,6 +15,8 @@ import logging
 import shlex
 import copy
 import random
+import operator
+from collections import OrderedDict
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +65,7 @@ def plural(n, word):
 def set_item_noedit(item):
     item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
 
+
 def set_item_enabled(item, enabled):
     """Enable/disable items which do not have a setEnabled method, like menu items"""
     flags = item.flags()
@@ -72,10 +75,17 @@ def set_item_enabled(item, enabled):
         flags &= ~QtCore.Qt.ItemIsEnabled
     item.setFlags(flags)
 
+
+def item_enabled(item):
+    flags = item.flags()
+    return bool(flags & QtCore.Qt.ItemIsEnabled)
+
+
 def get_combobox_item(combobox, n):
     """Return the n'th menu item from a combobox"""
     model = combobox.model()
     return model.item(n, 0)
+
 
 def get_selected_row(table):
     """get index of selected row from a QTableWidget"""
@@ -83,11 +93,13 @@ def get_selected_row(table):
     rows = set(i.row() for i in table.selectedIndexes())
     return None if not rows else rows.pop()
 
+
 def get_selected_rows(table):
     """get index of selected row from a QTableWidget"""
     # note, currentRow can return  >0 even when there is no selection
     rows = set(i.row() for i in table.selectedIndexes())
     return sorted(list(rows))
+
 
 def num_to_time(time, unit='s', outunit='time'):
     """Convert time with a unit to another unit."""
@@ -419,6 +431,14 @@ def append_row_column_triangular(a, n, fill_value = None):
     ret.append(fill_value)
     return ret
 
+def sort_dict(dict_, key, start=0):
+    """given an dict of dicts and a key, sort the outside dict based on the
+    value of one of the the internal dict's keys and return the sorted
+    OrderedDict"""
+    return OrderedDict(
+        [(k, dict_[old_k])
+         for k, (old_k, v) in enumerate(sorted([(k, v[key])
+         for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
 
 if __name__ == '__main__':
     def test_recurse_dict():

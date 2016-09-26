@@ -53,6 +53,16 @@
 !---------------------------------------------------------------------//
   MMAX = 0
 
+  EP_STAR = 0.42
+
+#----------------------------  TFM DEFAULTS  --------------------------#
+  KT_TYPE = 'ALGEBRAIC'
+  FRICTION_MODEL = 'SCHAEFFER'
+  C_e = 0.95
+  C_f = 0.10
+  PHI = 30.0
+  PHI_W = 11.3
+
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
@@ -73,7 +83,7 @@
   IC_V_g(1) = 0.0
   IC_W_g(1) = 0.0
 
-#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1, 0, 0], "to": [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin", "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
+#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1.0, 1.0, 1.0], "to": [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin", "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION

@@ -71,7 +71,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_xmin">
+       <widget class="LineEdit" name="lineedit_xmin">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -3027,13 +3027,13 @@ background-color: transparent;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets/base</header>
   </customwidget>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>

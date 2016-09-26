@@ -79,8 +79,10 @@ class PSS(object):
         for (name,data) in self.pss_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
-            available = data.get('available', True) and (shape in ('point', 'box')
-                                                         or 'plane' in shape)
+            available = (data.get('available', True)
+                         and not self.check_region_in_use(name)
+                         and (shape in ('point', 'box')
+                              or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()

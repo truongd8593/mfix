@@ -238,6 +238,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 new_region = copy.deepcopy(data[name])
 
                 new_name = get_unique_string(name, list(data.keys()))
+                # update parameters before the new region is added to the dictionary
+                self.update_parameter_name(new_name, None, new_region)
                 data[new_name] = new_region
                 data[new_name]['visible'] = self.get_visibility_image(
                     data[new_name]['visibility'])
@@ -245,6 +247,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
             self.tablewidget_regions.fit_to_contents()
+            self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
 
@@ -322,8 +325,7 @@ class RegionsWidget(QtWidgets.QWidget):
             elif key == 'name':
                 new_name = value.get('name')
                 if new_name:
-                    self.parent.ics_change_region_name(name, new_name)
-                    self.parent.bcs_change_region_name(name, new_name)
+                    self.parent.change_region_name(name, new_name)
                 else:
                     self.parent.error('invalid value %s' % value)
                     return
@@ -350,6 +352,7 @@ class RegionsWidget(QtWidgets.QWidget):
             # check for and update plane extents
             typ = data[name]['type']
             if 'plane' in typ and item[1] not in typ.lower():
+                self.update_parameter_map(val, name, 'to_'+str(item[1]))
                 data[name]['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
 
@@ -367,10 +370,23 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.change_region_name(name, new_name)
             # TODO FIXME fit table to contents
 
+            # update parameter map
+            self.update_parameter_name(new_name, name, data[new_name])
+
         elif 'type' in key:
-            data[name]['type'] = value.values()[0]
+            typ = value.values()[0]
+            data[name]['type'] = typ
             self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
+
+            # check for plane, update extents
+            if 'plane' in typ:
+                typ = typ.lower()
+                index = [d not in typ for d in 'xyz'].index(True)
+                f_value = data[name]['from'][index]
+                self.update_parameter_map(f_value, name, 'to_'+'xyz'[index])
+                data[name]['to'][index] = f_value
+                self.extent_lineedits[index*2+1].updateValue(None, f_value)
 
         elif 'stl_shape' in key:
             data[name]['stl_shape'] = value.values()[0]
@@ -554,9 +570,9 @@ class RegionsWidget(QtWidgets.QWidget):
         return rtype
 
     def get_region_dict(self):
-        """ return region dict, for use by clients"""
+        """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
-        return copy.deepcopy(region_dict) # Allow clients to modify dict
+        return copy.deepcopy(region_dict)  # Allow clients to modify dict
 
     def __len__(self):
         return len(self.tablewidget_regions.value)
@@ -594,15 +610,23 @@ class RegionsWidget(QtWidgets.QWidget):
 
         add = set(new_params)-set(old_params)
         for param in add:
-            if param not in self.parameter_key_map:
-                self.parameter_key_map[param] = set()
-            self.parameter_key_map[param].add(name_key)
+            self.add_namekey(param, name_key)
 
         remove = set(old_params)-set(new_params)
         for param in remove:
-            self.parameter_key_map[param].remove(name_key)
-            if len(self.parameter_key_map[param]) == 0:
-                self.parameter_key_map.pop(param)
+            self.remove_namekey(param, name_key)
+
+    def add_namekey(self, param, name_key):
+        """add the name_key to the parameter list"""
+        if param not in self.parameter_key_map:
+            self.parameter_key_map[param] = set()
+        self.parameter_key_map[param].add(name_key)
+
+    def remove_namekey(self, param, name_key):
+        """remove the name_key from the parameter list"""
+        self.parameter_key_map[param].remove(name_key)
+        if len(self.parameter_key_map[param]) == 0:
+            self.parameter_key_map.pop(param)
 
     def update_parameters(self, params):
         """parameters have changed, update regions"""
@@ -624,10 +648,25 @@ class RegionsWidget(QtWidgets.QWidget):
             else:
                 self._remove_key(key, value)
 
+    def update_parameter_name(self, new_name, old_name, region):
+        """a region name changed, update map"""
+        if old_name:
+            self.remove_from_parameter_map(old_name, region)
+        for k, v in region.items():
+            if isinstance(v, list):
+                for xyz, item in zip(['x', 'y', 'z'], v):
+                    self.update_parameter_map(item, new_name, '_'.join([k, xyz]))
+            else:
+                self.update_parameter_map(v, new_name, k)
+
     def _remove_key(self, name_key, value):
         if not isinstance(value, Equation): return
 
         for param in value.get_used_parameters():
-            self.parameter_key_map[param].remove(name_key)
-            if len(self.parameter_key_map[param]) == 0:
-                self.parameter_key_map.pop(param)
+            keys = self.parameter_key_map.get(param, None)
+            if keys:
+                keys.remove(name_key)
+                if len(self.parameter_key_map[param]) == 0:
+                    self.parameter_key_map.pop(param)
+            else:
+                self.warn("couldn't remove {} from {}".format(param, keys))

@@ -88,8 +88,8 @@ class TestNode(Node):
 
     def run_project(self):
         self.parent.workflow_widget.run_project(self.proj_file)
-        
-        
+
+
 class ExportNode(Node):
     name = 'Export'
 
@@ -341,7 +341,7 @@ class WorkflowWidget(QtWidgets.QWidget):
                 args = []
             proj.updateKeyword(key, value, args=args)
 
-        copied_proj = os.path.join(path, proj.run_name.value+'.mfx')
+        copied_proj = os.path.join(path, proj.get_value('run_name')+'.mfx')
         self.mfixgui.print_internal("Exporting to: %s" % copied_proj,
                                     color='green')
         proj.writeDatFile(copied_proj)

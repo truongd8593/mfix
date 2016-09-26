@@ -93,7 +93,9 @@ class ISS(object):
             # IS regions can be planes or volumes (not points or STLs)
             # No region can define more than one internal surface.
 
-            available = data.get('available', True) and (shape=='box' or 'plane' in shape)
+            available = (data.get('available', True)
+                         and not self.check_region_in_use(name)
+                         and (shape=='box' or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()

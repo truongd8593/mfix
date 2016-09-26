@@ -706,14 +706,14 @@ class Table(QtWidgets.QTableView, BaseWidget):
         else:
             return None
 
-    def set_value(self, value):
+    def set_value(self, value, block=None):
         if self.dtype != type(value):
             # FIXME, this is a problem if you try to mix dict and OrderedDict
             raise TypeError('Selected table model does not support type'
                             '{}'.format(type(value)))
 
         if self.model() is not None:
-            self.model().update(value)
+            self.model().update(value, block)
 
         # reset the selection
         self.block_selection_change_event = True
@@ -796,14 +796,18 @@ class Table(QtWidgets.QTableView, BaseWidget):
 #                    self.setRowHidden(i-1, False)
 
     def contextMenuEvent(self, event):
+        """Qt context menu over-ride"""
         self.mouse_pos = QtGui.QCursor.pos()
         # popup context menu
         self.menu.popup(self.mouse_pos)
 
-    def apply_val_to_column(self):
+    def get_clicked_cell(self):
+        """get the cell of the contectMenuEvent, return row, col"""
         local_pos = self.viewport().mapFromGlobal(self.mouse_pos)
-        column = self.columnAt(local_pos.x())
-        row = self.rowAt(local_pos.y())
+        return (self.rowAt(local_pos.y()), self.columnAt(local_pos.x()))
+
+    def apply_val_to_column(self):
+        row, column  = self.get_clicked_cell()
         value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
         self.model().apply_to_column(column, value)
 
@@ -962,7 +966,10 @@ class DictTableModel(QtCore.QAbstractTableModel):
         self.blockUpdate = False
         self.update_rows = False
 
-    def update(self, data):
+    def update(self, data, block=None):
+        if block is not None:
+            self.blockUpdate = block
+
         if not self.blockUpdate and data is not None:
             self.beginResetModel()
             self.datatable = data
@@ -1093,7 +1100,9 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         self._rows = rows
         self.blockUpdate = False
 
-    def update(self, data):
+    def update(self, data, block=None):
+        if block is not None:
+            self.blockUpdate = block
         if not self.blockUpdate:
             self.beginResetModel()
             self.datatable = data

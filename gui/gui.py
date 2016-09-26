@@ -5,6 +5,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 """MFIX GUI"""
 
 import getopt
+import glob
 import logging
 import multiprocessing
 import os
@@ -60,6 +61,7 @@ from ics import ICS
 from bcs import BCS
 from pss import PSS
 from iss import ISS
+from mesh import Mesh
 
 from interpreter import Interpreter
 
@@ -98,7 +100,7 @@ class MfixGui(QtWidgets.QMainWindow,
               ModelSetup,
               FluidHandler,
               SolidsHandler,
-              ICS, BCS, PSS, ISS,
+              ICS, BCS, PSS, ISS, Mesh,
               Interpreter):
     # Main window class for MFIX-GUI
 
@@ -327,6 +329,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_model_setup()
         self.init_fluid_handler()
         self.init_solids_handler()
+        self.init_mesh()
         self.init_ics()
         self.init_bcs()
         self.init_pss()
@@ -592,6 +595,18 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
+
+        expected_args = keyword_args.get(key)
+        if expected_args is not None:
+            if isinstance(args, int):
+                args = [args]
+            elif args is None:
+                args = []
+            if len(args) != len(expected_args):
+                self.error("keyword %s: argument mismatch, expected %s, got %s" %
+                           (key, str(expected_args), str(args)))
+                return
+
         if value is None or value=='':
             self.unset_keyword(key, args)
             return
@@ -675,10 +690,22 @@ class MfixGui(QtWidgets.QMainWindow,
                                              self.iss_check_region_in_use))
                                              # any more places region can be used?
 
+    def change_region_name(self, name, new_name):
+        self.bcs_change_region_name(name, new_name)
+        self.ics_change_region_name(name, new_name)
+        self.iss_change_region_name(name, new_name)
+        self.pss_change_region_name(name, new_name)
+        # any more places region can be used?
+
 
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
-        nav_menu.setVisible(not nav_menu.isVisible())
+        if self.mode != 'modeler':
+            self.mode_changed('modeler')
+            self.change_pane('model setup')
+            nav_menu.setVisible(True)
+        else:
+            nav_menu.setVisible(not nav_menu.isVisible())
 
 
     def status_message(self, message=''):
@@ -1095,6 +1122,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def mode_changed(self, mode):
         """change the Modeler, Workflow, Developer tab"""
+        self.mode = mode
         to_index = None
         self.capture_output(mode=='interpreter')
         for i in range(self.ui.stackedwidget_mode.count()):
@@ -2234,6 +2262,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # Take care of updates we deferred during extract_region
         # FIXME why not do this when switching panes, like we do with solids/BCs etc?
         self.ui.regions.tablewidget_regions.fit_to_contents()
+
+        # background mesh
+        self.init_background_mesh()
 
         # Initial conditions
         self.ics_extract_regions()

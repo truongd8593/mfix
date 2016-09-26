@@ -1556,9 +1556,8 @@ Define Tangential Velocities:
 #    Define Y-Axial Velocity
 # Sets keyword BC_V_G(#)
 # DEFAULT value of 0.0
-
-Define Z-Axial Velocity
-# Sets keyword BC_Wv_G(#)
+#    Define Z-Axial Velocity
+# Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
 
 Define temperature
@@ -1875,67 +1874,66 @@ Region orientation (e.g., XZ-Plane)
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
-# Sets keyword BC_VOLFLOW_ S(#,#)
+# Sets keyword BC_VOLFLOW_S(#,#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
-# Sets keyword BC_MASSFLOW_ S(#,#)
+# Sets keyword BC_MASSFLOW_S(#,#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
 #    Define X-Axial Velocity
-# Sets keyword BC_U_ S(#,#)
+# Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
-# Sets keyword BC_W_ S(#,#)
+# Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 # For BC_TYPE='MO' and YZ-Plane region
 #  Select mass outflow specification type:
 #    Available selections:
 #    X-Axial Velocity (m/s) [DEFAULT]
-# Sets keyword BC_U_ S(#,#)
+# Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
-# Sets keyword BC_VOLFLOW_ S(#,#)
+# Sets keyword BC_VOLFLOW_S(#,#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
-# Sets keyword BC_MASSFLOW_ S(#,#)
+# Sets keyword BC_MASSFLOW_S(#,#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
 #    Define Y-Axial Velocity
-# Sets keyword BC_V_ S(#,#)
+# Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
-# Sets keyword BC_W_ S(#,#)
+# Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 # For BC_TYPE='MO' and XY-Plane region
 #  Select mass outflow specification type:
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
-
-# Sets keyword BC_W_ S(#,#)
+# Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
-# Sets keyword BC_VOLFLOW_ S(#,#)
+# Sets keyword BC_VOLFLOW_S(#,#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
-# Sets keyword BC_MASSFLOW_ S(#,#)
+# Sets keyword BC_MASSFLOW_S(#,#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
 #    Define X-Axial Velocity
-# Sets keyword BC_U_ S(#,#)
+# Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
 #    Define Y-Axial Velocity
-# Sets keyword BC_V_ S(#,#)
+# Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 # For BC_TYPE='CG_MO'
 #  Specify all velocity components:
 #    Define X-Axial Velocity
-# Sets keyword BC_U_ S(#,#)
+# Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
 #    Define Y-Axial Velocity
-# Sets keyword BC_V_ S(#,#)
+# Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
-# Sets keyword BC_V_ S(#,#)
+# Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 
 Define duration to average outflow rate.
