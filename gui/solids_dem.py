@@ -2,10 +2,12 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 from qtpy import QtWidgets
+from qtpy.QtWidgets import QLabel
 
 from widgets.base import LineEdit
 from project import Equation
-from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit)
+from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit,
+                           widget_iter)
 
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
 
@@ -110,6 +112,7 @@ class SolidsDEM(object):
     def setup_dem_tab(self):
         # Ensures all constraints (items enabled/disabled) are set
         # called by each 'set_' function, so don't call those here
+
         ui = self.ui.solids
         # Inline comments from MFIX-UI SRS as of 2016-07-01
         #  Please update as needed!
@@ -330,32 +333,112 @@ class SolidsDEM(object):
                                    ('des_etat_fac', 0.5), ('des_etat_w_fac', 0.5)]:
                 if self.project.get_value(key) is None:
                     self.update_keyword(key, default)
-        # Unset keywords if not enabled? TODO
 
+        # Unset keywords if not enabled?
         #Specify Young's modulus
         # Only available for Hertzian collision model
         # Sets keyword E_YOUNG (EW_YOUNG)
-        #Specify Poisson ratio:
-        # Only available for Hertzian collision model
-        # Sets keyword V_POISSON (VW_POISSON)
+
+        layout = ui.gridlayout_dem_parameters
         enabled = (des_coll_model=='HERTZIAN')
         for item in (ui.label_e_young,
-                     ui.lineedit_keyword_e_young_args_P,
                      ui.lineedit_keyword_ew_young,
                      ui.label_e_young_units,
                      ui.label_v_poisson,
-                     ui.lineedit_keyword_v_poisson_args_P,
                      ui.lineedit_keyword_vw_poisson):
             item.setEnabled(enabled)
 
-        if enabled:
-            P = self.solids_current_phase
-            if P is not None:
-                for key in 'e_young', 'v_poisson':
-                    val = self.project.get_value(key, args=[P])
-                    widget = getattr(ui, 'lineedit_keyword_%s_args_P' % key)
-                    if widget:
-                        widget.updateValue(key, val)
+        key = 'e_young'
+
+        # We put these back after inserting rows
+        for item in (ui.label_v_poisson,
+                     ui.lineedit_keyword_vw_poisson):
+            item.hide()
+            layout.removeWidget(item)
+
+        # Delete all the old ones (we could do this just on solids change)
+        for idx in range(layout.count()-1, -1, -1):
+            item = layout.itemAt(idx)
+            w = item.widget()
+            if not w:
+                continue
+            name = w.objectName()
+            if '_args_' in  name:
+                   w.hide()
+                   if isinstance(w, LineEdit):
+                       self.project.unregister_widget(w)
+                   layout.removeWidget(w)
+                   w.deleteLater()
+
+        idx = layout.indexOf(ui.lineedit_keyword_ew_young)
+        columns = 4
+        row = 1 + int(idx/columns)
+        for (p, name) in enumerate(self.solids.keys(), 1):
+            row += 1
+            label = QLabel('    ' + name)
+            label.setObjectName('label_%s_args_%s' % (key,i))
+            label.args = [p]
+            self.add_tooltip(label, key)
+            layout.addWidget(label, row, 0, 1, 1)
+            label.setEnabled(enabled)
+
+            le = LineEdit()
+            le.setMaximumWidth(150) #?
+            le.key = key
+            le.args = [p]
+            le.dtype = float
+            le.setValInfo(min=0.0)
+            le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
+            self.add_tooltip(le, key)
+            layout.addWidget(le, row, 1, 1, 1)
+            le.setEnabled(enabled)
+            val = self.project.get_value(key, args=[p])
+            if val is not None:
+                le.updateValue(key, val)
+            self.project.register_widget(le, keys=[key], args=[p])
+
+            label = QLabel('Pa')
+            label.setObjectName('label_%s_units_args_%s' % (key, p))
+            layout.addWidget(label, row, 3, 1, 1)
+            label.setEnabled(enabled)
+
+        #Specify Poisson ratio:
+        # Only available for Hertzian collision model
+        # Sets keyword V_POISSON (VW_POISSON)
+        row += 1
+        layout.addWidget(ui.label_v_poisson, row, 0, 1, 1)
+        layout.addWidget(ui.lineedit_keyword_vw_poisson, row, 2, 1, 1)
+        for item in (ui.label_v_poisson, ui.lineedit_keyword_vw_poisson):
+            item.show()
+            item.setEnabled(enabled)
+
+        row += 1
+        key = 'v_poisson'
+
+        for (p, name) in enumerate(self.solids.keys(), 1):
+            row += 1
+            label = QLabel('    ' + name)
+            label.setObjectName('label_%s_args_%s' % (key, i))
+            label.args = [p]
+            self.add_tooltip(label, key)
+            layout.addWidget(label, row, 0, 1, 1)
+            label.setEnabled(enabled)
+
+            le = LineEdit()
+            le.setMaximumWidth(150) #?
+            le.key = key
+            le.args = [p]
+            le.dtype = float
+            le.setValInfo(min=0.0)
+            le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
+            self.add_tooltip(le, key)
+            layout.addWidget(le, row, 1, 1, 1)
+            le.setEnabled(enabled)
+            val = self.project.get_value(key, args=[p])
+            if val is not None:
+                le.updateValue(key, val)
+
+            self.project.register_widget(le, keys=[key], args=[p])
 
         #Specify normal restitution coefficient
         # Specification always required

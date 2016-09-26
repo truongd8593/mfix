@@ -175,7 +175,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="materials">
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1034,7 +1034,7 @@ QPushButton:checked {
                   <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderVisible">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </attribute>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
@@ -1993,7 +1993,17 @@ background-color:white;
             </widget>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout_16">
+            <layout class="QGridLayout" name="gridlayout_dem_parameters">
+             <item row="4" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac">
+               <property name="maximumSize">
+                <size>
+                 <width>150</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="1">
               <widget class="QLabel" name="label_179">
                <property name="text">
@@ -2009,7 +2019,7 @@ background-color:white;
               </widget>
              </item>
              <item row="1" column="0">
-              <widget class="QLabel" name="label_174">
+              <widget class="QLabel" name="label_mew">
                <property name="text">
                 <string>Friction coefficient</string>
                </property>
@@ -2113,40 +2123,10 @@ background-color:white;
                </property>
               </widget>
              </item>
-             <item row="4" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_des_etat_w_fac">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
              <item row="5" column="0">
               <widget class="QLabel" name="label_e_young">
                <property name="text">
                 <string>Young's modulus</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_e_young_args_P">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_ew_young">
-               <property name="maximumSize">
-                <size>
-                 <width>150</width>
-                 <height>16777215</height>
-                </size>
                </property>
               </widget>
              </item>
@@ -2157,15 +2137,8 @@ background-color:white;
                </property>
               </widget>
              </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="label_v_poisson">
-               <property name="text">
-                <string>Poisson's ratio</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_v_poisson_args_P">
+             <item row="6" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_vw_poisson">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
@@ -2174,8 +2147,15 @@ background-color:white;
                </property>
               </widget>
              </item>
-             <item row="6" column="2">
-              <widget class="LineEdit" name="lineedit_keyword_vw_poisson">
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_v_poisson">
+               <property name="text">
+                <string>Poisson's ratio</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <widget class="LineEdit" name="lineedit_keyword_ew_young">
                <property name="maximumSize">
                 <size>
                  <width>150</width>
