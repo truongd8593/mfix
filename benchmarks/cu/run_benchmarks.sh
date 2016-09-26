@@ -10,7 +10,7 @@ CORES=$( perl -e "use POSIX; print ceil(${LEVEL}**3/16)*16")
 
 QSUB=
 if [ -n "${Q}" ]; then
-    QSUB="qsub -v MFIX,VTUNE_CMD -q general -pe mpi ${CORES}"
+    QSUB="qsub -v MFIX,VTUNE_CMD,LEVEL -q general -pe mpi ${CORES}"
 fi
 
 VTUNE_BASE=

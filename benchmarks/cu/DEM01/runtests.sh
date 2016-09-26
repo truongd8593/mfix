@@ -7,6 +7,7 @@
 ##
 #$ -r n
 ##
+module load gnu openmpi/1.10.2_gnu6.1
 setenv RUN_NAME "DEM01"
 rm -f $RUN_NAME* >& /dev/null
 rm -f POST_* >& /dev/null
