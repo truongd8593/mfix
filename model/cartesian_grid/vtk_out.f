@@ -548,7 +548,6 @@
       Z1 = LIST_OF_Z_LINES_DES(0)
       Z2 = LIST_OF_Z_LINES_DES(NODESK)
 
-      print*,'VTU_FILENAME=',VTU_FILENAME,LEN(TRIM(VTU_FILENAME))
 ! Change extension to .vtr (rectilinear mesh)      
       LAST_CHAR = LEN(TRIM(VTU_FILENAME))
       VTU_FILENAME(LAST_CHAR:LAST_CHAR) = 'r'
