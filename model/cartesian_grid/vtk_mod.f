@@ -268,5 +268,9 @@ use param, only: DIMENSION_N_S
 
 ! Particle rank
       LOGICAL :: VTK_PART_RANK(DIMENSION_VTK)
+
+! Domain decomposition
+      LOGICAL :: VTK_DOMAIN_DECOMPOSITION(DIMENSION_VTK)
+
       END MODULE vtk
 

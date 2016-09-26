@@ -1105,6 +1105,8 @@ MODULE CG_INIT_NAMELIST
       VTK_PARTITION = .FALSE.
 !</keyword>
 
+      VTK_DOMAIN_DECOMPOSITION = .FALSE.
+
 !<keyword category="Output Control" required="false">
 !  <description>Write boundary condition ID in VTK file.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

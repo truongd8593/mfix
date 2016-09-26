@@ -130,6 +130,8 @@
          IF (VTK_Z_B(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
          IF (VTK_Z_T(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
 
+         IF (VTK_DOMAIN_DECOMPOSITION(L)) VTK_DEFINED(L) = .TRUE.
+
          IF(.NOT.VTK_DEFINED(L)) CYCLE
          N_VTK_REGIONS =  N_VTK_REGIONS + 1
       ENDDO   ! end loop over (l = 1,dimension_vtk)
