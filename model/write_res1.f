@@ -69,7 +69,7 @@
           call send_recv(V_g,2)
           call send_recv(W_g,2)
           call send_recv(ROP_S,2)
-!          IF(ANY(SOLVE_ROs)) call send_recv(RO_S,2)
+          IF(ANY(SOLVE_ROs)) call send_recv(RO_S,2)
           call send_recv(T_S,2)
           call send_recv(U_S,2)
           call send_recv(V_S,2)
