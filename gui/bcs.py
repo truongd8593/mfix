@@ -878,7 +878,7 @@ class BCS(object):
         # Available selections:
         #  No-Flux (adiabatic) [DEFAULT]
         if eq_type == NO_FLUX:
-            #    Sets keyword bBC_HW_T_S(#,#) to 0.0
+            #    Sets keyword BC_HW_T_S(#,#) to 0.0
             hw = 0.0
             #    Sets keyword BC_C_T_S(#,#) to 0.0
             c = 0.0
