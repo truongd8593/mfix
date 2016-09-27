@@ -1133,7 +1133,7 @@ class ICS(object):
 
         #Advanced: Define radiation coefficient
         # Specification only available when solving energy equations
-        # Sets keyword IC_GAMA_S(#,#)   # emended to IC_GAMA_RS
+        # Sets keyword IC_GAMA_RS(#,#)
         # DEFAULT value of 0.0
         enabled = bool(energy_eq)
         key = 'ic_gama_rs'

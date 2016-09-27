@@ -485,7 +485,6 @@ class MfixGui(QtWidgets.QMainWindow,
         # This is done in 'load_project'.  so why do it now?
         #self.reset() # Clear command_output too?
 
-        # end of __init__ (hooray!)
 
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
@@ -499,7 +498,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Remove mention of 'cylindrical' since we don't support it
         self.keyword_doc['no_k']['description'] = 'Flag to disable the third dimension (i.e., 2D simulation).'
-
         # Remove this docstring completely - it refers to cylindrical coordinates (annluar region)
         del self.keyword_doc['xmin']['description']
 

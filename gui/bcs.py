@@ -878,7 +878,7 @@ class BCS(object):
         # Available selections:
         #  No-Flux (adiabatic) [DEFAULT]
         if eq_type == NO_FLUX:
-            #    Sets keyword BC_HW_T_S(#,#) to 0.0
+            #    Sets keyword bBC_HW_T_S(#,#) to 0.0
             hw = 0.0
             #    Sets keyword BC_C_T_S(#,#) to 0.0
             c = 0.0
@@ -1940,8 +1940,7 @@ class BCS(object):
                 if (hw==0) and (c==0) and (sw is None):
                     eq_type = NO_FLUX
                 #  Specified Temperature
-                #    Sets keyword BC_HW_T_S(#,#) to UNDEFINED
-                #                 ^^^^ presumably BC_HW_SCALAR
+                #    Sets keyword BC_HW_SCALAR(#,#) to UNDEFINED
                 #    Sets keyword BC_C_SCALAR (#,#) to 0.0
                 #    Requires BC_SCALARW (#,#)
                 elif (hw is None) and (c==0.0) and (sw is not None):
