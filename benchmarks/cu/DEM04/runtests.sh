@@ -37,7 +37,7 @@ endif
 set MFIX_CMD = "$MFIX \
      XLENGTH=$LEN IMAX=$CELLS NODESI=$LEVEL \
      ZLENGTH=$LEN KMAX=$CELLS NODESK=$LEVEL \
-     IC_X_E\(1\)=$LEN IC_Z_T\(1\)=$LEN"
+     IC_X_E(1)=$LEN IC_Z_T(1)=$LEN"
 
 if ( $?WARMUP ) then
     time $MPIRUN $MFIX_CMD TSTOP=0.5
