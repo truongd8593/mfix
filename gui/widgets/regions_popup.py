@@ -12,7 +12,8 @@ from collections import OrderedDict
 import pickle
 
 from qtpy import QtCore, QtWidgets, PYQT5, uic
-from qtpy.QtWidgets import QTableWidgetItem, QLineEdit
+from qtpy.QtWidgets import QTableWidgetItem, QLineEdit, QAbstractItemView
+
 UserRole = QtCore.Qt.UserRole
 
 from constants import *
@@ -141,7 +142,9 @@ class RegionsPopup(QtWidgets.QDialog):
             bc_type = BC_TYPES[val]
             if bc_type.endswith('W'):
                 for i in range(0, tw.rowCount()):
-                    self.enable_row(i, True)
+                    text = tw.item(i, 1).text()
+                    enable = 'cyclic' not in text
+                    self.enable_row(i, enable)
 
             elif bc_type == 'PI':
                 #    Not available for volume regions
@@ -157,10 +160,19 @@ class RegionsPopup(QtWidgets.QDialog):
                     text = tw.item(i, 1).text()
                     enable = ('plane' in text or text=='STL') and (target is None or text==target)
                     self.enable_row(i, enable)
+            elif bc_type == 'CYCLIC':
+                tw.clearSelection()
+                for i in range(tw.rowCount()):
+                    text = tw.item(i, 1).text()
+                    enable = 'cyclic' in text
+                    self.enable_row(i, enable)
             else:
                 self.error("Unknown bc_type %s" % bc_type)
+            tw.setSelectionMode(QAbstractItemView.SingleSelection if bc_type=='CYCLIC'
+                                else QAbstractItemView.MultiSelection)
 
         elif self.surface:
+            tw.setSelectionMode(QAbstractItemView.MultiSelection)
             is_type = IS_TYPES[val]
             plane =  is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
             #enable planes, disable boxes
@@ -234,7 +246,7 @@ class RegionsPopup(QtWidgets.QDialog):
     def popup(self, label_text):
         # Widget is shared by ICs/BCs/PSs/ISs
         ui = self.ui
-
+        tw = ui.table
         text = "Select region(s) for %s" % label_text
         self.ui.label_top.setText(text)
 
@@ -258,6 +270,35 @@ class RegionsPopup(QtWidgets.QDialog):
         self.show()
         self.raise_()
         self.activateWindow()
+        # Table fixup
+
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.columnCount()
+        stretch_column = 0
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        table_height = 4 + tw.horizontalHeader().height() + (tw.rowHeight(0)*tw.rowCount())
+
+        min_table_height = 150
+        tw.setMinimumHeight(min(min_table_height,table_height))
+        tw.setMaximumHeight(table_height)
+
+        width = tw.horizontalHeader().width() + tw.verticalScrollBar().isVisible() * (4+tw.verticalScrollBar().width())
+        self.setMaximumWidth(max(width, ui.label_top.size().width()))
+        #self.setMinimumWidth(width)
+
+        # Height of all "stuff" other than the main table
+        stuff_height = 3 * self.combobox.size().height() + 20 # hack, size() of label returns weird value
+
+        height = (table_height + stuff_height)
+
+        self.setMinimumHeight(min(min_table_height+stuff_height, height))
+        self.setMaximumHeight(height)
 
 
     def get_selection_list(self):
