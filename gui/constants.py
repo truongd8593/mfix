@@ -44,15 +44,16 @@ DEFAULT_RDF_TYPE='LEBOWITZ'
 BLENDING_FUNCTIONS = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
 DEFAULT_BLENDING_FUNCTION = 'NONE'
 
-BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO']
+BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO', 'CYCLIC'] # 'CYCLIC' is not really a bc_type
 
 BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
             'Free Slip Wall', 'Partial Slip Wall',
-            'Pressure Inflow', 'Mass Outflow']
+            'Pressure Inflow', 'Mass Outflow',
+            'Cyclic Boundary']
 
 (MASS_INFLOW, PRESSURE_OUTFLOW,
  NO_SLIP_WALL, FREE_SLIP_WALL, PARTIAL_SLIP_WALL,
- PRESSURE_INFLOW, MASS_OUTFLOW) = range(7)
+ PRESSURE_INFLOW, MASS_OUTFLOW, CYCLIC_BOUNDARY) = range(8)
 
 (NO_FLUX, SPECIFIED_TEMPERATURE, SPECIFIED_FLUX, CONVECTIVE_FLUX) = range(4)
 

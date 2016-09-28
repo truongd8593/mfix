@@ -37,6 +37,7 @@ SOLIDS_TAB_DUMMY_L = 1
 SOLIDS_TAB = 2
 SOLIDS_TAB_DUMMY_R = 3
 SCALAR_TAB = 4
+CYCLIC_TAB = 5
 
 PAGE_WALL, PAGE_INFLOW, PAGE_PO, PAGE_MO = range(4) #page indices in stackedwidget
 
@@ -74,19 +75,29 @@ class BCS(object):
         self.bcs_current_solid = self.P = None
         ui.pushbutton_fluid.pressed.connect(lambda: self.bcs_change_tab(FLUID_TAB,None))
         ui.pushbutton_scalar.pressed.connect(lambda: self.bcs_change_tab(SCALAR_TAB,None))
+        ui.pushbutton_cyclic.pressed.connect(lambda: self.bcs_change_tab(CYCLIC_TAB,None))
 
-        # Trim width of "Fluid" and "Scalar" buttons, like we do for
+        # Trim width of "Fluid" and "Scalar" and "Cyclic" buttons, like we do for
         # dynamically-created "Solid #" buttons
-        for b in (ui.pushbutton_fluid, ui.pushbutton_scalar):
+        for b in (ui.pushbutton_fluid, ui.pushbutton_scalar, ui.pushbutton_cyclic):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
         # Checkbox callbacks
-        ui.checkbox_bc_jj_ps_args_BC.dtype = int
-        ui.checkbox_bc_jj_ps_args_BC.clicked.connect(self.set_bc_jj_ps)
-        ui.checkbox_bc_jj_ps_args_BC.key = 'bc_jj_ps'
-        ui.checkbox_bc_jj_ps_args_BC.args = ['BC']
-        self.add_tooltip(ui.checkbox_bc_jj_ps_args_BC, 'bc_jj_ps')
+        cb = ui.checkbox_bc_jj_ps_args_BC
+        cb.dtype = int
+        cb.clicked.connect(self.set_bc_jj_ps)
+        cb.key = 'bc_jj_ps'
+        cb.args = ['BC']
+        self.add_tooltip(cb, 'bc_jj_ps')
+
+        cb = ui.checkbox_cyclic_pd
+        cb.clicked.connect(self.set_cyclic_pd)
+        self.add_tooltip(cb, 'cyclic_x_pd')
+
+        cb = ui.checkbox_flux_g
+        cb.clicked.connect(self.enable_flux_g)
+        self.add_tooltip(cb, 'flux_g')
 
         # Combobox callbacks
         for name in ('fluid_energy_eq', #'fluid_species_eq',
@@ -150,6 +161,10 @@ class BCS(object):
             # Error Check: Value should be positive (non-negative)
             widget.min = 0
 
+        le = ui.lineedit_delp
+        le.dtype = float
+        le.value_updated.connect(self.project.submit_change)
+
 
     def bcs_set_volume_fraction_limit(self):
         # Set bc_ep_g from bc_ep_s, like we do for ICs
@@ -210,6 +225,13 @@ class BCS(object):
                               or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
+        for axis in 'X', 'Y', 'Z':
+            shape = 'cyclic'
+            available = not bool(self.project.get_value('cyclic_%s' % axis))
+            name = axis + '-cyclic'
+            row = (name, shape, available)
+            rp.add_row(row)
+
         rp.reset_signals()
         rp.save.connect(self.bcs_add_regions)
         rp.cancel.connect(self.bcs_cancel_add)
@@ -232,6 +254,11 @@ class BCS(object):
             for item in (ui.detail_pane,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
+
+
+    def bc_is_cyclic(self, idx):
+        # we use pseudo-indices to represent the cyclic pseudo-regions
+        return 'cyclic' in str(idx).lower()
 
 
     def bcs_add_regions(self):
@@ -263,8 +290,10 @@ class BCS(object):
         #    Plane regions set keyword BC_TYPE(#) to 'MO'
         #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
         #    Not available for volume regions
-
+        #  Cyclic
+        #    No region to select
         # Specification always available
+
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
         # (selection logic implemented in regions_popup.py)
@@ -303,20 +332,27 @@ class BCS(object):
         else: # loading file
             assert len(selections) == len(indices)
             autoselect = False
+        if bc_type == CYCLIC_BOUNDARY:
+            for (i, region_name) in enumerate(selections):
+                axis = region_name[0].lower()
+                key = 'cyclic_%s' % axis
+                self.update_keyword(key, True)
 
-        for (i, region_name) in enumerate(selections):
-            idx = indices[i]
-            if idx is None:
-                idx = self.bcs_find_index()
-                indices[i] = idx
-            self.bcs[idx] = {'region': region_name}
+            indices = selections #!  string pseudo-indices for pseudo-regions
+        else:
+            for (i, region_name) in enumerate(selections):
+                idx = indices[i]
+                if idx is None:
+                    idx = self.bcs_find_index()
+                    indices[i] = idx
+                self.bcs[idx] = {'region': region_name}
 
-            region_data = self.bcs_region_dict.get(region_name)
-            if region_data is None: # ?
-                self.warn("no data for region %s" % region_name)
-                continue
-            self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
-            self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
+                region_data = self.bcs_region_dict.get(region_name)
+                if region_data is None: # ?
+                    self.warn("no data for region %s" % region_name)
+                    continue
+                self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
+                self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
@@ -358,7 +394,14 @@ class BCS(object):
                 self.bcs_region_dict[r]['available'] = True
 
         for i in self.bcs_current_indices:
-            del self.bcs[i]
+            if self.bc_is_cyclic(i):
+                axis = i[0].lower()
+                self.unset_keyword('cyclic_%s' % axis)
+                if self.project.get_value('cyclic_%s_pd' % axis):
+                    self.unset_keyword('cyclic_%s_pd' % axis)
+                    self.unset_keyword('flux_g')
+            else:
+                del self.bcs[i]
 
         self.bcs_current_regions = []
         self.bcs_current_indices = []
@@ -367,6 +410,7 @@ class BCS(object):
         self.fixup_bcs_table(tw)
         self.bcs_setup_current_tab()
         self.update_nav_tree()
+
 
     def handle_bcs_region_selection(self):
         ui = self.ui.boundary_conditions
@@ -377,6 +421,7 @@ class BCS(object):
             regions = []
         else:
             (indices, regions) = table.item(row,0).data(UserRole)
+        BC0 = indices[0] if indices else None
         self.bcs_current_indices = indices
         self.bcs_current_regions = regions
         enabled = (row is not None)
@@ -388,7 +433,44 @@ class BCS(object):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
-        self.bcs_setup_current_tab() # reinitialize all widgets in current tab
+        setup_done = False # change_tab calls setup, avoid double-calling
+        if self.bc_is_cyclic(BC0):
+            for i in range(ui.tab_layout.columnCount()-1):
+                item = ui.tab_layout.itemAtPosition(0, i)
+                widget = item.widget()
+                widget.setEnabled(False)
+            ui.pushbutton_cyclic.setEnabled(True)
+            if self.bcs_current_tab != CYCLIC_TAB:
+                self.bcs_change_tab(CYCLIC_TAB, None)
+                setup_done = True
+        else: # Not cyclic
+            ui.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
+            ui.pushbutton_scalar.setEnabled(self.project.get_value('nscalar',default=0) != 0)
+            for i in range(1, ui.tab_layout.columnCount()-2): # Skip 'fluid', 'scalar' and 'cyclic'
+                item = ui.tab_layout.itemAtPosition(0, i)
+                widget = item.widget()
+                widget.setEnabled(False)
+
+            ui.pushbutton_cyclic.setEnabled(False)
+            if self.bcs_current_tab == CYCLIC_TAB:
+                self.bcs_change_tab(*self.bcs_find_valid_tab())
+                setup_done = True
+        if not setup_done:
+            self.bcs_setup_current_tab() # reinitialize all widgets in current tab
+
+
+    def bcs_find_valid_tab(self): # Don't stay on a disabled tab
+        if not self.fluid_solver_disabled:
+            return (FLUID_TAB, None)
+        elif self.solids:
+            return (SOLIDS_TAB, 0)
+        elif self.project.get_value('nscalar', default=0) != 0:
+            return (SCALAR_TAB, None)
+        elif self.bcs_current_indices and self.bc_is_cyclic(self.bcs_current_indices[0]):
+            return (CYCLIC_TAB, None)
+        else:
+            self.error("Boundary condition:  all tabs disabled!")
+            return (FLUID_TAB, None) # What else to do?
 
 
     def fixup_bcs_table(self, tw, stretch_column=0):
@@ -429,20 +511,22 @@ class BCS(object):
 
 
     def bcs_update_enabled(self):
-        if self.bcs:
-            # Never disable if there are BCs defined
-            disabled = False
-        else:
-            # If there are no solids, no scalar equations, and the fluid solver is disabled,
-            # then we have no input tabs on the BCs pane, so disable it completely
-            regions = self.ui.regions.get_region_dict()
-            nregions = sum(1 for (name, r) in regions.items()
-                           if not self.check_region_in_use(name)
-                           and (r.get('type')=='STL' or 'plane' in r.get('type')))
-            disabled = (nregions==0
-                        or (self.fluid_solver_disabled
-                            and self.project.get_value('nscalar',default=0)==0
-                            and len(self.solids)==0))
+        disabled = False # Since we have cyclic BCs, there's always something to do on this pane
+        # Old code:
+        # if self.bcs:
+        #     # Never disable if there are BCs defined
+        #     disabled = False
+        # else:
+        #     # If there are no solids, no scalar equations, and the fluid solver is disabled,
+        #     # then we have no input tabs on the BCs pane, so disable it completely
+        #     regions = self.ui.regions.get_region_dict()
+        #     nregions = sum(1 for (name, r) in regions.items()
+        #                    if not self.check_region_in_use(name)
+        #                    and (r.get('type')=='STL' or 'plane' in r.get('type')))
+        #     disabled = (nregions==0
+        #                 or (self.fluid_solver_disabled
+        #                     and self.project.get_value('nscalar',default=0)==0
+        #                     and len(self.solids)==0))
         self.find_navigation_tree_item("Boundary Conditions").setDisabled(disabled)
 
 
@@ -450,14 +534,15 @@ class BCS(object):
         ui = self.ui.boundary_conditions
         index = (0 if tab==FLUID_TAB
                  else len(self.solids)+1 if tab==SCALAR_TAB
+                 else len(self.solids)+2 if tab==CYCLIC_TAB
                  else solid)
 
         for i in range(ui.tab_layout.columnCount()):
             item = ui.tab_layout.itemAtPosition(0, i)
-            if not item:
+            if not item: # Why?
                 continue
             widget = item.widget()
-            if not widget:
+            if not widget: # Why?
                 continue
             font = widget.font()
             font.setBold(i==index)
@@ -581,6 +666,7 @@ class BCS(object):
 
     def setup_bcs(self):
         ui = self.ui.boundary_conditions
+        BC0 = self.bcs_current_indices[0] if self.bcs_current_indices else None
 
         # Grab a fresh copy, may have been updated
         self.bcs_region_dict = self.ui.regions.get_region_dict()
@@ -609,8 +695,8 @@ class BCS(object):
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
-            if self.bcs_current_tab == 0: # Don't stay on disabled tab
-                self.bcs_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR_TAB,None)) # what if nscalar==0?
+            if self.bcs_current_tab == FLUID_TAB: # Don't stay on disabled tab
+                self.bcs_change_tab(*self.bcs_find_valid_tab())
         font = b.font()
         font.setBold(self.bcs_current_tab == 0)
         b.setFont(font)
@@ -626,7 +712,7 @@ class BCS(object):
             widget = item.widget()
             if not widget:
                 continue
-            if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar):
+            if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar, ui.pushbutton_cyclic):
                 continue
             ui.tab_layout.removeWidget(widget)
             widget.setParent(None)
@@ -642,8 +728,9 @@ class BCS(object):
             b.setFont(font)
             b.pressed.connect(lambda i=i: self.bcs_change_tab(SOLIDS_TAB, i))
             ui.tab_layout.addWidget(b, 0, i)
-        # Don't stay on disabled tab TODO
-        # if self.bcs_current_tab == 1 and ...
+        # Don't stay on a disabled tab
+        if self.bcs_current_tab == SOLIDS_TAB and not self.solids:
+            self.bcs_change_tab(*self.bcs_find_valid_tab())
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
@@ -657,9 +744,24 @@ class BCS(object):
         if len(self.solids) > 0:
             ui.tab_layout.removeWidget(b)
             ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
-        # Don't stay on a disabled tab TODO
-        # if self.bcs_current_tab == 2 and nscalar == 0:
-        #
+        # Don't stay on a disabled tab
+        if self.bcs_current_tab == SCALAR_TAB and nscalar == 0:
+            self.bcs_change_tab(*self.bcs_find_valid_tab())
+
+        # Move the 'Cyclic' button to the right of all solids, if needed
+        b = ui.pushbutton_cyclic
+        font = b.font()
+        font.setBold(self.bcs_current_tab==CYCLIC_TAB)
+        b.setFont(font)
+        enabled = self.bc_is_cyclic(BC0)
+        b.setEnabled(enabled)
+        if len(self.solids) > 0:
+            ui.tab_layout.removeWidget(b)
+            ui.tab_layout.addWidget(b, 0, 2+len(self.solids))
+        # Don't stay on a disabled tab
+        if self.bcs_current_tab == CYCLIC_TAB and not self.bc_is_cyclic(BC0):
+            self.bcs_change_tab(*self.bcs_find_valid_tab())
+
         self.P = self.bcs_current_solid
         self.bcs_setup_current_tab()
 
@@ -671,7 +773,8 @@ class BCS(object):
             self.setup_bcs_solids_tab(self.bcs_current_solid)
         elif self.bcs_current_tab == SCALAR_TAB:
             self.setup_bcs_scalar_tab()
-
+        elif self.bcs_current_tab == CYCLIC_TAB:
+            self.setup_bcs_cyclic_tab()
 
     def bcs_extract_regions(self):
         if self.bcs:
@@ -733,7 +836,6 @@ class BCS(object):
             else:
                 self.warn("boundary condition %s: could not match defined region %s" %
                           (bc.ind, extent))
-
 
     def set_bcs_fluid_energy_eq_type(self, eq_type):
         if not self.bcs_current_indices:
@@ -979,6 +1081,10 @@ class BCS(object):
         if not self.bcs_current_indices:
             return # Disable inputs?
         BC0 = self.bcs_current_indices[0]
+        if self.bc_is_cyclic(BC0):
+            # we shouldn't be on this tab!
+            return
+
         bc_type = self.project.get_value('bc_type', args=[BC0])
         if bc_type is None:
             self.error("bc_type not set for region %s" % BC0)
@@ -3563,3 +3669,119 @@ class BCS(object):
 
     def setup_bcs_scalar_mo_tab(self):
         pass # ? not mentioned in SRS
+
+
+    def set_cyclic_pd(self, val):
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        if not self.bc_is_cyclic(BC0):
+            return
+        ui = self.ui.boundary_conditions
+        axis = BC0[0].lower()
+        key = 'cyclic_%s_pd' % axis
+        delp_key = 'delp_%s' % axis
+        if val:
+            self.update_keyword(key, True)
+            delp_val = ui.lineedit_delp.value
+            if delp_val is None:
+                delp_val = 0.0 # default
+            self.update_keyword(delp_key, delp_val)
+        else:
+            self.unset_keyword(key)
+            self.unset_keyword('delp_%s' % axis)
+            self.unset_keyword('flux_g')
+        self.setup_bcs_cyclic_tab()
+
+
+    def enable_flux_g(self, enabled):
+        ui = self.ui.boundary_conditions
+        for item in (ui.lineedit_keyword_flux_g, ui.label_flux_g_units):
+            item.setEnabled(enabled)
+        key = 'flux_g'
+        if enabled:
+            value = ui.lineedit_keyword_flux_g.value
+            if value in (None, ''):
+                value = 0.0 # default
+                ui.lineedit_keyword_flux_g.updateValue(key, value)
+            self.update_keyword(key, value)
+        else:
+            self.unset_keyword(key)
+
+
+    def setup_bcs_cyclic_tab(self):
+        # Subtask Pane Tab for Cyclic type Boundary Conditions
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        if not self.bc_is_cyclic(BC0):
+            return
+        ui = self.ui.boundary_conditions
+        #Enable specified pressure drop
+        # DEFAULT value of .FALSE.
+        # Sets keyword based on axis:
+        #  Q-Axis;
+        #    Sets keyword CYCLIC_Q_PD to .TRUE.
+        #    Required input for DELP_Q
+        # DEFAULT value of 0.0
+
+        # Error check: There should not be any BCs defined on walls that are cyclic.
+        # (I'm not sure if this check can be easily implemented.)
+        axis = BC0[0].lower()
+        key = 'cyclic_%s_pd' % axis
+        default = 0.0
+        cb = ui.checkbox_cyclic_pd
+        self.add_tooltip(cb, key)
+        enabled = True
+        # Error check: Only one axis can have a specified pressure drop
+        for q in 'xyz':
+            if q == axis:
+                continue
+            if self.project.get_value('cyclic_%s_pd'%q) is not None:
+                enabled = False
+                break
+        cb.setEnabled(enabled)
+        checked = self.project.get_value(key) is not None
+        cb.setChecked(checked)
+        if not enabled:
+            for item in ui.lineedit_delp, ui.lineedit_keyword_flux_g:
+                item.setText('')
+
+        key = 'delp_%s' % axis
+        le = ui.lineedit_delp
+        le.key = key
+        le.args = None
+        self.add_tooltip(le, key)
+        for item in (le, ui.label_delp_units, ui.checkbox_flux_g):
+            item.setEnabled(checked and enabled)
+        if not (checked and enabled): # Don't enable, leave that to checkbox_flux_g
+            for item in (ui.lineedit_keyword_flux_g, ui.label_flux_g_units):
+                item.setEnabled(False)
+            ui.checkbox_flux_g.setChecked(False)
+        if checked and enabled:
+            val = self.project.get_value(key)
+            if val is None:
+                val = default
+                self.update_keyword(key, val)
+            le.updateValue(key, val)
+
+        #Enable specified gas mass flux
+        # Requires specified pressure drop
+        # Sets keyword FLUX_G
+        # DEFAULT value of 0.0
+        # Error check: Only one axis can have a specified mass flux. (This should not be an
+        #issue as it requires a specified pressure drop which can only be applied to one axis.)
+        key = 'flux_g'
+        default = 0.0
+        val = self.project.get_value(key)
+
+        cb = ui.checkbox_flux_g
+        cb.setChecked(checked and enabled and (val is not None))
+        le = ui.lineedit_keyword_flux_g
+        for item in (le, ui.label_flux_g_units):
+            item.setEnabled(enabled and cb.isChecked())
+        if enabled and cb.isChecked():
+            if val is None:
+                val = default
+                self.update_keyword(key, val)
+            le.updateValue(key, val)
