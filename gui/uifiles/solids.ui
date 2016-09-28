@@ -743,7 +743,7 @@ QPushButton:checked {
                <item row="1" column="3">
                 <widget class="QLabel" name="label_ro_s0_units">
                  <property name="text">
-                  <string>kg/m3</string>
+                  <string>kg/m³</string>
                  </property>
                 </widget>
                </item>
