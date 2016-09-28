@@ -66,6 +66,7 @@ from mesh import Mesh
 from interpreter import Interpreter
 
 from tools.general import (get_icon, get_mfix_home, widget_iter,
+                           is_text_string, is_unicode,
                            format_key_with_args, to_unicode_from_fs)
 
 from tools.namelistparser import buildKeywordDoc
@@ -613,7 +614,12 @@ class MfixGui(QtWidgets.QMainWindow,
         v = self.project.get_value(key, args=args)
 
         #we might have updated 3 with 3.0 or with @(2+1), or @(1+2) with @(1+1+1)
-        if type(v)==type(value) and str(v)==str(value):
+        def typematch(v1, v2):
+            if is_text_string(v1) or is_unicode(v1):
+                return is_text_string(v2) or is_unicode(v2)
+            return (type(v1) == type(v2))
+
+        if typematch(v, value) and str(v)==str(value):
                 return
 
         self.set_keyword(key, value, args=args)
@@ -1897,6 +1903,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
+            # For debugging problems where flag gets set during load
+            #import traceback
+            #traceback.print_stack()
             log.info("Project is unsaved")
         self.unsaved_flag = True
         self.update_window_title()
