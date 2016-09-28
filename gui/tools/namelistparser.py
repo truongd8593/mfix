@@ -75,6 +75,7 @@ def buildKeywordDoc(mfixSourcePath):
             d = d.replace("Youngs", "Young's")
             d = d.replace("Poissons", "Poisson's")
             d = d.replace("Poisson ratio", "Poisson's ratio")
+            d = d.replace(" (in units of g/cm^2.s)", "")
             v['description'] = d
         return v
 
