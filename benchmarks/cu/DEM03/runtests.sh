@@ -41,8 +41,8 @@ set MFIX_CMD = "$MFIX \
      BC_X_E(2)=$LEN BC_Z_T(2)=$LEN"
 
 if ( $?WARMUP ) then
-    time $MPIRUN $MFIX_CMD TSTOP=0.01
-    time $MPIRUN $VTUNE_CMD $MFIX_CMD RUN_TYPE=\"RESTART_1\" TSTOP=0.06
+    time $MPIRUN $MFIX_CMD TSTOP=1.0
+    time $MPIRUN $VTUNE_CMD $MFIX_CMD RUN_TYPE=\"RESTART_1\" TSTOP=1.05
 else
     time $MPIRUN $VTUNE_CMD $MFIX_CMD
 endif

@@ -34,7 +34,7 @@ else
     setenv MPIRUN "mpirun -np $PROCS"
 endif
 
-/usr/bin/time -p $MPIRUN $VTUNE_CMD $MFIX \
+time $MPIRUN $VTUNE_CMD $MFIX \
      XLENGTH=$LEN IMAX=$CELLS NODESI=$LEVEL \
      ZLENGTH=$LEN KMAX=$CELLS NODESK=$LEVEL \
      IC_X_E\(1\)=$LEN IC_Z_T\(1\)=$LEN
