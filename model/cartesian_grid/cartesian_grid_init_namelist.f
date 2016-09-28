@@ -997,7 +997,7 @@ MODULE CG_INIT_NAMELIST
 !<keyword category="Output Control" required="false">
 !  <description>VTK region output file name base.</description>
 !  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
-      VTK_FIILEBASE(2:) = UNDEFINED_C
+      VTK_FILEBASE(2:) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Output Control" required="false">
