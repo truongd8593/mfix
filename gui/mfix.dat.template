@@ -83,7 +83,14 @@
   IC_V_g(1) = 0.0
   IC_W_g(1) = 0.0
 
-#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1.0, 1.0, 1.0], "to": [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin", "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
+#!MFIX-GUI SECTION
+#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1.0, 1.0,
+#!MFIX-GUI   1.0], "to": [{"eq": "xmax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"},
+#!MFIX-GUI   {"eq": "zmax", "__type__": "equation", "type": "float"}], "from":
+#!MFIX-GUI   [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
