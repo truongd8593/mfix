@@ -700,14 +700,16 @@ class BCS(object):
         # unavailable if no input is required from the user.
         #
         #Fluid tab - Unavailable if the fluid phase was disabled.
+        setup_done = False
         b = ui.pushbutton_fluid
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.bcs_current_tab == FLUID_TAB: # Don't stay on disabled tab
                 self.bcs_change_tab(*self.bcs_find_valid_tab())
+                setup_done = True
         font = b.font()
-        font.setBold(self.bcs_current_tab == 0)
+        font.setBold(self.bcs_current_tab == FLUID_TAB)
         b.setFont(font)
 
         #  Each solid phase will have its own tab. The tab name should be the name of the solid
@@ -740,7 +742,7 @@ class BCS(object):
         # Don't stay on a disabled tab
         if self.bcs_current_tab == SOLIDS_TAB and not self.solids:
             self.bcs_change_tab(*self.bcs_find_valid_tab())
-
+            setup_done = True
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
         b = ui.pushbutton_scalar
@@ -756,7 +758,7 @@ class BCS(object):
         # Don't stay on a disabled tab
         if self.bcs_current_tab == SCALAR_TAB and nscalar == 0:
             self.bcs_change_tab(*self.bcs_find_valid_tab())
-
+            setup_done = True
         # Move the 'Cyclic' button to the right of all solids, if needed
         b = ui.pushbutton_cyclic
         font = b.font()
@@ -767,12 +769,20 @@ class BCS(object):
         if len(self.solids) > 0:
             ui.tab_layout.removeWidget(b)
             ui.tab_layout.addWidget(b, 0, 2+len(self.solids))
-        # Don't stay on a disabled tab
-        if self.bcs_current_tab == CYCLIC_TAB and not self.bc_is_cyclic(BC0):
-            self.bcs_change_tab(*self.bcs_find_valid_tab())
+
+        if self.bc_is_cyclic(BC0):
+            if self.bcs_current_tab != CYCLIC_TAB:
+                self.bcs_change_tab(CYCLIC_TAB, None)
+                setup_done = True
+        else:        # Don't stay on a disabled tab
+            if self.bcs_current_tab == CYCLIC_TAB:
+                self.bcs_change_tab(*self.bcs_find_valid_tab())
+                setup_done = True
 
         self.P = self.bcs_current_solid
-        self.bcs_setup_current_tab()
+
+        if not setup_done:
+            self.bcs_setup_current_tab()
 
 
     def bcs_setup_current_tab(self):
@@ -3741,7 +3751,6 @@ class BCS(object):
         ui = self.ui.boundary_conditions
 
         # Make sure the rest of the tabs are disabled (why is this needed?)
-        print("HEY")
         ncols = ui.tab_layout.columnCount()
         for i in range(ncols-1):
             item = ui.tab_layout.itemAtPosition(0, i)
