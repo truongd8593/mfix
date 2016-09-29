@@ -356,7 +356,6 @@ class BCS(object):
                     bc_type = self.project.get_value('bc_type', args=[idx])
                 self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
                 self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
-
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 

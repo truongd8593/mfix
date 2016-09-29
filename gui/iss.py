@@ -158,10 +158,8 @@ class ISS(object):
 
         if indices is None: # interactive
             indices = [None] * len(selections)
-            autoselect = True
         else: # loading file
             assert len(selections) == len(indices)
-            autoselect = False
 
         for (i, region_name) in enumerate(selections):
             idx = indices[i]
@@ -175,7 +173,6 @@ class ISS(object):
                 continue
             self.iss_set_region_keys(region_name, idx, region_data, is_type)
             self.iss_region_dict[region_name]['available'] = False # Mark as in-use
-
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 

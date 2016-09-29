@@ -117,7 +117,7 @@ class PSS(object):
         selections = rp.get_selection_list()
         if not selections:
             return
-        self.pss_add_regions_1(selections, indices=None, autoselect=False) # Indices will be assigned
+        self.pss_add_regions_1(selections, indices=None, autoselect=False)
         self.pss_setup_current_tab() # Update the widgets
 
 
@@ -139,10 +139,8 @@ class PSS(object):
 
         if indices is None: # interactive
             indices = [None] * len(selections)
-            autoselect = True
         else: # loading file
             assert len(selections) == len(indices)
-            autoselect = False
 
         for (i, region_name) in enumerate(selections):
             idx = indices[i]
@@ -156,7 +154,6 @@ class PSS(object):
                 continue
             self.pss_set_region_keys(region_name, idx, region_data)
             self.pss_region_dict[region_name]['available'] = False # Mark as in-use
-
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
