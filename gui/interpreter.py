@@ -12,6 +12,7 @@ class Interpreter(object):
 
     def init_interpreter(self):
         import sys
+        self.interp_setup_done = False
         le = self.ui.lineedit_interpreter_input
         te = self.ui.textedit_interpreter_output
         le.editingFinished.connect(self.handle_interp_line)
@@ -34,9 +35,16 @@ class Interpreter(object):
         self.interpreter = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
         banner += 'MFIX-GUI version %s' % self.get_version() + '\n'
-        banner += 'To access top-level MFIX-GUI object:\n'
-        banner += '    from __main__ import gui'
         te.insertPlainText(banner)
+
+    def setup_interpreter(self):
+        if self.interp_setup_done:
+            return
+
+        self.interp_setup_done = True
+        for line in ("from __main__ import gui as g", "p = g.project"):
+            self.ui.lineedit_interpreter_input.setText('>>> ' + line)
+            self.handle_interp_line()
 
     def capture_output(self, enable):
         import sys
