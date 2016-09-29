@@ -325,7 +325,7 @@ class ISS(object):
                     indices, names = data
                     if key in indices:
                         item = tw.item(i,0)
-                        names = (new_name if n==old_name else n for n in names)
+                        names = [new_name if n==old_name else n for n in names]
                         item.setData(UserRole, (indices, names))
                         item.setText('+'.join(names))
                         break

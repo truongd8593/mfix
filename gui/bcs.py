@@ -608,7 +608,7 @@ class BCS(object):
                     indices, names = data
                     if old_name in names:
                         item = tw.item(i,0)
-                        names = (new_name if n==old_name else n for n in names)
+                        names = [new_name if n==old_name else n for n in names]
                         item.setData(UserRole, (indices, names))
                         item.setText('+'.join(names))
                         break
