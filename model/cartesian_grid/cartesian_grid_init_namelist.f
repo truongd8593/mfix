@@ -1021,6 +1021,40 @@ MODULE CG_INIT_NAMELIST
 !</keyword>
 
 !<keyword category="Output Control" required="false">
+!  <description>
+!    Specifies the number of subdivisions in the x-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NXS = 0
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Specifies the number of subdivisions in the y-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NYS = 0
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Specifies the number of subdivisions in the z-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NZS = 0
+!</keyword>
+
+
+!<keyword category="Output Control" required="false">
 !  <description>Tolerance to detect particle in a VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
