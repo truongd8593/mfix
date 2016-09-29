@@ -226,9 +226,11 @@ class BCS(object):
             row = (name, shape, available)
             rp.add_row(row)
         for axis in 'X', 'Y', 'Z':
-            shape = 'cyclic'
-            available = not bool(self.project.get_value('cyclic_%s' % axis))
             name = axis + '-cyclic'
+            shape = 'cyclic'
+            available = not bool(self.project.get_value('cyclic_%s' % axis)) # (already in use)
+            if axis == 'Z' and self.project.get_value('no_k'):
+                available = False
             row = (name, shape, available)
             rp.add_row(row)
 
@@ -303,16 +305,18 @@ class BCS(object):
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
-        bc_type = rp.combobox.currentIndex()
         if not selections:
             return
+        bc_type = BC_TYPES[rp.combobox.currentIndex()]
         self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None) # Indices will be assigned
         self.bcs_setup_current_tab() # Update the widgets
 
 
     def bcs_add_regions_1(self, selections,
-                          bc_type=DEFAULT_BC_TYPE, indices=None):
+                          bc_type=None, indices=None):
         # Used by both interactive and load-time add-region handlers
+        if bc_type is None:
+            self.error('Type not defined for boundary condition %s' % '+'.join(selections))
         if self.bcs_region_dict is None:
             self.bcs_region_dict = self.ui.regions.get_region_dict()
 
@@ -332,14 +336,13 @@ class BCS(object):
         else: # loading file
             assert len(selections) == len(indices)
             autoselect = False
-        if bc_type == CYCLIC_BOUNDARY:
+        if bc_type == 'CYCLIC':
             for (i, region_name) in enumerate(selections):
                 axis = region_name[0].lower()
                 key = 'cyclic_%s' % axis
                 self.update_keyword(key, True)
-
             indices = selections #!  string pseudo-indices for pseudo-regions
-        else:
+        else: # Non-cyclic
             for (i, region_name) in enumerate(selections):
                 idx = indices[i]
                 if idx is None:
@@ -349,15 +352,17 @@ class BCS(object):
 
                 region_data = self.bcs_region_dict.get(region_name)
                 if region_data is None: # ?
-                    self.warn("no data for region %s" % region_name)
+                    self.warn("no data for region %s bc_type %s" % (region_name, bc_type))
                     continue
+                if bc_type is None:
+                    bc_type = self.project.get_value('bc_type', args=[idx])
                 self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
                 self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
 
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
-        item = make_item(BC_NAMES[bc_type])
+        item = make_item(BC_NAMES[BC_TYPES.index(bc_type)])
         tw.setItem(nrows, 1, item)
 
         self.fixup_bcs_table(tw)
@@ -555,7 +560,7 @@ class BCS(object):
         # in a dummy pane, then slide back to the solids tab
         if tab == current_index == SOLIDS_TAB:
             if solid == self.bcs_current_solid:
-                return # Really nothing to do
+                return # nothing to do
 
             if solid > self.bcs_current_solid:
                 dummy_label = ui.label_dummy_solids_L
@@ -618,7 +623,7 @@ class BCS(object):
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the region the BC applies to
         if bc_type is not None:
-            val = BC_TYPES[bc_type]
+            val = bc_type
             if data.get('type') == 'STL':
                 val = 'CG_' + val
             if val== 'CG_PI': # Shouldn't happen!
@@ -660,8 +665,14 @@ class BCS(object):
             return
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
+            if not indices:
+                continue # should not get empty tuple
             # bc_type keyword should be set already when we call this
-            self.bcs_add_regions_1(regions, bc_type=None, indices=indices)
+            if self.bc_is_cyclic(indices[0]):
+                bc_type = 'CYCLIC'
+            else:
+                bc_type = self.project.get_value('bc_type', args=[indices[0]])
+            self.bcs_add_regions_1(regions, bc_type=bc_type, indices=indices)
 
 
     def setup_bcs(self):
@@ -777,7 +788,9 @@ class BCS(object):
             self.setup_bcs_cyclic_tab()
 
     def bcs_extract_regions(self):
-        if self.bcs:
+        ui = self.ui.boundary_conditions
+
+        if ui.tablewidget_regions.rowCount() > 0:
             # We assume that bc regions have been initialized correctly
             # from mfix_gui_comments.
             # TODO: verify that there is an BC region for each BC
@@ -805,7 +818,7 @@ class BCS(object):
             if bc_type is None:
                 self.error("No type for boundary condition %s" % bc.ind)
                 continue
-            bc_type = bc_type.value
+            bc_type = bc_type.value #
 
             is_stl = (bc_type.startswith('CG_'))
             if is_stl:
@@ -816,6 +829,7 @@ class BCS(object):
             #    self.warn("boundary condition %s: invalid extents %s" %
             #               (bc.ind, extent))
             #    continue
+
             for (region_name, data) in self.bcs_region_dict.items():
 
                 ext2 = [0 if x is None else x for x in
@@ -831,11 +845,20 @@ class BCS(object):
                         if bc_type not in BC_TYPES:
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
-                            self.bcs_add_regions_1([region_name], bc_type=BC_TYPES.index(bc_type), indices=[bc.ind])
+                            self.bcs_add_regions_1([region_name], bc_type=bc_type, indices=[bc.ind])
                             break
             else:
                 self.warn("boundary condition %s: could not match defined region %s" %
                           (bc.ind, extent))
+
+        # Handle cyclic BCs which don't really have a region
+        for axis in 'X', 'Y', 'Z':
+            q = axis.lower()
+            keys = ('cyclic_'+q, 'cyclic_%s_pd'%q, 'delp_'+q)
+            if any(self.project.get_value(key) for key in keys):
+                name = axis + '-cyclic'
+                self.bcs_add_regions_1([name], bc_type='CYCLIC', indices=None)
+
 
     def set_bcs_fluid_energy_eq_type(self, eq_type):
         if not self.bcs_current_indices:
@@ -3717,6 +3740,14 @@ class BCS(object):
         if not self.bc_is_cyclic(BC0):
             return
         ui = self.ui.boundary_conditions
+
+        # Make sure the rest of the tabs are disabled
+        for i in range(ui.tab_layout.columnCount()-1):
+            item = ui.tab_layout.itemAtPosition(0, i)
+            widget = item.widget()
+            widget.setEnabled(False)
+        ui.pushbutton_cyclic.setEnabled(True)
+
         #Enable specified pressure drop
         # DEFAULT value of .FALSE.
         # Sets keyword based on axis:
