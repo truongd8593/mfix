@@ -16,8 +16,8 @@
   RUN_TYPE = 'NEW'
   UNITS = 'SI'
 
-  TIME =  0.0000
-  TSTOP = 0.0025
+  TIME =  0.00
+  TSTOP = 0.05
 
   DT =     1.0d-04
   DT_MAX = 1.0d-02
