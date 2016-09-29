@@ -1104,10 +1104,14 @@ class Project(object):
     def parse_mfix_gui_comments(self, fobject):
         """read through the file looking for #!MFIX-GUI"""
         self.mfix_gui_comments.clear()
+        key = None
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip()
-            if line.startswith("#!MFIX-GUI"):
-                if "=" in line:
+            if line.startswith('#!MFIX-GUI  '):  #continuation line
+                if key:
+                    self.mfix_gui_comments[key] += line[12:].rstrip()
+            elif line.startswith('#!MFIX-GUI'):
+                if '=' in line:
                     key, val = line[10:].split('=', 1)
                     key, val = key.strip(), val.strip()
                     self.mfix_gui_comments[key] = val
@@ -1404,18 +1408,38 @@ class Project(object):
 
 
     def to_string(self):
-        # Why not just __str__ ?
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
                 yield to_text_string(line.line() + '\n')
             else:
                 yield to_text_string(line + '\n')
 
+        def break_string(s, w):
+            if len(s) <= w:
+                return (s, '')
+            else:
+                while w > 0 and s[w] != ' ':
+                    w -= 1
+                s, rest = s[:w], s[w:]
+                if len(rest) <= 6: # Prefer a slightly long line to a 'dangler'
+                    return (s+rest, '')
+                else:
+                    return (s, rest)
+
         if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
             yield '\n'
             yield '#!MFIX-GUI SECTION\n'
+
             for (key, val) in self.mfix_gui_comments.items():
-                yield '#!MFIX-GUI %s = %s\n' % (key, val)
+                sval = str(val)
+                keylen = len(key)
+                # Make lines no longer than 80 chars, including #!MFIX-GUI prefix (11 chars)
+                sval, rest = break_string(sval, 66-keylen) # 3 spaces for ' = ',
+                yield '#!MFIX-GUI %s = %s\n' % (key, sval)
+                while rest: # continuation lines
+                    sval, rest = break_string(rest, 68) # 1 space for continuation
+                    yield '#!MFIX-GUI  %s\n' % sval
+
 
         if self.thermo_data:
             yield '\n'
