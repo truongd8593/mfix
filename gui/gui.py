@@ -62,6 +62,7 @@ from bcs import BCS
 from pss import PSS
 from iss import ISS
 from mesh import Mesh
+from chemistry import Chemistry
 
 from interpreter import Interpreter
 
@@ -99,9 +100,11 @@ if PRECOMPILE_UI:
 
 class MfixGui(QtWidgets.QMainWindow,
               ModelSetup,
+              Mesh,
               FluidHandler,
               SolidsHandler,
-              ICS, BCS, PSS, ISS, Mesh,
+              ICS, BCS, PSS, ISS,
+              Chemistry,
               Interpreter):
     # Main window class for MFIX-GUI
 
@@ -685,6 +688,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.bcs_update_enabled()
         self.pss_update_enabled()
         self.iss_update_enabled()
+        self.chemistry_update_enabled()
 
 
     def check_region_in_use(self, name):
@@ -2353,13 +2357,13 @@ class MfixGui(QtWidgets.QMainWindow,
             description = description.replace(text, '<br/>%s<br/>'%text[:-2].replace(' ', '&nbsp;'))
 
         # Default
-        pat = re.compile(r'\[[^]]+\]')
-        while True:
-            match = pat.search(description)
-            if not match:
-                break
-            text = match.group(0)
-            description = description.replace(text, '<i>Default: %s</i>'%text[1:-1])
+        #pat = re.compile(r'\[[^]]+\]')
+        #while True:
+        #    match = pat.search(description)
+        #    if not match:
+        #        break
+        #    text = match.group(0)
+        #    description = description.replace(text, '<i>Default: %s</i>'%text[1:-1])
 
         # Bullets
         description = description.replace(' o ', '<br/>')

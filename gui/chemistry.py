@@ -6,8 +6,19 @@ from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
                             QHBoxLayout, QWidget, QGroupBox)
 
-#Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
-#Chemistry pane is disabled if any solids are specified as PIC.
+class Chemistry(object):
+    #Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
+
+    def init_chemistry(self):
+        pass
+
+    def chemistry_update_enabled(self):
+        #Chemistry pane is disabled if any solids are specified as PIC.
+        disabled = False
+        if any(self.project.get_value('solids_model', args=[i])=='PIC'
+               for (i,s) in enumerate(self.solids, 1)):
+            disabled = True
+        self.find_navigation_tree_item("Chemistry").setDisabled(disabled)
 
 #Enable the stiff chemistry solver
 # Selection always available
@@ -16,7 +27,7 @@ from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
 #Chemical reaction input is handled different that keyword pair inputs. All homogeneous gas phase
 #chemical reactions and all heterogeneous gas-tfm solids reactions are specified between @(RXNS)
 #and @(END) reaction block. All heterogeneous gas-dem and gas-pic reactions are specified
-#between @(DES_RXNS) and @(END) reaction block.
+#between @(DES_RXNS) and @(DES_END) reaction block.
 
 #Users use the globally unique species aliases to specify the chemical reaction equation. Each
 #reaction is specified with a unique reaction identify.

@@ -1132,8 +1132,11 @@ class Project(object):
         self.dat_file_list = []
         self.thermo_data.clear()
         reactionSection = False
+        desReactionSection = False
         thermoSection = False
         thermo_lines = [] # Temporary holder for thermo_data section
+        reaction_lines = [] # reaction section
+        des_reaction_lines = [] # DES reaction section
 
         # parse MFIX-GUI comments first
         self.parse_mfix_gui_comments(fobject)
@@ -1149,12 +1152,34 @@ class Project(object):
                 continue
 
             if '@(RXNS)' in line:
+                if reaction_lines:
+                    raise SyntaxError('multiple @(RXNS) sections')
+                if reactionSection or desReactionSection:
+                    raise SyntaxError('mismatched @(RXNS) statement')
                 reactionSection = True
-            elif '@(END)' in line and reactionSection:
+            elif '@(END)' in line:
+                if not reactionSection:
+                    raise SyntaxError('mismatched @(END) statement')
                 reactionSection = False
+            elif '@(DES_RXNS)' in line:
+                if des_reaction_lines:
+                    raise SyntaxError('multiple @(DES_RXNS) sections')
+                if reactionSection or desReactionSection:
+                    raise SyntaxError('mismatched @(DES_RXNS) statement')
+                desReactionSection = True
+            elif '@(DES_END)' in line:
+                if not desReactionSection:
+                    raise SyntaxError('mismatched @(DES_END) statement')
+                desReactionSection = False
             elif 'thermo data' in line.lower():
+                if thermoSection:
+                    raise SyntaxError('multiple THERMO DATA sections')
                 thermoSection = True
                 # Don't save 'THERMO SECTION' line - we'll regenerate it.
+            elif reactionSection:
+                reaction_lines.append(line.strip())
+            elif desReactionSection:
+                des_reaction_lines.append(line.strip())
             elif thermoSection:
                 thermo_lines.append(line0.rstrip()) # keep left padding
             elif not reactionSection and not thermoSection:
@@ -1204,6 +1229,13 @@ class Project(object):
                     self.thermo_data[species] = []
                 if species and line:
                     self.thermo_data[species].append(line)
+        if reaction_lines:
+            for line in reaction_lines:
+                print("RXN", line.strip())
+        if des_reaction_lines:
+            for line in des_reaction_lines:
+                print("DES_RXN", line.strip())
+
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):
         """Update or add a keyword to the project.  Raises ValueError if there is a
