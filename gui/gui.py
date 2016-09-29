@@ -1780,11 +1780,15 @@ class MfixGui(QtWidgets.QMainWindow,
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
 
-        # save IC regions
-        if self.ics:
-            self.project.mfix_gui_comments['ic_regions'] = self.ics_to_str()
-        else:
-            self.project.mfix_gui_comments.pop('ic_regions', None)
+        for (data, key) in ((self.bcs_to_str(), 'bc_regions'),
+                            (self.ics_to_str(), 'ic_regions'),
+                            (self.iss_to_str(), 'is_regions'),
+                            (self.pss_to_str(), 'ps_regions')):
+            if data:
+                self.project.mfix_gui_comments[key] = data
+            else:
+                self.project.mfix_gui_comments.pop(key)
+
 
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
@@ -2175,7 +2179,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.enable_turbulence(True)
 
 
-        #  Non-keyword params stored as !#MFIX_GUI comments
+        #  Non-keyword params stored as !#MFIX-GUI comments
         solids_phase_names = {}
         try:
             for (key, val) in self.project.mfix_gui_comments.items():
@@ -2188,6 +2192,14 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.ui.regions.regions_from_str(val)
                 elif key == 'ic_regions':
                     self.ics_regions_from_str(val)
+                elif key == 'bc_regions':
+                    self.bcs_regions_from_str(val)
+                elif key == 'is_regions':
+                    self.iss_regions_from_str(val)
+                elif key == 'ps_regions':
+                    self.pss_regions_from_str(val)
+
+
                 elif key == 'geometry':
                     pass # handled in 'geometry' section above
                 elif key == 'visual_props':

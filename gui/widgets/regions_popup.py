@@ -61,7 +61,7 @@ class RegionsPopup(QtWidgets.QDialog):
 
             # Don't stay on disabled item
             if not item_enabled(get_combobox_item(cb, cb.currentIndex())):
-                cb.setCurrentIndex(DEFAULT_BC_TYPE)
+                cb.setCurrentIndex(BC_TYPES.index(DEFAULT_BC_TYPE))
 
             bc_type = BC_TYPES[cb.currentIndex()]
             # Wall type boundary
@@ -260,7 +260,7 @@ class RegionsPopup(QtWidgets.QDialog):
             label.setText('Boundary type' if boundary else 'Surface type')
             cb.clear()
             cb.addItems(BC_NAMES if boundary else IS_NAMES)
-            index = DEFAULT_BC_TYPE if boundary else DEFAULT_IS_TYPE
+            index = BC_TYPES.index(DEFAULT_BC_TYPE) if boundary else IS_TYPES.index(DEFAULT_IS_TYPE)
             cb.setCurrentIndex(index)
             self.handle_type(index)
             ui.frame_object_type.show()

@@ -432,7 +432,7 @@ class ICS(object):
                 self.ics_set_region_keys(name, i, data)
 
 
-    def ics_set_region_keys(self, name, idx, data ):
+    def ics_set_region_keys(self, name, idx, data):
         # Update the keys which define the region the IC applies to
         no_k = self.project.get_value('no_k')
         for (key, val) in zip(('x_w', 'y_s', 'z_b',

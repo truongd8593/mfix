@@ -347,7 +347,7 @@ class PSS(object):
                 self.pss_set_region_keys(name, i, data)
 
 
-    def pss_set_region_keys(self, name, idx, data ):
+    def pss_set_region_keys(self, name, idx, data):
         # Update the keys which define the region the PS applies to
         no_k = self.project.get_value('no_k')
         for (key, val) in zip(('x_w', 'y_s', 'z_b',

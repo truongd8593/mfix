@@ -128,16 +128,20 @@ class ISS(object):
         rp = self.regions_popup
         self.iss_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
-        is_type = rp.combobox.currentIndex()
         if not selections:
             return
+        is_type = IS_TYPES[rp.combobox.currentIndex()]
         self.iss_add_regions_1(selections, is_type=is_type, indices=None) # Indices will be assigned
         self.iss_setup_current_tab() # Update the widgets
 
 
     def iss_add_regions_1(self, selections,
-                          is_type=DEFAULT_IS_TYPE, indices=None):
+                          is_type=None, indices=None):
         # Used by both interactive and load-time add-region handlers
+        if is_type is None:
+            self.error('Type not defined for internal surface %s' % '+'.join(selections))
+            return
+
         ui = self.ui.internal_surfaces
 
         if self.iss_region_dict is None:
@@ -175,7 +179,7 @@ class ISS(object):
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
-        item = make_item(IS_NAMES[is_type])
+        item = make_item(IS_NAMES[IS_TYPES.index(is_type)])
         tw.setItem(nrows, 1, item)
 
         self.fixup_iss_table(tw)
@@ -301,8 +305,7 @@ class ISS(object):
     def iss_set_region_keys(self, name, idx, data, is_type=None):
         # Update the keys which define the region the IS applies to
         if is_type is not None:
-            val = IS_TYPES[is_type]
-            self.update_keyword('is_type', val, args=[idx])
+            self.update_keyword('is_type', is_type, args=[idx])
 
         no_k = self.project.get_value('no_k')
         for (key, val) in zip(('x_w', 'y_s', 'z_b',
@@ -357,7 +360,10 @@ class ISS(object):
             return
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
+            if not indices:
+                continue # should not get empty tuple
             # is_type should already be set
+            is_type = self.project.get_value('is_type', args=[indices[0]])
             self.iss_add_regions_1(regions, is_type=None, indices=indices)
 
 
@@ -380,12 +386,19 @@ class ISS(object):
             #    self.warn("internal surface %s: invalid extents %s" %
             #               (is_.ind, extent))
             #    continue
+
+            is_type = d.get('is_type')
+            if is_type is None:
+                self.error("No type for internal surface %s" % is_.ind)
+                continue
+            is_type = is_type.value #
+
             for (region_name, data) in self.iss_region_dict.items():
                 ext2 = [0 if x is None else x for x in
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.iss_add_regions_1([region_name], indices=[is_.ind])
+                        self.iss_add_regions_1([region_name], is_type=is_type, indices=[is_.ind])
                         break
             else:
                 self.warn("internal surface %s: could not match defined region %s" %
