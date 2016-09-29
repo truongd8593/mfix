@@ -131,12 +131,12 @@ class ISS(object):
         if not selections:
             return
         is_type = IS_TYPES[rp.combobox.currentIndex()]
-        self.iss_add_regions_1(selections, is_type=is_type, indices=None) # Indices will be assigned
+        self.iss_add_regions_1(selections, is_type=is_type, indices=None, autoselect=True)
         self.iss_setup_current_tab() # Update the widgets
 
 
     def iss_add_regions_1(self, selections,
-                          is_type=None, indices=None):
+                          is_type=None, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         if is_type is None:
             self.error('Type not defined for internal surface %s' % '+'.join(selections))
@@ -364,7 +364,7 @@ class ISS(object):
                 continue # should not get empty tuple
             # is_type should already be set
             is_type = self.project.get_value('is_type', args=[indices[0]])
-            self.iss_add_regions_1(regions, is_type=None, indices=indices)
+            self.iss_add_regions_1(regions, is_type=None, indices=indices, autoselect=False)
 
 
     def iss_extract_regions(self):
@@ -398,7 +398,8 @@ class ISS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.iss_add_regions_1([region_name], is_type=is_type, indices=[is_.ind])
+                        self.iss_add_regions_1([region_name], is_type=is_type,
+                                               indices=[is_.ind], autoselect=False)
                         break
             else:
                 self.warn("internal surface %s: could not match defined region %s" %

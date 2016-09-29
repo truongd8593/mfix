@@ -204,11 +204,11 @@ class ICS(object):
         selections = rp.get_selection_list()
         if not selections:
             return
-        self.ics_add_regions_1(selections) # Indices will be assigned
+        self.ics_add_regions_1(selections, autoselect=True) # Indices will be assigned
         self.ics_setup_current_tab() # Update the widgets
 
 
-    def ics_add_regions_1(self, selections, indices=None):
+    def ics_add_regions_1(self, selections, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.initial_conditions
 
@@ -487,7 +487,7 @@ class ICS(object):
             return
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
-            self.ics_add_regions_1(regions, indices)
+            self.ics_add_regions_1(regions, indices, autoselect=False)
 
 
     def setup_ics(self):
@@ -802,7 +802,7 @@ class ICS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.ics_add_regions_1([region_name], indices=[ic.ind])
+                        self.ics_add_regions_1([region_name], indices=[ic.ind], autoselect=False)
                         break
             else:
                 self.warn("initial condition %s: could not match defined region %s" %

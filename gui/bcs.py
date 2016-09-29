@@ -308,12 +308,12 @@ class BCS(object):
         if not selections:
             return
         bc_type = BC_TYPES[rp.combobox.currentIndex()]
-        self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None) # Indices will be assigned
+        self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None, autoselect=True)
         self.bcs_setup_current_tab() # Update the widgets
 
 
     def bcs_add_regions_1(self, selections,
-                          bc_type=None, indices=None):
+                          bc_type=None, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         if bc_type is None:
             self.error('Type not defined for boundary condition %s' % '+'.join(selections))
@@ -332,10 +332,8 @@ class BCS(object):
 
         if indices is None: # interactive
             indices = [None] * len(selections)
-            autoselect = True
         else: # loading file
             assert len(selections) == len(indices)
-            autoselect = False
         if bc_type == 'CYCLIC':
             for (i, region_name) in enumerate(selections):
                 axis = region_name[0].lower()
@@ -672,7 +670,7 @@ class BCS(object):
                 bc_type = 'CYCLIC'
             else:
                 bc_type = self.project.get_value('bc_type', args=[indices[0]])
-            self.bcs_add_regions_1(regions, bc_type=bc_type, indices=indices)
+            self.bcs_add_regions_1(regions, bc_type=bc_type, indices=indices, autoselect=False)
 
 
     def setup_bcs(self):
@@ -845,7 +843,8 @@ class BCS(object):
                         if bc_type not in BC_TYPES:
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
-                            self.bcs_add_regions_1([region_name], bc_type=bc_type, indices=[bc.ind])
+                            self.bcs_add_regions_1([region_name], bc_type=bc_type,
+                                                   indices=[bc.ind], autoselect=False)
                             break
             else:
                 self.warn("boundary condition %s: could not match defined region %s" %
@@ -857,7 +856,7 @@ class BCS(object):
             keys = ('cyclic_'+q, 'cyclic_%s_pd'%q, 'delp_'+q)
             if any(self.project.get_value(key) for key in keys):
                 name = axis + '-cyclic'
-                self.bcs_add_regions_1([name], bc_type='CYCLIC', indices=None)
+                self.bcs_add_regions_1([name], bc_type='CYCLIC', indices=None, autoselect=False)
 
 
     def set_bcs_fluid_energy_eq_type(self, eq_type):
@@ -3741,8 +3740,10 @@ class BCS(object):
             return
         ui = self.ui.boundary_conditions
 
-        # Make sure the rest of the tabs are disabled
-        for i in range(ui.tab_layout.columnCount()-1):
+        # Make sure the rest of the tabs are disabled (why is this needed?)
+        print("HEY")
+        ncols = ui.tab_layout.columnCount()
+        for i in range(ncols-1):
             item = ui.tab_layout.itemAtPosition(0, i)
             widget = item.widget()
             widget.setEnabled(False)

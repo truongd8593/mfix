@@ -117,11 +117,11 @@ class PSS(object):
         selections = rp.get_selection_list()
         if not selections:
             return
-        self.pss_add_regions_1(selections) # Indices will be assigned
+        self.pss_add_regions_1(selections, indices=None, autoselect=False) # Indices will be assigned
         self.pss_setup_current_tab() # Update the widgets
 
 
-    def pss_add_regions_1(self, selections, indices=None):
+    def pss_add_regions_1(self, selections, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.point_sources
 
@@ -402,7 +402,7 @@ class PSS(object):
             return
         data = JSONDecoder().decode(s)
         for (indices, regions) in data:
-            self.pss_add_regions_1(regions, indices)
+            self.pss_add_regions_1(regions, indices, autoselect=False)
 
 
     def setup_pss(self):
@@ -711,7 +711,7 @@ class PSS(object):
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent:
                     if data.get('available', True):
-                        self.pss_add_regions_1([region_name], indices=[ps.ind])
+                        self.pss_add_regions_1([region_name], indices=[ps.ind], autoselect=False)
                         break
             else:
                 self.warn("point source %s: could not match defined region %s" %
