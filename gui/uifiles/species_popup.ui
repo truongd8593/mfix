@@ -627,7 +627,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>J/(kg.K)</string>
+           <string>J/kg.K</string>
           </property>
          </widget>
         </item>
@@ -641,7 +641,7 @@
         <item row="1" column="3">
          <widget class="QLabel" name="label_specific_heat_equation_units">
           <property name="text">
-           <string>J/(kg.K)</string>
+           <string>J/kg.K</string>
           </property>
          </widget>
         </item>
