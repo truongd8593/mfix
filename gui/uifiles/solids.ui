@@ -876,7 +876,7 @@ QPushButton:checked {
                <item row="4" column="3">
                 <widget class="QLabel" name="label_c_ps0_units">
                  <property name="text">
-                  <string>kJ/(kg K)</string>
+                  <string>J/kg.K</string>
                  </property>
                 </widget>
                </item>

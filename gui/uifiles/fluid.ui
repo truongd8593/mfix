@@ -703,7 +703,7 @@
          </font>
         </property>
         <property name="text">
-         <string>kJ/(kg.K)</string>
+         <string>J/kg.K</string>
         </property>
        </widget>
       </item>

@@ -1107,7 +1107,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas specific heat [J/(kg.s.K) in SI].
+!    Specified constant gas specific heat [J/(kg.K) in SI].
 !  </description>
       C_PG0 = UNDEFINED
 !</keyword>
@@ -1286,7 +1286,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids specific heat [J/(kg.s.K) in SI].
+!    Specified constant solids specific heat [J/(kg.K) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
