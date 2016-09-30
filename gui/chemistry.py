@@ -102,3 +102,33 @@ class Chemistry(object):
 # chemical equation are shown in the summary box at the top. A
 # chemical reaction is activated/deactivated by checking/unchecking the box. If the user 'deactivates'
 # the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
+
+#  user's guide says: Aliases cannot conflict with existing MFIX variable names (e.g., a species alias of MU_g will cause an error when compiling
+
+"""
+Evaporation{ chem_eq = "Vapor --> Liquid"}
+
+Ash_to_Ash { chem_eq = 'Ash2 --> FlyAsh' } ! Cold --> Hot
+
+
+Charring {
+
+chem_eq = 'Biomass --> 8.3334 * Char'
+
+DH = 3.585d3     ! (cal/mol-biomass)  150.0 J/g-biomass
+fracDH(1) = 1.0  ! assign to the coal phase
+}
+
+Pyrolysis {
+
+chem_eq = 'Biomass --> ' &
+'0.9639 * CO + 0.8771 * CO2 + 0.3491 * CH4 + ' &
+'1.6276 * H2 + 1.4210 * H2O'
+
+DH = 3.585d3     ! (cal/mol-biomass)  150.0 J/g-biomass
+fracDH(1) = 1.0  ! assign to the coal phase
+}
+
+"""
+
+# reaction ID:  32 chars max, alphanumeric + underscore
