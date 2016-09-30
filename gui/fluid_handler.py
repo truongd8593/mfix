@@ -118,7 +118,7 @@ class FluidHandler(object):
             model_name = 'fluid_%s_model' % name
             setattr(self, 'set_'+model_name, make_fluid_model_setter(self, model_name, key))
 
-            # Set the combobox default value
+            # Set the combobox default value (?)
             combobox = getattr(ui, 'combobox_'+model_name)
             combobox.default_value = getattr(self, model_name)
             #print(model_name, combobox.default_value)

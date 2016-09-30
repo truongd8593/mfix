@@ -462,7 +462,7 @@ class ProjectManager(Project):
                 except ValueError as e:
                     errlist.append(e)
 
-            # report any errors (this should probably be in gui class)
+            # report any errors
             for w in errlist + ws:
                 self.gui.print_internal("Warning: %s" % w.message, color='red')
             n_errs = len(errlist) + len(ws)
@@ -470,7 +470,7 @@ class ProjectManager(Project):
                 self.gui.print_internal("Warning: %s loading %s" %
                                            (plural(n_errs, "error") , project_file),
                                            color='red')
-            else: # Why don't we do this in gui.py?
+            else:
                 self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
 
     def register_widget(self, widget, keys=None, args=None):
@@ -538,6 +538,7 @@ class ProjectManager(Project):
             if key in self.registered_keywords:
                 self.registered_keywords.remove(key)
 
+
     def update_thermo_data(self, species_dict):
         """Update definitions in self.thermo_data based on data in species_dict.
         Unmatching entries are not modified"""
@@ -554,6 +555,7 @@ class ProjectManager(Project):
             self.thermo_data.update(update_dict)
             self.gui.set_unsaved_flag()
 
+
     def update_parameters(self, params):
         """parameter values have changed, loop through and update"""
         for p in params:
@@ -564,6 +566,7 @@ class ProjectManager(Project):
                     value = self.get_value(key, args=args)
                     self.change(self, key, value, args=args)
 
+
     def objectName(self):
         return 'Project Manager'
 
@@ -572,8 +575,6 @@ def format_burcat(species, data):
     """Return a list of lines in BURCAT.THR format"""
     ## TODO: move this somewhere else
     lines = []
-
-
     calc_quality = 'B' # This appears in column 68, valid values are A-F.
                        # We'll just assign 'B' to fill the space, it's the
                        # most common value.

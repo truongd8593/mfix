@@ -646,6 +646,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.print_internal(msg, color='red')
             traceback.print_exception(*sys.exc_info())
 
+
     def _on_resized(self, ev):
         ui = self.ui
         w = ev.size().width()
@@ -697,6 +698,7 @@ class MfixGui(QtWidgets.QMainWindow,
                                              self.pss_check_region_in_use,
                                              self.iss_check_region_in_use))
                                              # any more places region can be used?
+
 
     def change_region_name(self, name, new_name):
         self.bcs_change_region_name(name, new_name)
@@ -784,19 +786,6 @@ class MfixGui(QtWidgets.QMainWindow,
         # Stop/reset buttons are left enabled
         for pane in self.ui.panes:
             pane.setEnabled(enabled)
-        return
-        # Is the rest of this really necessary??
-
-        # Selected rows look bad with input disabled
-        if not enabled:
-            self.ui.fluid.tablewidget_fluid_species.clearSelection()
-            self.ui.solids.tablewidget_solids.clearSelection()
-            self.ui.solids.tablewidget_solids_species.clearSelection()
-        else:
-            self.update_fluid_species_table() # reenable sel?
-            self.update_solids_table() # ?
-            #self.update_solids_detail_pane()
-        # How about all the other panes?
 
 
     def slot_update_residuals(self):
@@ -902,14 +891,17 @@ class MfixGui(QtWidgets.QMainWindow,
         ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(bool(paused or unpaused))
 
+
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
                             color='blue')
         self.print_internal("MFIX-GUI version %s" % self.get_version(),
                             color='blue')
 
+
     def get_version(self):
         return "0.2y" # placeholder
+
 
     def closeEvent(self, event):
         if not self.confirm_close():
@@ -930,12 +922,6 @@ class MfixGui(QtWidgets.QMainWindow,
                     items = tree.findItems(short, flags, 0)
                     if len(items) == 1:
                         return items[0]
-                    # clean this up!
-                    #if len(items) == 2: # "Points"
-                    #    for item in items:
-                    #        data = bool(item.data(UserRole, 0))
-                    #        if data == (item_name == 'Points'): # Monitors/Points
-                    #            return item
 
 
     # move to 'scalar_handler.py'
@@ -2202,8 +2188,6 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.iss_regions_from_str(val)
                 elif key == 'ps_regions':
                     self.pss_regions_from_str(val)
-
-
                 elif key == 'geometry':
                     pass # handled in 'geometry' section above
                 elif key == 'visual_props':
@@ -2263,10 +2247,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
             if (val_usr is not None and val_g0 is not None):
                 self.print_internal('Warning: %s and %s are both set' % (name_g0, name_usr))
-                # FIXME this is getting printed after error count ... should be included in # of errs
-                # (another reason to move this to load_project_file)
+                # this is getting printed after error count ... should be included in # of errs
 
-            # XXX FIXME conflicts with default fluid models
+            # XXX FIXME conflicts with default fluid models (?)
             setter(CONSTANT if val_g0 is not None
                    else UDF if val_usr is not None
                    else 1)
