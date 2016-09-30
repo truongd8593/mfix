@@ -308,11 +308,22 @@ class ModelSetup(object):
         # Option to disable the fluid phase
         # Disables the Fluid task pane menu
         # Sets keyword RO_G0 to 0.0
-        self.fluid_solver_disabled = disabled
         m = self.ui.model_setup
         enabled = not disabled
         item = self.find_navigation_tree_item("Fluid")
         item.setDisabled(disabled)
+        m.checkbox_enable_turbulence.setEnabled(enabled)
+        m.combobox_turbulence_model.setEnabled(enabled and
+                        m.checkbox_enable_turbulence.isChecked())
+
+        self.update_nav_tree()
+        # TODO update nscalar (?)
+
+        # This hack avoids clobbering ro_g0 during project load
+        if self.fluid_solver_disabled == disabled:
+            return
+        self.fluid_solver_disabled = disabled
+
         if disabled:
             self.enable_turbulence(False)
             self.saved_ro_g0 = self.project.get_value('ro_g0')
@@ -324,12 +335,6 @@ class ModelSetup(object):
             val = self.saved_ro_g0 if self.fluid_density_model == CONSTANT else None
             self.update_keyword('ro_g0', val)
 
-        m.checkbox_enable_turbulence.setEnabled(enabled)
-        m.combobox_turbulence_model.setEnabled(enabled and
-                        m.checkbox_enable_turbulence.isChecked())
-
-        self.update_nav_tree()
-        # TODO update nscalar
 
 
     def enable_energy_eq(self, enabled):
