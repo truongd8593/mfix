@@ -728,8 +728,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
         log.debug("entering slot_rundir_changed")
-        runname = self.get_runname()
-        runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
+        runname_pid = self.get_pid_name()
         log.debug('job_manager.job: %s' % self.job_manager.job)
         if self.get_project_dir() and not self.job_manager.job:
             log.debug("slot_rundir_changed was called")
@@ -2026,11 +2025,11 @@ class MfixGui(QtWidgets.QMainWindow,
             name = name.replace(char, '_')
         return name
 
-    def get_pid_name(self):
+    def get_pid_name(self, check_exists=False):
         '''return the pid name if it exists, else an empty string'''
         # look for all caps!
-        run_name = self.get_runname().upper()
-        if not os.path.exists(run_name):
+        run_name = self.get_runname().upper() + '.pid'
+        if not os.path.exists(run_name) and check_exists:
             run_name = ''
         return run_name
 
@@ -2087,7 +2086,7 @@ class MfixGui(QtWidgets.QMainWindow,
         default_runname = os.path.splitext(os.path.basename(project_file))[0]
         runname = self.get_runname(default=default_runname)
         runname_mfx = runname + '.mfx'
-        runname_pid = self.get_pid_name()
+        runname_pid = self.get_pid_name(True)
 
         if runname_pid:
             # previously started job may be running, try to reconnect
