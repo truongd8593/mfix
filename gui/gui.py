@@ -2026,6 +2026,14 @@ class MfixGui(QtWidgets.QMainWindow,
             name = name.replace(char, '_')
         return name
 
+    def get_pid_name(self):
+        '''return the pid name if it exists, else an empty string'''
+        # look for all caps!
+        run_name = self.get_runname().upper()
+        if not os.path.exists(run_name):
+            run_name = ''
+        return run_name
+
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
 
@@ -2078,9 +2086,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         default_runname = os.path.splitext(os.path.basename(project_file))[0]
         runname = self.get_runname(default=default_runname)
-        runname_mfx, runname_pid = runname + '.mfx', runname + '.pid'
+        runname_mfx = runname + '.mfx'
+        runname_pid = self.get_pid_name()
 
-        if os.path.exists(runname_pid):
+        if runname_pid:
             # previously started job may be running, try to reconnect
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
