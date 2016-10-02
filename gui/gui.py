@@ -731,7 +731,7 @@ class MfixGui(QtWidgets.QMainWindow,
         runname_pid = self.get_pid_name()
         log.debug('job_manager.job: %s' % self.job_manager.job)
         if self.get_project_dir() and not self.job_manager.job:
-            log.debug("slot_rundir_changed was called")
+            log.debug("slot_rundir_changed was called, pid {}".format(runname_pid))
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             self.job_manager.try_to_connect(full_runname_pid)
 
@@ -809,7 +809,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # This is the main state-transition handler
 
         if message is not None:
-            # highlight for visibility, this is an important state chage
+            # highlight for visibility, this is an important state change
             self.print_internal(message, color='blue')
 
         # TODO: set this in __init__ or another early setup method
@@ -1802,12 +1802,21 @@ class MfixGui(QtWidgets.QMainWindow,
         new_dir = os.path.dirname(new_file)
         if not self.check_writable(new_dir):
             return
+
+        old_dir = self.get_project_dir()
+
         # Force run name to file name.  Is this a good idea?
         basename = os.path.basename(new_file)
         run_name = os.path.splitext(basename)[0]
         self.set_project_file(new_file)
         self.update_keyword('run_name', run_name)
         self.save_project()
+
+        # change file watcher
+        self.rundir_watcher.removePath(old_dir)
+        self.rundir_watcher.addPath(new_dir)
+        self.slot_rundir_changed()
+        self.signal_update_runbuttons.emit('')
 
     def get_save_filename(self, message=None):
         """wrapper for call to getSaveFileName, override in unit tests"""
@@ -2026,7 +2035,8 @@ class MfixGui(QtWidgets.QMainWindow,
         return name
 
     def get_pid_name(self, check_exists=False):
-        '''return the pid name if it exists, else an empty string'''
+        '''return the pid name if it exists, else an empty string if
+        check_exists==True'''
         # look for all caps!
         run_name = self.get_runname().upper() + '.pid'
         if not os.path.exists(run_name) and check_exists:
