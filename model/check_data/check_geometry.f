@@ -17,6 +17,7 @@
       use geometry, only: DX, XLENGTH
       use geometry, only: DY, YLENGTH
       use geometry, only: DZ, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use geometry, only: NO_I, IMIN1, IMAX, IMAX1, IMAX3
       use geometry, only: NO_J, JMIN1, JMAX, JMAX1, JMAX3
@@ -47,6 +48,10 @@
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_GEOMETRY")
+
+      CALL CHECK_MFIX_DOMAIN(X_MIN, X_MAX, XLENGTH, 'X')
+      CALL CHECK_MFIX_DOMAIN(Y_MIN, Y_MAX, YLENGTH, 'Y')
+      CALL CHECK_MFIX_DOMAIN(Z_MIN, Z_MAX, ZLENGTH, 'Z')
 
       CALL GET_DXYZ_FROM_CONTROL_POINTS
 

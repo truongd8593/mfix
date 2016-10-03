@@ -10,6 +10,7 @@
       IMAX, DX, XLENGTH, NO_I, CYCLIC_X, CYCLIC_X_PD, XMIN, &
       JMAX, DY, YLENGTH, NO_J, CYCLIC_Y, CYCLIC_Y_PD,       &
       KMAX, DZ, ZLENGTH, NO_K, CYCLIC_Z, CYCLIC_Z_PD,       &
+      X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX,             &
       CYLINDRICAL_2D, I_CYL_NUM, I_CYL_TRANSITION,          &
       SHEAR, V_SH
 

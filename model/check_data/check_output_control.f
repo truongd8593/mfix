@@ -33,6 +33,8 @@
       use param1, only: UNDEFINED, UNDEFINED_I, ZERO, LARGE_NUMBER
 ! Number of SPx files.
       USE param1, only: N_SPX
+! Geometry bounds
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -140,12 +142,12 @@
 ! If this is not the case, define the entire domain as default region
       IF(WRITE_VTK_FILES.AND.N_VTK_REGIONS==0) THEN
          VTK_DEFINED(1) = .TRUE.
-         VTK_X_W(1) = ZERO
-         VTK_X_E(1) = XLENGTH
-         VTK_Y_S(1) = ZERO
-         VTK_Y_N(1) = YLENGTH
-         VTK_Z_B(1) = ZERO
-         VTK_Z_T(1) = ZLENGTH
+         VTK_X_W(1) = X_MIN
+         VTK_X_E(1) = X_MAX
+         VTK_Y_S(1) = Y_MIN
+         VTK_Y_N(1) = Y_MAX
+         VTK_Z_B(1) = Z_MIN
+         VTK_Z_T(1) = Z_MAX
          VTK_FILEBASE(1) = RUN_NAME
       ENDIF
 

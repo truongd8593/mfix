@@ -99,6 +99,7 @@
       use stl, only: FACETS_AT_DG
 
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
       use stl, only: N_FACETS_DES
       use stl, only: VERTEX
 
@@ -140,14 +141,14 @@
 
          I1 = DG_IEND2
          I2 = DG_ISTART2
-         IF(X2>=-TOL_STL .AND. X1<=XLENGTH+TOL_STL) THEN
+         IF(X2>=X_MIN-TOL_STL .AND. X1<=X_MAX+TOL_STL) THEN
             I1 = max(iofpos(X1)-1, dg_istart2)
             I2 = min(iofpos(X2)+1, dg_iend2)
          ENDIF
 
          J1 = DG_JEND2
          J2 = DG_JSTART2
-         IF(Y2>=-TOL_STL .AND. Y1<=YLENGTH+TOL_STL) THEN
+         IF(Y2>=Y_MIN-TOL_STL .AND. Y1<=Y_MAX+TOL_STL) THEN
             J1 = max(jofpos(Y1)-1, dg_jstart2)
             J2 = min(jofpos(Y2)+1, dg_jend2)
          ENDIF
@@ -155,7 +156,7 @@
          K1 = DG_KEND2
          K2 = DG_KSTART2
          IF(DO_K) THEN
-            IF(Z2>=-TOL_STL .AND. Z1<=ZLENGTH+TOL_STL) THEN
+            IF(Z2>=Z_MIN-TOL_STL .AND. Z1<=Z_MAX+TOL_STL) THEN
                K1 = max(kofpos(Z1)-1, dg_kstart2)
                K2 = min(kofpos(Z2)+1, dg_kend2)
             ENDIF
@@ -356,6 +357,7 @@
       Subroutine CONVERT_BC_WALLS_TO_STL
 
       use geometry, only: ZLENGTH, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use bc, only: BC_DEFINED, BC_TYPE_ENUM, FREE_SLIP_WALL, NO_SLIP_WALL, PAR_SLIP_WALL
       use bc, only: BC_I_w, BC_I_e
@@ -391,7 +393,7 @@
             IF(DO_K) THEN
                lZb = ZT(BC_K_b(BCV)-1); lZt = ZT(BC_K_t(BCV))
             ELSE
-               lZb = ZERO; lZt = ZLENGTH
+               lZb = Z_MIN ;lZt = Z_MAX
             ENDIF
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
          ENDIF
@@ -414,6 +416,7 @@
       SUBROUTINE CONVERT_IMPERMEABLE_IS_TO_STL
 
       use geometry, only: DO_K, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use is, only: IS_DEFINED, IS_TYPE
       use is, only: IS_I_w, IS_I_e
@@ -448,7 +451,7 @@
             IF(DO_K) THEN
                lZb = ZT(IS_K_b(ISV)-1); lZt = ZT(IS_K_t(ISV))
             ELSE
-               lZb = ZERO; lZt = ZLENGTH
+               lZb = Z_MIN ;lZt = Z_MAX
             ENDIF
 
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
@@ -481,6 +484,7 @@
 
       USE geometry, only: DO_K
       USE geometry, only: XLENGTH, YLENGTH, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
       use stl, only: VERTEX, NORM_FACE
       use stl, only: N_FACETS_DES
       use stl, only: STL_START, STL_END, DEFAULT_STL
@@ -498,48 +502,48 @@
 ! West Face
       IF(.NOT.DES_PERIODIC_WALLS_X)THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
 
 ! East Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/XLENGTH, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/XLENGTH, 2*YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/XLENGTH, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MAX, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX, Y_MAX+YLENGTH, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MAX, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/-ONE, ZERO, ZERO/)
       ENDIF
 
 ! South Face
       IF(.NOT.DES_PERIODIC_WALLS_Y)THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
 
 ! North Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, YLENGTH, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, YLENGTH, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MAX, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MAX, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
       ENDIF
 
 ! Bottom Face
       IF(.NOT.DES_PERIODIC_WALLS_Z .AND. DO_K) THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZERO/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MAX/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
 
 ! Top Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZLENGTH/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZLENGTH/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MAX/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MAX/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
       ENDIF
 

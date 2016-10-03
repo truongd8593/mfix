@@ -44,8 +44,8 @@
       Z_CONSTANT = .TRUE.
 
       IF(PS_X_W(PSV)/=UNDEFINED .AND. PS_X_E(PSV)/=UNDEFINED) THEN
-         CALL CALC_CELL(XMIN, PS_X_W(PSV), DX, IMAX, I_W)
-         CALL CALC_CELL(XMIN, PS_X_E(PSV), DX, IMAX, I_E)
+         CALL CALC_CELL(X_MIN, PS_X_W(PSV), DX, IMAX, I_W)
+         CALL CALC_CELL(X_MIN, PS_X_E(PSV), DX, IMAX, I_E)
          IF (PS_X_W(PSV) /= PS_X_E(PSV)) THEN
             X_CONSTANT = .FALSE.
             I_W = I_W + 1
@@ -59,9 +59,9 @@
          PS_I_E(PSV) = I_E
       ELSE
          IF(PS_I_W(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(XMIN, DX, PS_I_W(PSV), PS_X_W(PSV))
+            CALL CALC_LOC(X_MIN, DX, PS_I_W(PSV), PS_X_W(PSV))
          IF(PS_I_E(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(XMIN, DX, PS_I_E(PSV), PS_X_E(PSV))
+            CALL CALC_LOC(X_MIN, DX, PS_I_E(PSV), PS_X_E(PSV))
          IF (PS_X_W(PSV) /= PS_X_E(PSV)) X_CONSTANT = .FALSE.
       ENDIF
 
@@ -72,8 +72,8 @@
       ENDIF
 !
       IF (PS_Y_S(PSV)/=UNDEFINED .AND. PS_Y_N(PSV)/=UNDEFINED) THEN
-         CALL CALC_CELL(ZERO, PS_Y_S(PSV), DY, JMAX, J_S)
-         CALL CALC_CELL(ZERO, PS_Y_N(PSV), DY, JMAX, J_N)
+         CALL CALC_CELL(Y_MIN, PS_Y_S(PSV), DY, JMAX, J_S)
+         CALL CALC_CELL(Y_MIN, PS_Y_N(PSV), DY, JMAX, J_N)
          IF (PS_Y_S(PSV) /= PS_Y_N(PSV)) THEN
             Y_CONSTANT = .FALSE.
             J_S = J_S + 1
@@ -87,9 +87,9 @@
          PS_J_N(PSV) = J_N
       ELSE
          IF(PS_J_S(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(ZERO, DY, PS_J_S(PSV), PS_Y_S(PSV))
+            CALL CALC_LOC(Y_MIN, DY, PS_J_S(PSV), PS_Y_S(PSV))
          IF(PS_J_N(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(ZERO, DY, PS_J_N(PSV), PS_Y_N(PSV))
+            CALL CALC_LOC(Y_MIN, DY, PS_J_N(PSV), PS_Y_N(PSV))
          IF (PS_Y_S(PSV) /= PS_Y_N(PSV)) Y_CONSTANT = .FALSE.
       ENDIF
 
@@ -100,8 +100,8 @@
       ENDIF
 
       IF (PS_Z_B(PSV)/=UNDEFINED .AND. PS_Z_T(PSV)/=UNDEFINED) THEN
-         CALL CALC_CELL(ZERO, PS_Z_B(PSV), DZ, KMAX, K_B)
-         CALL CALC_CELL(ZERO, PS_Z_T(PSV), DZ, KMAX, K_T)
+         CALL CALC_CELL(Z_MIN, PS_Z_B(PSV), DZ, KMAX, K_B)
+         CALL CALC_CELL(Z_MIN, PS_Z_T(PSV), DZ, KMAX, K_T)
          IF (PS_Z_B(PSV) /= PS_Z_T(PSV)) THEN
             Z_CONSTANT = .FALSE.
             K_B = K_B + 1
@@ -115,9 +115,9 @@
          PS_K_T(PSV) = K_T
       ELSE
          IF(PS_K_B(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(ZERO, DZ, PS_K_B(PSV), PS_Z_B(PSV))
+            CALL CALC_LOC(Z_MIN, DZ, PS_K_B(PSV), PS_Z_B(PSV))
          IF(PS_K_T(PSV) /= UNDEFINED_I)                                &
-            CALL CALC_LOC(ZERO, DZ, PS_K_T(PSV), PS_Z_T(PSV))
+            CALL CALC_LOC(Z_MIN, DZ, PS_K_T(PSV), PS_Z_T(PSV))
          IF (PS_Z_B(PSV) /= PS_Z_T(PSV)) Z_CONSTANT = .FALSE.
       ENDIF
 

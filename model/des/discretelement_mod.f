@@ -247,7 +247,7 @@
       INTEGER NWALLS
 
 ! Position of domain boundaries generally given as
-!   (0, xlength, 0, ylength, 0, zlength)
+!   (x_min, x_max, y_min, y_max, z_min, z_max)
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
 
 ! X, Y, Z position of cell faces of computational fluid grid

@@ -101,7 +101,7 @@
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
-        XG_E(1) = ZERO
+        XG_E(1) = X_MIN
         DO I = IMIN1, IMAX2
            XG_E(I) = XG_E(I-1) + DX(I)
         END DO
@@ -109,7 +109,7 @@
 
 !     Location of V-momentum cells for original (uncut grid)
       IF (DO_J) THEN
-        YG_N(1) = ZERO
+        YG_N(1) = Y_MIN
         DO J = JMIN1, JMAX2
            YG_N(J) = YG_N(J-1) + DY(J)
         END DO
@@ -117,7 +117,7 @@
 
 !     Location of W-momentum cells for original (uncut grid)
       IF (DO_K) THEN
-        ZG_T(1) = ZERO
+        ZG_T(1) = Z_MIN
         DO K = KMIN1, KMAX2
            ZG_T(K) = ZG_T(K-1) + DZ(K)
         END DO
@@ -3230,40 +3230,40 @@
       NYS = VTK_NYS(VTK_REGION)
       NZS = VTK_NZS(VTK_REGION)
 
-      CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
+      CALL CALC_CELL (X_MIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
       I_W = I_W !+ 1
-      CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
+      CALL CALC_CELL (X_MIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
 
 
-      CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
+      CALL CALC_CELL (Y_MIN, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
       J_S = J_S !+ 1
-      CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
+      CALL CALC_CELL (Y_MIN, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
 
       IF (NO_K) THEN
          K_B = 1
          K_T = 1
       ELSE
-         CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
+         CALL CALC_CELL (Z_MIN, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
          K_B = K_B !+ 1
-         CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
+         CALL CALC_CELL (Z_MIN, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
       ENDIF
 
 ! get slice(s) location
       DO NS = 1,NXS
          XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
-         CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_TMP)
+         CALL CALC_CELL (X_MIN, XSLICE, DX, IMAX, I_TMP)
          I_SLICE(NS) = MAX(MIN(I_TMP,IMAX1),IMIN1)
       ENDDO
 
       DO NS = 1,NYS
          YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
-         CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_TMP)
+         CALL CALC_CELL (Y_MIN, YSLICE, DY, JMAX, J_TMP)
          J_SLICE(NS) = MAX(MIN(J_TMP,JMAX1),JMIN1)
       ENDDO
 
       DO NS = 1,NZS
          ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
-         CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_TMP)
+         CALL CALC_CELL (Z_MIN, ZSLICE, DZ, KMAX, K_TMP)
          K_SLICE(NS) = MAX(MIN(K_TMP,KMAX1),KMIN1)
       ENDDO
 

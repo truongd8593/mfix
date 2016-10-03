@@ -31,10 +31,16 @@
 
 ! Reactor length in the x or r direction
       DOUBLE PRECISION :: XLENGTH
+! Reactor bounds in the x direction
+      DOUBLE PRECISION :: X_MIN,X_MAX
 ! Reactor length in the y direction
       DOUBLE PRECISION :: YLENGTH
+! Reactor bounds in the y direction
+      DOUBLE PRECISION :: Y_MIN,Y_MAX
 ! Reactor length in the z or theta direction
       DOUBLE PRECISION :: ZLENGTH
+! Reactor bounds in the z direction
+      DOUBLE PRECISION :: Z_MIN,Z_MAX
 
 ! Starting index in the x or r direction
       INTEGER :: IMIN1

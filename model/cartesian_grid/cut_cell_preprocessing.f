@@ -2157,7 +2157,7 @@ MODULE CUT_CELL_PREPROC
          I1 = IEND3
          I2 = ISTART3
 
-         IF(X2>=ZERO-DX(ISTART3).AND.X1<=XLENGTH+DX(IEND3)) THEN
+         IF(X2>=X_MIN-DX(ISTART3).AND.X1<=X_MAX+DX(IEND3)) THEN
             DO I = ISTART3, IEND3
                IP = I+1
                IF(XG_E(I)+X_OFFSET*DX(IP)>=X1-TOL_STL) THEN
@@ -2179,7 +2179,7 @@ MODULE CUT_CELL_PREPROC
          J1 = JEND3
          J2 = JSTART3
 
-         IF(Y2>=ZERO-DY(JSTART3).AND.Y1<=YLENGTH+DY(JEND3)) THEN
+         IF(Y2>=Y_MIN-DY(JSTART3).AND.Y1<=Y_MAX+DY(JEND3)) THEN
             DO J = JSTART3, JEND3
                JP = J+1
                IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1-TOL_STL) THEN
@@ -2200,7 +2200,7 @@ MODULE CUT_CELL_PREPROC
          K1 = KEND3
          K2 = KSTART3
 
-         IF(Z2>=ZERO-DZ(KSTART3).AND.Z1<=ZLENGTH+DZ(KEND3)) THEN
+         IF(Z2>=Z_MIN-DZ(KSTART3).AND.Z1<=Z_MAX+DZ(KEND3)) THEN
             DO K = KSTART3, KEND3
                KP=K+1
 

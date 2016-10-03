@@ -104,6 +104,7 @@
       use geometry, only: NO_I, IMAX, IMIN1, IMAX1, XLENGTH, DX, XMIN
       use geometry, only: NO_J, JMAX, JMIN1, JMAX1, YLENGTH, DY
       use geometry, only: NO_K, KMAX, KMIN1, KMAX1, ZLENGTH, DZ
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 ! Flag: New run or a restart.
       use run, only: RUN_TYPE
       use run, only: REINITIALIZING
@@ -168,7 +169,7 @@
 
          IF (IC_X_W(ICV)==UNDEFINED .AND. IC_I_W(ICV)==UNDEFINED_I) THEN
             IF (NO_I) THEN
-               IC_X_W(ICV) = ZERO
+               IC_X_W(ICV) = X_MIN
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_X_w and IC_I_w'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -177,7 +178,7 @@
 
          IF (IC_X_E(ICV)==UNDEFINED .AND. IC_I_E(ICV)==UNDEFINED_I) THEN
             IF (NO_I) THEN
-               IC_X_E(ICV) = XLENGTH
+               IC_X_E(ICV) = X_MAX
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_X_e and IC_I_e'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -186,7 +187,7 @@
 
          IF (IC_Y_S(ICV)==UNDEFINED .AND. IC_J_S(ICV)==UNDEFINED_I) THEN
             IF (NO_J) THEN
-               IC_Y_S(ICV) = ZERO
+               IC_Y_S(ICV) = Y_MIN
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Y_s and IC_J_s'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -195,7 +196,7 @@
 
          IF (IC_Y_N(ICV)==UNDEFINED .AND. IC_J_N(ICV)==UNDEFINED_I) THEN
             IF (NO_J) THEN
-               IC_Y_N(ICV) = YLENGTH
+               IC_Y_N(ICV) = Y_MAX
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Y_n and IC_J_n'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -204,7 +205,7 @@
 
          IF (IC_Z_B(ICV)==UNDEFINED .AND. IC_K_B(ICV)==UNDEFINED_I) THEN
             IF (NO_K) THEN
-               IC_Z_B(ICV) = ZERO
+               IC_Z_B(ICV) = Z_MIN
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Z_b and IC_K_b'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -213,7 +214,7 @@
 
          IF (IC_Z_T(ICV)==UNDEFINED .AND. IC_K_T(ICV)==UNDEFINED_I) THEN
             IF (NO_K) THEN
-               IC_Z_T(ICV) = ZLENGTH
+               IC_Z_T(ICV) = Z_MAX
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Z_t and IC_K_t'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -237,9 +238,9 @@
                I_W = 1
                I_E = 1
             ELSE
-               CALL CALC_CELL (XMIN, IC_X_W(ICV), DX, IMAX, I_W)
+               CALL CALC_CELL (X_MIN, IC_X_W(ICV), DX, IMAX, I_W)
                I_W = I_W + 1
-               CALL CALC_CELL (XMIN, IC_X_E(ICV), DX, IMAX, I_E)
+               CALL CALC_CELL (X_MIN, IC_X_E(ICV), DX, IMAX, I_E)
             ENDIF
             IF (IC_I_W(ICV)/=UNDEFINED_I .OR. IC_I_E(ICV)/=UNDEFINED_I) THEN
                CALL LOCATION_CHECK (IC_I_W(ICV), I_W, ICV, 'IC - west')
@@ -274,9 +275,9 @@
                J_S = 1
                J_N = 1
             ELSE
-               CALL CALC_CELL (ZERO, IC_Y_S(ICV), DY, JMAX, J_S)
+               CALL CALC_CELL (Y_MIN, IC_Y_S(ICV), DY, JMAX, J_S)
                J_S = J_S + 1
-               CALL CALC_CELL (ZERO, IC_Y_N(ICV), DY, JMAX, J_N)
+               CALL CALC_CELL (Y_MIN, IC_Y_N(ICV), DY, JMAX, J_N)
             ENDIF
             IF (IC_J_S(ICV)/=UNDEFINED_I .OR. IC_J_N(ICV)/=UNDEFINED_I) THEN
                CALL LOCATION_CHECK (IC_J_S(ICV), J_S, ICV, 'IC - south')
@@ -310,9 +311,9 @@
                K_B = 1
                K_T = 1
             ELSE
-               CALL CALC_CELL (ZERO, IC_Z_B(ICV), DZ, KMAX, K_B)
+               CALL CALC_CELL (Z_MIN, IC_Z_B(ICV), DZ, KMAX, K_B)
                K_B = K_B + 1
-               CALL CALC_CELL (ZERO, IC_Z_T(ICV), DZ, KMAX, K_T)
+               CALL CALC_CELL (Z_MIN, IC_Z_T(ICV), DZ, KMAX, K_T)
             ENDIF
             IF (IC_K_B(ICV)/=UNDEFINED_I .OR. IC_K_T(ICV)/=UNDEFINED_I) THEN
                CALL LOCATION_CHECK (IC_K_B(ICV), K_B, ICV, 'IC - bottom')
