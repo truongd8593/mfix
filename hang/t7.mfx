@@ -1,0 +1,293 @@
+########################################################################
+#                                                                      #
+# Generic template for MFIX GUI *new* case.                            #
+#                                                                      #
+########################################################################
+
+  run_name = 't7'
+  description = 'Example MFiX Simulation'
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  run_type = 'new'
+  units = 'SI'
+
+  time = 0.0
+  tstop = 5.0
+
+  dt = 1.0000e-04
+
+  detect_stall = .True.
+
+  energy_eq = .False.
+
+  species_eq(0) = .False.
+
+  momentum_x_eq(0) = .True.
+  momentum_y_eq(0) = .True.
+  momentum_z_eq(0) = .True.
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  coordinates = 'CARTESIAN'
+
+  xlength = 0.1
+  imax = 10
+  zlength = 0.1
+  kmax = 10
+  ylength = 1.0
+  jmax = 100
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! Gas Section
+!---------------------------------------------------------------------//
+  mu_g0 = 1.8000e-05    ! (kg/m.s)
+  mw_avg = 29.0
+
+! PARTICLE SECTION
+!---------------------------------------------------------------------//
+  mmax = 1
+
+  ep_star = 0.42
+
+#----------------------------  TFM DEFAULTS  --------------------------#
+  kt_type = 'ALGEBRAIC'
+  friction_model = 'SCHAEFFER'
+  c_e = 0.95
+  c_f = 0.1
+  phi = 30.0
+  phi_w = 11.3
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+! Background - full domain initialize
+!---------------------------------------------------------------------//
+  ic_x_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  ic_y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  ic_z_b(1) = 0.0 #!MFIX-GUI eq{zmin,float}
+  ic_x_e(1) = 0.1 #!MFIX-GUI eq{xmax,float}
+  ic_y_n(1) = 1.0 #!MFIX-GUI eq{ymax,float}
+  ic_z_t(1) = 0.1 #!MFIX-GUI eq{zmax,float}
+
+  ic_ep_g(1) = 1.0
+
+  ic_t_g(1) = 293.15
+
+  ic_u_g(1) = 0.0
+  ic_v_g(1) = 0.259
+  ic_w_g(1) = 0.0
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  res_dt = 0.1
+  spx_dt(1) = 0.1
+  spx_dt(2) = 0.1
+  spx_dt(3) = 0.1
+  spx_dt(4) = 0.1
+  spx_dt(5) = 0.1
+  spx_dt(6) = 0.1
+  spx_dt(7) = 0.1
+  spx_dt(8) = 0.1
+  spx_dt(9) = 0.1
+
+  full_log = .True.
+
+  resid_string(1) = 'P0'
+  resid_string(2) = 'U0'
+  resid_string(3) = 'V0'
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  nodesi = 1
+  nodesj = 1
+  nodesk = 1
+  chk_batchq_end = .True.
+  cartesian_grid = .False.
+  use_stl = .False.
+  drag_c1 = 0.8
+  drag_d1 = 2.65
+  solids_model(1) = 'TFM'
+  species_eq(1) = .False.
+  nmax_s(1) = 0
+  d_p0(1) = 2.0000e-04
+  ro_s0(1) = 2000.0
+  blending_function = 'NONE'
+  ic_x_w(2) = 0
+  ic_y_s(2) = 0
+  ic_z_b(2) = 0
+  ic_x_e(2) = 0.1 #!MFIX-GUI eq{xmax,float}
+  ic_y_n(2) = 0.5
+  ic_z_t(2) = 0.1 #!MFIX-GUI eq{zmax,float}
+  ic_ep_g(2) = 0.5
+  ic_t_g(2) = 293.15
+  ic_u_g(2) = 0.0
+  ic_v_g(2) = 0.617
+  ic_w_g(2) = 0.0
+  ic_ep_s(2,1) = 0.5
+  ic_u_s(2,1) = 0.0
+  ic_v_s(2,1) = 0.0
+  ic_w_s(2,1) = 0.0
+  ic_p_star(2) = 0.0
+  bc_type(2) = 'MI'
+  bc_x_w(2) = 0.04
+  bc_y_s(2) = 0
+  bc_z_b(2) = 0.04
+  bc_x_e(2) = 0.06
+  bc_y_n(2) = 0
+  bc_z_t(2) = 0.06
+  bc_ep_g(2) = 1.0
+  bc_u_g(2) = 0.0
+  bc_w_g(2) = 0.0
+  bc_t_g(2) = 293.15
+  bc_p_g(2) = 1.0132e+05
+  bc_ep_s(2,1) = 0.0
+  bc_u_s(2,1) = 0.0
+  bc_w_s(2,1) = 0.0
+  bc_t_s(2,1) = 293.15
+  bc_v_g(2) = 1.246
+  bc_type(3) = 'PO'
+  bc_x_w(3) = 0.0
+  bc_y_s(3) = 1.0 #!MFIX-GUI eq{ymax,float}
+  bc_z_b(3) = 0.0
+  bc_x_e(3) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_n(3) = 1.0 #!MFIX-GUI eq{ymax,float}
+  bc_z_t(3) = 0.1 #!MFIX-GUI eq{zmax,float}
+  bc_p_g(3) = 1.0132e+05
+  bc_type(1) = 'MI'
+  bc_x_w(1) = 0
+  bc_y_s(1) = 0
+  bc_z_b(1) = 0
+  bc_x_e(1) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_n(1) = 0
+  bc_z_t(1) = 0.04
+  bc_type(4) = 'MI'
+  bc_x_w(4) = 0.0
+  bc_y_s(4) = 0.0
+  bc_z_b(4) = 0.06
+  bc_x_e(4) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_n(4) = 0
+  bc_z_t(4) = 0.1 #!MFIX-GUI eq{zmax,float}
+  bc_type(5) = 'MI'
+  bc_x_w(5) = 0.0
+  bc_y_s(5) = 0
+  bc_z_b(5) = 0.04
+  bc_x_e(5) = 0.04
+  bc_y_n(5) = 0
+  bc_z_t(5) = 0.06
+  bc_type(6) = 'MI'
+  bc_x_w(6) = 0.06
+  bc_y_s(6) = 0
+  bc_z_b(6) = 0.04
+  bc_x_e(6) = 0.1
+  bc_y_n(6) = 0
+  bc_z_t(6) = 0.06
+  bc_ep_g(1) = 1.0
+  bc_ep_g(4) = 1.0
+  bc_ep_g(5) = 1.0
+  bc_ep_g(6) = 1.0
+  bc_u_g(1) = 0.0
+  bc_u_g(4) = 0.0
+  bc_u_g(5) = 0.0
+  bc_u_g(6) = 0.0
+  bc_w_g(1) = 0.0
+  bc_w_g(4) = 0.0
+  bc_w_g(5) = 0.0
+  bc_w_g(6) = 0.0
+  bc_t_g(1) = 293.15
+  bc_t_g(4) = 293.15
+  bc_t_g(5) = 293.15
+  bc_t_g(6) = 293.15
+  bc_p_g(1) = 1.0132e+05
+  bc_p_g(4) = 1.0132e+05
+  bc_p_g(5) = 1.0132e+05
+  bc_p_g(6) = 1.0132e+05
+  bc_ep_s(1,1) = 0.0
+  bc_ep_s(4,1) = 0.0
+  bc_ep_s(5,1) = 0.0
+  bc_ep_s(6,1) = 0.0
+  bc_u_s(1,1) = 0.0
+  bc_u_s(4,1) = 0.0
+  bc_u_s(5,1) = 0.0
+  bc_u_s(6,1) = 0.0
+  bc_w_s(1,1) = 0.0
+  bc_w_s(4,1) = 0.0
+  bc_w_s(5,1) = 0.0
+  bc_w_s(6,1) = 0.0
+  bc_t_s(1,1) = 293.15
+  bc_t_s(4,1) = 293.15
+  bc_t_s(5,1) = 293.15
+  bc_t_s(6,1) = 293.15
+  bc_v_g(1) = 0.259
+  bc_v_g(4) = 0.259
+  bc_v_g(5) = 0.259
+  bc_v_g(6) = 0.259
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI regions_dict = {"order": ["Background IC", "bed", "MI - Jet", "PO",
+#!MFIX-GUI   "MI - DF1", "MI - DF2", "MI - DF3", "MI - DF4", "IC_1", "IC_2",
+#!MFIX-GUI   "BC_3", "BC_1", "BC_4"], "regions": {"BC_1": {"to": [0.1, 0.0,
+#!MFIX-GUI   0.04], "color": [0.7294117647058823, 0.796078431372549,
+#!MFIX-GUI   0.6745098039215687], "type": "XZ-plane"}, "MI - DF1": {"to":
+#!MFIX-GUI   [{"eq": "xmax", "__type__": "equation", "type": "float"}, 0, 0.04],
+#!MFIX-GUI   "color": [1.0, 0.0, 0.0], "type": "XZ-plane"}, "MI - DF2": {"to":
+#!MFIX-GUI   [{"eq": "xmax", "__type__": "equation", "type": "float"}, 0, {"eq":
+#!MFIX-GUI   "zmax", "__type__": "equation", "type": "float"}], "color": [1.0,
+#!MFIX-GUI   0.0, 0.0], "from": [0.0, 0.0, 0.06], "type": "XZ-plane"}, "BC_4":
+#!MFIX-GUI   {"to": [0.1, 0.0, 0.1], "color": [0.7176470588235294,
+#!MFIX-GUI   0.5294117647058824, 0.6313725490196078], "from": [0.0, 0.0, 0.06],
+#!MFIX-GUI   "type": "XZ-plane"}, "IC_2": {"to": [0.1, 0.5, 0.1], "color":
+#!MFIX-GUI   [0.7607843137254902, 0.7058823529411765, 0.5254901960784314]},
+#!MFIX-GUI   "IC_1": {"to": [0.1, 1.0, 0.1], "color": [0.6313725490196078,
+#!MFIX-GUI   0.41568627450980394, 0.6627450980392157]}, "MI - Jet": {"to":
+#!MFIX-GUI   [0.06, 0, 0.06], "color": [0.0, 0.0, 0.0], "from": [0.04, 0, 0.04],
+#!MFIX-GUI   "type": "XZ-plane"}, "bed": {"to": [{"eq": "xmax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, 0.5, {"eq": "zmax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}], "color": [0.6509803921568628,
+#!MFIX-GUI   0.40784313725490196, 0.5333333333333333]}, "PO": {"to": [{"eq":
+#!MFIX-GUI   "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "color":
+#!MFIX-GUI   [0.8117647058823529, 0.6470588235294118, 0.8470588235294118],
+#!MFIX-GUI   "from": [0.0, {"eq": "ymax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, 0.0], "type": "XZ-plane"}, "BC_3": {"to": [0.1, 1.0,
+#!MFIX-GUI   0.1], "color": [0.7333333333333333, 0.8352941176470589,
+#!MFIX-GUI   0.4627450980392157], "from": [0.0, 1.0, 0.0], "type": "XZ-plane"},
+#!MFIX-GUI   "Background IC": {"to": [{"eq": "xmax", "__type__": "equation",
+#!MFIX-GUI   "type": "float"}, {"eq": "ymax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}],
+#!MFIX-GUI   "color": [1.0, 1.0, 1.0], "from": [{"eq": "xmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "ymin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "zmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}]}, "MI - DF4": {"to": [0.1, 0, 0.06],
+#!MFIX-GUI   "color": [1.0, 0.0, 0.0], "from": [0.06, 0, 0.04], "type":
+#!MFIX-GUI   "XZ-plane"}, "MI - DF3": {"to": [0.04, 0, 0.06], "color": [1.0,
+#!MFIX-GUI   0.0, 0.0], "from": [0.0, 0, 0.04], "type": "XZ-plane"}}}
+#!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
+#!MFIX-GUI visual_props = {"mesh": {"rep": "wire", "visible": true, "color":
+#!MFIX-GUI   [244, 67, 40, 255], "edge": [122, 33, 20, 255], "opacity": 1.0},
+#!MFIX-GUI   "background_mesh": {"rep": "wire", "visible": true, "color": [100,
+#!MFIX-GUI   182, 247, 255], "edge": [50, 91, 123, 255], "opacity": 1.0},
+#!MFIX-GUI   "regions": {"rep": "solid", "visible": true, "color": [224, 224,
+#!MFIX-GUI   224, 255], "edge": [112, 112, 112, 255], "opacity": 0.15},
+#!MFIX-GUI   "geometry": {"rep": "wire", "visible": true, "color": [224, 224,
+#!MFIX-GUI   224, 255], "edge": [112, 112, 112, 255], "opacity": 1.0}}
+#!MFIX-GUI ic_regions = [[[1], ["Background IC"]], [[2], ["bed"]]]
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin":
+#!MFIX-GUI   0.0, "xmax": 0.1, "ymin": 0.0, "ymax": 1.0, "zmin": 0.0, "zmax": 0.1}}
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI mfix_exe = /Users/mmeredith/dev/gui/mfix
+#!MFIX-GUI bc_regions = [[[2], ["MI - Jet"]], [[5], ["MI - DF3"]], [[6], ["MI -
+#!MFIX-GUI   DF4"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
