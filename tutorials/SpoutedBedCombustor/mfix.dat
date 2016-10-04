@@ -53,6 +53,7 @@
   Coordinates = 'Cylindrical'
 
   IMAX = 19
+  XLENGTH = 16.0
   DX = 4*0.5, .59, .69, .81, .91, 11*1.0
 
   JMAX    = 60
