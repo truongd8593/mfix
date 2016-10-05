@@ -135,18 +135,15 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def __init__(self, app, parent=None, project_file=None):
-        # load settings early so get_project_file returns the right thing.
-        if project_file:
+        self.app = app
+        QtWidgets.QMainWindow.__init__(self, parent)
+        if project_file is not None:
             self.set_project_file(project_file)
 
-        self.app = app
         LineEdit.report_value_error = self.popup_value_error
 
-        QtWidgets.QMainWindow.__init__(self, parent)
         self.setWindowIcon(get_icon('mfix.png'))
-
         self.message_box = None # for tests to access
-
         # Initialize data members - make sure these values match 'reset'!
         self.solver_name = None
         self.fluid_solver_disabled = False
