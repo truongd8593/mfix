@@ -50,7 +50,8 @@ pyinst: all ../mfix
 
 sphinx-docs:
 	cd doc/sphinx; sphinx-apidoc -o ../generated/source ../..
-	cp doc/sphinx/index.rst doc/sphinx/conf.py doc/generated/source
-	make -C doc/sphinx html
+	cp doc/sphinx/index.rst doc/sphinx/conf.py doc/generated/source/
+	cp doc/sphinx/Makefile doc/generated/
+	make -C doc/generated html
 
 docs: sphinx-docs

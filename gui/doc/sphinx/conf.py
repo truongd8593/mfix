@@ -46,7 +46,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'modules'
+master_doc = 'index'
 
 # General information about the project.
 project = u'MFIX-GUI'
@@ -78,7 +78,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['uifiles']
+exclude_patterns = ['uifiles*']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

@@ -31,6 +31,7 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
 from tools.general import get_mfix_home
 from tools.general import debug_trace
 
+#: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
 def get_dict_from_pidfile(pid_filename):
@@ -321,6 +322,7 @@ class JobManager(QObject):
         elif os.path.isfile(pidfile):
             self.reset_api_error_count()
             self.job = Job(pidfile)
+            self.job.connect()
             log.debug('JobManager created %s', self.job)
 
             # connect Job signals
