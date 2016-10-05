@@ -449,7 +449,7 @@ class BCS(object):
             return
         setup_done = False # change_tab calls setup, avoid double-calling
         if self.bc_is_cyclic(BC0):
-            for i in range(ui.tab_layout.columnCount()-1):
+            for i in range(ui.tab_layout.columnCount()-1): # Skip 'Cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
                 widget = item.widget()
                 widget.setEnabled(False)
@@ -463,7 +463,7 @@ class BCS(object):
             for i in range(1, ui.tab_layout.columnCount()-2): # Skip 'fluid', 'scalar' and 'cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
                 widget = item.widget()
-                widget.setEnabled(False)
+                widget.setEnabled(True)
 
             ui.pushbutton_cyclic.setEnabled(False)
             if self.bcs_current_tab == CYCLIC_TAB:
