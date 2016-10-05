@@ -24,7 +24,7 @@ class HopperPopUp(QtWidgets.QDialog):
         self.setWindowTitle('Hopper Wizard')
 
         ui.pushbutton_close.clicked.connect(self.close)
-        pixmap = get_pixmap('hopper_sketch.png')
+        pixmap = get_pixmap('hopper_sketch.png', 118, 288)
         ui.label_image.setPixmap(pixmap)
         ui.lineedit_dh.setFocus()
 

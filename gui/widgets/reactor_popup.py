@@ -24,7 +24,7 @@ class ReactorPopUp(QtWidgets.QDialog):
         self.setWindowTitle('Reactor Wizard')
 
         ui.pushbutton_close.clicked.connect(self.close)
-        pixmap = get_pixmap('reactor_sketch.png')
+        pixmap = get_pixmap('reactor_sketch.png', 199, 349)
         ui.label_image.setPixmap(pixmap)
         ui.lineedit_db.setFocus()
 

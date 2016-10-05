@@ -24,7 +24,7 @@ class CyclonePopUp(QtWidgets.QDialog):
         self.setWindowTitle('Cyclone Wizard')
 
         ui.pushbutton_close.clicked.connect(self.close)
-        pixmap = get_pixmap('cyclone_sketch.png')
+        pixmap = get_pixmap('cyclone_sketch.png', 175, 306)
         ui.label_image.setPixmap(pixmap)
         ui.lineedit_dc.setFocus()
 
