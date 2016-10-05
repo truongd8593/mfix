@@ -308,6 +308,15 @@ class BCS(object):
         if not selections:
             return
         bc_type = BC_TYPES[rp.combobox.currentIndex()]
+        if self.bcs_region_dict is None:
+            self.bcs_region_dict = self.ui.regions.get_region_dict()
+        shape = self.bcs_region_dict.get(selections[0])
+        if shape == 'STL':
+            bc_type = 'CG_' + bc_type
+        if bc_type == 'CG_PI': # Shouldn't happen!
+                self.error("Invalid bc_type %s" % bc_type)
+                return
+
         self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None, autoselect=True)
         self.bcs_setup_current_tab() # Update the widgets
 
@@ -352,14 +361,17 @@ class BCS(object):
                 if region_data is None: # ?
                     self.warn("no data for region %s bc_type %s" % (region_name, bc_type))
                     continue
-                if bc_type is None:
-                    bc_type = self.project.get_value('bc_type', args=[idx])
                 self.bcs_set_region_keys(region_name, idx, region_data, bc_type)
                 self.bcs_region_dict[region_name]['available'] = False # Mark as in-use
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
-        item = make_item(BC_NAMES[BC_TYPES.index(bc_type)])
+        # remove prefix so we can construct the long name
+        tmp = bc_type
+        if tmp.startswith('CG_'):
+            tmp = tmp[3:]
+        name = BC_NAMES[BC_TYPES.index(tmp)]
+        item = make_item(name)
         tw.setItem(nrows, 1, item)
 
         self.fixup_bcs_table(tw)
@@ -620,13 +632,7 @@ class BCS(object):
     def bcs_set_region_keys(self, name, idx, data, bc_type=None):
         # Update the keys which define the region the BC applies to
         if bc_type is not None:
-            val = bc_type
-            if data.get('type') == 'STL':
-                val = 'CG_' + val
-            if val== 'CG_PI': # Shouldn't happen!
-                self.error("Invalid bc_type %s" % val)
-                return
-            self.update_keyword('bc_type', val, args=[idx])
+            self.update_keyword('bc_type', bc_type, args=[idx])
 
         no_k = self.project.get_value('no_k')
 
@@ -1854,6 +1860,7 @@ class BCS(object):
         if bc_type is None:
             self.error("bc_type not set for region %s" % BC0)
             return
+
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
         else:
