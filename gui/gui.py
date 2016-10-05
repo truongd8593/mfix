@@ -4,7 +4,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 """MFIX GUI"""
 
-import getopt
+import argparse
 import glob
 import logging
 import multiprocessing
@@ -2425,51 +2425,29 @@ class MfixGui(QtWidgets.QMainWindow,
                                default='cancel')
         return response == 'ok'
 
-def Usage(name):
-    print("""Usage: %s [directory|file] [-h, --help] [-l, --log=LEVEL] [-q, --quit]
-    directory: open mfix.dat file in specified directory
-    file: open mfix.dat or <RUN_NAME>.mfx project file
-    -h, --help: display this help message
-    -e, --exe=EXE:  specify MFIX executable (full path)
-    -l, --log=LEVEL: set logging level (error, warning, info, debug)
-    -s, --style=STYLE: specify app style (windowsvista, fusion, cleanlooks,...)
-    -n, --noload:  do not autoload previous project
-    -q, --quit: quit after opening file (for testing)"""  % name, file=sys.stderr)
-    sys.exit(1)
-
-
 def main(args):
     global gui
-    args = sys.argv
-    name = args[0]
-    try:
-        opts, args = getopt.getopt(args[1:], "hqnl:e:s:", ["help", "quit", "noload", "log=", "exe=", "style="])
-    except getopt.GetoptError as err:
-        print(err)
-        Usage(name)
 
-    quit_after_loading = False
-    project_file = None
-    noload = False
-    log_level = 'WARN'
-    mfix_exe_option = None
-    app_style = None
+    # build the arg parser
+    parser = argparse.ArgumentParser(description='MFIX GUI Arguments')
+    parser.add_argument('directory', action='store_const', const=None,
+                        help='open mfix.dat file in specified directory')
+    parser.add_argument('file', action='store_const', const=None,
+                        help='open mfix.dat or <RUN_NAME>.mfx project file')
+    parser.add_argument('-e', '--exe',  metavar='EXE', action='store_const', const=None,
+                        help='specify MFIX executable (full path)')
+    parser.add_argument('-l', '--log', metavar='LOG', action='store_const', const='WARN',
+                        help='set logging level (error, warning, info, debug)')
+    parser.add_argument('-s', '--style', metavar='STYLE', action='store_const', const=None,
+                        help='specify app style (windowsvista, fusion, cleanlooks,...)')
+    parser.add_argument('-n', '--noload', action='store_true',
+                        help='do not autoload previous project')
+    parser.add_argument('-q', '--quit', action='store_true',
+                        help='quit after opening file (for testing)')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 2.0')
 
-    for opt, arg in opts:
-        if opt in ("-l", "--log"):
-            log_level = arg
-        elif opt in ("-h", "--help"):
-            Usage(name)
-        elif opt in ("-q", "--quit"):
-            quit_after_loading = True
-        elif opt in ("-n", "--noload"):
-            noload = True
-        elif opt in ("-e", "--exe"):
-            mfix_exe_option = arg
-        elif opt in ("-s", "--style"):
-            app_style = arg
-        else:
-            Usage(name)
+    args = parser.parse_args()
+    print(args)
 
     logging.basicConfig(stream=sys.stdout,
                         filemode='w', level=getattr(logging, log_level.upper()),
