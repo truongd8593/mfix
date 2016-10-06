@@ -1612,9 +1612,8 @@ class MfixGui(QtWidgets.QMainWindow,
             else:
                 name='unpause' #?
                 self.job_manager.job.unpause()
-        except Exception:
-            log.exception('problem in handle_run')
-            self.print_internal('problem in handle_run')
+        except Exception as e:
+            self.error('handle_run: %s' % str(e))
         self.signal_update_runbuttons.emit('')
 
     def handle_set_pymfix_output(self):
