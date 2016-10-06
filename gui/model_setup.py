@@ -15,8 +15,6 @@ class ModelSetup(object):
 
         ui.checkbox_disable_fluid_solver.clicked.connect(self.disable_fluid_solver)
 
-        ui.checkbox_keyword_energy_eq.clicked.connect(self.enable_energy_eq)
-
         key = 'turbulence_model'
         ui.checkbox_enable_turbulence.clicked.connect(self.enable_turbulence)
         cb = ui.combobox_turbulence_model
@@ -335,43 +333,6 @@ class ModelSetup(object):
             val = self.saved_ro_g0 if self.fluid_density_model == CONSTANT else None
             self.update_keyword('ro_g0', val)
 
-
-
-    def enable_energy_eq(self, enabled):
-        #    Option to enable thermal energy equations
-        # This keyword should always be specified in the input deck
-        # Sets keyword ENERGY_EQ
-        # DEFAULT value of .FALSE.
-        # Note, the mfix default is True.  We initialize to False in
-        # the new project template (mfix.dat.template)
-
-        # This is an additional callback on top of automatic keyword update,
-        # since this has to change availability of several other GUI items
-        ui = self.ui.model_setup
-        ui.checkbox_keyword_energy_eq.setChecked(enabled)
-
-        # It might not be necessary to do all this - will the fluid or
-        # solid panes get updated before we display them?
-        f = self.ui.fluid
-        for item in (f.label_fluid_specific_heat_model,
-                     f.combobox_fluid_specific_heat_model,
-                     f.label_fluid_conductivity_model,
-                     f.combobox_fluid_conductivity_model,
-                     # more ?
-                     ):
-            item.setEnabled(enabled)
-
-        # c_pg0 == specific heat for fluid phase
-        lineedit = f.lineedit_keyword_c_pg0
-        label = f.label_c_pg0_units
-        for item in (lineedit, label):
-            item.setEnabled(enabled and (self.fluid_specific_heat_model == CONSTANT))
-
-        # k_g0 == thermal conductivity fluid phase
-        lineedit = f.lineedit_keyword_k_g0
-        label = f.label_k_g0_units
-        for item in (lineedit, label):
-            item.setEnabled(enabled and (self.fluid_conductivity_model == CONSTANT))
 
 
     def enable_turbulence(self, enabled):
