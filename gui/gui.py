@@ -2425,20 +2425,22 @@ class MfixGui(QtWidgets.QMainWindow,
                                default='cancel')
         return response == 'ok'
 
+
 def main(args):
     global gui
 
     # build the arg parser
-    parser = argparse.ArgumentParser(description='MFIX GUI Arguments')
-    parser.add_argument('directory', action='store_const', const=None,
-                        help='open mfix.dat file in specified directory')
-    parser.add_argument('file', action='store_const', const=None,
-                        help='open mfix.dat or <RUN_NAME>.mfx project file')
-    parser.add_argument('-e', '--exe',  metavar='EXE', action='store_const', const=None,
+    av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
+    parser = argparse.ArgumentParser(description='MFIX GUI')
+    parser.add_argument('project', action='store', nargs='?', default=None,
+                        help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
+    parser.add_argument('-e', '--exe',  metavar='EXE', action='store', default=None,
                         help='specify MFIX executable (full path)')
-    parser.add_argument('-l', '--log', metavar='LOG', action='store_const', const='WARN',
+    parser.add_argument('-l', '--log', metavar='LOG', action='store', default='WARN',
+                        choices=['error', 'warning', 'info', 'debug'],
                         help='set logging level (error, warning, info, debug)')
-    parser.add_argument('-s', '--style', metavar='STYLE', action='store_const', const=None,
+    parser.add_argument('-s', '--style', metavar='STYLE', action='store', default=None,
+                        choices=av_styles,
                         help='specify app style (windowsvista, fusion, cleanlooks,...)')
     parser.add_argument('-n', '--noload', action='store_true',
                         help='do not autoload previous project')
@@ -2446,56 +2448,53 @@ def main(args):
                         help='quit after opening file (for testing)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 2.0')
 
+    # parse the args
     args = parser.parse_args()
-    print(args)
 
     logging.basicConfig(stream=sys.stdout,
-                        filemode='w', level=getattr(logging, log_level.upper()),
+                        filemode='w', level=getattr(logging, args.log.upper()),
                         format='%(name)s - %(levelname)s - %(message)s')
 
-    if len(args) > 1:
-        Usage(name)
-    if args:
-        project_file = args[0]
-    if noload and project_file:
-        Usage(name)
-    if project_file and not os.path.isfile(project_file):
+    project_file = args.project
+    if project_file and os.path.isdir(project_file):
+        mfx_files = glob.glob(os.path.join(project_file, '*.mfx'))
+        if mfx_files:
+            project_file = mfx_files[0]
+        else:
+            dat_files = glob.glob(os.path.join(project_file, 'mfix.dat'))
+            if dat_files:
+                project_file = dat_files[0]
+            else:
+                print("Can't find *.mfx or mfix.dat in directory: %s" % project_file)
+                parser.print_help()
+                sys.exit()
+
+    elif project_file and not os.path.isfile(project_file):
         print("%s: is not a file " % project_file)
-        Usage(name)
+        parser.print_help()
+        sys.exit()
 
     # create the QApplication
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
     # set style
+    app_style = args.style
     if app_style is not None:
-        av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
-        app_style = app_style.lower()
-        if app_style in av_styles: # set style if it is available
-            qapp.setStyle(app_style)
-        else: # print available styles
-            print("'%s' is not a valid style. Using default style: %s.\nValid Styles: %s " % (app_style, qapp.style().objectName(), ', '.join(av_styles)))
+        qapp.setStyle(app_style.lower())
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 
-    if mfix_exe_option:
+    if args.exe:
         #print('exe option passed: %s' % mfix_exe_option)
-        gui.commandline_option_exe = mfix_exe_option
+        gui.commandline_option_exe = args.exe
 
-    if project_file is None and not noload:
+    if project_file is None and not args.noload:
         # autoload last project
         project_file = gui.get_project_file()
 
-    if project_file and os.path.isfile(project_file):
-        gui.open_project(project_file, auto_rename=(not quit_after_loading))
+    if project_file and not args.noload:
+        gui.open_project(project_file, auto_rename=(not args.quit))
     else:
         gui.set_no_project()
-
-    # print number of keywords
-    reg_keys = len(gui.project.registered_keywords)
-    mfix_keys = len(gui.keyword_doc.keys())
-
-    # Note, a lot of keywords are handled dynamically and are not registered yet
-    #gui.print_internal('Registered %d keywords out of %d, %d %%' %
-    #                   (reg_keys, mfix_keys, reg_keys/mfix_keys*100))
 
     # have to initialize vtk after the widget is visible!
     gui.vtkwidget.vtkiren.Initialize()
@@ -2504,7 +2503,7 @@ def main(args):
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    if not quit_after_loading:
+    if not args.quit:
         qapp.exec_()
 
     qapp.deleteLater()
