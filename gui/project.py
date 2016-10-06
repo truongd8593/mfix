@@ -1,4 +1,6 @@
 """
+project.py
+==========
 
 This module defines Project and Keyword classes.
 
@@ -24,8 +26,10 @@ History
 -------
 
 This file was derived from the pymfix library
+
 License
 -------
+
 As a work of the United States Government, this project is in the public domain
 within the United States. As such, this code is licensed under
 CC0 1.0 Universal public domain.
