@@ -1068,7 +1068,7 @@
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_bc_k_turb_g_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string>m²/s²</string>
                      </property>
                     </widget>
                    </item>
@@ -1080,12 +1080,12 @@
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_bc_k_turb_g_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_k_turb_g_args_BC"/>
                    </item>
                    <item row="1" column="2">
                     <widget class="QLabel" name="label_bc_e_turb_g_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string>m²/s³</string>
                      </property>
                     </widget>
                    </item>
@@ -1097,7 +1097,7 @@
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="LineEdit" name="lineedit_bc_e_turb_g_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_e_turb_g_args_BC"/>
                    </item>
                   </layout>
                  </widget>
