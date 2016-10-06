@@ -2452,8 +2452,8 @@
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>The interval at the beginning when the normal
-!    velocity at the boundary is equal to BC_Jet_g0. When restarting,
-!    run this value and BC_Jet_g0 should be specified such that the
+!    velocity at the boundary is equal to BC_Jet_g0. When restarting
+!    run, this value and BC_Jet_g0 should be specified such that the
 !    transient jet continues correctly. MFIX does not store the jet
 !    conditions. For MASS_OUTFLOW boundary conditions, BC_DT_0 is
 !    the time period to average and print the outflow rates. The
