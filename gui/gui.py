@@ -3,6 +3,8 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 """MFIX GUI"""
+__version__ = [2017, 1, 0, 'a']
+__version_str__ = '.'.join([str(i) for i in __version__])
 
 import argparse
 import glob
@@ -896,7 +898,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def get_version(self):
-        return "0.2y" # placeholder
+        return __version_str__
 
 
     def closeEvent(self, event):
@@ -2443,7 +2445,7 @@ def main(args):
                         help='do not autoload previous project')
     parser.add_argument('-q', '--quit', action='store_true',
                         help='quit after opening file (for testing)')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s 2.0')
+    parser.add_argument('-v', '--version', action='version', version=__version_str__)
 
     # parse the args
     args = parser.parse_args()
