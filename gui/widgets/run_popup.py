@@ -425,12 +425,12 @@ class RunPopup(QDialog):
 
     def get_run_command(self):
 
-        if self.dmp_enabled():
-            mpiranks = ( self.project.get_value('nodesi', 1) *
-                         self.project.get_value('nodesj', 1) *
-                         self.project.get_value('nodesk', 1) )
+        nodesi = self.project.get_value('nodesi', 1)
+        nodesj = self.project.get_value('nodesj', 1)
+        nodesk = self.project.get_value('nodesk', 1)
 
-            dmp = ['mpirun', '-np', str(mpiranks)]
+        if self.dmp_enabled():
+            dmp = ['mpirun', '-np', str(nodesi * nodesj * nodesk)]
         else:
             dmp = []
 
@@ -440,6 +440,11 @@ class RunPopup(QDialog):
             smp = []
 
         run_cmd = smp + dmp + [self.mfix_exe,]
+        if self.dmp_enabled:
+            run_cmd += ['nodesi=%s'%nodesi,
+                        'nodesj=%s'%nodesj]
+            if not self.parent.project.get_value('no_k'):
+                run_cmd += ['nodesk=%s'%nodesk]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
