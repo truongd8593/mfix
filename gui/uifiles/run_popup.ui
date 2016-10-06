@@ -45,7 +45,7 @@
        <number>5</number>
       </property>
       <item row="4" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesk">
+       <widget class="QSpinBox" name="spinbox_nodesk">
         <property name="minimum">
          <number>1</number>
         </property>
@@ -93,14 +93,14 @@
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesi">
+       <widget class="QSpinBox" name="spinbox_nodesi">
         <property name="minimum">
          <number>1</number>
         </property>
        </widget>
       </item>
       <item row="3" column="2">
-       <widget class="QSpinBox" name="spinbox_keyword_nodesj">
+       <widget class="QSpinBox" name="spinbox_nodesj">
         <property name="minimum">
          <number>1</number>
         </property>
@@ -615,9 +615,9 @@
  </customwidgets>
  <tabstops>
   <tabstop>spinbox_threads</tabstop>
-  <tabstop>spinbox_keyword_nodesi</tabstop>
-  <tabstop>spinbox_keyword_nodesj</tabstop>
-  <tabstop>spinbox_keyword_nodesk</tabstop>
+  <tabstop>spinbox_nodesi</tabstop>
+  <tabstop>spinbox_nodesj</tabstop>
+  <tabstop>spinbox_nodesk</tabstop>
   <tabstop>lineedit_queue_modules</tabstop>
  </tabstops>
  <resources/>

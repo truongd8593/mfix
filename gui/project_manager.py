@@ -445,6 +445,8 @@ class ProjectManager(Project):
             thermo_keys = set(['mw_g', 'mw_s'])
             vector_keys = set(['des_en_input', 'des_en_wall_input',
                         'des_et_input', 'des_et_wall_input'])
+            # issues/149
+            skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
             for kw in kwlist:
                 if kw.key in thermo_keys:
                     self.gui.print_internal("%s=%s moved to THERMO DATA section" % (
@@ -457,6 +459,9 @@ class ProjectManager(Project):
                     if not kw.args:
                         self.gui.unset_keyword(kw.key)
                         kw.args = [1]
+                if kw.key in skipped_keys:
+                    self.gui.unset_keyword(kw.key, args=kw.args)
+                    continue
                 try:
                     self.submit_change(None, {kw.key: kw.value}, args=kw.args)
                 except ValueError as e:

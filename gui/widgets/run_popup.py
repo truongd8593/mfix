@@ -93,9 +93,11 @@ class RunPopup(QDialog):
             ui.spinbox_threads.setValue(int(env_threads))
         else:
             ui.spinbox_threads.setValue(1)
-        ui.spinbox_keyword_nodesi.setValue(self.project.get_value('nodesi', default=1))
-        ui.spinbox_keyword_nodesj.setValue(self.project.get_value('nodesj', default=1))
-        ui.spinbox_keyword_nodesk.setValue(self.project.get_value('nodesk', default=1))
+
+        # issues/149
+        #ui.spinbox_nodesi.setValue(self.project.get_value('nodesi', default=1))
+        #ui.spinbox_nodesj.setValue(self.project.get_value('nodesj', default=1))
+        #ui.spinbox_nodesk.setValue(self.project.get_value('nodesk', default=1))
 
         if self.mfix_exe_list:
             self.mfix_available = True
@@ -138,11 +140,13 @@ class RunPopup(QDialog):
 
         self.ui.groupbox_run_options.setEnabled(self.mfix_available)
         cfg = self.get_exe_flags(self.mfix_exe)
-        dmp = 'dmp' in cfg['flags'] if cfg else False
+        dmp = 'dmp' in cfg['flags'] if cfg else False # why not use dmp_enabled
         smp = 'smp' in cfg['flags'] if cfg else False
-        self.ui.spinbox_keyword_nodesi.setEnabled(dmp)
-        self.ui.spinbox_keyword_nodesj.setEnabled(dmp)
-        self.ui.spinbox_keyword_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
+        dmp = self.dmp_enabled()
+        smp = self.smp_enabled()
+        self.ui.spinbox_nodesi.setEnabled(dmp)
+        self.ui.spinbox_nodesj.setEnabled(dmp)
+        self.ui.spinbox_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
         self.ui.spinbox_threads.setEnabled(smp)
 
     def update_no_mfix_warning(self):
@@ -167,20 +171,20 @@ class RunPopup(QDialog):
         self.signal_cancel.emit()
 
     def finish_with_dialog(self):
-        """ persist run options in project file, then emit run signal """
+        """ save run options in project file, then emit run signal """
         thread_count = str(self.ui.spinbox_threads.value())
         os.environ['OMP_NUM_THREADS'] = thread_count
         log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
                  os.environ["OMP_NUM_THREADS"])
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
 
-        self.project.updateKeyword('nodesi',
-                                    self.ui.spinbox_keyword_nodesi.value())
-        self.project.updateKeyword('nodesj',
-                                    self.ui.spinbox_keyword_nodesj.value())
-        self.project.updateKeyword('nodesk',
-                                    self.ui.spinbox_keyword_nodesk.value())
-        self.persist_selected_exe(self.mfix_exe)
+        #self.project.updateKeyword('nodesi',
+        #                            self.ui.spinbox_keyword_nodesi.value())
+        #self.project.updateKeyword('nodesj',
+        #                            self.ui.spinbox_keyword_nodesj.value())
+        #self.project.updateKeyword('nodesk',
+        #                            self.ui.spinbox_keyword_nodesk.value())
+        self.save_selected_exe(self.mfix_exe)
         self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
 
@@ -263,7 +267,7 @@ class RunPopup(QDialog):
 
     # utils
 
-    def persist_selected_exe(self, new_exe):
+    def save_selected_exe(self, new_exe):
         """ add new executable to recent list, save in project file and config,
         send signal(s) """
         self.settings.setValue('mfix_exe', new_exe)
@@ -410,11 +414,13 @@ class RunPopup(QDialog):
         return mfix_exe_flags
 
     def dmp_enabled(self):
+        return True
         config = self.get_exe_flags(self.mfix_exe)
         flags = config['flags'] if config else ''
         return 'dmp' in flags
 
     def smp_enabled(self):
+        return True
         config = self.get_exe_flags(self.mfix_exe)
         flags = config['flags'] if config else ''
         return 'smp' in flags
@@ -422,9 +428,9 @@ class RunPopup(QDialog):
     def get_run_command(self):
 
         if self.dmp_enabled():
-            mpiranks = (self.project.nodesi.value *
-                        self.project.nodesj.value *
-                        self.project.nodesk.value)
+            mpiranks = ( self.project.get_value('nodesi', 1) *
+                         self.project.get_value('nodesj', 1) *
+                         self.project.get_value('nodesk', 1) )
 
             dmp = ['mpirun', '-np', str(mpiranks)]
         else:
