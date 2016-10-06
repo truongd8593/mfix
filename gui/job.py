@@ -538,6 +538,7 @@ class Job(QObject):
         self.api_status_timer.setInterval(1000)
         self.api_status_timer.timeout.connect(self.update_job_status)
 
+    def connect(self):
         log.debug('testing API %s' % self.api)
         self.test_api_connection()
 
