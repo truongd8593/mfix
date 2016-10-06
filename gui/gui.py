@@ -1326,7 +1326,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def message(self,
                 title='Warning',
                 icon='warning',
-                text='This is a warning.',
+                text='',
                 buttons=['ok'],
                 default='ok',
                 infoText=None,
@@ -2176,7 +2176,7 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             turbulence_models = ['MIXING_LENGTH', 'K_EPSILON']
             if turbulence_model not in turbulence_models:
-                self.message("Error: Invalid turbulence model %s" % turbulence_model)
+                self.error("Invalid turbulence model %s" % turbulence_model)
                 self.unset_keyword('turbulence_model')
             else:
                 # set model first to avoid extra keyword settings
