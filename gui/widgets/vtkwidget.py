@@ -598,18 +598,18 @@ class VtkWidget(QtWidgets.QWidget):
                     geo_data.update(geo_dict[node])
                     geo_type = geo_dict[node]['geo_type']
                     if geo_type == 'primitive':
-                        self.add_primitive(name=node, data=geo_data)
+                        self.add_primitive(name=node, data=geo_data, loading=True)
                     elif geo_type == 'parametric':
-                        self.add_parametric(name=node, data=geo_data)
+                        self.add_parametric(name=node, data=geo_data, loading=True)
                     elif geo_type == 'filter':
                         self.add_filter(name=node, data=geo_data,
-                                        child=tree[node].pop())
+                                        child=tree[node].pop(), loading=True)
                     elif geo_type == 'boolean':
                         self.boolean_operation(boolname=node, data=geo_data,
-                                               children=tree[node])
+                                               children=tree[node], loading=True)
                     elif geo_type == 'stl':
                         self.add_stl(None, filename=geo_data['filename'],
-                                     name=node, data=geo_data)
+                                     name=node, data=geo_data, loading=True)
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
@@ -738,7 +738,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.render()
 
-    def add_stl(self, widget, filename=None, name=None, data=None):
+    def add_stl(self, widget, filename=None, name=None, data=None, loading=False):
         """Open browse dialog and load selected stl file"""
 
         if filename is None:
@@ -819,7 +819,9 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
 
-            self.parent.set_unsaved_flag() # FIXME do not do this on loading
+            if not loading:
+                self.parent.set_unsaved_flag()
+
             return name
 
     def parameter_edited(self, widget, name=None, value=None, key=None):
@@ -947,7 +949,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         return transform_filter
 
-    def add_primitive(self, primtype='sphere', name=None, data=None):
+    def add_primitive(self, primtype='sphere', name=None, data=None, loading=False):
         """Add the specified primitive"""
         if name is None:
             name = get_unique_string(primtype, list(self.geometrydict.keys()))
@@ -1013,7 +1015,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
 
-        self.parent.set_unsaved_flag()
+        if not loading:
+            self.parent.set_unsaved_flag()
+
         return name
 
     def update_parametric(self, name):
@@ -1074,7 +1078,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.parent.set_unsaved_flag()
         return source
 
-    def add_parametric(self, paramtype=None, name=None, data=None):
+    def add_parametric(self, paramtype=None, name=None, data=None, loading=False):
         """Add the specified parametric object"""
 
         if paramtype is None:
@@ -1141,10 +1145,12 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
 
-        self.parent.set_unsaved_flag()
+        if not loading:
+            self.parent.set_unsaved_flag()
+
         return name
 
-    def boolean_operation(self, booltype=None, boolname=None, data=None, children=None):
+    def boolean_operation(self, booltype=None, boolname=None, data=None, children=None, loading=False):
         """Apply a boolean operation with the currently selected toplevel
         items."""
 
@@ -1224,7 +1230,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
 
-        self.parent.set_unsaved_flag()
+        if not loading:
+            self.parent.set_unsaved_flag()
+
         return boolname
 
     def clear_all_geometry(self):
@@ -1342,7 +1350,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         vtkfilter.Update()
 
-    def add_filter(self, filtertype=None, name=None, data=None, child=None):
+    def add_filter(self, filtertype=None, name=None, data=None, child=None, loading=False):
         """add the selected filter with the input being the currently selected
         toplevel item"""
 
@@ -1420,7 +1428,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)
 
-        self.parent.set_unsaved_flag()
+        if not loading:
+            self.parent.set_unsaved_flag()
 
         return name
 
