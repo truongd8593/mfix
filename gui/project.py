@@ -1456,6 +1456,8 @@ class Project(object):
             else:
                 while w > 0 and s[w] != ' ':
                     w -= 1
+                if w == 0: # no space found, can't break
+                    return  (s, '')
                 s, rest = s[:w], s[w:]
                 if len(rest) <= 6: # Prefer a slightly long line to a 'dangler'
                     return (s+rest, '')
