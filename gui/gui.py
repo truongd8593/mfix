@@ -2131,7 +2131,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.set_project_file(project_file)
-        self.clear_unsaved_flag()
         self.set_save_as_action(enabled=True)
 
         self.setup_current_tab() # update vals in any open tabs
