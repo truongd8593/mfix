@@ -414,13 +414,11 @@ class RunPopup(QDialog):
         return mfix_exe_flags
 
     def dmp_enabled(self):
-        return True
         config = self.get_exe_flags(self.mfix_exe)
         flags = config['flags'] if config else ''
         return 'dmp' in flags
 
     def smp_enabled(self):
-        return True
         config = self.get_exe_flags(self.mfix_exe)
         flags = config['flags'] if config else ''
         return 'smp' in flags
