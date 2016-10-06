@@ -142,6 +142,24 @@ class ModelSetup(object):
 
         self.disable_fluid_solver(self.fluid_solver_disabled) # FIXME
 
+        # Additional GUI setup based on loaded projects (not handled
+        # by keyword updates)
+        #    .... is there a way to verify that 'energy_eq' is boolean?
+        #    should that get set from keyword doc?
+
+        # TODO: set 'disable fluid solver' checkbox if appropriate
+        turbulence_model = self.project.get_value('turbulence_model')
+        if turbulence_model is None:
+            self.enable_turbulence(False)
+        else:
+            if turbulence_model not in TURBULENCE_MODELS:
+                self.error("Invalid turbulence model %s" % turbulence_model)
+                self.unset_keyword('turbulence_model')
+            else:
+                self.set_turbulence_model(TURBULENCE_MODELS.index(turbulence_model))
+                self.enable_turbulence(True)
+
+
         #Specify drag model
         # Selection requires TFM, DEM, or PIC solver
         enabled = self.project.solver in (TFM, DEM, PIC)

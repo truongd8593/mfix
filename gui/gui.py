@@ -2154,36 +2154,6 @@ class MfixGui(QtWidgets.QMainWindow,
             if geo:
                 self.vtkwidget.geometry_from_str(geo)
 
-        # Additional GUI setup based on loaded projects (not handled
-        # by keyword updates)
-        #    .... is there a way to verify that 'energy_eq' is boolean?
-        #    should that get set from keyword doc?
-
-        # Note that energy_eq is TRUE by default according to MFIX but
-        # FALSE by default according to SRS document.  We have to respect
-        # MFIX.  This default is enforced in the template file used
-        # to create new projects.
-        self.enable_energy_eq(bool(self.project.get_value('energy_eq', default=True)))
-
-        # Model parameters
-        # move this stuff to model_setup.py!
-
-        # TODO: set 'disable fluid solver' checkbox if appropriate
-
-        turbulence_model = self.project.get_value('turbulence_model')
-        if turbulence_model is None:
-            self.enable_turbulence(False)
-        else:
-            turbulence_models = ['MIXING_LENGTH', 'K_EPSILON']
-            if turbulence_model not in turbulence_models:
-                self.error("Invalid turbulence model %s" % turbulence_model)
-                self.unset_keyword('turbulence_model')
-            else:
-                # set model first to avoid extra keyword settings
-                self.set_turbulence_model(turbulence_models.index(turbulence_model))
-                self.enable_turbulence(True)
-
-
         #  Non-keyword params stored as !#MFIX-GUI comments
         solids_phase_names = {}
         try:
