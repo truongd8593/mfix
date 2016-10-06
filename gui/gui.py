@@ -2255,7 +2255,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project)
         # Take care of updates we deferred during extract_region
-        # FIXME why not do this when switching panes, like we do with solids/BCs etc?
+        # FIXME Do this when switching to regions pane
         self.ui.regions.tablewidget_regions.fit_to_contents()
 
         # background mesh

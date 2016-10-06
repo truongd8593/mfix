@@ -515,6 +515,10 @@ class RegionsWidget(QtWidgets.QWidget):
 
     def extract_regions(self, proj):
         """ extract regions from IC, BC, PS, IS """
+        if self.tablewidget_regions.value:
+            # We assume regions_dict has been initialized correctly
+            # from mfix_gui_comments.
+            return
 
         for condtype, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
                                 ('is_', proj.iss), ('ps_', proj.pss)):
