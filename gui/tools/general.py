@@ -392,18 +392,18 @@ def topological_sort(dependency_dict):
     for k, v in data.items():
         v.discard(k)
     # Find all items that don't depend on anything.
-    extra_items_in_deps = reduce(set.union, data.itervalues()) - set(data.iterkeys())
+    extra_items_in_deps = reduce(set.union, data.values()) - set(data.keys())
     # Add empty dependences where needed
     data.update({item: set() for item in extra_items_in_deps})
     while True:
-        ordered = set(item for item, dep in data.iteritems() if not dep)
+        ordered = set(item for item, dep in data.items() if not dep)
         if not ordered:
             break
         yield ordered
         data = {item: (dep - ordered)
-                for item, dep in data.iteritems()
+                for item, dep in data.items()
                 if item not in ordered}
-    assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
+    assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.items())
 
 def drop_row_column_triangular(a, n, r):
     # Inputs:

@@ -694,7 +694,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_current_phase_name = new_name
         # rewriting dict to change key while preserving order - hack
         d = OrderedDict()
-        for (k,v) in self.solids.iteritems():
+        for (k,v) in self.solids.items():
             if k==old_name:
                 k = new_name
             d[k] = v
