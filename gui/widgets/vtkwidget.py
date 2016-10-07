@@ -146,52 +146,52 @@ def purge_multi_solids(fname):
         return fname
 
 
-class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
-    """custom vtkInteractorStyleTrackballCamera to highlight selected
-    objects"""
-    def __init__(self, parent=None):
-        self.AddObserver("LeftButtonPressEvent", self.left_button_press_event)
-
-        self.last_picked_actor = None
-        self.last_picked_property = vtk.vtkProperty()
-
-    def left_button_press_event(self, obj, event):
-        """on a left mouse press event, see if there is an actor and highlight
-        it"""
-        clickPos = self.GetInteractor().GetEventPosition()
-
-        picker = vtk.vtkPropPicker()
-        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
-
-        # get the new actor
-        self.new_picked_actor = picker.GetActor()
-
-        # If something was selected
-        if self.new_picked_actor:
-            # If we picked something before, reset its property
-            if self.last_picked_actor:
-                self.last_picked_actor.GetProperty().DeepCopy(
-                    self.last_picked_property)
-
-            # Save the property of the picked actor so that we can
-            # restore it next time
-            self.last_picked_property.DeepCopy(self.new_picked_actor.GetProperty())
-            # Highlight the picked actor by changing its properties
-            self.new_picked_actor.GetProperty().SetColor(255/255.0, 140/255.0, 0)
-            self.new_picked_actor.GetProperty().SetDiffuse(1.0)
-            self.new_picked_actor.GetProperty().SetSpecular(0.0)
-
-            # save the last picked actor
-            self.last_picked_actor = self.new_picked_actor
-
-        # clear selection
-        elif self.last_picked_actor:
-            self.last_picked_actor.GetProperty().DeepCopy(
-                self.last_picked_property)
-            self.last_picked_actor = None
-
-        self.OnLeftButtonDown()
-        return
+#class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
+#    """custom vtkInteractorStyleTrackballCamera to highlight selected
+#    objects"""
+#    def __init__(self, parent=None):
+#        self.AddObserver("LeftButtonPressEvent", self.left_button_press_event)
+#
+#        self.last_picked_actor = None
+#        self.last_picked_property = vtk.vtkProperty()
+#
+#    def left_button_press_event(self, obj, event):
+#        """on a left mouse press event, see if there is an actor and highlight
+#        it"""
+#        clickPos = self.GetInteractor().GetEventPosition()
+#
+#        picker = vtk.vtkPropPicker()
+#        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+#
+#        # get the new actor
+#        self.new_picked_actor = picker.GetActor()
+#
+#        # If something was selected
+#        if self.new_picked_actor:
+#            # If we picked something before, reset its property
+#            if self.last_picked_actor:
+#                self.last_picked_actor.GetProperty().DeepCopy(
+#                    self.last_picked_property)
+#
+#            # Save the property of the picked actor so that we can
+#            # restore it next time
+#            self.last_picked_property.DeepCopy(self.new_picked_actor.GetProperty())
+#            # Highlight the picked actor by changing its properties
+#            self.new_picked_actor.GetProperty().SetColor(255/255.0, 140/255.0, 0)
+#            self.new_picked_actor.GetProperty().SetDiffuse(1.0)
+#            self.new_picked_actor.GetProperty().SetSpecular(0.0)
+#
+#            # save the last picked actor
+#            self.last_picked_actor = self.new_picked_actor
+#
+#        # clear selection
+#        elif self.last_picked_actor:
+#            self.last_picked_actor.GetProperty().DeepCopy(
+#                self.last_picked_property)
+#            self.last_picked_actor = None
+#
+#        self.OnLeftButtonDown()
+#        return
 
 
 class VtkWidget(QtWidgets.QWidget):
@@ -264,9 +264,12 @@ class VtkWidget(QtWidgets.QWidget):
         self.vtkRenderWindow.AddRenderer(self.vtkrenderer)
         self.vtkiren = self.vtkWindowWidget.GetRenderWindow().GetInteractor()
 
-        self.style = CustomInteractorStyle()
-        self.style.SetDefaultRenderer(self.vtkrenderer)
-        self.vtkiren.SetInteractorStyle(self.style)
+        #self.style = CustomInteractorStyle()
+        self.style_3d = vtk.vtkInteractorStyleTrackballCamera()
+        self.style_3d.SetDefaultRenderer(self.vtkrenderer)
+        self.style_2d = vtk.vtkInteractorStyleImage()
+        self.style_2d.SetDefaultRenderer(self.vtkrenderer)
+        self.vtkiren.SetInteractorStyle(self.style_2d)
 
         # Orientation Arrows Marker Widget
         self.axes = vtk.vtkAxesActor()
@@ -539,8 +542,13 @@ class VtkWidget(QtWidgets.QWidget):
         """receive keyword changed from project manager"""
 
         if key == 'no_k':
-            #2d
-            pass
+            if newValue:
+                self.vtkiren.SetInteractorStyle(self.style_2d)
+                self.view_flip[1] = False
+                self.set_view()
+            else:
+                self.vtkiren.SetInteractorStyle(self.style_3d)
+                self.perspective(False)
         elif key == 'out_stl_value':
             self.ui.mesh.checkbox_internal_external_flow.setChecked(newValue == 1.0)
 
