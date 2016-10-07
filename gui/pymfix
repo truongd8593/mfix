@@ -766,7 +766,7 @@ def parse_command_line_arguments():
     "handle command line arguments"
     parser = argparse.ArgumentParser(description='Welcome to PYMFIX')
     parser.add_argument('MFIX_KEY=VALUE', action=DictAction, nargs='*',
-                        help='Series of MFIX_KEY=VALUE to over-ride values in the project file. Does not support indexes.')
+                        help='Series of MFIX_KEY=VALUE to over-ride values in the project file. Does not support indices.')
     parser.add_argument('-f', '--file',  metavar='FILE', action='store',
                         help='specify an input file (*.mfx or *.dat)',
                         required=True)
