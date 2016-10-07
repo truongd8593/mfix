@@ -216,7 +216,7 @@ class RunPopup(QDialog):
 
         run_cmd = self.get_run_command()
         msg = 'Starting %s' % ' '.join(run_cmd)
-        self.parent.print_i(msg, color='blue')
+        self.parent.print_internal(msg, color='blue')
 
         self.start_command(
             cmd=run_cmd,
