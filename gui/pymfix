@@ -768,7 +768,7 @@ def parse_command_line_arguments():
     parser.add_argument('-f', '--file',  metavar='FILE', action='store',
                         help='specify an input file (*.mfx or *.dat)',
                         required=True)
-    parser.add_argument('-p', '--print-flags', action=PrintFlagsAction,
+    parser.add_argument('-p', '--print-flags', action=PrintFlagsAction, nargs=0,
                         help='return the compile flags and exit')
     parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
                         type=check_port,
