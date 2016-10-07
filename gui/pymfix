@@ -3,7 +3,10 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
-import getopt
+__version_str__ = "2017.1" #TODO link to mfix version
+
+import argparse
+import copy
 import json
 import logging
 import numpy.core
@@ -733,55 +736,52 @@ def set_logging(state=None, level=None):
     # maybe handle loglevel someday
     return api_response(200, 'OK')
 
+# from http://stackoverflow.com/questions/18800328/python-read-in-multiple-key-value-dict-from-command-line-into-a-variable
+class DictAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        #Implementation is from argparse._AppendAction
+        items = copy.copy(argparse._ensure_value(namespace, self.dest, {}))  # Default mutables, use copy!
+        for value in values:
+            try:
+                k, v = value.split("=", 1)
+            except ValueError:
+                raise argparse.ArgumentError(self, "Format must be key=value")
+            items[k] = v
+        setattr(namespace, self.dest, items)
+
+class PrintFlagsAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            MAIN.print_flags()
+            sys.exit(1)
+
+def check_port(value):
+    ivalue = int(value)
+    if ivalue > 1025 or ivalue < 65536:
+         raise argparse.ArgumentTypeError("%s is an invalid port number, must be 1025 < port < 65536 " % value)
+    return ivalue
 
 def parse_command_line_arguments():
     "handle command line arguments"
-    port = random.randint(1025, 65536)
-    usage_string = "\n".join(["Usage: pymfix [-f, --file <mfix.dat>]",
-                              "              [-h, --help]",
-                              "              [-p, --print-flags]",
-                              "              [-P, --port <port>]",
-                              "              [-s, --start]",
-                              "              [<keyword>=<keywordvalue> ...]"])
-    try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:],
-                                           "f:hspP:",
-                                           ["file=", "help", "start", "print-flags", "port="])
-    except getopt.GetoptError:
-        print(usage_string)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Welcome to PYMFIX')
+    parser.add_argument('MFIX_KEY=VALUE', action=DictAction, nargs='*',
+                        help='Series of MFIX_KEY=VALUE to over-ride values in the project file. Does not support indexes.')
+    parser.add_argument('-f', '--file',  metavar='FILE', action='store',
+                        help='specify an input file (*.mfx or *.dat)',
+                        required=True)
+    parser.add_argument('-p', '--print-flags', action=PrintFlagsAction,
+                        help='return the compile flags and exit')
+    parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
+                        type=check_port,
+                        help='specify a port number to use')
+    parser.add_argument('-s', '--start', action='store_false',
+                        help='do not wait for api connection to run')
+    parser.add_argument('-v', '--version', action='version', version=__version_str__)
 
-    mfix_dat = "mfix.dat"
-    mfix_paused = True
-    for opt, arg in opts:
-        if opt in ("-f", "--file"):
-            # Fortran strings need to be padded with blanks (ljust)
-            mfix_dat = arg.ljust(80)
-        elif opt in ("-h", "--help"):
-            print(usage_string)
-            sys.exit(0)
-        elif opt in ("-s", "--start"):
-            mfix_paused = False
-        elif opt in ("-p", "--print-flags"):
-            MAIN.print_flags()
-            sys.exit(1)
-        elif opt in ("-P", "--port"):
-            port = arg
-            try:
-                port = int(port)
-                user_port_specified = True
-                if port < 1025 or port > 65536:
-                    raise ValueError
-            except ValueError:
-                print("Invalid port: %d", port)
-                sys.exit(1)
+    args = parser.parse_args()
 
-    if len(keyword_args) > len(MAIN.cmd_line_args):
-        print("Too many command line arguments: %d" % len(keyword_args))
-        print("Only %d or fewer command line arguments are supported." % len(MAIN.cmd_line_args))
-        sys.exit(1)
+    passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
 
-    return mfix_dat, mfix_paused, port, keyword_args
+    return args.file.ljust(80), args.start, args.port, passed_kwargs
 
 if __name__ == '__main__':
     main()
