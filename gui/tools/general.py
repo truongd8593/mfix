@@ -338,26 +338,33 @@ class CellColor(object):
     """
     def __init__(self, color=[1, 0, 0], text=''):
 
-        self.color = color
+        if isinstance(color, (list, tuple)):
+            self.color = QtGui.QColor(*color)
+        else:
+            self.color = QtGui.QColor(color)
         self.text = text
 
     @property
     def color_int(self):
-        return [255*c for c in self.color]
+        return [255*c for c in self.color_float]
 
     @property
     def color_float(self):
-        return self.color
+        return self.color.getRgbF()[:3]
+
+    @property
+    def color_hex(self):
+        return self.color.name()
 
     @property
     def qcolor(self):
-        return QtGui.QColor(*self.color_int)
+        return self.color
 
     def __repr__(self):
         return self.text
 
     def rand(self):
-        self.color = random_pastel_color()
+        self.color.setRgbF(*random_pastel_color())
 
 
 def insert_append_action(menu, action, insert=None):

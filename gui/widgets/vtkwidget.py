@@ -103,7 +103,7 @@ def clean_visual_dict(dirty_dict):
         clean_geo = clean_dict[geo] = {}
         for key, value in geo_dict.items():
             if key in ['color', 'edge']:
-                clean_geo[key] = geo_dict[key].getRgb()
+                clean_geo[key] = geo_dict[key].name()
             else:
                 clean_geo[key] = geo_dict[key]
 
@@ -625,7 +625,10 @@ class VtkWidget(QtWidgets.QWidget):
         for geo, geo_dict in data.items():
             for key, value in geo_dict.items():
                 if key in ['color', 'edge']:
-                    data[geo][key] = QtGui.QColor(*value)
+                    if isinstance(value, (list, tuple)):
+                        data[geo][key] = QtGui.QColor(*value)
+                    else:
+                        data[geo][key] = QtGui.QColor(value)
 
         self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
         self.visual_props.update(data)
@@ -2235,8 +2238,9 @@ class VtkWidget(QtWidgets.QWidget):
         dark = self.visual_props[name]['edge'] = col.darker()
 
         for actor in self.get_actors(name):
-            actor.GetProperty().SetColor(col.getRgbF()[:3])
-            actor.GetProperty().SetEdgeColor(dark.getRgbF()[:3])
+            if actor is not None:
+                actor.GetProperty().SetColor(col.getRgbF()[:3])
+                actor.GetProperty().SetEdgeColor(dark.getRgbF()[:3])
 
         self.render()
 
