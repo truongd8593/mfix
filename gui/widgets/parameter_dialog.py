@@ -268,8 +268,8 @@ class ParameterDialog(QtWidgets.QDialog):
         if old_name in p_map.keys():
             for keyword in p_map[old_name]:
                 key, args = parse_key_with_args(keyword)
-                if [key]+args in proj:
-                    eq = proj[[key]+args].value
+                eq = proj.get_value(key, default=None, args=args)
+                if eq is not None and isinstance(eq, Equation):
                     eq.eq = eq.eq.replace(old_name, new_name)
 
             p_map[new_name] = p_map.pop(old_name)
