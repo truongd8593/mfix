@@ -164,7 +164,6 @@ class RunPopup(QDialog):
         self.activateWindow()
 
 
-
     # event handlers
 
     def handle_abort(self):
@@ -215,8 +214,12 @@ class RunPopup(QDialog):
         if not self.finish_with_dialog():
             return
 
+        run_cmd = self.get_run_command()
+        msg = 'Starting %s' % ' '.join(run_cmd)
+        self.parent.print_i(msg, color='blue')
+
         self.start_command(
-            cmd=self.get_run_command(),
+            cmd=run_cmd,
             cwd=self.parent.get_project_dir(),
             env=os.environ)
 
@@ -224,8 +227,12 @@ class RunPopup(QDialog):
         if not self.finish_with_dialog():
             return
 
+        run_cmd = self.get_run_command()
+        msg = 'Submitting %s' % ' '.join(run_cmd)
+        self.parent.print_internal(msg, color='blue')
+
         self.submit_command(
-            cmd=self.get_run_command())
+            cmd=run_cmd)
 
     def handle_resume(self):
         """resume previously stopped mfix run"""
@@ -262,8 +269,6 @@ class RunPopup(QDialog):
         self.populate_combobox_mfix_exe()
         log.debug('selected new exe %s' % new_exe)
         self.set_run_mfix_exe.emit()
-
-
 
     # utils
 
@@ -440,17 +445,19 @@ class RunPopup(QDialog):
             smp = []
 
         run_cmd = smp + dmp + [self.mfix_exe,]
+
+        project_filename = os.path.basename(self.parent.get_project_file())
+        # Warning, not all versions of mfix support '-f' !
+        run_cmd += ['-f', project_filename]
+
+        # Add key=value flags at end
         if self.dmp_enabled:
             run_cmd += ['nodesi=%s'%nodesi,
                         'nodesj=%s'%nodesj]
             if not self.parent.project.get_value('no_k'):
                 run_cmd += ['nodesk=%s'%nodesk]
 
-        project_filename = os.path.basename(self.parent.get_project_file())
-        # Warning, not all versions of mfix support '-f' !
-        run_cmd += ['-f', project_filename]
-        msg = 'Starting %s' % ' '.join(run_cmd)
-        self.parent.print_internal(msg, color='blue')
+
         return run_cmd
 
     def submit_command(self, cmd):
