@@ -96,7 +96,7 @@ class KeyHandler(QtCore.QObject):
     def updateValue(self, key, val, args):
         if key in MESH_EXTENT_KEYS:
             self.update_mesh_extents.emit(key, val, args)
-        elif key in MESH_CELL_KEYS:
+        elif key in MESH_CELL_KEYS + ['no_k']:
             self.update_mesh_cells.emit(key, val, args)
 
 
@@ -125,7 +125,7 @@ class Mesh(object):
 
         # key hadler
         self.mesh_key_handler = KeyHandler()
-        self.project.register_widget(self.mesh_key_handler, MESH_EXTENT_KEYS + MESH_CELL_KEYS, [])
+        self.project.register_widget(self.mesh_key_handler, MESH_EXTENT_KEYS + MESH_CELL_KEYS + ['no_k'], [])
         self.mesh_key_handler.update_mesh_extents.connect(self.update_background_mesh_extents)
         self.mesh_key_handler.update_mesh_cells.connect(self.update_background_mesh_cells)
 
@@ -403,12 +403,15 @@ class Mesh(object):
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
         if not self.mesh_cells: return
-        val = safe_int(val)
-        ind = MESH_CELL_KEYS.index(key)
-        old_val = self.mesh_cells[ind]
-        if old_val != val:
-            self.mesh_cells[ind] = val
+        if key == 'no_k':
             self.update_background_mesh()
+        else:
+            val = safe_int(val)
+            ind = MESH_CELL_KEYS.index(key)
+            old_val = self.mesh_cells[ind]
+            if old_val != val:
+                self.mesh_cells[ind] = val
+                self.update_background_mesh()
 
     def update_background_mesh_extents(self, key, val, args):
         """collect extents changes, check if value is different"""

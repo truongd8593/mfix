@@ -539,8 +539,8 @@ class VtkWidget(QtWidgets.QWidget):
         """receive keyword changed from project manager"""
 
         if key == 'no_k':
-            self.ui.geometry.lineedit_keyword_zlength.setEnabled(not newValue)
-            self.ui.mesh.lineedit_keyword_kmax.setEnabled(not newValue)
+            #2d
+            pass
         elif key == 'out_stl_value':
             self.ui.mesh.checkbox_internal_external_flow.setChecked(newValue == 1.0)
 
