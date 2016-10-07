@@ -744,6 +744,8 @@ class DictAction(argparse.Action):
         for value in values:
             try:
                 k, v = value.split("=", 1)
+                if not v:
+                    raise argparse.ArgumentError(self, "Value not provided for: %s" % k)
             except ValueError:
                 raise argparse.ArgumentError(self, "Format must be key=value")
             items[k] = v
