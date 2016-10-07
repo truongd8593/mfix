@@ -108,7 +108,6 @@ class ICS(object):
 
 
     def ics_set_volume_fraction_limit(self):
-        # Set ic_ep_g from ic_ep_s (issues/121)
         if not self.ics_current_indices:
             return
         if not self.ics_current_solid:
@@ -146,6 +145,7 @@ class ICS(object):
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
             return # ?
+        # Set ic_ep_g from ic_ep_s (issues/121)
         val = round(1.0 - s, 10)
         for IC in self.ics_current_indices:
             self.update_keyword('ic_ep_g', val, args=[IC])
