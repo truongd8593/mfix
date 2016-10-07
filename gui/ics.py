@@ -1033,12 +1033,12 @@ class ICS(object):
         #  Volume fraction may be inferred from IC_EP_G
         #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
         #    Only valid for one solids phase (MMAX=1)
-
-        ic_ep_s = self.project.get_value(key, args=[IC0, P])
-        ic_ep_g = self.project.get_value('ic_ep_g', args=[IC0])
-        if ic_ep_s is None and ic_ep_g is not None and len(self.solids)==1:
-            for IC in self.ics_current_indices:
-                self.update_keyword(key, 1.0-ic_ep_g, args=[IC, P])
+        # (note, this is handled in project_manager.load_project_file, see issues/142)
+        #ic_ep_s = self.project.get_value(key, args=[IC0, P])
+        #ic_ep_g = self.project.get_value('ic_ep_g', args=[IC0])
+        #if ic_ep_s is None and ic_ep_g is not None and len(self.solids)==1:
+        #    for IC in self.ics_current_indices:
+        #        self.update_keyword(key, 1.0-ic_ep_g, args=[IC, P])
 
         setup_key_widget(key, default)
 
