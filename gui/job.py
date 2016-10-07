@@ -137,8 +137,10 @@ class PymfixAPI(QNetworkAccessManager):
             (name, value) = token.split(':')
             headers[name] = value
         for k,v in headers.items():
-            log.debug("setting header %s to %s" % (k,v))
-            req.setRawHeader(k,v)
+            kb = k.encode('utf-8')
+            vb = v.encode('utf-8')
+            log.debug("setting header %s to %s" % (kb,vb))
+            req.setRawHeader(kb,vb)
         for param in (('request id', req_id),
                       ('url', url),
                       ('endpoint', endpoint),
