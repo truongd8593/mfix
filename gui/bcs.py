@@ -205,6 +205,7 @@ class BCS(object):
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
             return # ?
+        # set bc_ep_g from bc_ep_s (issues/121)
         val = round(1.0 - s, 10)
         for BC in self.bcs_current_indices:
             self.update_keyword('bc_ep_g', val, args=[BC])
