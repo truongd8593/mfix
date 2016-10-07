@@ -414,7 +414,6 @@ class MfixGui(QtWidgets.QMainWindow,
         geo.toolbutton_geometry_intersect.setIcon(get_icon('intersect.png'))
         geo.toolbutton_geometry_difference.setIcon(get_icon('difference.png'))
 
-
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
             btn.pressed.connect(lambda mode=mode: self.mode_changed(mode))
@@ -2246,7 +2245,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_fluid_mol_weight_model(1)
         # requires molecular weights for all species components, when should we validate?
 
-        ### Solids - move to solids_handler.py!
+        ### Solids
+        # Needed?  will this get done when we switch to solids tab?
         self.update_solids_table()
         self.solids_update_tabs()
         self.update_solids_detail_pane()
