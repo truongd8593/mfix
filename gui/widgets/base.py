@@ -138,7 +138,10 @@ class BaseWidget(QtCore.QObject):
         if btn == QtWidgets.QMessageBox.Yes:
             name = get_unique_string('param', PARAMETER_DICT.keys())
 
-            PARAMETER_DICT[name] = self.dtype(self.value)
+            v = self.dtype(0)
+            if self.value:
+                v = self.dtype(self.value)
+            PARAMETER_DICT[name] = v
 
             self.updateValue(None, name)
             self.emitUpdatedValue()
