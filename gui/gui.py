@@ -192,7 +192,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_boundary_conditions,
                         Ui_point_sources,
                         Ui_internal_surfaces,
-                        # Ui_chemistry,
+                        Ui_chemistry,
                         Ui_numerics,
                         Ui_output,
                         Ui_vtk,
@@ -227,7 +227,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'boundary_conditions',
                          'point_sources',
                          'internal_surfaces',
-                         #'chemistry',
+                         'chemistry',
                          'numerics',
                          'output',
                          'vtk',
@@ -1217,6 +1217,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_pss()
         elif text in ('internal_surfaces', 'iss'):
             self.setup_iss()
+        elif text == 'chemistry':
+            self.setup_chemistry()
 
 
     # --- animation methods ---
@@ -2112,7 +2114,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
             project_file = renamed_project_file
             try:
-                self.force_default_settings() #?
                 self.print_internal("Info: Saving %s" % project_file)
                 self.project.writeDatFile(project_file) #XX
                 #self.print_internal(save_msg, color='blue')
@@ -2281,17 +2282,17 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.workflow_widget.clear()
             self.ui.workflow_widget.load(workflow_file)
 
-        # FIXME: is this a good idea?  it means we can't open a file read-only
-        #self.force_default_settings()
-        #if self.unsaved_flag: # Settings changed after loading
-        #    self.save_project()
 
         self.vtkwidget.reset_view()
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
         self.update_nav_tree()
-        #self.clear_unsaved_flag() # why is unsaved_flag set?
+
+        #if self.unsaved_flag: #
+        # Settings changed during loading
+        #    self.save_project()- let the user do this
+
 
 
     def add_tooltip(self, widget, key, description=None, value=None):

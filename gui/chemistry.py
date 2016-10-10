@@ -15,10 +15,43 @@ class Chemistry(object):
     def chemistry_update_enabled(self):
         #Chemistry pane is disabled if any solids are specified as PIC.
         disabled = False
+        if self.project.reactions: # Don't disable panes if reactions are defined (?)
+            disabled = False
         if any(self.project.get_value('solids_model', args=[i])=='PIC'
                for (i,s) in enumerate(self.solids, 1)):
             disabled = True
         self.find_navigation_tree_item("Chemistry").setDisabled(disabled)
+
+
+    def setup_chemistry(self):
+        ui = self.ui.chemistry
+        layout = ui.layout()
+        spacer = layout.itemAtPosition(layout.rowCount()-1, 0)
+        layout.removeItem(spacer)
+        for row in range(layout.rowCount(), 0, -1):
+            for col in (1, 0):
+                item = layout.itemAtPosition(row, col)
+                if item:
+                    widget = item.widget()
+                    if widget:
+                        layout.removeItem(item)
+                        widget.deleteLater()
+
+        row = 0
+        for (r, (d,i)) in self.project.reactions.items():
+            row += 1
+            label = QLabel(r)
+            layout.addWidget(label, row, 0, 1, 1)
+            text = d.get('chem_eq')
+            if text is None:
+                continue
+            text = text.replace('==', '→')
+            text = text.replace('-->', '→')
+            label = QLabel(text)
+            layout.addWidget(label, row, 1, 1, 1)
+
+        row += 1
+        layout.addItem(spacer, row, 0)
 
 #Enable the stiff chemistry solver
 # Selection always available

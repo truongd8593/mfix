@@ -499,6 +499,7 @@ class ProjectManager(Project):
             else:
                 self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
 
+
     def register_widget(self, widget, keys=None, args=None):
         """ Register a widget with the project manager. The widget must have a
         value_updated signal to connect to.  If args is not None, widget will

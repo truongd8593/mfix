@@ -19,6 +19,10 @@ class ReactionParser(object):
     def emit(self):
         self.reactions[self.reaction_id] = (self.d, self.idx)
 
+    def parse(self, data):
+        for t in self.tokenize(data):
+            self.push(t)
+
     def tokenize(self, data):
         for line in data.split('\n'):
             line = line.strip()
