@@ -634,9 +634,10 @@ class BCS(object):
         # Update the keys which define the region the BC applies to
         if bc_type is not None:
             self.update_keyword('bc_type', bc_type, args=[idx])
+            if bc_type.startswith('CG_'): # STL region, don't set keys
+                return
 
         no_k = self.project.get_value('no_k')
-
         for (key, val) in zip(('x_w', 'y_s', 'z_b',
                                'x_e', 'y_n', 'z_t'),
                               data['from']+data['to']):
@@ -835,8 +836,6 @@ class BCS(object):
             bc_type = bc_type.value #
 
             is_stl = (bc_type.startswith('CG_'))
-            if is_stl:
-                bc_type = bc_type[3:]
 
             # Check dimensionality?
             #if any (x is None for x in extent):
@@ -856,11 +855,13 @@ class BCS(object):
                     if data.get('available', True):
                         if bc_type is None:
                             self.warn("no bc_type for region %s" % bc.ind)
-                        if bc_type not in BC_TYPES:
+                        if not (bc_type in BC_TYPES or (is_stl and bc_type[3:] in BC_TYPES)):
                             self.warn("invalid bc_type %s for region %s" % (bc_type, bc.ind))
                         else:
-                            self.bcs_add_regions_1([region_name], bc_type=bc_type,
-                                                   indices=[bc.ind], autoselect=False)
+                            self.bcs_add_regions_1([region_name],
+                                                   bc_type=bc_type,
+                                                   indices=[bc.ind],
+                                                   autoselect=False)
                             break
             else:
                 self.warn("boundary condition %s: could not match defined region %s" %
