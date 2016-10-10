@@ -337,6 +337,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_bcs()
         self.init_pss()
         self.init_iss()
+        self.init_chemistry()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -546,6 +547,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.regions.reset_regions()
         self.reset_ics()
         self.reset_bcs()
+        self.reset_iss()
+        self.reset_pss()
+        self.reset_chemistry()
 
         # Set all custom widgets to default
         for w in widget_iter(self):
@@ -2102,35 +2106,7 @@ class MfixGui(QtWidgets.QMainWindow,
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
 
-        if auto_rename and not project_path.endswith(runname_mfx):
-            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
-            if ok_to_write:
-                renamed_project_file = os.path.join(project_dir, runname_mfx)
-                if os.path.exists(renamed_project_file):
-                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
-            if not ok_to_write:
-                self.print_internal("Rename canceled at user request")
-                return
 
-            project_file = renamed_project_file
-            try:
-                self.print_internal("Info: Saving %s" % project_file)
-                self.project.writeDatFile(project_file) #XX
-                #self.print_internal(save_msg, color='blue')
-                self.clear_unsaved_flag()
-            except Exception as e:
-                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
-                self.print_internal("Error: %s" % msg, color='red')
-                self.message(title='Error',
-                             icon='error',
-                             text=msg,
-                             buttons=['ok'],
-                             default='ok')
-                traceback.print_exception(*sys.exc_info())
-                return
-
-        self.set_project_file(project_file)
-        self.set_save_as_action(enabled=True)
 
         self.setup_current_tab() # update vals in any open tabs
         self.update_source_view()
@@ -2282,6 +2258,36 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.workflow_widget.clear()
             self.ui.workflow_widget.load(workflow_file)
 
+
+        if auto_rename and not project_path.endswith(runname_mfx):
+            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
+            if ok_to_write:
+                renamed_project_file = os.path.join(project_dir, runname_mfx)
+                if os.path.exists(renamed_project_file):
+                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
+            if not ok_to_write:
+                self.print_internal("Rename canceled at user request")
+                return
+
+            project_file = renamed_project_file
+            try:
+                self.print_internal("Info: Saving %s" % project_file)
+                self.project.writeDatFile(project_file) #XX
+                #self.print_internal(save_msg, color='blue')
+                self.clear_unsaved_flag()
+            except Exception as e:
+                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                self.print_internal("Error: %s" % msg, color='red')
+                self.message(title='Error',
+                             icon='error',
+                             text=msg,
+                             buttons=['ok'],
+                             default='ok')
+                traceback.print_exception(*sys.exc_info())
+                return
+
+        self.set_project_file(project_file)
+        self.set_save_as_action(enabled=True)
 
         self.vtkwidget.reset_view()
         self.vtkwidget.render(defer_render=False)

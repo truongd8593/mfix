@@ -1243,6 +1243,19 @@ class Project(object):
                 except Exception as e:
                     warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
             self.reactions = RP.reactions
+            for name in self.reactions.keys():
+                d = self.reactions[name][0]
+                chem_eq = d.get('chem_eq')
+                if chem_eq is None:
+                    # Disabled reaction
+                    chem_eq = 'None'
+                    d['chem_eq'] = chem_eq
+                reactants, products = RP.parse_chem_eq(chem_eq)
+                print(reactants, products)
+                d['reactants'] = reactants
+                d['products'] = products
+
+
 
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):

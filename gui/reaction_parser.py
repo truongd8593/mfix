@@ -7,9 +7,9 @@ from collections import OrderedDict
 # expr :=  key = val
 # reaction := reaction ID  { expr [expr]+ }
 
-
 class ParseError(Exception):
     pass
+
 
 class ReactionParser(object):
     def __init__(self):
@@ -107,7 +107,7 @@ class ReactionParser(object):
                 self.err('key', t)
             self.d[self.key] += t
             self.state = 8
-        elif self.state == 8:
+        elif self.state == 8: # end of reaction block or continuation line
             if t == '&':
                 self.state = 7
             else:
@@ -122,7 +122,6 @@ class ReactionParser(object):
                     self.state = 3
 
 
-
     def is_alnum(self, s):
         return all((c.isalnum() or c=='_') for c in s)
 
@@ -130,11 +129,49 @@ class ReactionParser(object):
     def valid_reaction_id(self, s):
         if s in self.reactions:
             print("reaction_id %s already defined" % s)
-
         return len(s) <= 32 and self.is_alnum(s) and s not in self.reactions
+
 
     def err(self, expected, got):
         raise ParseError('expected %s, got %s state=%s' % (expected, got, self.state))
+
+
+    def parse_chem_eq(self, chem_eq):
+        """parse chemical equation, return two lists (Reactants, Products)
+        each list is a list of tuples (species, coefficient)"""
+        if chem_eq is None or chem_eq.upper()=='NONE':
+            return [], []
+        if '-->' in chem_eq:
+            lhs, rhs = chem_eq.split('-->', 1)
+        elif '==' in chem_eq:
+            lhs, rhs = chem_eq.split('==', 1)
+        else:
+            raise ParseError('expected --> or == in chem_eq, got %s' % chem_eq)
+
+        def parse_side(side):
+            ret = []
+            for field in side.split('+'):
+                field = field.strip()
+                if not field:
+                    continue # ?
+                if '*' in field:
+                    coeff, species = field.split('*', 1)
+                    ret.append((species.strip(), float(coeff)))
+                elif ' ' in field:
+                    coeff, species = field.split(' ', 1)
+                    ret.append((species.strip(), float(coeff)))
+                else:
+                    coeff = ''
+                    while field and field[0].isdigit() or field[0]=='.':
+                        coeff += field[0]
+                        field = field[1:]
+                    if coeff:
+                        coeff = float(coeff)
+                    else:
+                        coeff = 1.0
+                    ret.append((field.strip(), coeff))
+            return ret
+        return parse_side(lhs), parse_side(rhs)
 
 
 
