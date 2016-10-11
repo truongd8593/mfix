@@ -48,6 +48,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids = OrderedDict()
         self.solids_current_phase = None
         self.solids_species = {} #dict of OrderedDict, keyed by phase
+        # This is keyed by species, but probably should
+        # be keyed by alias FIXME.  (this will be a big change, have to find all refs to solids_species)
+
         self.solids_current_tab = 0 # Materials
 
         ui = self.ui.solids

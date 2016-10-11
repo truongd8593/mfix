@@ -67,7 +67,9 @@ class FluidHandler(object):
 
 
     def init_fluid_handler(self):
-        self.fluid_species = OrderedDict()
+        self.fluid_species = OrderedDict() # This is keyed by species, but probably should
+        # be keyed by alias FIXME.  (this will be a big change, have to find all refs to fluid_species)
+
         ui = self.ui.fluid
 
         ui.lineedit_fluid_phase_name.default_value = self.fluid_phase_name = "Fluid"
