@@ -471,11 +471,20 @@ class SpeciesPopup(QtWidgets.QDialog):
                     # More visual indication of invalid alias?
                     return (QValidator.Invalid, text, pos)
                 current_species = self.parent.current_species
-                current_alias = self.parent.defined_species[current_species]['alias']
+                if current_species not in self.parent.defined_species:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Invalid, text, pos)
+                current_alias = self.parent.defined_species[current_species].get('alias')
+                if current_alias is None:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Invalid, text, pos)
                 for (k,v) in self.parent.defined_species.items():
-                    if v['alias'] == current_alias: # Skip selected item
+                    v_alias = v.get('alias')
+                    if v_alias == current_alias: # Skip selected item
                         continue
-                    if v['alias'] == text:
+                    if v_alias == text:
                         self.parent.set_save_button(False)
                         # More visual indication of invalid alias?
                         return (QValidator.Intermediate, text, pos)
