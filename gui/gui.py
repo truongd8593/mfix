@@ -626,7 +626,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         if typematch(v, value) and str(v)==str(value):
                 return
-
         self.set_keyword(key, value, args=args)
 
 
@@ -2251,6 +2250,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_extract_regions()
 
         # Chemistry
+        self.chemistry_extract()
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))

@@ -1243,19 +1243,6 @@ class Project(object):
                 except Exception as e:
                     warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
             self.reactions = RP.reactions
-            for name in self.reactions.keys():
-                d = self.reactions[name][0]
-                chem_eq = d.get('chem_eq')
-                if chem_eq is None:
-                    # Disabled reaction
-                    chem_eq = 'None'
-                    d['chem_eq'] = chem_eq
-                reactants, products = RP.parse_chem_eq(chem_eq)
-                print(reactants, products)
-                d['reactants'] = reactants
-                d['products'] = products
-
-
 
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):
@@ -1460,12 +1447,60 @@ class Project(object):
                 yield v
 
 
+    def format_reaction(self, name):
+        data, indices = self.reactions[name]
+        yield('%s {\n' % name)
+        # TODO split chem_eq if long
+        yield('    chem_eq = "%s" \n' % (data.get('chem_eq', 'NONE')))
+        for k in data.keys():
+            if k in ('num_phases', 'chem_eq', 'reactants', 'products'):
+                continue
+            i = indices.get(k)
+            v = data.get(k)
+            if i:
+                yield('    %s(%s) = %s\n' % (k, i, v))
+            else:
+                yield('    %s = %s\n' % (k, v))
+        yield('}\n')
+
+
     def to_string(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
                 yield to_text_string(line.line() + '\n')
             else:
                 yield to_text_string(line + '\n')
+
+        # Save chemistry
+        rxns = []
+        des_rxns = []
+        for (name, data) in self.reactions.items():
+            num_phases = data[0].get('num_phases')
+            if num_phases == 1:
+                rxns.append(name)
+            elif num_phases == 2:
+                des_rxns.append(name)
+            else:
+                raise ValueError(name, num_phases)
+        if rxns or des_rxns:
+            yield('\n')
+            yield('# CHEMICAL REACTION SECTION\n')
+        if rxns:
+            yield('@(RXNS)\n')
+            for name in rxns:
+                for line in self.format_reaction(name):
+                    yield line
+            yield('@(END)\n')
+            yield('\n')
+        if des_rxns:
+            yield('\n')
+            yield('@(DES_RXNS)\n')
+            for name in des_rxns:
+                for line in self.format_reaction(name):
+                    yield(line)
+            yield('@(DES_END)\n')
+            yield('\n')
+        # TODO: if there are disabled reactions save them in gui comments
 
         def break_string(s, w):
             if len(s) <= w:
@@ -1503,6 +1538,7 @@ class Project(object):
                 for line in self.thermo_data[key]:
                     yield line + '\n'
                 yield '\n' # blank line
+
 
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""

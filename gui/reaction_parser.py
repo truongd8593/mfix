@@ -18,6 +18,12 @@ class ReactionParser(object):
 
     def emit(self):
         self.reactions[self.reaction_id] = (self.d, self.idx)
+        chem_eq = self.d.get('chem_eq')
+        if chem_eq is None:
+            chem_eq = "NONE"
+            self.d['chem_eq'] = chem_eq
+        self.d['reactants'], self.d['products'] = self.parse_chem_eq(chem_eq)
+
 
     def parse(self, data):
         for t in self.tokenize(data):

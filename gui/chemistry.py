@@ -4,11 +4,13 @@ from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
-                            QHBoxLayout, QWidget, QGroupBox)
+                            QHBoxLayout, QWidget, QGroupBox, QComboBox)
 
 from tools.general import (set_item_noedit, set_item_enabled,
                            widget_iter,
                            get_selected_row, get_combobox_item)
+
+from widgets.base import (LineEdit, ComboBox)
 
 class Chemistry(object):
     #Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
@@ -32,26 +34,83 @@ class Chemistry(object):
         if not enabled:
             for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
                 tw.clearContents()
+                tw.setRowCount(0)
                 self.fixup_chemistry_table(tw)
-            for widget in widget_iter(bottom_frame):
+            for widget in widget_iter(ui.bottom_frame):
                 if hasattr(widget, 'default'):
                     widget.default()
             return
         tw = ui.tablewidget_chemistry
         name = tw.item(row,0).text()
-        def make_item(sval):
-            item = QtWidgets.QTableWidgetItem(sval)
-            set_item_noedit(item)
-            return item
+
+        def make_species_item(species_alias):
+            cb = QComboBox()
+            aliases_seen = set() # They should be globally unique, so this is not necessary
+            idx = 0
+            all_aliases = list((data.get('alias', name) for (name, data) in self.fluid_species.items()))
+
+            for phase in self.solids_species.values():
+                all_aliases.extend(list(data.get('alias', name) for (name, data) in phase.items()))
+
+            for a in all_aliases:
+                if a in aliases_seen:
+                    continue
+                aliases_seen.add(a)
+                cb.addItem(a)
+                if a == species_alias:
+                    cb.setCurrentIndex(idx)
+                idx += 1
+            return cb
+
+
+        def make_coeff_item(val):
+            le = LineEdit()
+            le.dtype = float
+            le.min = 0
+            le.setToolTip("Stoichometric coefficient")
+            le.key = ''
+            le.updateValue('', val)
+            return le
+
         for (side, tw) in (('reactants', ui.tablewidget_reactants),
                            ('products', ui.tablewidget_products)):
             data = self.project.reactions[name][0].get(side, [])
             tw.clearContents()
             tw.setRowCount(len(data))
             for (row, (species, coeff)) in enumerate(data):
-                tw.setItem(row, 0, make_item(species))
-                tw.setItem(row, 1, make_item(str(coeff)))
+                tw.setCellWidget(row, 0, make_species_item(species))
+                tw.setCellWidget(row, 1, make_coeff_item(coeff))
             self.fixup_chemistry_table(tw)
+
+
+    def chemistry_num_phases(self, alias_list):
+        """determine minimum number of phases required to find all listed species,
+        i.e. if this returns 1, reaction is homogeneous"""
+        if not alias_list:
+            return 0
+        all_aliases = [(0, list(data.get('alias', name) for (name, data) in self.fluid_species.items()))]
+
+        for (num, phase) in enumerate(self.solids_species.values(), 1):
+            all_aliases.append((num, list(data.get('alias', name) for (name, data) in phase.items())))
+
+        def recurse(alias_list):
+            if len(alias_list) == 0:
+                yield []
+            elif len(alias_list) == 1:
+                alias = alias_list[0]
+                for (num, sublist) in all_aliases:
+                    if alias in sublist:
+                        yield [num]
+            else:
+                head, tail = alias_list[:1], alias_list[1:]
+                for r in recurse(head):
+                    for s in recurse(tail):
+                        yield r+s
+
+        r = [(len(set(indices)), indices) # Sort by # of distinct elements]
+             for indices in recurse(alias_list)]
+        return min(r)[0] if r else 0
+
 
 
     def chemistry_update_enabled(self):
@@ -73,6 +132,7 @@ class Chemistry(object):
         else:
             resize = tw.horizontalHeader().setResizeMode
         ncols = tw.columnCount()
+
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
 
@@ -103,7 +163,8 @@ class Chemistry(object):
 
 
     def chemistry_add(self):
-        print("ADD")
+        pass
+
 
     def chemistry_delete(self):
         ui = self.ui.chemistry
@@ -153,9 +214,20 @@ class Chemistry(object):
             self.fixup_chemistry_table(tw)
 
 
+    def chemistry_extract(self):
+        """extract additional chemistry info after loading project file"""
+        for (name, (data, indices)) in self.project.reactions.items():
+            alias_list = [k[0] for k in data.get('reactants',[])] + [k[0] for k in data.get('products',[])]
+            data['num_phases'] = self.chemistry_num_phases(alias_list)
+
+
     def reset_chemistry(self):
-        #self.project.reactions.clear()
-        pass # project.reset clears reactions
+        self.project.reactions.clear()
+        ui = self.ui.chemistry
+        for tw in (ui.tablewidget_chemistry, ui.tablewidget_reactants, ui.tablewidget_products):
+            tw.clearContents()
+            tw.setRowCount(0)
+            self.fixup_chemistry_table(tw)
 
 
     #Enable the stiff chemistry solver
