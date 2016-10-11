@@ -1237,7 +1237,6 @@
 !    product or reactant of any chemical reaction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
 !  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
 !  <dependent keyword="X_s0" value="DEFINED"/>
 !  <dependent keyword="RO_Xs0" value="DEFINED"/>
