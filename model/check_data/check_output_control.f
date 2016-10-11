@@ -85,11 +85,7 @@
 
 ! Verify the remaining SPx files.
          ELSE
-            IF(SPX_DT(LC) == UNDEFINED) THEN
-               WRITE(ERR_MSG,1000) iVar('SPX_DT',LC)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-            ELSEIF(SPX_DT(LC) <= ZERO) THEN
+            IF(SPX_DT(LC) <= ZERO) THEN
                WRITE(ERR_MSG,1001) iVar('SPX_DT',LC), SPX_DT(LC)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
