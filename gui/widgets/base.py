@@ -904,6 +904,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
+        # What is this for?
 
     def eventFilter(self, widget, event):
         if isinstance(widget, ComboBox):
