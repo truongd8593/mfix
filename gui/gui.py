@@ -494,7 +494,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # These are all fractions, must be btwn 0 and 1, not documented as such
         for key in ('des_em',
                     'eps_f_min',
-                    'bc_xw_g'):
+                    'bc_xw_g',
+                    'phip0'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
 
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
