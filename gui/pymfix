@@ -761,7 +761,7 @@ class DictAction(argparse.Action):
                 converted_v = None
                 for conv in [int, float, conv_bool]:
                     try:
-                        converted_v = conv(v)
+                        converted_v = str(conv(v))
                         break
                     except ValueError:
                         continue
