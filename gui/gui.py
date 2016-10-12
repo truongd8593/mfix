@@ -316,9 +316,9 @@ class MfixGui(QtWidgets.QMainWindow,
             self.find_navigation_tree_item(name).setDisabled(True)
 
         # Initialize popup dialogs
-        self.species_popup = SpeciesPopup(QtWidgets.QDialog())
+        self.species_popup = SpeciesPopup(QtWidgets.QDialog(), self)
         #self.species_popup.setModal(True) # ?
-        self.regions_popup = RegionsPopup(QtWidgets.QDialog())
+        self.regions_popup = RegionsPopup(QtWidgets.QDialog(), self)
 
         # Create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -2050,6 +2050,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
+        # Too much going on here, split some of this out
 
         self.open_succeeded = False  # set to true on success
         self.vtkwidget.defer_render = True # defer rendering vtk until load finished
@@ -2077,7 +2078,10 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         # --- read the mfix.dat or *.mfx file
+
+
         self.reset() # resets gui, keywords, file system watchers, etc
+        # May not be needed on initial load
 
         basename, pathname = os.path.split(project_file)
 
@@ -2240,6 +2244,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # background mesh
         self.init_background_mesh()
 
+        # "Extract" pulls out info from non-GUI project files, which don't have MFIX_GUI section
         # Initial conditions
         self.ics_extract_regions()
 
@@ -2253,7 +2258,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_extract_regions()
 
         # Chemistry
-        self.chemistry_extract()
+        self.chemistry_extract_phases()
 
         ### Workflow
         workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))

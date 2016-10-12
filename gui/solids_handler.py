@@ -34,7 +34,9 @@ from solids_tfm import SolidsTFM
 from solids_dem import SolidsDEM
 from solids_pic import SolidsPIC
 
-class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
+from species_handler import SpeciesHandler
+
+class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -1138,15 +1140,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             return
         ui = self.ui.solids
 
-        table = ui.tablewidget_solids_species
-        row = get_selected_row(table)
+        tw = ui.tablewidget_solids_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
-        table.clearSelection()
-        key = list(self.solids_species[phase].keys())[row]
-        del self.solids_species[phase][key]
-        if key in self.project.thermo_data:
-            del self.project.thermo_data[key]
+        tw.clearSelection() #?
+        alias = tw.item(row,0).text()
+        del self.solids_species[phase][alias]
+
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)

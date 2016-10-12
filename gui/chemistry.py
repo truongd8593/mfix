@@ -30,7 +30,17 @@ class Chemistry(object):
         row = get_selected_row(tw)
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.bottom_frame.setEnabled(enabled) # Clear all widgets?
+
+        for widget in (ui.label_reaction_name,
+                       ui.lineedit_reaction_name,
+                       ui.groupbox_reactants,
+                       ui.groupbox_products,
+                       ui.groupbox_heat_of_reaction):
+            widget.setEnabled(enabled)
+        # Note, leave checkbox_keyword_stiff_chemistry enabled
+        # even if no selection
+        #ui.bottom_frame.setEnabled(enabled)
+
         if not enabled:
             for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
                 tw.clearContents()
@@ -62,7 +72,6 @@ class Chemistry(object):
                 idx += 1
             return cb
 
-
         def make_coeff_item(val):
             le = LineEdit()
             le.dtype = float
@@ -81,7 +90,7 @@ class Chemistry(object):
                 tw.setCellWidget(row, 0, make_species_item(species))
                 tw.setCellWidget(row, 1, make_coeff_item(coeff))
             self.fixup_chemistry_table(tw)
-
+        self.fixup_chemistry_table(ui.tablewidget_chemistry, stretch_column=1)
 
     def chemistry_num_phases(self, alias_list):
         """determine minimum number of phases required to find all listed species,
@@ -151,12 +160,14 @@ class Chemistry(object):
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
 
         if tw == ui.tablewidget_chemistry:
+            print("A", tw.objectName(), height, header_height+40)
             ui.top_frame.setMaximumHeight(height+40)
             ui.top_frame.setMinimumHeight(header_height+40)
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
         else:
+            print("B", tw.objectName(), height, header_height)
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(height)
         tw.updateGeometry() #? needed?
@@ -185,6 +196,8 @@ class Chemistry(object):
         ui = self.ui.chemistry
         tw = ui.tablewidget_chemistry
 
+        # Note, because we clear and reconstruct this tab each time
+        #  we lose the current selection
         tw.clearContents()
 
         def make_item(sval):
@@ -212,9 +225,10 @@ class Chemistry(object):
 
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
             self.fixup_chemistry_table(tw)
+        self.handle_chemistry_selection() # enable/disable inputs
 
 
-    def chemistry_extract(self):
+    def chemistry_extract_phases(self):
         """extract additional chemistry info after loading project file"""
         for (name, (data, indices)) in self.project.reactions.items():
             alias_list = [k[0] for k in data.get('reactants',[])] + [k[0] for k in data.get('products',[])]
@@ -222,7 +236,7 @@ class Chemistry(object):
 
 
     def reset_chemistry(self):
-        self.project.reactions.clear()
+        self.project.reactions.clear() # done in project.reset()
         ui = self.ui.chemistry
         for tw in (ui.tablewidget_chemistry, ui.tablewidget_reactants, ui.tablewidget_products):
             tw.clearContents()
