@@ -24,7 +24,7 @@ class FortranWalker(object):
 
     def walk(self, fname):
 
-        print self.parse(fname)
+        print(self.parse(fname))
 
     def parse(self, fname):
 
@@ -46,7 +46,7 @@ class FortranWalker(object):
                 # subroutine
                 subroutine = self.subroutine_re.findall(line)
                 if subroutine:
-                    print subroutine
+                    print(subroutine)
 
                 # Modules (use)
                 use = self.use_re.findall(line)
@@ -65,7 +65,7 @@ class FortranWalker(object):
                 # real
                 reals = self.real_re.findall(line)
                 if reals:
-                    print reals
+                    print(reals)
 
                 # double
                 doubles = self.double_re.findall(line)

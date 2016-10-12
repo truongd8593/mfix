@@ -159,7 +159,7 @@ if __name__ == '__main__':
     partdatabase = ParticleDatabase(databasepath)
 
     # Print material names
-    print partdatabase.materials
+    print(partdatabase.materials)
 
     # Print material data
-    print partdatabase['079: Sorbent BN v2']
+    print(partdatabase['079: Sorbent BN v2'])

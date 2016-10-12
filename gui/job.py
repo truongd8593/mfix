@@ -28,8 +28,8 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkReply,
                              QNetworkRequest)
 
-from tools.general import get_mfix_home
-from tools.general import debug_trace
+from gui.tools.general import get_mfix_home
+from gui.tools.general import debug_trace
 
 #: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
