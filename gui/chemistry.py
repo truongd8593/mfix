@@ -160,7 +160,6 @@ class Chemistry(object):
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
 
         if tw == ui.tablewidget_chemistry:
-            print("A", tw.objectName(), height, header_height+40)
             ui.top_frame.setMaximumHeight(height+40)
             ui.top_frame.setMinimumHeight(header_height+40)
             ui.top_frame.updateGeometry()
