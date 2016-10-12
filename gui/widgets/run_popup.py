@@ -15,7 +15,7 @@ from qtpy import PYQT5
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox
 
-from tools.general import get_mfix_home
+from gui.tools.general import get_mfix_home
 
 try:
     from PyQt5 import uic

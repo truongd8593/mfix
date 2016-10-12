@@ -11,9 +11,9 @@ from qtpy import QtWidgets, QtGui, QtCore
 from qtpy import uic
 
 # local imports
-from tools.general import (get_unique_string, widget_iter, CellColor, get_pixmap)
+from gui.tools.general import (get_unique_string, widget_iter, CellColor, get_pixmap)
 
-from project import Equation, ExtendedJSON
+from gui.project import Equation, ExtendedJSON
 
 DEFAULT_REGION_DATA = {
     'filter': [0, 0, 0],

@@ -8,13 +8,13 @@ from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
-from widgets.regions_popup import RegionsPopup
-from widgets.base import LineEdit
+from gui.widgets.regions_popup import RegionsPopup
+from gui.widgets.base import LineEdit
 
-from tools.general import (set_item_noedit, set_item_enabled,
+from gui.tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, widget_iter)
 
-from tools.keyword_args import mkargs
+from gui.tools.keyword_args import mkargs
 
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder

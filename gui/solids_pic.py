@@ -2,7 +2,7 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from tools.general import get_combobox_item, set_item_enabled
+from gui.tools.general import get_combobox_item, set_item_enabled
 
 """Particle in Cell Model Task Pane Window: (requires PIC solver)"""
 # In-line comments from MFIX-UI SRS as of 2016-07-01

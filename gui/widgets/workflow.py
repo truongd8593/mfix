@@ -23,12 +23,12 @@ except ImportError:
     Node = object
 
 # local imports
-from widgets.base import Table
-from widgets.run_popup import RunPopup
-from tools.general import get_icon
-from constants import PARAMETER_DICT
-from job import JobManager
-from project import Project
+from gui.widgets.base import Table
+from gui.widgets.run_popup import RunPopup
+from gui.tools.general import get_icon
+from gui.constants import PARAMETER_DICT
+from gui.job import JobManager
+from gui.project import Project
 
 
 # --- Custom MFIX GUI Nodes ---

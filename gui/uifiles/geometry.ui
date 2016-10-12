@@ -3029,12 +3029,12 @@ background-color: transparent;
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets.base</header>
+   <header>gui.widgets.base</header>
   </customwidget>
   <customwidget>
    <class>CheckBox</class>
    <extends>QCheckBox</extends>
-   <header>widgets.base</header>
+   <header>gui.widgets.base</header>
   </customwidget>
  </customwidgets>
  <resources/>

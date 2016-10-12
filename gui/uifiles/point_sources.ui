@@ -824,7 +824,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets.base</header>
+   <header>gui.widgets.base</header>
   </customwidget>
  </customwidgets>
  <resources/>

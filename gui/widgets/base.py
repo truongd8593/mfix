@@ -27,7 +27,7 @@ except ImportError:
     from qtpy.QtCore import QItemSelectionModel
 
 
-from tools.general import get_selected_row
+from gui.tools.general import get_selected_row
 
 import logging
 log = logging.getLogger(__name__)
@@ -46,12 +46,12 @@ except ImportError:
     log.debug("can't import pandas")
 
 # local imports
-from project import Keyword, Equation, FloatExp, make_FloatExp
-from regexes import *
-from constants import *
-from tools.general import (to_text_string, get_icon, insert_append_action,
+from gui.project import Keyword, Equation, FloatExp, make_FloatExp
+from gui.regexes import *
+from gui.constants import *
+from gui.tools.general import (to_text_string, get_icon, insert_append_action,
                            insert_append_separator, get_unique_string)
-from tools.simpleeval import VALID_EXPRESION_NAMES
+from gui.tools.simpleeval import VALID_EXPRESION_NAMES
 VALID_EXP_NAMES = VALID_EXPRESION_NAMES + SPECIAL_PARAMETERS
 
 

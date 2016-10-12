@@ -23,14 +23,14 @@ import logging
 log = logging.getLogger(__name__)
 import warnings
 
-from project import Project, Keyword
-from constants import *
+from gui.project import Project, Keyword
+from gui.constants import *
 
-from widgets.base import LineEdit # a little special handling needed
+from gui.widgets.base import LineEdit # a little special handling needed
 
-from tools.general import (format_key_with_args, parse_key_with_args,
+from gui.tools.general import (format_key_with_args, parse_key_with_args,
                            plural, to_text_string)
-from tools import read_burcat
+from gui.tools import read_burcat
 
 
 class ProjectManager(Project):
