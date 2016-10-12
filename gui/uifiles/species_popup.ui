@@ -187,6 +187,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pushbutton_copy">
+         <property name="text">
+          <string>Copy</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="pushbutton_delete">
          <property name="enabled">
           <bool>false</bool>
