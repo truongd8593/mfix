@@ -6,6 +6,8 @@ from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
                             QHBoxLayout, QWidget, QGroupBox, QComboBox)
 
+from qtpy.QtGui import QValidator
+
 from tools.general import (set_item_noedit, set_item_enabled,
                            widget_iter,
                            get_selected_row, get_combobox_item)
@@ -22,7 +24,47 @@ class Chemistry(object):
         # TODO implement 'duplicate' (what does this do?)
         ui.toolbutton_delete.setEnabled(False) # Need a selection
         ui.tablewidget_chemistry.itemSelectionChanged.connect(self.handle_chemistry_selection)
+        ui.lineedit_reaction_name.editingFinished.connect(self.set_reaction_name)
+        class RxnIdValidator(QValidator):
+            #  Alphanumeric combinations (no special characters excluding underscores)
+            #  Limited to 32 characters
+            #  First character must be a letter
+            #  No blank spaces
+            def __init__(self, parent=None):
+                super(RxnIdValidator, self).__init__()
+                self.parent = parent
 
+            def validate(self, text, pos):
+                self.parent.Xlen = len(text)
+                #if len(text) == 0:
+                #    # How to reset the lineedit after user blanks out input?
+                #    return (QValidator.Intermediate, text, pos)
+                if len(text) == 0:
+                    return (QValidator.Acceptable, text, pos)
+
+                elif 1 <= len(text) <= 32 and text[0].isalpha() and all(c.isalnum() or c=='_' for c in text):
+                    return (QValidator.Acceptable, text, pos)
+                else:
+                    return (QValidator.Invalid, text, pos)
+        ui.lineedit_reaction_name.setValidator(RxnIdValidator(parent=self))
+
+
+    def set_reaction_name(self):
+        ui = self.ui.chemistry
+        tw = ui.tablewidget_chemistry
+        row = get_selected_row(tw)
+        if row is None:
+            return
+        name = ui.lineedit_reaction_name.value
+        if len(name) == 0: # Reset name if empty input
+            name = tw.item(row,0).text()
+            ui.lineedit_reaction_name.setText(name)
+            return
+        tw.item(row,0).setText(name)
+        # update ordered dict, keeping order
+        keys = list(self.project.reactions.keys())
+        keys[row] = name
+        self.project.reactions = OrderedDict(zip(keys, self.project.reactions.values()))
 
     def handle_chemistry_selection(self):
         ui = self.ui.chemistry
@@ -46,34 +88,52 @@ class Chemistry(object):
                 tw.clearContents()
                 tw.setRowCount(0)
                 self.fixup_chemistry_table(tw)
-            for widget in widget_iter(ui.bottom_frame):
-                if hasattr(widget, 'default'):
-                    widget.default()
+            ui.lineedit_reaction_name.clear()
+            ui.groupbox_heat_of_reaction.setChecked(False)
+            for widget in widget_iter(ui.groupbox_heat_of_reaction):
+                if isinstance(widget, LineEdit):
+                    widget.clear()
             return
+
         tw = ui.tablewidget_chemistry
         name = tw.item(row,0).text()
+        ui.lineedit_reaction_name.setText(name)
 
-        def make_species_item(species_alias):
+        def handle_phase(tw, row, idx):
+            print(tw.objectName(), row, idx)
+            print(tw.rowCount(), tw.columnCount())
+            old_item = tw.cellWidget(row, 1)
+            item = make_species_item(idx, None)
+            tw.setCellWidget(row, 1, item)
+            tw.cellWidget(row,2).clear()
+            old_item.deleteLater()
+
+
+        def make_phase_item(phase):
+            cb = ComboBox()
+            phases = []
+            if not self.fluid_solver_disabled:
+                phases.append(self.fluid_phase_name)
+            for name in self.solids.keys():
+                phases.append(name)
+            for p in phases:
+                cb.addItem(p)
+            cb.setCurrentIndex(phase)
+            return cb
+
+        def make_species_item(phase, species):
             cb = QComboBox()
-            aliases_seen = set() # They should be globally unique, so this is not necessary
             idx = 0
-            all_aliases = list((data.get('alias', name) for (name, data) in self.fluid_species.items()))
-
-            for phase in self.solids_species.values():
-                all_aliases.extend(list(data.get('alias', name) for (name, data) in phase.items()))
-
-            for a in all_aliases:
-                if a in aliases_seen:
-                    continue
-                aliases_seen.add(a)
-                cb.addItem(a)
-                if a == species_alias:
+            for s in self.species_of_phase(phase):
+                cb.addItem(s)
+                if s == species:
                     cb.setCurrentIndex(idx)
                 idx += 1
             return cb
 
         def make_coeff_item(val):
             le = LineEdit()
+            le.setMaximumWidth(80) #?
             le.dtype = float
             le.min = 0
             le.setToolTip("Stoichometric coefficient")
@@ -87,10 +147,18 @@ class Chemistry(object):
             tw.clearContents()
             tw.setRowCount(len(data))
             for (row, (species, coeff)) in enumerate(data):
-                tw.setCellWidget(row, 0, make_species_item(species))
-                tw.setCellWidget(row, 1, make_coeff_item(coeff))
+                phase = self.find_species_phase(species)
+                if phase is None:
+                    self.error("Species %s not found in any phase" % species)
+                    continue
+                item = make_phase_item(phase)
+                item.activated.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
+                tw.setCellWidget(row, 0, item)
+                tw.setCellWidget(row, 1, make_species_item(phase, species))
+                tw.setCellWidget(row, 2, make_coeff_item(coeff))
             self.fixup_chemistry_table(tw)
         self.fixup_chemistry_table(ui.tablewidget_chemistry, stretch_column=1)
+
 
     def chemistry_num_phases(self, alias_list):
         """determine minimum number of phases required to find all listed species,
@@ -133,7 +201,7 @@ class Chemistry(object):
         self.find_navigation_tree_item("Chemistry").setDisabled(disabled)
 
 
-    def fixup_chemistry_table(self, tw, stretch_column=0):
+    def fixup_chemistry_table(self, tw, stretch_column=1):
         ui = self.ui.chemistry
         hv = QtWidgets.QHeaderView
         if PYQT5:

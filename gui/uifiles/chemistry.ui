@@ -300,7 +300,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineedit_reaction_name"/>
+              <widget class="LineEdit" name="lineedit_reaction_name"/>
              </item>
             </layout>
            </item>
@@ -429,6 +429,11 @@
                 <attribute name="verticalHeaderHighlightSections">
                  <bool>false</bool>
                 </attribute>
+                <column>
+                 <property name="text">
+                  <string>Phase</string>
+                 </property>
+                </column>
                 <column>
                  <property name="text">
                   <string>Species</string>
@@ -563,6 +568,11 @@
                 <attribute name="verticalHeaderHighlightSections">
                  <bool>false</bool>
                 </attribute>
+                <column>
+                 <property name="text">
+                  <string>Phase</string>
+                 </property>
+                </column>
                 <column>
                  <property name="text">
                   <string>Species</string>
