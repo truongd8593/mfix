@@ -1071,6 +1071,9 @@ class MfixGui(QtWidgets.QMainWindow,
                     return self if key=='vtkiren' else self.noop
             self.vtkwidget = FakeVtk()
             self.ui.regions.vtkwidget = self.vtkwidget
+            label = QtWidgets.QLabel('Could not import vtk, please check your installation.')
+            label.setAlignment(QtCore.Qt.AlignCenter);
+            self.ui.horizontalLayoutModelGraphics.addWidget(label)
             return
 
         from widgets.vtkwidget import VtkWidget

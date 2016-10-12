@@ -5,6 +5,7 @@ well as a simple geometry creation tool and region selection.
 from __future__ import print_function, absolute_import, unicode_literals, division
 import os
 import copy
+import traceback
 import logging
 from functools import partial
 import numpy as np
@@ -19,7 +20,8 @@ try:
     VTK_MAJOR_VERSION = vtk.VTK_MAJOR_VERSION
 except ImportError:
     VTK_AVAILABLE = False
-    LOG.info("can't import vtk")
+    e = traceback.format_exc()
+    LOG.info("can't import vtk:\n{}".format(e))
 try:
     # Try Qt 5.x
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -29,7 +31,8 @@ except ImportError:
         from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
     except ImportError:
         VTK_AVAILABLE = False
-        LOG.info("Can't import QVTKRenderWindowInteractor ")
+        e = traceback.format_exc()
+        LOG.info("Can't import QVTKRenderWindowInteractor:\n{}".format(e))
 
 # local imports
 from tools.general import (get_unique_string, widget_iter, get_icon,
