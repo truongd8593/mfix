@@ -737,6 +737,16 @@ def set_logging(state=None, level=None):
     # maybe handle loglevel someday
     return api_response(200, 'OK')
 
+
+def conv_bool(s):
+    s = s.lower().replace('.','')
+    if s == 'true' or s == 't':
+        return '.T.'
+    elif s == 'false' or s == 'f':
+        return '.F.'
+    else:
+        raise ValueError
+
 # from http://stackoverflow.com/questions/18800328/python-read-in-multiple-key-value-dict-from-command-line-into-a-variable
 class DictAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -745,11 +755,25 @@ class DictAction(argparse.Action):
         for value in values:
             try:
                 k, v = value.split("=", 1)
+
+                # all values are strings, try infering type form the string so
+                # that mfix handles it
+                converted_v = None
+                for conv in [int, float, conv_bool]:
+                    try:
+                        converted_v = conv(v)
+                        break
+                    except ValueError:
+                        continue
+
+                if converted_v is None:
+                    converted_v = "'"+v+"'"
+
                 if not v:
                     raise argparse.ArgumentError(self, "Value not provided for: %s" % k)
             except ValueError:
                 raise argparse.ArgumentError(self, "Format must be key=value")
-            items[k] = v
+            items[k] = converted_v
         setattr(namespace, self.dest, items)
 
 class PrintFlagsAction(argparse.Action):
@@ -783,7 +807,6 @@ def parse_command_line_arguments():
     args = parser.parse_args()
 
     passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
-
     return args.file.ljust(80), args.start, args.port, passed_kwargs
 
 if __name__ == '__main__':
