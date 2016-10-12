@@ -447,7 +447,7 @@
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_bc_hw_g_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -1627,9 +1627,9 @@
                     <widget class="LineEdit" name="lineedit_keyword_phip"/>
                    </item>
                    <item row="3" column="2">
-                    <widget class="QLabel" name="label_11">
+                    <widget class="QLabel" name="label_phip_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -1644,9 +1644,9 @@
                     <widget class="LineEdit" name="lineedit_keyword_phip0"/>
                    </item>
                    <item row="4" column="2">
-                    <widget class="QLabel" name="label_12">
+                    <widget class="QLabel" name="label_phip0_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -1683,7 +1683,7 @@
                    <item row="6" column="2">
                     <widget class="QLabel" name="label_bc_hw_s_units">
                      <property name="text">
-                      <string>TBD</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -2736,13 +2736,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>widgets.base</header>
   </customwidget>
   <customwidget>
