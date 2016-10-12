@@ -1216,7 +1216,8 @@ class Project(object):
                             try:
                                 self.updateKeyword(key, value, args, keywordComment)
                             except ValueError:
-                                warnings.warn("Error at line %d: Cannot set %s=%s" % (lineno, (format_key_with_args(key, args), value)))
+                                # TODO:  allow user to fix value, like we do at mfix runtime
+                                warnings.warn("Line %d: Cannot set %s=%s" % (lineno, format_key_with_args(key, args), value))
                 except Exception as e:
                     traceback.print_exception(*sys.exc_info())
                     warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
