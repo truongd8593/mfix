@@ -166,7 +166,6 @@ class Chemistry(object):
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
         else:
-            print("B", tw.objectName(), height, header_height)
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(height)
         tw.updateGeometry() #? needed?
