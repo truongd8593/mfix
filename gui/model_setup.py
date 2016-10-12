@@ -253,7 +253,7 @@ class ModelSetup(object):
         #Select sub-grid model:
         # Selection requirements:
         #  Only available with MFIX-TFM solver
-        #  DRAG_TYPE="WEN_YU" # including _PCF?
+        #  DRAG_TYPE="WEN_YU"
         #  KT_TYPE="ALGEBRAIC"
         #  TURBULENCE_MODEL /= K_EPSILON
         #  BLENDING_STRESS = NONE
@@ -268,10 +268,10 @@ class ModelSetup(object):
         friction_model = self.project.get_value('friction_model')
 
         enabled = (solver == TFM
-                   and drag_type.startswith('WEN_YU')
-                   and kt_type=='ALGEBRAIC'
+                   and drag_type == 'WEN_YU'
+                   and kt_type == 'ALGEBRAIC'
                    and turbulence_model != 'K_EPSILON'
-                   and bool(blending_stress)==False
+                   and bool(blending_stress) == False
                    and friction_model != 'SRIVASTAVA')
         cb = ui.combobox_subgrid_type
         for item in (ui.label_subgrid_type, cb,
