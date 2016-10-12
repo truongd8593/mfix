@@ -66,6 +66,8 @@ from tools.general import (to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string,
                            safe_shlex_split, format_key_with_args)
 
+from reaction_parser import ReactionParser
+
 from regexes import *
 from constants import *
 
@@ -847,6 +849,7 @@ class Project(object):
         self.thermo_data =  {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
         self.parameter_key_map = {}  # key=parameter, value=set of keywords
+        self.reactions= OrderedDict()
         # See also 'reset'
 
         self.init_data()
@@ -1147,7 +1150,7 @@ class Project(object):
 
         fobject.seek(0)
 
-        for i, line in enumerate(fobject):
+        for lineno, line in enumerate(fobject, 1):
             line = to_unicode_from_fs(line)
             line0 = line
             line = line.strip()
@@ -1181,9 +1184,9 @@ class Project(object):
                 thermoSection = True
                 # Don't save 'THERMO SECTION' line - we'll regenerate it.
             elif reactionSection:
-                reaction_lines.append(line.strip())
+                reaction_lines.append((lineno, line.strip()))
             elif desReactionSection:
-                des_reaction_lines.append(line.strip())
+                des_reaction_lines.append((lineno, line.strip()))
             elif thermoSection:
                 thermo_lines.append(line0.rstrip()) # keep left padding
             elif not reactionSection and not thermoSection:
@@ -1213,11 +1216,11 @@ class Project(object):
                             try:
                                 self.updateKeyword(key, value, args, keywordComment)
                             except ValueError:
-                                # error at line i
-                                warnings.warn("Cannot set %s=%s" % (format_key_with_args(key, args), value))
+                                # TODO:  allow user to fix value, like we do at mfix runtime
+                                warnings.warn("Line %d: Cannot set %s=%s" % (lineno, format_key_with_args(key, args), value))
                 except Exception as e:
                     traceback.print_exception(*sys.exc_info())
-                    warnings.warn("Parse error: %s: line %d, %s" % (e, i, line))
+                    warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
 
         # turn THERMO DATA section into a dictionary
         if thermo_lines:
@@ -1233,12 +1236,14 @@ class Project(object):
                     self.thermo_data[species] = []
                 if species and line:
                     self.thermo_data[species].append(line)
-        if reaction_lines:
-            for line in reaction_lines:
-                print("RXN", line.strip())
-        if des_reaction_lines:
-            for line in des_reaction_lines:
-                print("DES_RXN", line.strip())
+        if reaction_lines or des_reaction_lines:
+            RP = ReactionParser()
+            for (lineno, line) in reaction_lines + des_reaction_lines:
+                try:
+                    RP.parse(line)
+                except Exception as e:
+                    warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
+            self.reactions = RP.reactions
 
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):
@@ -1443,12 +1448,60 @@ class Project(object):
                 yield v
 
 
+    def format_reaction(self, name):
+        data, indices = self.reactions[name]
+        yield('%s {\n' % name)
+        # TODO split chem_eq if long
+        yield('    chem_eq = "%s" \n' % (data.get('chem_eq', 'NONE')))
+        for k in data.keys():
+            if k in ('num_phases', 'chem_eq', 'reactants', 'products'):
+                continue
+            i = indices.get(k)
+            v = data.get(k)
+            if i:
+                yield('    %s(%s) = %s\n' % (k, i, v))
+            else:
+                yield('    %s = %s\n' % (k, v))
+        yield('}\n')
+
+
     def to_string(self):
         for line in self.dat_file_list:
             if hasattr(line, 'line'):
                 yield to_text_string(line.line() + '\n')
             else:
                 yield to_text_string(line + '\n')
+
+        # Save chemistry
+        rxns = []
+        des_rxns = []
+        for (name, data) in self.reactions.items():
+            num_phases = data[0].get('num_phases')
+            if num_phases == 1:
+                rxns.append(name)
+            elif num_phases == 2:
+                des_rxns.append(name)
+            else:
+                raise ValueError(name, num_phases)
+        if rxns or des_rxns:
+            yield('\n')
+            yield('# CHEMICAL REACTION SECTION\n')
+        if rxns:
+            yield('@(RXNS)\n')
+            for name in rxns:
+                for line in self.format_reaction(name):
+                    yield line
+            yield('@(END)\n')
+            yield('\n')
+        if des_rxns:
+            yield('\n')
+            yield('@(DES_RXNS)\n')
+            for name in des_rxns:
+                for line in self.format_reaction(name):
+                    yield(line)
+            yield('@(DES_END)\n')
+            yield('\n')
+        # TODO: if there are disabled reactions save them in gui comments
 
         def break_string(s, w):
             if len(s) <= w:
@@ -1487,6 +1540,7 @@ class Project(object):
                     yield line + '\n'
                 yield '\n' # blank line
 
+
     def writeDatFile(self, fname):
         """ Write the project to specified text file"""
         ### TODO:  format species sections
@@ -1511,6 +1565,7 @@ class Project(object):
         self.thermo_data.clear()
         self.mfix_gui_comments.clear()
         self.parameter_key_map = {}
+        self.reactions.clear()
 
         for name in dir(self):
             attr = getattr(self, name)

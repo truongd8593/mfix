@@ -34,7 +34,9 @@ from solids_tfm import SolidsTFM
 from solids_dem import SolidsDEM
 from solids_pic import SolidsPIC
 
-class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
+from species_handler import SpeciesHandler
+
+class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
     def init_solids_default_models(self):
         self.solids_density_model = CONSTANT
@@ -48,6 +50,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids = OrderedDict()
         self.solids_current_phase = None
         self.solids_species = {} #dict of OrderedDict, keyed by phase
+        # This is keyed by species, but probably should
+        # be keyed by alias FIXME.  (this will be a big change, have to find all refs to solids_species)
+
         self.solids_current_tab = 0 # Materials
 
         ui = self.ui.solids
@@ -694,7 +699,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
         self.solids_current_phase_name = new_name
         # rewriting dict to change key while preserving order - hack
         d = OrderedDict()
-        for (k,v) in self.solids.iteritems():
+        for (k,v) in self.solids.items():
             if k==old_name:
                 k = new_name
             d[k] = v
@@ -1135,15 +1140,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC):
             return
         ui = self.ui.solids
 
-        table = ui.tablewidget_solids_species
-        row = get_selected_row(table)
+        tw = ui.tablewidget_solids_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
-        table.clearSelection()
-        key = list(self.solids_species[phase].keys())[row]
-        del self.solids_species[phase][key]
-        if key in self.project.thermo_data:
-            del self.project.thermo_data[key]
+        tw.clearSelection() #?
+        alias = tw.item(row,0).text()
+        del self.solids_species[phase][alias]
+
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)

@@ -192,7 +192,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_boundary_conditions,
                         Ui_point_sources,
                         Ui_internal_surfaces,
-                        # Ui_chemistry,
+                        Ui_chemistry,
                         Ui_numerics,
                         Ui_output,
                         Ui_vtk,
@@ -227,7 +227,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          'boundary_conditions',
                          'point_sources',
                          'internal_surfaces',
-                         #'chemistry',
+                         'chemistry',
                          'numerics',
                          'output',
                          'vtk',
@@ -316,9 +316,9 @@ class MfixGui(QtWidgets.QMainWindow,
             self.find_navigation_tree_item(name).setDisabled(True)
 
         # Initialize popup dialogs
-        self.species_popup = SpeciesPopup(QtWidgets.QDialog())
+        self.species_popup = SpeciesPopup(QtWidgets.QDialog(), self)
         #self.species_popup.setModal(True) # ?
-        self.regions_popup = RegionsPopup(QtWidgets.QDialog())
+        self.regions_popup = RegionsPopup(QtWidgets.QDialog(), self)
 
         # Create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -337,6 +337,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_bcs()
         self.init_pss()
         self.init_iss()
+        self.init_chemistry()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -413,7 +414,6 @@ class MfixGui(QtWidgets.QMainWindow,
         geo.toolbutton_geometry_union.setIcon(get_icon('union.png'))
         geo.toolbutton_geometry_intersect.setIcon(get_icon('intersect.png'))
         geo.toolbutton_geometry_difference.setIcon(get_icon('difference.png'))
-
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
@@ -547,6 +547,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.regions.reset_regions()
         self.reset_ics()
         self.reset_bcs()
+        self.reset_iss()
+        self.reset_pss()
+        self.reset_chemistry()
 
         # Set all custom widgets to default
         for w in widget_iter(self):
@@ -623,7 +626,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         if typematch(v, value) and str(v)==str(value):
                 return
-
         self.set_keyword(key, value, args=args)
 
 
@@ -1069,6 +1071,9 @@ class MfixGui(QtWidgets.QMainWindow,
                     return self if key=='vtkiren' else self.noop
             self.vtkwidget = FakeVtk()
             self.ui.regions.vtkwidget = self.vtkwidget
+            label = QtWidgets.QLabel('Could not import vtk, please check your installation.')
+            label.setAlignment(QtCore.Qt.AlignCenter);
+            self.ui.horizontalLayoutModelGraphics.addWidget(label)
             return
 
         from widgets.vtkwidget import VtkWidget
@@ -1218,6 +1223,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_pss()
         elif text in ('internal_surfaces', 'iss'):
             self.setup_iss()
+        elif text == 'chemistry':
+            self.setup_chemistry()
 
 
     # --- animation methods ---
@@ -2043,6 +2050,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
+        # Too much going on here, split some of this out
 
         self.open_succeeded = False  # set to true on success
         self.vtkwidget.defer_render = True # defer rendering vtk until load finished
@@ -2070,7 +2078,10 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         # --- read the mfix.dat or *.mfx file
+
+
         self.reset() # resets gui, keywords, file system watchers, etc
+        # May not be needed on initial load
 
         basename, pathname = os.path.split(project_file)
 
@@ -2101,36 +2112,7 @@ class MfixGui(QtWidgets.QMainWindow,
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
 
-        if auto_rename and not project_path.endswith(runname_mfx):
-            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
-            if ok_to_write:
-                renamed_project_file = os.path.join(project_dir, runname_mfx)
-                if os.path.exists(renamed_project_file):
-                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
-            if not ok_to_write:
-                self.print_internal("Rename canceled at user request")
-                return
 
-            project_file = renamed_project_file
-            try:
-                self.force_default_settings() #?
-                self.print_internal("Info: Saving %s" % project_file)
-                self.project.writeDatFile(project_file) #XX
-                #self.print_internal(save_msg, color='blue')
-                self.clear_unsaved_flag()
-            except Exception as e:
-                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
-                self.print_internal("Error: %s" % msg, color='red')
-                self.message(title='Error',
-                             icon='error',
-                             text=msg,
-                             buttons=['ok'],
-                             default='ok')
-                traceback.print_exception(*sys.exc_info())
-                return
-
-        self.set_project_file(project_file)
-        self.set_save_as_action(enabled=True)
 
         self.setup_current_tab() # update vals in any open tabs
         self.update_source_view()
@@ -2246,7 +2228,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_fluid_mol_weight_model(1)
         # requires molecular weights for all species components, when should we validate?
 
-        ### Solids - move to solids_handler.py!
+        ### Solids
+        # Needed?  will this get done when we switch to solids tab?
         self.update_solids_table()
         self.solids_update_tabs()
         self.update_solids_detail_pane()
@@ -2261,6 +2244,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # background mesh
         self.init_background_mesh()
 
+        # "Extract" pulls out info from non-GUI project files, which don't have MFIX_GUI section
         # Initial conditions
         self.ics_extract_regions()
 
@@ -2274,6 +2258,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_extract_regions()
 
         # Chemistry
+        self.chemistry_extract_phases()
 
         ### Workflow
         if PYQTNODE_AVAILABLE:
@@ -2283,17 +2268,47 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.ui.workflow_widget.load(workflow_file)
             self.ui.workflow_widget.look_for_projects(basename)
 
-        # FIXME: is this a good idea?  it means we can't open a file read-only
-        #self.force_default_settings()
-        #if self.unsaved_flag: # Settings changed after loading
-        #    self.save_project()
+
+        if auto_rename and not project_path.endswith(runname_mfx):
+            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
+            if ok_to_write:
+                renamed_project_file = os.path.join(project_dir, runname_mfx)
+                if os.path.exists(renamed_project_file):
+                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
+            if not ok_to_write:
+                self.print_internal("Rename canceled at user request")
+                return
+
+            project_file = renamed_project_file
+            try:
+                self.print_internal("Info: Saving %s" % project_file)
+                self.project.writeDatFile(project_file) #XX
+                #self.print_internal(save_msg, color='blue')
+                self.clear_unsaved_flag()
+            except Exception as e:
+                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                self.print_internal("Error: %s" % msg, color='red')
+                self.message(title='Error',
+                             icon='error',
+                             text=msg,
+                             buttons=['ok'],
+                             default='ok')
+                traceback.print_exception(*sys.exc_info())
+                return
+
+        self.set_project_file(project_file)
+        self.set_save_as_action(enabled=True)
 
         self.vtkwidget.reset_view()
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')
         self.update_nav_tree()
-        #self.clear_unsaved_flag() # why is unsaved_flag set?
+
+        #if self.unsaved_flag: #
+        # Settings changed during loading
+        #    self.save_project()- let the user do this
+
 
 
     def add_tooltip(self, widget, key, description=None, value=None):

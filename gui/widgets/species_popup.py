@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 """Species selector dialog for MFIX GUI, includes stand-alone test"""
@@ -20,11 +20,11 @@ from tools.general import (set_item_noedit, set_item_enabled,
                            widget_iter)
 
 if PYQT5:
-    def resize_column(table, col, flags):
-        table.horizontalHeader().setSectionResizeMode(col, flags)
+    def resize_column(tw, col, flags):
+        tw.horizontalHeader().setSectionResizeMode(col, flags)
 else:
-    def resize_column(table, col, flags):
-        table.horizontalHeader().setResizeMode(col, flags)
+    def resize_column(tw, col, flags):
+        tw.horizontalHeader().setResizeMode(col, flags)
 
 
 class SpeciesPopup(QtWidgets.QDialog):
@@ -77,26 +77,26 @@ class SpeciesPopup(QtWidgets.QDialog):
                     (needle in k[0] or
                      (self.include_comments and needle in k[1]))):
                     results.append((key, phase))
-        table = self.ui.tablewidget_search
+        tw = self.ui.tablewidget_search
         nrows = len(results)
         self.ui.tablewidget_search.clearContents()
         self.ui.tablewidget_search.setRowCount(nrows)
         self.search_results = [None]*nrows
 
         # http://stackoverflow.com/questions/10192579/
-        table.model().blockSignals(True);
+        tw.model().blockSignals(True);
         for (i,r) in enumerate(results):
             key, phase = r
             comment = self.comments[phase][key]
             item = QTableWidgetItem(key[0])
             item.setToolTip(comment)
             set_item_noedit(item)
-            table.setItem(i, 0, item)
+            tw.setItem(i, 0, item)
             item = QTableWidgetItem(phase)
             set_item_noedit(item)
-            table.setItem(i, 1, item)
+            tw.setItem(i, 1, item)
             self.search_results[i] = (key, phase)
-        table.model().blockSignals(False);
+        tw.model().blockSignals(False);
 
 
     def get_species_data(self, key, phase):
@@ -140,13 +140,13 @@ class SpeciesPopup(QtWidgets.QDialog):
             item.setEnabled(False)
             if hasattr(item, 'setText'):
                 item.setText('')
-        table = self.ui.tablewidget_params
+        tw = self.ui.tablewidget_params
         for row in range(8):
             for col in range(2):
-                w = table.cellWidget(row, col)
+                w = tw.cellWidget(row, col)
                 if w:
                     w.setText('')
-                    #table.cellWidget(i,j).setText('')
+                    #tw.cellWidget(i,j).setText('')
 
 
     def enable_species_panel(self):
@@ -156,7 +156,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         data = self.defined_species.get(species)
         ui = self.ui
         def make_item(val, key=None):
-            item = QLineEdit(table)
+            item = QLineEdit()
             item.setText(str(val))
              #item = QTableWidgetItem(str(val))
             item.setValidator(QDoubleValidator(item))
@@ -199,13 +199,13 @@ class SpeciesPopup(QtWidgets.QDialog):
             ui.lineedit_density.setText('' if density is None else str(density))
             ui.lineedit_density.editingFinished.connect(make_handler(ui.lineedit_density,'density'))
 
-        table = ui.tablewidget_params
-        table.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
-        table.setCellWidget(0, 1, make_item(data['tmax'], key='tmax'))
+        tw = ui.tablewidget_params
+        tw.setCellWidget(0, 0, make_item(data['tmin'], key='tmin'))
+        tw.setCellWidget(0, 1, make_item(data['tmax'], key='tmax'))
         for (i,x) in enumerate(data['a_low']):
-            table.setCellWidget(i, 0, make_item(x, key=('a_low', i)))
+            tw.setCellWidget(i, 0, make_item(x, key=('a_low', i)))
         for (i,x) in enumerate(data['a_high']):
-            table.setCellWidget(i, 1, make_item(x, key=('a_high', i)))
+            tw.setCellWidget(i, 1, make_item(x, key=('a_high', i)))
 
 
     def enable_density(self, enabled):
@@ -223,22 +223,25 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
-        table = self.tablewidget_defined_species
-        row = get_selected_row(table)
+        tw = self.tablewidget_defined_species
+        row = get_selected_row(tw)
 
         if row is None:
             self.current_species = None
             self.clear_species_panel()
             self.ui.pushbutton_delete.setEnabled(False)
+            self.ui.pushbutton_copy.setEnabled(False)
             self.ui.combobox_phase.setEnabled(False)
         else:
             self.ui.pushbutton_delete.setEnabled(True)
-            self.current_species = table.item(row, 0).data(UserRole)
+            self.ui.pushbutton_copy.setEnabled(True)
+            self.current_species = tw.item(row, 0).data(UserRole)
             self.enable_species_panel()
 
 
     def make_alias(self, species):
-        return species.split(' ', 1)[0]
+        species = species.split(' ', 1)[0]
+        return self.parent().species_make_alias(species)
 
 
     def make_user_species_name(self):
@@ -263,9 +266,9 @@ class SpeciesPopup(QtWidgets.QDialog):
         data = self.db[phase][key]
         (species, tmin, tmax) = key
         (coeffs, mol_weight, comment) = data
-        # Do we want to allow same species in different phases, etc?
+
         if species in self.defined_species:
-            return # Don't allow duplicates
+            return # Don't allow duplicates in tmp list (?)
 
         alias = self.make_alias(species)
         a_low = coeffs[:7]
@@ -298,31 +301,41 @@ class SpeciesPopup(QtWidgets.QDialog):
     def add_defined_species_row(self, species, select=False):
         species_data = self.defined_species[species]
         ui = self.ui
-        table = ui.tablewidget_defined_species
-        nrows = table.rowCount()
-        table.setRowCount(nrows+1)
+        tw = ui.tablewidget_defined_species
+        nrows = tw.rowCount()
+        tw.setRowCount(nrows+1)
         alias = species_data['alias']
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
         set_item_noedit(item)
         item.setData(UserRole, species)
-        table.setItem(nrows, 0, item)
+        tw.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
         set_item_noedit(item)
-        table.setItem(nrows, 1, item)
+        tw.setItem(nrows, 1, item)
 
         if select:
-            table.setCurrentCell(nrows, 0) # Cause the new row to be selected
+            tw.setCurrentCell(nrows, 0) # Cause the new row to be selected
+
+
+    def handle_copy(self):
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
+        if row is None:
+            return
+        species = tw.item(row,0).text()
+        alias = self.parent().species_make_alias(species)
+
 
 
     def handle_delete(self):
-        table = self.ui.tablewidget_defined_species
-        row = get_selected_row(table)
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
         current_species = self.current_species # will be reset when selection cleared
-        table.removeRow(row)
-        table.clearSelection()
+        tw.removeRow(row)
+        tw.clearSelection()
         self.ui.tablewidget_search.clearSelection()
 
         if current_species:
@@ -368,15 +381,15 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_alias(self):
         val = self.ui.lineedit_alias.text()
-        table = self.ui.tablewidget_defined_species
-        row = get_selected_row(table)
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
         #note, making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         item.setData(UserRole, self.current_species)
         set_item_noedit(item)
-        table.setItem(row, 0, item)
+        tw.setItem(row, 0, item)
         self.defined_species[self.current_species]['alias'] = val
 
     def set_save_button(self, state):
@@ -442,6 +455,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         ui.pushbutton_new.clicked.connect(self.handle_new)
         ui.pushbutton_delete.clicked.connect(self.handle_delete)
+        ui.pushbutton_copy.clicked.connect(self.handle_copy)
         ui.checkbox_include_comments.clicked.connect(self.handle_include_comments)
 
         for phase in 'GLSC':
@@ -471,11 +485,20 @@ class SpeciesPopup(QtWidgets.QDialog):
                     # More visual indication of invalid alias?
                     return (QValidator.Invalid, text, pos)
                 current_species = self.parent.current_species
-                current_alias = self.parent.defined_species[current_species]['alias']
+                if current_species not in self.parent.defined_species:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Invalid, text, pos)
+                current_alias = self.parent.defined_species[current_species].get('alias')
+                if current_alias is None:
+                    self.parent.set_save_button(False)
+                    # More visual indication of invalid alias?
+                    return (QValidator.Invalid, text, pos)
                 for (k,v) in self.parent.defined_species.items():
-                    if v['alias'] == current_alias: # Skip selected item
+                    v_alias = v.get('alias')
+                    if v_alias == current_alias: # Skip selected item
                         continue
-                    if v['alias'] == text:
+                    if v_alias == text:
                         self.parent.set_save_button(False)
                         # More visual indication of invalid alias?
                         return (QValidator.Intermediate, text, pos)

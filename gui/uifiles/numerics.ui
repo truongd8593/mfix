@@ -163,7 +163,7 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets/base</header>
+   <header>widgets.base</header>
   </customwidget>
  </customwidgets>
  <tabstops>

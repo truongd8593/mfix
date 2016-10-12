@@ -14,8 +14,9 @@ from qtpy import QtWidgets, PYQT5
 #local imports
 from constants import *
 from tools.general import set_item_noedit, get_selected_row
+from species_handler import SpeciesHandler
 
-class FluidHandler(object):
+class FluidHandler(SpeciesHandler):
     # Defaults
     def init_fluid_default_models(self):
         self.fluid_density_model = CONSTANT
@@ -67,7 +68,8 @@ class FluidHandler(object):
 
 
     def init_fluid_handler(self):
-        self.fluid_species = OrderedDict()
+        self.fluid_species = OrderedDict() # keyed by ALIAS
+
         ui = self.ui.fluid
 
         ui.lineedit_fluid_phase_name.default_value = self.fluid_phase_name = "Fluid"
@@ -314,15 +316,15 @@ class FluidHandler(object):
         # it results in species being renumbered, or a hole in
         # the sequence - either way is trouble.  Have to warn
         # user, if species is referenced elsewhere.
-        table = self.ui.fluid.tablewidget_fluid_species
-        row = get_selected_row(table)
+        ui = self.ui.fluid
+        tw = ui.tablewidget_fluid_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
-        table.clearSelection()
-        key = list(self.fluid_species.keys())[row]
-        del self.fluid_species[key]
-        if key in self.project.thermo_data:
-            del self.project.thermo_data[key]
+
+        table.clearSelection() #?
+        alias = tw.item(row,0).text()
+        del self.fluid_species[alias]
 
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.

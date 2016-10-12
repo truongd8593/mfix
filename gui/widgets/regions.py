@@ -578,9 +578,6 @@ class RegionsWidget(QtWidgets.QWidget):
         region_dict = self.tablewidget_regions.value
         return copy.deepcopy(region_dict)  # Allow clients to modify dict
 
-    def __len__(self):
-        return len(self.tablewidget_regions.value)
-
     def get_value(self, name, key):
         """given a region name and value key, return the value"""
 
