@@ -1200,15 +1200,15 @@ class BCS(object):
                 lambda index, species_index=species_index: self.set_bcs_fluid_species_eq_type(index, species_index))
             hbox = QHBoxLayout()
             label = QLabel('Type')
-            # TODO: tooltips
+            # TODO: tooltips on label and combobox
             hbox.addWidget(label)
             hbox.addWidget(cb)
             hbox.addStretch()
             box_layout.addLayout(hbox, 0, 0, 1, 3)
             row = 0
             for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
-                                             ('Constant flux', 'bc_c_x_g', 'TBD'),
-                                             ('Transfer coefficient', 'bc_hw_x_g', 'TBD'),
+                                             ('Constant flux', 'bc_c_x_g', 'K/m'),
+                                             ('Transfer coefficient', 'bc_hw_x_g', None),
                                              ('Free stream mass frac.', 'bc_xw_g', None)):
                 row += 1
                 suffix = '_2' if label_text.startswith('Free') else ''
@@ -1637,7 +1637,7 @@ class BCS(object):
         enabled = (bc_jj_ps==1) and (jenkins or friction_model=='SRIVASTAVA') and solids_model not in ('DEM', 'PIC')
         # DEFAULT value of 11.31 = atan(0.2) * (180/pi)
         key = 'phi_w'
-        default = Equation('atan(0.2) * (180/pi)') # 11.31
+        default = 11.31 # Equation('atan(0.2) * (180/pi)')
         # Required when available
         setup_key_widget(key, default, enabled)
 
@@ -2034,9 +2034,8 @@ class BCS(object):
                     self.project.register_widget(le, [key], ['BC', i])
                     setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
 
-                    # Right column is the stretchy one
                     for col in (0, 1):
-                        groupbox_layout.setColumnStretch(col, col)
+                        groupbox_layout.setColumnStretch(col, col==1)
 
         # Clear memoized data above current nscalar if nscalar decreased
         if old_nscalar is None:
