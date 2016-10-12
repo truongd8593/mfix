@@ -18,10 +18,10 @@ from qtpy import QtWidgets
 import logging
 import errno
 
-from tools.general import to_unicode_from_fs
+from gui.tools.general import to_unicode_from_fs
 
 from .helper_functions import TestQApplication, waitFor, waitForWindow
-import gui
+from gui.gui import MfixGui
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
@@ -60,10 +60,10 @@ class MfixGuiTests(TestQApplication):
         def set_project_file(cls, value):
             cls.project_file = value
 
-        gui.MfixGui.get_project_file = get_project_file
-        gui.MfixGui.set_project_file = set_project_file
+        MfixGui.get_project_file = get_project_file
+        MfixGui.set_project_file = set_project_file
 
-        self.mfix = gui.MfixGui(self.qapp)
+        self.mfix = MfixGui(self.qapp)
         self.mfix.show()
         self.assertTrue(waitForWindow(self.mfix), "main mfix app not open")
 

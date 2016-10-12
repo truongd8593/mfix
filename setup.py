@@ -1,8 +1,8 @@
-"""A setuptools based setup module.
+"""A setuptools based setup module for the MFiX GUI.
 
 See:
 https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
+http://mfix.netl.doe.gov/
 """
 
 # Always prefer setuptools over distutils
@@ -19,7 +19,7 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='sample',
+    name='mfixgui',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -30,11 +30,11 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/pypa/sampleproject',
+    url='http://mfix.netl.doe.gov/',
 
     # Author details
-    author='The Python Packaging Authority',
-    author_email='pypa-dev@googlegroups.com',
+    author='Multiflow Science Group at NETL',
+    author_email='mfix-gui@mfix.netl.doe.gov',
     platforms=["any"],
 
     # Choose your license
@@ -66,9 +66,6 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
 
-    # What does your project relate to?
-    # keywords='sample setuptools development',
-
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=['gui',
@@ -80,33 +77,19 @@ setup(
               'gui.tools',
               'gui.widgets',
     ],
-    # packages=find_packages(),
-
-    # Alternatively, if you want to distribute just a my_module.py, uncomment
-    # this:
-    #   py_modules=["my_module"],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    # install_requires=['peppercorn'],
-
-    # List additional groups of dependencies here (e.g. development
-    # dependencies). You can install these using the following syntax,
-    # for example:
-    # $ pip install -e .[dev,test]
-    # extras_require={
-    #     'dev': ['check-manifest'],
-    #     'test': ['coverage'],
-    # },
+    install_requires=['qtpy'],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    # package_data={
-    #     'sample': ['package_data.dat'],
-    # },
+    package_data={
+        'gui/widgets': ['gui/widgets/burcat.pickle'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
@@ -117,7 +100,7 @@ setup(
     # ],
     data_files=[('gui/tools', ['gui/tools/keyword_args.txt']),
                 ('gui/icons', glob('gui/icons/*')),
-                ('gui/widgets', ['gui/widgets/burcat.pickle']),
+                # ('gui/widgets', ['gui/widgets/burcat.pickle']),
                 ('gui/uifiles', glob('gui/uifiles/*')),
                 ('model', glob('model/*.f')),
                 ('model/des', glob('model/des/*.f')),

@@ -12,9 +12,9 @@ from qtpy import QtCore
 import math
 
 from .helper_functions import TestQApplication, waitFor, waitForWindow
-from widgets import base
-from project import Equation
-from constants import *
+from gui.widgets import base
+from gui.project import Equation
+from gui.constants import *
 
 
 class BaseWidgetTests(TestQApplication):

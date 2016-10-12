@@ -9,7 +9,7 @@ import math
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(myPath, os.pardir, os.pardir))
 
-from project import Keyword, Equation, Project, FloatExp
+from gui.project import Keyword, Equation, Project, FloatExp
 
 class TestEquation(unittest.TestCase):
 
