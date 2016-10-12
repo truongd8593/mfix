@@ -8,17 +8,17 @@ from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
 
 UserRole = QtCore.Qt.UserRole
 
-from gui.constants import *
-from gui.widgets.regions_popup import RegionsPopup
-from gui.widgets.base import LineEdit, ComboBox
+from constants import *
+from widgets.regions_popup import RegionsPopup
+from widgets.base import LineEdit, ComboBox
 
-from gui.project import Equation, FloatExp
+from project import Equation, FloatExp
 
-from gui.tools.general import (set_item_noedit, set_item_enabled,
+from tools.general import (set_item_noedit, set_item_enabled,
                            get_combobox_item, get_selected_row,
                            widget_iter)
 
-from gui.tools.keyword_args import mkargs
+from tools.keyword_args import mkargs
 
 from json import JSONDecoder, JSONEncoder
 

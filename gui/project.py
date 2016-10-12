@@ -60,16 +60,16 @@ import logging
 log = logging.getLogger(__name__)
 
 # local imports
-from gui.tools.simpleeval import simple_eval
-from gui.tools.comparable import Comparable
-from gui.tools.general import (to_unicode_from_fs, to_fs_from_unicode,
+from tools.simpleeval import simple_eval
+from tools.comparable import Comparable
+from tools.general import (to_unicode_from_fs, to_fs_from_unicode,
                            is_text_string, to_text_string,
                            safe_shlex_split, format_key_with_args)
 
-from gui.reaction_parser import ReactionParser
+from reaction_parser import ReactionParser
 
-from gui.regexes import *
-from gui.constants import *
+from regexes import *
+from constants import *
 
 NaN = float('NaN')
 

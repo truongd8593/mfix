@@ -6,11 +6,11 @@ from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
                             QHBoxLayout, QWidget, QGroupBox, QComboBox)
 
-from gui.tools.general import (set_item_noedit, set_item_enabled,
+from tools.general import (set_item_noedit, set_item_enabled,
                            widget_iter,
                            get_selected_row, get_combobox_item)
 
-from gui.widgets.base import (LineEdit, ComboBox)
+from widgets.base import (LineEdit, ComboBox)
 
 class Chemistry(object):
     #Chemistry Task Pane Window: This section allows a user to define chemical reaction input.

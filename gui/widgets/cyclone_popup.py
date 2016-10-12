@@ -5,8 +5,8 @@ import copy
 import math
 
 from qtpy import QtWidgets, uic
-from gui.tools.general import get_pixmap, widget_iter, get_unique_string
-from gui.widgets.vtk_constants import *
+from tools.general import get_pixmap, widget_iter, get_unique_string
+from widgets.vtk_constants import *
 
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 

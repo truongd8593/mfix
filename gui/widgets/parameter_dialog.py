@@ -7,12 +7,12 @@ from collections import OrderedDict
 from qtpy import QtWidgets, QtCore
 import copy
 
-from gui.constants import *
-from gui.project import Equation
-from gui.regexes import *
-from gui.tools.general import get_icon, get_unique_string, parse_key_with_args
-from gui.tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
-from gui.widgets.base import Table
+from widgets.base import Table
+from tools.general import get_icon, get_unique_string, parse_key_with_args
+from constants import *
+from tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
+from regexes import *
+from project import Equation
 
 PROTECTED_NAMES = list(DEFAULT_FUNCTIONS.keys()) + list(DEFAULT_NAMES.keys()) + SPECIAL_PARAMETERS
 

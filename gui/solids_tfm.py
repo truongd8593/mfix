@@ -1,9 +1,9 @@
 # Methods to deal with solids tfm tab, slip off from solids_handler.py
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from gui.tools.general import get_combobox_item, set_item_enabled
+from tools.general import get_combobox_item, set_item_enabled
 
-from gui.constants import *
+from constants import *
 
 class SolidsTFM(object):
     def init_solids_tfm(self):

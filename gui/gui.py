@@ -22,7 +22,7 @@ from collections import OrderedDict
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
-from gui.tools.general import SCRIPT_DIRECTORY
+from tools.general import SCRIPT_DIRECTORY
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 
 
@@ -41,41 +41,41 @@ if not PRECOMPILE_UI:
 
 
 # local imports
-from gui.project_manager import ProjectManager
-from gui.project import Equation
-from gui.job import JobManager, get_dict_from_pidfile
-from gui.monitor import Monitor
+from project_manager import ProjectManager
+from project import Equation
+from job import JobManager, get_dict_from_pidfile
+from monitor import Monitor
 
-from gui.widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
+from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table, BaseWidget)
-from gui.widgets.regions import RegionsWidget
-from gui.widgets.linear_equation_table import LinearEquationTable
-from gui.widgets.species_popup import SpeciesPopup
-from gui.widgets.regions_popup import RegionsPopup
-from gui.widgets.run_popup import RunPopup
-from gui.widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
-from gui.widgets.parameter_dialog import ParameterDialog
+from widgets.regions import RegionsWidget
+from widgets.linear_equation_table import LinearEquationTable
+from widgets.species_popup import SpeciesPopup
+from widgets.regions_popup import RegionsPopup
+from widgets.run_popup import RunPopup
+from widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
+from widgets.parameter_dialog import ParameterDialog
 
-from gui.model_setup import ModelSetup
-from gui.fluid_handler import FluidHandler
-from gui.solids_handler import SolidsHandler
-from gui.ics import ICS
-from gui.bcs import BCS
-from gui.pss import PSS
-from gui.iss import ISS
-from gui.mesh import Mesh
-from gui.chemistry import Chemistry
+from model_setup import ModelSetup
+from fluid_handler import FluidHandler
+from solids_handler import SolidsHandler
+from ics import ICS
+from bcs import BCS
+from pss import PSS
+from iss import ISS
+from mesh import Mesh
+from chemistry import Chemistry
 
-from gui.interpreter import Interpreter
+from interpreter import Interpreter
 
-from gui.tools.general import (get_icon, get_mfix_home, widget_iter,
+from tools.general import (get_icon, get_mfix_home, widget_iter,
                            is_text_string, is_unicode,
                            format_key_with_args, to_unicode_from_fs)
 
-from gui.tools.namelistparser import buildKeywordDoc
-from gui.tools.keyword_args import keyword_args
+from tools.namelistparser import buildKeywordDoc
+from tools.keyword_args import keyword_args
 
-from gui.constants import *
+from constants import *
 
 if PRECOMPILE_UI:
     try:
@@ -1056,7 +1056,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #initialize the vtk widget
         disable_vtk = False
         if not 'MFIX_NO_VTK' in os.environ: # Avoid importing vtkwidget if MFIX_NO_VTK set
-            from gui.widgets.vtkwidget import VTK_AVAILABLE
+            from widgets.vtkwidget import VTK_AVAILABLE
             disable_vtk = not VTK_AVAILABLE
         else: # env var set
             disable_vtk = True
@@ -1076,7 +1076,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.horizontalLayoutModelGraphics.addWidget(label)
             return
 
-        from gui.widgets.vtkwidget import VtkWidget
+        from widgets.vtkwidget import VtkWidget
         self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
@@ -2408,7 +2408,7 @@ class MfixGui(QtWidgets.QMainWindow,
         return response == 'ok'
 
 
-def main():
+def main(args):
     global gui
 
     # build the arg parser
@@ -2492,4 +2492,4 @@ def main():
     sys.exit()
 
 if __name__  == '__main__':
-    main()
+    main(sys.argv)

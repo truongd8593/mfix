@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from gui.constants import *
+from constants import *
 
-from gui.tools.general import get_combobox_item
+from tools.general import get_combobox_item
 
 class ModelSetup(object):
     #    Model Setup Task Pane Window: Select MFIX solver and other conservation equations

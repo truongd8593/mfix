@@ -18,23 +18,23 @@ UserRole = QtCore.Qt.UserRole
 DIM_M = 10
 
 #local imports
-from gui.constants import *
-from gui.tools.general import (set_item_noedit, get_selected_row,
+from constants import *
+from tools.general import (set_item_noedit, get_selected_row,
                            widget_iter,
                            format_key_with_args,
                            get_combobox_item, set_item_enabled,
                            drop_row_column_triangular, append_row_column_triangular )
 
 
-from gui.tools import keyword_args
+from tools import keyword_args
 
-from gui.widgets.base import LineEdit
+from widgets.base import LineEdit
 
-from gui.solids_tfm import SolidsTFM
-from gui.solids_dem import SolidsDEM
-from gui.solids_pic import SolidsPIC
+from solids_tfm import SolidsTFM
+from solids_dem import SolidsDEM
+from solids_pic import SolidsPIC
 
-from gui.species_handler import SpeciesHandler
+from species_handler import SpeciesHandler
 
 class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 

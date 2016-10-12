@@ -12,9 +12,9 @@ log = logging.getLogger(__name__)
 from qtpy import QtWidgets, PYQT5
 
 #local imports
-from gui.constants import *
-from gui.tools.general import set_item_noedit, get_selected_row
-from gui.species_handler import SpeciesHandler
+from constants import *
+from tools.general import set_item_noedit, get_selected_row
+from species_handler import SpeciesHandler
 
 class FluidHandler(SpeciesHandler):
     # Defaults

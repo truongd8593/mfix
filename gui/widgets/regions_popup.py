@@ -16,9 +16,9 @@ from qtpy.QtWidgets import QTableWidgetItem, QLineEdit, QAbstractItemView
 
 UserRole = QtCore.Qt.UserRole
 
-from gui.constants import *
+from constants import *
 
-from gui.tools.general import (set_item_noedit, set_item_enabled, item_enabled,
+from tools.general import (set_item_noedit, set_item_enabled, item_enabled,
                            get_combobox_item, get_selected_rows)
 
 if PYQT5:

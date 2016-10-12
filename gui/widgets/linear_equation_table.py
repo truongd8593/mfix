@@ -10,7 +10,7 @@ import copy
 
 # local imports
 from .base import Table
-from gui.project import Keyword
+from project import Keyword
 
 
 class LinearEquationTable(QtWidgets.QWidget):

@@ -6,7 +6,7 @@ from itertools import groupby
 from qtpy import QtCore, QtWidgets, PYQT5
 
 # local i,ports
-from gui.tools.general import sort_dict
+from tools.general import sort_dict
 
 MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']

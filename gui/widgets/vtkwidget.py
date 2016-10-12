@@ -35,15 +35,15 @@ except ImportError:
         LOG.info("Can't import QVTKRenderWindowInteractor:\n{}".format(e))
 
 # local imports
-from gui.tools.general import (get_unique_string, widget_iter, get_icon,
+from tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
-from gui.widgets.base import LineEdit
-from gui.widgets.distributed_popup import DistributionPopUp
-from gui.widgets.cyclone_popup import CyclonePopUp
-from gui.widgets.reactor_popup import ReactorPopUp
-from gui.widgets.hopper_popup import HopperPopUp
-from gui.project import Equation, ExtendedJSON
-from gui.widgets.vtk_constants import *
+from widgets.base import LineEdit
+from widgets.distributed_popup import DistributionPopUp
+from widgets.cyclone_popup import CyclonePopUp
+from widgets.reactor_popup import ReactorPopUp
+from widgets.hopper_popup import HopperPopUp
+from project import Equation, ExtendedJSON
+from widgets.vtk_constants import *
 
 GUI = None
 

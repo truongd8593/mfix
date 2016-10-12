@@ -15,7 +15,7 @@ from qtpy.QtGui import QValidator, QDoubleValidator
 from qtpy.QtCore import QObject, QEvent
 UserRole = QtCore.Qt.UserRole
 
-from gui.tools.general import (set_item_noedit, set_item_enabled,
+from tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, get_selected_rows,
                            widget_iter)
 

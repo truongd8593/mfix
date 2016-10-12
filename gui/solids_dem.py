@@ -4,9 +4,9 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from qtpy import QtWidgets
 from qtpy.QtWidgets import QLabel
 
-from gui.widgets.base import LineEdit
-from gui.project import Equation
-from gui.tools.general import (get_combobox_item, set_item_enabled, set_item_noedit,
+from widgets.base import LineEdit
+from project import Equation
+from tools.general import (get_combobox_item, set_item_enabled, set_item_noedit,
                            widget_iter)
 
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
