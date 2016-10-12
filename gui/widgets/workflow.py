@@ -14,6 +14,7 @@ import os
 import shutil
 import glob
 import subprocess
+import json
 
 
 try:
@@ -321,6 +322,11 @@ class WorkflowWidget(QtWidgets.QWidget):
                 if root != path and name.endswith('.mfx'):
                     dir_base = os.path.basename(root)
                     data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':root, 'dt':'None', 'time remaining':'None'}
+                    run_data_path = os.path.join(root, '.workflow_run_cmd.json')
+                    if os.path.exists(run_data_path):
+                        with open(run_data_path) as f:
+                            d = json.load(f)
+                        data[dir_base].update(d)
                     self.create_job_manager(root)
                     self.file_watcher.addPath(root)
 
@@ -401,6 +407,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         if self.run_cmd is None:
             self.run_popup(mfx_file)
+        queue = False
 
         data = self.job_status_table.value
         data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir, 'dt':'None', 'time remaining':'None'}
@@ -411,6 +418,25 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
             return
 
+        # run it
+        self._run(proj_dir, mfx_file, self.run_cmd, queue)
+
+        # save some info on the run
+        c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
+        data[dir_base]['queue'] = queue
+        data[dir_base]['file'] = mfx_file
+        data = {
+            'cmd': c,
+            'queue': queue,
+            'file': mfx_file,
+        }
+        with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
+            json.dump(data, f)
+
+        if not self.update_timer.isActive():
+            self.update_timer.start(1000)
+
+    def _run(self, proj_dir, mfx_file, cmd, queue=False):
         parent = MockParent()
         parent.mfix_gui = self.mfixgui
         parent.project_dir = proj_dir
@@ -422,19 +448,16 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
 
         # Queue
-        if False:
-            msg = 'Submitting to Queue: %s' % ' '.join(self.run_cmd)
-            run_dialog.submit_command(self.run_cmd)
+        if queue:
+            msg = 'Submitting to Queue: %s' % ' '.join(cmd)
+            run_dialog.submit_command(cmd)
         # local
         else:
-            msg = 'Run Command: %s' % ' '.join(self.run_cmd)
-            run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
+            msg = 'Run Command: %s' % ' '.join(cmd)
+            run_dialog.start_command(cmd, proj_dir, os.environ)
 
         self.file_watcher.addPath(proj_dir)
         self.mfixgui.print_internal(msg, color='green')
-
-        if not self.update_timer.isActive():
-            self.update_timer.start(1000)
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
@@ -488,24 +511,24 @@ class WorkflowWidget(QtWidgets.QWidget):
                 job = self.job_dict[job_name].job
 
                 if job is None:
-                    if data[job_name]['status'] == 'waiting for pid':
-                        data[job_name]['status'] = 'stopped'
                     continue
 
-                if data[job_name]['status'] != 'stopped':
-                    if job.is_paused():
-                        status = 'paused'
-                    else:
-                        status = 'running'
+                if job.is_paused():
+                    status = 'paused'
+                else:
+                    status = 'running'
 
-                    if job.status:
-                        data[job_name]['status'] = status
-                        data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
-                        data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
-                        try:
-                            data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
-                        except:
-                            pass
+                if job.status:
+
+                    p = data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
+                    if p >= 99:
+                        status = 'finished'
+                    data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
+                    try:
+                        data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
+                    except:
+                        pass
+                    data[job_name]['status'] = status
 
         self.job_status_table.set_value(data)
 
@@ -529,7 +552,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         projs = self.get_selected_projects()
 
         if projs:
-            enable_list[:3] = [True]*4
+            enable_list[:4] = [True]*5
         if len(projs) == 1:
             enable_list[n_btns-1] = True
 
@@ -548,7 +571,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         data = self.job_status_table.value
         for proj in projs:
             job = self.job_dict[proj]
-            job.stop_mfix()
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
             data[proj]['status'] = 'stopped'
         self.job_status_table.set_value(data)
 
@@ -590,9 +614,26 @@ class WorkflowWidget(QtWidgets.QWidget):
 
     def handle_restart(self):
         """restart the selected job"""
-        jobs = self.get_selected_jobs()
-        for job in jobs:
-            job.stop_mfix()
+        projs = self.get_selected_projects()
+        data = self.job_status_table.value
+        for proj in projs:
+            p = data[proj]
+
+            # make sure the job is stopped
+            job = self.job_dict[proj]
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
+                p['status'] = 'stopped'
+
+            cmd = copy.deepcopy(p['cmd'])
+            #TODO: not hard code restart_1
+            cmd.append('run_type=restart_1')
+
+            self._run(p['path'], p['file'], cmd, p['queue'])
+            p['status'] = 'waiting for pid'
+
+        self.job_status_table.set_value(data)
+
 
     def handle_remove_from_queue(self):
         """remove job from queue"""
