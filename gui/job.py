@@ -424,7 +424,8 @@ class JobManager(QObject):
         self.parent.job_manager.save_job_id(job_id)
 
     def stop_mfix(self):
-        self.job.stop_mfix()
+        if self.job is not None:
+            self.job.stop_mfix()
 
     def teardown_job(self):
         """Job ended or exited. Destory Job object and remove pidfile"""

@@ -2276,10 +2276,12 @@ class MfixGui(QtWidgets.QMainWindow,
         # Chemistry
 
         ### Workflow
-        workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
-        if PYQTNODE_AVAILABLE and os.path.exists(workflow_file):
-            self.ui.workflow_widget.clear()
-            self.ui.workflow_widget.load(workflow_file)
+        if PYQTNODE_AVAILABLE:
+            workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
+            if os.path.exists(workflow_file):
+                self.ui.workflow_widget.clear()
+                self.ui.workflow_widget.load(workflow_file)
+            self.ui.workflow_widget.look_for_projects(basename)
 
         # FIXME: is this a good idea?  it means we can't open a file read-only
         #self.force_default_settings()

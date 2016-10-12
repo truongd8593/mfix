@@ -183,6 +183,9 @@ class WorkflowRunPopup(RunPopup):
     def handle_submit(self):
         self.finish_with_dialog()
 
+class FakeJob(object):
+    job=None
+
 # --- Workflow Widget ---
 class WorkflowWidget(QtWidgets.QWidget):
     def __init__(self, project, parent=None):
@@ -206,7 +209,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.nodeChart.setGeometry(0, 0, 100, 1000)
 
         # modify toolbar
-        i = 2
+        i = 4
         for tool, icon, callback in [('import', 'import.png', self.handle_import),
                                      ('export', 'open_in_new.png', self.handle_import)]:
             btn = QtWidgets.QToolButton()
@@ -308,6 +311,21 @@ class WorkflowWidget(QtWidgets.QWidget):
     def used_parameters(self):
         return self.mfixgui.project.parameter_key_map.keys()
 
+    def look_for_projects(self, path):
+        data = self.job_status_table.value
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                if root != path and name.endswith('.mfx'):
+                    dir_base = os.path.basename(root)
+                    data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':root, 'dt':'None', 'time remaining':'None'}
+                    self.create_job_manager(root)
+                    self.file_watcher.addPath(root)
+
+        self.job_status_table.set_value(data)
+        if not self.update_timer.isActive():
+            self.update_timer.start(1000)
+
+
     def export_project(self, path=None, param_dict={}, keyword_dict={}):
         """
         export a mfix project
@@ -366,7 +384,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
         run_dialog.exec_()
 
-        self.run_cmd = run_dialog.get_run_cmd()
+        self.run_cmd = run_dialog.get_run_command()
 
     def run_project(self, mfx_file):
         """
@@ -417,11 +435,12 @@ class WorkflowWidget(QtWidgets.QWidget):
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
+        dir_base = os.path.basename(proj_dir)
         if pid_files:
             if len(pid_files) > 1:
                 self.mfixgui.print_internal('more than one pid file', color='red')
 
-            dir_base = os.path.basename(proj_dir)
+
             mfx_files = glob.glob(os.path.join(proj_dir, '*.mfx'))
 
             parent = MockParent()
@@ -434,9 +453,10 @@ class WorkflowWidget(QtWidgets.QWidget):
             full_runname_pid = os.path.join(proj_dir, pid_files[0])
             job = JobManager(parent)
             job.try_to_connect(full_runname_pid)
-
             self.job_dict[dir_base] = job
             self.file_watcher.removePath(proj_dir)
+        else:
+            self.job_dict[dir_base] = FakeJob()
 
     def job_error(self, error):
         self.mfixgui.print_internal(error, color='red')
@@ -457,48 +477,17 @@ class WorkflowWidget(QtWidgets.QWidget):
     def update_job_status(self):
         """update the current job status"""
 
-#        {   u'dt': 0.0001234567901234568,
-#    u'nit': 18,
-#    u'paused': True,
-#    u'profiling': [   [   u'time_step_init',
-#                          0.0012989044189453125],
-#                      [   u'do_iteration',
-#                          18,
-#                          0.01675891876220703],
-#                      [   u'time_step_end',
-#                          1.2874603271484375e-05],
-#                      [   u'des_time_init',
-#                          u'unknown'],
-#                      [   u'des_time_steps',
-#                          0,
-#                          u'unknown'],
-#                      [   u'des_time_end',
-#                          u'unknown']],
-#    u'residuals': [   [u'', u'0.0'],
-#                      [   u'P0  ',
-#                          u'0.000817730624263'],
-#                      [   u'P1  ',
-#                          u'9.72339499832e-06'],
-#                      [   u'U0  ',
-#                          u'3.51669989309e-08'],
-#                      [   u'V0  ',
-#                          u'1.85474211159e-06'],
-#                      [   u'U1  ',
-#                          u'5.18117609376e-08'],
-#                      [   u'V1  ',
-#                          u'1.85322488506e-06'],
-#                      [u'    ', u'0.0']],
-#    u'time': 0.0012666666666666666,
-#    u'tstop': 2.0,
-#    u'walltime_elapsed': 3.575956106185913,
-#    u'walltime_remaining': u'5642.67052735'}
-
         data = self.job_status_table.value
 
         for job_name in data.keys():
             if job_name in self.job_dict:
 
                 job = self.job_dict[job_name].job
+
+                if job is None:
+                    if data[job_name]['status'] == 'waiting for pid':
+                        data[job_name]['status'] = 'stopped'
+                    continue
 
                 if data[job_name]['status'] != 'stopped':
                     if job.is_paused():
@@ -521,7 +510,7 @@ class WorkflowWidget(QtWidgets.QWidget):
     def get_selected_jobs(self):
         """get the currently selected jobs"""
         projs = list(self.job_status_table.value.keys())
-        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows()]
+        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows() if self.job_dict[projs[i]].job is not None]
 
     def get_selected_projects(self):
         """get the currently selected project names"""
