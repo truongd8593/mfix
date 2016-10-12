@@ -94,7 +94,7 @@
          !  EP_g     P_g     U_g   U_s   ROP_s  T_g      X_g
          !           P_star  V_g   V_s          T_s      X_s       G
          !                   W_g   W_s           
-   SPX_DT = 0.1     0.1     0.1   0.1   100.    100.       100.   100.  100.
+   SPX_DT = 0.01     0.01    0.01  0.01  100.   100.     100.      100.  100.
 
    NLOG = 25
 
