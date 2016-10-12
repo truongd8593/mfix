@@ -13,6 +13,8 @@ import copy
 import os
 import shutil
 import glob
+import subprocess
+
 
 try:
     from pyqtnode import NodeWidget, Node, tools
@@ -25,7 +27,7 @@ except ImportError:
 # local imports
 from widgets.base import Table
 from widgets.run_popup import RunPopup
-from tools.general import get_icon
+from tools.general import get_icon, SCRIPT_DIRECTORY
 from constants import PARAMETER_DICT
 from job import JobManager
 from project import Project
@@ -258,6 +260,7 @@ class WorkflowWidget(QtWidgets.QWidget):
                 ('play', 'play.png', self.handle_play),
                 ('stop', 'stop.png', self.handle_stop),
                 ('pause', 'pause.png', self.handle_pause),
+                ('delete', 'delete.png', self.handle_delete),
                 ('restart', 'restart.png', self.handle_restart),
                 ('auto restart', 'autorenew.png', self.handle_renew),
                 ('remove from queue', 'removefromqueue.png', self.handle_remove_from_queue),
@@ -520,15 +523,15 @@ class WorkflowWidget(QtWidgets.QWidget):
     def update_btns(self):
         """enable/diable btns"""
 
-        enable_list = [False]*len(self.tool_btn_dict)
+        n_btns = len(self.tool_btn_dict)
+        enable_list = [False]*n_btns
 
         projs = self.get_selected_projects()
 
         if projs:
             enable_list[:3] = [True]*4
-            enable_list[-1] = True
-#        elif len(projs) == 1:
-#
+        if len(projs) == 1:
+            enable_list[n_btns-1] = True
 
         for enable, btn in zip(enable_list, self.tool_btn_dict.values()):
             btn.setEnabled(enable)
@@ -555,6 +558,36 @@ class WorkflowWidget(QtWidgets.QWidget):
         for job in jobs:
             job.job.pause()
 
+    def handle_delete(self):
+        """delete the selected job"""
+        projs = self.get_selected_projects()
+
+        btn = self.mfixgui.message(
+            text='The selectect directories will be delete.\nContinue?',
+            buttons=['yes', 'no'],
+            default='no',)
+
+        if btn != 'yes':
+            return
+
+        data = self.job_status_table.value
+        for proj in projs:
+
+            # make sure the job is stopped
+            job = self.job_dict[proj]
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
+                data[proj]['status'] = 'stopped'
+
+            # remove the dir
+            path = data[proj]['path']
+            shutil.rmtree(path)
+
+            data.pop(proj)
+            self.job_dict.pop(proj)
+
+        self.job_status_table.set_value(data)
+
     def handle_restart(self):
         """restart the selected job"""
         jobs = self.get_selected_jobs()
@@ -579,7 +612,17 @@ class WorkflowWidget(QtWidgets.QWidget):
     def handle_open(self):
         """open the selected job"""
         projs = self.get_selected_projects()
-        print('open')
+        if not projs:
+            return
+
+        data = self.job_status_table.value
+        path = data[projs[0]]['path']
+
+        #TODO: this is hard coded to > python gui.py project
+        gui_path = os.path.join(SCRIPT_DIRECTORY, 'gui.py')
+        cmd = ['python', gui_path, path]
+        subprocess.Popen(cmd)
+
 
     def handle_import(self):
         """immport a nc file"""
