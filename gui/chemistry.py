@@ -104,8 +104,11 @@ class Chemistry(object):
             old_item = tw.cellWidget(row, 1)
             item = make_species_item(tw, row, idx, None)
             tw.setCellWidget(row, 1, item)
-            tw.cellWidget(row,2).setText('1.0') # Default
-            old_item.deleteLater()
+            w = tw.cellWidget(row,2)
+            if w:
+                w.setText('1.0') # Default
+            if old_item:
+                old_item.deleteLater()
             self.chemistry_update_totals()
 
         def make_phase_item(tw, row, phase):
@@ -118,7 +121,7 @@ class Chemistry(object):
             for p in phases:
                 cb.addItem(p)
             cb.setCurrentIndex(phase)
-            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
+            cb.activated.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
             return cb
 
         def handle_species(tw, row, idx):
@@ -133,7 +136,7 @@ class Chemistry(object):
                 if s == species:
                     cb.setCurrentIndex(idx)
                 idx += 1
-            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
+            cb.activated.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
             return cb
 
         def handle_coeff(widget, val, args):
