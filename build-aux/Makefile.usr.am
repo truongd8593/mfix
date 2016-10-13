@@ -122,19 +122,19 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 
 if PYTHON
 ui_files = \
-	$(top_srcdir)/../gui/uifiles/general.ui \
-	$(top_srcdir)/../gui/uifiles/geometry.ui \
-	$(top_srcdir)/../gui/uifiles/gui.ui \
-	$(top_srcdir)/../gui/uifiles/mesh.ui \
-	$(top_srcdir)/../gui/uifiles/model_setup.ui \
-	$(top_srcdir)/../gui/uifiles/monitors.ui \
-	$(top_srcdir)/../gui/uifiles/numerics.ui \
-	$(top_srcdir)/../gui/uifiles/output.ui \
-	$(top_srcdir)/../gui/uifiles/post_processing.ui \
-	$(top_srcdir)/../gui/uifiles/regions.ui \
-	$(top_srcdir)/../gui/uifiles/run.ui \
-	$(top_srcdir)/../gui/uifiles/species_popup.ui \
-	$(top_srcdir)/../gui/uifiles/vtk.ui
+	$(top_srcdir)/../mfix/uifiles/general.ui \
+	$(top_srcdir)/../mfix/uifiles/geometry.ui \
+	$(top_srcdir)/../mfix/uifiles/gui.ui \
+	$(top_srcdir)/../mfix/uifiles/mesh.ui \
+	$(top_srcdir)/../mfix/uifiles/model_setup.ui \
+	$(top_srcdir)/../mfix/uifiles/monitors.ui \
+	$(top_srcdir)/../mfix/uifiles/numerics.ui \
+	$(top_srcdir)/../mfix/uifiles/output.ui \
+	$(top_srcdir)/../mfix/uifiles/post_processing.ui \
+	$(top_srcdir)/../mfix/uifiles/regions.ui \
+	$(top_srcdir)/../mfix/uifiles/run.ui \
+	$(top_srcdir)/../mfix/uifiles/species_popup.ui \
+	$(top_srcdir)/../mfix/uifiles/vtk.ui
 
 .ui.py:
 	$(PYUIC) -o $@ $^
@@ -172,13 +172,13 @@ pymfix_src = \
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
-mfix$(EXEEXT): mfix.so
-	-rm -f $@
-	$(LN_S) $(top_srcdir)/../gui/pymfix $@
+# mfix$(EXEEXT): solver.so
+#		-rm -f $@
+#		$(LN_S) $(top_srcdir)/../mfix/pymfix.py $@
 
-mfix.so: $(LIBMFIX).md5
-mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
-	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+solver.so: $(LIBMFIX).md5
+solver.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
+	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m solver -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 
 egg: mfix
 	python setup.py develop --local
