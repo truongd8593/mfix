@@ -1207,7 +1207,7 @@ class BCS(object):
             box_layout.addLayout(hbox, 0, 0, 1, 3)
             row = 0
             for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
-                                             ('Constant flux', 'bc_c_x_g', 'K/m'),
+                                             ('Constant flux', 'bc_c_x_g', '1/m'),
                                              ('Transfer coefficient', 'bc_hw_x_g', None),
                                              ('Free stream mass frac.', 'bc_xw_g', None)):
                 row += 1
@@ -2034,7 +2034,12 @@ class BCS(object):
                     self.project.register_widget(le, [key], ['BC', i])
                     setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
 
-                    for col in (0, 1):
+                    units = '1/m' if '_c_' in key else '' # Scalars are dimensionless,
+                    # flux is per meter
+                    label = QLabel(units)
+                    groupbox_layout.addWidget(label, row, 2)
+
+                    for col in (0, 1, 2):
                         groupbox_layout.setColumnStretch(col, col==1)
 
         # Clear memoized data above current nscalar if nscalar decreased

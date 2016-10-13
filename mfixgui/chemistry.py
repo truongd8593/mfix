@@ -41,7 +41,6 @@ class Chemistry(object):
                 #    return (QValidator.Intermediate, text, pos)
                 if len(text) == 0:
                     return (QValidator.Acceptable, text, pos)
-
                 elif 1 <= len(text) <= 32 and text[0].isalpha() and all(c.isalnum() or c=='_' for c in text):
                     return (QValidator.Acceptable, text, pos)
                 else:
