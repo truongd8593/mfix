@@ -21,7 +21,7 @@ import errno
 from mfixgui.tools.general import to_unicode_from_fs
 
 from .helper_functions import TestQApplication, waitFor, waitForWindow
-from mfixgui.mfixgui import MfixGui
+from mfixgui.gui import MfixGui
 
 class MfixGuiTests(TestQApplication):
     ''' unit tests for the GUI '''
