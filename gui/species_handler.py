@@ -7,7 +7,7 @@ class SpeciesHandler(object):
         for (name, data) in self.fluid_species.items():
             data.get('alias', name)
         for phase in self.solids_species.values():
-            for (name, data) in phase.keys():
+            for (name, data) in phase.items():
                 yield data.get('alias', name)
 
     def species_alias_unique(self, alias):
@@ -16,13 +16,13 @@ class SpeciesHandler(object):
     def species_make_alias(self, species):
         if self.species_alias_unique(species):
             return species
-
-        # Strip _nn suffix
-        i = species.rindex('_')
         count = 0
-        if i > 0 and species[i+1:].isdigit():
-            count = 1 + int(species[i+1:])
-            species = species[:i]
+        # Strip _nn suffix
+        if '_' in species:
+            i = species.rindex('_')
+            if i > 0 and species[i+1:].isdigit():
+                count = 1 + int(species[i+1:])
+                species = species[:i]
 
         while True:
             alias = '%s_%s' % (species, count) # Prefer underscore so we don't get things like H2O2
@@ -45,6 +45,21 @@ class SpeciesHandler(object):
             for (name, data) in s.items():
                 if data.get('alias') == species_or_alias:
                     return p
+
+
+    def species_mol_weight(self, species_or_alias):
+        if not self.fluid_solver_disabled:
+            for (name, data) in self.fluid_species.items():
+                alias = data.get('alias', name)
+                if alias == species_or_alias:
+                    return data.get('mol_weight')
+        for (p, subdict) in self.solids_species.items():
+            for (name, data) in subdict.items():
+                alias = data.get('alias', name)
+                if alias == species_or_alias:
+                    return data.get('mol_weight')
+
+        return None
 
 
     def species_of_phase(self, p):

@@ -164,12 +164,12 @@ class FluidHandler(SpeciesHandler):
     def fixup_fluid_table(self):
         hv = QtWidgets.QHeaderView
         ui = self.ui.fluid
-        table = ui.tablewidget_fluid_species
+        tw = ui.tablewidget_fluid_species
         if PYQT5:
-            resize = table.horizontalHeader().setSectionResizeMode
+            resize = tw.horizontalHeader().setSectionResizeMode
         else:
-            resize = table.horizontalHeader().setResizeMode
-        for n in range(table.columnCount()):
+            resize = tw.horizontalHeader().setResizeMode
+        for n in range(tw.columnCount()):
             resize(n, hv.ResizeToContents if n>0
                    else hv.Stretch)
 
@@ -229,13 +229,13 @@ class FluidHandler(SpeciesHandler):
     def update_fluid_species_table(self):
         """Update table in fluid pane.  Also set nmax_g, species_g and species_alias_g keywords,
         which are not tied to a single widget"""
-        table = self.ui.fluid.tablewidget_fluid_species
-        table.clearContents()
+        tw = self.ui.fluid.tablewidget_fluid_species
+        tw.clearContents()
         if self.fluid_species is None:
             self.fixup_fluid_table()
             return
         nrows = len(self.fluid_species)
-        table.setRowCount(nrows)
+        tw.setRowCount(nrows)
         def make_item(val):
             item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
@@ -251,7 +251,7 @@ class FluidHandler(SpeciesHandler):
                                         'h_f', 'source')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
-                table.setItem(row, col, make_item(data.get(key)))
+                tw.setItem(row, col, make_item(data.get(key)))
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', alias, args=row+1)
                 # We're avoiding mw_g in favor of the settings in THERMO DATA
@@ -271,16 +271,16 @@ class FluidHandler(SpeciesHandler):
 
     def handle_fluid_species_selection(self):
         ui = self.ui.fluid
-        table = ui.tablewidget_fluid_species
-        row = get_selected_row(table)
+        tw = ui.tablewidget_fluid_species
+        row = get_selected_row(tw)
         enabled = (row is not None)
         ui.toolbutton_fluid_species_delete.setEnabled(enabled)
         ui.toolbutton_fluid_species_copy.setEnabled(enabled)
         if enabled:
-            table.doubleClicked.connect(self.fluid_species_edit)
+            tw.doubleClicked.connect(self.fluid_species_edit)
         else:
             try:
-                table.doubleClicked.disconnect() #self.fluid_species_edit)
+                tw.doubleClicked.disconnect() #self.fluid_species_edit)
             except:
                 pass
 
@@ -322,7 +322,7 @@ class FluidHandler(SpeciesHandler):
         if row is None: # No selection
             return
 
-        table.clearSelection() #?
+        tw.clearSelection() #?
         alias = tw.item(row,0).text()
         del self.fluid_species[alias]
 
@@ -335,8 +335,8 @@ class FluidHandler(SpeciesHandler):
 
 
     def fluid_species_edit(self):
-        table = self.ui.fluid.tablewidget_fluid_species
-        row = get_selected_row(table)
+        tw = self.ui.fluid.tablewidget_fluid_species
+        row = get_selected_row(tw)
         sp = self.species_popup
         sp.set_phases('GL')
         self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert

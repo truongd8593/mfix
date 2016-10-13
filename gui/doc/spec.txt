@@ -403,7 +403,6 @@ Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
 #    Specify constant gas density, RO_G0
 #  Ideal gas law:
 #    Selection always available
-
 #    Keyword RO_G0 must be undefined
 #    Requires a fluid phase molecular weight
 #    Requires temperature field for full domain
@@ -503,7 +502,8 @@ conductivity and the diffusion coefficient models- are hard coded for specific c
 would permit greater modeling flexibility moving forward.
 NOTE: The gas phase species molecular weights, MW_G(#) cannot be directly specified. This
 keyword is not needed because users can edit the molecular weight in the material database popup
-window.
+window.  (TODO:  how about MW_S?)
+
 Solids Task Pane Window:
 #    Select Solids model
 #    Sets keyword SOLIDS_MODEL(#)
@@ -2986,4 +2986,3 @@ HELYX-OS
 SimScale
 
 DICEhub
-

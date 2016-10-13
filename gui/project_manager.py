@@ -209,10 +209,6 @@ class ProjectManager(Project):
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=project_file)
-            # emit loaded keys
-            # some of these changes may cause new keywords to be instantiated,
-            # so iterate over a copy of the list, which may change
-            kwlist = list(self.keywordItems())
             # Let's guess the solver type from the file
             self.solver = self.guess_solver()
             # Now put the GUI into the correct state before setting up interface
@@ -230,7 +226,6 @@ class ProjectManager(Project):
             self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
             self.solids.sort(key=lambda a:a.ind)
 
-            # TODO: integrate project.gasSpecies with gui.fluid_species (deprecate the former)
             db = self.gui.species_popup.db
 
             # Note that parsemfixdat does not modify the THERMO DATA section into
@@ -468,6 +463,9 @@ class ProjectManager(Project):
             skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
 
             # Submit all remaining keyword updates, except the ones we're skipping
+            # some of these changes may cause new keywords to be instantiated,
+            # so iterate over a copy of the list, which may change
+            kwlist = list(self.keywordItems())
             for kw in kwlist:
                 if kw.key in thermo_keys:
                     self.gui.print_internal("%s=%s moved to THERMO DATA section" % (

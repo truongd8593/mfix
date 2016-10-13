@@ -66,6 +66,7 @@ class Chemistry(object):
         keys[row] = name
         self.project.reactions = OrderedDict(zip(keys, self.project.reactions.values()))
 
+
     def handle_chemistry_selection(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_chemistry
@@ -100,16 +101,14 @@ class Chemistry(object):
         ui.lineedit_reaction_name.setText(name)
 
         def handle_phase(tw, row, idx):
-            print(tw.objectName(), row, idx)
-            print(tw.rowCount(), tw.columnCount())
             old_item = tw.cellWidget(row, 1)
-            item = make_species_item(idx, None)
+            item = make_species_item(tw, row, idx, None)
             tw.setCellWidget(row, 1, item)
-            tw.cellWidget(row,2).clear()
+            tw.cellWidget(row,2).setText('1.0') # Default
             old_item.deleteLater()
+            self.chemistry_update_totals()
 
-
-        def make_phase_item(phase):
+        def make_phase_item(tw, row, phase):
             cb = ComboBox()
             phases = []
             if not self.fluid_solver_disabled:
@@ -119,9 +118,14 @@ class Chemistry(object):
             for p in phases:
                 cb.addItem(p)
             cb.setCurrentIndex(phase)
+            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
             return cb
 
-        def make_species_item(phase, species):
+        def handle_species(tw, row, idx):
+            tw.cellWidget(row,2).setText('1.0')
+            self.chemistry_update_totals()
+
+        def make_species_item(tw, row, phase, species):
             cb = QComboBox()
             idx = 0
             for s in self.species_of_phase(phase):
@@ -129,9 +133,15 @@ class Chemistry(object):
                 if s == species:
                     cb.setCurrentIndex(idx)
                 idx += 1
+            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
             return cb
 
-        def make_coeff_item(val):
+        def handle_coeff(widget, val, args):
+            if widget.text() == '':
+                widget.setText('1.0')
+            self.chemistry_update_totals()
+
+        def make_coeff_item(tw, row, val):
             le = LineEdit()
             le.setMaximumWidth(80) #?
             le.dtype = float
@@ -139,25 +149,57 @@ class Chemistry(object):
             le.setToolTip("Stoichometric coefficient")
             le.key = ''
             le.updateValue('', val)
+            le.value_updated.connect(handle_coeff)
             return le
 
         for (side, tw) in (('reactants', ui.tablewidget_reactants),
                            ('products', ui.tablewidget_products)):
             data = self.project.reactions[name][0].get(side, [])
             tw.clearContents()
-            tw.setRowCount(len(data))
+            # Add a "total" row, only if there is data
+            tw.setRowCount(len(data)+1 if data else 0)
             for (row, (species, coeff)) in enumerate(data):
                 phase = self.find_species_phase(species)
                 if phase is None:
                     self.error("Species %s not found in any phase" % species)
                     continue
-                item = make_phase_item(phase)
-                item.activated.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
-                tw.setCellWidget(row, 0, item)
-                tw.setCellWidget(row, 1, make_species_item(phase, species))
-                tw.setCellWidget(row, 2, make_coeff_item(coeff))
+                tw.setCellWidget(row, 0, make_phase_item(tw, row, phase))
+                tw.setCellWidget(row, 1, make_species_item(tw, row, phase, species))
+                tw.setCellWidget(row, 2, make_coeff_item(tw, row, coeff))
+            if data:
+                item = QtWidgets.QTableWidgetItem('Total mol. weight')
+                set_item_noedit(item)
+                tw.setItem(row+1, 1, item)
+                item = QtWidgets.QTableWidgetItem('0.0')
+                set_item_noedit(item)
+                font=item.font()
+                font.setBold(True)
+                item.setFont(font)
+                tw.setItem(row+1, 2, item)
+
             self.fixup_chemistry_table(tw)
         self.fixup_chemistry_table(ui.tablewidget_chemistry, stretch_column=1)
+        self.chemistry_update_totals()
+
+    def chemistry_update_totals(self):
+        ui = self.ui.chemistry
+        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            nrows = tw.rowCount()
+            if nrows < 2: # Should not happen - either 0 rows or a 'total' at end
+                return
+            tot = 0.0
+            for row in range(nrows-1):
+                species = tw.cellWidget(row,1).currentText()
+                m_w = self.species_mol_weight(species)
+                if m_w is None: # Undefined mol. wt - species_mol_wt sprinted a warning
+                    self.warning("Molecular weight for %s not found" % species)
+                    continue
+                coeff = tw.cellWidget(row,2).value
+                if coeff in (None, ''):
+                    continue # Empty input field
+                tot += m_w * float(coeff)
+            tot = round(tot, 6)
+            tw.item(nrows-1, 2).setText(str(tot))
 
 
     def chemistry_num_phases(self, alias_list):
@@ -308,7 +350,6 @@ class Chemistry(object):
             tw.clearContents()
             tw.setRowCount(0)
             self.fixup_chemistry_table(tw)
-
 
     #Enable the stiff chemistry solver
     # Selection always available

@@ -1146,7 +1146,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
         tw.clearSelection() #?
         alias = tw.item(row,0).text()
-        del self.solids_species[phase][alias]
+        if alias in self.solids_species[phase]:
+            del self.solids_species[phase][alias] # XXXX Fixme
 
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
