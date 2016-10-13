@@ -68,14 +68,14 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['mfix',
-              'mfix.doc',
-              'mfix.icons',
-              'mfix.static',
-              'mfix.templates',
-              'mfix.tests',
-              'mfix.tools',
-              'mfix.widgets',
+    packages=['mfixgui',
+              'mfixgui.doc',
+              'mfixgui.icons',
+              'mfixgui.static',
+              'mfixgui.templates',
+              'mfixgui.tests',
+              'mfixgui.tools',
+              'mfixgui.widgets',
     ],
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -88,7 +88,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     # package_data={
-    #     'mfix/widgets': ['burcat.pickle'],
+    #     'mfixgui/widgets': ['burcat.pickle'],
     # },
 
     # Although 'package_data' is the preferred approach, in some case you may
@@ -98,10 +98,10 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=[('mfix/tools', ['mfix/tools/keyword_args.txt']),
-                ('mfix/icons', glob('mfix/icons/*')),
-                ('mfix/widgets', ['mfix/widgets/burcat.pickle']),
-                ('mfix/uifiles', glob('mfix/uifiles/*')),
+    data_files=[('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
+                ('mfixgui/icons', glob('mfixgui/icons/*')),
+                ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
+                ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
                 ('model', glob('model/*.f')),
                 ('model/des', glob('model/des/*.f')),
                 ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
@@ -112,8 +112,8 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'mfixgui=mfix.gui:main',
-            'pymfix=mfix.pymfix:main',
+            'mfixgui=mfixgui.gui:main',
+            'pymfix=mfixgui.pymfix:main',
         ],
     },
 )
