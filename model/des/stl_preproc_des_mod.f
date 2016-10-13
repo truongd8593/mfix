@@ -536,7 +536,7 @@
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
          VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MIN/)
-         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MAX/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MIN/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
 
 ! Top Face
