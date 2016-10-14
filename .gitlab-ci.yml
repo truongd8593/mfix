@@ -15,7 +15,7 @@ stages:
 #   script:
 #     - pip install packaging
 #     - git clean -fdx
-#     - make -C gui ../mfix
+#     - make -C mfixgui ../mfix
 #   artifacts:
 #     paths:
 #     - mfix
@@ -29,7 +29,7 @@ stages:
 # test_job:
 #   stage: test
 #   script:
-#     - make -C gui test
+#     - make -C mfixgui test
 #   only:
 #     - branches
 #   tags:
@@ -40,7 +40,7 @@ stages:
 build_job3:
   stage: build
   script:
-    - make -C gui ../mfix
+    - make -C mfixgui ../mfix
   artifacts:
     paths:
     - mfix*
@@ -50,6 +50,6 @@ build_job3:
 test_job3:
   stage: test
   script:
-    - make -C gui test
+    - make -C mfixgui test
   only:
     - branches
