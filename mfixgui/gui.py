@@ -2409,7 +2409,7 @@ class MfixGui(QtWidgets.QMainWindow,
         return response == 'ok'
 
 
-def main(args):
+def main():
     global gui
 
     # build the arg parser
@@ -2493,4 +2493,4 @@ def main(args):
     sys.exit()
 
 if __name__  == '__main__':
-    main(sys.argv)
+    main()
