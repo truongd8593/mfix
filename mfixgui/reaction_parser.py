@@ -17,6 +17,7 @@ class ReactionParser(object):
         self.reactions = OrderedDict()
 
     def emit(self):
+        # TODO better format for returning data?
         self.reactions[self.reaction_id] = (self.d, self.idx)
         chem_eq = self.d.get('chem_eq')
         if chem_eq is None:
@@ -162,10 +163,10 @@ class ReactionParser(object):
                     continue # ?
                 if '*' in field:
                     coeff, species = field.split('*', 1)
-                    ret.append((species.strip(), float(coeff)))
+                    ret.append([species.strip(), float(coeff)])
                 elif ' ' in field:
                     coeff, species = field.split(' ', 1)
-                    ret.append((species.strip(), float(coeff)))
+                    ret.append([species.strip(), float(coeff)])
                 else:
                     coeff = ''
                     while field and field[0].isdigit() or field[0]=='.':
@@ -175,7 +176,7 @@ class ReactionParser(object):
                         coeff = float(coeff)
                     else:
                         coeff = 1.0
-                    ret.append((field.strip(), coeff))
+                    ret.append([field.strip(), coeff])
             return ret
         return parse_side(lhs), parse_side(rhs)
 
