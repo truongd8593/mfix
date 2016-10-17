@@ -71,8 +71,6 @@ setup(
     packages=['mfixgui',
               'mfixgui.doc',
               'mfixgui.icons',
-              'mfixgui.static',
-              'mfixgui.templates',
               'mfixgui.tests',
               'mfixgui.tools',
               'mfixgui.widgets',
