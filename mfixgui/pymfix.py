@@ -36,10 +36,7 @@ sys.path.append(os.getcwd())
 pidfilename = None
 
 # append the path of the symlink __file__ (not its realpath)
-# sys.path.append(os.path.dirname(__file__))
-print("CHECK IS OUT JOANNA, the syspath is now:")
-for p in sys.path:
-    print(p)
+sys.path.append(os.path.dirname(__file__))
 
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
@@ -56,8 +53,7 @@ from solver import step as STEP
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 
-FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
-                  template_folder=PYMFIX_DIR+'/templates')
+FLASK_APP = Flask(__name__)
 FLASK_APP.config['SECRET_KEY'] = \
             ''.join([random.choice(string.digits + string.ascii_letters)
             for x in range(0,64)])
