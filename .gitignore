@@ -31,7 +31,7 @@ build
 compile
 configure
 dist
-gui/uifiles/*.py
+mfixgui/uifiles/*.py
 install-sh
 tmp.*
 *.swp
