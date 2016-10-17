@@ -18,12 +18,18 @@ class Chemistry(object):
     #Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
 
     def init_chemistry(self):
+        self.chemistry_current_reaction = None
         ui = self.ui.chemistry
-        ui.toolbutton_add.clicked.connect(self.chemistry_add)
-        ui.toolbutton_delete.clicked.connect(self.chemistry_delete)
-        # TODO implement 'duplicate' (what does this do?)
-        ui.toolbutton_delete.setEnabled(False) # Need a selection
-        ui.tablewidget_chemistry.itemSelectionChanged.connect(self.handle_chemistry_selection)
+        ui.toolbutton_add_reaction.clicked.connect(self.chemistry_add_reaction)
+        ui.toolbutton_delete_reaction.clicked.connect(self.chemistry_delete_reaction)
+        ui.toolbutton_add_reactant.clicked.connect(self.chemistry_add_reactant)
+        ui.toolbutton_add_product.clicked.connect(self.chemistry_add_product)
+
+        # TODO implement 'duplicate'
+        ui.toolbutton_delete_reaction.setEnabled(False) # Need a selection
+        ui.toolbutton_delete_reactant.setEnabled(False)
+        ui.toolbutton_delete_reaction.setEnabled(False)
+        ui.tablewidget_chemistry.itemSelectionChanged.connect(self.chemistry_handle_selection)
         ui.lineedit_reaction_name.editingFinished.connect(self.set_reaction_name)
         class RxnIdValidator(QValidator):
             #  Alphanumeric combinations (no special characters excluding underscores)
@@ -64,14 +70,15 @@ class Chemistry(object):
         keys = list(self.project.reactions.keys())
         keys[row] = name
         self.project.reactions = OrderedDict(zip(keys, self.project.reactions.values()))
+        self.set_unsaved_flag()
 
 
-    def handle_chemistry_selection(self):
+    def chemistry_handle_selection(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_chemistry
         row = get_selected_row(tw)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
+        ui.toolbutton_delete_reaction.setEnabled(enabled)
 
         for widget in (ui.label_reaction_name,
                        ui.lineedit_reaction_name,
@@ -79,6 +86,7 @@ class Chemistry(object):
                        ui.groupbox_products,
                        ui.groupbox_heat_of_reaction):
             widget.setEnabled(enabled)
+
         # Note, leave checkbox_keyword_stiff_chemistry enabled
         # even if no selection
         #ui.bottom_frame.setEnabled(enabled)
@@ -93,11 +101,13 @@ class Chemistry(object):
             for widget in widget_iter(ui.groupbox_heat_of_reaction):
                 if isinstance(widget, LineEdit):
                     widget.clear()
+            self.chemistry_current_reaction = None
             return
 
         tw = ui.tablewidget_chemistry
         name = tw.item(row,0).text()
         ui.lineedit_reaction_name.setText(name)
+        self.chemistry_current_reaction = name
 
         def handle_phase(tw, row, idx):
             old_item = tw.cellWidget(row, 1)
@@ -109,6 +119,7 @@ class Chemistry(object):
             if old_item:
                 old_item.deleteLater()
             self.chemistry_update_totals()
+            self.set_unsaved_flag()
 
         def make_phase_item(tw, row, phase):
             cb = ComboBox()
@@ -126,6 +137,7 @@ class Chemistry(object):
         def handle_species(tw, row, idx):
             tw.cellWidget(row,2).setText('1.0')
             self.chemistry_update_totals()
+            self.set_unsaved_flag()
 
         def make_species_item(tw, row, phase, species):
             cb = QComboBox()
@@ -142,6 +154,7 @@ class Chemistry(object):
             if widget.text() == '':
                 widget.setText('1.0')
             self.chemistry_update_totals()
+            self.set_unsaved_flag()
 
         def make_coeff_item(tw, row, val):
             le = LineEdit()
@@ -160,6 +173,8 @@ class Chemistry(object):
             tw.clearContents()
             # Add a "total" row, only if there is data
             tw.setRowCount(len(data)+1 if data else 0)
+            import pprint
+            pprint.pprint(data)
             for (row, (species, coeff)) in enumerate(data):
                 phase = self.find_species_phase(species)
                 if phase is None:
@@ -207,6 +222,7 @@ class Chemistry(object):
     def chemistry_num_phases(self, alias_list):
         """determine minimum number of phases required to find all listed species,
         i.e. if this returns 1, reaction is homogeneous"""
+        # Should go away after species/alias integration
         if not alias_list:
             return 0
         all_aliases = [(0, list(data.get('alias', name) for (name, data) in self.fluid_species.items()))]
@@ -231,7 +247,6 @@ class Chemistry(object):
         r = [(len(set(indices)), indices) # Sort by # of distinct elements]
              for indices in recurse(alias_list)]
         return min(r)[0] if r else 0
-
 
 
     def chemistry_update_enabled(self):
@@ -283,11 +298,31 @@ class Chemistry(object):
         tw.updateGeometry() #? needed?
 
 
-    def chemistry_add(self):
-        pass
+    def chemistry_add_reaction(self):
+        ui = self.ui.chemistry
+        aliases = list(self.species_all_aliases())
+        if not aliases:
+            return
+        count = 1
+        while 'Reaction_%s' % count in self.project.reactions:
+            count += 1
+        name = 'Reaction_%s' % count
+        # TODO find first unused
+        alias = aliases[0]
+        chem_eq = '%s --> %s' % (alias, alias)
+        self.project.reactions[name] = (
+            {'reactants': [(alias, 1.0)],
+             'products': [(alias, 1.0)],
+             'chem_eq': chem_eq},
+            {})
 
+        self.set_unsaved_flag()
+        self.setup_chemistry()
+        # Auto-select new reaction
+        tw = ui.tablewidget_chemistry
+        tw.setCurrentCell(tw.rowCount()-1, 0)
 
-    def chemistry_delete(self):
+    def chemistry_delete_reaction(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_chemistry
         row = get_selected_row(tw)
@@ -302,13 +337,37 @@ class Chemistry(object):
         #self.setup_chemistry() # handled by selection change
 
 
+    def chemistry_add_reactant(self):
+        ui = self.ui.chemistry
+        aliases = self.species_all_aliases()
+        aliases = list(aliases)
+        if not aliases:
+            return
+        #TODO Find first unused
+        alias = aliases[0]
+        print        ('A', self.project.reactions[self.chemistry_current_reaction][0]['reactants'])
+        self.project.reactions[self.chemistry_current_reaction][0]['reactants'].append(
+            (alias, 1.0))
+        print        ('B', self.project.reactions[self.chemistry_current_reaction][0]['reactants'])
+        self.setup_chemistry()
+        self.chemistry_handle_selection() # force update
+
+    def chemistry_delete_reactant(self):
+        pass
+
+    def chemistry_add_product(self):
+        pass
+
+    def chemistry_delete_product(self):
+        pass
+
     def setup_chemistry(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_chemistry
 
         # Note, because we clear and reconstruct this tab each time
         #  we lose the current selection
-        tw.clearContents()
+        old_selection = get_selected_row(tw)
 
         def make_item(sval):
             item = QtWidgets.QTableWidgetItem(sval)
@@ -328,15 +387,17 @@ class Chemistry(object):
             item = make_item(text)
             tw.setItem(row, 1, item)
 
-        self.fixup_chemistry_table(tw, stretch_column=1)
         # Autoselect if only 1 row
         if tw.rowCount() == 1:
             tw.setCurrentCell(0, 0)
+        elif old_selection is not None and old_selection < tw.rowCount():
+            tw.setCurrentCell(old_selection, 0)
+        else:
+            self.chemistry_handle_selection() # enable/disable inputs
 
+        self.fixup_chemistry_table(tw, stretch_column=1)
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
             self.fixup_chemistry_table(tw)
-        self.handle_chemistry_selection() # enable/disable inputs
-
 
     def chemistry_extract_phases(self):
         """extract additional chemistry info after loading project file"""
