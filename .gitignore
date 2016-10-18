@@ -12,10 +12,12 @@
 *.mfx
 *.mic
 *.mod
+*.nfs*
 *.o
 *.pid
 *.pvd
 *.pyc
+*.swp
 *.vtk
 *.vtp
 *~
@@ -24,6 +26,7 @@
 Makefile
 Makefile.in
 Makefile.usr.in
+TAGS
 VTU_FRAME_INDEX.TXT
 aclocal.m4
 autom4te.cache
@@ -31,9 +34,6 @@ build
 compile
 configure
 dist
-gui/uifiles/*.py
 install-sh
+mfixgui/uifiles/*.py
 tmp.*
-*.swp
-*.nfs*
-TAGS
