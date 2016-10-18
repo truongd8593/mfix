@@ -15,6 +15,7 @@
       IF(myPE /= PE_IO) RETURN
 
       CALL WRITE_DAT_HEADER('POST_VEL.dat','Vel')
+      CALL WRITE_NRM_HEADER('POST_VEL_NORMS.dat')
 
 
       RETURN
@@ -70,5 +71,41 @@
       CLOSE(fUNIT)
       RETURN
       END SUBROUTINE WRITE_DAT_HEADER
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE WRITE_NRM_HEADER(FNAME)
+
+      use run, only: DESCRIPTION
+
+      use param1, only: UNDEFINED
+      use geometry, only: JMAX
+      use bc, only: DELP_X
+      use toleranc, only: tol_resid
+      use iterate, only: max_nit
+
+      IMPLICIT NONE
+
+      CHARACTER(len=*) :: FNAME
+
+! logical used for testing is the data file already exists
+      LOGICAL :: EXISTS
+! file unit for heat transfer data
+      INTEGER, PARAMETER :: fUNIT = 2030
+
+      INQUIRE(FILE=FNAME,EXIST=EXISTS)
+      IF (.NOT.EXISTS) THEN
+         OPEN(UNIT=fUNIT,FILE=FNAME,STATUS='NEW')
+         WRITE(fUNIT, 1000) trim(DESCRIPTION)
+      ENDIF
+
+ 1000 FORMAT('#',/'#',/'#',25x,A)
+
+      CLOSE(fUNIT)
+      RETURN
+      END SUBROUTINE WRITE_NRM_HEADER
 
       END SUBROUTINE WRITE_USR0
