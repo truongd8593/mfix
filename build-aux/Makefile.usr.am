@@ -24,8 +24,6 @@ obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix$(EXEEXT)
-
 LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix$(EXEEXT)
@@ -169,13 +167,16 @@ pymfix_src = \
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
-mfix$(EXEEXT): mfixsolver.so
-		-rm -f $@
-		$(LN_S) $(top_srcdir)/../mfixgui/pymfix.py $@
 
 mfixsolver.so: $(LIBMFIX).md5
-mfixsolver.so: $(pymfix_src) $(src_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
+mfixsolver.so: $(pymfix_src) $(mfix_LDADD)
 	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m mfixsolver -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+
+.DEFAULT_GOAL := mfixsolver.so
+
+else
+
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 endif
 

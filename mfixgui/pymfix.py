@@ -35,24 +35,6 @@ from flask import Flask, jsonify, make_response, render_template, request, redir
 sys.path.append(os.getcwd())
 pidfilename = None
 
-# append the path of the symlink __file__ (not its realpath)
-sys.path.append(os.path.dirname(__file__))
-
-# Fortran modules are in uppercase since Fortran uses uppercase (even though it's
-# conventional to only use uppercase for constants)
-from mfixsolver import compar as COMPAR
-from mfixsolver import des_time_march as DES_TIME_MARCH
-from mfixsolver import discretelement as DEM
-from mfixsolver import iterate as ITERATE
-from mfixsolver import main as MAIN
-from mfixsolver import debug as DEBUG
-from mfixsolver import parallel_mpi as PARALLEL_MPI
-from mfixsolver import residual as RESIDUAL
-from mfixsolver import run as RUN
-from mfixsolver import step as STEP
-
-PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
-
 FLASK_APP = Flask(__name__)
 FLASK_APP.config['SECRET_KEY'] = \
             ''.join([random.choice(string.digits + string.ascii_letters)
@@ -114,9 +96,12 @@ def main():
     """The main function starts MFIX on a separate thread, then
        start the Flask server. """
 
-    mfix_dat, paused, port, keyword_args = parse_command_line_arguments()
-
     global mfix_thread
+    global mfix_dat
+    global paused
+    global port
+    global keyword_args
+
     mfix_thread = Mfix(mfix_dat, paused, keyword_args, port=port)
     mfix_thread.start()
 
@@ -799,6 +784,8 @@ def parse_command_line_arguments():
     parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
                         type=check_port,
                         help='specify a port number to use')
+    parser.add_argument('-k', '--solver', action='store', default=None,
+                        help='specify an MFIX solver to use (mfixsolver.so or mfixsolver.dll)')
     parser.add_argument('-s', '--start', action='store_false',
                         help='do not wait for api connection to run')
     parser.add_argument('-v', '--version', action='version', version=__version_str__)
@@ -806,7 +793,28 @@ def parse_command_line_arguments():
     args = parser.parse_args()
 
     passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
-    return args.file.ljust(80), args.start, args.port, passed_kwargs
+    return args.file.ljust(80), args.start, args.port, passed_kwargs, args.solver
+
+mfix_dat, paused, port, keyword_args, solver = parse_command_line_arguments()
+
+if solver:
+    sys.path.insert(0,os.path.dirname(solver))
+
+# Fortran modules are in uppercase since Fortran uses uppercase (even though it's
+# conventional to only use uppercase for constants)
+from mfixsolver import compar as COMPAR
+from mfixsolver import des_time_march as DES_TIME_MARCH
+from mfixsolver import discretelement as DEM
+from mfixsolver import iterate as ITERATE
+from mfixsolver import main as MAIN
+from mfixsolver import debug as DEBUG
+from mfixsolver import parallel_mpi as PARALLEL_MPI
+from mfixsolver import residual as RESIDUAL
+from mfixsolver import run as RUN
+from mfixsolver import step as STEP
+
+import mfixsolver
+log.info("Using solver: %s ", mfixsolver.__file__)
 
 if __name__ == '__main__':
     main()
