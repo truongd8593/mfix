@@ -15,7 +15,7 @@ import shutil
 import glob
 import subprocess
 import json
-
+import sys
 
 try:
     from pyqtnode import NodeWidget, Node, tools
@@ -625,9 +625,14 @@ class WorkflowWidget(QtWidgets.QWidget):
                 job.stop_mfix()
                 p['status'] = 'stopped'
 
+            # look for *.SP? files
+            spx_files = glob.glob(os.path.join(p['path'], '*SP?'))
+
             cmd = copy.deepcopy(p['cmd'])
-            #TODO: not hard code restart_1
-            cmd.append('run_type=restart_1')
+            if spx_files:
+                cmd.append('run_type=restart_1')
+            else:
+                cmd.append('run_type=restart_2')
 
             self._run(p['path'], p['file'], cmd, p['queue'])
             p['status'] = 'waiting for pid'
