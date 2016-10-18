@@ -28,7 +28,7 @@ except ImportError:
 # local imports
 from mfixgui.widgets.base import Table
 from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY
+from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY, is_vnc
 from mfixgui.constants import PARAMETER_DICT
 from mfixgui.job import JobManager
 from mfixgui.project import Project
@@ -202,6 +202,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.file_watcher = QtCore.QFileSystemWatcher()
         self.file_watcher.directoryChanged.connect(self.create_job_manager)
         self.mock_parents = []
+        self.running_in_vnc = is_vnc()
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
@@ -666,7 +667,10 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         #TODO: this is hard coded to > python gui.py project
         gui_path = os.path.join(SCRIPT_DIRECTORY, 'gui.py')
-        cmd = ['python', gui_path, path]
+        cmd = []
+        if self.running_in_vnc:
+            cmd.append('vglrun')
+        cmd += ['python', gui_path, path]
         subprocess.Popen(cmd)
 
 

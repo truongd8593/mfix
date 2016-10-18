@@ -17,6 +17,7 @@ import copy
 import random
 import operator
 from collections import OrderedDict
+import subprocess
 
 log = logging.getLogger(__name__)
 
@@ -446,6 +447,17 @@ def sort_dict(dict_, key, start=0):
         [(k, dict_[old_k])
          for k, (old_k, v) in enumerate(sorted([(k, v[key])
          for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
+
+
+def is_vnc():
+    """determine if the gui is running in vnc"""
+    if os.name == 'nt':
+        return False
+
+    xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
+
+    return 'vnc' in xdpyinfo
+
 
 if __name__ == '__main__':
     def test_recurse_dict():
