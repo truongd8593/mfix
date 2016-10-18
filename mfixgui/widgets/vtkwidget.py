@@ -272,7 +272,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.style_3d.SetDefaultRenderer(self.vtkrenderer)
         self.style_2d = vtk.vtkInteractorStyleImage()
         self.style_2d.SetDefaultRenderer(self.vtkrenderer)
-        self.vtkiren.SetInteractorStyle(self.style_2d)
+        self.vtkiren.SetInteractorStyle(self.style_3d)
 
         # Orientation Arrows Marker Widget
         self.axes = vtk.vtkAxesActor()
@@ -545,13 +545,7 @@ class VtkWidget(QtWidgets.QWidget):
         """receive keyword changed from project manager"""
 
         if key == 'no_k':
-            if newValue:
-                self.vtkiren.SetInteractorStyle(self.style_2d)
-                self.view_flip[1] = False
-                self.set_view()
-            else:
-                self.vtkiren.SetInteractorStyle(self.style_3d)
-                self.perspective(False)
+            self.change_interaction(newValue)
         elif key == 'out_stl_value':
             self.ui.mesh.checkbox_internal_external_flow.setChecked(newValue == 1.0)
 
@@ -565,6 +559,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
+        self.change_interaction()
         self.render()
 
     # --- save/load ---
@@ -2122,6 +2117,21 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
     # --- view ---
+    def change_interaction(self, style_2d=False):
+        if style_2d:
+            self.vtkiren.SetInteractorStyle(self.style_2d)
+            self.view_flip[1] = False
+            self.set_view()
+            enabled = False
+        else:
+            self.vtkiren.SetInteractorStyle(self.style_3d)
+            self.perspective(False)
+            enabled = True
+
+        for btn in [self.toolbutton_perspective, self.toolbutton_view_yz,
+                    self.toolbutton_view_xz]:
+            btn.setEnabled(enabled)
+
     def perspective(self, parallel=None):
         """change the perspective of the vtk scene"""
         camera = self.vtkrenderer.GetActiveCamera()
