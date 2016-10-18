@@ -1983,8 +1983,12 @@ class MfixGui(QtWidgets.QMainWindow,
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
-        return QtWidgets.QFileDialog.getOpenFileName(
+        project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir)
+        if PYQT5:
+            # qt4/qt5 compat hack
+            project_path = project_path[0]
+        return project_path
 
     def handle_open(self):
         """handler for toolbar Open button"""
@@ -1997,10 +2001,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.clear_unsaved_flag()
 
         project_path = self.get_open_filename()
-        # qt4/qt5 compat hack
-        #if type(project_path) == tuple:
-        if PYQT5:
-            project_path = project_path[0]
         if not project_path:
             return # user pressed Cancel
         self.open_project(project_path)
