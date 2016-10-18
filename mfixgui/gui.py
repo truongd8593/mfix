@@ -1984,7 +1984,8 @@ class MfixGui(QtWidgets.QMainWindow,
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
         project_path = QtWidgets.QFileDialog.getOpenFileName(
-            self, 'Open Project Directory', project_dir)
+            self, 'Open Project Directory', project_dir,
+            'MFIX Project (*.mfx *.dat);; All Files (*)')
         if PYQT5:
             # qt4/qt5 compat hack
             project_path = project_path[0]
