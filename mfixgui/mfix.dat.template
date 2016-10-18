@@ -90,8 +90,8 @@
   IC_W_g(1) = 0.0
 
 #!MFIX-GUI SECTION
-#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": [1.0, 1.0,
-#!MFIX-GUI   1.0], "to": [{"eq": "xmax", "__type__": "equation", "type":
+#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": "#ffffff",
+#!MFIX-GUI   "to": [{"eq": "xmax", "__type__": "equation", "type":
 #!MFIX-GUI   "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"},
 #!MFIX-GUI   {"eq": "zmax", "__type__": "equation", "type": "float"}], "from":
 #!MFIX-GUI   [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq":
