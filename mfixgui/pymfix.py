@@ -40,16 +40,16 @@ sys.path.append(os.path.dirname(__file__))
 
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
-from solver import compar as COMPAR
-from solver import des_time_march as DES_TIME_MARCH
-from solver import discretelement as DEM
-from solver import iterate as ITERATE
-from solver import main as MAIN
-from solver import debug as DEBUG
-from solver import parallel_mpi as PARALLEL_MPI
-from solver import residual as RESIDUAL
-from solver import run as RUN
-from solver import step as STEP
+from mfixsolver import compar as COMPAR
+from mfixsolver import des_time_march as DES_TIME_MARCH
+from mfixsolver import discretelement as DEM
+from mfixsolver import iterate as ITERATE
+from mfixsolver import main as MAIN
+from mfixsolver import debug as DEBUG
+from mfixsolver import parallel_mpi as PARALLEL_MPI
+from mfixsolver import residual as RESIDUAL
+from mfixsolver import run as RUN
+from mfixsolver import step as STEP
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 
