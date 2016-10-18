@@ -54,7 +54,6 @@ from mfixgui.tools.general import (to_text_string, get_icon, insert_append_actio
 from mfixgui.tools.simpleeval import VALID_EXPRESION_NAMES
 VALID_EXP_NAMES = VALID_EXPRESION_NAMES + SPECIAL_PARAMETERS
 
-
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
@@ -1202,3 +1201,11 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |
                 QtCore.Qt.ItemIsSelectable)
+
+BASE_WIDGETS = {
+    'lineedit': LineEdit,
+    'combobox': ComboBox,
+    'checkbox': CheckBox,
+    'spinbox': SpinBox,
+    'doublespinbox': DoubleSpinBox,
+}

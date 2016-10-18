@@ -394,7 +394,7 @@ class JobManager(QObject):
 
     def submit_command(self, cmd, dmp_enabled, smp_enabled):
 
-        with open(os.path.join(get_mfix_home(), 'gui', 'run_hpcee')) as qsub_template:
+        with open(os.path.join(get_mfix_home(), 'mfixgui', 'run_hpcee')) as qsub_template:
             template_text = qsub_template.read()
 
         cores = self.parent.run_dialog.spinbox_cores_requested.value()

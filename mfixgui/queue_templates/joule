@@ -1,0 +1,65 @@
+#!/bin/csh -ex
+
+## Special values
+## SCRIPT - the path of this script, after replacement in the run directory
+## PROJECT_NAME - name of the opened project
+## JOB_ID - the job id extracted using job_id_regex
+
+## CONFIG
+## [options]
+## name: Joule
+## job_id_regex: (\d+)
+## submit_cmd: qsub ${SCRIPT}
+## delete_cmd: qdel ${JOB_ID}
+## status_cmd: qstat -j ${JOB_ID}
+##
+## [JOB_NAME]
+## widget: lineedit
+## label: Job Name
+## value: ${PROJECT_NAME}
+##
+## [CORES]
+## widget: spinbox
+## label: Number of Cores
+## value: 16
+##
+## [QUEUE]
+## widget: combobox
+## label: Queue
+## value: general
+## items: general;mgn;dev;serial
+##
+## [PARALLEL_ENV]
+## widget: combobox
+## label: Parallel Environment
+## items: serial;mpi;dev
+## value: serial
+##
+## [MODULES]
+## widget: list
+## label: Modules
+## items: anaconda/2.7;
+##
+## END CONFIG
+
+## The Script
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N ${JOB_NAME}
+##
+## Number of cores to request
+#$ -pe ${PARALLEL_ENV} ${CORES}
+##
+#$ -r n
+##
+## Queue Name
+#$ -q ${QUEUE}
+
+
+##Load Modules
+module load ${MODULES}
+
+##Run the parallel job
+${MPIRUN} ${COMMAND}

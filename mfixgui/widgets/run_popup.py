@@ -6,6 +6,7 @@ import signal
 import sys
 import tempfile
 import time
+import StringIO
 
 from collections import OrderedDict
 from subprocess import Popen, PIPE
@@ -13,19 +14,42 @@ from glob import glob
 
 from qtpy import PYQT5
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
-from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox
+from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox, QLabel, QComboBox
 
-from mfixgui.tools.general import get_mfix_home
+from mfixgui.tools.general import get_mfix_home, clear_layout
+from mfixgui.widgets.base import BASE_WIDGETS
 
 try:
     from PyQt5 import uic
 except ImportError:
     from PyQt4 import uic
 
+try: #2.7
+    import ConfigParser as configparser
+except: # 3
+    import configparser
+
+
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
 MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
+
+def extract_config(path):
+    '''Given a path to a file, extract the section that starts with ## CONFIG
+    and ends with ## END CONFIG'''
+    s = []
+    record = False
+    with open(path) as f:
+        for line in f:
+            l = line.strip()
+            if l == '## CONFIG':
+                record = True
+            elif l == '## END CONFIG':
+                break
+            elif record:
+                s.append(l.replace('##','').strip())
+    return '\n'.join(s)
 
 class RunPopup(QDialog):
 
@@ -74,6 +98,7 @@ class RunPopup(QDialog):
         self.ui.button_queue_cancel.clicked.connect(self.handle_abort)
 
         self.initialize_ui()
+        self.__init_templates()
 
     # UI update functions
 
@@ -113,7 +138,54 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
-        self.lineedit_job_name.setText(self.parent.project.get_value('run_name',default=''))
+        #self.lineedit_job_name.setText(self.parent.project.get_value('run_name',default=''))
+
+    def __init_templates(self):
+
+        search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
+
+
+        self.templates = {}
+        for root, dirs, files in os.walk(search_p):
+            for f in files:
+                p = os.path.join(root, f)
+                config = extract_config(p)
+                c = configparser.ConfigParser()
+                c.readfp(StringIO.StringIO(config))
+
+                d = OrderedDict([(s, dict(c.items(s))) for s in c.sections()])
+                d['path'] = p
+
+                name = f
+                if 'options' in d:
+                    name = d['options'].get('name', name)
+                self.templates[name] = d
+
+
+        self.ui.combobox_template.addItems(list(self.templates.keys()))
+        self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
+        self.update_queue_widgets()
+
+    def update_queue_widgets(self):
+
+        l = self.ui.groupbox_queue_options_gridlayout
+        clear_layout(l)
+        tp =  self.ui.combobox_template.currentText()
+
+        wids_data = self.templates[tp]
+
+        # add the widgets
+        for i, wid in enumerate(list(wids_data.keys())):
+            wd = wids_data[wid]
+            if not isinstance(wd, dict) or wid == 'options': continue
+
+            label = QLabel(wd.get('label'))
+            l.addWidget(label, i, 0)
+            widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
+            if isinstance(widget, QComboBox):
+                widget.addItems(wd.get('items','').split(';'))
+            widget.updateValue('', wd.get('value'))
+            l.addWidget(widget, i, 1)
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
@@ -132,11 +204,6 @@ class RunPopup(QDialog):
         self.ui.button_queue_submit.setEnabled(self.mfix_available)
 
         self.update_no_mfix_warning()
-
-        # TODO: create user controls for local/remote
-        mode = 'local'
-        queue_enabled = mode == 'queue'
-        self.ui.groupbox_queue_options.setEnabled(queue_enabled)
 
         self.ui.groupbox_run_options.setEnabled(self.mfix_available)
         cfg = self.get_exe_flags(self.mfix_exe)

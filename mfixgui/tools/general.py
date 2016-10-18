@@ -447,6 +447,13 @@ def sort_dict(dict_, key, start=0):
          for k, (old_k, v) in enumerate(sorted([(k, v[key])
          for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
 
+def clear_layout(layout):
+    """given a layout, clear all widgets"""
+    while layout.count():
+        item = layout.takeAt(0)
+        widget = item.widget()
+        widget.deleteLater()
+
 if __name__ == '__main__':
     def test_recurse_dict():
         d = {1: {2:3,
