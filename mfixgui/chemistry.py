@@ -77,6 +77,33 @@ class Chemistry(object):
         self.set_unsaved_flag()
 
 
+    def chemistry_restrict_phases(self):
+        ui = self.ui.chemistry
+        phases = {}
+        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            for row in range(tw.rowCount()-1): # Skip 'total'
+                cb = tw.cellWidget(row, 0)
+                phase = cb.currentText()
+                phases[(tw, row)] = phase
+        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            # We need to determine, for each combobox item, how many
+            # phases would be referenced if the combobox were set to that
+            # item
+            for row in range(tw.rowCount()-1):
+                cb = tw.cellWidget(row, 0)
+                orig_phase = cb.currentText()
+                for i in range(cb.count()):
+                    item = get_combobox_item(cb, i)
+                    phases[(tw, row)] = item.text()
+                    enabled = len(set(phases.values())) <= 2 # Allow at most 2-phase reactions
+                    set_item_enabled(item, enabled)
+                    if not enabled:
+                        item.setToolTip('Only single or 2-phase reactions are currently supported')
+                    else:
+                        item.setToolTip(None)
+                phases[(tw, row)] = orig_phase
+
+
     def chemistry_handle_selection(self):
         # selection callback for main table
         ui = self.ui.chemistry
@@ -124,6 +151,7 @@ class Chemistry(object):
             if old_item:
                 old_item.deleteLater()
             self.chemistry_update_totals()
+            self.chemistry_restrict_phases()
             self.set_unsaved_flag()
 
         def make_phase_item(tw, row, phase):
@@ -216,6 +244,7 @@ class Chemistry(object):
 
             self.fixup_chemistry_table(tw)
         self.fixup_chemistry_table(ui.tablewidget_reactions, stretch_column=1)
+        self.chemistry_restrict_phases()
         self.chemistry_update_totals()
 
     def chemistry_update_chem_eq(self):
@@ -464,6 +493,7 @@ class Chemistry(object):
         self.fixup_chemistry_table(tw, stretch_column=1)
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
             self.fixup_chemistry_table(tw)
+
 
     def chemistry_extract_phases(self):
         """extract additional chemistry info after loading project file"""
