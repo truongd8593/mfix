@@ -28,8 +28,12 @@ class Chemistry(object):
         # TODO implement 'duplicate'
         ui.toolbutton_delete_reaction.setEnabled(False) # Need a selection
         ui.toolbutton_delete_reactant.setEnabled(False)
-        ui.toolbutton_delete_reaction.setEnabled(False)
+        ui.toolbutton_delete_product.setEnabled(False)
         ui.tablewidget_reactions.itemSelectionChanged.connect(self.chemistry_handle_selection)
+        ui.tablewidget_reactants.itemSelectionChanged.connect(self.chemistry_handle_reactant_selection)
+        ui.tablewidget_products.itemSelectionChanged.connect(self.chemistry_handle_product_selection)
+
+
         ui.lineedit_reaction_name.editingFinished.connect(self.set_reaction_name)
         class RxnIdValidator(QValidator):
             #  Alphanumeric combinations (no special characters excluding underscores)
@@ -74,6 +78,7 @@ class Chemistry(object):
 
 
     def chemistry_handle_selection(self):
+        # selection callback for main table
         ui = self.ui.chemistry
         tw = ui.tablewidget_reactions
         row = get_selected_row(tw)
@@ -246,6 +251,20 @@ class Chemistry(object):
                 tot += m_w * float(coeff)
             tot = round(tot, 6)
             tw.item(nrows-1, 2).setText(str(tot))
+
+    def chemistry_handle_reactant_selection(self):
+        ui = self.ui.chemistry
+        tw = ui.tablewidget_reactants
+        row = get_selected_row(tw)
+        enabled = (row is not None)
+        ui.toolbutton_delete_reactant.setEnabled(enabled)
+
+    def chemistry_handle_product_selection(self):
+        ui = self.ui.chemistry
+        tw = ui.tablewidget_products
+        row = get_selected_row(tw)
+        enabled = (row is not None)
+        ui.toolbutton_delete_product.setEnabled(enabled)
 
 
     def chemistry_num_phases(self, alias_list):
