@@ -33,17 +33,17 @@
          do i=istart2, iend2
             do j=jstart2, jend2
 
-               imjmk = funijk(i-1,j-1,k)
-               imj_k = funijk(i-1,j,  k)
-               imjpk = funijk(i-1,j+1,k)
+               imjmk = bound_funijk(i-1,j-1,k)
+               imj_k = bound_funijk(i-1,j,  k)
+               imjpk = bound_funijk(i-1,j+1,k)
 
-               i_jmk = funijk(i,  j-1,k)
-               i_j_k = funijk(i,  j,  k)
-               i_jpk = funijk(i,  j+1,k)
+               i_jmk = bound_funijk(i,  j-1,k)
+               i_j_k = bound_funijk(i,  j,  k)
+               i_jpk = bound_funijk(i,  j+1,k)
 
-               ipjmk = funijk(i+1,j-1,k)
-               ipj_k = funijk(i+1,j,  k)
-               ipjpk = funijk(i+1,j+1,k)
+               ipjmk = bound_funijk(i+1,j-1,k)
+               ipj_k = bound_funijk(i+1,j,  k)
+               ipjpk = bound_funijk(i+1,j+1,k)
 
                UgN = AVG_Y(AVG_X_E(U_G(imj_k),U_G(i_j_k),i),  &
                   AVG_X_E(U_G(imjpk),U_G(i_jpk),I),j)
