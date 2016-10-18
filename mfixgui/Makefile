@@ -41,11 +41,11 @@ test-load-all:
 	find .. -name mfix.dat -print0 | DISPLAY=:99 MFIX_NO_VTK=1 xargs -0 -n 1 ./run.sh -lwarning -q |& egrep --line-buf -v 'GL|Unsupported screen format' >& /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
 	pkill Xvfb
 
-../mfix:
+solver:
 	cd ..; ./configure_mfix --python --smp
-	make -C .. mfix
+	make -C ..
 
-pyinst: all ../mfix
+pyinst: all solver
 	pyinstaller gui.spec
 
 sphinx-docs:

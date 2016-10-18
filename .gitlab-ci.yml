@@ -40,7 +40,7 @@ stages:
 build_job3:
   stage: build
   script:
-    - make -C mfixgui ../mfix
+    - make -C mfixgui solver
   artifacts:
     paths:
     - mfix*
