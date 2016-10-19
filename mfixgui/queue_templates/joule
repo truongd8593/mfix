@@ -61,5 +61,5 @@
 ##Load Modules
 module load ${MODULES}
 
-##Run the parallel job
-${MPIRUN} ${COMMAND}
+##Run the job
+${COMMAND}

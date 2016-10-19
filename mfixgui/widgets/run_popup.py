@@ -14,7 +14,9 @@ from glob import glob
 
 from qtpy import PYQT5
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
-from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox, QLabel, QComboBox
+from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
+                            QDialogButtonBox, QLabel, QComboBox, QSpinBox,
+                            QDoubleSpinBox)
 
 from mfixgui.tools.general import get_mfix_home, clear_layout
 from mfixgui.widgets.base import BASE_WIDGETS
@@ -38,7 +40,8 @@ MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
 def extract_config(path):
     '''Given a path to a file, extract the section that starts with ## CONFIG
     and ends with ## END CONFIG'''
-    s = []
+    config = []
+    script = []
     record = False
     with open(path) as f:
         for line in f:
@@ -46,10 +49,21 @@ def extract_config(path):
             if l == '## CONFIG':
                 record = True
             elif l == '## END CONFIG':
-                break
+                record = False
             elif record:
-                s.append(l.replace('##','').strip())
-    return '\n'.join(s)
+                config.append(l.replace('##','').strip())
+            else:
+                script.append(l)
+    return '\n'.join(config), '\n'.join(script)
+
+def replace_with_dict(string, dict_):
+    '''given a string and a dict, replace all dict.key found in the string
+    with the corresponding dict.value'''
+
+    for key, value in dict_.items():
+        string = string.replace('${'+key+'}', str(value))
+    return string
+
 
 class RunPopup(QDialog):
 
@@ -138,33 +152,34 @@ class RunPopup(QDialog):
                 default='ok')
 
         self.update_dialog_options()
-        #self.lineedit_job_name.setText(self.parent.project.get_value('run_name',default=''))
 
     def __init_templates(self):
 
         search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
 
-
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
             for f in files:
                 p = os.path.join(root, f)
-                config = extract_config(p)
-                c = configparser.ConfigParser()
-                c.readfp(StringIO.StringIO(config))
-
-                d = OrderedDict([(s, dict(c.items(s))) for s in c.sections()])
-                d['path'] = p
-
-                name = f
-                if 'options' in d:
-                    name = d['options'].get('name', name)
-                self.templates[name] = d
-
+                self.add_queue_template(p)
 
         self.ui.combobox_template.addItems(list(self.templates.keys()))
         self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
         self.update_queue_widgets()
+
+    def add_queue_template(self, path):
+        config, script = extract_config(path)
+        c = configparser.ConfigParser()
+        c.readfp(StringIO.StringIO(config))
+
+        d = OrderedDict([(s, dict(c.items(s))) for s in c.sections()])
+        d['path'] = path
+        d['script'] = script
+
+        name = os.path.basename(path)
+        if 'options' in d:
+            name = d['options'].get('name', name)
+        self.templates[name] = d
 
     def update_queue_widgets(self):
 
@@ -186,6 +201,7 @@ class RunPopup(QDialog):
                 widget.addItems(wd.get('items','').split(';'))
             widget.updateValue('', wd.get('value'))
             l.addWidget(widget, i, 1)
+            wd['widget_obj'] = widget
 
     def populate_combobox_mfix_exe(self):
         """ Add items from self.mfix_exe_list to combobox,
@@ -298,8 +314,7 @@ class RunPopup(QDialog):
         msg = 'Submitting %s' % ' '.join(run_cmd)
         self.parent.print_internal(msg, color='blue')
 
-        self.submit_command(
-            cmd=run_cmd)
+        self.submit_command(cmd=run_cmd)
 
     def handle_resume(self):
         """resume previously stopped mfix run"""
@@ -511,7 +526,7 @@ class RunPopup(QDialog):
         else:
             smp = []
 
-        run_cmd = smp + dmp + [self.mfix_exe,]
+        run_cmd = smp + dmp + [self.mfix_exe]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
@@ -523,12 +538,41 @@ class RunPopup(QDialog):
                         'nodesj=%s'%nodesj]
             if not self.parent.project.get_value('no_k'):
                 run_cmd += ['nodesk=%s'%nodesk]
-
-
         return run_cmd
 
     def submit_command(self, cmd):
-        self.parent.job_manager.submit_command(cmd, self.dmp_enabled(), self.smp_enabled())
+
+        tp =  self.ui.combobox_template.currentText()
+        template = self.templates[tp]
+
+        # collect widget values
+        replace_dict = {
+            'PROJECT_NAME': self.parent.project.get_value('run_name',default=''),
+            'COMMAND': ' '.join(cmd),
+        }
+        for name, wid in template.items():
+            if not isinstance(wid, dict): continue
+
+            if 'widget_obj' in wid:
+                wid_obj = wid['widget_obj']
+                if isinstance(wid_obj, (QSpinBox, QDoubleSpinBox)):
+                    v = wid_obj.value()
+                else:
+                    v = wid_obj.value
+                replace_dict[name] = v
+
+        # replace twice ti make sure that any references added the first time
+        # get replaced
+        script = replace_with_dict(template['script'], replace_dict)
+        script = replace_with_dict(script, replace_dict)
+
+        print(script)
+
+        sub_cmd = template['options'].get('submit_cmd')
+        if not sub_cmd:
+            self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
+
+        #self.parent.job_manager.submit_command(script, sub_cmd)
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
