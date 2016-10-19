@@ -139,7 +139,7 @@ class RunPopup(QDialog):
 
         self.ui.combobox_template.addItems(list(self.templates.keys()))
         self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
-        self.update_queue_widgets()
+        #self.update_queue_widgets()
 
     def set_current_template(self, name):
         '''set the template file combobox'''
@@ -183,9 +183,13 @@ class RunPopup(QDialog):
             label = QLabel(wd.get('label', wid))
             l.addWidget(label, i, 0)
             widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
-            if isinstance(widget, QComboBox):
-                widget.addItems(wd.get('items','').split(';'))
-            widget.updateValue('', wd.get('value'))
+            items = wd.get('items','').split('|')
+	    v = wd.get('value')
+	    if isinstance(widget, QComboBox) and items:
+                widget.addItems(items)
+	        if v not in items:
+		    v = items[0]
+            widget.updateValue('', v)
             widget.help_text = wd.get('help', 'No help avaliable.')
             l.addWidget(widget, i, 1)
             wd['widget_obj'] = widget
@@ -566,12 +570,10 @@ class RunPopup(QDialog):
                     v = wid_obj.value
                 replace_dict[name] = v
 
-        # replace twice ti make sure that any references added the first time
+        # replace twice to make sure that any references added the first time
         # get replaced
         script = replace_with_dict(template['script'], replace_dict)
         script = replace_with_dict(script, replace_dict)
-
-        print(script)
 
         sub_cmd = template['options'].get('submit', False)
         if not sub_cmd:
@@ -581,12 +583,9 @@ class RunPopup(QDialog):
         status_cmd = template['options'].get('status', False)
         job_id_regex = template['options'].get('job_id_regex', None)
 
-
         self.parent.job_manager.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
-    def start_command(self, cmd, cwd, env):
-        """Start MFIX in QProcess"""
-
+    def remove_mfix_stop(self):
         mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         if os.path.exists(mfix_stop_file):
             try:
@@ -594,6 +593,11 @@ class RunPopup(QDialog):
             except OSError:
                 log.error("Cannot remove", mfix_stop_file)
                 return
+
+    def start_command(self, cmd, cwd, env):
+        """Start MFIX in QProcess"""
+
+        self.remove_mfix_stop()
 
         self.mfixproc = QProcess()
         if not self.mfixproc:

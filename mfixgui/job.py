@@ -20,7 +20,7 @@ import uuid
 from functools import partial
 import re
 
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 log = logging.getLogger(__name__)
 
@@ -394,11 +394,14 @@ class JobManager(QObject):
 
     def submit_command(self, qscript, submit_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
 
-        qsub_script = tempfile.NamedTemporaryFile()
-        qsub_script.write(qscript)
-        qsub_script.flush() # Keep tmpfile open
+        prj_dir = self.parent.get_project_dir()
+        script_name = '.qsubmit_script'
 
-        replace_dict['SCRIPT'] = qsub_script.name
+        # write the script
+        with open(os.path.join(prj_dir, script_name), 'w') as f:
+            f.write(qscript)
+
+        replace_dict['SCRIPT'] = script_name
 
         submit_cmd = replace_with_dict(submit_cmd, replace_dict)
 
@@ -406,7 +409,8 @@ class JobManager(QObject):
         self.parent.print_internal("Job submit CMD: {}".format(submit_cmd),
                                    color='blue')
 
-        proc = Popen(submit_cmd, shell=True, cwd=self.parent.get_project_dir())
+        proc = Popen(submit_cmd, shell=True, stdout=PIPE, stderr=PIPE,
+	             cwd=self.parent.get_project_dir())
         out, err = proc.communicate()
         if job_id_regex is not None and out:
             job_id = re.findall(job_id_regex, out)
@@ -422,8 +426,8 @@ class JobManager(QObject):
         if err:
             self.parent.error('Error with submission:\n{}'.format(err))
 
-        qsub_script.close() # deletes tmpfile
-        #self.parent.job_manager.save_job_id(job_id)
+        #TODO:
+        # use status_cmd to see if it queued, running, etc.
 
     def stop_mfix(self):
         self.job.stop_mfix()

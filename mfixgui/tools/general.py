@@ -471,7 +471,7 @@ def extract_config(path):
                 config.append(l.replace('##','').strip())
             else:
                 script.append(l)
-    return '\n'.join(config), '\n'.join(script)
+    return '\n'.join(config), '\n'.join(script+[''])
 
 def replace_with_dict(string, dict_):
     '''given a string and a dict, replace all dict.key found in the string

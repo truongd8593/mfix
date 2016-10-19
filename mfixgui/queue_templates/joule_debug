@@ -8,7 +8,7 @@
 
 ## CONFIG
 ## [options]
-## name: Joule
+## name: Joule Debug
 ## job_id_regex: (\d+)
 ## status_regex: ([rqw])
 ## submit: qsub ${SCRIPT}
@@ -69,6 +69,10 @@
 ## Queue Name
 #$ -q ${QUEUE}
 ##
+## Capture stdout and stderr
+#$ -o ${JOB_NAME}.output
+#$ -e ${JOB_NAME}.error
+
 
 ##Load Modules
 module load ${MODULES}
