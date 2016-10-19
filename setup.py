@@ -12,11 +12,16 @@ from codecs import open
 from glob import glob
 from os import path
 
+from mfixgui import build_in_dir
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
 with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
+
+# Eventually we will build pymfix during the install process for Windows
+# build_in_dir(here)
 
 setup(
     name='mfixgui',
@@ -86,7 +91,6 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     # package_data={
-    #     'mfixgui/widgets': ['burcat.pickle'],
     # },
 
     # Although 'package_data' is the preferred approach, in some case you may
@@ -96,14 +100,30 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=[('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
-                ('mfixgui/icons', glob('mfixgui/icons/*')),
-                ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
-                ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
-                ('model', glob('model/*.f')),
-                ('model/des', glob('model/des/*.f')),
-                ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
-                ],
+    data_files=[
+        ('', ['configure_mfix']),
+        ('', glob('*.dll')),
+        ('', glob('*.dylib')),
+        ('', glob('*.so')),
+        ('build-aux', glob('build-aux/*')),
+        ('mfixgui/icons', glob('mfixgui/icons/*')),
+        ('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
+        ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
+        ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
+        ('model', glob('model/*.f')),
+        ('model', glob('model/*.F')),
+        ('model/GhdTheory', glob('model/GhdTheory/*.f')),
+        ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
+        ('model/check_data', glob('model/check_data/*.f')),
+        ('model/chem', glob('model/chem/*.f')),
+        ('model/des', glob('model/des/*.f')),
+        ('model/des/pic', glob('model/des/pic/*.f')),
+        ('model/dmp_modules', glob('model/dmp_modules/*.f')),
+        ('model/dqmom', glob('model/dqmom/*.f')),
+        ('model/include', glob('model/include/*')),
+        ('model/qmomk', glob('model/qmomk/*.f')),
+        ('model/thermochemical', glob('model/thermochemical/*.f')),
+    ],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -114,4 +134,5 @@ setup(
             'pymfix=mfixgui.pymfix:main',
         ],
     },
+    test_suite='mfixgui.tests',
 )

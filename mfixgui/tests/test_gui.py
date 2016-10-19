@@ -21,6 +21,9 @@ import errno
 from mfixgui.tools.general import to_unicode_from_fs
 
 from .helper_functions import TestQApplication, waitFor, waitForWindow
+
+# disable VTK before import gui module
+os.environ['MFIX_NO_VTK'] = '1'
 from mfixgui.gui import MfixGui
 
 class MfixGuiTests(TestQApplication):

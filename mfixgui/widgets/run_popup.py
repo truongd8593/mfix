@@ -16,6 +16,7 @@ from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import QDialog, QApplication, QFileDialog, QDialogButtonBox
 
 from mfixgui.tools.general import get_mfix_home
+from mfixgui import build_in_dir
 
 try:
     from PyQt5 import uic
@@ -25,7 +26,7 @@ except ImportError:
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
+MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe']
 
 class RunPopup(QDialog):
 
@@ -466,6 +467,9 @@ class RunPopup(QDialog):
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
+        conf, make = build_in_dir(cwd)
+        log.info(conf)
+        log.info(make)
         mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         if os.path.exists(mfix_stop_file):
             try:
