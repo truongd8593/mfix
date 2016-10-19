@@ -4,6 +4,7 @@
 ## SCRIPT - the path of this script, after replacement in the run directory
 ## PROJECT_NAME - name of the opened project
 ## JOB_ID - the job id extracted using job_id_regex
+## COMMAND - the command to run mfix
 
 ## CONFIG
 ## [options]
@@ -17,28 +18,40 @@
 ## widget: lineedit
 ## label: Job Name
 ## value: ${PROJECT_NAME}
+## help: The name of the job.
 ##
 ## [CORES]
 ## widget: spinbox
 ## label: Number of Cores
 ## value: 16
+## help: The number of cores to request.
 ##
 ## [QUEUE]
 ## widget: combobox
 ## label: Queue
 ## value: general
 ## items: general;mgn;dev;serial
+## help: The Queue to submit to.
 ##
 ## [PARALLEL_ENV]
 ## widget: combobox
 ## label: Parallel Environment
 ## items: serial;mpi;dev
 ## value: serial
+## help: The parallel environment to use.
 ##
 ## [MODULES]
 ## widget: list
 ## label: Modules
 ## items: anaconda/2.7;
+## help: Select the modules that need to be loaded.
+##
+## [START]
+## widget: checkbox
+## label: Start
+## help: Don't wait for for a command to run.
+## true: -s
+## value: true
 ##
 ## END CONFIG
 
@@ -62,4 +75,4 @@
 module load ${MODULES}
 
 ##Run the job
-${COMMAND}
+${COMMAND}  ${START}

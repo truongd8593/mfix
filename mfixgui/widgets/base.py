@@ -447,7 +447,17 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
 
     def updateValue(self, key, new_value, args=None):
         assert not isinstance(new_value, Keyword)  # value should not be keyword!
-        self.setChecked(new_value)
+        if isinstance(new_value, str):
+            new_value = new_value.lower()
+            if 'true' in new_value:
+                v = True
+            elif 'false' in new_value:
+                v = False
+            else:
+                v = bool(new_value)
+        else:
+            v = new_value
+        self.setChecked(v)
 
     def default(self, val=None):
         if BaseWidget.default(self, val) is None:

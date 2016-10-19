@@ -194,12 +194,13 @@ class RunPopup(QDialog):
             wd = wids_data[wid]
             if not isinstance(wd, dict) or wid == 'options': continue
 
-            label = QLabel(wd.get('label'))
+            label = QLabel(wd.get('label', wid))
             l.addWidget(label, i, 0)
             widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
             if isinstance(widget, QComboBox):
                 widget.addItems(wd.get('items','').split(';'))
             widget.updateValue('', wd.get('value'))
+            widget.help_text = wd.get('help', 'No help avaliable.')
             l.addWidget(widget, i, 1)
             wd['widget_obj'] = widget
 
@@ -571,6 +572,7 @@ class RunPopup(QDialog):
         sub_cmd = template['options'].get('submit_cmd')
         if not sub_cmd:
             self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
+            return
 
         #self.parent.job_manager.submit_command(script, sub_cmd)
 
