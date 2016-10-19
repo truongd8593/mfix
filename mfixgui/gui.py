@@ -9,7 +9,6 @@ __version_str__ = '.'.join([str(i) for i in __version__])
 import argparse
 import glob
 import logging
-import multiprocessing
 import os
 import re
 import shutil
@@ -1702,7 +1701,6 @@ class MfixGui(QtWidgets.QMainWindow,
             return
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
-        self.run_dialog.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
         self.run_dialog.setModal(True)
         self.run_dialog.popup()
 

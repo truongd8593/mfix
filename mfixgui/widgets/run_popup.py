@@ -5,8 +5,9 @@ import os
 import signal
 import sys
 import tempfile
-import time
 import StringIO
+import multiprocessing
+import json
 
 from collections import OrderedDict
 from subprocess import Popen, PIPE
@@ -54,6 +55,7 @@ class RunPopup(QDialog):
         self.mfix_exe = None
         self.mfix_exe_cache = {}
         self.mfix_exe_list = []
+        self.template_values = {}
         self.cmdline = None
         self.parent = parent
         self.project = parent.project
@@ -79,11 +81,13 @@ class RunPopup(QDialog):
         self.signal_submit.connect(self.handle_submit)
         self.signal_cancel.connect(self.close)
 
-        self.ui.button_local_run.clicked.connect(self.handle_run)
-        self.ui.button_queue_submit.clicked.connect(self.handle_submit)
-        self.ui.button_local_cancel.clicked.connect(self.handle_abort)
-        self.ui.button_queue_cancel.clicked.connect(self.handle_abort)
-        self.ui.pushbutton_browse_template.clicked.connect(self.handle_browse_template)
+        ui.button_local_run.clicked.connect(self.handle_run)
+        ui.button_queue_submit.clicked.connect(self.handle_submit)
+        ui.button_local_cancel.clicked.connect(self.handle_abort)
+        ui.button_queue_cancel.clicked.connect(self.handle_abort)
+        ui.pushbutton_browse_template.clicked.connect(self.handle_browse_template)
+
+        ui.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
 
         self.initialize_ui()
         self.init_templates()
@@ -107,6 +111,9 @@ class RunPopup(QDialog):
         else:
             ui.spinbox_threads.setValue(1)
 
+        # lacla/queue
+        self.ui.tabWidget.setCurrentIndex(int(self.gui_comments.get('run_location', 1)))
+
         # issues/149
         #ui.spinbox_nodesi.setValue(self.project.get_value('nodesi', default=1))
         #ui.spinbox_nodesj.setValue(self.project.get_value('nodesj', default=1))
@@ -129,17 +136,61 @@ class RunPopup(QDialog):
 
     def init_templates(self):
 
+        # look for templates in mfixgui/queue_templates
         search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
-
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
             for f in files:
                 p = os.path.join(root, f)
                 self.add_queue_template(p)
 
+        # look for recent templates
+        temp_paths = self.settings.value('queue_templates')
+        if temp_paths:
+            for temp_path in temp_paths.split('|'):
+                if os.path.exists(temp_path):
+                    self.add_queue_template(temp_path)
+
         self.ui.combobox_template.addItems(list(self.templates.keys()))
         self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
-        #self.update_queue_widgets()
+
+        temp = self.gui_comments.get('queue_template')
+        if temp:
+            self.template_values = json.loads(temp)
+            t_name = self.template_values.get('template')
+            if t_name:
+                self.set_current_template(t_name)
+
+        self.update_queue_widgets()
+
+    def save_template(self):
+        '''Save the current template data'''
+        self.collect_template_values()
+        tp =  self.ui.combobox_template.currentText()
+        self.template_values['template'] = tp
+        self.gui_comments['queue_template'] = json.dumps(self.template_values)
+
+    def collect_template_values(self):
+        tp =  self.ui.combobox_template.currentText()
+        template = self.templates[tp]
+        replace_dict = {}
+        for name, wid in template.items():
+            if not isinstance(wid, dict): continue
+
+            if 'widget_obj' in wid:
+                wid_obj = wid['widget_obj']
+                if isinstance(wid_obj, (QSpinBox, QDoubleSpinBox)):
+                    self.template_values[name]  = v = wid_obj.value()
+                elif isinstance(wid_obj, QCheckBox):
+                    self.template_values[name] = v = wid_obj.value
+                    if v:
+                        v = wid.get('true', '')
+                    else:
+                        v = wid.get('false', '')
+                else:
+                    self.template_values[name] = v = wid_obj.value
+                replace_dict[name] = v
+        return replace_dict
 
     def set_current_template(self, name):
         '''set the template file combobox'''
@@ -161,11 +212,14 @@ class RunPopup(QDialog):
         name = os.path.basename(path)
         if 'options' in d:
             name = d['options'].get('name', name)
+
         self.templates[name] = d
+
+        self.ui.combobox_template.clear()
+        self.ui.combobox_template.addItems(list(self.templates.keys()))
 
         if select:
             self.set_current_template(name)
-
 
     def update_queue_widgets(self):
 
@@ -184,11 +238,13 @@ class RunPopup(QDialog):
             l.addWidget(label, i, 0)
             widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
             items = wd.get('items','').split('|')
-	    v = wd.get('value')
-	    if isinstance(widget, QComboBox) and items:
+            v = self.template_values.get(wid)
+            if not v or self.template_values.get('template') != tp:
+                v = wd.get('value')
+            if isinstance(widget, QComboBox) and items:
                 widget.addItems(items)
-	        if v not in items:
-		    v = items[0]
+                if v not in items:
+                    v = items[0]
             widget.updateValue('', v)
             widget.help_text = wd.get('help', 'No help avaliable.')
             l.addWidget(widget, i, 1)
@@ -250,6 +306,7 @@ class RunPopup(QDialog):
         log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
                  os.environ["OMP_NUM_THREADS"])
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
+        self.gui_comments['run_location'] = self.ui.tabWidget.currentIndex()
 
         #self.project.updateKeyword('nodesi',
         #                            self.ui.spinbox_keyword_nodesi.value())
@@ -258,6 +315,7 @@ class RunPopup(QDialog):
         #self.project.updateKeyword('nodesk',
         #                            self.ui.spinbox_keyword_nodesk.value())
         self.save_selected_exe(self.mfix_exe)
+        self.save_template()
         self.set_run_mfix_exe.emit() # possible duplication, but needed
                                      # in case signal has not yet been fired
 
@@ -354,6 +412,15 @@ class RunPopup(QDialog):
             new_temp = new_temp[0]
 
         self.add_queue_template(new_temp, select=True)
+
+        # add it to the recent settings
+        temp_paths = self.settings.value('queue_templates')
+        good_paths = [os.path.abspath(new_temp)]
+        if temp_paths:
+            for temp_path in temp_paths.split('|'):
+                if os.path.exists(temp_path):
+                    good_paths.append(temp_path)
+        self.settings.setValue('queue_templates', '|'.join(list(set(good_paths))[:RECENT_EXE_LIMIT]))
 
     # utils
 
@@ -545,30 +612,17 @@ class RunPopup(QDialog):
 
     def submit_command(self, cmd):
 
+        self.remove_mfix_stop()
+
         tp =  self.ui.combobox_template.currentText()
         template = self.templates[tp]
 
         # collect widget values
-        replace_dict = {
+        replace_dict = self.collect_template_values()
+        replace_dict.update({
             'PROJECT_NAME': self.parent.project.get_value('run_name', default=''),
             'COMMAND': ' '.join(cmd),
-        }
-        for name, wid in template.items():
-            if not isinstance(wid, dict): continue
-
-            if 'widget_obj' in wid:
-                wid_obj = wid['widget_obj']
-                if isinstance(wid_obj, (QSpinBox, QDoubleSpinBox)):
-                    v = wid_obj.value()
-                elif isinstance(wid_obj, QCheckBox):
-                    v = wid_obj.value
-                    if v:
-                        v = wid.get('true', '')
-                    else:
-                        v = wid.get('false', '')
-                else:
-                    v = wid_obj.value
-                replace_dict[name] = v
+        })
 
         # replace twice to make sure that any references added the first time
         # get replaced

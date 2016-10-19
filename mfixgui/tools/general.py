@@ -462,13 +462,13 @@ def extract_config(path):
     record = False
     with open(path) as f:
         for line in f:
-            l = line.strip()
-            if l == '## CONFIG':
+            l = line.rstrip()
+            if '## CONFIG' in l:
                 record = True
-            elif l == '## END CONFIG':
+            elif '## END CONFIG' in l:
                 record = False
             elif record:
-                config.append(l.replace('##','').strip())
+                config.append(l)
             else:
                 script.append(l)
     return '\n'.join(config), '\n'.join(script+[''])
