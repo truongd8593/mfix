@@ -10,9 +10,9 @@
 ## [options]
 ## name: Joule
 ## job_id_regex: (\d+)
-## submit_cmd: qsub ${SCRIPT}
-## delete_cmd: qdel ${JOB_ID}
-## status_cmd: qstat -j ${JOB_ID}
+## submit: qsub ${SCRIPT}
+## delete: qdel ${JOB_ID}
+## status: qstat -j ${JOB_ID}
 ##
 ## [JOB_NAME]
 ## widget: lineedit
@@ -75,4 +75,4 @@
 module load ${MODULES}
 
 ##Run the job
-${COMMAND}  ${START}
+${COMMAND} ${START}

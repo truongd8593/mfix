@@ -18,6 +18,7 @@ import tempfile
 import time
 import uuid
 from functools import partial
+import re
 
 from subprocess import Popen
 
@@ -28,8 +29,7 @@ from qtpy.QtNetwork import  (QNetworkAccessManager,
                              QNetworkReply,
                              QNetworkRequest)
 
-from mfixgui.tools.general import get_mfix_home
-from mfixgui.tools.general import debug_trace
+from mfixgui.tools.general import get_mfix_home, debug_trace, replace_with_dict
 
 #: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
@@ -392,42 +392,44 @@ class JobManager(QObject):
     def is_job_ready(self):
         return self.job and self.job.api_available
 
-    def submit_command(self, cmd, dmp_enabled, smp_enabled):
-
-        with open(os.path.join(get_mfix_home(), 'mfixgui', 'run_hpcee')) as qsub_template:
-            template_text = qsub_template.read()
-
-        cores = self.parent.run_dialog.spinbox_cores_requested.value()
-        threads = self.parent.run_dialog.spinbox_threads.value()
-        do_smp = 'env OMP_NUM_THREADS=%d' % threads if smp_enabled else ''
-        mpirun = 'mpirun -np %d' % cores if dmp_enabled else ''
-        qscript = template_text.replace("${JOB_NAME}", self.parent.run_dialog.lineedit_job_name.text()) \
-                .replace("${CORES}", str(cores)) \
-                .replace("${QUEUE}", self.parent.run_dialog.combobox_queue_name.currentText()) \
-                .replace("${MODULES}", self.parent.run_dialog.lineedit_queue_modules.text()) \
-                .replace("${MPIRUN}", mpirun) \
-                .replace("${COMMAND}", ' '.join(cmd))
+    def submit_command(self, qscript, submit_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
 
         qsub_script = tempfile.NamedTemporaryFile()
-        print(qscript)
         qsub_script.write(qscript)
         qsub_script.flush() # Keep tmpfile open
 
-        # FIXME: for testing without qsub installed, use:
-        # Popen('qsub %s' % qsub_script.name, cwd=self.parent.get_project_dir())
-        print('/bin/csh %s &' % qsub_script.name, self.parent.get_project_dir())
-        proc = Popen('qsub %s' % qsub_script.name, shell=True, cwd=self.parent.get_project_dir())
+        replace_dict['SCRIPT'] = qsub_script.name
+
+        submit_cmd = replace_with_dict(submit_cmd, replace_dict)
+
+        # submit the job
+        self.parent.print_internal("Job submit CMD: {}".format(submit_cmd),
+                                   color='blue')
+
+        proc = Popen(submit_cmd, shell=True, cwd=self.parent.get_project_dir())
         out, err = proc.communicate()
-        job_id = out.split(' ')[2] # qsub stdout:  You job JOB_ID has been submitted
+        if job_id_regex is not None and out:
+            job_id = re.findall(job_id_regex, out)
+        else:
+            job_id = []
+        if job_id:
+            job_id = job_id[0]
+            self.parent.print_internal("Job successfully submitted with job id: {}".format(job_id),
+                                       color='blue')
+        else:
+            self.parent.error('Could not determine job id')
+            job_id = None
+        if err:
+            self.parent.error('Error with submission:\n{}'.format(err))
 
         qsub_script.close() # deletes tmpfile
-        self.parent.job_manager.save_job_id(job_id)
+        #self.parent.job_manager.save_job_id(job_id)
 
     def stop_mfix(self):
         self.job.stop_mfix()
 
     def teardown_job(self):
-        """Job ended or exited. Destory Job object and remove pidfile"""
+        """Job ended or exited. Destroy Job object and remove pidfile"""
         # TODO: this handles local only, not queued jobs
         log.debug('teardown_job')
         if not self.job:

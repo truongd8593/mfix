@@ -454,6 +454,33 @@ def clear_layout(layout):
         widget = item.widget()
         widget.deleteLater()
 
+def extract_config(path):
+    '''Given a path to a file, extract the section that starts with ## CONFIG
+    and ends with ## END CONFIG'''
+    config = []
+    script = []
+    record = False
+    with open(path) as f:
+        for line in f:
+            l = line.strip()
+            if l == '## CONFIG':
+                record = True
+            elif l == '## END CONFIG':
+                record = False
+            elif record:
+                config.append(l.replace('##','').strip())
+            else:
+                script.append(l)
+    return '\n'.join(config), '\n'.join(script)
+
+def replace_with_dict(string, dict_):
+    '''given a string and a dict, replace all dict.key found in the string
+    with the corresponding dict.value'''
+
+    for key, value in dict_.items():
+        string = string.replace('${'+key+'}', str(value))
+    return string
+
 if __name__ == '__main__':
     def test_recurse_dict():
         d = {1: {2:3,

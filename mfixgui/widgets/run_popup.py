@@ -16,9 +16,9 @@ from qtpy import PYQT5
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
                             QDialogButtonBox, QLabel, QComboBox, QSpinBox,
-                            QDoubleSpinBox)
+                            QDoubleSpinBox, QCheckBox)
 
-from mfixgui.tools.general import get_mfix_home, clear_layout
+from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
 
 try:
@@ -36,33 +36,6 @@ log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
 MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
-
-def extract_config(path):
-    '''Given a path to a file, extract the section that starts with ## CONFIG
-    and ends with ## END CONFIG'''
-    config = []
-    script = []
-    record = False
-    with open(path) as f:
-        for line in f:
-            l = line.strip()
-            if l == '## CONFIG':
-                record = True
-            elif l == '## END CONFIG':
-                record = False
-            elif record:
-                config.append(l.replace('##','').strip())
-            else:
-                script.append(l)
-    return '\n'.join(config), '\n'.join(script)
-
-def replace_with_dict(string, dict_):
-    '''given a string and a dict, replace all dict.key found in the string
-    with the corresponding dict.value'''
-
-    for key, value in dict_.items():
-        string = string.replace('${'+key+'}', str(value))
-    return string
 
 
 class RunPopup(QDialog):
@@ -110,9 +83,10 @@ class RunPopup(QDialog):
         self.ui.button_queue_submit.clicked.connect(self.handle_submit)
         self.ui.button_local_cancel.clicked.connect(self.handle_abort)
         self.ui.button_queue_cancel.clicked.connect(self.handle_abort)
+        self.ui.pushbutton_browse_template.clicked.connect(self.handle_browse_template)
 
         self.initialize_ui()
-        self.__init_templates()
+        self.init_templates()
 
     # UI update functions
 
@@ -153,7 +127,7 @@ class RunPopup(QDialog):
 
         self.update_dialog_options()
 
-    def __init_templates(self):
+    def init_templates(self):
 
         search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
 
@@ -167,7 +141,15 @@ class RunPopup(QDialog):
         self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
         self.update_queue_widgets()
 
-    def add_queue_template(self, path):
+    def set_current_template(self, name):
+        '''set the template file combobox'''
+        cb = self.ui.combobox_template
+        for itm in range(cb.count()):
+            if str(name).lower() == str(cb.itemText(itm)).lower():
+                cb.setCurrentIndex(itm)
+                break
+
+    def add_queue_template(self, path, select=False):
         config, script = extract_config(path)
         c = configparser.ConfigParser()
         c.readfp(StringIO.StringIO(config))
@@ -180,6 +162,10 @@ class RunPopup(QDialog):
         if 'options' in d:
             name = d['options'].get('name', name)
         self.templates[name] = d
+
+        if select:
+            self.set_current_template(name)
+
 
     def update_queue_widgets(self):
 
@@ -352,6 +338,18 @@ class RunPopup(QDialog):
         self.populate_combobox_mfix_exe()
         log.debug('selected new exe %s' % new_exe)
         self.set_run_mfix_exe.emit()
+
+    def handle_browse_template(self):
+        """ Handle file open dialog for user specified exe """
+        new_temp = QFileDialog.getOpenFileName(
+            self, "Select a Template",
+            directory=self.project_dir,)
+        if not new_temp:
+            return
+        if PYQT5:
+            new_temp = new_temp[0]
+
+        self.add_queue_template(new_temp, select=True)
 
     # utils
 
@@ -548,7 +546,7 @@ class RunPopup(QDialog):
 
         # collect widget values
         replace_dict = {
-            'PROJECT_NAME': self.parent.project.get_value('run_name',default=''),
+            'PROJECT_NAME': self.parent.project.get_value('run_name', default=''),
             'COMMAND': ' '.join(cmd),
         }
         for name, wid in template.items():
@@ -558,6 +556,12 @@ class RunPopup(QDialog):
                 wid_obj = wid['widget_obj']
                 if isinstance(wid_obj, (QSpinBox, QDoubleSpinBox)):
                     v = wid_obj.value()
+                elif isinstance(wid_obj, QCheckBox):
+                    v = wid_obj.value
+                    if v:
+                        v = wid.get('true', '')
+                    else:
+                        v = wid.get('false', '')
                 else:
                     v = wid_obj.value
                 replace_dict[name] = v
@@ -569,12 +573,16 @@ class RunPopup(QDialog):
 
         print(script)
 
-        sub_cmd = template['options'].get('submit_cmd')
+        sub_cmd = template['options'].get('submit', False)
         if not sub_cmd:
             self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
             return
+        delete_cmd = template['options'].get('delete', False)
+        status_cmd = template['options'].get('status', False)
+        job_id_regex = template['options'].get('job_id_regex', None)
 
-        #self.parent.job_manager.submit_command(script, sub_cmd)
+
+        self.parent.job_manager.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
