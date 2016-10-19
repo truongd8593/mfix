@@ -237,7 +237,7 @@ class RunPopup(QDialog):
             label = QLabel(wd.get('label', wid))
             l.addWidget(label, i, 0)
             widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
-            items = wd.get('items','').split('|')
+            items = [it.strip() for it in wd.get('items','').split('|')]
             v = self.template_values.get(wid)
             if not v or self.template_values.get('template') != tp:
                 v = wd.get('value')
