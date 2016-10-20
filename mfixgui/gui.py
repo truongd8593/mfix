@@ -68,7 +68,7 @@ from mfixgui.chemistry import Chemistry
 from mfixgui.interpreter import Interpreter
 
 from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
-                           is_text_string, is_unicode,
+                           is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs)
 
 from mfixgui.tools.namelistparser import buildKeywordDoc
@@ -422,7 +422,14 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # navigation tree
         ui.toolbutton_collapse_navigation.clicked.connect(self.toggle_nav_menu)
-        ui.toolbutton_collapse_navigation.setIcon(get_icon('left.png'))
+        icon = self.icon_collapse_right = QtGui.QIcon()
+        icon.addFile(get_image_path('right_light.png'), QtCore.QSize(), icon.Normal, icon.Off)
+        icon.addFile(get_image_path('right.png'), QtCore.QSize(), icon.Active, icon.Off)
+        icon = self.icon_collapse_left = QtGui.QIcon()
+        icon.addFile(get_image_path('left_light.png'), QtCore.QSize(), icon.Normal, icon.Off)
+        icon.addFile(get_image_path('left.png'), QtCore.QSize(), icon.Active, icon.Off)
+        ui.toolbutton_collapse_navigation.setIcon(icon)
+
         ui.treewidget_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
@@ -723,9 +730,9 @@ class MfixGui(QtWidgets.QMainWindow,
             nav_menu.setVisible(not nav_menu.isVisible())
 
         if nav_menu.isVisible():
-            self.ui.toolbutton_collapse_navigation.setIcon(get_icon('left.png'))
+            self.ui.toolbutton_collapse_navigation.setIcon(self.icon_collapse_left)
         else:
-            self.ui.toolbutton_collapse_navigation.setIcon(get_icon('right.png'))
+            self.ui.toolbutton_collapse_navigation.setIcon(self.icon_collapse_right)
 
 
     def status_message(self, message=''):
