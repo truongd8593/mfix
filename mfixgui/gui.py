@@ -421,6 +421,8 @@ class MfixGui(QtWidgets.QMainWindow,
             btn.pressed.connect(lambda mode=mode: self.mode_changed(mode))
 
         # navigation tree
+        ui.toolbutton_collapse_navigation.clicked.connect(self.toggle_nav_menu)
+        ui.toolbutton_collapse_navigation.setIcon(get_icon('left.png'))
         ui.treewidget_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
@@ -719,6 +721,11 @@ class MfixGui(QtWidgets.QMainWindow,
             nav_menu.setVisible(True)
         else:
             nav_menu.setVisible(not nav_menu.isVisible())
+
+        if nav_menu.isVisible():
+            self.ui.toolbutton_collapse_navigation.setIcon(get_icon('left.png'))
+        else:
+            self.ui.toolbutton_collapse_navigation.setIcon(get_icon('right.png'))
 
 
     def status_message(self, message=''):
