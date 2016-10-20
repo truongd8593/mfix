@@ -75,7 +75,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         cb = ui.combobox_solids_model
         cb.activated.connect(self.handle_combobox_solids_model)
         cb.setToolTip(cb.currentText())
-        ui.lineedit_solids_phase_name.editingFinished.connect(self.handle_solids_phase_name)
+        ui.lineedit_solids_phase_name.value_updated.connect(self.handle_solids_phase_name)
         ui.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         ui.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
@@ -686,15 +686,17 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             # a little extra to avoid horiz scrollbar when not needed
 
 
-    def handle_solids_phase_name(self):
+    def handle_solids_phase_name(self, widget, value_dict, args):
         ui = self.ui.solids
-        new_name = ui.lineedit_solids_phase_name.text()
+        le = ui.lineedit_solids_phase_name
+        new_name = le.text()
         phase = self.solids_current_phase
         if phase is None:
             return
         old_name = list(self.solids.keys())[phase-1]
-        if new_name in self.solids: # Reject the input
-            self.ui.solids.lineedit_solids_phase_name.setText(old_name)
+        if new_name in self.solids or new_name == self.fluid_phase_name: # Reject the input
+            self.warning("%s: name is in use" % new_name, popup=True)
+            le.setText(old_name)
             return
         self.solids_current_phase_name = new_name
         # rewriting dict to change key while preserving order - hack

@@ -132,7 +132,7 @@ class FluidHandler(SpeciesHandler):
         checkbox = ui.checkbox_keyword_species_eq_args_0
         checkbox.clicked.connect(self.enable_fluid_species_eq)
 
-        ui.lineedit_fluid_phase_name.editingFinished.connect(
+        ui.lineedit_fluid_phase_name.value_updated.connect(
             self.handle_fluid_phase_name)
         ui.checkbox_enable_scalar_eq.clicked.connect(
             self.enable_fluid_scalar_eq)
@@ -199,9 +199,16 @@ class FluidHandler(SpeciesHandler):
             self.unset_keyword("mw_avg")
 
 
-    def handle_fluid_phase_name(self): # editingFinished signal does not include value
-        value = self.ui.fluid.lineedit_fluid_phase_name.text()
-        self.set_fluid_phase_name(value)
+    def handle_fluid_phase_name(self, widget, value_dict, args):
+        ui = self.ui.fluid
+        le = ui.lineedit_fluid_phase_name
+        old_name = self.fluid_phase_name
+        new_name = le.text()
+        if new_name in self.solids: # Reject the input
+            self.warning("%s: name is in use" % new_name, popup=True)
+            le.setText(old_name)
+        else:
+            self.set_fluid_phase_name(new_name)
 
 
     def set_fluid_phase_name(self, value):
