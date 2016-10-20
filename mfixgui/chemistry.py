@@ -548,8 +548,8 @@ class Chemistry(object):
             tw.setCurrentCell(0, 0)
         elif old_selection is not None and old_selection < tw.rowCount():
             tw.setCurrentCell(old_selection, 0)
-        else:
-            self.chemistry_handle_selection() # enable/disable inputs
+
+        self.chemistry_handle_selection() # update bottom pane
 
         self.fixup_chemistry_table(tw, stretch_column=1)
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
