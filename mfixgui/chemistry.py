@@ -25,7 +25,7 @@ class Chemistry(object):
         ui.toolbutton_add_reactant.clicked.connect(self.chemistry_add_reactant)
         ui.toolbutton_add_product.clicked.connect(self.chemistry_add_product)
 
-        # TODO implement 'duplicate'
+        # Toolbuttons
         ui.toolbutton_delete_reaction.setEnabled(False) # Need a selection
         ui.toolbutton_delete_reactant.setEnabled(False)
         ui.toolbutton_delete_product.setEnabled(False)
@@ -33,7 +33,7 @@ class Chemistry(object):
         ui.tablewidget_reactants.itemSelectionChanged.connect(self.chemistry_handle_reactant_selection)
         ui.tablewidget_products.itemSelectionChanged.connect(self.chemistry_handle_product_selection)
 
-
+        # Set reaction name
         ui.lineedit_reaction_name.editingFinished.connect(self.set_reaction_name)
         class RxnIdValidator(QValidator):
             #  Alphanumeric combinations (no special characters excluding underscores)
@@ -78,7 +78,9 @@ class Chemistry(object):
 
 
     def chemistry_restrict_phases(self):
+        # Set up comboboxes to only allow homogeneous or 2-phase heterogenous reactions
         ui = self.ui.chemistry
+        # Collect all current phase info (reactants and products)
         phases = {}
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
             for row in range(tw.rowCount()-1): # Skip 'total'
@@ -86,23 +88,44 @@ class Chemistry(object):
                 phase = cb.currentText()
                 phases[(tw, row)] = phase
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
-            # We need to determine, for each combobox item, how many
-            # phases would be referenced if the combobox were set to that
-            # item
+            # We need to determine, for each combobox item, how many phases would be
+            # referenced if the combobox were set to that item
             for row in range(tw.rowCount()-1):
                 cb = tw.cellWidget(row, 0)
                 orig_phase = cb.currentText()
                 for i in range(cb.count()):
                     item = get_combobox_item(cb, i)
-                    phases[(tw, row)] = item.text()
+                    phases[(tw, row)] = item.text() # consider what setting this combobox would do...
                     enabled = len(set(phases.values())) <= 2 # Allow at most 2-phase reactions
                     set_item_enabled(item, enabled)
                     if not enabled:
-                        item.setToolTip('Only single or 2-phase reactions are currently supported')
+                        item.setToolTip('Only homogeneous or 2-phase heterogenous reactions supported')
                     else:
                         item.setToolTip(None)
-                phases[(tw, row)] = orig_phase
+                phases[(tw, row)] = orig_phase # ..and set it back
 
+
+    def chemistry_restrict_species(self):
+        # Set up comboboxes to ensure that no species is duplicated as a reactant or product
+        ui = self.ui.chemistry
+        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            # Collect species info
+            species = {}
+            for row in range(tw.rowCount()-1): # Skip 'total'
+                cb = tw.cellWidget(row, 1)
+                species[row] = cb.currentText()
+            # For each combobox item, determine whether setting the combobox to that value
+            # results in duplicated species
+            n_rows = tw.rowCount() - 1 # Skip 'total'
+            for row in range(n_rows):
+                cb = tw.cellWidget(row, 1)
+                orig_species = cb.currentText()
+                for i in range(cb.count()):
+                    item = get_combobox_item(cb, i)
+                    species[row] = item.text() # consider what setting this combobox would do...
+                    enabled = (len(set(species.values())) == n_rows) # should be as many species as rows
+                    set_item_enabled(item, enabled)
+                species[row] = orig_species # ... and set it back
 
     def chemistry_handle_selection(self):
         # selection callback for main table
@@ -176,8 +199,9 @@ class Chemistry(object):
             side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             reaction = self.project.reactions[self.chemistry_current_reaction][0]
             reaction[side][row][0] = species
-            self.chemistry_update_chem_eq()
+            self.chemistry_restrict_species()
             self.chemistry_update_totals()
+            self.chemistry_update_chem_eq()
             self.set_unsaved_flag()
 
         def make_species_item(tw, row, phase, species):
@@ -241,10 +265,10 @@ class Chemistry(object):
                 font.setBold(True)
                 item.setFont(font)
                 tw.setItem(row+1, 2, item)
-
             self.fixup_chemistry_table(tw)
         self.fixup_chemistry_table(ui.tablewidget_reactions, stretch_column=1)
         self.chemistry_restrict_phases()
+        self.chemistry_restrict_species()
         self.chemistry_update_totals()
 
     def chemistry_update_chem_eq(self):
@@ -295,11 +319,10 @@ class Chemistry(object):
         enabled = (row is not None)
         ui.toolbutton_delete_product.setEnabled(enabled)
 
-
     def chemistry_num_phases(self, alias_list):
         """determine minimum number of phases required to find all listed species,
         i.e. if this returns 1, reaction is homogeneous"""
-        # Should go away after species/alias integration
+        # This should go away after species/alias integration!
         if not alias_list:
             return 0
         all_aliases = [(0, list(data.get('alias', name) for (name, data) in self.fluid_species.items()))]
@@ -373,6 +396,44 @@ class Chemistry(object):
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(height)
         tw.updateGeometry() #? needed?
+
+    def chemistry_available_phases(self):
+        ui = self.ui.chemistry
+        phases = set()
+        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            n_rows = tw.rowCount() - 1 # skip 'total'
+            for row in range(n_rows):
+                cb = tw.cellWidget(row, 0)
+                text = cb.currentText()
+                if text not in phases: # list won't be very long
+                    phases.add(text)
+        if len(phases) < 2: # all phases are valid
+            phases = []
+            if not self.fluid_solver_disabled:
+                phases.append(self.fluid_phase_name)
+            for name in self.solids.keys():
+                phases.append(name)
+            return phases
+        if len(phases) == 2:
+            return phases
+        else:
+            self.error("more than 2 phases selected")
+            return []
+
+
+    def chemistry_available_species(self, side):
+        # side is 'reactants' or 'products'
+        ui = self.ui.chemistry
+        in_use = set()
+        tw = ui.tablewidget_reactants if side=='reactants' else ui.tablewidget_products
+        n_rows = tw.rowCount()-1
+        for row in range(n_rows):
+            in_use.add(tw.cellWidget(row,1).currentText())
+
+
+
+
+
 
 
     def chemistry_add_reaction(self):
@@ -547,15 +608,12 @@ class Chemistry(object):
     # Use +/- buttons to add/remove products
     # Column 1 - Select phase for product
     #  Use drop down list of user defined phase names
-
     #Reactions are limited to homogeneous or two-phase heterogeneous reactions
     #(e.g., species from three separate phases cannot be referenced by any single
     #chemical reaction)
-
     # Column 2 - Select product species
     #  Use drop down list to show species in selected phase
     #  A species can only appear once as a product in the same reaction
-
     # Column 3 - Enter stoichiometric coefficient
     #  Numerical value (integer or float)
     #  Value must be non-negative
@@ -577,7 +635,7 @@ class Chemistry(object):
     # DEFAULT value 0.0
     # Sets reaction construct keyword DH
 
-    #Specify HoR fraction assigned to -phase
+    #Specify HoR fraction assigned to phase
     # Only available if user-defined heat of reaction is enabled
     # Homogeneous chemical reactions
     #  Specification is not available
@@ -593,7 +651,7 @@ class Chemistry(object):
     # chemical reaction is activated/deactivated by checking/unchecking the box. If the user 'deactivates'
     # the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
 
-    #  user's guide says: Aliases cannot conflict with existing MFIX variable names (e.g., a species alias of MU_g will cause an error when compiling
+    # NB: user's guide says: Aliases cannot conflict with existing MFIX variable names (e.g., a species alias of MU_g will cause an error when compiling
 
 """
 Evaporation{ chem_eq = "Vapor --> Liquid"}
