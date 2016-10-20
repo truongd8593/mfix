@@ -13,6 +13,9 @@ import copy
 import os
 import shutil
 import glob
+import subprocess
+import json
+import sys
 
 try:
     from pyqtnode import NodeWidget, Node, tools
@@ -25,7 +28,7 @@ except ImportError:
 # local imports
 from mfixgui.widgets.base import Table
 from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.tools.general import get_icon
+from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY, is_vnc
 from mfixgui.constants import PARAMETER_DICT
 from mfixgui.job import JobManager
 from mfixgui.project import Project
@@ -183,6 +186,9 @@ class WorkflowRunPopup(RunPopup):
     def handle_submit(self):
         self.finish_with_dialog()
 
+class FakeJob(object):
+    job=None
+
 # --- Workflow Widget ---
 class WorkflowWidget(QtWidgets.QWidget):
     def __init__(self, project, parent=None):
@@ -196,6 +202,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.file_watcher = QtCore.QFileSystemWatcher()
         self.file_watcher.directoryChanged.connect(self.create_job_manager)
         self.mock_parents = []
+        self.running_in_vnc = is_vnc()
 
         # --- initalize the node widget ---
         self.nodeChart = NodeWidget(showtoolbar=True)
@@ -206,7 +213,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.nodeChart.setGeometry(0, 0, 100, 1000)
 
         # modify toolbar
-        i = 2
+        i = 4
         for tool, icon, callback in [('import', 'import.png', self.handle_import),
                                      ('export', 'open_in_new.png', self.handle_import)]:
             btn = QtWidgets.QToolButton()
@@ -255,6 +262,7 @@ class WorkflowWidget(QtWidgets.QWidget):
                 ('play', 'play.png', self.handle_play),
                 ('stop', 'stop.png', self.handle_stop),
                 ('pause', 'pause.png', self.handle_pause),
+                ('delete', 'delete.png', self.handle_delete),
                 ('restart', 'restart.png', self.handle_restart),
                 ('auto restart', 'autorenew.png', self.handle_renew),
                 ('remove from queue', 'removefromqueue.png', self.handle_remove_from_queue),
@@ -307,6 +315,26 @@ class WorkflowWidget(QtWidgets.QWidget):
     @property
     def used_parameters(self):
         return self.mfixgui.project.parameter_key_map.keys()
+
+    def look_for_projects(self, path):
+        data = self.job_status_table.value
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                if root != path and name.endswith('.mfx'):
+                    dir_base = os.path.basename(root)
+                    data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':root, 'dt':'None', 'time remaining':'None'}
+                    run_data_path = os.path.join(root, '.workflow_run_cmd.json')
+                    if os.path.exists(run_data_path):
+                        with open(run_data_path) as f:
+                            d = json.load(f)
+                        data[dir_base].update(d)
+                    self.create_job_manager(root)
+                    self.file_watcher.addPath(root)
+
+        self.job_status_table.set_value(data)
+        if not self.update_timer.isActive():
+            self.update_timer.start(1000)
+
 
     def export_project(self, path=None, param_dict={}, keyword_dict={}):
         """
@@ -366,7 +394,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
         run_dialog.exec_()
 
-        self.run_cmd = run_dialog.get_run_cmd()
+        self.run_cmd = run_dialog.get_run_command()
 
     def run_project(self, mfx_file):
         """
@@ -380,6 +408,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         if self.run_cmd is None:
             self.run_popup(mfx_file)
+        queue = False
 
         data = self.job_status_table.value
         data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir, 'dt':'None', 'time remaining':'None'}
@@ -390,6 +419,25 @@ class WorkflowWidget(QtWidgets.QWidget):
             self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
             return
 
+        # run it
+        self._run(proj_dir, mfx_file, self.run_cmd, queue)
+
+        # save some info on the run
+        c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
+        data[dir_base]['queue'] = queue
+        data[dir_base]['file'] = mfx_file
+        data = {
+            'cmd': c,
+            'queue': queue,
+            'file': mfx_file,
+        }
+        with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
+            json.dump(data, f)
+
+        if not self.update_timer.isActive():
+            self.update_timer.start(1000)
+
+    def _run(self, proj_dir, mfx_file, cmd, queue=False):
         parent = MockParent()
         parent.mfix_gui = self.mfixgui
         parent.project_dir = proj_dir
@@ -401,27 +449,25 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
 
         # Queue
-        if False:
-            msg = 'Submitting to Queue: %s' % ' '.join(self.run_cmd)
-            run_dialog.submit_command(self.run_cmd)
+        if queue:
+            msg = 'Submitting to Queue: %s' % ' '.join(cmd)
+            run_dialog.submit_command(cmd)
         # local
         else:
-            msg = 'Run Command: %s' % ' '.join(self.run_cmd)
-            run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
+            msg = 'Run Command: %s' % ' '.join(cmd)
+            run_dialog.start_command(cmd, proj_dir, os.environ)
 
         self.file_watcher.addPath(proj_dir)
         self.mfixgui.print_internal(msg, color='green')
 
-        if not self.update_timer.isActive():
-            self.update_timer.start(1000)
-
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
+        dir_base = os.path.basename(proj_dir)
         if pid_files:
             if len(pid_files) > 1:
                 self.mfixgui.print_internal('more than one pid file', color='red')
 
-            dir_base = os.path.basename(proj_dir)
+
             mfx_files = glob.glob(os.path.join(proj_dir, '*.mfx'))
 
             parent = MockParent()
@@ -434,9 +480,10 @@ class WorkflowWidget(QtWidgets.QWidget):
             full_runname_pid = os.path.join(proj_dir, pid_files[0])
             job = JobManager(parent)
             job.try_to_connect(full_runname_pid)
-
             self.job_dict[dir_base] = job
             self.file_watcher.removePath(proj_dir)
+        else:
+            self.job_dict[dir_base] = FakeJob()
 
     def job_error(self, error):
         self.mfixgui.print_internal(error, color='red')
@@ -457,42 +504,6 @@ class WorkflowWidget(QtWidgets.QWidget):
     def update_job_status(self):
         """update the current job status"""
 
-#        {   u'dt': 0.0001234567901234568,
-#    u'nit': 18,
-#    u'paused': True,
-#    u'profiling': [   [   u'time_step_init',
-#                          0.0012989044189453125],
-#                      [   u'do_iteration',
-#                          18,
-#                          0.01675891876220703],
-#                      [   u'time_step_end',
-#                          1.2874603271484375e-05],
-#                      [   u'des_time_init',
-#                          u'unknown'],
-#                      [   u'des_time_steps',
-#                          0,
-#                          u'unknown'],
-#                      [   u'des_time_end',
-#                          u'unknown']],
-#    u'residuals': [   [u'', u'0.0'],
-#                      [   u'P0  ',
-#                          u'0.000817730624263'],
-#                      [   u'P1  ',
-#                          u'9.72339499832e-06'],
-#                      [   u'U0  ',
-#                          u'3.51669989309e-08'],
-#                      [   u'V0  ',
-#                          u'1.85474211159e-06'],
-#                      [   u'U1  ',
-#                          u'5.18117609376e-08'],
-#                      [   u'V1  ',
-#                          u'1.85322488506e-06'],
-#                      [u'    ', u'0.0']],
-#    u'time': 0.0012666666666666666,
-#    u'tstop': 2.0,
-#    u'walltime_elapsed': 3.575956106185913,
-#    u'walltime_remaining': u'5642.67052735'}
-
         data = self.job_status_table.value
 
         for job_name in data.keys():
@@ -500,20 +511,25 @@ class WorkflowWidget(QtWidgets.QWidget):
 
                 job = self.job_dict[job_name].job
 
-                if data[job_name]['status'] != 'stopped':
-                    if job.is_paused():
-                        status = 'paused'
-                    else:
-                        status = 'running'
+                if job is None:
+                    continue
 
-                    if job.status:
-                        data[job_name]['status'] = status
-                        data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
-                        data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
-                        try:
-                            data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
-                        except:
-                            pass
+                if job.is_paused():
+                    status = 'paused'
+                else:
+                    status = 'running'
+
+                if job.status:
+
+                    p = data[job_name]['progress'] = job.status['time']/job.status['tstop']*100
+                    if p >= 99:
+                        status = 'finished'
+                    data[job_name]['dt'] = '{0:.2e}'.format(job.status['dt'])
+                    try:
+                        data[job_name]['time remaining'] = '{0:.0f}'.format(float(job.status['walltime_remaining']))
+                    except:
+                        pass
+                    data[job_name]['status'] = status
 
         self.job_status_table.set_value(data)
 
@@ -521,7 +537,7 @@ class WorkflowWidget(QtWidgets.QWidget):
     def get_selected_jobs(self):
         """get the currently selected jobs"""
         projs = list(self.job_status_table.value.keys())
-        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows()]
+        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows() if self.job_dict[projs[i]].job is not None]
 
     def get_selected_projects(self):
         """get the currently selected project names"""
@@ -531,15 +547,15 @@ class WorkflowWidget(QtWidgets.QWidget):
     def update_btns(self):
         """enable/diable btns"""
 
-        enable_list = [False]*len(self.tool_btn_dict)
+        n_btns = len(self.tool_btn_dict)
+        enable_list = [False]*n_btns
 
         projs = self.get_selected_projects()
 
         if projs:
-            enable_list[:3] = [True]*4
-            enable_list[-1] = True
-#        elif len(projs) == 1:
-#
+            enable_list[:4] = [True]*5
+        if len(projs) == 1:
+            enable_list[n_btns-1] = True
 
         for enable, btn in zip(enable_list, self.tool_btn_dict.values()):
             btn.setEnabled(enable)
@@ -556,7 +572,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         data = self.job_status_table.value
         for proj in projs:
             job = self.job_dict[proj]
-            job.stop_mfix()
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
             data[proj]['status'] = 'stopped'
         self.job_status_table.set_value(data)
 
@@ -566,11 +583,63 @@ class WorkflowWidget(QtWidgets.QWidget):
         for job in jobs:
             job.job.pause()
 
+    def handle_delete(self):
+        """delete the selected job"""
+        projs = self.get_selected_projects()
+
+        btn = self.mfixgui.message(
+            text='The selectect directories will be delete.\nContinue?',
+            buttons=['yes', 'no'],
+            default='no',)
+
+        if btn != 'yes':
+            return
+
+        data = self.job_status_table.value
+        for proj in projs:
+
+            # make sure the job is stopped
+            job = self.job_dict[proj]
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
+                data[proj]['status'] = 'stopped'
+
+            # remove the dir
+            path = data[proj]['path']
+            shutil.rmtree(path)
+
+            data.pop(proj)
+            self.job_dict.pop(proj)
+
+        self.job_status_table.set_value(data)
+
     def handle_restart(self):
         """restart the selected job"""
-        jobs = self.get_selected_jobs()
-        for job in jobs:
-            job.stop_mfix()
+        projs = self.get_selected_projects()
+        data = self.job_status_table.value
+        for proj in projs:
+            p = data[proj]
+
+            # make sure the job is stopped
+            job = self.job_dict[proj]
+            if not isinstance(job, FakeJob):
+                job.stop_mfix()
+                p['status'] = 'stopped'
+
+            # look for *.SP? files
+            spx_files = glob.glob(os.path.join(p['path'], '*SP?'))
+
+            cmd = copy.deepcopy(p['cmd'])
+            if spx_files:
+                cmd.append('run_type=restart_1')
+            else:
+                cmd.append('run_type=restart_2')
+
+            self._run(p['path'], p['file'], cmd, p['queue'])
+            p['status'] = 'waiting for pid'
+
+        self.job_status_table.set_value(data)
+
 
     def handle_remove_from_queue(self):
         """remove job from queue"""
@@ -590,7 +659,20 @@ class WorkflowWidget(QtWidgets.QWidget):
     def handle_open(self):
         """open the selected job"""
         projs = self.get_selected_projects()
-        print('open')
+        if not projs:
+            return
+
+        data = self.job_status_table.value
+        path = data[projs[0]]['path']
+
+        #TODO: this is hard coded to > python gui.py project
+        gui_path = os.path.join(SCRIPT_DIRECTORY, 'gui.py')
+        cmd = []
+        if self.running_in_vnc:
+            cmd.append('vglrun')
+        cmd += ['python', gui_path, path]
+        subprocess.Popen(cmd)
+
 
     def handle_import(self):
         """immport a nc file"""

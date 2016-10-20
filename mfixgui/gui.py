@@ -2281,10 +2281,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.chemistry_extract_phases()
 
         ### Workflow
-        workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
-        if PYQTNODE_AVAILABLE and os.path.exists(workflow_file):
-            self.ui.workflow_widget.clear()
-            self.ui.workflow_widget.load(workflow_file)
+        if PYQTNODE_AVAILABLE:
+            workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
+            if os.path.exists(workflow_file):
+                self.ui.workflow_widget.clear()
+                self.ui.workflow_widget.load(workflow_file)
+            self.ui.workflow_widget.look_for_projects(basename)
 
 
         if auto_rename and not project_path.endswith(runname_mfx):

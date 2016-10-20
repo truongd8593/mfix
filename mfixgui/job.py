@@ -430,7 +430,8 @@ class JobManager(QObject):
         # use status_cmd to see if it queued, running, etc.
 
     def stop_mfix(self):
-        self.job.stop_mfix()
+        if self.job is not None:
+            self.job.stop_mfix()
 
     def teardown_job(self):
         """Job ended or exited. Destroy Job object and remove pidfile"""

@@ -17,6 +17,7 @@ import copy
 import random
 import operator
 from collections import OrderedDict
+import subprocess
 
 log = logging.getLogger(__name__)
 
@@ -480,6 +481,16 @@ def replace_with_dict(string, dict_):
     for key, value in dict_.items():
         string = string.replace('${'+key+'}', str(value))
     return string
+
+def is_vnc():
+    """determine if the gui is running in vnc"""
+    if os.name == 'nt':
+        return False
+
+    xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
+
+    return 'vnc' in xdpyinfo
+
 
 if __name__ == '__main__':
     def test_recurse_dict():
