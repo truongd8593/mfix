@@ -120,9 +120,9 @@ setup(
 
         ('config', [ 'config/rxn_preproc.sh', ]),
         ('mfixgui/icons', glob('mfixgui/icons/*')),
-        ('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
+        ('mfixgui/tools', [ 'mfixgui/tools/keyword_args.txt', ]),
         ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
-        ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
+        ('mfixgui/widgets', [ 'mfixgui/widgets/burcat.pickle', ]),
         ('model', glob('model/*.f')),
         ('model', glob('model/*.F')),
         ('model/GhdTheory', glob('model/GhdTheory/*.f')),
@@ -136,6 +136,7 @@ setup(
         ('model/include', glob('model/include/*')),
         ('model/qmomk', glob('model/qmomk/*.f')),
         ('model/thermochemical', glob('model/thermochemical/*.f')),
+        ('model/thermochemical', [ 'model/thermochemical/BURCAT.THR', ]),
     ],
 
     # To provide executable scripts, use entry points in preference to the

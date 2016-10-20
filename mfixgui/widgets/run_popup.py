@@ -26,7 +26,7 @@ except ImportError:
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe']
+MFIX_EXE_NAMES = ['mfix', 'mfix.exe', 'pymfix', 'pymfix.exe']
 
 class RunPopup(QDialog):
 

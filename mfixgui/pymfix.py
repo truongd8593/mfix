@@ -799,6 +799,8 @@ mfix_dat, paused, port, keyword_args, solver = parse_command_line_arguments()
 
 if solver:
     sys.path.insert(0,os.path.dirname(solver))
+else:
+    sys.path.insert(0,os.getcwd())
 
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
