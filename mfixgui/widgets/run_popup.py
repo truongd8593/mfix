@@ -151,7 +151,6 @@ class RunPopup(QDialog):
                 if os.path.exists(temp_path):
                     self.add_queue_template(temp_path)
 
-        self.ui.combobox_template.addItems(list(self.templates.keys()))
         self.ui.combobox_template.currentIndexChanged.connect(self.update_queue_widgets)
 
         temp = self.gui_comments.get('queue_template')
