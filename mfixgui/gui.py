@@ -909,6 +909,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if not self.confirm_close():
             event.ignore()
             return
+        self.settings.setValue('geometry', self.saveGeometry())
         event.accept()
 
 
@@ -2430,6 +2431,8 @@ def main():
                         help='do not autoload previous project')
     parser.add_argument('-q', '--quit', action='store_true',
                         help='quit after opening file (for testing)')
+    parser.add_argument('-d', '--default_geo', action='store_true',
+                        help="Use default geometry, don't restore previous state.")
     parser.add_argument('-v', '--version', action='version', version=__version_str__)
 
     # parse the args
@@ -2468,7 +2471,12 @@ def main():
         SETTINGS.setValue('app_style', app_style_arg)
     elif app_style_settings is not None:
         qapp.setStyle(app_style_settings.lower())
+
+    # create the gui
     gui = MfixGui(qapp, project_file=project_file)
+    geo = SETTINGS.value('geometry')
+    if geo is not None and not args.default_geo:
+        gui.restoreGeometry(geo)
     gui.show()
 
     if args.exe:
