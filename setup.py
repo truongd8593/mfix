@@ -21,7 +21,7 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Eventually we will build pymfix during the install process for Windows
-build_in_dir(here)
+# build_in_dir(here)
 
 setup(
     name='mfixgui',
