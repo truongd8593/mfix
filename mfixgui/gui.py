@@ -924,6 +924,9 @@ class MfixGui(QtWidgets.QMainWindow,
             event.ignore()
             return
         self.settings.setValue('geometry', self.saveGeometry())
+        self.settings.setValue('geometry', self.saveGeometry())
+        self.settings.setValue('splitter_left_right', self.ui.splitter_left_right.sizes())
+        self.settings.setValue('splitter_graphics_cmd_output', self.ui.splitter_graphics_cmd_output.sizes())
         event.accept()
 
 
@@ -2488,10 +2491,20 @@ def main():
 
     # create the gui
     gui = MfixGui(qapp, project_file=project_file)
+
+    # set previous geometry
     geo = SETTINGS.value('geometry')
     if geo is not None and not args.default_geo:
         gui.restoreGeometry(geo)
+        left_right = SETTINGS.value('splitter_left_right')
+        if left_right is not None:
+            gui.ui.splitter_left_right.setSizes([int(num) for num in left_right])
+        cmd_output = SETTINGS.value('splitter_graphics_cmd_output')
+        if cmd_output is not None:
+            gui.ui.splitter_graphics_cmd_output.setSizes([int(num) for num in cmd_output])
     gui.show()
+
+
 
     if args.exe:
         #print('exe option passed: %s' % mfix_exe_option)

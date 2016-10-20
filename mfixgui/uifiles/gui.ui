@@ -821,7 +821,7 @@ QPushButton:checked {
             <number>0</number>
            </property>
            <item>
-            <widget class="QSplitter" name="splitter_2">
+            <widget class="QSplitter" name="splitter_graphics_cmd_output">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
