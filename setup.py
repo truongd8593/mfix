@@ -21,7 +21,7 @@ with open(path.join(here, 'README'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Eventually we will build pymfix during the install process for Windows
-# build_in_dir(here)
+build_in_dir(here)
 
 setup(
     name='mfixgui',
@@ -105,7 +105,20 @@ setup(
         ('', glob('*.dll')),
         ('', glob('*.dylib')),
         ('', glob('*.so')),
-        ('build-aux', glob('build-aux/*')),
+        ('build-aux', [ path.join('build-aux', f) for f in [
+            'Makefile.am',
+            'Makefile.usr.am',
+            'ax_check_compile_flag.m4',
+            'ax_prog_fc_mpi.m4',
+            'configure.ac',
+            'fdep.in',
+            'netcdf.m4',
+            'netcdff.m4',
+            'runtests.sh',
+            'test.sh',
+            'update-usrdeps',]]),
+
+        ('config', [ 'config/rxn_preproc.sh', ]),
         ('mfixgui/icons', glob('mfixgui/icons/*')),
         ('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
         ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),

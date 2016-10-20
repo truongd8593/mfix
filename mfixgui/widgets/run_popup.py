@@ -76,6 +76,18 @@ class RunPopup(QDialog):
 
         self.initialize_ui()
 
+        cwd = self.parent.get_project_dir()
+        solver_exists = glob(os.path.join(cwd, '*.dll')) + glob(os.path.join(cwd, '*.dylib')) + glob(os.path.join(cwd, '*.so'))
+        if not solver_exists:
+            response = self.parent.message(title="Solver not found for this directory. Build?",
+                                    icon="question",
+                                    text="Solver not found for this directory. Build?",
+                                    buttons=['yes', 'no'])
+            if response == 'yes':
+                conf, make = build_in_dir(cwd)
+                log.info(conf)
+                log.info(make)
+
     # UI update functions
 
     def initialize_ui(self):
@@ -467,9 +479,6 @@ class RunPopup(QDialog):
     def start_command(self, cmd, cwd, env):
         """Start MFIX in QProcess"""
 
-        conf, make = build_in_dir(cwd)
-        log.info(conf)
-        log.info(make)
         mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
         if os.path.exists(mfix_stop_file):
             try:
