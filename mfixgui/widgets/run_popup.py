@@ -227,7 +227,8 @@ class RunPopup(QDialog):
         clear_layout(l)
         tp =  self.ui.combobox_template.currentText()
 
-        wids_data = self.templates[tp]
+        wids_data = self.templates.get(tp, None)
+        if wids_data is None: return
 
         # add the widgets
         for i, wid in enumerate(list(wids_data.keys())):

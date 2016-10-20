@@ -97,6 +97,8 @@ if PRECOMPILE_UI:
         print("You must compile ui files! (run 'make')")
         sys.exit(1)
 
+SETTINGS = QSettings('MFIX', 'MFIX')
+
 # --- Main Gui ---
 
 class MfixGui(QtWidgets.QMainWindow,
@@ -109,7 +111,7 @@ class MfixGui(QtWidgets.QMainWindow,
               Interpreter):
     # Main window class for MFIX-GUI
 
-    settings = QSettings('MFIX', 'MFIX')
+    settings = SETTINGS
 
     stdout_signal = Signal(str)
     stderr_signal = Signal(str)
@@ -2459,9 +2461,13 @@ def main():
     # create the QApplication
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
     # set style
-    app_style = args.style
-    if app_style is not None:
-        qapp.setStyle(app_style.lower())
+    app_style_arg = args.style
+    app_style_settings = SETTINGS.value('app_style')
+    if app_style_arg is not None:
+        qapp.setStyle(app_style_arg.lower())
+        SETTINGS.setValue('app_style', app_style_arg)
+    elif app_style_settings is not None:
+        qapp.setStyle(app_style_settings.lower())
     gui = MfixGui(qapp, project_file=project_file)
     gui.show()
 
