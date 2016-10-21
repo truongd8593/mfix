@@ -6,7 +6,7 @@ This module contains the work flow widget.
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtCore import Signal
 from collections import OrderedDict
 import copy
@@ -215,7 +215,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         # modify toolbar
         i = 4
         for tool, icon, callback in [('import', 'import.png', self.handle_import),
-                                     ('export', 'open_in_new.png', self.handle_import)]:
+                                     ('export', 'open_in_new.png', self.handle_export)]:
             btn = QtWidgets.QToolButton()
             btn.setIcon(get_icon(icon))
             btn.pressed.connect(callback)
@@ -267,12 +267,13 @@ class WorkflowWidget(QtWidgets.QWidget):
                 ('auto restart', 'autorenew.png', self.handle_renew),
                 ('remove from queue', 'removefromqueue.png', self.handle_remove_from_queue),
                 ('submit to queue', 'addtoqueue.png', self.handle_add_to_queue),
-                ('open', 'folder.png', self.handle_open)]:
+                ('open', 'folder.png', self.handle_open),
+                ('settings', 'settings.png', self.handle_settings)]:
             btn = QtWidgets.QToolButton()
             btn.setIcon(get_icon(icon))
             btn.pressed.connect(callback)
             btn.setAutoRaise(True)
-            btn.setEnabled(False)
+            btn.setEnabled(tool == 'settings')
             btn.setToolTip(tool)
             self.tool_btn_dict[tool] = btn
             self.job_toolbar_layout.addWidget(btn)
@@ -369,7 +370,11 @@ class WorkflowWidget(QtWidgets.QWidget):
                 args = []
             proj.updateKeyword(key, value, args=args)
 
-        copied_proj = os.path.join(path, proj.get_value('run_name')+'.mfx')
+        run_name = proj.get_value('run_name')
+        if run_name is None:
+            self.mfixgui.error('The project does not have a run_name, is it a valid proejct?')
+            return
+        copied_proj = os.path.join(path, run_name+'.mfx')
         self.mfixgui.print_internal("Exporting to: %s" % copied_proj,
                                     color='green')
         proj.writeDatFile(copied_proj)
@@ -381,14 +386,12 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         return copied_proj
 
-    def run_popup(self, mfx_file):
-
-        proj_dir = os.path.dirname(mfx_file)
+    def run_popup(self):
 
         parent = MockParent()
         parent.mfix_gui = self.mfixgui
-        parent.project_dir = proj_dir
-        parent.project_file = mfx_file
+        parent.project_dir = self.mfixgui.get_project_dir()
+        parent.project_file = self.mfixgui.get_project_file()
         parent.project = self.project
         parent.settings = self.mfixgui.settings
         run_dialog = WorkflowRunPopup(None, parent)
@@ -407,7 +410,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         dir_base = os.path.basename(proj_dir)
 
         if self.run_cmd is None:
-            self.run_popup(mfx_file)
+            self.run_popup()
         queue = False
 
         data = self.job_status_table.value
@@ -423,14 +426,10 @@ class WorkflowWidget(QtWidgets.QWidget):
         self._run(proj_dir, mfx_file, self.run_cmd, queue)
 
         # save some info on the run
-        c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
+        data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
         data[dir_base]['queue'] = queue
         data[dir_base]['file'] = mfx_file
-        data = {
-            'cmd': c,
-            'queue': queue,
-            'file': mfx_file,
-        }
+
         with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
             json.dump(data, f)
 
@@ -548,16 +547,16 @@ class WorkflowWidget(QtWidgets.QWidget):
         """enable/diable btns"""
 
         n_btns = len(self.tool_btn_dict)
-        enable_list = [False]*n_btns
+        enable_list = [False]*(n_btns-1)
 
         projs = self.get_selected_projects()
 
         if projs:
             enable_list[:4] = [True]*5
         if len(projs) == 1:
-            enable_list[n_btns-1] = True
+            enable_list[n_btns-2] = True
 
-        for enable, btn in zip(enable_list, self.tool_btn_dict.values()):
+        for enable, btn in zip(enable_list, self.tool_btn_dict.values()[:-1]):
             btn.setEnabled(enable)
 
     def handle_play(self):
@@ -673,11 +672,33 @@ class WorkflowWidget(QtWidgets.QWidget):
         cmd += ['python', gui_path, path]
         subprocess.Popen(cmd)
 
+    def handle_settings(self):
+        """open the run settings dialog"""
+        self.run_popup()
 
     def handle_import(self):
         """immport a nc file"""
-        print('import')
+        new_nc = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open a node chart",
+            self.mfixgui.get_project_dir(),
+            'Node Chart (*.nc);; All Files (*)')
+        if not new_nc:
+            return
+        if PYQT5:
+            new_nc = new_nc[0]
+
+        self.nodeChart.open(path=new_nc)
 
     def handle_export(self):
         """export a nc file"""
-        print('export')
+
+        new_nc = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Save the node chart",
+            self.mfixgui.get_project_dir(),
+            'Node Chart (*.nc)')
+        if not new_nc:
+            return
+        if PYQT5:
+            new_nc = new_nc[0]
+
+        self.nodeChart.save(path=new_nc)
