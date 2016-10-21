@@ -297,7 +297,7 @@
       WRITE(ERR_MSG, 1110) I, J, K, trim(VAR), VALUE
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
- 1110 FORMAT(1X,'I = ',I6,' J = ',I6,' K = ',I6,2X,A,'Value:',g11.4)
+ 1110 FORMAT(1X,'I = ',I6,' J = ',I6,' K = ',I6,2X,A,'Value:',g18.11)
 
 
       END SUBROUTINE REPORT_UNPHYSICAL

@@ -470,6 +470,8 @@ SUBROUTINE SET_BC0
             DO M = 1, SMAX
                ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + &
                   BC_ROP_S(BCV,M)
+! this will cause issue if any variable density model is used as ro_s
+! will not yet be defined
                nM = BC_ROP_S(BCV,M)*6d0/ &
                   (PI*D_p(IJK,M)**3*RO_S(IJK,M))
                nTOT = nTOT + nM

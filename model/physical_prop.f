@@ -223,7 +223,7 @@
 ! Equation of State - Solid
       use eos, only: EOSS
 ! Solid phase species mass fractions.
-      use fldvar, only: X_s, ROP_s, RO_s
+      use fldvar, only: X_s, ROP_s, RO_s, ep_s
 ! Solid phase density (variable).
       use fldvar, only: ROP_s, RO_s
 
@@ -265,6 +265,8 @@
       LOGICAL :: wHeader
 ! Minimum bulk density
       DOUBLE PRECISION :: minROPs
+! Local variable to store current volume fraction
+      DOUBLE PRECISION :: EPS_tmp
 !......................................................................!
 
 ! User defined function
@@ -284,6 +286,7 @@
 ! Calculate the solids denisty over all cells.
          IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) cycle IJK_LP
+            eps_tmp = ep_s(ijk,M)
             IF(ROP_s(IJK,M) > minROPs) THEN
                RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   X_s(IJK,M,IIS))
@@ -292,6 +295,8 @@
                RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   DIL_INERT_X_VSD(M))
             ENDIF
+! update rop_s based on new density
+            ROP_S(IJK,M) = eps_tmp*RO_S(IJK,M)
 
 ! Report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN

@@ -36,13 +36,21 @@
       USE param
       USE param1
       USE physprop
+      use usr_prop, only: usr_rog, calc_usr_prop, gas_density
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER :: IJK
 !-----------------------------------------------
-      IF (RO_G0 == UNDEFINED) THEN   ! compressible case
+      IF (USR_ROG) THEN   ! user defined ro_g
+         DO IJK=IJKSTART3,IJKEND3
+            IF (WALL_AT(IJK)) CYCLE
+            CALL USR_PROP_ROG(IJK)
+            ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
+         ENDDO
+
+      ELSEIF (RO_G0 == UNDEFINED) THEN   ! compressible case
 
 !!$omp parallel do private(IJK)
          DO IJK = ijkstart3, ijkend3

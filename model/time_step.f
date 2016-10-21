@@ -102,7 +102,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: TIME_STEP_INIT                                          !
+!  Subroutine: TIME_STEP_END                                           !
 !  Author: M. Syamlal                                 Date: 12-APR-96  !
 !                                                                      !
 !  Purpose: This module controls the iterations for solving equations  !
@@ -161,14 +161,14 @@
 
       END SUBROUTINE TIME_STEP_END
 
-      !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      !                                                                      !
-      !  Subroutine: CHECK_LOW_DT                                            !
-      !  Author: Mark Meredith                              Date: 04-JUN-16  !
-      !                                                                      !
-      !  Purpose: Exit if DT < DT_MIN                                        !
-      !                                                                      !
-      !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_LOW_DT                                            !
+!  Author: Mark Meredith                              Date: 04-JUN-16  !
+!                                                                      !
+!  Purpose: Exit if DT < DT_MIN                                        !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CHECK_LOW_DT
 !f2py threadsafe
@@ -193,14 +193,14 @@
          ENDIF
       END SUBROUTINE CHECK_LOW_DT
 
-      !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      !                                                                      !
-      !  Subroutine: CHEM_MASS                                               !
-      !  Author: Mark Meredith                              Date: 04-JUN-16  !
-      !                                                                      !
-      !  Purpose: Stiff chemistry and check mass balance                     !
-      !                                                                      !
-      !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHEM_MASS                                               !
+!  Author: Mark Meredith                              Date: 04-JUN-16  !
+!                                                                      !
+!  Purpose: Stiff chemistry and check mass balance                     !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CHEM_MASS
 !f2py threadsafe

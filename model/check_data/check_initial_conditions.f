@@ -651,6 +651,8 @@
 ! Flag: Do not solve in specified direction.
       use geometry, only: NO_I, NO_J, NO_K
 
+      use usr_prop, only: usr_ros
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum number of solids species.
@@ -686,6 +688,9 @@
       INTEGER :: MMAX_TOT
 ! Flag for PATCH IC regions
       LOGICAL :: BASIC_IC
+! count of number of phases skipped from boundary volume fraction
+! checks due to a user variable density model
+      INTEGER :: lskip
 !......................................................................!
 
 ! Initialize the error manager.
@@ -720,7 +725,7 @@
             DO M = 1, MMAX_TOT
                IF(IC_ROP_S(ICV,M) /= UNDEFINED .AND. &
                   IC_EP_S(ICV,M) /= UNDEFINED) THEN
-                  WRITE(ERR_MSG, 1400) M, ICV, 'IC_ROP_s and IC_EP_s'
+                  WRITE(ERR_MSG, 1401) M, ICV, 'IC_ROP_s and IC_EP_s'
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
             ENDDO
@@ -730,6 +735,9 @@
  1400 FORMAT('Error 1400: Insufficient solids phase ',I2,' ',          &
          'information for IC',/'region ',I3,'. ',A,' not specified.',/ &
          'Please correct the mfix.dat file.')
+ 1401 FORMAT('Error 1400: Inconsistent solids phase ',I2,' ',          &
+         'information for IC',/'region ',I3,'. ',A,' should not be ',&
+         'specified.',/ 'Please correct the mfix.dat file.')
 
 ! Determine which solids phases are present.
       DO M = 1, MMAX_TOT
@@ -739,6 +747,9 @@
 
       IF(MMAX_TOT == 1 .AND. IC_EP_g(ICV)/=ONE) SKIP(1) = .FALSE.
 
+! at this time if usr defined ros invoked will skip basic check on volume 
+! fraction; potential to use ro_s0 as 'initialization'
+      lskip = 0
       DO M=1, MMAX_TOT
 
 ! check that solids phase m velocity components are initialized
@@ -849,14 +860,32 @@
             ENDIF
          ENDIF
 
-! Set the solids density for the IC region.
+      ENDDO   ! end loop over (m=1,smax)
+
+
+! Initialize the sum of the total volume fraction.
+      SUM_EP = IC_EP_G(ICV)
+! at this time if usr defined ros invoked will skip basic check on volume 
+! fraction in ic; potential to use ro_s0 as 'initialization'
+      lskip = 0
+
+      DO M=1, MMAX_TOT
+
+! Clear out both variables if this phase is skipped.  No need to continue
+! checks if it is skipped!
          IF(SKIP(M)) THEN
-            IC_ROs(M) = merge(RO_s0(M), RO_s0(M), SOLVE_ROs(M))
+            IF(BASIC_IC) THEN
+               IC_EP_S(ICV,M)  = ZERO
+               IC_ROP_S(ICV,M) = ZERO
+            ENDIF
+! if not basic_ic then we shouldn't do anything/ but no checks should
+! be made either; at this point if skip is true then we can assume
+! ic_rop_s and ic_ep_s are zero or undefined.
+            CYCLE
+         ENDIF
 
-         ELSEIF(.NOT.SOLVE_ROs(M)) THEN
-            IC_ROs(M) = RO_s0(M)
-
-         ELSE
+! Set the solids density for the IC region.
+         IF(SOLVE_ROs(M)) THEN
 ! Verify that the species mass fraction for the inert material is not
 ! zero in the IC region when the solids is present.
             INERT = INERT_SPECIES(M)
@@ -874,27 +903,20 @@
 ! Calculate the solids density.
             IC_ROs(M) = EOSS(RO_s0(M), X_s0(M,INERT),                  &
                IC_X_S(ICV,M,INERT))
+
+         ELSEIF (USR_ROs(M)) THEN 
+! at this time there is no mechanism to use user defined IC variables
+! in the user defined density calculation to obtain an appropriate
+! IC_ROs for this case 
+            lskip = lskip + 1
+            CYCLE
+         ELSE
+            IC_ROs(M) = RO_s0(M)
          ENDIF
 
-      ENDDO   ! end loop over (m=1,smax)
-
-
-! Initialize the sum of the total volume fraction.
-      SUM_EP = IC_EP_G(ICV)
-
-      DO M=1, MMAX_TOT
-
-! Clear out both varaibles if this phase is skipped.
-         IF(BASIC_IC .AND. SKIP(M)) THEN
-            IC_EP_S(ICV,M)  = ZERO
-            IC_ROP_S(ICV,M) = ZERO
-
-! Leave everything undefined for PATCH ICs that are not specifed.
-         ELSEIF(.NOT.BASIC_IC .AND. (IC_ROP_S(ICV,M) == UNDEFINED      &
-            .AND. IC_EP_S(ICV,M) == UNDEFINED)) THEN
 
 ! If both input parameters are defined. Make sure they are equivalent.
-         ELSEIF(IC_ROP_S(ICV,M) /= UNDEFINED .AND.                     &
+         IF(IC_ROP_S(ICV,M) /= UNDEFINED .AND.                     &
             IC_EP_S(ICV,M) /= UNDEFINED) THEN
 
             IF(.NOT.COMPARE(IC_EP_S(ICV,M)*IC_ROs(M),                  &
@@ -903,34 +925,26 @@
 ! BASIC_IC regions require that the IC_ROP_s and IC_EP_s specifications
 ! match although it is unlikely that anyone would specify both.
                IF(BASIC_IC) THEN
-
                   WRITE(ERR_MSG,1406) M, ICV
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
 1406 FORMAT('Error 1406: IC_EP_s and IC_ROP_s are inconsistent for ',&
          'phase ',I2,/,'in IC region ', I3,'. Please correct the ',&
          'mfix.dat file.')
 
-
-! PachedeIC regions defer to IC_EP_s if the values do not match. This
+! Patched IC regions defer to IC_EP_s if the values do not match. This
 ! prevents a dead lock or the need to define both. This case is rather
 ! common as a defined IC_EP_s is converted to IC_ROP_s. Therefore, if
 ! a patch region is used more than once, these values may not match.
                ELSE
-
                   WRITE(ERR_MSG,1407) trim(iVar('IC_ROP_s',ICV,M)), &
                      trim(iVAL(IC_ROP_S(ICV,M))), trim(iVar('IC_EP_s',&
                      ICV,M)), trim(iVAL(IC_EP_S(ICV,M)))
                   CALL FLUSH_ERR_MSG()
-
 1407 FORMAT('Warning 1407: IC_EP_s and IC_ROP_s are inconsistent:',    &
          2(/3x,A,' = ',A),/'Deferring to IC_EP_s to overcome conflict.')
-
                   IC_ROP_S(ICV,M) = IC_EP_S(ICV,M)*IC_ROs(M)
-
                ENDIF
             ENDIF
-
 
 ! Compute IC_EP_s from IC_ROP_s
          ELSEIF(IC_EP_S(ICV,M) == UNDEFINED)THEN
@@ -939,8 +953,6 @@
 ! Compute IC_ROP_s from IC_EP_s and IC_ROs
          ELSEIF(IC_ROP_S(ICV,M) == UNDEFINED) THEN
             IC_ROP_S(ICV,M) = IC_EP_S(ICV,M) * IC_ROs(M)
-! This is a sanity check.
-         ELSE
 
          ENDIF
 ! Add this phase to the total volume fraction.
@@ -948,11 +960,12 @@
       ENDDO
 
 ! Verify that the volume fractions sum to one.
-      IF(BASIC_IC .AND. .NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(ERR_MSG,1410) ICV
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      IF(BASIC_IC .AND. lskip == 0) THEN
+         IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
+            WRITE(ERR_MSG,1410) ICV
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
       ENDIF
-
  1410 FORMAT('Error 1410: Illegal initial condition region : ',I3,/    &
          'Sum of volume fractions does NOT equal ONE. Please correct',/&
          'the mfix.dat file.')

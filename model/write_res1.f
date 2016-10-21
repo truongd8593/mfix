@@ -28,6 +28,7 @@
       USE scalars
       USE sendrecv
       use turb, only: k_epsilon
+      use usr_prop, only: usr_ros
       IMPLICIT NONE
 
 ! Local Variables
@@ -69,7 +70,7 @@
           call send_recv(V_g,2)
           call send_recv(W_g,2)
           call send_recv(ROP_S,2)
-          IF(ANY(SOLVE_ROs)) call send_recv(RO_S,2)
+          IF(ANY(SOLVE_ROs) .OR. ANY(USR_ROS)) call send_recv(RO_S,2)
           call send_recv(T_S,2)
           call send_recv(U_S,2)
           call send_recv(V_S,2)
@@ -109,7 +110,7 @@
 
         call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)
 
-        IF(ANY(SOLVE_ROs)) &
+        IF(ANY(SOLVE_ROs) .OR. ANY(USR_ROS)) &
             call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)
 
         call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)

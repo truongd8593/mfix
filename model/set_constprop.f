@@ -58,6 +58,8 @@
       USE compar, only: ijkstart3, ijkend3
       use functions, only: wall_at, fluid_at
 
+      use usr_prop, only: usr_ros
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -65,6 +67,9 @@
 ! indices
       INTEGER :: IJK, M, I, J
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
+! local variable indicating that some variable density model is being used
+! either a user defined function or mfix built in variable density model.
+      LOGICAL :: SolveAnyRos
 !-----------------------------------------------
 
 ! First, initialize certain transport coefficients, physical
@@ -177,16 +182,20 @@
 
       ENDDO
 
+! initialize
+      SolveAnyRos = .FALSE.
 ! ensure ro_s(ijk,m) is assigned to ro_s0(m) or ro_s(np) so that the
 ! function ep_s works for discrete phases. might be able to move this
 ! to set_ic_dem and set_ic_mppic. also required d_p(ijk,m) for hybrid
 ! use.  note check_solids_common_all ensures d_p0 is set for all
 ! solids defined also either ro_s0 must be set or ro_s0
       DO M = 1, MMAX+DES_MMAX
+
+         SolveAnyROs = (SOLVE_ROS(M) .OR. USR_ROS(M))
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100
-               IF (RO_S0(M) /= UNDEFINED.AND..NOT.SOLVE_ROs(M)) RO_S(IJK,M) = RO_S0(M)
+               IF (RO_S0(M) /= UNDEFINED.AND..NOT.SolveAnyROs) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0(M) /= UNDEFINED) C_PS(IJK,M) = C_PS0(M)
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
             ENDIF
