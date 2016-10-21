@@ -16,6 +16,7 @@ import glob
 import subprocess
 import json
 import sys
+import re
 
 try:
     from pyqtnode import NodeWidget, Node, tools
@@ -28,7 +29,7 @@ except ImportError:
 # local imports
 from mfixgui.widgets.base import Table
 from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY, is_vnc
+from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY, is_vnc, replace_with_dict
 from mfixgui.constants import PARAMETER_DICT
 from mfixgui.job import JobManager
 from mfixgui.project import Project
@@ -151,6 +152,7 @@ class MockParent(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self, parent)
         self.mfix_gui = mfix_gui
 
+
     def noop(self, *args, **kwargs):
         return None
 
@@ -178,12 +180,15 @@ class MockParent(QtWidgets.QWidget):
 class WorkflowRunPopup(RunPopup):
     def __init__(self, mfix_exe, parent):
         RunPopup.__init__(self, mfix_exe, parent)
+        self.submit_queue = False
 
     # over-rides
     def handle_run(self):
+        self.submit_queue = False
         self.finish_with_dialog()
 
     def handle_submit(self):
+        self.submit_queue = True
         self.finish_with_dialog()
 
 class FakeJob(object):
@@ -199,6 +204,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.update_timer = QtCore.QTimer()
         self.update_timer.timeout.connect(self.update_job_status)
         self.run_cmd = None
+        self.submit_cmd = None
+        self.queue = False
         self.file_watcher = QtCore.QFileSystemWatcher()
         self.file_watcher.directoryChanged.connect(self.create_job_manager)
         self.mock_parents = []
@@ -281,8 +288,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         self.job_status_table = Table(
             dtype=OrderedDict,
-            columns=['status', 'progress', 'dt', 'time remaining', 'path'],
-            column_delegate={1: {'widget': 'progressbar'}},
+            columns=['status', 'job id', 'progress', 'dt', 'time remaining', 'path'],
+            column_delegate={2: {'widget': 'progressbar'}},
             multi_selection=True
             )
         self.job_status_table.set_value(OrderedDict())
@@ -323,7 +330,9 @@ class WorkflowWidget(QtWidgets.QWidget):
             for name in files:
                 if root != path and name.endswith('.mfx'):
                     dir_base = os.path.basename(root)
-                    data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':root, 'dt':'None', 'time remaining':'None'}
+                    data[dir_base] = {'status':'waiting for pid', 'progress':0,
+                                      'path':root, 'dt':'None', 'time remaining':'None',
+                                      'job id': None}
                     run_data_path = os.path.join(root, '.workflow_run_cmd.json')
                     if os.path.exists(run_data_path):
                         with open(run_data_path) as f:
@@ -398,6 +407,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog.exec_()
 
         self.run_cmd = run_dialog.get_run_command()
+        self.submit_cmd = run_dialog.get_submit_command()
+        self.queue = run_dialog.submit_queue
+        print(self.queue)
 
     def run_project(self, mfx_file):
         """
@@ -411,32 +423,40 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         if self.run_cmd is None:
             self.run_popup()
-        queue = False
 
         data = self.job_status_table.value
-        data[dir_base] = {'status':'waiting for pid', 'progress':0, 'path':proj_dir, 'dt':'None', 'time remaining':'None'}
+        data[dir_base] = {'status':'waiting for pid', 'progress':0,
+                          'path':proj_dir, 'dt':'None', 'time remaining':'None',
+                          'job id':None}
         self.job_status_table.set_value(data)
-        self.mfixgui.print_internal("Starting: %s" % str(proj_dir), color='green')
 
         if not os.path.exists(mfx_file):
             self.mfixgui.print_internal("Error: No project file: %s" % proj_dir)
             return
 
         # run it
-        self._run(proj_dir, mfx_file, self.run_cmd, queue)
+        self._run(proj_dir, mfx_file)
 
         # save some info on the run
-        data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
-        data[dir_base]['queue'] = queue
+        c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
+        s = data[dir_base]['submit'] = copy.deepcopy(self.submit_cmd)
+        data[dir_base]['queue'] = self.queue
         data[dir_base]['file'] = mfx_file
 
+        save_data = {
+            'cmd': c,
+            'submit': s,
+            'queue': self.queue,
+            'file': mfx_file,
+        }
+
         with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
-            json.dump(data, f)
+            json.dump(save_data, f)
 
         if not self.update_timer.isActive():
             self.update_timer.start(1000)
 
-    def _run(self, proj_dir, mfx_file, cmd, queue=False):
+    def _run(self, proj_dir, mfx_file):
         parent = MockParent()
         parent.mfix_gui = self.mfixgui
         parent.project_dir = proj_dir
@@ -448,16 +468,68 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
 
         # Queue
-        if queue:
-            msg = 'Submitting to Queue: %s' % ' '.join(cmd)
-            run_dialog.submit_command(cmd)
+        if self.queue:
+            msg = 'Submitting to Queue'
+            self.submit_to_queue(proj_dir)
         # local
         else:
-            msg = 'Run Command: %s' % ' '.join(cmd)
-            run_dialog.start_command(cmd, proj_dir, os.environ)
+            msg = 'Running: %s' % ' '.join(self.run_cmd)
+            run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
         self.file_watcher.addPath(proj_dir)
         self.mfixgui.print_internal(msg, color='green')
+
+    def submit_to_queue(self, prj_dir):
+        script_name = '.qsubmit_script'
+
+        script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict = self.submit_cmd
+
+        # write the script
+        with open(os.path.join(prj_dir, script_name), 'w') as f:
+            f.write(script)
+
+        replace_dict['SCRIPT'] = script_name
+
+        submit_cmd = replace_with_dict(sub_cmd, replace_dict)
+
+        # submit the job
+        self.mfixgui.print_internal("Job submit CMD: {}".format(submit_cmd),
+                                   color='blue')
+
+        proc = subprocess.Popen(submit_cmd, shell=True, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                cwd=prj_dir)
+        out, err = proc.communicate()
+        if job_id_regex is not None and out:
+            job_id = re.findall(job_id_regex, out)
+        else:
+            job_id = []
+        if job_id:
+            job_id = job_id[0]
+            self.mfixgui.print_internal("Job successfully submitted with job id: {}".format(job_id),
+                                       color='blue')
+        else:
+            self.mfixgui.error('Could not determine job id')
+            job_id = None
+        if err:
+            self.mfixgui.error('Error with submission:\n{}'.format(err))
+
+        dir_base = os.path.basename(prj_dir)
+        data = self.job_status_table.value
+        data[dir_base]['job id'] = job_id
+        data[dir_base]['status'] = 'submitted to queue'
+
+        # save the job id
+        save_path = os.path.join(prj_dir, '.workflow_run_cmd.json')
+        if os.path.exists(save_path):
+            with open(save_path , 'r') as f:
+                d = json.load(f)
+
+            d['job id'] = job_id
+
+            with open(save_path, 'w') as f:
+                json.dump(d, f)
+
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))

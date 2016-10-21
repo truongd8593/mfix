@@ -111,7 +111,7 @@ class RunPopup(QDialog):
         else:
             ui.spinbox_threads.setValue(1)
 
-        # lacla/queue
+        # local/queue
         self.ui.tabWidget.setCurrentIndex(int(self.gui_comments.get('run_location', 1)))
 
         # issues/149
@@ -359,11 +359,12 @@ class RunPopup(QDialog):
         if not self.finish_with_dialog():
             return
 
-        run_cmd = self.get_run_command()
-        msg = 'Submitting %s' % ' '.join(run_cmd)
+        msg = 'Submitting to queue'
         self.parent.print_internal(msg, color='blue')
 
-        self.submit_command(cmd=run_cmd)
+        script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict = self.get_submit_command()
+
+        self.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
     def handle_resume(self):
         """resume previously stopped mfix run"""
@@ -610,9 +611,9 @@ class RunPopup(QDialog):
                 run_cmd += ['nodesk=%s'%nodesk]
         return run_cmd
 
-    def submit_command(self, cmd):
+    def get_submit_command(self):
 
-        self.remove_mfix_stop()
+        cmd = self.get_run_command()
 
         tp =  self.ui.combobox_template.currentText()
         template = self.templates[tp]
@@ -630,12 +631,19 @@ class RunPopup(QDialog):
         script = replace_with_dict(script, replace_dict)
 
         sub_cmd = template['options'].get('submit', False)
-        if not sub_cmd:
-            self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
-            return
         delete_cmd = template['options'].get('delete', False)
         status_cmd = template['options'].get('status', False)
         job_id_regex = template['options'].get('job_id_regex', None)
+
+        return script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict
+
+    def submit_command(self, script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
+
+        self.remove_mfix_stop()
+
+        if not sub_cmd:
+            self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
+            return
 
         self.parent.job_manager.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
