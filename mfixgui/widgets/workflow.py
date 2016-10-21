@@ -530,6 +530,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             with open(save_path, 'w') as f:
                 json.dump(d, f)
 
+        self.file_watcher.addPath(prj_dir)
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
