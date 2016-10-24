@@ -70,6 +70,7 @@ class Chemistry(object):
             ui.lineedit_reaction_name.setText(name)
             return
         tw.item(row,0).setText(name)
+        self.chemistry_current_reaction = name # We can only edit the current reaction
         # update ordered dict, keeping order
         keys = list(self.project.reactions.keys())
         keys[row] = name
@@ -85,23 +86,23 @@ class Chemistry(object):
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
             for row in range(tw.rowCount()-1): # Skip 'total'
                 cb = tw.cellWidget(row, 0)
-                phase = cb.currentText()
+                phase = cb.currentIndex()
                 phases[(tw, row)] = phase
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
+            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             # We need to determine, for each combobox item, how many phases would be
             # referenced if the combobox were set to that item
             for row in range(tw.rowCount()-1):
                 cb = tw.cellWidget(row, 0)
-                orig_phase = cb.currentText()
+                orig_phase = cb.currentIndex()
                 for i in range(cb.count()):
                     item = get_combobox_item(cb, i)
-                    phases[(tw, row)] = item.text() # consider what setting this combobox would do...
-                    enabled = len(set(phases.values())) <= 2 # Allow at most 2-phase reactions
+                    phases[(tw, row)] = i # consider what setting this combobox would do...
+                    enabled = (len(set(phases.values())) <= 2 # Allow at most 2-phase reactions
+                               # and don't allow phases for which there are no available species
+                               and self.chemistry_find_available_species(side, match_phase=i))
                     set_item_enabled(item, enabled)
-                    if not enabled:
-                        item.setToolTip('Only homogeneous or 2-phase heterogenous reactions supported')
-                    else:
-                        item.setToolTip(None)
+
                 phases[(tw, row)] = orig_phase # ..and set it back
 
 
@@ -126,6 +127,7 @@ class Chemistry(object):
                     enabled = (len(set(species.values())) == n_rows) # should be as many species as rows
                     set_item_enabled(item, enabled)
                 species[row] = orig_species # ... and set it back
+
 
     def chemistry_handle_selection(self):
         # selection callback for main table
@@ -165,8 +167,11 @@ class Chemistry(object):
         self.chemistry_current_reaction = name
 
         def handle_phase(tw, row, idx):
+            ui = self.ui.chemistry
+            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             old_item = tw.cellWidget(row, 1)
-            item = make_species_item(tw, row, idx, None)
+            species = self.chemistry_find_available_species(side, idx)
+            item = make_species_item(tw, row, idx, species)
             tw.setCellWidget(row, 1, item)
             w = tw.cellWidget(row,2)
             if w:
@@ -175,26 +180,26 @@ class Chemistry(object):
                 old_item.deleteLater()
             self.chemistry_update_totals()
             self.chemistry_restrict_phases()
+            #self.chemistry_update_chem_eq()
             self.set_unsaved_flag()
 
         def make_phase_item(tw, row, phase):
             cb = ComboBox()
-            phases = []
-            if not self.fluid_solver_disabled:
-                phases.append(self.fluid_phase_name)
+            phases = [self.fluid_phase_name]
             for name in self.solids.keys():
                 phases.append(name)
             for p in phases:
                 cb.addItem(p)
             cb.setCurrentIndex(phase)
-            cb.activated.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
+            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
             return cb
 
         def handle_species(tw, row, idx):
+            print("HS", row, idx)
             ui = self.ui.chemistry
             if not self.chemistry_current_reaction:
                 return
-            tw.cellWidget(row,2).setText('1.0')
+            #tw.cellWidget(row, 2).setText('1.0')
             species = tw.cellWidget(row, 1).currentText()
             side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             reaction = self.project.reactions[self.chemistry_current_reaction][0]
@@ -212,7 +217,7 @@ class Chemistry(object):
                 if s == species:
                     cb.setCurrentIndex(idx)
                 idx += 1
-            cb.activated.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
+            cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
             return cb
 
         def handle_coeff(widget, val, args):
@@ -276,13 +281,18 @@ class Chemistry(object):
         if not self.chemistry_current_reaction:
             return
         reaction = self.project.reactions[self.chemistry_current_reaction][0]
-        data = {}
+        fmt = {}
         for side in 'reactants', 'products':
-            data[side] = ' + '.join(species if coeff==1.0 else '%.4g * %s' % (coeff, species)
-                                    for (species, coeff) in reaction[side] if coeff)
-        chem_eq = "%s --> %s" % (data['reactants'], data['products'])
+            fmt[side] = ' + '.join(species if coeff==1.0 else '%.4g*%s' % (coeff, species)
+                                   for (species, coeff) in reaction[side] if coeff)
+        chem_eq = "%s --> %s" % (fmt['reactants'], fmt['products'])
+        display_text = chem_eq.replace('-->', '→')
         reaction['chem_eq'] = chem_eq
-        self.setup_chemistry()
+        tw = ui.tablewidget_reactions
+        row = get_selected_row(tw)
+        if row is not None:
+            ui.tablewidget_reactions.item(row, 1).setText(display_text)
+        #self.setup_chemistry()
 
 
     def chemistry_update_totals(self):
@@ -397,55 +407,17 @@ class Chemistry(object):
             tw.setMinimumHeight(height)
         tw.updateGeometry() #? needed?
 
-    def chemistry_available_phases(self):
-        ui = self.ui.chemistry
-        phases = set()
-        for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
-            n_rows = tw.rowCount() - 1 # skip 'total'
-            for row in range(n_rows):
-                cb = tw.cellWidget(row, 0)
-                text = cb.currentText()
-                if text not in phases: # list won't be very long
-                    phases.add(text)
-        if len(phases) < 2: # all phases are valid
-            phases = []
-            if not self.fluid_solver_disabled:
-                phases.append(self.fluid_phase_name)
-            for name in self.solids.keys():
-                phases.append(name)
-            return phases
-        if len(phases) == 2:
-            return phases
-        else:
-            self.error("more than 2 phases selected")
-            return []
-
-
-    def chemistry_available_species(self, side):
-        # side is 'reactants' or 'products'
-        ui = self.ui.chemistry
-        in_use = set()
-        tw = ui.tablewidget_reactants if side=='reactants' else ui.tablewidget_products
-        n_rows = tw.rowCount()-1
-        for row in range(n_rows):
-            in_use.add(tw.cellWidget(row,1).currentText())
-
-
-
-
-
-
-
     def chemistry_add_reaction(self):
         ui = self.ui.chemistry
         aliases = list(self.species_all_aliases())
         if not aliases:
             return
+
         count = 1
         while 'Reaction_%s' % count in self.project.reactions:
             count += 1
         name = 'Reaction_%s' % count
-        # TODO find first unused
+
         alias = aliases[0]
         chem_eq = '%s --> %s' % (alias, alias)
         self.project.reactions[name] = (
@@ -475,15 +447,47 @@ class Chemistry(object):
         #self.setup_chemistry() # handled by selection change
 
 
+    def chemistry_find_available_species(self, side, match_phase=None):
+        # side is 'reactants' or 'products'
+        # if match_phase is passed, species must belong to that phase
+        if not self.chemistry_current_reaction:
+            return
+        reaction = self.project.reactions.get(self.chemistry_current_reaction)
+        if reaction is None:
+            self.error("reaction %s undefined" % self.chemistry_current_reaction)
+            return
+        reaction_data = reaction[0]
+
+        # Collect phase info
+        if match_phase is None:
+            phases = set(self.find_species_phase(s)
+                         for (s,c) in
+                         reaction_data.get('reactants',[])+reaction_data.get('products',[]))
+        else:
+            phases = set()
+        data = reaction_data.get(side, [])
+        used = set(s for (s,c) in data)
+
+        for alias in self.species_all_aliases():
+            # This is a bit inefficient - we should already know the phase
+            # (but the species list should not be too long)
+            species_phase = self.find_species_phase(alias)
+            if match_phase is not None and species_phase != match_phase:
+                continue
+            if len(phases) > 1 and species_phase not in phases:
+                continue
+            if alias not in used:
+                return alias
+
     def chemistry_add_reactant(self):
         ui = self.ui.chemistry
-        aliases = self.species_all_aliases()
-        aliases = list(aliases)
-        if not aliases:
+        reaction = self.project.reactions.get(self.chemistry_current_reaction)
+        if reaction is None:
             return
-        #TODO Find first unused
-        alias = aliases[0]
-        self.project.reactions[self.chemistry_current_reaction][0]['reactants'].append([alias, 1.0])
+        alias = self.chemistry_find_available_species('reactants')
+        if not alias:
+            return
+        reaction[0]['reactants'].append([alias, 1.0])
         self.setup_chemistry()
         self.chemistry_handle_selection() # force update
 
@@ -504,13 +508,13 @@ class Chemistry(object):
 
     def chemistry_add_product(self):
         ui = self.ui.chemistry
-        aliases = self.species_all_aliases()
-        aliases = list(aliases)
-        if not aliases:
+        reaction = self.project.reactions.get(self.chemistry_current_reaction)
+        if reaction is None:
             return
-        #TODO Find first unused
-        alias = aliases[0]
-        self.project.reactions[self.chemistry_current_reaction][0]['products'].append([alias, 1.0])
+        alias = self.chemistry_find_available_species('products')
+        if not alias:
+            return
+        reaction[0]['products'].append([alias, 1.0])
         self.setup_chemistry()
         self.chemistry_handle_selection() # force update
 
