@@ -538,7 +538,6 @@ class WorkflowWidget(QtWidgets.QWidget):
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
-        print('changed:', pid_files)
         dir_base = os.path.basename(proj_dir)
         if pid_files:
             if len(pid_files) > 1:
