@@ -14,24 +14,52 @@ from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
 
 from mfixgui.widgets.base import (LineEdit, ComboBox)
 
+class ExtLineEdit(LineEdit):
+    # Track focus of lineedits, to emulate selection behavior
+    def focusInEvent(self, ev):
+        self.tw.current_row = self.row
+        if self.side == 'reactants':
+            self.parent.chemistry_handle_reactant_selection(row=self.row)
+        else:
+            self.parent.chemistry_handle_product_selection(row=self.row)
+        LineEdit.focusInEvent(self, ev)
+        #self.selectAll()
+
 class Chemistry(object):
     #Chemistry Task Pane Window: This section allows a user to define chemical reaction input.
 
     def init_chemistry(self):
         self.chemistry_current_reaction = None
         ui = self.ui.chemistry
+
+        # Toolbuttons
         ui.toolbutton_add_reaction.clicked.connect(self.chemistry_add_reaction)
         ui.toolbutton_delete_reaction.clicked.connect(self.chemistry_delete_reaction)
         ui.toolbutton_add_reactant.clicked.connect(self.chemistry_add_reactant)
+        ui.toolbutton_delete_reactant.clicked.connect(self.chemistry_delete_reactant)
         ui.toolbutton_add_product.clicked.connect(self.chemistry_add_product)
+        ui.toolbutton_delete_product.clicked.connect(self.chemistry_delete_product)
+        ui.toolbutton_save.clicked.connect(self.chemistry_save_reaction)
+        ui.toolbutton_cancel.clicked.connect(self.chemistry_cancel)
 
-        # Toolbuttons
         ui.toolbutton_delete_reaction.setEnabled(False) # Need a selection
         ui.toolbutton_delete_reactant.setEnabled(False)
         ui.toolbutton_delete_product.setEnabled(False)
+
+        ui.toolbutton_save.setEnabled(False)
+        ui.toolbutton_cancel.setEnabled(False)
+
+        # Tablewidgets
         ui.tablewidget_reactions.itemSelectionChanged.connect(self.chemistry_handle_selection)
-        ui.tablewidget_reactants.itemSelectionChanged.connect(self.chemistry_handle_reactant_selection)
-        ui.tablewidget_products.itemSelectionChanged.connect(self.chemistry_handle_product_selection)
+
+        # Note, since tw_reactants and tw_products are populated with cell widgets, selection
+        # callbacks do not work http://www.qtcentre.org/threads/56547-QTableWidget-cellwidget-selection
+        #ui.tablewidget_reactants.itemSelectionChanged.connect(self.chemistry_handle_reactant_selection)
+        #ui.tablewidget_products.itemSelectionChanged.connect(self.chemistry_handle_product_selection)
+        ui.tablewidget_reactants.current_row = None
+        ui.tablewidget_products.current_row = None
+
+        ui.tablewidget_reactants.cellPressed.connect(self.foo)
 
         # Set reaction name
         ui.lineedit_reaction_name.editingFinished.connect(self.set_reaction_name)
@@ -45,7 +73,7 @@ class Chemistry(object):
                 self.parent = parent
 
             def validate(self, text, pos):
-                self.parent.Xlen = len(text)
+                #self.parent.len = len(text)
                 #if len(text) == 0:
                 #    # How to reset the lineedit after user blanks out input?
                 #    return (QValidator.Intermediate, text, pos)
@@ -57,6 +85,9 @@ class Chemistry(object):
                     return (QValidator.Invalid, text, pos)
         ui.lineedit_reaction_name.setValidator(RxnIdValidator(parent=self))
 
+
+    def foo(self, *args):
+        print("FOO", args)
 
     def set_reaction_name(self):
         ui = self.ui.chemistry
@@ -173,6 +204,7 @@ class Chemistry(object):
             species = self.chemistry_find_available_species(side, idx)
             item = make_species_item(tw, row, idx, species)
             tw.setCellWidget(row, 1, item)
+
             w = tw.cellWidget(row,2)
             if w:
                 w.setText('1.0') # Default
@@ -184,6 +216,8 @@ class Chemistry(object):
             self.set_unsaved_flag()
 
         def make_phase_item(tw, row, phase):
+            ui = self.ui.chemistry
+            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             cb = ComboBox()
             phases = [self.fluid_phase_name]
             for name in self.solids.keys():
@@ -192,14 +226,18 @@ class Chemistry(object):
                 cb.addItem(p)
             cb.setCurrentIndex(phase)
             cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_phase(tw, row, idx))
+            if side=='reactants': # additional callbacks for pseudo-selection
+                cb.activated.connect(lambda idx, row=row: self.chemistry_handle_reactant_selection(row))
+            else:
+                cb.activated.connect(lambda idx, row=row: self.chemistry_handle_product_selection(row))
             return cb
 
         def handle_species(tw, row, idx):
-            print("HS", row, idx)
             ui = self.ui.chemistry
             if not self.chemistry_current_reaction:
                 return
             #tw.cellWidget(row, 2).setText('1.0')
+
             species = tw.cellWidget(row, 1).currentText()
             side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
             reaction = self.project.reactions[self.chemistry_current_reaction][0]
@@ -218,23 +256,37 @@ class Chemistry(object):
                     cb.setCurrentIndex(idx)
                 idx += 1
             cb.currentIndexChanged.connect(lambda idx, tw=tw, row=row: handle_species(tw, row, idx))
+            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            if side=='reactants': # additional callbacks for pseudo-selection
+                cb.activated.connect(lambda idx, row=row: self.chemistry_handle_reactant_selection(row))
+            else:
+                cb.activated.connect(lambda idx, row=row: self.chemistry_handle_product_selection(row))
             return cb
 
         def handle_coeff(widget, val, args):
             ui = self.ui.chemistry
+            tw = ui.tablewidget_reactants if widget.side == 'reactants' else ui.tablewidget_products
+            reaction_data = self.project.reactions[self.chemistry_current_reaction][0]
             val = widget.value
+            row = widget.row
+            tw.current_row = row
             if val in (None, ''):
                 val = 1.0
                 widget.setText('1.0')
-            # if val == 0.0: delete row #?
+            if val == 0.0:
+                del reaction_data[widget.side][row]
+                self.setup_chemistry()
+            else:
+                reaction_data[widget.side][widget.row][1] = val
             self.chemistry_update_totals()
-            reaction_data = self.project.reactions[self.chemistry_current_reaction][0]
-            reaction_data[widget.side][widget.row][1] = val
             self.chemistry_update_chem_eq()
+            tw.setCurrentCell(widget.row, 2)
+            widget.selectAll() # simulate selection
             self.set_unsaved_flag()
 
         def make_coeff_item(tw, row, val):
-            le = LineEdit()
+            le = ExtLineEdit()
+            le.parent = self
             le.setMaximumWidth(80) #?
             le.dtype = float
             le.min = 0
@@ -242,6 +294,7 @@ class Chemistry(object):
             le.key = ''
             le.updateValue('', val)
             le.side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            le.tw = tw
             le.row = row
             le.value_updated.connect(handle_coeff)
             return le
@@ -271,6 +324,12 @@ class Chemistry(object):
                 item.setFont(font)
                 tw.setItem(row+1, 2, item)
             self.fixup_chemistry_table(tw)
+            if len(data) == 1: # autoselect
+                if side == 'reactants':
+                    self.chemistry_handle_reactant_selection(row=0)
+                else:
+                    self.chemistry_handle_product_selection(row=0)
+
         self.fixup_chemistry_table(ui.tablewidget_reactions, stretch_column=1)
         self.chemistry_restrict_phases()
         self.chemistry_restrict_species()
@@ -315,17 +374,22 @@ class Chemistry(object):
             tot = round(tot, 6)
             tw.item(nrows-1, 2).setText(str(tot))
 
-    def chemistry_handle_reactant_selection(self):
+    def chemistry_handle_reactant_selection(self, row=None):
         ui = self.ui.chemistry
         tw = ui.tablewidget_reactants
-        row = get_selected_row(tw)
+        tw.current_row = row
         enabled = (row is not None)
         ui.toolbutton_delete_reactant.setEnabled(enabled)
+        for r in range(tw.rowCount()-1):
+            tw.cellWidget(r, 2).deselect()
+        if enabled:
+            tw.setCurrentCell(row, 2)
+            tw.cellWidget(row, 2).selectAll()
 
-    def chemistry_handle_product_selection(self):
+    def chemistry_handle_product_selection(self, row=None):
         ui = self.ui.chemistry
         tw = ui.tablewidget_products
-        row = get_selected_row(tw)
+        tw.current_row = row
         enabled = (row is not None)
         ui.toolbutton_delete_product.setEnabled(enabled)
 
@@ -407,6 +471,7 @@ class Chemistry(object):
             tw.setMinimumHeight(height)
         tw.updateGeometry() #? needed?
 
+
     def chemistry_add_reaction(self):
         ui = self.ui.chemistry
         aliases = list(self.species_all_aliases())
@@ -447,6 +512,13 @@ class Chemistry(object):
         #self.setup_chemistry() # handled by selection change
 
 
+    def chemistry_save_reaction(self):
+        pass
+
+    def chemistry_cancel(self):
+        pass
+
+
     def chemistry_find_available_species(self, side, match_phase=None):
         # side is 'reactants' or 'products'
         # if match_phase is passed, species must belong to that phase
@@ -481,6 +553,7 @@ class Chemistry(object):
 
     def chemistry_add_reactant(self):
         ui = self.ui.chemistry
+        tw = ui.tablewidget_reactants
         reaction = self.project.reactions.get(self.chemistry_current_reaction)
         if reaction is None:
             return
@@ -490,20 +563,30 @@ class Chemistry(object):
         reaction[0]['reactants'].append([alias, 1.0])
         self.setup_chemistry()
         self.chemistry_handle_selection() # force update
+        self.chemistry_handle_reactant_selection(row=len(reaction[0]['reactants'])-1)
 
 
     def chemistry_delete_reactant(self):
-        ui = self.chemistry.ui
+        ui = self.ui.chemistry
         tw = ui.tablewidget_reactants
-        row = get_selected_row(tw)
-        if row is None:
-            return
-        tw.deleteRow(row)
+        row = tw.current_row
+        tw.removeRow(row)
         reaction_data =  self.project.reactions[self.chemistry_current_reaction][0]
         del reaction_data['reactants'][row]
-        self.update_chem_eq()
-        self.chemistry_update_totals()
-        #self.setup_chemistry() #?
+        #self.chemistry_update_chem_eq()
+        #self.chemistry_update_totals()
+        self.setup_chemistry()
+        # Move selection to last row
+        n_reactants = len(reaction_data['reactants'])
+        if n_reactants == 0:
+            row = None
+        elif row > n_reactants-1:
+            row = n_reactants-1
+        if row is not None:
+            tw.setCurrentCell(row, 0)
+        tw.current_row = row
+        self.chemistry_handle_reactant_selection(row=row)
+        self.set_unsaved_flag()
 
 
     def chemistry_add_product(self):
@@ -574,7 +657,10 @@ class Chemistry(object):
             tw.clearContents()
             tw.setRowCount(0)
             self.fixup_chemistry_table(tw)
+            tw.current_row = None
 
+
+# Documentation/spec
     #Enable the stiff chemistry solver
     # Selection always available
     # Sets keyword STIFF_CHEMISTRY to .TRUE.

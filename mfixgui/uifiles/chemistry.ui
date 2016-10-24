@@ -305,6 +305,24 @@
             </layout>
            </item>
            <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QToolButton" name="toolbutton_save">
+               <property name="text">
+                <string>Save</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolbutton_cancel">
+               <property name="text">
+                <string>Cancel</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
             <widget class="QGroupBox" name="groupbox_reactants">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -679,13 +697,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
