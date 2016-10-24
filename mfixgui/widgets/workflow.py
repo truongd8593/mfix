@@ -206,8 +206,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.run_cmd = None
         self.submit_cmd = None
         self.queue = False
-        self.file_watcher = QtCore.QFileSystemWatcher()
-        self.file_watcher.directoryChanged.connect(self.create_job_manager)
+        self.file_timer = QtCore.QTimer()
+        self.file_timer.timeout.connect(self.look_for_pid)
+        self.watch_dir_paths = []
         self.mock_parents = []
         self.running_in_vnc = is_vnc()
 
@@ -339,12 +340,13 @@ class WorkflowWidget(QtWidgets.QWidget):
                             d = json.load(f)
                         data[dir_base].update(d)
                     self.create_job_manager(root)
-                    self.file_watcher.addPath(root)
+                    self.watch_dir_paths.append(root)
 
         self.job_status_table.set_value(data)
         if not self.update_timer.isActive():
             self.update_timer.start(1000)
-
+        if not self.file_timer.isActive():
+            self.file_timer.start(1000)
 
     def export_project(self, path=None, param_dict={}, keyword_dict={}):
         """
@@ -409,7 +411,6 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.run_cmd = run_dialog.get_run_command()
         self.submit_cmd = run_dialog.get_submit_command()
         self.queue = run_dialog.submit_queue
-        print(self.queue)
 
     def run_project(self, mfx_file):
         """
@@ -435,7 +436,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             return
 
         # run it
-        self._run(proj_dir, mfx_file)
+        job_id = self._run(proj_dir, mfx_file)
 
         # save some info on the run
         c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
@@ -448,6 +449,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             'submit': s,
             'queue': self.queue,
             'file': mfx_file,
+            'job id': job_id,
         }
 
         with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
@@ -455,6 +457,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         if not self.update_timer.isActive():
             self.update_timer.start(1000)
+        if not self.file_timer.isActive():
+            self.file_timer.start(1000)
 
     def _run(self, proj_dir, mfx_file):
         parent = MockParent()
@@ -468,16 +472,18 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
 
         # Queue
+        job_id = None
         if self.queue:
             msg = 'Submitting to Queue'
-            self.submit_to_queue(proj_dir)
+            job_id = self.submit_to_queue(proj_dir)
         # local
         else:
             msg = 'Running: %s' % ' '.join(self.run_cmd)
             run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
-        self.file_watcher.addPath(proj_dir)
+        self.watch_dir_paths.append(proj_dir)
         self.mfixgui.print_internal(msg, color='green')
+        return job_id
 
     def submit_to_queue(self, prj_dir):
         script_name = '.qsubmit_script'
@@ -519,26 +525,24 @@ class WorkflowWidget(QtWidgets.QWidget):
         data[dir_base]['job id'] = job_id
         data[dir_base]['status'] = 'submitted to queue'
 
-        # save the job id
-        save_path = os.path.join(prj_dir, '.workflow_run_cmd.json')
-        if os.path.exists(save_path):
-            with open(save_path , 'r') as f:
-                d = json.load(f)
-
-            d['job id'] = job_id
-
-            with open(save_path, 'w') as f:
-                json.dump(d, f)
-
-        self.file_watcher.addPath(prj_dir)
+        return job_id
+        
+    def look_for_pid(self):
+        
+        for d in copy.deepcopy(self.watch_dir_paths):
+            pid_files = glob.glob(os.path.join(d, '*.pid'))
+            if pid_files:
+                self.create_job_manager(d)
+        if len(self.watch_dir_paths) == 0:
+            self.file_timer.stop()
 
     def create_job_manager(self, proj_dir):
         pid_files = glob.glob(os.path.join(proj_dir, '*.pid'))
+        print('changed:', pid_files)
         dir_base = os.path.basename(proj_dir)
         if pid_files:
             if len(pid_files) > 1:
                 self.mfixgui.print_internal('more than one pid file', color='red')
-
 
             mfx_files = glob.glob(os.path.join(proj_dir, '*.mfx'))
 
@@ -553,7 +557,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             job = JobManager(parent)
             job.try_to_connect(full_runname_pid)
             self.job_dict[dir_base] = job
-            self.file_watcher.removePath(proj_dir)
+            self.watch_dir_paths.remove(proj_dir)
         else:
             self.job_dict[dir_base] = FakeJob()
 
