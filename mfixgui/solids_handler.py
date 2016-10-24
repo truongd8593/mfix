@@ -11,8 +11,9 @@ log = logging.getLogger(__name__)
 #import Qt
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtCore import Qt
-QT_MAX = 16777215
-UserRole = QtCore.Qt.UserRole
+from qtpy.QtGui import QValidator
+
+
 
 # ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
 DIM_M = 10
@@ -76,6 +77,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         cb.activated.connect(self.handle_combobox_solids_model)
         cb.setToolTip(cb.currentText())
         ui.lineedit_solids_phase_name.value_updated.connect(self.handle_solids_phase_name)
+
+
         ui.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         ui.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
@@ -846,19 +849,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             energy_eq = self.project.get_value('energy_eq', default=True)
             enabled = (species_eq) or (energy_eq and self.solids_specific_heat_model == MIXTURE)
 
-        # Is it a good idea to have hidden items? No.
-        #ui.groupbox_species.setVisible(enabled)
         ui.groupbox_species.setEnabled(enabled)
         # Buttons seem to take up a lot of space when table is shrunk
         ui.frame_add_delete_copy_species.setVisible(enabled)
 
-        #tw = ui.tablewidget_solids_species
-        #if not enabled: # Hide species?  shrink input area?
-        #    tw.clearContents()
-        #    tw.setMaximumHeight(32) #?
-        #else:
-        #    tw.setMaximumHeight(QT_MAX)
-        #    self.update_solids_species_table()
 
     def update_solids_baseline_groupbox(self, density_model):
         #Baseline (unreacted) composition selection:
