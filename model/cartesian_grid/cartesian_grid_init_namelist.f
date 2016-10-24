@@ -1315,6 +1315,11 @@ MODULE CG_INIT_NAMELIST
 !</keyword>
 
 !<keyword category="Output Control" required="false">
+!  <description>Option to save or not save particules belonging to solids phases in VTK region.</description>
+      VTK_PART_PHASE = .TRUE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
 !  <description>Write cut-cell data only in VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>

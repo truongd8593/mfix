@@ -1578,13 +1578,13 @@
       USE vtk, only: VTK_REGION
       USE vtk, only: VTK_X_E, VTK_X_W, VTK_Y_S, VTK_Y_N, VTK_Z_B, VTK_Z_T
       USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
-      USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
+      USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE,VTK_PART_PHASE
       USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
-      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW
+      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW,PIJK
 
       IMPLICIT NONE
 
-      INTEGER :: PC,LC1
+      INTEGER :: PC,LC1,M
       INTEGER :: NXS,NYS,NZS,NS
       INTEGER :: X_SLICE(DIM_I),Y_SLICE(DIM_J),Z_SLICE(DIM_K)
       DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
@@ -1628,7 +1628,6 @@
       ENDDO
 
 
-
 ! Loop through all particles on local rank and keep a list of particles
 ! belonging to VTK region
 
@@ -1644,6 +1643,10 @@
          IF(IS_NONEXISTENT(LC1)) CYCLE
          PC = PC+1
          IF(IS_GHOST(LC1) .OR. IS_ENTERING_GHOST(LC1) .OR. IS_EXITING_GHOST(LC1)) CYCLE
+
+         M = PIJK(LC1,5)
+
+         IF(.NOT.VTK_PART_PHASE(VTK_REGION,M)) CYCLE
 
          SELECT CASE(SELECT_PARTICLE_BY)
             CASE('C')  ! Particle center must be inside vtk region

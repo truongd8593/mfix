@@ -242,6 +242,10 @@ use param, only: DIMENSION_N_S
 ! VTK Particle selection: 'C': center, 'P': entire particle, 'I': particle intersect
       CHARACTER(LEN=1) :: VTK_SELECT_MODE(DIMENSION_VTK)
 
+! Particle phase
+
+      LOGICAL :: VTK_PART_PHASE(DIMENSION_VTK, DIM_M)
+
 ! Particle radius
       LOGICAL :: VTK_PART_DIAMETER(DIMENSION_VTK)
 
