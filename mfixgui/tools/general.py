@@ -486,10 +486,8 @@ def is_vnc():
     """determine if the gui is running in vnc"""
     if os.name == 'nt':
         return False
-
     xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
-
-    return 'vnc' in xdpyinfo
+    return 'vnc' in str(xdpyinfo)
 
 
 if __name__ == '__main__':

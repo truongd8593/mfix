@@ -507,7 +507,7 @@ class WorkflowWidget(QtWidgets.QWidget):
                                 cwd=prj_dir)
         out, err = proc.communicate()
         if job_id_regex is not None and out:
-            job_id = re.findall(job_id_regex, out)
+            job_id = re.findall(job_id_regex, str(out))
         else:
             job_id = []
         if job_id:
@@ -556,7 +556,11 @@ class WorkflowWidget(QtWidgets.QWidget):
             job = JobManager(parent)
             job.try_to_connect(full_runname_pid)
             self.job_dict[dir_base] = job
-            self.watch_dir_paths.remove(proj_dir)
+            try:
+                self.watch_dir_paths.remove(proj_dir)
+            except ValueError:
+                # already removed?
+                pass
         else:
             self.job_dict[dir_base] = FakeJob()
 
@@ -632,7 +636,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         if len(projs) == 1:
             enable_list[n_btns-2] = True
 
-        for enable, btn in zip(enable_list, self.tool_btn_dict.values()[:-1]):
+        for enable, btn in zip(enable_list, list(self.tool_btn_dict.values())[:-1]):
             btn.setEnabled(enable)
 
     def handle_play(self):

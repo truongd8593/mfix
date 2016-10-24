@@ -38,12 +38,22 @@ except ImportError:
 from mfixgui.tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
 from mfixgui.widgets.base import LineEdit
-from mfixgui.widgets.distributed_popup import DistributionPopUp
-from mfixgui.widgets.cyclone_popup import CyclonePopUp
-from mfixgui.widgets.reactor_popup import ReactorPopUp
-from mfixgui.widgets.hopper_popup import HopperPopUp
+try:
+    from mfixgui.widgets.distributed_popup import DistributionPopUp
+    from mfixgui.widgets.cyclone_popup import CyclonePopUp
+    from mfixgui.widgets.reactor_popup import ReactorPopUp
+    from mfixgui.widgets.hopper_popup import HopperPopUp
+except ImportError:
+    DistributionPopUp = None
+    CyclonePopUp = None
+    ReactorPopUp = None
+    HopperPopUp = None
 from mfixgui.project import Equation, ExtendedJSON
-from mfixgui.widgets.vtk_constants import *
+
+try:
+    from mfixgui.widgets.vtk_constants import *
+except ImportError:
+    DEFAULT_MESH_NAME = 'geometry.stl'
 
 GUI = None
 

@@ -5,7 +5,10 @@ import os
 import signal
 import sys
 import tempfile
-import StringIO
+try: #2.7
+    from StringIO import StringIO
+except ImportError: # 3
+    from io import StringIO
 import multiprocessing
 import json
 
@@ -202,7 +205,7 @@ class RunPopup(QDialog):
     def add_queue_template(self, path, select=False):
         config, script = extract_config(path)
         c = configparser.ConfigParser()
-        c.readfp(StringIO.StringIO(config))
+        c.readfp(StringIO(config))
 
         d = OrderedDict([(s, dict(c.items(s))) for s in c.sections()])
         d['path'] = path
