@@ -923,10 +923,12 @@ class MfixGui(QtWidgets.QMainWindow,
         if not self.confirm_close():
             event.ignore()
             return
-        self.settings.setValue('geometry', self.saveGeometry())
+        # save the state
         self.settings.setValue('geometry', self.saveGeometry())
         self.settings.setValue('splitter_left_right', self.ui.splitter_left_right.sizes())
         self.settings.setValue('splitter_graphics_cmd_output', self.ui.splitter_graphics_cmd_output.sizes())
+        self.settings.setValue('mode', self.mode)
+        self.settings.setValue('navigation', self.curr_nav_label)    
         event.accept()
 
 
@@ -1192,8 +1194,8 @@ class MfixGui(QtWidgets.QMainWindow,
         """an item in the tree was selected, change panes"""
         current_selection = self.ui.treewidget_navigation.selectedItems()
         if not current_selection:
-            return
-        name = str(current_selection[0].text(0))
+            return None
+        self.curr_nav_label = name = str(current_selection[0].text(0))
         # Translate from short to long name
         for (long, short) in self.nav_labels:
             if name==short:
@@ -2518,6 +2520,10 @@ def main():
 
     if project_file and not args.noload:
         gui.open_project(project_file, auto_rename=(not args.quit))
+        m = SETTINGS.value('mode')
+        if m is not None: gui.mode_changed(m)
+        n = SETTINGS.value('navigation')
+        if n is not None: gui.change_pane(n)
     else:
         gui.set_no_project()
 
