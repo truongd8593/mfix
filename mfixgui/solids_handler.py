@@ -697,6 +697,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if phase is None:
             return
         old_name = list(self.solids.keys())[phase-1]
+        if new_name == old_name:
+            return # Nothing to do
         if new_name in self.solids or new_name == self.fluid_phase_name: # Reject the input
             self.warning("%s: name is in use" % new_name, popup=True)
             le.setText(old_name)
