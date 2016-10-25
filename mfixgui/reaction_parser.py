@@ -22,9 +22,14 @@ class ReactionParser(object):
         chem_eq = self.d.get('chem_eq')
         if chem_eq is None:
             chem_eq = "NONE"
-            self.d['chem_eq'] = chem_eq
         self.d['reactants'], self.d['products'] = self.parse_chem_eq(chem_eq)
-
+        # Reformat chemical equation
+        fmt = {}
+        for side in 'reactants', 'products':
+            fmt[side] = ' + '.join(species if coeff==1.0 else '%g*%s' % (coeff, species)
+                                   for (species, coeff) in self.d[side] if coeff)
+        chem_eq = "%s --> %s" % (fmt['reactants'], fmt['products'])
+        self.d['chem_eq'] =chem_eq
 
     def parse(self, data):
         for t in self.tokenize(data):
