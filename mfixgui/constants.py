@@ -78,3 +78,5 @@ for c in ['x', 'y', 'z']:
     SPECIAL_PARAMETERS.extend([c+'min', c+'max'])
 
 PARAMETER_DICT = OrderedDict([(key, 0.0) for key in SPECIAL_PARAMETERS])
+
+MAX_RECENT_PROJECTS = 20

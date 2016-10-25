@@ -368,44 +368,21 @@ class MfixGui(QtWidgets.QMainWindow,
         # Toolbuttons at top of frame
         ui = self.ui
         for (button, icon_name, function) in (
-                (ui.toolbutton_settings, 'settings', self.toggle_nav_menu),
-                (ui.toolbutton_new, 'newfolder', self.new_project),
-                (ui.toolbutton_open, 'openfolder', self.handle_open),
+                (ui.toolbutton_file, 'menu', self.handle_main_menu),
                 (ui.toolbutton_save, 'save', self.handle_save),
                 (ui.toolbutton_run_mfix, 'play', self.handle_run),
                 (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
                 (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
-                (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files)):
+                (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files),
+                (ui.toolbutton_compile, 'build', self.handle_compile),
+                (ui.toolbutton_parameters, 'functions', self.handle_parameters),
+                ):
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
-        for button in (ui.toolbutton_run_mfix, ui.toolbutton_save, ui.toolbutton_more):
+        for button in (ui.toolbutton_run_mfix, ui.toolbutton_save):
             button.setFocusPolicy(Qt.ClickFocus)
-
-        # "More" submenu
-        ui.toolbutton_more.setIcon(get_icon('more_vert_black_crop.png'))
-        ui.menu_more = QtWidgets.QMenu()
-        ui.toolbutton_more.setMenu(ui.menu_more)
-        self.ui.action_save_as = self.ui.menu_more.addAction(
-            get_icon('save.png'), 'Save As', self.handle_save_as)
-        self.ui.action_export = self.ui.menu_more.addAction(
-            get_icon('open_in_new.png'), 'Export', self.handle_export)
-        self.ui.action_compile_tool = self.ui.menu_more.addAction(
-            get_icon('build.png'), 'Compile', self.handle_compile)
-        self.ui.menu_more.addSeparator()
-        self.ui.action_compile_tool = self.ui.menu_more.addAction(
-            get_icon('functions.png'), 'Parameters', self.handle_parameters)
-        self.ui.menu_more.addSeparator()
-        #self.ui.action_about = self.ui.menu_more.addAction(
-        #    get_icon('settings.png'), 'Settings', self.handle_settings)
-        self.ui.action_about = self.ui.menu_more.addAction(
-            get_icon('help.png'), 'Help', self.handle_help)
-        self.ui.action_about = self.ui.menu_more.addAction(
-            get_icon('infooutline.png'), 'About', self.handle_about)
-        self.ui.menu_more.addSeparator()
-        self.ui.action_close = self.ui.menu_more.addAction(
-            get_icon('close.png'), 'Close', self.close)
 
         # Geometry toolbuttons
         geo = self.ui.geometry
@@ -477,6 +454,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.register_keyword_widgets()
         self.register_numerics()
 
+        # --- Create main menu ---
+        self.init_main_menu()
+
         # --- vtk setup ---
         self.init_vtk_widget()
 
@@ -498,6 +478,180 @@ class MfixGui(QtWidgets.QMainWindow,
         # This is done in 'load_project'.  so why do it now?
         #self.reset() # Clear command_output too?
 
+
+    # --- main menu ---
+    def init_main_menu(self):
+        """build the main menu"""
+        self.main_menu = QtWidgets.QWidget(self)
+        self.main_menu.setObjectName('main_menu')
+        self.main_menu.setStyleSheet('QWidget#main_menu{background-color: #E0E0E0;}')
+        self.main_menu.hide()
+
+        layout = self.ui.main_menu_layout = QtWidgets.QGridLayout(self.main_menu)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # return
+        btn = self.ui.main_menu_return = QtWidgets.QToolButton(self.main_menu)
+        btn.setIcon(get_icon('left.png'))
+        btn.setText('Back')
+        btn.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        btn.setAutoRaise(True)
+        btn.clicked.connect(self.handle_main_menu_hide)
+        layout.addWidget(btn, 0, 0)
+
+        # list widget
+        lw = self.ui.main_menu_list = QtWidgets.QListWidget()
+        lw.setMaximumWidth(200)
+        lw.setFrameStyle(lw.NoFrame)
+        lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
+        lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
+        for name, icon in zip(['Info', 'New', 'Open', 'Save', 'Save As', 'Export', 'Seetings', 'Help', 'About', 'Close'],
+                              ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', 'settings', 'help', 'infooutline', 'close']):
+            li = QtWidgets.QListWidgetItem(get_icon(icon+'.png'), name)
+            lw.addItem(li)
+        layout.addWidget(lw, 1, 0)
+
+        # stacked widget
+        st = self.ui.main_menu_stackedwidget = QtWidgets.QStackedWidget()
+        layout.addWidget(st, 0, 1, 2, 1)
+
+        # blank widget
+        bw = self.ui.main_menu_blank_widget = QtWidgets.QWidget()
+        bw.setStyleSheet('QWidget{background-color: white;}')
+        st.addWidget(bw)
+
+        # build open
+        ow = self.ui.main_menu_open_widget = QtWidgets.QWidget()
+        ow.setObjectName('browse_stack')
+        ow.setStyleSheet('QWidget#browse_stack{background-color: white;}')
+        st.addWidget(ow)
+        ow_layout = QtWidgets.QGridLayout(ow)
+
+        browse = self.ui.main_menu_browse = QtWidgets.QToolButton()
+        browse.setText('Browse')
+        browse.setIcon(get_icon('openfolder.png'))
+        browse.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+        browse.clicked.connect(self.handle_open)
+        ow_layout.addWidget(browse, 0, 0)
+
+        lw = self.ui.main_menu_loc_lw = QtWidgets.QListWidget()
+        lw.setMaximumWidth(200)
+        lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
+        loc = ['Recent']
+        mfx_dir = os.path.dirname(SCRIPT_DIRECTORY)
+
+        self.tutorial_paths = []
+        for root, dirs, files in os.walk(os.path.join(mfx_dir, 'tutorials')):
+            if any(f.endswith('.dat') for f in files):
+                self.tutorial_paths.append(root)
+        if self.tutorial_paths:
+            loc += ['Tutorials']
+
+        self.benchmark_paths = []
+        for root, dirs, files in os.walk(os.path.join(mfx_dir, 'benchmarks')):
+            if any(f.endswith('.dat') for f in files):
+                self.benchmark_paths.append(root)
+        if self.benchmark_paths:
+            loc += ['Benchmarks']
+
+        lw.addItems(loc)
+        ow_layout.addWidget(lw, 1, 0)
+
+        lw = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
+        lw.itemDoubleClicked.connect(self.handle_main_menu_open_project)
+        ow_layout.addWidget(lw, 1, 1)
+
+    def handle_main_menu_open_project(self, item):
+        text = str(item.text())
+        self.open_project(text)
+
+    def handle_main_menu_browse_loc_changes(self, selected, deselected):
+        if selected:
+            text = str(self.ui.main_menu_loc_lw.item(selected.indexes()[0].row()).text()).lower()
+
+            self.ui.main_menu_file_lw.clear()
+
+            if text == 'tutorials':
+                self.ui.main_menu_file_lw.addItems(self.tutorial_paths)
+            elif text == 'benchmarks':
+                self.ui.main_menu_file_lw.addItems(self.benchmark_paths)
+            elif text == 'recent':
+                prjs = self.settings.value('recent_projects')
+                if prjs:
+                    self.ui.main_menu_file_lw.addItems(prjs.split('|'))
+
+
+    def handle_main_menu_selection_changed(self, selected, deselected):
+        if selected:
+            text = str(self.ui.main_menu_list.item(selected.indexes()[0].row()).text()).lower()
+
+            if text == 'new':
+                self.handle_main_menu_hide()
+                self.new_project()
+            elif text == 'save':
+                self.handle_main_menu_hide()
+                self.handle_save()
+            elif text == 'save as':
+                self.handle_main_menu_hide()
+                self.handle_save_as()
+            elif text == 'export':
+                self.handle_main_menu_hide()
+                self.handle_export()
+            elif text == 'close':
+                self.close()
+            elif text == 'open':
+                self.ui.main_menu_stackedwidget.setCurrentIndex(1)
+            else:
+                self.ui.main_menu_stackedwidget.setCurrentIndex(0)
+
+
+    def handle_main_menu(self):
+        """Show the main menu"""
+
+        if self.get_project_file() is None:
+            self.ui.main_menu_list.setCurrentRow(2)
+        else:
+            self.ui.main_menu_list.setCurrentRow(0)
+
+        self.ui.main_menu_loc_lw.setCurrentRow(0)
+
+        tw, th = self.ui.toolbutton_file.width(), self.ui.toolbutton_file.height()
+        self.ui.main_menu_return.setMinimumWidth(tw)
+        self.ui.main_menu_return.setMinimumHeight(th)
+
+        # animate
+        w, h = self.width(), self.height()
+        self.main_menu.setGeometry(-w/2, 0, w, h)
+        self.main_menu.show()
+        self.main_menu.raise_()
+        ani = self.main_menu_animation = self.create_main_menu_animation(self.main_menu, -w/4, 0, 0, 0)
+        ani.finished.connect(self.main_menu_animation_finished)
+        ani.start()
+
+    def create_main_menu_animation(self, target, x_start, y_start, x_end,y_end):
+        animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
+        animation.setDuration(150)
+        animation.setStartValue(QtCore.QPoint(x_start, y_start))
+        animation.setEndValue(QtCore.QPoint(x_end,y_end))
+
+        return animation
+
+    def handle_main_menu_hide(self):
+        """Show the main menu"""
+        # animate
+        w, h = self.width(), self.height()
+        ani = self.main_menu_animation = self.create_main_menu_animation(self.main_menu, 0, 0, -w/4, 0)
+        ani.finished.connect(self.main_menu_animation_finished_hide)
+        ani.start()
+
+    def main_menu_animation_finished(self):
+        w, h = self.width(), self.height()
+        self.main_menu.setGeometry(0, 0, w, h)
+        self.main_menu.show()
+        self.main_menu.raise_()
+
+    def main_menu_animation_finished_hide(self):
+        self.main_menu.hide()
 
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
@@ -524,7 +678,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.set_solver(None)
         self.set_project_file(None)
         self.clear_unsaved_flag() # sets save button
-        self.set_save_as_action(enabled=False)
         self.update_window_title()
         self.enable_input(False)
         self.ui.toolbutton_new.setEnabled(True)
@@ -763,15 +916,13 @@ class MfixGui(QtWidgets.QMainWindow,
                 b.setEnabled(enabled)
 
 
-    def set_pause_button(self, text=None, enabled=None, visible=None):
+    def set_pause_button(self, text=None, enabled=None):
         buttons = (self.ui.run.button_pause_mfix, self.ui.toolbutton_pause_mfix)
 
         if enabled is not None:
             for b in buttons:
                 b.setEnabled(enabled)
-        if visible is not None:
-            for b in buttons:
-                b.setVisible(visible)
+
         if text is not None:
             self.ui.run.button_pause_mfix.setText(text)
             self.ui.toolbutton_pause_mfix.setToolTip(text + ' MFIX')
@@ -855,13 +1006,12 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
-        pause_visible = bool(self.job_manager.job)
         if pending:
             self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False, visible=True)
             self.set_run_button(enabled=False)
-            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
             self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
@@ -871,7 +1021,7 @@ class MfixGui(QtWidgets.QMainWindow,
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False, visible=False)
             self.set_run_button(enabled=False)
-            self.set_pause_button(text="Pause", enabled=True, visible=pause_visible)
+            self.set_pause_button(text="Pause", enabled=True)
             self.set_stop_button(enabled=True)
             self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
@@ -880,7 +1030,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
             self.set_reset_button(enabled=False, visible=False)
             self.set_run_button(text="Unpause", enabled=True)
-            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_pause_button(text="Pause", enabled=False)
             self.set_reinit_button(enabled=(self.unsaved_flag and editable), visible=True)
             self.set_stop_button(enabled=True)
             # FIXME support reinit: edits can be made while paused
@@ -890,7 +1040,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
             self.set_reset_button(enabled=True, visible=True)
             self.set_run_button(text='Resume', enabled=True)
-            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=False)
             self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
@@ -899,7 +1049,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.status_message("Ready")
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Run", enabled=project_open)
-            self.set_pause_button(text="Pause", enabled=False, visible=pause_visible)
+            self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=False)
             self.set_reinit_button(enabled=False, visible=False)
 
@@ -914,12 +1064,18 @@ class MfixGui(QtWidgets.QMainWindow,
         self.print_internal("MFIX-GUI version %s" % self.get_version(),
                             color='blue')
 
-
     def get_version(self):
         return __version_str__
 
+    def resizeEvent(self, event):
+        '''over-ride of qt resize event'''
+        if self.main_menu.isVisible():
+            self.main_menu.setGeometry(0, 0, self.width(), self.height())
+
+        QtWidgets.QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
+        '''over-ride of qt close event'''
         if not self.confirm_close():
             event.ignore()
             return
@@ -935,6 +1091,10 @@ class MfixGui(QtWidgets.QMainWindow,
                 name=long
                 break
         self.settings.setValue('navigation', name)
+
+        # clean up
+        self.main_menu.close()
+
         event.accept()
 
 
@@ -1527,7 +1687,6 @@ class MfixGui(QtWidgets.QMainWindow,
         stripped = line.strip()
         return all(c=='*' for c in stripped) or stripped in boilerplate
 
-
     def handle_stdout(self, text):
         """collect stderr from mfix/pymfix process, format and display
         to user.  Note that some errors are printed to stdout"""
@@ -1824,6 +1983,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.clear_unsaved_flag()
         self.update_source_view()
+        self.save_recent_projects()
 
     def save_as(self):
         """Prompt user for new filename, save project to that file and make
@@ -1935,9 +2095,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_save_button(self, enabled):
         self.ui.toolbutton_save.setEnabled(enabled)
-
-    def set_save_as_action(self, enabled):
-        self.ui.action_save_as.setEnabled(enabled)
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
@@ -2076,9 +2233,27 @@ class MfixGui(QtWidgets.QMainWindow,
             run_name = ''
         return run_name
 
+    def save_recent_projects(self):
+        '''Save recent projects'''
+
+        rec_prjs = self.settings.value('recent_projects')
+        if rec_prjs is None:
+            rec_prjs = []
+        else:
+            rec_prjs = rec_prjs.split('|')
+
+        new_rec_prjs = list(set([self.get_project_file()] + rec_prjs))[:MAX_RECENT_PROJECTS]
+        self.settings.setValue('recent_projects', '|'.join(new_rec_prjs))
+
+
     def open_project(self, project_path, auto_rename=True):
         """Open MFiX Project"""
         # Too much going on here, split some of this out
+
+        if self.main_menu.isVisible():
+            self.handle_main_menu_hide()
+
+        self.change_pane('model setup')
 
         self.open_succeeded = False  # set to true on success
         self.vtkwidget.defer_render = True # defer rendering vtk until load finished
@@ -2325,7 +2500,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.set_project_file(project_file)
-        self.set_save_as_action(enabled=True)
 
         self.vtkwidget.reset_view()
         self.vtkwidget.render(defer_render=False)
@@ -2337,6 +2511,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Settings changed during loading
         #    self.save_project()- let the user do this
 
+        self.save_recent_projects()
 
 
     def add_tooltip(self, widget, key, description=None, value=None):

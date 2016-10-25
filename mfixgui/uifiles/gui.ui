@@ -267,13 +267,23 @@ QPushButton:checked {
               <property name="margin">
                <number>0</number>
               </property>
+              <item row="0" column="8">
+               <widget class="QToolButton" name="toolbutton_compile">
+                <property name="text">
+                 <string>Compile</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="0">
-               <widget class="QToolButton" name="toolbutton_settings">
+               <widget class="QToolButton" name="toolbutton_file">
                 <property name="toolTip">
                  <string>Toggle Navigation Menu</string>
                 </property>
                 <property name="text">
-                 <string>Settings</string>
+                 <string>File</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -290,53 +300,6 @@ QPushButton:checked {
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolbutton_new">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="toolTip">
-                 <string>New Project</string>
-                </property>
-                <property name="text">
-                 <string>New</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>24</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="toolButtonStyle">
-                 <enum>Qt::ToolButtonIconOnly</enum>
-                </property>
-                <property name="autoRaise">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QToolButton" name="toolbutton_open">
-                <property name="toolTip">
-                 <string>Open Project</string>
-                </property>
-                <property name="text">
-                 <string>Open</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>24</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="toolButtonStyle">
-                 <enum>Qt::ToolButtonIconOnly</enum>
-                </property>
-                <property name="autoRaise">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
                <widget class="QToolButton" name="toolbutton_save">
                 <property name="toolTip">
                  <string>Save Project</string>
@@ -358,14 +321,14 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
+              <item row="0" column="2">
                <widget class="Line" name="line_3">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
+              <item row="0" column="3">
                <widget class="QToolButton" name="toolbutton_reset_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -390,7 +353,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="6">
+              <item row="0" column="4">
                <widget class="QToolButton" name="toolbutton_run_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -415,8 +378,11 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="7">
+              <item row="0" column="5">
                <widget class="QToolButton" name="toolbutton_pause_mfix">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Pause</string>
                 </property>
@@ -425,8 +391,11 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="8">
+              <item row="0" column="6">
                <widget class="QToolButton" name="toolbutton_stop_mfix">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="toolTip">
                  <string>Stop MFIX</string>
                 </property>
@@ -444,35 +413,10 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="9">
+              <item row="0" column="7">
                <widget class="Line" name="line">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="10">
-               <widget class="QToolButton" name="toolbutton_more">
-                <property name="toolTip">
-                 <string>More</string>
-                </property>
-                <property name="text">
-                 <string>More</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>16</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="popupMode">
-                 <enum>QToolButton::InstantPopup</enum>
-                </property>
-                <property name="toolButtonStyle">
-                 <enum>Qt::ToolButtonIconOnly</enum>
-                </property>
-                <property name="autoRaise">
-                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -488,6 +432,23 @@ QPushButton:checked {
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item row="0" column="9">
+               <widget class="QToolButton" name="toolbutton_parameters">
+                <property name="text">
+                 <string>Parameters</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="10">
+               <widget class="Line" name="line_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
