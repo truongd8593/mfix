@@ -1449,17 +1449,16 @@ class Project(object):
 
 
     def format_reaction(self, name):
-        data, indices = self.reactions[name]
+        data = self.reactions[name]
         yield('%s {\n' % name)
         # TODO split chem_eq if long
         yield('    chem_eq = "%s" \n' % (data.get('chem_eq', 'NONE')))
         for k in data.keys():
             if k in ('num_phases', 'chem_eq', 'reactants', 'products'):
                 continue
-            i = indices.get(k)
             v = data.get(k)
-            if i:
-                yield('    %s(%s) = %s\n' % (k, i, v))
+            if isinstance(k, tuple):
+                yield('    %s(%s) = %s\n' % (k[0], k[1], v))
             else:
                 yield('    %s = %s\n' % (k, v))
         yield('}\n')
@@ -1476,9 +1475,9 @@ class Project(object):
         rxns = []
         des_rxns = []
         for (name, data) in self.reactions.items():
-            if data[0].get('chem_eq') is None: # Don't save incompletely-defined reactions
+            if data.get('chem_eq') is None: # Don't save incompletely-defined reactions
                 continue
-            num_phases = data[0].get('num_phases')
+            num_phases = data.get('num_phases')
             if num_phases == 1:
                 rxns.append(name)
             elif num_phases == 2:

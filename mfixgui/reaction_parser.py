@@ -18,7 +18,7 @@ class ReactionParser(object):
 
     def emit(self):
         # TODO better format for returning data?
-        self.reactions[self.reaction_id] = (self.d, self.idx)
+        self.reactions[self.reaction_id] = self.d
         chem_eq = self.d.get('chem_eq')
         if chem_eq is None:
             chem_eq = "NONE"
@@ -74,7 +74,6 @@ class ReactionParser(object):
     def push(self, t):
         if self.state == 0: # start of reaction
             self.d = {}
-            self.idx = {}
             self.key = ''
             self.index = None
             if not self.valid_reaction_id(t):
@@ -89,7 +88,9 @@ class ReactionParser(object):
             if not self.is_alnum(t):
                 self.err('key', t)
             self.key = t
-            self.d[self.key] = ''
+            self.index = None
+            if self.key not in self.d:
+                self.d[self.key] = ''
             self.state = 3
         elif self.state == 3: # key may have args
             if t == '(':
@@ -102,7 +103,6 @@ class ReactionParser(object):
             if not t.isdigit():
                 self.err('integer', t)
             self.index = int(t)
-            self.idx[self.key] = self.index
             self.state = 5
         elif self.state == 5: # expect closing paren
             if t != ')':
@@ -117,7 +117,14 @@ class ReactionParser(object):
                 self.err('string value', t)
             if self.key not in self.d:
                 self.err('key', t)
-            self.d[self.key] += t
+            if self.index is not None:
+                if self.d[self.key] == '':
+                    self.d[self.key] = {}
+                if self.index not in self.d[self.key]:
+                    self.d[self.key][self.index] = ''
+                self.d[self.key][self.index] += t
+            else:
+                self.d[self.key] += t
             self.state = 8
         elif self.state == 8: # end of reaction block or continuation line
             if t == '&':
@@ -130,7 +137,8 @@ class ReactionParser(object):
                     self.err('key', t)
                 else:
                     self.key = t
-                    self.d[self.key] = ''
+                    if self.key not in self.d:
+                        self.d[self.key] = ''
                     self.state = 3
 
 
