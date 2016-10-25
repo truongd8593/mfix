@@ -89,6 +89,14 @@ class MainMenu(object):
         ow_layout.addWidget(lw, 1, 1)
 
     def handle_main_menu_open_project(self, item):
+        if self.unsaved_flag:
+            confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
+                                   buttons=['yes', 'no'],
+                                   default='no')
+            if confirm != 'yes':
+                return
+            self.clear_unsaved_flag()
+
         text = str(item.text())
         self.open_project(text)
 
