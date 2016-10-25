@@ -928,7 +928,13 @@ class MfixGui(QtWidgets.QMainWindow,
         self.settings.setValue('splitter_left_right', self.ui.splitter_left_right.sizes())
         self.settings.setValue('splitter_graphics_cmd_output', self.ui.splitter_graphics_cmd_output.sizes())
         self.settings.setValue('mode', self.mode)
-        self.settings.setValue('navigation', self.curr_nav_label)    
+
+        name = self.curr_nav_label
+        for (long, short) in self.nav_labels:
+            if name==short:
+                name=long
+                break
+        self.settings.setValue('navigation', name)
         event.accept()
 
 
