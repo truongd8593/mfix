@@ -229,6 +229,7 @@ class FluidHandler(SpeciesHandler):
 
 
     def fluid_species_save(self):
+        # TODO update chem equations!
         self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.update_fluid_species_table()
 

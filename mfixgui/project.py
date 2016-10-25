@@ -1476,6 +1476,8 @@ class Project(object):
         rxns = []
         des_rxns = []
         for (name, data) in self.reactions.items():
+            if data[0].get('chem_eq') is None: # Don't save incompletely-defined reactions
+                continue
             num_phases = data[0].get('num_phases')
             if num_phases == 1:
                 rxns.append(name)
