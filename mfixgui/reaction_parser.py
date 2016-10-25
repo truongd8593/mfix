@@ -87,7 +87,7 @@ class ReactionParser(object):
         elif self.state == 2: # start of key
             if not self.is_alnum(t):
                 self.err('key', t)
-            self.key = t
+            self.key = t.lower()
             self.index = None
             if self.key not in self.d:
                 self.d[self.key] = ''
@@ -136,7 +136,7 @@ class ReactionParser(object):
                 elif not self.is_alnum(t):
                     self.err('key', t)
                 else:
-                    self.key = t
+                    self.key = t.lower()
                     if self.key not in self.d:
                         self.d[self.key] = ''
                     self.state = 3
