@@ -2514,16 +2514,19 @@ def main():
         #print('exe option passed: %s' % mfix_exe_option)
         gui.commandline_option_exe = args.exe
 
+    last_prj = None
     if project_file is None and not args.noload:
         # autoload last project
-        project_file = gui.get_project_file()
+        last_prj = project_file = gui.get_project_file()
 
     if project_file and not args.noload:
         gui.open_project(project_file, auto_rename=(not args.quit))
-        m = SETTINGS.value('mode')
-        if m is not None: gui.mode_changed(m)
-        n = SETTINGS.value('navigation')
-        if n is not None: gui.change_pane(n)
+        # change mode and navigation if loaded last project
+        if last_prj == project_file:
+            m = SETTINGS.value('mode')
+            if m is not None: gui.mode_changed(m)
+            n = SETTINGS.value('navigation')
+            if n is not None: gui.change_pane(n)
     else:
         gui.set_no_project()
 
