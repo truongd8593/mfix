@@ -505,7 +505,7 @@ class MfixGui(QtWidgets.QMainWindow,
         lw.setFrameStyle(lw.NoFrame)
         lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
-        for name, icon in zip(['Info', 'New', 'Open', 'Save', 'Save As', 'Export', 'Seetings', 'Help', 'About', 'Close'],
+        for name, icon in zip(['Info', 'New', 'Open', 'Save', 'Save As', 'Export', 'Settings', 'Help', 'About', 'Close'],
                               ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', 'settings', 'help', 'infooutline', 'close']):
             li = QtWidgets.QListWidgetItem(get_icon(icon+'.png'), name)
             lw.addItem(li)
