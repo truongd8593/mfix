@@ -408,9 +408,12 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
         run_dialog.exec_()
 
-        self.run_cmd = run_dialog.get_run_command()
-        self.submit_cmd = run_dialog.get_submit_command()
         self.queue = run_dialog.submit_queue
+        if self.queue:
+            self.submit_cmd = run_dialog.get_submit_command()
+        else:
+            self.submit_cmd = None
+        self.run_cmd = run_dialog.get_run_command()
 
     def run_project(self, mfx_file):
         """
@@ -418,14 +421,17 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         :mfx_file: path to mfx project file
         """
-
         proj_dir = os.path.dirname(mfx_file)
         dir_base = os.path.basename(proj_dir)
+
+        data = self.job_status_table.value
+        if dir_base in data.keys():
+            self.mfixgui.print_internal("Error: Project already submited: %s" % proj_dir)
+            return
 
         if self.run_cmd is None:
             self.run_popup()
 
-        data = self.job_status_table.value
         data[dir_base] = {'status':'waiting for pid', 'progress':0,
                           'path':proj_dir, 'dt':'None', 'time remaining':'None',
                           'job id':None}
@@ -443,6 +449,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         s = data[dir_base]['submit'] = copy.deepcopy(self.submit_cmd)
         data[dir_base]['queue'] = self.queue
         data[dir_base]['file'] = mfx_file
+        self.job_status_table.set_value(data)
 
         save_data = {
             'cmd': c,
@@ -526,9 +533,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         data[dir_base]['status'] = 'submitted to queue'
 
         return job_id
-        
+
     def look_for_pid(self):
-        
+
         for d in copy.deepcopy(self.watch_dir_paths):
             pid_files = glob.glob(os.path.join(d, '*.pid'))
             if pid_files:
