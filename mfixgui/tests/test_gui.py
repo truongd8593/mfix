@@ -75,7 +75,7 @@ class MfixGuiTests(TestQApplication):
         browse_item = self.mfix.ui.main_menu_list.item(2)
         browse_item_rect = self.mfix.ui.main_menu_list.visualItemRect(browse_item)
         waitFor(200)
-        QTest.mouseClick(self.mfix.ui.main_menu_list.viewport(), Qt.LeftButton, 0, browse_item_rect.center())
+        QTest.mouseClick(widget=self.mfix.ui.main_menu_list.viewport(), button=Qt.LeftButton, pos=browse_item_rect.center())
         waitFor(50)
         QTest.mouseClick(self.mfix.ui.main_menu_browse, Qt.LeftButton)
 
