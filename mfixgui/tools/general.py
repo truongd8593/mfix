@@ -489,6 +489,17 @@ def is_vnc():
     xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
     return 'vnc' in str(xdpyinfo)
 
+def get_separator(vertical=True):
+    """create a QFrame that looks like a separator"""
+    f = QtWidgets.QFrame
+    line = f()
+    if vertical:
+        line.setFrameShape(f.VLine)
+    else:
+        line.setFrameShape(f.HLine)
+    line.setFrameShadow(f.Sunken)
+    return line
+
 
 if __name__ == '__main__':
     def test_recurse_dict():

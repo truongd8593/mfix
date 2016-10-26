@@ -263,30 +263,11 @@ QPushButton:checked {
              <property name="frameShadow">
               <enum>QFrame::Plain</enum>
              </property>
-             <layout class="QGridLayout" name="gridLayout">
+             <layout class="QHBoxLayout" name="horizontallayout_menu_bar">
               <property name="margin">
                <number>0</number>
               </property>
-              <item row="0" column="8">
-               <widget class="QToolButton" name="toolbutton_compile">
-                <property name="toolTip">
-                 <string>Compile MFIX</string>
-                </property>
-                <property name="text">
-                 <string>Compile</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>24</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="autoRaise">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
+              <item>
                <widget class="QToolButton" name="toolbutton_file">
                 <property name="toolTip">
                  <string>Main Menu</string>
@@ -308,7 +289,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
+              <item>
                <widget class="QToolButton" name="toolbutton_save">
                 <property name="toolTip">
                  <string>Save Project</string>
@@ -330,14 +311,14 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="2">
+              <item>
                <widget class="Line" name="line_3">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                </widget>
               </item>
-              <item row="0" column="3">
+              <item>
                <widget class="QToolButton" name="toolbutton_reset_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -362,7 +343,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
+              <item>
                <widget class="QToolButton" name="toolbutton_run_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -387,7 +368,7 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
+              <item>
                <widget class="QToolButton" name="toolbutton_pause_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -398,12 +379,18 @@ QPushButton:checked {
                 <property name="text">
                  <string>Pause</string>
                 </property>
+                <property name="iconSize">
+                 <size>
+                  <width>24</width>
+                  <height>24</height>
+                 </size>
+                </property>
                 <property name="autoRaise">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item row="0" column="6">
+              <item>
                <widget class="QToolButton" name="toolbutton_stop_mfix">
                 <property name="enabled">
                  <bool>false</bool>
@@ -425,27 +412,33 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="7">
+              <item>
                <widget class="Line" name="line">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                </widget>
               </item>
-              <item row="0" column="11">
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+              <item>
+               <widget class="QToolButton" name="toolbutton_compile">
+                <property name="toolTip">
+                 <string>Compile MFIX</string>
                 </property>
-                <property name="sizeHint" stdset="0">
+                <property name="text">
+                 <string>Compile</string>
+                </property>
+                <property name="iconSize">
                  <size>
-                  <width>122</width>
-                  <height>20</height>
+                  <width>24</width>
+                  <height>24</height>
                  </size>
                 </property>
-               </spacer>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
-              <item row="0" column="9">
+              <item>
                <widget class="QToolButton" name="toolbutton_parameters">
                 <property name="toolTip">
                  <string>Edit Parameters</string>
@@ -464,12 +457,25 @@ QPushButton:checked {
                 </property>
                </widget>
               </item>
-              <item row="0" column="10">
+              <item>
                <widget class="Line" name="line_2">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>122</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </widget>

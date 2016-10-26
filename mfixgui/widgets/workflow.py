@@ -213,23 +213,20 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.running_in_vnc = is_vnc()
 
         # --- initalize the node widget ---
-        self.nodeChart = NodeWidget(showtoolbar=True)
+        nc = self.nodeChart = NodeWidget(showtoolbar=False)
         if hasattr(self.nodeChart, 'needsSavedEvent'):
             self.nodeChart.needsSavedEvent.connect(self.set_save_btn)
         self.nodeChart.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
                                      QtWidgets.QSizePolicy.Preferred)
         self.nodeChart.setGeometry(0, 0, 100, 1000)
 
-        # modify toolbar
-        i = 4
-        for tool, icon, callback in [('import', 'import.png', self.handle_import),
-                                     ('export', 'open_in_new.png', self.handle_export)]:
-            btn = QtWidgets.QToolButton()
-            btn.setIcon(get_icon(icon))
-            btn.pressed.connect(callback)
-            btn.setAutoRaise(True)
-            btn.setToolTip(tool)
-            self.nodeChart.toolbarLayout.insertWidget(i, btn)
+        # add btns to gui toolbar
+        ly = parent.ui.horizontallayout_menu_bar
+        i = ly.count() - 5
+
+        for btn in [nc.runToolButton, nc.autorunToolButton, nc.stopToolButton, nc.stepToolButton]:
+            btn.setIconSize(QtCore.QSize(24, 24))
+            ly.insertWidget(i, btn)
             i += 1
 
         # add an attribute for the project manager

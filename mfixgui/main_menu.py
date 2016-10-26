@@ -1,10 +1,8 @@
 import os
-from qtpy import QtCore, QtWidgets, QtGui, PYQT5
+from qtpy import QtCore, QtWidgets
 
-from mfixgui.tools.general import SCRIPT_DIRECTORY
-from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
-                           is_text_string, is_unicode, get_image_path,
-                           format_key_with_args, to_unicode_from_fs)
+from mfixgui.tools.general import get_icon, get_mfix_home, get_separator
+from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 class MainMenu(object):
     main_menu_animation_speed = 150
@@ -33,10 +31,25 @@ class MainMenu(object):
         lw.setFrameStyle(lw.NoFrame)
         lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
-        for name, icon in zip(['Info', 'New', 'Open', 'Save', 'Save As', 'Export', 'Settings', 'Help', 'About', 'Close'],
-                              ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', 'settings', 'help', 'infooutline', 'close']):
-            li = QtWidgets.QListWidgetItem(get_icon(icon+'.png'), name)
-            lw.addItem(li)
+
+        names = ['Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Close']
+        icons = ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', '', 'settings', 'help', 'infooutline', 'close']
+        if PYQTNODE_AVAILABLE:
+            for n, i in reversed([('Export Workflow', 'open_in_new'), ('Import Workflow', 'import'),
+                         ('sep', '')]):
+                names.insert(7, n)
+                icons.insert(7, i)
+
+        for name, icon in zip(names, icons):
+            if name == 'sep':
+                li = QtWidgets.QListWidgetItem()
+                li.setFlags(QtCore.Qt.NoItemFlags)
+                li.setSizeHint(QtCore.QSize(0, 10))
+                lw.addItem(li)
+                lw.setItemWidget(li, get_separator(vertical=False))
+            else:
+                li = QtWidgets.QListWidgetItem(get_icon(icon+'.png'), name)
+                lw.addItem(li)
         layout.addWidget(lw, 1, 0)
 
         # stacked widget
@@ -45,13 +58,14 @@ class MainMenu(object):
 
         # blank widget
         bw = self.ui.main_menu_blank_widget = QtWidgets.QWidget()
+        bw.setObjectName('default')
         bw.setStyleSheet('QWidget{background-color: white;}')
         st.addWidget(bw)
 
         # build open
         ow = self.ui.main_menu_open_widget = QtWidgets.QWidget()
-        ow.setObjectName('browse_stack')
-        ow.setStyleSheet('QWidget#browse_stack{background-color: white;}')
+        ow.setObjectName('open')
+        ow.setStyleSheet('QWidget#open{background-color: white;}')
         st.addWidget(ow)
         ow_layout = QtWidgets.QGridLayout(ow)
 
@@ -66,7 +80,7 @@ class MainMenu(object):
         lw.setMaximumWidth(200)
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
         loc = ['Recent']
-        mfx_dir = os.path.dirname(SCRIPT_DIRECTORY)
+        mfx_dir = get_mfix_home()
 
         self.tutorial_paths = []
         for root, dirs, files in os.walk(os.path.join(mfx_dir, 'tutorials')):
@@ -130,9 +144,15 @@ class MainMenu(object):
             elif text == 'save as':
                 self.handle_main_menu_hide()
                 self.handle_save_as()
-            elif text == 'export':
+            elif text == 'export project':
                 self.handle_main_menu_hide()
                 self.handle_export()
+            elif text == 'export workflow':
+                self.handle_main_menu_hide()
+                self.ui.workflow_widget.handle_export()
+            elif text == 'import workflow':
+                self.handle_main_menu_hide()
+                self.ui.workflow_widget.handle_import()
             elif text == 'close':
                 self.close()
             elif text == 'open':

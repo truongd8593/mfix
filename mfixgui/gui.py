@@ -1108,6 +1108,12 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.verticallayout_workflow_mode.addWidget(
                 self.ui.workflow_widget)
         else:
+            class FakeWorkflow:
+                def noop(self, *args, **kwargs):
+                    return None
+                def __getattr__(self, key):
+                    return self if key=='nodeChart' else self.noop
+            self.ui.workflow_widget = FakeWorkflow()
             self.ui.pushButtonWorkflow.setEnabled(False)
             self.ui.pushButtonWorkflow.setToolTip(
                 "Workflow disabled, can't import pyqtnode")
@@ -1152,6 +1158,16 @@ class MfixGui(QtWidgets.QMainWindow,
             #font = btn.font()
             #font.setBold(mode == key)
             #btn.setFont(font)
+
+        workflow = mode == 'workflow'
+        if PYQTNODE_AVAILABLE:
+            nc = self.ui.workflow_widget.nodeChart
+            for btn in [nc.runToolButton, nc.autorunToolButton, nc.stopToolButton, nc.stepToolButton]:
+                btn.setVisible(workflow)
+
+        ui = self.ui
+        for btn in [ui.toolbutton_reset_mfix, ui.toolbutton_run_mfix, ui.toolbutton_pause_mfix, ui.toolbutton_stop_mfix]:
+            btn.setVisible(not workflow)
 
         self.animate_stacked_widget(self.ui.stackedwidget_mode,
                                     self.ui.stackedwidget_mode.currentIndex(),
