@@ -19,10 +19,10 @@ DIM_M = 10
 #local imports
 from mfixgui.constants import *
 from mfixgui.tools.general import (set_item_noedit, get_selected_row,
-                           widget_iter,
-                           format_key_with_args,
-                           get_combobox_item, set_item_enabled,
-                           drop_row_column_triangular)
+                                   widget_iter, format_key_with_args,
+                                   get_combobox_item, set_item_enabled,
+                                   append_row_column_triangular,
+                                   drop_row_column_triangular)
 
 
 from mfixgui.tools import keyword_args
@@ -462,6 +462,21 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # ICs enabled/disabled depends on number of solids
         self.update_nav_tree()
 
+        # Reshape triangular matrices
+        for key in ('des_et_input', 'des_en_input'):
+            prev_size = (n*(n-1))//2 # Size before row added
+            vals = [self.project.get_value(key, args=i)
+                    for i in range(1, 1+prev_size)]
+            if any(v is not None for v in vals):
+                new_vals = append_row_column_triangular(vals, n-1)
+                for (i, val) in enumerate(new_vals, 1):
+                    if val is None:
+                        self.unset_keyword(key, args=i)
+                    else:
+                        self.update_keyword(key, val, args=i)
+
+
+
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
         if len(self.solids) >= DIM_M:
@@ -776,7 +791,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
             # Fix hole in restitution coeffs
             n = len(self.solids)
-            for key in  ('des_et_input', 'des_en_input'):
+            for key in ('des_et_input', 'des_en_input'):
                 prev_size = ((n+1)*(n+2))//2 # Size before row deleted
                 vals = [self.project.get_value(key, args=i)
                         for i in range(1, 1+prev_size)]
@@ -1257,5 +1272,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.update_solids_table()
         self.update_solids_detail_pane()
         self.solids_current_tab = 0
+        ui.toolbutton_solids_add.setEnabled(True)
         self.solids_change_tab(0, ui.pushbutton_solids_materials)
         # TODO (?)  reset THERMO_DATA ?
