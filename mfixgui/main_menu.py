@@ -7,6 +7,7 @@ from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
                            format_key_with_args, to_unicode_from_fs)
 
 class MainMenu(object):
+    main_menu_animation_speed = 150
     def init_main_menu(self):
         """build the main menu"""
         self.main_menu = QtWidgets.QWidget(self)
@@ -166,7 +167,7 @@ class MainMenu(object):
 
     def create_main_menu_animation(self, target, x_start, y_start, x_end,y_end):
         animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
-        animation.setDuration(150)
+        animation.setDuration(self.main_menu_animation_speed)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))
         animation.setEndValue(QtCore.QPoint(x_end,y_end))
 

@@ -71,11 +71,13 @@ class MfixGuiTests(TestQApplication):
         self.mfix.check_if_ok_to_write = lambda *args: True
         self.mfix.check_if_ok_to_rename = lambda *args: True
         self.mfix.check_if_ok_to_delete_files = lambda *args: True
+        self.mfix.main_menu_animation_speed = 0
+        self.mfix.animation_speed = 0
         QTest.mouseClick(self.mfix.ui.toolbutton_file, Qt.LeftButton)
         browse_item = self.mfix.ui.main_menu_list.item(2)
         browse_item_rect = self.mfix.ui.main_menu_list.visualItemRect(browse_item)
-        waitFor(200)
-        QTest.mouseClick(widget=self.mfix.ui.main_menu_list.viewport(), button=Qt.LeftButton, pos=browse_item_rect.center())
+        waitFor(50)
+        QTest.mouseClick(self.mfix.ui.main_menu_list.viewport(), Qt.LeftButton, Qt.NoModifier, browse_item_rect.center())
         waitFor(50)
         QTest.mouseClick(self.mfix.ui.main_menu_browse, Qt.LeftButton)
 
@@ -126,7 +128,7 @@ class MfixGuiTests(TestQApplication):
         newpath = os.path.join(self.rundir, '%s.mfx' % newname)
 
         self.mfix.get_save_filename = lambda: newpath
-        self.mfix.ui.action_save_as.trigger()
+        self.mfix.save_as()
 
         waitFor(500) # FIXME wait for a transition, not a hardcoded delay time
         self.assertEqual(newname, self.mfix.project.get_value('run_name'))
