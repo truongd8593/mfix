@@ -9,7 +9,7 @@ import argparse
 import copy
 import json
 import logging
-import numpy.core
+import numpy.core # used?
 import os
 try:
     import packaging
