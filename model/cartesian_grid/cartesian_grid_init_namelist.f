@@ -1315,6 +1315,11 @@ MODULE CG_INIT_NAMELIST
 !</keyword>
 
 !<keyword category="Output Control" required="false">
+!  <description>Write particle ID in VTK region.</description>
+      VTK_PART_ID = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
 !  <description>Option to save or not save particules belonging to solids phases in VTK region.</description>
       VTK_PART_PHASE = .TRUE.
 !</keyword>
