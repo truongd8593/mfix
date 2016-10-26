@@ -90,7 +90,7 @@ class RunPopup(QDialog):
         ui.button_queue_cancel.clicked.connect(self.handle_abort)
         ui.pushbutton_browse_template.clicked.connect(self.handle_browse_template)
 
-        ui.label_cores_detected.setText("Running with %d cores" % multiprocessing.cpu_count())
+        ui.label_cores_detected.setText("%d cores available locally." % multiprocessing.cpu_count())
 
         self.initialize_ui()
         self.init_templates()
