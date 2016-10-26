@@ -475,6 +475,7 @@ def extract_config(path):
     return '\n'.join(config), '\n'.join(script+[''])
 
 def replace_with_dict(string, dict_):
+    # Deprecate in favor of built-in Python string operators
     '''given a string and a dict, replace all dict.key found in the string
     with the corresponding dict.value'''
 
