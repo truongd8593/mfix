@@ -2286,7 +2286,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_extract_regions()
 
         # Chemistry
-        self.chemistry_extract_phases()
+        self.chemistry_extract_info()
 
         ### Workflow
         if PYQTNODE_AVAILABLE:

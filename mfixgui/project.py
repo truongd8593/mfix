@@ -1452,17 +1452,40 @@ class Project(object):
         data = self.reactions[name]
         yield('%s {\n' % name)
         # TODO split chem_eq if long
-        yield('    chem_eq = "%s" \n' % (data.get('chem_eq', 'NONE')))
-        for k in data.keys():
-            if k in ('num_phases', 'chem_eq', 'reactants', 'products'):
+        chem_eq = data.get('chem_eq', 'NONE')
+        chem_eq, rest = self.break_string(chem_eq, 60)
+        if not rest:
+            yield('    chem_eq = "%s"\n' % chem_eq)
+        else:
+            yield('    chem_eq = "%s" &\n' % chem_eq)
+            while rest:
+                chem_eq, rest = self.break_string(rest, 60)
+                yield('        "%s"%s\n' % (chem_eq, '&' if rest else ''))
+
+        for (key, val) in sorted(data.items()):
+            if key in ('num_phases', 'chem_eq', 'reactants', 'products'):
                 continue
-            v = data.get(k)
-            if isinstance(k, tuple):
-                yield('    %s(%s) = %s\n' % (k[0], k[1], v))
+            if isinstance(val, dict):
+                for (arg, subval) in sorted(val.items()):
+                    yield('    %s(%s) = %s\n' % (key, arg, subval))
             else:
-                yield('    %s = %s\n' % (k, v))
+                yield('    %s = %s\n' % (key, val))
         yield('}\n')
 
+
+    def break_string(self, s, w):
+        if len(s) <= w:
+            return (s, '')
+        else:
+            while w > 0 and s[w] != ' ':
+                w -= 1
+            if w == 0: # no space found, can't break
+                return  (s, '')
+            s, rest = s[:w], s[w:]
+            if len(rest) <= 6: # Prefer a slightly long line to a 'dangler'
+                return (s+rest, '')
+            else:
+                return (s, rest)
 
     def to_string(self):
         for line in self.dat_file_list:
@@ -1504,20 +1527,6 @@ class Project(object):
             yield('\n')
         # TODO: if there are disabled reactions save them in gui comments
 
-        def break_string(s, w):
-            if len(s) <= w:
-                return (s, '')
-            else:
-                while w > 0 and s[w] != ' ':
-                    w -= 1
-                if w == 0: # no space found, can't break
-                    return  (s, '')
-                s, rest = s[:w], s[w:]
-                if len(rest) <= 6: # Prefer a slightly long line to a 'dangler'
-                    return (s+rest, '')
-                else:
-                    return (s, rest)
-
         if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
             yield '\n'
             yield '#!MFIX-GUI SECTION\n'
@@ -1526,10 +1535,10 @@ class Project(object):
                 sval = str(val)
                 keylen = len(key)
                 # Make lines no longer than 80 chars, including #!MFIX-GUI prefix (11 chars)
-                sval, rest = break_string(sval, 66-keylen) # 3 spaces for ' = ',
+                sval, rest = self.break_string(sval, 66-keylen) # 3 spaces for ' = ',
                 yield '#!MFIX-GUI %s = %s\n' % (key, sval)
                 while rest: # continuation lines
-                    sval, rest = break_string(rest, 68) # 1 space for continuation
+                    sval, rest = self.break_string(rest, 68) # 1 space for continuation
                     yield '#!MFIX-GUI  %s\n' % sval
 
 

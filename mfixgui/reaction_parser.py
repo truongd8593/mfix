@@ -17,7 +17,21 @@ class ReactionParser(object):
         self.reactions = OrderedDict()
 
     def emit(self):
-        # TODO better format for returning data?
+        # Turn values into numbers, where possible
+        def to_float(val):
+            vtmp = val.lower().replace('d', 'e')
+            try:
+                return float(vtmp)
+            except ValueError:
+                return val
+
+        for (k, v) in self.d.items():
+            if isinstance(v, dict):
+                for (k2, v2) in v.items():
+                    v[k2] = to_float(v2)
+            else:
+                self.d[k] = to_float(v)
+
         self.reactions[self.reaction_id] = self.d
         chem_eq = self.d.get('chem_eq')
         if chem_eq is None:

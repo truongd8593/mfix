@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>536</width>
-    <height>633</height>
+    <width>575</width>
+    <height>709</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -189,6 +189,9 @@
          <attribute name="horizontalHeaderHighlightSections">
           <bool>false</bool>
          </attribute>
+         <attribute name="horizontalHeaderMinimumSectionSize">
+          <number>10</number>
+         </attribute>
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
          </attribute>
@@ -198,6 +201,11 @@
          <attribute name="verticalHeaderHighlightSections">
           <bool>false</bool>
          </attribute>
+         <column>
+          <property name="text">
+           <string/>
+          </property>
+         </column>
          <column>
           <property name="text">
            <string>Name</string>
@@ -232,18 +240,6 @@
        <enum>QFrame::Plain</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>10</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
        <item row="0" column="0">
         <widget class="QScrollArea" name="scrollarea_detail">
          <property name="styleSheet">
@@ -257,8 +253,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>532</width>
-            <height>513</height>
+            <width>553</width>
+            <height>552</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -301,24 +297,6 @@
              </item>
              <item>
               <widget class="LineEdit" name="lineedit_reaction_name"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QToolButton" name="toolbutton_save">
-               <property name="text">
-                <string>Save</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolbutton_cancel">
-               <property name="text">
-                <string>Cancel</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </item>
@@ -437,6 +415,9 @@
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
                 </property>
                 <attribute name="horizontalHeaderHighlightSections">
                  <bool>false</bool>
@@ -577,6 +558,9 @@
                 <property name="selectionMode">
                  <enum>QAbstractItemView::SingleSelection</enum>
                 </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
+                </property>
                 <attribute name="horizontalHeaderHighlightSections">
                  <bool>false</bool>
                 </attribute>
@@ -607,7 +591,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupbox_heat_of_reaction">
+            <widget class="QGroupBox" name="groupbox_dh">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -642,14 +626,14 @@
               <item row="0" column="1">
                <widget class="LineEdit" name="lineedit_dh">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
               <item row="0" column="2">
                <widget class="QLabel" name="label_dh_units">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="text">
                  <string>J/kmol</string>
@@ -659,10 +643,44 @@
               <item row="0" column="0">
                <widget class="QLabel" name="label_dh">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="text">
                  <string>Heat of reaction</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_fracdh_1">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>Fraction assigned to</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_fracdh_2">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>Fraction assigned to</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1" colspan="2">
+               <widget class="LineEdit" name="lineedit_fracdh_2">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" colspan="2">
+               <widget class="LineEdit" name="lineedit_fracdh_1">
+                <property name="enabled">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -688,6 +706,31 @@
           </layout>
          </widget>
         </widget>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QToolButton" name="toolbutton_apply">
+           <property name="text">
+            <string>Apply changes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolbutton_revert">
+           <property name="text">
+            <string>Revert</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_status">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
