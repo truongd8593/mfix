@@ -117,11 +117,6 @@ class RunPopup(QDialog):
         # local/queue
         self.ui.tabWidget.setCurrentIndex(int(self.gui_comments.get('run_location', 1)))
 
-        # issues/149
-        #ui.spinbox_nodesi.setValue(self.project.get_value('nodesi', default=1))
-        #ui.spinbox_nodesj.setValue(self.project.get_value('nodesj', default=1))
-        #ui.spinbox_nodesk.setValue(self.project.get_value('nodesk', default=1))
-
         if self.mfix_exe_list:
             self.mfix_available = True
             self.mfix_exe = self.mfix_exe_list[0]
@@ -586,9 +581,9 @@ class RunPopup(QDialog):
 
     def get_run_command(self):
 
-        nodesi = self.project.get_value('nodesi', 1)
-        nodesj = self.project.get_value('nodesj', 1)
-        nodesk = self.project.get_value('nodesk', 1)
+        nodesi = self.ui.spinbox_nodesi.value()
+        nodesj = self.ui.spinbox_nodesj.value()
+        nodesk = self.ui.spinbox_nodesk.value()
 
         if self.dmp_enabled():
             dmp = ['mpirun', '-np', str(nodesi * nodesj * nodesk)]
