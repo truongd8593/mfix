@@ -4,7 +4,7 @@ from collections import OrderedDict
 import copy
 
 from qtpy import QtWidgets, PYQT5
-from qtpy.QtWidgets import QCheckBox
+from qtpy.QtWidgets import QCheckBox, QComboBox
 
 from qtpy.QtGui import QValidator
 
@@ -13,6 +13,10 @@ from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, get_combobox_item)
 
 from mfixgui.widgets.base import (LineEdit, ComboBox)
+
+from mfixgui.reaction_parser import ReactionParser
+
+from json import JSONDecoder, JSONEncoder
 
 class ExtLineEdit(LineEdit):
     # Track focus of lineedits, to emulate selection behavior
@@ -40,6 +44,7 @@ class Chemistry(object):
         self.reaction_edited = False
         self.working_reaction = None
         self.reaction_mass_totals = [None, None]
+        self.disabled_reactions = {}
 
         # Toolbuttons
         ui.toolbutton_add_reaction.clicked.connect(self.chemistry_add_reaction)
@@ -167,8 +172,6 @@ class Chemistry(object):
         reaction['dh'] = val['dh']
         self.reaction_edited = True
         self.chemistry_update_buttons()
-
-
 
 
     def handle_fracdh(self, widget, vals, args):
@@ -349,7 +352,7 @@ class Chemistry(object):
             self.reaction_edited = True
             self.chemistry_restrict_phases()
             self.chemistry_restrict_species()
-            self.chemistry_check_fracdh(reaction)
+            self.chemistry_check_fracdh(reaction) # sets 'phases'
             self.chemistry_update_detail_pane()
 
 
@@ -496,7 +499,7 @@ class Chemistry(object):
             for w in (ui.label_fracdh_1, ui.lineedit_fracdh_1,
                       ui.label_fracdh_2, ui.lineedit_fracdh_2):
                 w.hide()
-        if num_phases == 1:
+        elif num_phases == 1:
             ui.label_fracdh_1.setText('Fraction assigned to %s' % phase_name(phases[0]))
             ui.label_fracdh_1.show()
             ui.lineedit_fracdh_1.show()
@@ -522,19 +525,26 @@ class Chemistry(object):
         else:
             self.error("num_phases = %s" % num_phases)
 
+
     def chemistry_update_chem_eq(self):
         ui = self.ui.chemistry
-        if not self.current_reaction_name:
+        name = self.current_reaction_name
+        if name is None:
             return
         #reaction = self.project.reactions[self.current_reaction_name]
         reaction = self.working_reaction
+        if reaction is None:
+            return
         fmt = {}
         for side in 'reactants', 'products':
             fmt[side] = ' + '.join(species if coeff==1.0 else '%g*%s' % (coeff, species)
                                    for (species, coeff) in reaction[side] if coeff)
         chem_eq = "%s --> %s" % (fmt['reactants'], fmt['products'])
         display_text = chem_eq.replace('-->', '→')
-        reaction['chem_eq'] = chem_eq
+        if reaction['chem_eq'] == 'NONE': # Disabled reaction
+            self.disabled_reactions[name] = chem_eq
+        else: # Update reaction
+            reaction['chem_eq'] = chem_eq
         tw = ui.tablewidget_reactions
         row = get_selected_row(tw)
         if row is not None:
@@ -761,7 +771,6 @@ class Chemistry(object):
         if row is None or self.working_reaction is None:
             return
         reaction = self.working_reaction
-        alias_list = [k[0] for k in reaction.get('reactants',[])+reaction.get('products',[])]
         self.chemistry_update_chem_eq()
         if self.project.reactions[self.current_reaction_name] != reaction:
             self.project.reactions[self.current_reaction_name] = copy.deepcopy(reaction)
@@ -810,8 +819,6 @@ class Chemistry(object):
 
     def chemistry_add_reactant(self):
         ui = self.ui.chemistry
-        tw = ui.tablewidget_reactants
-        #reaction = self.project.reactions.get(self.current_reaction_name)
         reaction = self.working_reaction
         if reaction is None:
             return
@@ -832,7 +839,6 @@ class Chemistry(object):
         row = tw.current_row
         if row is None:
             return
-        #tw.removeRow(row)
         reaction = self.working_reaction
         # reaction = self.project.reactions[self.current_reaction_name]
         del reaction['reactants'][row]
@@ -853,8 +859,6 @@ class Chemistry(object):
 
     def chemistry_add_product(self):
         ui = self.ui.chemistry
-        tw = ui.tablewidget_products
-        #reaction = self.project.reactions.get(self.current_reaction_name)
         reaction = self.working_reaction
         if reaction is None:
             return
@@ -875,9 +879,7 @@ class Chemistry(object):
         row = tw.current_row
         if row is None:
             return
-        #tw.removeRow(row)
         reaction = self.working_reaction
-        # reaction = self.project.reactions[self.current_reaction_name]
         del reaction['products'][row]
         self.reaction_edited = True
         self.chemistry_update_detail_pane()
@@ -914,11 +916,15 @@ class Chemistry(object):
             enabled = bool(chem_eq and chem_eq.upper()!='NONE')
             item = QCheckBox()
             item.setChecked(enabled)
+            item.clicked.connect(lambda enabled, row=row:
+                                 self.chemistry_toggle_reaction(row, enabled))
             tw.setCellWidget(row, COL_ENABLE, item)
 
             item = make_item(name)
             tw.setItem(row, COL_RXN_NAME, item)
 
+            if not enabled:
+                chem_eq = self.disabled_reactions.get(name)
             if chem_eq is None:
                 continue
             text = chem_eq.replace('==', '→')
@@ -941,20 +947,31 @@ class Chemistry(object):
     def chemistry_extract_info(self):
         """extract additional chemistry info after loading project file"""
         for reaction in self.project.reactions.values():
-            self.chemistry_check_fracdh(reaction)
+            self.chemistry_check_fracdh(reaction) # sets 'phases' field
+
+
+    def chemistry_toggle_reaction(self, row, enabled):
+        name = self.project.reactions.keys()[row]
+        reaction = self.project.reactions[name]
+        if enabled:
+            reaction['chem_eq'] = self.disabled_reactions.pop(name, 'NONE')
+        else:
+            self.disabled_reactions[name] = reaction.get('chem_eq', 'NONE')
+            reaction['chem_eq'] = 'NONE'
+        self.set_unsaved_flag()
 
 
     def chemistry_check_fracdh(self, reaction):
         phases = self.chemistry_reaction_phases(reaction)
+        reaction['phases'] = phases
         num_phases = len(phases)
-        reaction['num_phases'] = num_phases
         dh = reaction.get('dh')
         fracdh = reaction.get('fracdh')
         if dh is None:
             reaction.pop('fracdh', None)
         else:
             if num_phases == 0:
-                reaction.pop('fracdh')
+                reaction.pop('fracdh', None)
             elif len(phases) == 1:
                 reaction['fracdh'] = {phases[0]: 1.0}
             elif len(phases) == 2:
@@ -974,6 +991,29 @@ class Chemistry(object):
                 self.error('num_phases = %s' % num_phases)
 
 
+    def chemistry_to_str(self):
+        if self.disabled_reactions:
+            data = {'disabled_reactions': self.disabled_reactions}
+            return JSONEncoder().encode(data)
+        return ''
+
+
+    def chemistry_from_str(self, s):
+        if not s:
+            return
+        data = JSONDecoder().decode(s)
+
+        if data:
+            RP = ReactionParser()
+            val = data.get('disabled_reactions')
+            if val:
+                self.disabled_reactions = val
+                for (name, eq) in self.disabled_reactions.items():
+                    if name in self.project.reactions:
+                        reaction = self.project.reactions[name]
+                        reaction['reactants'], reaction['products'] = RP.parse_chem_eq(eq)
+                        self.chemistry_check_fracdh(reaction)
+
 
     def reset_chemistry(self):
         ui = self.ui.chemistry
@@ -982,6 +1022,7 @@ class Chemistry(object):
         self.reaction_mass_totals = [None, None]
         self.working_reaction = None
         self.project.reactions.clear() # done in project.reset()
+        self.disabled_reactions.clear()
         self.chemistry_clear_tables()
         tw = ui.tablewidget_reactions
         tw.clearSelection()
@@ -995,7 +1036,6 @@ class Chemistry(object):
 
         for tb in (ui.toolbutton_apply, ui.toolbutton_revert):
             tb.setEnabled(False)
-
 
 
 # Documentation/spec
@@ -1061,53 +1101,26 @@ class Chemistry(object):
 # Selection always available
 # DEFAULT disabled
 
-    #Specify heat of reaction
-    # Only available if user-defined heat of reaction is enabled
-    # DEFAULT value 0.0
-    # Sets reaction construct keyword DH
+#Specify heat of reaction
+# Only available if user-defined heat of reaction is enabled
+# DEFAULT value 0.0
+# Sets reaction construct keyword DH
 
-    #Specify HoR fraction assigned to phase
-    # Only available if user-defined heat of reaction is enabled
-    # Homogeneous chemical reactions
-    #  Specification is not available
-    #  Set reaction construct keyword fracDH(#) to 1.0 where # is the phase index
-    # Heterogeneous chemical reactions
-    #  Entry for each phase referenced by the reaction
-    #  DEFAULT value 0.5 for both entries
-    #  Sets reaction construct keyword fracDH(#) for each referenced phase
+#Specify HoR fraction assigned to phase
+# Only available if user-defined heat of reaction is enabled
+# Homogeneous chemical reactions
+#  Specification is not available
+#  Set reaction construct keyword fracDH(#) to 1.0 where # is the phase index
+# Heterogeneous chemical reactions
+#  Entry for each phase referenced by the reaction
+#  DEFAULT value 0.5 for both entries
+#  Sets reaction construct keyword fracDH(#) for each referenced phase
 
-    # The user cannot 'save' the reaction if there are errors. After
-    # saving (adding?) the reaction, the reaction identifier (name) and
-    # chemical equation are shown in the summary box at the top. A
-    # chemical reaction is activated/deactivated by checking/unchecking the box. If the user 'deactivates'
-    # the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
+# The user cannot 'save' the reaction if there are errors. After
+# saving (adding?) the reaction, the reaction identifier (name) and
+# chemical equation are shown in the summary box at the top. A
+# chemical reaction is activated/deactivated by checking/unchecking the box. If the user 'deactivates'
+# the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
 
-    # NB: user's guide says: Aliases cannot conflict with existing MFIX variable names (e.g., a species alias of MU_g will cause an error when compiling
-
-"""
-Evaporation{ chem_eq = "Vapor --> Liquid"}
-
-Ash_to_Ash { chem_eq = 'Ash2 --> FlyAsh' } ! Cold --> Hot
-
-
-Charring {
-
-chem_eq = 'Biomass --> 8.3334 * Char'
-
-DH = 3.585d3     ! (cal/mol-biomass)  150.0 J/g-biomass
-fracDH(1) = 1.0  ! assign to the coal phase
-}
-
-Pyrolysis {
-
-chem_eq = 'Biomass --> ' &
-'0.9639 * CO + 0.8771 * CO2 + 0.3491 * CH4 + ' &
-'1.6276 * H2 + 1.4210 * H2O'
-
-DH = 3.585d3     ! (cal/mol-biomass)  150.0 J/g-biomass
-fracDH(1) = 1.0  ! assign to the coal phase
-}
-
-"""
-
-# reaction ID:  32 chars max, alphanumeric + underscore
+# NB: user's guide says: Aliases cannot conflict with existing MFIX variable names (e.g., a
+#  species alias of MU_g will cause an error when compiling)

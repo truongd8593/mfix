@@ -1802,11 +1802,12 @@ class MfixGui(QtWidgets.QMainWindow,
         for (data, key) in ((self.bcs_to_str(), 'bc_regions'),
                             (self.ics_to_str(), 'ic_regions'),
                             (self.iss_to_str(), 'is_regions'),
-                            (self.pss_to_str(), 'ps_regions')):
+                            (self.pss_to_str(), 'ps_regions'),
+                            (self.chemistry_to_str(), 'chemistry')):
             if data:
                 self.project.mfix_gui_comments[key] = data
             else:
-                self.project.mfix_gui_comments.pop(key)
+                self.project.mfix_gui_comments.pop(key, None)
 
 
         project_base = os.path.basename(project_file)
@@ -2197,6 +2198,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.iss_regions_from_str(val)
                 elif key == 'ps_regions':
                     self.pss_regions_from_str(val)
+                elif key == 'chemistry':
+                    self.chemistry_from_str(val)
                 elif key == 'geometry':
                     pass # handled in 'geometry' section above
                 elif key == 'visual_props':

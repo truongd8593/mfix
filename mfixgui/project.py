@@ -1237,13 +1237,14 @@ class Project(object):
                 if species and line:
                     self.thermo_data[species].append(line)
         if reaction_lines or des_reaction_lines:
-            RP = ReactionParser()
-            for (lineno, line) in reaction_lines + des_reaction_lines:
-                try:
-                    RP.parse(line)
-                except Exception as e:
-                    warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
-            self.reactions = RP.reactions
+            for lines in reaction_lines, des_reaction_lines:
+                RP = ReactionParser()
+                for (lineno, line) in lines:
+                    try:
+                        RP.parse(line)
+                    except Exception as e:
+                        warnings.warn("Parse error: %s: line %d, %s" % (e, lineno, line))
+                self.reactions.update(RP.reactions)
 
 
     def updateKeyword(self, key, value, args=None,  keywordComment=None):
@@ -1463,7 +1464,8 @@ class Project(object):
                 yield('        "%s"%s\n' % (chem_eq, '&' if rest else ''))
 
         for (key, val) in sorted(data.items()):
-            if key in ('num_phases', 'chem_eq', 'reactants', 'products'):
+            if key in ('chem_eq', # handled above
+                       'phases', 'reactants', 'products'): # keys we added
                 continue
             if isinstance(val, dict):
                 for (arg, subval) in sorted(val.items()):
@@ -1497,16 +1499,18 @@ class Project(object):
         # Save chemistry
         rxns = []
         des_rxns = []
-        for (name, data) in self.reactions.items():
-            if data.get('chem_eq') is None: # Don't save incompletely-defined reactions
+        # defer the decision whether a reaction is DES or not until as late as possible
+        #  since solids models can change
+        for (name, reaction) in self.reactions.items():
+            if reaction.get('chem_eq') is None: # Don't save incompletely-defined reactions
                 continue
-            num_phases = data.get('num_phases')
-            if num_phases == 1:
-                rxns.append(name)
-            elif num_phases == 2:
+            des = any(self.get('solids_model', args=[p]) in ('DEM', 'PIC')
+                      for p in reaction.get('phases',[]))
+            if des:
                 des_rxns.append(name)
             else:
-                raise ValueError(name, num_phases)
+                rxns.append(name)
+
         if rxns or des_rxns:
             yield('\n')
             yield('# CHEMICAL REACTION SECTION\n')
