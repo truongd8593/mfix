@@ -71,7 +71,13 @@ class MfixGuiTests(TestQApplication):
         self.mfix.check_if_ok_to_write = lambda *args: True
         self.mfix.check_if_ok_to_rename = lambda *args: True
         self.mfix.check_if_ok_to_delete_files = lambda *args: True
-        QTest.mouseClick(self.mfix.ui.toolbutton_open, Qt.LeftButton)
+        QTest.mouseClick(self.mfix.ui.toolbutton_file, Qt.LeftButton)
+        browse_item = self.ui.main_menu_list.item(2)
+        browse_item_rect = self.ui.main_menu_list.visualItemRect(browse_item)
+        waitFor(200)
+        QTest.mouseClick(self.ui.main_menu_list.viewport(), Qt.LeftButton, 0, browse_item_rect.center())
+        waitFor(50)
+        QTest.mouseClick(self.ui.main_menu_browse, Qt.LeftButton)
 
         # We will get a confirmer for auto-rename
 
