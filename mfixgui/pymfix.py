@@ -16,7 +16,6 @@ try:
     import packaging.requirements
     import packaging.specifiers
     import packaging.version
-    import six
 except ImportError:
     print("warning: can't import the module packaging")
 import random

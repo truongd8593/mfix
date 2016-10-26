@@ -28,7 +28,6 @@ RUN pip install future
 RUN pip install packaging
 RUN pip install pyinstaller==3.1.1
 RUN pip install qtpy
-RUN pip install six
 RUN pip install xvfbwrapper
 
 # http://bugs.python.org/issue19846
