@@ -9,10 +9,8 @@ import logging
 log = logging.getLogger(__name__)
 
 #import Qt
-from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy import QtWidgets, PYQT5
 from qtpy.QtCore import Qt
-from qtpy.QtGui import QValidator
-
 
 
 # ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
@@ -24,7 +22,7 @@ from mfixgui.tools.general import (set_item_noedit, get_selected_row,
                            widget_iter,
                            format_key_with_args,
                            get_combobox_item, set_item_enabled,
-                           drop_row_column_triangular, append_row_column_triangular )
+                           drop_row_column_triangular)
 
 
 from mfixgui.tools import keyword_args

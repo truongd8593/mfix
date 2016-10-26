@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 from itertools import groupby
 
-from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy import QtCore, QtWidgets
 
 # local i,ports
 from mfixgui.tools.general import sort_dict

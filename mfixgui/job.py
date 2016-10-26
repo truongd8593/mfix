@@ -13,9 +13,6 @@ import logging
 import os
 import pprint
 import signal
-import sys
-import tempfile
-import time
 import uuid
 from functools import partial
 import re
@@ -25,11 +22,10 @@ from subprocess import Popen, PIPE
 log = logging.getLogger(__name__)
 
 from qtpy.QtCore import QObject, QTimer, QUrl, Signal
-from qtpy.QtNetwork import  (QNetworkAccessManager,
-                             QNetworkReply,
-                             QNetworkRequest)
+from qtpy.QtNetwork import QNetworkAccessManager,  QNetworkRequest
 
-from mfixgui.tools.general import get_mfix_home, debug_trace, replace_with_dict
+
+from mfixgui.tools.general import replace_with_dict
 
 #: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']

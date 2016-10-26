@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
 from qtpy.QtWidgets import (QComboBox, QGridLayout, QGroupBox, QHBoxLayout,
-                            QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget)
+                            QLabel, QPushButton, QWidget)
 
 
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
@@ -12,10 +12,9 @@ from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 UserRole = QtCore.Qt.UserRole
 
 from mfixgui.constants import *
-from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.base import LineEdit, ComboBox
 
-from mfixgui.project import Equation, FloatExp
+from mfixgui.project import FloatExp
 
 from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
                            get_combobox_item, get_selected_row,

@@ -2,8 +2,6 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from qtpy import QtWidgets
-
 from code import InteractiveConsole
 
 # TODO:  colorize stderr, syntax highlighting, auto-complete, readline, clear window, search

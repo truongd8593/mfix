@@ -13,7 +13,6 @@ import os
 import re
 import shutil
 import signal
-import socket
 import sys
 import traceback
 from collections import OrderedDict
@@ -41,8 +40,7 @@ if not PRECOMPILE_UI:
 
 # local imports
 from mfixgui.project_manager import ProjectManager
-from mfixgui.project import Equation
-from mfixgui.job import JobManager, get_dict_from_pidfile
+from mfixgui.job import JobManager
 from mfixgui.monitor import Monitor
 
 from mfixgui.widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,

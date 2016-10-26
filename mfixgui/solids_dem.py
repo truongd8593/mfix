@@ -6,8 +6,7 @@ from qtpy.QtWidgets import QLabel
 
 from mfixgui.widgets.base import LineEdit
 from mfixgui.project import Equation
-from mfixgui.tools.general import (get_combobox_item, set_item_enabled, set_item_noedit,
-                           widget_iter)
+from mfixgui.tools.general import get_combobox_item, set_item_enabled, set_item_noedit
 
 """Discrete Element Model Task Pane Window: (requires DEM solver)"""
 

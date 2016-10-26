@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
-from collections import OrderedDict
 
 from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLabel, QLineEdit, QPushButton, QGridLayout, QWidget
+from qtpy.QtWidgets import QLabel, QPushButton, QWidget
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
 UserRole = QtCore.Qt.UserRole
 
-from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.base import LineEdit
 
-from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
-                           get_selected_row, widget_iter)
+from mfixgui.tools.general import set_item_noedit, get_selected_row, widget_iter
 
 from mfixgui.tools.keyword_args import mkargs
 

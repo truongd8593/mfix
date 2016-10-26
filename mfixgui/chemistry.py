@@ -3,9 +3,8 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 import copy
 
-from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import (QLabel, QLineEdit, QPushButton, QGridLayout,
-                            QCheckBox, QHBoxLayout, QWidget, QGroupBox, QComboBox)
+from qtpy import QtWidgets, PYQT5
+from qtpy.QtWidgets import QCheckBox
 
 from qtpy.QtGui import QValidator
 
