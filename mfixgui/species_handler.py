@@ -61,7 +61,9 @@ class SpeciesHandler(object):
 
 
     def species_of_phase(self, p):
-        if p == 0:
+        if p is None:
+            return []
+        elif p == 0:
             return [data.get('alias', name)
                     for (name, data) in self.fluid_species.items()]
         else:

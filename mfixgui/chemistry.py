@@ -365,7 +365,8 @@ class Chemistry(object):
                 phases.append(name)
             for p in phases:
                 cb.addItem(p)
-            cb.setCurrentIndex(phase)
+            if phase is not None:
+                cb.setCurrentIndex(phase)
             cb.currentIndexChanged.connect(lambda idx, tw=tw, cb=cb, row=row: handle_phase(tw, cb, row, idx))
             if side=='reactants': # additional callbacks for pseudo-selection
                 cb.activated.connect(lambda idx, row=row: self.chemistry_handle_reactant_selection(row))
@@ -453,7 +454,6 @@ class Chemistry(object):
                 phase = self.find_species_phase(species)
                 if phase is None:
                     self.error("Species %s not found in any phase" % species)
-                    continue
                 tw.setCellWidget(row, COL_PHASE, make_phase_item(tw, row, phase))
                 tw.setCellWidget(row, COL_SPECIES, make_species_item(tw, row, phase, species))
                 tw.setCellWidget(row, COL_COEFF, make_coeff_item(tw, row, coeff))
@@ -899,11 +899,17 @@ class Chemistry(object):
         if self.chemistry_find_available_species('products'):
             ui.toolbutton_add_product.setEnabled(True)
 
+
     def chemistry_check_species_in_use(self, alias):
-        for reaction in self.project.reactions.values():
+        for (rxn_name, reaction) in self.project.reactions.items():
             for side in 'reactants', 'products':
-                if any(v[0]==alias for v in reaction.get(side, [])):
-                    return True
+                if any(v[0]==alias for v in reaction.get(side,[])):
+                    return rxn_name
+        reaction = self.working_reaction
+        if reaction:
+            for side in 'reactants', 'products':
+                if any(v[0]==alias for v in reaction.get(side,[])):
+                    return self.current_reaction_name
         return False
 
 

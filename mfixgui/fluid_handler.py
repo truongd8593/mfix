@@ -217,13 +217,11 @@ class FluidHandler(SpeciesHandler):
         self.project.mfix_gui_comments['fluid_phase_name'] = value
         self.set_unsaved_flag()
 
-
-    # --- fluid species methods ---
     def fluid_species_revert(self):
         pass
 
-
     def fluid_species_save(self):
+        self.set_unsaved_flag()
         rename = {}
         for (name, data) in self.fluid_species.items():
             old_alias = data.get('alias', name)

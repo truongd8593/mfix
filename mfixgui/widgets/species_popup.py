@@ -8,6 +8,7 @@ import sys
 import signal
 from collections import OrderedDict
 import pickle
+from copy import deepcopy
 
 from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QTableWidget, QLineEdit
@@ -168,6 +169,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             def handler(item=item,key=key):
                 if not self.current_species:
                     print("Error, no current species")
+                    return
                 val = item.text()
                 try:
                     data = self.defined_species[self.current_species]
@@ -329,8 +331,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         current_species = self.current_species # will be reset when selection cleared
         if not current_species:
             return
-        if self.parent().chemistry_check_species_in_use(current_species):
-            self.parent().message(text="%s is used in chemical reaction" % current_species)
+
+        # we use initial list, b/c alias may be changed but unsaved
+        alias = self.initial_species[current_species].get('alias', current_species)
+        msg = self.parent().chemistry_check_species_in_use(alias)
+        if msg:
+            self.parent().message(text="%s is used in reaction %s" % (alias, msg))
             return
 
         tw.removeRow(row)
@@ -435,6 +441,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
+        self.initial_species = OrderedDict()
         self.extra_aliases = set() # To support enforcing
         # uniqueness of aliases across all phases
 
@@ -548,6 +555,8 @@ class SpeciesPopup(QtWidgets.QDialog):
 
 
     def popup(self):
+        # Keep initial aliases, we need them to check species in use
+        self.initial_species = deepcopy(self.defined_species)
         self.show()
         self.raise_()
         self.activateWindow()

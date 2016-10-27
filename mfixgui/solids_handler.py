@@ -1014,17 +1014,15 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
         self.update_scalar_equations(prev_nscalar)
 
-
-
-    # --- solids species methods ---
     def solids_species_revert(self):
         pass
 
     def solids_species_save(self):
+        ui = self.ui.solids
         phase = self.solids_current_phase
         if phase is None:
             return
-        ui = self.ui.solids
+        self.set_unsaved_flag()
         rename = {}
         for (name, data) in self.solids_species[phase].items():
             old_alias = data.get('alias', name)
@@ -1154,8 +1152,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
 
         alias = tw.item(row,0).text()
-        if self.chemistry_check_species_in_use(alias):
-            self.message(text="%s is used in chemical reaction" % alias)
+        msg = self.chemistry_check_species_in_use(alias)
+        if msg:
+            self.message(text="%s is used in reaction %s " % (alias, msg))
             return
 
         tw.clearSelection() #?
@@ -1199,6 +1198,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         sp.popup()
 
     def solids_phase_in_use(self, phase):
+        """return False if OK to delete phase, else a string indicating
+        what phase is referenced by (BC, chem eq, etc)"""
+
+        for species in self.solids_species[phase]:
+            msg = self.chemistry_check_species_in_use(species)
+            if msg:
+                return("reaction %s (%s)" % (msg, species))
+
         for k in keyword_args.keys_by_type['phase']:
             indices = self.project.get_key_indices(k)
             if not indices:
@@ -1217,7 +1224,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     if self.project.get_value(k, args=args) is not None:
                         return format_key_with_args(k,args)
 
-        return None # Ok to delete phase, no refs
+        return False # Ok to delete phase, no refs
 
     def solids_delete_phase_keys(self, phase):
         prev_size = len(self.solids) + 1 # Size before row deleted
