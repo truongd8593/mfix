@@ -1,6 +1,6 @@
 # modified from https://github.com/ContinuumIO/docker-images/blob/master/anaconda/Dockerfile
 
-FROM continuumio/anaconda:4.2.0
+FROM continuumio/anaconda:4.1.0
 
 MAINTAINER Mark Meredith <mark.meredith@netl.doe.gov>
 
