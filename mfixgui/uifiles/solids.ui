@@ -1091,14 +1091,6 @@ QPushButton:checked {
                    <string>Heat of formation</string>
                   </property>
                  </column>
-                 <column>
-                  <property name="text">
-                   <string>Source</string>
-                  </property>
-                  <property name="toolTip">
-                   <string>Data source</string>
-                  </property>
-                 </column>
                 </widget>
                </item>
                <item row="0" column="0">
@@ -1642,7 +1634,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
+            <width>353</width>
             <height>1264</height>
            </rect>
           </property>

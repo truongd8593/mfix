@@ -115,8 +115,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                 a_low = coeffs[:7]
                 a_high = coeffs[7:14]
                 h_f = coeffs[14]
-                return {'source': 'BURCAT',
-                        'phase': phase,
+                return {'phase': phase,
                         'mol_weight': mol_weight,
                         'h_f': h_f,
                         'tmin':  tmin,
@@ -177,16 +176,11 @@ class SpeciesPopup(QtWidgets.QDialog):
                         data[key[0]][key[1]] = val
                     else:
                         data[key] = val
-                    if key != 'density':
-                        data['source'] = 'User Defined' # Data has been modified
-                        # Density is not in BURCAT so we don't consider this a mod (?)
-                    ui.label_species_source.setText(data['source'])
                 except ValueError:
                     # reset field to prev. value
                     pass
 
             return handler
-        ui.label_species_source.setText(data['source'])
         ui.label_species.setText(species)
         ui.combobox_phase.setCurrentIndex('GLSC'.index(data['phase']))
         ui.lineedit_alias.setText(data['alias'])
@@ -275,8 +269,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         a_high = coeffs[7:14]
         h_f = coeffs[14]
 
-        species_data = {'source': 'BURCAT',
-                        'phase': phase,
+        species_data = {'phase': phase,
                         'alias': alias,
                         'mol_weight': mol_weight,
                         'h_f': h_f,
@@ -334,6 +327,12 @@ class SpeciesPopup(QtWidgets.QDialog):
         if row is None: # No selection
             return
         current_species = self.current_species # will be reset when selection cleared
+        if not current_species:
+            return
+        if self.parent().chemistry_check_species_in_use(current_species):
+            self.parent().message(text="%s is used in chemical reaction" % current_species)
+            return
+
         tw.removeRow(row)
         tw.clearSelection()
         self.ui.tablewidget_search.clearSelection()
@@ -359,8 +358,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         a_low = [0.0]*7
         a_high = [0.0]*7
 
-        species_data = {'source': 'User Defined',
-                        'phase': phase,
+        species_data = {'phase': phase,
                         'alias': alias,
                         'mol_weight': mol_weight,
                         'density': density,
@@ -390,6 +388,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         item.setData(UserRole, self.current_species)
         set_item_noedit(item)
         tw.setItem(row, 0, item)
+        print("SET ALIAS", val)
         self.defined_species[self.current_species]['alias'] = val
 
     def set_save_button(self, state):
@@ -403,8 +402,6 @@ class SpeciesPopup(QtWidgets.QDialog):
         species['phase'] = phase
 
     def reset_signals(self):
-        # todo:  fix this so it's not the caller's responsibility
-        #  (make a util function that calls this & pops up dialog)
         for sig in (self.cancel, self.save):
             try:
                 sig.disconnect()
@@ -519,7 +516,6 @@ class SpeciesPopup(QtWidgets.QDialog):
             l.setValidator(QDoubleValidator())
 
         self.species_panel_items=[
-            ui.label_species_source,
             ui.label_species,
             ui.lineedit_alias,
             ui.lineedit_mol_weight,

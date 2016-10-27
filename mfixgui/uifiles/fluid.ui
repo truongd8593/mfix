@@ -309,14 +309,6 @@
           <string>Heat of formation</string>
          </property>
         </column>
-        <column>
-         <property name="text">
-          <string>Source</string>
-         </property>
-         <property name="toolTip">
-          <string>Dat a source</string>
-         </property>
-        </column>
        </widget>
       </item>
      </layout>
