@@ -73,7 +73,6 @@ class FluidHandler(SpeciesHandler):
         ui = self.ui.fluid
 
         ui.lineedit_fluid_phase_name.default_value = self.fluid_phase_name = "Fluid"
-        self.saved_fluid_species = None
         self.init_fluid_default_models()
         # Handle a number of cases which are essentially the same
         # see 'set_fluid_mol_weight_model' below to help understand this
@@ -221,17 +220,20 @@ class FluidHandler(SpeciesHandler):
 
     # --- fluid species methods ---
     def fluid_species_revert(self):
-        if self.saved_fluid_species is None:
-            return
-        self.fluid_species = self.saved_fluid_species
-        self.species_popup.defined_species = deepcopy(self.fluid_species)
-        self.update_fluid_species_table()
+        pass
 
 
     def fluid_species_save(self):
-        # TODO update chem equations!
+        rename = {}
+        for (name, data) in self.fluid_species.items():
+            old_alias = data.get('alias', name)
+            new_alias = self.species_popup.defined_species.get(name,{}).get('alias', name)
+            if new_alias != old_alias:
+                rename[old_alias] = new_alias
         self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.update_fluid_species_table()
+        for (old_alias, new_alias) in rename.items():
+            self.chemistry_rename_species(old_alias, new_alias)
 
 
     def update_fluid_species_table(self):
@@ -255,11 +257,11 @@ class FluidHandler(SpeciesHandler):
         else:
             self.unset_keyword('nmax_g')
         for (row, (species,data)) in enumerate(self.fluid_species.items()):
-            for (col, key) in enumerate(('alias', 'phase', 'mol_weight',
-                                        'h_f', 'source')):
+            for (col, key) in enumerate(('alias', 'phase', 'mol_weight', 'h_f')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 tw.setItem(row, col, make_item(data.get(key)))
+                # Fixme, we should not be setting keywords in a 'update_table' method
                 self.update_keyword('species_g', species, args=row+1)
                 self.update_keyword('species_alias_g', alias, args=row+1)
                 # We're avoiding mw_g in favor of the settings in THERMO DATA
@@ -298,11 +300,10 @@ class FluidHandler(SpeciesHandler):
         sp.set_phases('GL')
         sp.do_search('') # Init to full db
         # how to avoid this if dialog open already?
-        self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
-        sp.defined_species = self.fluid_species
+        sp.defined_species = deepcopy(self.fluid_species)
         sp.extra_aliases = self.fluid_make_extra_aliases()
         sp.update_defined_species()
         sp.setWindowTitle("Fluid Species")
@@ -338,7 +339,7 @@ class FluidHandler(SpeciesHandler):
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
-        sp.defined_species = self.fluid_species
+        sp.defined_species = deepcopy(self.fluid_species)
         sp.update_defined_species()
 
 
@@ -347,11 +348,10 @@ class FluidHandler(SpeciesHandler):
         row = get_selected_row(tw)
         sp = self.species_popup
         sp.set_phases('GL')
-        self.saved_fluid_species = deepcopy(self.fluid_species) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.fluid_species_revert)
         sp.save.connect(self.fluid_species_save)
-        sp.defined_species = self.fluid_species
+        sp.defined_species = deepcopy(self.fluid_species)
         sp.extra_aliases = self.fluid_make_extra_aliases()
         sp.update_defined_species()
         if row is None:
@@ -380,7 +380,6 @@ class FluidHandler(SpeciesHandler):
     def reset_fluid(self):
         # Set all fluid-related state back to default
         self.fluid_phase_name = 'Fluid'
-        self.saved_fluid_species = None
         self.fluid_species.clear()
         self.init_fluid_default_models()
 

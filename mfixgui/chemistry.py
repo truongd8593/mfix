@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
-import copy
+from copy import deepcopy
 
 from qtpy import QtWidgets, PYQT5
 from qtpy.QtWidgets import QCheckBox, QComboBox
@@ -279,7 +279,7 @@ class Chemistry(object):
         self.reaction_mass_totals = [None, None]
         if enabled:
             self.current_reaction_name = tw.item(row, COL_RXN_NAME).text()
-            self.working_reaction = copy.deepcopy(self.project.reactions[self.current_reaction_name])
+            self.working_reaction = deepcopy(self.project.reactions[self.current_reaction_name])
         else:
             self.current_reaction_name = None
             self.working_reaction = None
@@ -526,29 +526,33 @@ class Chemistry(object):
             self.error("num_phases = %s" % num_phases)
 
 
-    def chemistry_update_chem_eq(self):
+    def format_chem_eq(self, reactants, products):
+        tmp = []
+        for side in reactants, products:
+            tmp.append(' + '.join(species if coeff==1.0 else '%g*%s' % (coeff, species)
+                                  for (species, coeff) in side))
+        chem_eq = ' --> '.join(tmp)
+        return chem_eq
+
+
+    def chemistry_update_chem_eq(self, name):
+        # Allow updating non-selected reaction, used when renaming species
         ui = self.ui.chemistry
-        name = self.current_reaction_name
-        if name is None:
-            return
-        #reaction = self.project.reactions[self.current_reaction_name]
-        reaction = self.working_reaction
+        #reaction = self.working_reaction
+        reaction = self.project.reactions.get(name)
         if reaction is None:
             return
-        fmt = {}
-        for side in 'reactants', 'products':
-            fmt[side] = ' + '.join(species if coeff==1.0 else '%g*%s' % (coeff, species)
-                                   for (species, coeff) in reaction[side] if coeff)
-        chem_eq = "%s --> %s" % (fmt['reactants'], fmt['products'])
+        chem_eq = self.format_chem_eq(reaction.get('reactants',[]), reaction.get('products',[]))
         display_text = chem_eq.replace('-->', '→')
-        if reaction['chem_eq'] == 'NONE': # Disabled reaction
+        if reaction['chem_eq'] == 'NONE': # Update disabled reaction
             self.disabled_reactions[name] = chem_eq
-        else: # Update reaction
+        else: # Update active reaction
             reaction['chem_eq'] = chem_eq
         tw = ui.tablewidget_reactions
-        row = get_selected_row(tw)
-        if row is not None:
-            ui.tablewidget_reactions.item(row, COL_CHEM_EQ).setText(display_text)
+        for row in range(tw.rowCount()):
+            if tw.item(row, COL_RXN_NAME).text() == name:
+                ui.tablewidget_reactions.item(row, COL_CHEM_EQ).setText(display_text)
+                break
 
 
     def chemistry_update_totals(self):
@@ -770,11 +774,10 @@ class Chemistry(object):
         self.chemistry_update_buttons()
         if row is None or self.working_reaction is None:
             return
-        reaction = self.working_reaction
-        self.chemistry_update_chem_eq()
-        if self.project.reactions[self.current_reaction_name] != reaction:
-            self.project.reactions[self.current_reaction_name] = copy.deepcopy(reaction)
-            self.set_unsaved_flag()
+
+        self.project.reactions[self.current_reaction_name] = deepcopy(self.working_reaction)
+        self.chemistry_update_chem_eq(self.current_reaction_name)
+        self.set_unsaved_flag()
 
 
     def chemistry_revert_changes(self):
@@ -783,8 +786,8 @@ class Chemistry(object):
         row = get_selected_row(tw)
         ui.toolbutton_add_reaction.setEnabled(True)
         if row is not None:
-            chem_eq = tw.item(row, COL_CHEM_EQ).text()
-            if not chem_eq:  # user cancelled an add
+            chem_eq = tw.item(row, COL_CHEM_EQ)
+            if not (chem_eq and chem_eq.text()):
                 self.chemistry_delete_reaction()
         self.chemistry_handle_selection()
 
@@ -895,6 +898,33 @@ class Chemistry(object):
         self.chemistry_handle_product_selection(row=row)
         if self.chemistry_find_available_species('products'):
             ui.toolbutton_add_product.setEnabled(True)
+
+    def chemistry_check_species_in_use(self, alias):
+        for reaction in self.project.reactions.values():
+            for side in 'reactants', 'products':
+                if any(v[0]==alias for v in reaction.get(side, [])):
+                    return True
+        return False
+
+
+    def chemistry_rename_species(self, old_name, new_name):
+        reaction = self.working_reaction
+        if reaction is not None:
+            for side in 'reactants', 'products':
+                for v in reaction.get(side, []):
+                    if v[0]==old_name:
+                        v[0] = new_name
+
+        for (rxn_name, reaction) in self.project.reactions.items():
+            changed = False
+            for side in 'reactants', 'products':
+                for v in reaction.get(side, []):
+                    if v[0]==old_name:
+                        v[0] = new_name
+                        changed = True
+            if changed:
+                if rxn_name is not None:
+                    self.chemistry_update_chem_eq(rxn_name)
 
 
     def setup_chemistry(self):

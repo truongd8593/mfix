@@ -80,7 +80,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         ui.checkbox_enable_scalar_eq.stateChanged.connect(self.enable_solids_scalar_eq)
         ui.spinbox_nscalar_eq.valueChanged.connect(self.set_solids_nscalar_eq)
 
-        self.saved_solids_species = None
         self.init_solids_default_models()
         ui.checkbox_keyword_species_eq_args_P.clicked.connect(
             self.handle_solids_species_eq)
@@ -1019,26 +1018,26 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
     # --- solids species methods ---
     def solids_species_revert(self):
-        if self.saved_solids_species is None:
-            return
-        phase = self.solids_current_phase
-        if phase is None:
-            return
-        self.solids_species[phase] = self.saved_solids_species
-        self.species_popup.defined_species = deepcopy(self.solids_species[phase])
-        self.update_solids_species_table()
-        self.update_solids_baseline_groupbox(self.solids_density_model)
+        pass
 
     def solids_species_save(self):
         phase = self.solids_current_phase
         if phase is None:
             return
         ui = self.ui.solids
+        rename = {}
+        for (name, data) in self.solids_species[phase].items():
+            old_alias = data.get('alias', name)
+            new_alias = self.species_popup.defined_species.get(name,{}).get('alias', name)
+            if new_alias != old_alias:
+                rename[old_alias] = new_alias
         self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
+        for (old_alias, new_alias) in rename.items():
+            self.chemistry_rename_species(old_alias, new_alias)
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
@@ -1065,8 +1064,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         for (row, (species,data)) in enumerate(self.solids_species[phase].items()):
             # order must match table headers
             args = [phase,row+1]
-            for (col, key) in enumerate(('alias', 'phase', 'density', 'mol_weight',
-                                        'h_f', 'source')):
+            for (col, key) in enumerate(('alias', 'phase', 'density', 'mol_weight', 'h_f')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
                 table.setItem(row, col, make_item(data.get(key)))
@@ -1124,11 +1122,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         sp.set_phases('SC')
         sp.do_search('')
         # how to avoid this if dialog open already?
-        self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
-        sp.defined_species = self.solids_species[phase]
+        sp.defined_species = deepcopy(self.solids_species[phase])
         sp.extra_aliases = self.solids_make_extra_aliases(phase)
         sp.update_defined_species()
         sp.setWindowTitle("Species for %s" %self.solids_current_phase_name)
@@ -1155,11 +1152,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         row = get_selected_row(tw)
         if row is None: # No selection
             return
-        tw.clearSelection() #?
-        alias = tw.item(row,0).text()
-        if alias in self.solids_species[phase]:
-            del self.solids_species[phase][alias] # XXXX Fixme
 
+        alias = tw.item(row,0).text()
+        if self.chemistry_check_species_in_use(alias):
+            self.message(text="%s is used in chemical reaction" % alias)
+            return
+
+        tw.clearSelection() #?
+        self.solids_species[phase].pop(alias, None)
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)
@@ -1168,8 +1168,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
         sp = self.species_popup
-        sp.defined_species = self.solids_species[phase]
+        sp.defined_species = deepcopy(self.solids_species[phase])
         sp.update_defined_species()
+
 
     def solids_species_edit(self):
         phase = self.solids_current_phase
@@ -1180,12 +1181,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         row = get_selected_row(table)
         sp = self.species_popup
         sp.set_phases('SC')
-
-        self.saved_solids_species = deepcopy(self.solids_species[phase]) # So we can revert
         sp.reset_signals()
         sp.cancel.connect(self.solids_species_revert)
         sp.save.connect(self.solids_species_save)
-        sp.defined_species = self.solids_species[phase]
+        sp.defined_species = deepcopy(self.solids_species[phase])
         sp.extra_aliases = self.solids_make_extra_aliases(phase)
         sp.update_defined_species()
         if row is None:
@@ -1266,7 +1265,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # Set all solid-related state back to default
         self.solids_current_phase = self.P = None
         self.solids_current_phase_name = None
-        self.saved_solids_species = None
         self.solids.clear()
         self.solids_species.clear()
         self.update_solids_table()
