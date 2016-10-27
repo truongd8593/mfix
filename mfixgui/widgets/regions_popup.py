@@ -192,8 +192,6 @@ class RegionsPopup(QtWidgets.QDialog):
 
 
     def reset_signals(self):
-        # todo:  fix this so it's not the caller's responsibility
-        #  (make a util function that calls this & pops up dialog)
         for sig in (self.cancel, self.save):
             try:
                 sig.disconnect()
