@@ -350,6 +350,12 @@
                   <height>32</height>
                  </size>
                 </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_2">
                  <property name="spacing">
                   <number>6</number>
@@ -492,6 +498,12 @@
                   <height>32</height>
                  </size>
                 </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <property name="spacing">
                   <number>6</number>
@@ -600,6 +612,9 @@
              </property>
              <property name="title">
               <string>Specify heat of reaction</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
              </property>
              <property name="checkable">
               <bool>true</bool>
