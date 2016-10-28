@@ -1,7 +1,9 @@
 import os
+import datetime
+import json
 from qtpy import QtCore, QtWidgets
 
-from mfixgui.tools.general import get_icon, get_mfix_home, get_separator
+from mfixgui.tools.general import get_icon, get_mfix_home, get_separator, get_pixmap
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 class MainMenu(object):
@@ -32,7 +34,7 @@ class MainMenu(object):
         lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
 
-        names = ['Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Close']
+        names = ['Project Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Close']
         icons = ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', '', 'settings', 'help', 'infooutline', 'close']
         if PYQTNODE_AVAILABLE:
             for n, i in reversed([('Export Workflow', 'open_in_new'), ('Import Workflow', 'import'),
@@ -52,9 +54,16 @@ class MainMenu(object):
                 lw.addItem(li)
         layout.addWidget(lw, 1, 0)
 
+        # logo
+        l = QtWidgets.QLabel()
+        pixmap = get_pixmap('mfix.png', 84, 84)
+        l.setPixmap(pixmap)
+        l.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(l, 2, 0)
+
         # stacked widget
         st = self.ui.main_menu_stackedwidget = QtWidgets.QStackedWidget()
-        layout.addWidget(st, 0, 1, 2, 1)
+        layout.addWidget(st, 0, 1, -1, 1)
 
         # blank widget
         bw = self.ui.main_menu_blank_widget = QtWidgets.QWidget()
@@ -62,19 +71,27 @@ class MainMenu(object):
         bw.setStyleSheet('QWidget{background-color: white;}')
         st.addWidget(bw)
 
-        # build open
+        label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
+        label_policy_m = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        spacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum,)
+        # --- build open ---
         ow = self.ui.main_menu_open_widget = QtWidgets.QWidget()
         ow.setObjectName('open')
         ow.setStyleSheet('QWidget#open{background-color: white;}')
         st.addWidget(ow)
         ow_layout = QtWidgets.QGridLayout(ow)
 
+        l = QtWidgets.QLabel('Open')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        ow_layout.addWidget(l, 0, 0, 1, -1)
+
         browse = self.ui.main_menu_browse = QtWidgets.QToolButton()
         browse.setText('Browse')
         browse.setIcon(get_icon('openfolder.png'))
         browse.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         browse.clicked.connect(self.handle_open)
-        ow_layout.addWidget(browse, 0, 0)
+        ow_layout.addWidget(browse, 1, 0)
 
         lw = self.ui.main_menu_loc_lw = QtWidgets.QListWidget()
         lw.setMaximumWidth(200)
@@ -97,11 +114,166 @@ class MainMenu(object):
             loc += ['Benchmarks']
 
         lw.addItems(loc)
-        ow_layout.addWidget(lw, 1, 0)
+        ow_layout.addWidget(lw, 2, 0)
 
         lw = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
         lw.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw, 1, 1)
+        ow_layout.addWidget(lw, 2, 1)
+
+        # --- build info ---
+        iw = self.ui.main_menu_info_widget = QtWidgets.QWidget()
+        iw.setObjectName('project_info')
+        iw.setStyleSheet('QWidget#project_info{background-color: white;}')
+        st.addWidget(iw)
+        iw_layout = QtWidgets.QGridLayout(iw)
+
+        l = QtWidgets.QLabel('Project Info')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 0, 0, 1, -1)
+
+        iw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
+
+        l = QtWidgets.QLabel('Project Version:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 2, 0)
+
+        l = self.ui.main_menu_project_version = QtWidgets.QLabel('Unknown')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 2, 1)
+
+        l = QtWidgets.QLabel('MFIX GUI Version:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 3, 0)
+
+        l = self.ui.main_menu_gui_version = QtWidgets.QLabel('Unknown')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 3, 1)
+
+        iw_layout.addItem(spacer, 4, 0)
+
+        l = QtWidgets.QLabel('Author:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 5, 0)
+
+        l = self.ui.main_menu_created_by = QtWidgets.QLabel('Unknown')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 5, 1)
+
+        l = QtWidgets.QLabel('Modified By:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 6, 0)
+
+        l = self.ui.main_menu_modified_by = QtWidgets.QLabel('Unknown')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 6, 1)
+
+        iw_layout.addItem(spacer, 7, 0)
+
+        l = QtWidgets.QLabel('Last Modified:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 8, 0)
+
+        l = self.ui.main_menu_modified_time = QtWidgets.QLabel('')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 8, 1)
+
+        l = QtWidgets.QLabel('Created:')
+        l.setSizePolicy(label_policy_m)
+        iw_layout.addWidget(l, 9, 0)
+
+        l = self.ui.main_menu_created_time = QtWidgets.QLabel('')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 9, 1)
+
+        iw_layout.addItem(spacer, 10, 0)
+
+        l = QtWidgets.QLabel('Notes:')
+        l.setSizePolicy(label_policy)
+        iw_layout.addWidget(l, 30, 0, 1, -1)
+
+        nt = self.ui.main_menu_project_notes = QtWidgets.QTextEdit()
+        iw_layout.addWidget(nt, 31, 0, 1, -1)
+
+        iw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+
+        # --- build settings ---
+        sw = self.ui.main_menu_settings_widget = QtWidgets.QWidget()
+        sw.setObjectName('settings')
+        sw.setStyleSheet('QWidget#settings{background-color: white;}')
+        l.setSizePolicy(label_policy)
+        st.addWidget(sw)
+        sw_layout = QtWidgets.QGridLayout(sw)
+
+        l = QtWidgets.QLabel('Settings')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        sw_layout.addWidget(l, 0, 0, 1, -1)
+
+        sw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
+
+        # style
+        l = QtWidgets.QLabel('Style:')
+        l.setSizePolicy(label_policy_m)
+        sw_layout.addWidget(l, 2, 0)
+
+        sc = QtWidgets.QComboBox()
+        sc.addItems([s.lower() for s in QtWidgets.QStyleFactory.keys()])
+        cur_style = self.settings.value('app_style')
+        sc.setCurrentIndex(sc.findText(cur_style))
+        sc.currentIndexChanged.connect(lambda: self.change_app_style(sc.currentText()))
+        sw_layout.addWidget(sc, 2, 1)
+
+        sw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+
+        # --- build help ---
+        hw = self.ui.main_menu_help_widget = QtWidgets.QWidget()
+        hw.setObjectName('help')
+        hw.setStyleSheet('QWidget#help{background-color: white;}')
+        st.addWidget(hw)
+        hw_layout = QtWidgets.QGridLayout(hw)
+
+        l = QtWidgets.QLabel('Help')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        hw_layout.addWidget(l, 0, 0, 1, -1)
+
+        hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
+
+        hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+
+        # --- build about ---
+        aw = self.ui.main_menu_about_widget = QtWidgets.QWidget()
+        aw.setObjectName('about')
+        aw.setStyleSheet('QWidget#about{background-color: white;}')
+        st.addWidget(aw)
+        aw_layout = QtWidgets.QGridLayout(aw)
+
+        l = QtWidgets.QLabel('About')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        aw_layout.addWidget(l, 0, 0, 1, -1)
+
+        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
+
+        vl = QtWidgets.QLabel('MFIX GUI version: {}'.format(self.get_version()))
+        vl.setStyleSheet('background-color: white;')
+        aw_layout.addWidget(vl, 2, 0, 1, -1)
+
+        il = QtWidgets.QLabel('''
+        MFIX is an open-source multiphase flow solver and is free to download
+        and use. MFIX provides a suite of models that treat the carrier phase
+        (typically the gas phase) and disperse phase (typically the solids
+        phase) differently. These models include the Two Fluid Model (TFM), the
+        Particle in Cell (PIC) model, the Discrete Element Model (DEM), and the
+        Eulerian-Lagrangian-Eulerian (Hybrid) model.
+        ''')
+        il.setStyleSheet('background-color: white;')
+        il.setWordWrap(True)
+        aw_layout.addWidget(il, 3, 0, 1, -1)
+
+
+        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
     def handle_main_menu_open_project(self, item):
         if self.unsaved_flag:
@@ -155,19 +327,42 @@ class MainMenu(object):
                 self.ui.workflow_widget.handle_import()
             elif text == 'close':
                 self.close()
-            elif text == 'open':
-                self.ui.main_menu_stackedwidget.setCurrentIndex(1)
             else:
-                self.ui.main_menu_stackedwidget.setCurrentIndex(0)
+                index = 0
+                sw = self.ui.main_menu_stackedwidget
+
+                matches = [i
+                   for i in range(sw.count())
+                   if sw.widget(i).objectName().replace('_', ' ') == text]
+
+                if len(matches) == 1:
+                    index = matches[0]
+                self.ui.main_menu_stackedwidget.setCurrentIndex(index)
 
 
     def handle_main_menu(self):
         """Show the main menu"""
 
-        if self.get_project_file() is None:
+        prj_file = self.get_project_file()
+        if prj_file is None:
             self.ui.main_menu_list.setCurrentRow(2)
-
+            self.disable_main_menu_items(['project info', 'save', 'save as', 'export project', 'export workflow', 'import workflow'])
         else:
+            self.ui.main_menu_modified_time.setText(
+                datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(prj_file)), '%Y-%m-%d %H:%M'))
+            self.ui.main_menu_created_time.setText(
+                self.project.mfix_gui_comments.get('created_date', 'Unknown'))
+            self.ui.main_menu_project_version.setText(
+                str(self.project.mfix_gui_comments.get('project_version', 'Unknown')))
+            self.ui.main_menu_gui_version.setText(
+                str(self.project.mfix_gui_comments.get('gui_version', 'Unknown')))
+            self.ui.main_menu_created_by.setText(
+                self.project.mfix_gui_comments.get('author', 'Unknown'))
+            self.ui.main_menu_modified_by.setText(
+                self.project.mfix_gui_comments.get('modified_by', '').replace('|', ', '))
+            self.ui.main_menu_project_notes.setText(
+                json.loads(self.project.mfix_gui_comments.get('project_notes', '""')))
+            self.disable_main_menu_items([], ['save'])
             self.ui.main_menu_list.setCurrentRow(0)
 
         self.ui.main_menu_loc_lw.setCurrentRow(0)
@@ -209,3 +404,16 @@ class MainMenu(object):
 
     def main_menu_animation_finished_hide(self):
         self.main_menu.hide()
+
+    def disable_main_menu_items(self, items, except_items=[]):
+
+        for r in range(self.ui.main_menu_list.count()):
+            i = self.ui.main_menu_list.item(r)
+            text = str(i.text()).lower()
+            if text in except_items:
+                continue
+            i.setFlags(i.flags() & ~QtCore.Qt.ItemIsEnabled if text in items else i.flags() | QtCore.Qt.ItemIsEnabled )
+
+    def change_app_style(self, style):
+        self.app.setStyle(style)
+        self.settings.setValue('app_style', style)

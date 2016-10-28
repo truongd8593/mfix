@@ -15,7 +15,9 @@ import shutil
 import signal
 import sys
 import traceback
+import datetime
 from collections import OrderedDict
+import json
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
@@ -68,7 +70,8 @@ from mfixgui.interpreter import Interpreter
 
 from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
                            is_text_string, is_unicode, get_image_path,
-                           format_key_with_args, to_unicode_from_fs)
+                           format_key_with_args, to_unicode_from_fs,
+                           get_username)
 
 from mfixgui.tools.namelistparser import buildKeywordDoc
 from mfixgui.tools.keyword_args import keyword_args
@@ -1791,6 +1794,21 @@ class MfixGui(QtWidgets.QMainWindow,
         if project_dir is None or project_file is None:
             return
 
+        # save version
+        v = self.project.mfix_gui_comments.get('project_version', 0)
+        self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
+        self.project.mfix_gui_comments['gui_version'] = self.get_version()
+
+        self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
+
+        # save users
+        users = self.project.mfix_gui_comments.get('modified_by', [])
+        if not isinstance(users, list):
+            users = users.split('|')
+        users.append(get_username())
+        users = set(users)
+        self.project.mfix_gui_comments['modified_by'] = '|'.join(users)
+
         # save geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
         self.project.mfix_gui_comments['geometry'] = self.vtkwidget.geometry_to_str()
@@ -1882,11 +1900,6 @@ class MfixGui(QtWidgets.QMainWindow,
     def handle_save_as(self):
         self.save_as()
 
-#    def handle_settings(self):
-#        """handle user settings"""
-#        # TODO: implement
-#        self.unimplemented()
-
     def handle_parameters(self):
         """add/change parameters"""
         changed_params = self.parameter_dialog.get_parameters()
@@ -1935,6 +1948,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_save_button(self, enabled):
         self.ui.toolbutton_save.setEnabled(enabled)
+        # set the one in the main menu too!
+        self.disable_main_menu_items([] if enabled else ['save'])
 
     def set_unsaved_flag(self):
         if not self.unsaved_flag:
@@ -2001,6 +2016,12 @@ class MfixGui(QtWidgets.QMainWindow,
         shutil.copyfile(template, project_file)
         self.open_project(project_file, auto_rename=False)
         self.update_keyword('run_name', run_name)
+
+        # add some info
+        self.project.mfix_gui_comments['author'] = get_username()
+        self.project.mfix_gui_comments['created_date'] = datetime.datetime.strftime(
+            datetime.datetime.now(), '%Y-%m-%d %H:%M')
+
         self.save_project()
 
     def get_open_filename(self):

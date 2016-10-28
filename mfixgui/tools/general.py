@@ -501,6 +501,16 @@ def get_separator(vertical=True):
     line.setFrameShadow(f.Sunken)
     return line
 
+def get_username():
+    """attempt to retunr the currnet user name"""
+    name = 'unknown'
+    for e in ['USER', 'user', 'USERNAME', 'username']:
+        name = os.environ.get(e)
+        if name:
+            break
+    if not name:
+        name = 'unknown'
+    return name
 
 if __name__ == '__main__':
     def test_recurse_dict():

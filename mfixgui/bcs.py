@@ -310,7 +310,7 @@ class BCS(object):
         bc_type = BC_TYPES[rp.combobox.currentIndex()]
         if self.bcs_region_dict is None:
             self.bcs_region_dict = self.ui.regions.get_region_dict()
-        shape = self.bcs_region_dict.get(selections[0])
+        shape = self.bcs_region_dict.get(selections[0]).get('type', '')
         if shape == 'STL':
             bc_type = 'CG_' + bc_type
         if bc_type == 'CG_PI': # Shouldn't happen!
