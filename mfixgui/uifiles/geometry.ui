@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
+    <width>456</width>
     <height>672</height>
    </rect>
   </property>
@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>31</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -2370,6 +2370,9 @@ background-color: transparent;
            </item>
            <item row="0" column="1">
             <widget class="QComboBox" name="combobox_stl_units">
+             <property name="currentIndex">
+              <number>2</number>
+             </property>
              <item>
               <property name="text">
                <string>mm</string>
@@ -2393,6 +2396,11 @@ background-color: transparent;
              <item>
               <property name="text">
                <string>ft</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>custom</string>
               </property>
              </item>
             </widget>
@@ -2511,6 +2519,126 @@ background-color: transparent;
               </item>
              </layout>
             </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_stl_scale"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="scale">
+          <layout class="QGridLayout" name="gridLayout_15">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_28">
+             <property name="text">
+              <string>Scale Factor</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="LineEdit" name="lineedit_scale_scale"/>
+           </item>
+           <item row="1" column="0">
+            <spacer name="verticalSpacer_15">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="translate">
+          <layout class="QGridLayout" name="gridLayout_13">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_translate_translation_z"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_translate_translation_y"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_29">
+             <property name="text">
+              <string>Translation</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="LineEdit" name="lineedit_translate_translation_x"/>
+           </item>
+           <item row="1" column="1">
+            <spacer name="verticalSpacer_14">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="rotate">
+          <layout class="QGridLayout" name="gridLayout_14">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_rotate_rotation_z"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_rotate_rotation_y"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_121">
+             <property name="text">
+              <string>Rotation</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="LineEdit" name="lineedit_rotate_rotation_x"/>
+           </item>
+           <item row="1" column="1">
+            <spacer name="verticalSpacer_10">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>
