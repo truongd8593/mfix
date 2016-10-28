@@ -53,6 +53,7 @@ AM_CONDITIONAL([GNU], [$FC --version|grep GNU\ Fortran])
 AM_CONDITIONAL([INTEL], [$FC --version|grep ifort])
 AM_CONDITIONAL([IBM], [$FC --version|grep -i ibm])
 AM_CONDITIONAL([PGI], [$FC --version|grep Portland])
+LT_INIT
 
 # If pymfix support is enabled, require f2py to be in PATH and
 # add -fPIC to FCFLAGS and FFLAGS.
