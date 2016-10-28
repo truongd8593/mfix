@@ -8,7 +8,7 @@ Prepared by J.Musser, J.Weber, W. Rogers, M. Meredith
 National Energy Technology Laboratory
 Research and Innovation Center
 
-September, 2016
+October, 2016
 
 Table of Contents
 Table of Contents .......................................................................................................................... ii
@@ -31,23 +31,23 @@ Assumptions and Dependencies ...................................................
 
 3. External Interface Requirements ...........................................................................................3
 User Interfaces .......................................................................................................................................... 3
-Hardware Interfaces ................................................................................................................................ 67
-0Software Interfaces ............................................................................................................................... 67
-Communications Interfaces .................................................................................................................... 67
+Hardware Interfaces ................................................................................................................................ 68
+0Software Interfaces ............................................................................................................................... 68
+Communications Interfaces .................................................................................................................... 68
 
-4. System Features .....................................................................................................................67
-5. Other Nonfunctional Requirements .....................................................................................73
-Performance Requirements ..................................................................................................................... 73
-Safety Requirements ............................................................................................................................... 73
-Security Requirements ............................................................................................................................ 73
-Software Quality Attributes .................................................................................................................... 73
-Code Style Guide .................................................................................................................................... 73
-Business Rules ........................................................................................................................................ 73
+4. System Features .....................................................................................................................68
+5. Other Nonfunctional Requirements .....................................................................................74
+Performance Requirements ..................................................................................................................... 74
+Safety Requirements ............................................................................................................................... 74
+Security Requirements ............................................................................................................................ 74
+Software Quality Attributes .................................................................................................................... 74
+Code Style Guide .................................................................................................................................... 74
+Business Rules ........................................................................................................................................ 74
 
-6. Other Requirements ..............................................................................................................74
-Appendix A: Glossary..................................................................................................................74
-Appendix B: Analysis Models .....................................................................................................74
-Appendix C: To Be Determined List ..........................................................................................74
+6. Other Requirements ..............................................................................................................75
+Appendix A: Glossary..................................................................................................................75
+Appendix B: Analysis Models .....................................................................................................75
+Appendix C: To Be Determined List ..........................................................................................75
 
 Revision History
 Name
@@ -333,6 +333,15 @@ Specify maximum fluid viscosity (not shown in mockup)
 #    Selection available if TURBULENCE_MODEL =/ 'NONE'
 #    Sets keyword MU_GMAX
 #    DEFAULT value of 1.0e3 (Pa.s)
+Specify Gravitational acceleration
+#    Specification always available
+#    Sets keywords GRAVITY_X, GRAVITY_Y, GRAVITY_Z
+#    DEFAULT values
+#  Leave blank when converting dat files to mfx
+#  New cases take the values from the mfix.dat.template
+#    If keyword GRAVITY is specified
+#  GRAVITY_Y = -GRAVITY
+#  GRAVITY_X = GRAVITY_Z = 0.0
 Specify drag model
 #    Selection requires TFM, DEM, or PIC solver
 #    Sets keyword DRAG_TYPE
@@ -361,6 +370,7 @@ Specify momentum equation formulation; Select Model A, Model B; Jackson, Ishii
 Select sub-grid model:
 #    Selection requirements:
 #  Only available with MFIX-TFM solver
+
 #  DRAG_TYPE="WEN_YU"
 #  KT_TYPE="ALGEBRAIC"
 #  TURBULENCE_MODEL /= K_EPSILON
@@ -370,7 +380,6 @@ Select sub-grid model:
 #    Sets keyword SUBGRID_TYPE
 #    Available selections
 #  NONE (DEFAULT)
-
 #  IGCI
 #  MILIOLI
 Specify sub-grid model filter size ratio:
@@ -383,7 +392,6 @@ Enable sub-grid wall correction model:
 #    DEFAULT value of FALSE
 
 Mockup of Task pane for defining the Model Setup.
-
 Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
 #    Option to rename the phase (e.g, air, gas)
 #    Option to disable Momentum Equations (enabled by default)
@@ -395,7 +403,8 @@ Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
 #    Define the number of scalar equations
 #    Value sums into keyword NSCALAR
 #    Sets keyword PHASE4SCALAR(*)=0 for total listed scalars
-#    Select Density Model:
+
+Select Density Model:
 #    Selection always available
 #    Available selections:
 #  Constant: [DEFAULT]
@@ -449,7 +458,8 @@ Select Specific Heat Model:
 #    MFIX runtime check verifies UDF was provided
 Select Thermal Conductivity Model:
 #    Selection only available when solving thermal energy equations
-#    Available selections:
+
+Available selections:
 #  Constant
 #    Selection always available
 #    Specify constant thermal conductivity, K_G0
@@ -457,7 +467,6 @@ Select Thermal Conductivity Model:
 #    Selection always available
 #    Keyword K_G0 must be undefined
 #  UDF
-
 #    Selection always available
 #    Set keyword USR_KG
 #    MFIX runtime check verifies UDF was provided
@@ -482,6 +491,14 @@ Fluid phase species selection:
 #  Energy equations are solved with mixture specific heat model
 #    Specification panel operates as a popup window triggered by an Add/Edit button
 #    Summary window provides a list of the species and an overview of some properties
+Specify reference pressure
+#    Specification requires fluid phase (RO_G0 /= 0.0)
+#    Sets keyword P_REF
+#    DEFAULT value of 0.0 (set in mfix.dat.template)
+Specify pressure scale factor
+#    Specification requires fluid phase (RO_G0 /= 0.0)
+#    Sets keyword P_SCALE
+#    DEFAULT value 1.0 (set in mfix.dat.template)
 
 Fluid phase Material Database window (popup):
 #    Select database (BURCAT); later could link in other databases.
@@ -502,8 +519,7 @@ conductivity and the diffusion coefficient models- are hard coded for specific c
 would permit greater modeling flexibility moving forward.
 NOTE: The gas phase species molecular weights, MW_G(#) cannot be directly specified. This
 keyword is not needed because users can edit the molecular weight in the material database popup
-window.  (TODO:  how about MW_S?)
-
+window.
 Solids Task Pane Window:
 #    Select Solids model
 #    Sets keyword SOLIDS_MODEL(#)
@@ -523,13 +539,14 @@ Solids Task Pane Window:
 #    Sets keyword: SPECIES_EQ(#)
 #    Species Equations disabled [DEFAULT]
 #    Option to enable scalar equations
+
 #    Selection only available for MFIX-TFM solids model
 #    Define the number of scalar equations
 #    Value sums into keyword NSCALAR
 #    Sets keyword PHASE4SCALAR(*)=# for total listed scalars
-#    Specify Diameter (required)
+Specify Diameter (required)
 #    Sets keyword: D_p0(#)
-#    Select Solids Density model
+Select Solids Density model
 #    Selection requires species equations
 #    Available selections:
 #  Constant; [DEFAULT]
@@ -541,10 +558,9 @@ Solids Task Pane Window:
 #    Requires material densities for all solids species
 #    Requires base composition be specified
 #    Requires an inert species be identified
-#    Select Solids Viscosity Model:
+Select Solids Viscosity Model:
 #    Selection only available for MFIX-TFM solids model
-
-Available selections:
+#    Available selections:
 #  Continuum Solids Stress Theory [DEFAULT]
 #    Selection always available
 #    Keyword MU_s0 must be undefined
@@ -578,6 +594,7 @@ Select Specific Heat Model:
 #  UDF
 #    Selection always available
 #    Sets keyword USR_CPS(#)
+
 #    MFIX runtime check verifies UDF was provided
 Select Thermal Conductivity Model:
 #    Selection only available for MFIX-TFM solids model
@@ -598,8 +615,7 @@ Specify solids phase emissivity
 #    Specification only available when solving energy equations
 #    Sets keyword DES_EM(#)
 Solids phase species selection:
-
-Species data required under any of the following conditions:
+#    Species data required under any of the following conditions:
 #  Solving species equations
 #  Energy equations are solved with mixture specific heat model
 #    Specification panel operates as a popup window triggered by an Add/Edit button
@@ -639,8 +655,9 @@ composition. Right: Popup material database window for specifying solids phase s
 
 Continuum Solids Model Task Pane Window: (requires TFM solver)
 #    Specify void fraction at close pack (required)
+
 #    Sets keyword EP_STAR
-#    Select Viscous Stress Model (KTGS):
+Select Viscous Stress Model (KTGS):
 #    Selection is unavailable for constant solids viscosity (MU_S0 defined)
 #    Available selections:
 #  Algebraic Formulation [DEFAULT]
@@ -663,7 +680,6 @@ Continuum Solids Model Task Pane Window: (requires TFM solver)
 #    Sets keyword KT_TYPE to AHMADI
 #  Garzo and Dufty, 1999
 #    Selection only available with MMAX=1 (monodisperse)
-
 #    Sets keyword KT_TYPE to GD_99
 #    Requires particle-particle restitution coefficient, C_E
 #  Garzo, Tenneti, Subramaniam, Hrenya, 2012
@@ -694,6 +710,7 @@ Select Frictional Stress Model
 Specify solids volume fraction at onset of friction
 #    Only available with FRICTION_MODEL=SRIVASTAVA
 #    Default value of 0.5
+
 #    Sets keyword EPS_F_MIN
 Specify particle-particle restitution coefficient
 #    Specification available only when required
@@ -718,17 +735,16 @@ Select radial distribution function
 #  Carnahan-Starling
 #    Only available for MMAX==1
 #    Sets keyword RDF_TYPE to LEBOWITZ (this is correct)
-
-Lebowitz
+#  Lebowitz
 #    Only available for MMAX >1
 #    Sets keyword RDF_TYPE to LEBOWITZ
-Mansoori
+#  Mansoori
 #    Only available for MMAX>1
 #    Sets keyword RDF_TYPE to MANSOORI
-Modified Lebowitz
+#  Modified Lebowitz
 #    Only available for MMAX >1
 #    Sets keyword RDF_TYPE to MODIFIED_LEBOWITZ
-Modified Mansoori
+#  Modified Mansoori
 #    Only available for MMAX>1
 #    Sets keyword RDF_TYPE to MODIFIED_MANSOORI
 
@@ -749,6 +765,7 @@ Specify the segregation slope coefficient
 models: algebraic formulation; Lun. 1984; Simonin, 1996; Ahmadi, 1995
 #    Unavailable with (+other requirements)
 #    Sets keyword SEGREGATION_SLOPE_COEFFICIENT
+
 Select maximum packing correlation
 #    Selection only available with FRICTION_MODEL=SCHAEFFER and MMAX >1
 #    Available selections:
@@ -782,9 +799,10 @@ Discrete Element Model Task Pane Window: (requires DEM solver)
 #    Selection always available
 #    Sets keyword DES_INTG_METHOD to 'EULER'
 #  Adams-Bashforth
+
 #    Selection always available
 #    Sets keyword DES_INTG_METHOD to 'ADAMS_BASHFORTH'
-#    Selection collision model
+Selection collision model
 #    Selection always available
 #    Available selections
 #  Linear Spring-Dashpot [DEFAULT]
@@ -793,14 +811,13 @@ Discrete Element Model Task Pane Window: (requires DEM solver)
 #  Hertzian
 #    Selection always available
 #    Sets keyword DES_COLL_MODEL to 'HERTZIAN'
-#    Select gas-solids coupling scheme:
+Select gas-solids coupling scheme:
 #    Selection unavailable if fluid model is disabled
 #    Available selections:
 #  One-way Coupled
 #    Selection always available
 #    Sets keyword DES_ONEWAY_COUPLED true
 #  Fully Coupled [DEFAULT]
-
 #    Selection always available
 #    Sets keyword DES_ONEWAY_COUPLED false
 Optional to enable explicitly coupled simulation
@@ -837,9 +854,10 @@ Define interpolation width (DPVM only) (required)
 #    Specification only available with SQUARE_DPVM interpolation scheme
 #    Sets keyword DES_INTERP_WIDTH
 Option to enable diffusion of particle data
-#    Selection unavailable with GARG_2012 interpolation scheme
-#    No keyword is set by this option
-#    Enables the user to specify a diffusion width
+
+Selection unavailable with GARG_2012 interpolation scheme
+No keyword is set by this option
+Enables the user to specify a diffusion width
 #  Sets keyword DES_DIFFUSE_WIDTH
 Specify friction coefficient
 #    Specification always required
@@ -855,8 +873,7 @@ Specify tangential damping coefficient factor
 #    Only available for LSD collision model
 #    Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
 #    Default values of 0.5
-
-Specify Young's modulus
+searSpecify Young's modulus
 #    Only available for Hertzian collision model
 #    Sets keyword E_YOUNG (EW_YOUNG)
 Specify Poisson ratio:
@@ -892,7 +909,8 @@ Specify inner cutoff
 #    Sets keyword VDW_INNER_CUTOFF (WALL_INNER_CUTOFF)
 Specify asperities
 #    Specification only available for Van der Waals cohesion model
-#    Sets keyword ASPERITIES
+
+Sets keyword ASPERITIES
 
 List the following options under an 'Advanced' section header.
 
@@ -910,7 +928,6 @@ Specify maximum steps between neighbor search
 #    Sets keyword NEIGHBOR_SEARCH_N
 Specify factor defining particle neighborhood
 #    Specification always available
-
 #    Sets keyword FACTOR_RLM
 Specify neighborhood search radius ratio
 #    Specification always available
@@ -945,7 +962,6 @@ Select solid stress model
 #    Selection always available
 #    Sets keyword MPPIC_SOLID_STRESS_SNIDER=.T.
 Option to enable implicit treatment of drag force
-
 #    Sets keyword: MPPIC_PDRAG_IMPLICIT
 #    Disabled [DEFAULT]
 Define particle-particle momentum retention
@@ -964,6 +980,7 @@ Select gas-solids coupling scheme:
 #    Selection always available
 #    Sets keyword DES_ONEWAY_COUPLED true
 #  Fully Coupled
+
 #    Selection always available
 #    Sets keyword DES_ONEWAY_COUPLED false
 Select interpolation framework:
@@ -1000,7 +1017,6 @@ Define interpolation width (DPVM only) (required)
 Define solids stress model parameter: pressure constant
 #    Sets keyword PSFAC_FRIC_PIC
 #    DEFAULT value of 10.0
-
 Define solids stress model parameter: volume fraction exponent
 #    Sets keyword FRIC_EXP_PIC
 #    DEFAULT value of 3.0
@@ -1065,22 +1081,22 @@ Fluid (tab)
 #    Sets keyword IC_L_SCALE(#)
 #    DEFAULT value of 1.0
 #    Turbulence: Define k-ε turbulent kinetic energy
-
 #    Specification only available with K-Epsilon turbulence model
 #    Sets keyword IC_K_TURB_G(#)
 #    DEFAULT value of 0.0
-Turbulence: Define k-ε turbulent dissipation
+#    Turbulence: Define k-ε turbulent dissipation
 #    Specification only available with K-Epsilon turbulence model
 #    Sets keywords IC_E_TURB_G(#)
 #    DEFAULT value of 0.0
-Advanced: Define radiation coefficient
+#    Advanced: Define radiation coefficient
 #    Specification only available when solving energy equations
 #    Sets keyword IC_GAMA_RG(#)
 #    DEFAULT value of 0.0
-Advanced: Define radiation temperature
-#    Specification only available when solving energy equations
-#    Sets keyword IC_T_RG(#)
-#    DEFAULT value of 293.15
+#    Advanced: Define radiation temperature
+
+Specification only available when solving energy equations
+Sets keyword IC_T_RG(#)
+DEFAULT value of 293.15
 
 Mockup of Task pane for specifying the fluid properties for initial conditions parameters.
 Solid-# (tab) - Rename tab to user provided solids name.
@@ -1099,20 +1115,20 @@ Solid-# (tab) - Rename tab to user provided solids name.
 #    Define temperature
 #    Specification always available
 #    Input required when solving energy equations
-
 #    Sets keyword IC_T_S(#,#)
 #    DEFAULT value of 293.15
-Define velocity components (required)
+#    Define velocity components (required)
 #    Specification always available
 #    Sets keywords IC_U_S(#,#), IC_V_S(#,#), IC_W_S(#,#)
 #    DEFAULT value of 0.0
-Define pressure (optional)
+#    Define pressure (optional)
 #    Specification only available for SOLIDS_MODEL(#)='TFM'
 #    Sets keyword IC_P_STAR(#)
 #    DEFAULT of 0.0
 #    Common to all phases - Warn user if changed.
-Define granular temperature
-#    Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
+#    Define granular temperature
+
+Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
 formulation viscous stress model (see continuous solids model section) or for
 SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
 #    Sets keyword IC_THETA_M(#,#)
@@ -1139,8 +1155,7 @@ Advanced: Define radiation coefficient
 Advanced: Define radiation temperature
 #    Specification only available when solving energy equations
 #    Sets keyword IC_T_RS(#,#)
-
-DEFAULT value of 293.15
+#    DEFAULT value of 293.15
 
 Mockup of Task pane for specifying solids-# initial condition parameters.
 Scalar (tab) - Tab only available if scalar equations are solved
@@ -1153,7 +1168,6 @@ this tab should only be available if scalar equations are being solved. Furtherm
 scalars requiring input (here 2) comes from the number of scalar equations specified by the user.
 Boundary Conditions Task Pane Window: This section allows a user to define the boundary
 conditions for the described model. This section relies on regions named in the Regions section.
-
 The top of the task pane is where users define/select BC regions
 
 Icons to add/remove/duplicate boundary conditions are given at the top
@@ -1180,18 +1194,20 @@ Select boundary type
 #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
 #  Partial Slip Wall
+
 #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-#  Pressure Inflow
+Pressure Inflow
 #    Plane regions set keyword BC_TYPE(#) to 'PI'
 #    Not available for volume regions
 #    Not available for STL regions
-#  Mass Outflow
+Mass Outflow
 #    Plane regions set keyword BC_TYPE(#) to 'MO'
 #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
 #    Not available for volume regions
-#  Cyclic
+Cyclic
 #    No region to select
+
 # Specification always available
 # DEFAULT - No slip wall
 # Error check: mass fractions must sum to one
@@ -1217,11 +1233,12 @@ Fluid (tab)
 #    Specification only available with PSW
 #    Sets keyword BC_VW_G(#)
 #    DEFAULT value of 0.0
-#    Define Wall W-velocity
+
+Define Wall W-velocity
 #    Specification only available with PSW
 #    Sets keyword BC_WW_G(#)
 #    DEFAULT value of 0.0
-#    Select energy equation boundary type:
+Select energy equation boundary type:
 #    Selection only available when solving energy equations
 #    Available selections:
 #  No-Flux (adiabatic) [DEFAULT]
@@ -1240,12 +1257,11 @@ Fluid (tab)
 #    Requires BC_HW_T_G(#)
 #    Sets keyword BC_C_T_G(#) to 0.0
 #    Requires BC_TW_G(#)
-#    Define wall temperature
+Define wall temperature
 #    Specification only available with 'Specified Temperature' BC type
 #    Sets keyword BC_TW_G(#)
 #    DEFAULT value of 293.15
-#    Define constant flux
-
+Define constant flux
 #    Specification only available with 'Specified Flux' BC type
 #    Sets keyword BC_C_T_G(#)
 #    DEFAULT value of 0.0
@@ -1272,7 +1288,8 @@ Select species equation boundary type:
 #    Sets keyword BC_HW_X_G(#) to 0.0
 #    Requires BC_C_X_G(#)
 #    Sets keyword BC_XW_G(#) to UNDEFINED
-#  Convective Flux
+
+Convective Flux
 #    Requires BC_HW_X_G(#)
 #    Sets keyword BC_C_X_G(#) to 0.0
 #    Requires BC_XW_G(#)
@@ -1304,8 +1321,9 @@ Solids-# (tab) - (Replace with phase name defined by the user)
 #    Disabled (0.0) for KT_TYPE = 'ALGEBRAIC'
 #    Disabled (0.0) for KT_TYPE = 'GHD_2007'
 #    Sets keyword BC_JJ_PS(#)
+
 #    DEFAULT value of 1.0 when not disabled
-#    Select type of Jackson and Johnson BC:
+Select type of Jackson and Johnson BC:
 #    Disabled for DEM and PIC solids
 #    Selection only available BC_JJ_PS(#) = 1.0
 #    Available selections:
@@ -1318,13 +1336,12 @@ Solids-# (tab) - (Replace with phase name defined by the user)
 #  Jenkins small frictional boundary
 #    Sets keyword BC_JJ_M to .FALSE.
 #    Sets keyword JENKINS to .TRUE.
-#    Define restitution coefficient
+Define restitution coefficient
 #    Disabled for DEM and PIC solids
 #    Specification only available with BC_JJ_PS(#) = 1.0
 #    Sets keyword E_W
 #    DEFAULT value of 1.0
 #    Required when available
-
 Define specularity coefficient
 #    Disabled for DEM and PIC solids
 #    Specification only available with BC_JJ_PS(#)=1.0 and JENKINS=.FALSE.
@@ -1357,6 +1374,7 @@ Define Wall V-velocity
 #    Specification only available with PSW or BC_JJ_PS(#) = 1.0
 #    Sets keyword BC_VW_S(#,#)
 #    DEFAULT value of 0.0
+
 Define Wall W-velocity
 #    Disabled for DEM and PIC solids
 #    Specification only available with PSW or BC_JJ_PS(#) = 1.0
@@ -1377,9 +1395,8 @@ Select energy equation boundary type:
 #  Specified Flux
 #    Sets keyword BC_HW_T_S(#,#) to 0.0
 #    Requires BC_C_T_S(#)
-
 #    Sets keyword BC_TW_S(#,#) to UNDEFINED
-Convective Flux
+#  Convective Flux
 #    Disabled for DEM and PIC solids
 #    Requires BC_HW_T_S(#,#)
 #    Sets keyword BC_C_T_S(#,#) to 0.0
@@ -1412,7 +1429,8 @@ Select granular energy equation boundary type:
 #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
 #    Sets keyword BC_C_THETA_M (#,#) to 0.0
 #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
-#  Specified Temperature
+
+Specified Temperature
 #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
 #    Sets keyword BC_C_THETA_M(#,#) to 0.0
 #    Requires BC_THETAW_M(#,#)
@@ -1432,10 +1450,9 @@ Define constant flux
 #    DEFAULT value of 0.0
 
 When solving solids species equations:
-
-Set keyword BC_HW_X_S(#,#,#) to 0.0
-Set keyword BC_C_X_S(#,#,#) to 0.0
-Set keyword BC_XW_S(#,#,#) to UNDEFINED
+#    Set keyword BC_HW_X_S(#,#,#) to 0.0
+#    Set keyword BC_C_X_S(#,#,#) to 0.0
+#    Set keyword BC_XW_S(#,#,#) to UNDEFINED
 
 Mockup of Task pane for specifying the Solid-# properties for WALL boundary condition regions.
 Scalar (tab) - Tab only available if scalar equations are solved
@@ -1447,6 +1464,7 @@ Scalar (tab) - Tab only available if scalar equations are solved
 #    Sets keyword BC_SCALARW(#,#) to UNDEFINED
 #  Specified Temperature
 #    Sets keyword BC_HW_SCALAR(#,#) to UNDEFINED
+
 #    Sets keyword BC_C_SCALAR (#,#) to 0.0
 #    Requires BC_SCALARW (#,#)
 #  Specified Flux
@@ -1457,17 +1475,16 @@ Scalar (tab) - Tab only available if scalar equations are solved
 #    Requires BC_HW_T_S(#,#)
 #    Sets keyword BC_C_SCALAR (#,#) to 0.0
 #    Requires BC_SCALARW (#,#)
-#    Define wall temperature
+Define wall temperature
 #    Specification only available with 'Specified Temperature' BC type
 #    Sets keyword BC_SCALARW (#,#)
 #    DEFAULT value of 0.0
-#    Define constant flux
+Define constant flux
 #    Specification only available with 'Specified Flux' BC type
 #    Sets keyword BC_C_SCALAR (#,#)
 #    DEFAULT value of 0.0
-#    Define transfer coefficient
+Define transfer coefficient
 #    Specification only available with 'Convective Flux' BC type
-
 #    Sets keyword BC_HW_SCALAR(#,#)
 #    DEFAULT value of 0.0
 Define free stream temperature
@@ -1480,6 +1497,7 @@ Note that this tab should only be available if scalar equations are being solved
 number of scalars requiring input (here 2) comes from the number of scalar equations specified by
 the user.
 Subtask Pane Tab for INFLOW type (MI, PI, CG_MI) Boundary Condition Regions
+
 Fluid (tab)
 #    Define volume fraction
 #    Specification always available
@@ -1499,7 +1517,6 @@ Region orientation (e.g., XZ-Plane)
 # Sets keyword BC_VOLFLOW_G(#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
-
 # Sets keyword BC_MASSFLOW_G(#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
@@ -1509,7 +1526,7 @@ Region orientation (e.g., XZ-Plane)
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
-For BC_TYPE='MI' and YZ-Plane region
+#    For BC_TYPE='MI' and YZ-Plane region
 #  Select mass inflow specification type:
 #    Available selections:
 #    X-Axial Velocity (m/s) [DEFAULT]
@@ -1528,13 +1545,14 @@ For BC_TYPE='MI' and YZ-Plane region
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
-For BC_TYPE='MI' and XY-Plane region
+#    For BC_TYPE='MI' and XY-Plane region
 #  Select mass inflow specification type:
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
-#    Volumetric Flowrate (m3/s)
+
+Volumetric Flowrate (m3/s)
 # Sets keyword BC_VOLFLOW_G(#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
@@ -1547,19 +1565,17 @@ For BC_TYPE='MI' and XY-Plane region
 #    Define Y-Axial Velocity
 # Sets keyword BC_V_G(#)
 # DEFAULT value of 0.0
-For BC_TYPE='CG_MI' or 'PI'
+#    For BC_TYPE='CG_MI' or 'PI'
 #  Specify all velocity components:
 #    Define X-Axial Velocity
 # Sets keyword BC_U_G(#)
 # DEFAULT value of 0.0
 #    Define Y-Axial Velocity
 # Sets keyword BC_V_G(#)
-
 # DEFAULT value of 0.0
-Define Z-Axial Velocity
+#    Define Z-Axial Velocity
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
-
 Define temperature
 #    Specification always available
 #    Input required for any of the following
@@ -1619,7 +1635,8 @@ Region orientation (e.g., XZ-Plane)
 #    Volumetric Flowrate (m3/s)
 # Sets keyword BC_VOLFLOW_S(#,#)
 # DEFAULT value of 0.0
-#    Mass Flowrate (kg/s)
+
+Mass Flowrate (kg/s)
 # Sets keyword BC_MASSFLOW_S(#,#)
 # DEFAULT value of 0.0
 #  Define Tangential Velocities:
@@ -1629,7 +1646,7 @@ Region orientation (e.g., XZ-Plane)
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
-#    For BC_TYPE='MI' and YZ-Plane region
+For BC_TYPE='MI' and YZ-Plane region
 #  Select mass inflow specification type:
 #    Available selections:
 #    X-Axial Velocity (m/s) [DEFAULT]
@@ -1640,16 +1657,15 @@ Region orientation (e.g., XZ-Plane)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
 # Sets keyword BC_MASSFLOW_S(#, #)
-
 # DEFAULT value of 0.0
-Define Tangential Velocities:
+#  Define Tangential Velocities:
 #    Define Y-Axial Velocity
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
-#    For BC_TYPE='MI' and XY-Plane region
+For BC_TYPE='MI' and XY-Plane region
 #  Select mass inflow specification type:
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
@@ -1668,17 +1684,19 @@ Define Tangential Velocities:
 #    Define Y-Axial Velocity
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
-#    For BC_TYPE='CG_MI' or 'PI'
+For BC_TYPE='CG_MI' or 'PI'
 #  Specify all velocity components:
 #    Define X-Axial Velocity
 # Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
 #    Define Y-Axial Velocity
+
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
-#    Define Z-Axial Velocity
+Define Z-Axial Velocity
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
+
 Define temperature
 #    Specification always available
 #    Input required when energy equations are solved
@@ -1705,6 +1723,7 @@ Fluid (tab)
 #    Input required
 #    Sets keyword BC_P_G(#)
 #    DEFAULT 101.325d3
+
 The remaining inputs are "optional." They do not have default values, because MFIX will calculate
 appropriate values if they are unspecified and 'backflow' occurs at the outlet.
 #    Define volume fraction
@@ -1721,9 +1740,7 @@ fractions for the BC region must be specified and must sum to one.
 #    Specification always available
 #    NO DEFAULT value
 #    Sets keyword BC_X_G(#,#)
-
-Error check: if specified, mass fractions must sum to one_
-
+#    Error check: if specified, mass fractions must sum to one_
 Solids-# (tab)
 All inputs are optional. They do not have default values, because MFIX will calculate appropriate
 values if they are unspecified and 'backflow' occurs at the outlet.
@@ -1780,6 +1797,7 @@ Region orientation (e.g., XZ-Plane)
 # Sets keyword BC_U_G(#)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
+
 # Sets keyword BC_VOLFLOW_G(#)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
@@ -1792,7 +1810,7 @@ Region orientation (e.g., XZ-Plane)
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_G(#)
 # DEFAULT value of 0.0
-#    For BC_TYPE='MO' and XY-Plane region
+For BC_TYPE='MO' and XY-Plane region
 #  Select mass outflow specification type:
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
@@ -1803,9 +1821,8 @@ Region orientation (e.g., XZ-Plane)
 # DEFAULT value of 0.0
 #    Mass Flowrate (kg/s)
 # Sets keyword BC_MASSFLOW_G(#)
-
 # DEFAULT value of 0.0
-Define Tangential Velocities:
+#  Define Tangential Velocities:
 #    Define X-Axial Velocity
 # Sets keyword BC_U_G(#)
 # DEFAULT value of 0.0
@@ -1854,7 +1871,6 @@ fractions for the BC region must be specified and must sum to one.
 Define temperature
 #    Specification is required when solving the energy equations (ENERGY_EQ ==
 .TRUE.) or with mass or volumetric flowrates and (RO_G0 == UNDEFINED)
-
 #    DEFAULT value 293.15
 #    Sets keyword BC_T_G(#)
 Select species and set mass fractions (table format)
@@ -1885,8 +1901,9 @@ Region orientation (e.g., XZ-Plane)
 # DEFAULT value of 0.0
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_S(#,#)
+
 # DEFAULT value of 0.0
-#    For BC_TYPE='MO' and YZ-Plane region
+For BC_TYPE='MO' and YZ-Plane region
 #  Select mass outflow specification type:
 #    Available selections:
 #    X-Axial Velocity (m/s) [DEFAULT]
@@ -1905,11 +1922,10 @@ Region orientation (e.g., XZ-Plane)
 #    Define Z-Axial Velocity
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
-#    For BC_TYPE='MO' and XY-Plane region
+For BC_TYPE='MO' and XY-Plane region
 #  Select mass outflow specification type:
 #    Available selections:
 #    Z-Axial Velocity (m/s) [DEFAULT]
-
 # Sets keyword BC_W_S(#,#)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
@@ -1940,13 +1956,14 @@ For BC_TYPE='CG_MO'
 Define duration to average outflow rate.
 #    Specification always available
 #    Input required
+
 #    Sets keyword BC_DT_0(#)
 #    DEFAULT value of 0.1
 #    Error Check: Value should be positive (non-negative)
 BC_DT_0 specification should persist across the gas and solids tabs. If the user sets it in the gas
 phase tab, but then changes it under a solids tab, a warning messing indicating that this value is
-
 'constant' across all phases should be given.
+
 Subtask Pane Tab for Cyclic type Boundary Conditions
 
 Select cyclic axis
@@ -1975,10 +1992,11 @@ Enable specified pressure drop
 #    Error check: There should not be any BCs defined on walls that are cyclic.
 (I'm not sure if this check can be easily implemented.
 Enable specified gas mass flux
-#    Requires specified pressure drop
-#    Sets keyword FLUX_G
-#    DEFAULT value of 0.0
-#    Error check: Only one axis can have a specified mass flux. (This should not be an
+
+Requires specified pressure drop
+Sets keyword FLUX_G
+DEFAULT value of 0.0
+Error check: Only one axis can have a specified mass flux. (This should not be an
 issue as it requires a specified pressure drop which can only be applied to one axis.)
 
 Point Source Task Pane Window: This section allows a user to define point sources for the
@@ -1986,7 +2004,6 @@ described model. This section relies on regions named in the Regions section.
 The top of the task pane is where users define/select PS regions
 
 Icons to add/remove/duplicate boundary conditions are given at the top
-
 Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
 a region to apply the point source.
 # Users cannot select inapplicable regions.
@@ -2005,24 +2022,26 @@ Fluid (tab)
 #    Define temperature
 #    Specification only available when solving energy equations
 #    DEFAULT value 293.15
+
 #    Sets keyword PS_T_G(#)
-#    Select species and set mass fractions (table format)
+Select species and set mass fractions (table format)
 #    Specification only available when solving species equations
 #    DEFAULT value 1.0 of last defined species
 #    Sets keyword PS_X_G(#,#)
 #    Error check: if specified, mass fractions must sum to one
-#    Define X-axial velocity:
+Define X-axial velocity:
 #    Specification always
 #    No DEFAULT value (blank)
 #    Sets keyword PS_U_G(#)
-#    Define Y-axial velocity:
+Define Y-axial velocity:
 #    Specification always
 #    No DEFAULT value (blank)
 #    Sets keyword PS_V_G(#)
-#    Define Z-axial velocity:
+Define Z-axial velocity:
 #    Specification always
 #    No DEFAULT value (blank)
 #    Sets keyword PS_W_G(#)
+
 Solids-# (tab) - At this time, only TFM solids can be defined with point sources. At some point in the
 future, this could be extended to PIC solids, but never DEM.
 
@@ -2079,7 +2098,6 @@ Select internal surface type
 #    Selection only available for volume regions
 #    set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
 #  Semi-permeable
-
 #    Selection only available for plane regions
 #    set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
 #  X-Axis semi-permeable
@@ -2092,6 +2110,7 @@ Select internal surface type
 #    Selection only available for volume regions
 #    set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
 # DEFAULT - Impermeable
+
 Input is only needed for semi-permeable surfaces.
 
 Gas permeability:
@@ -2128,6 +2147,7 @@ Specify the reaction identifier (Name)
 #    DEFAULT value reactionN (for the Nth reaction)
 #    Reaction identifiers must be "Fortran compilable"
 #  Alphanumeric combinations (no special characters excluding underscores)
+
 #  Limited to 32 characters
 #  First character must be a letter
 #  No black spaces
@@ -2154,11 +2174,9 @@ chemical reaction)
 #    Column 2 - Select product species
 #  Use drop down list to show species in selected phase
 #  A species can only appear once as a product in the same reaction
-
-Column 3 - Enter stoichiometric coefficient
+#    Column 3 - Enter stoichiometric coefficient
 #  Numerical value (integer or float)
 #  Value must be non-negative
-
 Reactant/Product information is combined with stoichiometric coefficients to define the
 chemical reaction as a string.
 #    Sets reaction construct keyword CHEM_EQ
@@ -2182,7 +2200,8 @@ Specify HoR fraction assigned to -phase#    Only available if user-defined heat 
 #    Heterogeneous chemical reactions
 #  Entry for each phase referenced by the reaction
 #  DEFAULT value 0.5 for both entires
-#  Sets reaction construct keyword fracDH(#) for each referenced phase
+
+Sets reaction construct keyword fracDH(#) for each referenced phase
 
 The user cannot 'save' the reaction if there are errors. After saving (adding?) the reaction, the
 reaction identifier (name) and chemical equation are shown in the summary box at the top. A
@@ -2202,6 +2221,7 @@ Specify residual for energy equations
 #    Specification always available
 #    Sets keyword TOL_RESID_T
 #    DEFAULT value of 1.0e-4
+
 Specify residual for species equations
 #    Specification always available
 #    Sets keyword TOL_RESID_X
@@ -2230,8 +2250,9 @@ Specify spatial discretization and under relation factors (table format)
 #    Column 2: Select discretization scheme for equation #
 #  Available selections
 #    First-order upwind [DEFAULT for all equations]
+
 # Sets keyword DISCRETIZE(#) to 0
-#    First-order upwind (dwf)
+First-order upwind (dwf)
 # Sets keyword DISCRETIZE(#) to 1
 #    Superbee
 # Sets keyword DISCRETIZE(#) to 2
@@ -2249,8 +2270,7 @@ Specify spatial discretization and under relation factors (table format)
 # Sets keyword DISCRETIZE(#) to 8
 #    Central
 # Sets keyword DISCRETIZE(#) to 9
-
-Column 3: Specify under relation factors
+#    Column 3: Specify under relation factors
 #  Specification always available
 #  Sets keyword UR_FAC for each equation #
 #  DEFAULTS are equation type specific
@@ -2284,9 +2304,8 @@ Specify linear solver, number of iterations, and convergence tolerance (table fo
 #    BiCGSTAB [DEFAULT for all equations]
 # Sets keyword LEQ_METHOD(#) to 2
 #    GMRES
-
 #  Sets keyword LEQ_METHOD(#) to 3
-Column 3: Specify number of iterations
+#    Column 3: Specify number of iterations
 #  Specification always available
 #  Sets keyword LEQ_IT for each equation #
 #  DEFAULTS are equation type specific
@@ -2300,7 +2319,7 @@ Column 3: Specify number of iterations
 #    8 - granular energy: 15
 #    9 - user-scalar/k-epsilon: 15
 #    10 - DES diffusion: 5
-Column 4: Specify convergence tolerance
+#    Column 4: Specify convergence tolerance
 #  Specification always available
 #  Sets keyword LEQ_TOL
 #  DEFAULT value of 1.0E-4 for all equations
@@ -2318,8 +2337,7 @@ Specify linear solver, number of preconditioner and sweep direction (table forma
 # Sets keyword LEQ_PC(#) to 'LINE'
 #    Diagonal Scaling
 # Sets keyword LEQ_PC(#) to 'DIAG'
-
-Column 3: Preconditioner sweep direction for equation #
+#    Column 3: Preconditioner sweep direction for equation #
 #  Selection only available for equations with LINE preconditioner
 #  Available selections
 #    'Red-black sweep' [DEFAULT for all equations]
@@ -2353,7 +2371,6 @@ Specify IA theory conductivity under relation factor
 Enable four point, fourth order interpolation
 #    Specification always available
 #    Sets keyword FPFOI
-
 #    DEFAULT value of .FALSE.
 Specify the universal limiter
 #    Specification only available if four point, forth order interpolation is enabled
@@ -2363,9 +2380,9 @@ Specify the universal limiter
 
 Output Task Pane Window:
 The output input is split into tabs.
-Native MFIX IO (tab)
+Basic (tab)
 
-Specify Restart write interval
+Specify Restart/checkpoint write interval
 #    Specification always available (required)
 #    Sets keyword RES_DT
 #    DEFAULT value of 1.0
@@ -2379,12 +2396,27 @@ Specify the backup interval
 #    Sets keyword RES_BACKUP_DT
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
-Write binary Single Precision files (SPx)
-#    No keyword association.
-#    This value is always TRUE. (SPx files are always written at this time.)
-#    The checkbox is a placeholder for future capabilities.
-Write interval for gas volume fraction
+Enable VTK output
+#    Specification always available
+#    Sets keyword WRITE_VTK_FILES
+#    DEFAULT value of .FALSE.
+#    Enables VTK tab
+Enable time-dependent VTK files
+#    Specification only if WRITE_VTK_FILES = .TRUE.
+#    Sets keyword TIME_DEPENDENT_FILENAME
+#    DEFAULT value .TRUE.
+Specify VTK Directory
+#    Specification only if WRITE_VTK_FILES = .TRUE.
 
+#    Sets keyword VTU_DIR
+#    No default (empty string)
+Write binary Single Precision files (SPx)
+#    No keyword association at this time.
+#    The checkbox is a placeholder for capabilities under-development.
+#    Enables SPx tab
+Enable NetCDF output files
+#    No keyword association.
+Write interval for gas volume fraction
 #    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(1)
 #    DEFAULT value of 1.0
@@ -2428,6 +2460,7 @@ Write interval for user defined scalars
 #    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(9)
 #    DEFAULT value of 1.0
+
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for reaction rates
 #    Specification only if write binary SPx files is enabled (currently always true)
@@ -2439,7 +2472,6 @@ Number of reaction rates to write
 #    Sets keyword NRR
 #    DEFAULT value of 0
 #    Error check: value must be greater than or equal to 0
-
 Write interval for turbulence quantities
 #    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(11)
@@ -2457,19 +2489,6 @@ Select particle data format
 #  Tecplot - .dat
 
 VTK IO (tab)
-
-Enable VTK output
-#    Specification always available
-#    Sets keyword WRITE_VTK_FILES
-#    DEFAULT value of .FALSE.
-Enable time-dependent VTK files
-#    Specification only if WRITE_VTK_FILES = .TRUE.
-#    Sets keyword TIME_DEPENDENT_FILENAME
-#    DEFAULT value .TRUE.
-Specify VTK Directory
-#    Specification only if WRITE_VTK_FILES = .TRUE.
-#    Sets keyword VTU_DIR
-#    No default (empty string)
 
 Icons and table similar to IC/BC/PS/IS for adding VTK regions. This section requires
 WRITE_VTK_FILES = .TRUE.
@@ -2544,8 +2563,8 @@ Enable writing gas temperature
 # Requires fluid solver (RO_G0 /= 0.0) and ENERGY_EQ = .TRUE.
 # Sets keyword VTK_T_G(#)
 # DEFAULT value .FALSE.
-
 Enable writing gas species N (an entry for each defined species)
+
 # Requires defined gas phase species
 # Sets keyword VTK_X_G(#,N)
 # DEFAULT value .FALSE.
@@ -2554,7 +2573,6 @@ Enable writing gas temperature
 # Requires fluid solver (RO_G0 /= 0.0) and ENERGY_EQ = .TRUE.
 # Sets keyword VTK_T_G(#)
 # DEFAULT value .FALSE.
-
 o
 
 Enable writing solids velocity vector
@@ -2588,8 +2606,8 @@ When the MFIX solver is launched the following actions are taken:
 a. Check and setup base background mesh
 b. Setup MPI domain decomposition
 c. Preform sanity checks on user inputs
-
 d. Set flags and loop structures for background mesh
+
 e. Invoke Cartesian grid cut-cell preprocessing
 f. Allocate data arrays
 5) Process RES (restart) files
@@ -2986,3 +3004,4 @@ HELYX-OS
 SimScale
 
 DICEhub
+
