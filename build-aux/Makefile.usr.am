@@ -46,7 +46,7 @@ mfix_LDADD += $(LIBMFIX)
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix
+	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
 
 $(LIBMFIX).md5: $(LIBMFIX)
 	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi
