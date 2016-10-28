@@ -2316,14 +2316,14 @@ background-color:white;
               <item row="0" column="0">
                <layout class="QGridLayout" name="gridLayout_17">
                 <item row="0" column="1">
-                 <widget class="QLabel" name="label_208">
+                 <widget class="QLabel" name="label_particle_particle">
                   <property name="text">
                    <string>particle-particle</string>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="2">
-                 <widget class="QLabel" name="label_206">
+                 <widget class="QLabel" name="label_particle_wall">
                   <property name="text">
                    <string>particle-wall</string>
                   </property>
@@ -2424,6 +2424,33 @@ background-color:white;
                     <width>150</width>
                     <height>16777215</height>
                    </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3">
+                 <widget class="QLabel" name="label_vdw_outer_cutoff_units">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>m</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QLabel" name="label_vdw_inner_cutoff_units">
+                  <property name="text">
+                   <string>m</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QLabel" name="label_asperities_units">
+                  <property name="text">
+                   <string>m</string>
                   </property>
                  </widget>
                 </item>
