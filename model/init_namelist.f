@@ -438,24 +438,21 @@
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>
-!    X-component of gravitational acceleration vector. By default, the
-!    gravity force acts in the negative y-direction.
+!    X-component of gravitational acceleration vector.
 !  </description>
       GRAVITY_X = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>
-!    Y-component of gravitational acceleration vector. By default, the
-!    gravity force acts in the negative y-direction.
+!    Y-component of gravitational acceleration vector.
 !  </description>
       GRAVITY_Y = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>
-!    Z-component of gravitational acceleration vector. By default, the
-!    gravity force acts in the negative y-direction.
+!    Z-component of gravitational acceleration vector.
 !  </description>
       GRAVITY_Z = ZERO
 !</keyword>
