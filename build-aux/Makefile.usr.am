@@ -150,6 +150,12 @@ endif
 
 if PYTHON
 
+lib_LTLIBRARIES = libmfixsolver.la
+libmfixsolver_la_FCFLAGS = $(PYTHON_FCFLAGS)
+libmfixsolver_la_LIBADD = $(LIBMFIX)
+libmfixsolver_la_SOURCES = mfixsolver-f2pywrappers.f mfixsolver-f2pywrappers2.f90 mfixsolvermodule.c
+libmfixsolver_la_LDFLAGS = -avoid-version -module -shared -export-dynamic
+
 AM_FCFLAGS += $(patsubst %,-Xlinker -rpath=%, $(subst :, ,$(LD_LIBRARY_PATH)))
 
 pymfix_src = \
@@ -174,8 +180,8 @@ mfix$(EXEEXT): mfixsolver.so
 		$(LN_S) $(top_srcdir)/../mfixgui/pymfix.py $@
 
 mfixsolver.so: $(LIBMFIX).md5
-mfixsolver.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
-	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m mfixsolver -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+mfixsolver-f2pywrappers.f  mfixsolver-f2pywrappers2.f90  mfixsolvermodule.c: $(pymfix_src)
+	$(F2PY) -m mfixsolver $(pymfix_src)
 
 endif
 
@@ -192,12 +198,10 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
-F2PY_FLAGS =
-
 if MPI
 AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
-F2PY_FLAGS += $(FC_DEFINE)MPI
+PYTHON_FCFLAGS += $(FC_DEFINE)MPI
 
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
 	MPICMD="$(MPICMD)" ${top_srcdir}/runtests.sh

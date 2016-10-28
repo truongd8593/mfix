@@ -2,6 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
+LT_PREREQ([2.4])
+LT_INIT
 AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
 AC_CONFIG_AUX_DIR([../build-aux])
 
