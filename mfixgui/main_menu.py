@@ -100,18 +100,22 @@ class MainMenu(object):
         mfx_dir = get_mfix_home()
 
         self.tutorial_paths = []
-        for root, dirs, files in os.walk(os.path.join(mfx_dir, 'tutorials')):
+        tut_path = os.path.join(mfx_dir, 'tutorials', '')
+        for root, dirs, files in os.walk(tut_path):
             if any(f.endswith('.dat') for f in files):
-                self.tutorial_paths.append(root)
+                self.tutorial_paths.append(root.replace(tut_path,''))
         if self.tutorial_paths:
             loc += ['Tutorials']
+            self.tutorial_paths.sort()
 
         self.benchmark_paths = []
-        for root, dirs, files in os.walk(os.path.join(mfx_dir, 'benchmarks')):
+        bench_path = os.path.join(mfx_dir, 'benchmarks', '')
+        for root, dirs, files in os.walk(bench_path):
             if any(f.endswith('.dat') for f in files):
-                self.benchmark_paths.append(root)
+                self.benchmark_paths.append(root.replace(bench_path, ''))
         if self.benchmark_paths:
             loc += ['Benchmarks']
+            self.benchmark_paths.sort()
 
         lw.addItems(loc)
         ow_layout.addWidget(lw, 2, 0)
@@ -285,6 +289,11 @@ class MainMenu(object):
             self.clear_unsaved_flag()
 
         text = str(item.text())
+
+        name = str(self.ui.main_menu_loc_lw.currentItem().text()).lower()
+        if name in ['benchmarks', 'tutorials']:
+            mfx_dir = get_mfix_home()
+            text = os.path.join(mfx_dir, name, text)
         self.open_project(text)
 
     def handle_main_menu_browse_loc_changes(self, selected, deselected):
