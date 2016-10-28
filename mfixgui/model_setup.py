@@ -142,14 +142,11 @@ class ModelSetup(object):
         ui = self.ui.model_setup
         solver = self.project.solver
 
-        self.disable_fluid_solver(self.fluid_solver_disabled) # FIXME
+        self.disable_fluid_solver(self.fluid_solver_disabled)
 
         # Additional GUI setup based on loaded projects (not handled
         # by keyword updates)
-        #    .... is there a way to verify that 'energy_eq' is boolean?
-        #    should that get set from keyword doc?
 
-        # TODO: set 'disable fluid solver' checkbox if appropriate
         turbulence_model = self.project.get_value('turbulence_model')
         if turbulence_model is None:
             self.enable_turbulence(False)
@@ -160,6 +157,22 @@ class ModelSetup(object):
             else:
                 self.set_turbulence_model(TURBULENCE_MODELS.index(turbulence_model))
                 self.enable_turbulence(True)
+
+        #Specify Gravitational acceleration
+        #    Specification always available
+        #    Sets keywords GRAVITY_X, GRAVITY_Y, GRAVITY_Z
+        #    DEFAULT values
+        # handled by keyword widgets
+
+        #  Leave blank when converting dat files to mfx
+        #  New cases take the values from the mfix.dat.template
+        # Implementation Note:  Not doing this.  There's not a
+        # strong reason for it, and we don't distinguish converting dat files from opening existing projects.
+
+
+        #    If keyword GRAVITY is specified
+        #  GRAVITY_Y = -GRAVITY
+        #  GRAVITY_X = GRAVITY_Z = 0.0
 
 
         #Specify drag model
