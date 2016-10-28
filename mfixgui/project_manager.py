@@ -221,6 +221,7 @@ class ProjectManager(Project):
             # Make sure we're in SI
             units = self.get_value('units', default='SI')
             if units.lower() == 'cgs':
+                self.gui.update_keyword('units', 'SI')
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
                     if kw.dtype != float:
