@@ -131,6 +131,7 @@ DEFAULT_PARAMETRIC_PARAMS = {
 
 # Filters
 FILTER_DICT = OrderedDict([
+    ('transform',             vtk.vtkTransformPolyDataFilter),
     ('clean',                 vtk.vtkCleanPolyData),
     ('fill_holes',            vtk.vtkFillHolesFilter),
     ('triangle',              vtk.vtkTriangleFilter),
@@ -172,6 +173,15 @@ DEFAULT_FILTER_PARAMS = {
     'normalize':            False,
     'reversecells':         False,
     'reversenormals':       True,
+    'rotationx':            0.0,
+    'rotationy':            0.0,
+    'rotationz':            0.0,
+    'scalex':               1.0,
+    'scaley':               1.0,
+    'scalez':               1.0,
+    'translatex':           0.0,
+    'translatey':           0.0,
+    'translatez':           0.0,
     'geo_type':             'filter',
     'type':                 ''}
 

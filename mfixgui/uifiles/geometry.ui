@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>20</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -2521,11 +2521,15 @@ background-color: transparent;
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="LineEdit" name="lineedit_stl_scale"/>
+            <widget class="LineEdit" name="lineedit_stl_scale">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="scale">
+         <widget class="QWidget" name="transform">
           <layout class="QGridLayout" name="gridLayout_15">
            <property name="margin">
             <number>0</number>
@@ -2533,17 +2537,45 @@ background-color: transparent;
            <property name="spacing">
             <number>5</number>
            </property>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_28">
+           <item row="0" column="2" colspan="3">
+            <widget class="LineEdit" name="lineedit_transform_scalex"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_29">
              <property name="text">
-              <string>Scale Factor</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Translation&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="LineEdit" name="lineedit_scale_scale"/>
+           <item row="1" column="7">
+            <widget class="LineEdit" name="lineedit_translate_translatez"/>
            </item>
-           <item row="1" column="0">
+           <item row="1" column="5" colspan="2">
+            <widget class="LineEdit" name="lineedit_translate_translatey"/>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="label_28">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Scale&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="7">
+            <widget class="LineEdit" name="lineedit_transform_scalez"/>
+           </item>
+           <item row="2" column="7">
+            <widget class="LineEdit" name="lineedit_rotate_rotationz"/>
+           </item>
+           <item row="1" column="2" colspan="3">
+            <widget class="LineEdit" name="lineedit_translate_translatex"/>
+           </item>
+           <item row="2" column="5" colspan="2">
+            <widget class="LineEdit" name="lineedit_rotate_rotationy"/>
+           </item>
+           <item row="3" column="5">
             <spacer name="verticalSpacer_15">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -2556,65 +2588,7 @@ background-color: transparent;
              </property>
             </spacer>
            </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="translate">
-          <layout class="QGridLayout" name="gridLayout_13">
-           <property name="margin">
-            <number>0</number>
-           </property>
-           <property name="spacing">
-            <number>5</number>
-           </property>
-           <item row="0" column="3">
-            <widget class="LineEdit" name="lineedit_translate_translation_z"/>
-           </item>
-           <item row="0" column="2">
-            <widget class="LineEdit" name="lineedit_translate_translation_y"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_29">
-             <property name="text">
-              <string>Translation</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="LineEdit" name="lineedit_translate_translation_x"/>
-           </item>
-           <item row="1" column="1">
-            <spacer name="verticalSpacer_14">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="rotate">
-          <layout class="QGridLayout" name="gridLayout_14">
-           <property name="margin">
-            <number>0</number>
-           </property>
-           <property name="spacing">
-            <number>5</number>
-           </property>
-           <item row="0" column="3">
-            <widget class="LineEdit" name="lineedit_rotate_rotation_z"/>
-           </item>
-           <item row="0" column="2">
-            <widget class="LineEdit" name="lineedit_rotate_rotation_y"/>
-           </item>
-           <item row="0" column="0">
+           <item row="2" column="0">
             <widget class="QLabel" name="label_121">
              <property name="text">
               <string>Rotation</string>
@@ -2624,21 +2598,11 @@ background-color: transparent;
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="LineEdit" name="lineedit_rotate_rotation_x"/>
+           <item row="0" column="5" colspan="2">
+            <widget class="LineEdit" name="lineedit_transform_scaley"/>
            </item>
-           <item row="1" column="1">
-            <spacer name="verticalSpacer_10">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
+           <item row="2" column="2" colspan="3">
+            <widget class="LineEdit" name="lineedit_rotate_rotationx"/>
            </item>
           </layout>
          </widget>

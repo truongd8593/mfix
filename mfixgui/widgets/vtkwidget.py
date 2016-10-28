@@ -338,6 +338,8 @@ class VtkWidget(QtWidgets.QWidget):
         self.__add_tool_buttons()
         self.__setup_wizards()
 
+        self.ui.geometry.stackedWidgetGeometryDetails.setCurrentIndex(0)
+
     # --- setup ---
     def __connect_events(self):
 
@@ -724,6 +726,7 @@ class VtkWidget(QtWidgets.QWidget):
             self.ui.geometry.groupBoxGeometryParameters.setTitle('Parameters')
             self.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
 
+
         self.parent.animate_stacked_widget(
             self.ui.geometry.stackedWidgetGeometryDetails,
             self.ui.geometry.stackedWidgetGeometryDetails.currentIndex(),
@@ -881,7 +884,7 @@ class VtkWidget(QtWidgets.QWidget):
             elif geo_type in list(PARAMETRIC_DICT.keys()):
                 self.update_parametric(name)
 
-            if 'transform' in geo_data:
+            if 'transform' in geo_data and not 'filter' == geo_data.get('geo_type'):
                 self.update_transform(name)
             self.render()
 
@@ -1366,6 +1369,37 @@ class VtkWidget(QtWidgets.QWidget):
         elif filtertype == 'reverse_sense':
             vtkfilter.SetReverseCells(safe_int(geo['reversecells']))
             vtkfilter.SetReverseNormals(safe_int(geo['reversenormals']))
+        elif filtertype == 'transform':
+            transform = geo['transform']
+            # reset to Identity
+            transform.Identity()
+            transform.PostMultiply()
+
+            # find the center
+            polydata = vtkfilter.GetInput()
+            com = vtk.vtkCenterOfMass()
+            com.SetInputData(polydata)
+            com.SetUseScalarsAsWeights(False)
+            com.Update()
+            x, y, z = com.GetCenter()
+
+            # translate to center
+            transform.Translate(-x, -y, -z)
+
+            # scale
+            transform.Scale(safe_float(geo['scalex']),
+                            safe_float(geo['scaley']),
+                            safe_float(geo['scalez']))
+
+            # rotation
+            transform.RotateWXYZ(safe_float(geo['rotationx']), 1, 0, 0)
+            transform.RotateWXYZ(safe_float(geo['rotationy']), 0, 1, 0)
+            transform.RotateWXYZ(safe_float(geo['rotationz']), 0, 0, 1)
+
+            # translate
+            transform.Translate(x + safe_float(geo['translatex']),
+                                y + safe_float(geo['translatey']),
+                                z + safe_float(geo['translatez']))
 
         vtkfilter.Update()
 
@@ -1397,8 +1431,11 @@ class VtkWidget(QtWidgets.QWidget):
         # init filter
         if data is not None:
             filtertype = data['type']
-        vtkfilter = FILTER_DICT[filtertype]()
-        geo['filter'] = vtkfilter
+        vtkfilter = geo['filter'] = FILTER_DICT[filtertype]()
+
+        if filtertype == 'transform':
+            t = geo['transform'] = vtk.vtkTransform()
+            vtkfilter.SetTransform(t)
 
         # set input data
         inputdata = self.get_input_data(selection_text)
