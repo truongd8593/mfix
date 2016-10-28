@@ -76,6 +76,7 @@ def buildKeywordDoc(mfixSourcePath):
             d = d.replace("Poissons", "Poisson's")
             d = d.replace("Poisson ratio", "Poisson's ratio")
             d = d.replace(" (in units of g/cm^2.s)", "")
+            d = d.replace(" By default, the gravity force acts in the negative y-direction.", "")
             v['description'] = d
         return v
 
