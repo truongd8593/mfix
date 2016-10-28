@@ -31,6 +31,7 @@ from mfixgui.widgets.base import LineEdit # a little special handling needed
 from mfixgui.tools.general import (format_key_with_args, parse_key_with_args,
                            plural, to_text_string)
 from mfixgui.tools import read_burcat
+from mfixgui.unit_conversion import cgs_to_SI
 
 
 class ProjectManager(Project):
@@ -203,12 +204,43 @@ class ProjectManager(Project):
         return SINGLE
 
     def load_project_file(self, project_file):
-        """Load an MFiX project file."""
-        # See also gui.open_project
+        """Load an MFiX project file.
+        Returns False if input file rejected, True if opened (with possible warnings)
+        See also gui.open_project"""
         n_errs = 0
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=project_file)
+            # Check for some invalid conditions
+            if self.get_value('use_rrates'):
+                raise ValueError('use_rrates not supported')
+
+            if self.get_value('cylindrical'):
+                raise ValueError('Cylindrical coordinates not supported')
+
+            # Make sure we're in SI
+            units = self.get_value('units', default='SI')
+            if units.lower() == 'cgs':
+                warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
+                for kw in self.keywordItems():
+                    if kw.dtype != float:
+                        continue
+                    print("DTYPE", kw.dtype)
+                    factor = cgs_to_SI.get(kw.key)
+                    if factor is not None:
+                        try:
+                            kw.value = factor * float(kw.value)
+                            self.gui.set_unsaved_flag()
+                        except Exception, e:
+                            warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
+                    else:
+                        warnings.warn('no conversion for %s' % (kw.key))
+            elif units.lower() == 'si':
+                pass
+            else:
+                warnings.warn('Invalid units %s' % units)
+
+
             # Let's guess the solver type from the file
             self.solver = self.guess_solver()
             # Now put the GUI into the correct state before setting up interface
@@ -222,8 +254,10 @@ class ProjectManager(Project):
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
 
+
+
             # Make sure they are sorted by index before inserting into gui
-            self.gasSpecies.sort(key=lambda a: a.ind) # override 'sort' in class Project?
+            self.gasSpecies.sort(key=lambda a: a.ind)
             self.solids.sort(key=lambda a:a.ind)
 
             db = self.gui.species_popup.db
@@ -323,7 +357,6 @@ class ProjectManager(Project):
 
             self.update_thermo_data(self.gui.fluid_species)
 
-
             # Build the 'solids' dict that the gui expects.
             #  Note that this is derived from the project.solids SolidsCollection
             #  but is slightly different.
@@ -331,7 +364,6 @@ class ProjectManager(Project):
                                    else "TFM" if self.solver==TFM
                                    else "PIC" if self.solver==PIC
                                    else "TFM")
-
 
             for s in self.solids:
                 name = s.name
@@ -427,8 +459,6 @@ class ProjectManager(Project):
 
                 self.update_thermo_data(self.gui.solids_species[s.ind])
 
-
-
                 solids_data =  {'model': s.get("solids_model"),
                                'diameter': s.get('d_p0'),
                                'density': s.get('ro_s0'),
@@ -467,20 +497,31 @@ class ProjectManager(Project):
             # so iterate over a copy of the list, which may change
             kwlist = list(self.keywordItems())
             for kw in kwlist:
+
+                if kw.key == 'gravity': # convert scalar 'gravity' to x-y-z vector
+                    y_val = -kw.value  # minus - gravity points down along y-axis
+                    self.gui.unset_keyword('gravity')
+                    for axis in 'xz':
+                        self.submit_change(None, {'gravity_%s'%axis: 0.0}, args=None)
+                    self.submit_change(None, {'gravity_y': y_val}, args=None)
+                    continue
+
                 if kw.key in thermo_keys:
                     self.gui.print_internal("%s=%s moved to THERMO DATA section" % (
                         format_key_with_args(kw.key, kw.args),
                         kw.value))
-
                     self.gui.unset_keyword(kw.key, args=kw.args) # print msg in window
                     continue
+
                 if kw.key in vector_keys: # Make sure they are really vectors
                     if not kw.args:
                         self.gui.unset_keyword(kw.key)
                         kw.args = [1]
+
                 if kw.key in skipped_keys:
                     self.gui.unset_keyword(kw.key, args=kw.args)
                     continue
+
                 try:
                     self.submit_change(None, {kw.key: kw.value}, args=kw.args)
                 except ValueError as e:
