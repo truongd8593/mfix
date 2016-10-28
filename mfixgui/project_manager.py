@@ -225,11 +225,12 @@ class ProjectManager(Project):
                 for kw in self.keywordItems():
                     if kw.dtype != float:
                         continue
-                    print("DTYPE", kw.dtype)
                     factor = cgs_to_SI.get(kw.key)
+                    if factor == 1:
+                        continue
                     if factor is not None:
                         try:
-                            kw.value = factor * float(kw.value)
+                            kw.value = factor * float(kw.value) # message?
                             self.gui.set_unsaved_flag()
                         except Exception, e:
                             warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
