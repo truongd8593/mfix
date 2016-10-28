@@ -126,8 +126,15 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def error(self, msg, popup=False):
         # Show the user a warning & log it - use this instead of log.error
-        self.print_internal('Error: %s' % msg)
-        # No popup
+        if not popup:
+            self.print_internal('Error: %s' % msg)
+        else:
+            self.message(title='Error',
+                         icon='error',
+                         text=msg,
+                         buttons=['ok'],
+                         default='ok')
+
 
     def warn(self, msg, popup=False):
         # Show the user a warning & log it - use instead of log.warn
@@ -246,7 +253,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     try:
                         path = os.path.join(uifiles, name+'.ui')
                         uic.loadUi(path, widget)
-                    except Exception:
+                    except Exception as e:
                         # report which ui file it was, otherwise stack trace
                         # is too generic to be helpful.
                         print("Error loading", path)
@@ -1656,16 +1663,15 @@ class MfixGui(QtWidgets.QMainWindow,
         try:
             self.job_manager.job.set_pymfix_output(
               self.ui.run.checkbox_pymfix_output.isChecked())
-        except Exception:
-            log.exception('problem in handle_set_pymfix_output')
-            self.print_internal('problem in handle_set_pymfix_output')
+        except Exception as e:
+            self.error('handle_set_pymfix_output: %s' % e)
+
 
     def handle_pause(self):
         try:
             self.job_manager.job.pause()
-        except Exception:
-            log.exception('problem in handle_pause')
-            self.print_internal('problem in handle_pause')
+        except Exception as e:
+            self.error('handle_pause: %s' % e)
 
     def handle_reinit(self):
         """Save current project with copy <run_name>.reinit.NN, then
@@ -1696,19 +1702,17 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.job_manager.job.reinit(''.join(self.project.to_string()).encode('utf-8'))
                 log.debug('gui returned from job reinit call')
                 #TODO: save project file upon reinit success
-            except Exception:
-                log.exception('problem in handle_reinit')
-                self.print_internal('problem in handle_reinit')
+            except Exception as e:
+                self.error('handle_reinit: %s' % e)
         else:
-            log.debug("reinitialize called while in an unsupported state")
+            log.debug('reinitialize called in invalid state')
         log.debug('gui leaving handle_reinit')
 
     def handle_stop(self):
         try:
             self.job_manager.stop_mfix()
-        except Exception:
-            log.exception('problem in handle_stop')
-            self.print_internal('problem in handle_stop')
+        except Exception as e:
+            self.error('handle_stop: %s' % e)
 
     def check_save(self):
         if self.unsaved_flag:
@@ -2107,14 +2111,14 @@ class MfixGui(QtWidgets.QMainWindow,
         self.settings.setValue('recent_projects', '|'.join(new_rec_prjs))
 
 
-    def open_project(self, project_path, auto_rename=True):
+    def open_project(self, project_path, interactive=True):
         """Open MFiX Project"""
         # Too much going on here, split some of this out
 
         if self.main_menu.isVisible():
             self.handle_main_menu_hide()
 
-        self.change_pane('model setup')
+        #self.change_pane('model setup')
 
         self.open_succeeded = False  # set to true on success
         self.vtkwidget.defer_render = True # defer rendering vtk until load finished
@@ -2153,13 +2157,10 @@ class MfixGui(QtWidgets.QMainWindow,
         try:
             self.project.load_project_file(project_file)
         except Exception as e:
-            msg = 'Failed to load %s: %s: %s' % (project_file, e.__class__.__name__, e)
-            self.print_internal("Error: %s" % msg, color='red')
-            self.message(title='Error',
-                         icon='error',
-                         text=msg,
-                         buttons=['ok'],
-                         default='ok')
+            msg = 'Failed to load %s: %s: %s' % (os.path.basename(project_file),
+                                                 e.__class__.__name__, e)
+            self.error(msg, popup=interactive) # don't popup in -q mode
+
             traceback.print_exception(*sys.exc_info())
             # Should we stick this in the output window?  no, for now.
 
@@ -2175,8 +2176,6 @@ class MfixGui(QtWidgets.QMainWindow,
             # previously started job may be running, try to reconnect
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
-
-
 
         self.setup_current_tab() # update vals in any open tabs
         self.update_source_view()
@@ -2335,7 +2334,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.workflow_widget.look_for_projects(basename)
 
 
-        if auto_rename and not project_path.endswith(runname_mfx):
+        if interactive and not project_path.endswith(runname_mfx):
             ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
             if ok_to_write:
                 renamed_project_file = os.path.join(project_dir, runname_mfx)
@@ -2352,7 +2351,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 #self.print_internal(save_msg, color='blue')
                 self.clear_unsaved_flag()
             except Exception as e:
-                msg = 'Failed to save %s: %s: %s' % (project_file, e.__class__.__name__, e)
+                msg = 'Failed to save %s: %s: %s' % (os.path.basename(project_file),
+                                                     e.__class__.__name__, e)
                 self.print_internal("Error: %s" % msg, color='red')
                 self.message(title='Error',
                              icon='error',
@@ -2552,8 +2552,6 @@ def main():
             gui.ui.splitter_graphics_cmd_output.setSizes([int(num) for num in cmd_output])
     gui.show()
 
-
-
     if args.exe:
         #print('exe option passed: %s' % mfix_exe_option)
         gui.commandline_option_exe = args.exe
@@ -2564,13 +2562,15 @@ def main():
         last_prj = project_file = gui.get_project_file()
 
     if project_file and not args.noload:
-        gui.open_project(project_file, auto_rename=(not args.quit))
+        gui.open_project(project_file, interactive=(not args.quit))
         # change mode and navigation if loaded last project
         if last_prj == project_file:
             m = SETTINGS.value('mode')
-            if m is not None: gui.mode_changed(m)
+            if m is not None:
+                gui.mode_changed(m)
             n = SETTINGS.value('navigation')
-            if n is not None: gui.change_pane(n)
+            if n is not None:
+                gui.change_pane(n)
     else:
         gui.set_no_project()
         gui.handle_main_menu()
