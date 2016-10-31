@@ -52,7 +52,12 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         #  The value dict  is keyed by species, but probably should
         #  be keyed by alias FIXME.
 
+        # Avoid circular deps
+        self.fluid_nscalar_eq = self.solids_nscalar_eq = 0
+
         self.solids_current_tab = 0 # Materials
+
+
 
         ui = self.ui.solids
         tb = ui.toolbutton_solids_add
@@ -1279,6 +1284,5 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.solids_current_tab = 0
         ui.toolbutton_solids_add.setEnabled(True)
         self.solids_nscalar_eq = 0
-        self.nscalar_eq = self.fluid_nscalar_eq
         self.solids_change_tab(0, ui.pushbutton_solids_materials)
         # TODO (?)  reset THERMO_DATA ?

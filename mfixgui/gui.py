@@ -547,7 +547,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.reset_pss()
         self.reset_chemistry()
 
-        self.nscalar_eq = 0
         self.saved_ro_g0 = None # hack
 
         # Set all custom widgets to default
