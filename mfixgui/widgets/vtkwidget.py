@@ -1271,16 +1271,17 @@ class VtkWidget(QtWidgets.QWidget):
         """Remove the currently selected geometry, filter, or boolean operation
         """
         currentSelection = self.geometrytree.selectedItems()
+        self.animate = False
         for selection in currentSelection:
             text = str(selection.text(0)).lower()
-
             # remove tree item
             toplevelindex = self.geometrytree.indexOfTopLevelItem(
                 selection)
             item = self.geometrytree.takeTopLevelItem(toplevelindex)
 
             # move children to toplevel, make visible
-            for child in item.takeChildren():
+            children = item.takeChildren()
+            for child in children:
                 self.geometrytree.addTopLevelItem(child)
                 if self.visual_props['geometry']['visible']:
                     geo = self.geometrydict.get(str(child.text(0)).lower())
@@ -1292,6 +1293,14 @@ class VtkWidget(QtWidgets.QWidget):
             geo = self.geometrydict.pop(text)
             self.remove_from_parameter_map(text, geo)
             self.vtkrenderer.RemoveActor(geo['actor'])
+
+        self.animate = True
+        if children:
+            self.geometrytree.setCurrentItem(children[0])
+        else:
+            i = self.geometrytree.topLevelItemCount() - 1
+            item = self.geometrytree.topLevelItem(i)
+            self.geometrytree.setCurrentItem(item)
 
         self.render()
 
