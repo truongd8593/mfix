@@ -1278,5 +1278,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.update_solids_detail_pane()
         self.solids_current_tab = 0
         ui.toolbutton_solids_add.setEnabled(True)
+        self.solids_nscalar_eq = 0
+        self.nscalar_eq = self.fluid_nscalar_eq
         self.solids_change_tab(0, ui.pushbutton_solids_materials)
         # TODO (?)  reset THERMO_DATA ?

@@ -528,10 +528,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.change_pane("model setup") # Default pane
 
-        # ---- parameters which do not map neatly to keywords
-        self.fluid_nscalar_eq = 0
-        self.solids_nscalar_eq = 0 # Infer these from phase4scalar
-
         # Defaults - see __init__
         self.solver_name = None
         self.fluid_solver_disabled = False  # TODO: infer at load time
@@ -551,6 +547,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.reset_pss()
         self.reset_chemistry()
 
+        self.nscalar_eq = 0
         self.saved_ro_g0 = None # hack
 
         # Set all custom widgets to default

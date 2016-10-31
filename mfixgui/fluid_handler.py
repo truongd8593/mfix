@@ -73,6 +73,8 @@ class FluidHandler(SpeciesHandler):
         ui = self.ui.fluid
 
         ui.lineedit_fluid_phase_name.default_value = self.fluid_phase_name = "Fluid"
+        self.fluid_nscalar_eq = 0
+
         self.init_fluid_default_models()
         # Handle a number of cases which are essentially the same
         # see 'set_fluid_mol_weight_model' below to help understand this
@@ -380,7 +382,8 @@ class FluidHandler(SpeciesHandler):
         self.fluid_phase_name = 'Fluid'
         self.fluid_species.clear()
         self.init_fluid_default_models()
-
+        self.fluid_nscalar_eq = 0
+        self.nscalar_eq = self.solids_nscalar_eq
 
 
 #Fluid phase Task Pane Window: (unavailable if fluid phase was disable)
