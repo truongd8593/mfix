@@ -17,6 +17,9 @@
    <property name="styleSheet">
     <string notr="true">QWidget#widget_main{
 	background-color: #E0E0E0;
+        }
+QFrame {
+        border-style: none;
 }
 QFrame#frame_mode_bar{
 	background-color: #BDBDBD;
