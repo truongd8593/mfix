@@ -44,6 +44,17 @@ CELL_TYPE_ENUM = {
     36: 'quadratic_polygon',
     }
 
+# Implicits
+IMPLICIT_DICT = OrderedDict([
+    ('sphere',        vtk.vtkSphere),
+    ('box',           vtk.vtkBox),
+    ('cylinder',      vtk.vtkCylinder),
+    ('cone',          vtk.vtkCone),
+    ('plane',         vtk.vtkPlane),
+    ('quadric',       vtk.vtkQuadric),
+    ('super_quadric', vtk.vtkSuperquadric),
+    ])
+
 # Primitives
 PRIMITIVE_DICT = OrderedDict([
     ('sphere',   vtk.vtkSphereSource),

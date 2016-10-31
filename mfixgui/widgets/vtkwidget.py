@@ -366,17 +366,34 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.add_geometry_menu.addSeparator()
 
-        for geo in PRIMITIVE_DICT.keys():
-            action = QtWidgets.QAction(geo, self.add_geometry_menu)
-            action.triggered.connect(partial(self.add_primitive, primtype=geo))
+        # --- implicit functions ---
+        for geo in IMPLICIT_DICT.keys():
+            action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
+            action.triggered.connect(partial(self.add_implicit, primtype=geo))
             self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
 
+        # --- primitives ---
+        p_menu = self.add_geometry_primitive = QtWidgets.QMenu(self)
+        p_menu.setTitle('Primitives')
+        p_menu.setIcon(get_icon('geometry.png'))
+        a = self.add_geometry_menu.addMenu(p_menu)
+        a.setIconVisibleInMenu(True)
+        for geo in PRIMITIVE_DICT.keys():
+            action = QtWidgets.QAction(geo, p_menu)
+            action.triggered.connect(partial(self.add_primitive, primtype=geo))
+            p_menu.addAction(action)
+
+        # --- parametric ---
+        p_menu = self.add_geometry_parametric = QtWidgets.QMenu(self)
+        p_menu.setTitle('Parametrics')
+        self.add_geometry_menu.addMenu(p_menu)
         for geo in PARAMETRIC_DICT.keys():
-            action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
+            action = QtWidgets.QAction(geo.replace('_', ' '), p_menu)
             action.triggered.connect(partial(self.add_parametric, paramtype=geo))
-            self.add_geometry_menu.addAction(action)
+            p_menu.addAction(action)
+
 
         # --- filter button ---
         self.add_filter_menu = QtWidgets.QMenu(self)
@@ -1045,6 +1062,10 @@ class VtkWidget(QtWidgets.QWidget):
 
         return name
 
+    def add_implicit(self, name):
+        """Add an implicit function"""
+        pass
+
     def update_parametric(self, name):
         """Update the specified parameteric object."""
         geo = self.geometrydict.get(name)
@@ -1081,7 +1102,7 @@ class VtkWidget(QtWidgets.QWidget):
             para_object.SetHillAmplitude(safe_float(geo['amplitude']))
             para_object.SetAmplitudeScaleFactor(safe_float(geo['scaleamplitude']))
             para_object.SetNumberOfHills(safe_int(geo['nhills']))
-            para_object.SetAllowRandomGenerationOn(safe_int(geo['allowrandom']))
+            para_object.SetAllowRandomGeneration(safe_int(geo['allowrandom']))
         elif paratype == 'roman':
             para_object.SetRadius(safe_float(geo['radius']))
         elif paratype == 'super_ellipsoid':
