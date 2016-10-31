@@ -706,10 +706,11 @@ class Chemistry(object):
                                   'chem_eq': ''}
 
         self.project.reactions[name] = self.working_reaction
-        self.setup_chemistry()
-        # Auto-select new reaction
+        self.setup_chemistry() # adds row to table
         tw = ui.tablewidget_reactions
-        tw.setCurrentCell(tw.rowCount()-1, COL_RXN_NAME)
+        row = tw.rowCount()-1
+        tw.cellWidget(row, COL_ENABLE).setChecked(True) #Enable new reaction
+        tw.setCurrentCell(row, COL_RXN_NAME) # and select it
         self.reaction_edited = True
         self.chemistry_update_buttons()
 
@@ -948,7 +949,7 @@ class Chemistry(object):
 
         tw.setRowCount(len(self.project.reactions))
         for row, (name, data) in enumerate(self.project.reactions.items()):
-            chem_eq = data.get('chem_eq')
+            chem_eq = data.get('chem_eq', '')
             enabled = bool(chem_eq and chem_eq.upper()!='NONE')
             item = QCheckBox()
             item.setChecked(enabled)
@@ -960,9 +961,8 @@ class Chemistry(object):
             tw.setItem(row, COL_RXN_NAME, item)
 
             if not enabled:
-                chem_eq = self.disabled_reactions.get(name)
-            if chem_eq is None:
-                text = ''
+                chem_eq = self.disabled_reactions.get(name, '')
+
             text = chem_eq.replace('==', '→')
             text = text.replace('-->', '→')
             item = make_item(text)
