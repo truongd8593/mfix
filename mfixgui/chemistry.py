@@ -962,7 +962,7 @@ class Chemistry(object):
             if not enabled:
                 chem_eq = self.disabled_reactions.get(name)
             if chem_eq is None:
-                continue
+                text = ''
             text = chem_eq.replace('==', '→')
             text = text.replace('-->', '→')
             item = make_item(text)
