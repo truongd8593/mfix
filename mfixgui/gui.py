@@ -156,8 +156,10 @@ class MfixGui(QtWidgets.QMainWindow,
         LineEdit.report_value_error = self.popup_value_error
 
         self.setWindowIcon(get_icon('mfix.png'))
+
         self.message_box = None # for tests to access
         # Initialize data members - make sure these values match 'reset'!
+
         self.solver_name = None
         self.fluid_solver_disabled = False
         self.mfix_exe = None
@@ -171,7 +173,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # Hack -remove these once better 'restore value' framework exists
         self.saved_ro_g0 = None
 
-        # load ui file
+        # load UI
+
         self.customWidgets = {'LineEdit':      LineEdit,
                               'CheckBox':      CheckBox,
                               'ComboBox':      ComboBox,
@@ -180,10 +183,10 @@ class MfixGui(QtWidgets.QMainWindow,
                               'Table':         Table,
                               }
 
-        if PRECOMPILE_UI:
+        if PRECOMPILE_UI: # Slightly faster startup (?)
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
-            self.ui.panes = [] # Convenience
+            self.ui.panes = []
             def make_widget(cls):
                 # Create an instance of a new class which is a subclass
                 # of QWidget and the specified class
@@ -221,10 +224,10 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
                 self.ui.panes.append(widget)
 
-        else:  # not precompiled
+        else:  # not precompiled - for developers
             uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
             self.ui = uic.loadUi(os.path.join(uifiles, 'gui.ui'))
-            self.ui.panes = [] # Convenience
+            self.ui.panes = []
             self.setCentralWidget(self.ui)
             assert self is not self.ui
 
@@ -548,6 +551,8 @@ class MfixGui(QtWidgets.QMainWindow,
         self.reset_pss()
         self.reset_chemistry()
 
+        self.saved_ro_g0 = None # hack
+
         # Set all custom widgets to default
         for w in widget_iter(self):
             if isinstance(w, BaseWidget):
@@ -589,7 +594,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def set_keyword(self, key, value, args=None):
-        """convenience function to set keyword"""
+        """set_keyword(key, value, args)
+             sets key(args) = value and updates GUI state.
+             Always use this function,
+             do not assign to keyword object directly """
         self.set_unsaved_flag()
         self.project.submit_change(None, {key:value}, args)
 
