@@ -50,10 +50,26 @@ IMPLICIT_DICT = OrderedDict([
     ('box',           vtk.vtkBox),
     ('cylinder',      vtk.vtkCylinder),
     ('cone',          vtk.vtkCone),
-    ('plane',         vtk.vtkPlane),
     ('quadric',       vtk.vtkQuadric),
     ('super_quadric', vtk.vtkSuperquadric),
     ])
+
+DEFAULT_IMPLICIT_PARAMS = {
+    'centerx':   0.0,
+    'centery':   0.0,
+    'centerz':   0.0,
+    'rotationx': 0.0,
+    'rotationy': 0.0,
+    'rotationz': 0.0,
+    'radius':    1.0,
+    'lengthx':   1.0,
+    'lengthy':   1.0,
+    'lengthz':   1.0,
+    'height':    1.0,
+    'angle':     45.0,
+    'geo_type':  'implicit',
+    'type':      '',
+    }
 
 # Primitives
 PRIMITIVE_DICT = OrderedDict([

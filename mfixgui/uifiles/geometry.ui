@@ -14,16 +14,7 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <property name="leftMargin">
-    <number>5</number>
-   </property>
-   <property name="topMargin">
-    <number>5</number>
-   </property>
-   <property name="rightMargin">
-    <number>5</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>5</number>
    </property>
    <item>
@@ -169,22 +160,13 @@
          <enum>QFrame::NoFrame</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
+         <enum>QFrame::Raised</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <property name="spacing">
           <number>0</number>
          </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>0</number>
          </property>
          <item>
@@ -258,16 +240,7 @@
        <property name="spacing">
         <number>5</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -282,16 +255,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -520,21 +484,12 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>20</number>
+          <number>8</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
           <layout class="QGridLayout" name="gridLayout_3">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -614,16 +569,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -663,16 +609,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -689,18 +626,58 @@ background-color: transparent;
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="sphere_implicit">
+          <layout class="QGridLayout" name="gridLayout_13">
+           <item row="0" column="1" colspan="2">
+            <widget class="LineEdit" name="lineedit_sphere_implicit_center_x"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_30">
+             <property name="text">
+              <string>Center</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_sphere_implicit_center_y"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_31">
+             <property name="text">
+              <string>Radius</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" colspan="4">
+            <widget class="LineEdit" name="lineedit_sphere_implicit_radius"/>
+           </item>
+           <item row="0" column="4">
+            <widget class="LineEdit" name="lineedit_sphere_implicit_center_z"/>
+           </item>
+           <item row="2" column="1">
+            <spacer name="verticalSpacer_10">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="box">
           <layout class="QGridLayout" name="gridLayout_6">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -718,16 +695,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -787,16 +755,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -833,16 +792,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -859,18 +809,80 @@ background-color: transparent;
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="box_implicit">
+          <layout class="QGridLayout" name="gridLayout_14">
+           <item row="2" column="3">
+            <widget class="LineEdit" name="lineedit_box_implicit_length_y"/>
+           </item>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_box_implicit_center_y"/>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="label_33">
+             <property name="text">
+              <string>Length</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_32">
+             <property name="text">
+              <string>Center</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="4">
+            <widget class="LineEdit" name="lineedit_box_implicit_length_z"/>
+           </item>
+           <item row="0" column="4">
+            <widget class="LineEdit" name="lineedit_box_implicit_center_z"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_box_implicit_center_x"/>
+           </item>
+           <item row="3" column="3">
+            <spacer name="verticalSpacer_14">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="2">
+            <widget class="LineEdit" name="lineedit_box_implicit_length_x"/>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_x"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="label_41">
+             <property name="text">
+              <string>Rotation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_y"/>
+           </item>
+           <item row="1" column="4">
+            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_z"/>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="cone">
           <layout class="QGridLayout" name="gridLayout_5">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -960,16 +972,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -996,16 +999,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1042,16 +1036,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1068,18 +1053,87 @@ background-color: transparent;
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="cone_implicit">
+          <layout class="QGridLayout" name="gridLayout_17">
+           <item row="3" column="1" colspan="3">
+            <widget class="LineEdit" name="lineedit_cone_implicit_angle"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_39">
+             <property name="text">
+              <string>Center</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_cone_implicit_center_z"/>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_38">
+             <property name="text">
+              <string>Angle</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_cone_implicit_center_y"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="LineEdit" name="lineedit_cone_implicit_center_x"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_34">
+             <property name="text">
+              <string>Height</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <spacer name="verticalSpacer_17">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="1" colspan="3">
+            <widget class="LineEdit" name="lineedit_cone_implicit_height"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_40">
+             <property name="text">
+              <string>Rotation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_x"/>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_y"/>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_z"/>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="cylinder">
           <layout class="QGridLayout" name="gridLayout_4">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1159,16 +1213,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1205,16 +1250,7 @@ background-color: transparent;
               <property name="spacing">
                <number>5</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1231,18 +1267,84 @@ background-color: transparent;
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="cylinder_implicit">
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="0" column="4">
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_center_z"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_37">
+             <property name="text">
+              <string>Center</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_35">
+             <property name="text">
+              <string>Radius</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="4">
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_height"/>
+           </item>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_center_y"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_36">
+             <property name="text">
+              <string>Height</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" colspan="2">
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_center_x"/>
+           </item>
+           <item row="3" column="1" colspan="4">
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_radius"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_42">
+             <property name="text">
+              <string>Rotation</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_y"/>
+           </item>
+           <item row="1" column="1" colspan="2">
+            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_x"/>
+           </item>
+           <item row="4" column="1" colspan="4">
+            <spacer name="verticalSpacer_16">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="4">
+            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_z"/>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="torus">
           <layout class="QGridLayout" name="gridLayout_8">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1329,16 +1431,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="boy">
           <layout class="QGridLayout" name="gridLayout_9">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1412,16 +1505,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="conic_spiral">
           <layout class="QGridLayout" name="gridLayout_10">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1534,16 +1618,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="cross_cap">
           <layout class="QGridLayout" name="gridLayout_33">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1604,16 +1679,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="dini">
           <layout class="QGridLayout" name="gridLayout_37">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1700,16 +1766,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="ellipsoid">
           <layout class="QGridLayout" name="gridLayout_38">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1789,16 +1846,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="enneper">
           <layout class="QGridLayout" name="gridLayout_39">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1859,16 +1907,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="figure_8_klein">
           <layout class="QGridLayout" name="gridLayout_40">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -1942,16 +1981,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="klein">
           <layout class="QGridLayout" name="gridLayout_41">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2012,16 +2042,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="mobius">
           <layout class="QGridLayout" name="gridLayout_42">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2095,16 +2116,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="random_hills">
           <layout class="QGridLayout" name="gridLayout_43">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2263,16 +2275,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="roman">
           <layout class="QGridLayout" name="gridLayout_44">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2346,16 +2349,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="super_ellipsoid">
           <layout class="QGridLayout" name="gridLayout_45">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2461,16 +2455,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="super_toroid">
           <layout class="QGridLayout" name="gridLayout_46">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2602,16 +2587,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="stl">
           <layout class="QGridLayout" name="gridLayout_11">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2828,16 +2804,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="transform">
           <layout class="QGridLayout" name="gridLayout_15">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2914,16 +2881,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="clean">
           <layout class="QGridLayout" name="gridLayout_26">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -2967,16 +2925,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="fill_holes">
           <layout class="QGridLayout" name="gridLayout_24">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3012,16 +2961,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="triangle">
           <layout class="QGridLayout" name="gridLayout_27">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3064,16 +3004,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="decimate">
           <layout class="QGridLayout" name="gridLayout_28">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3130,16 +3061,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="quadric_decimation">
           <layout class="QGridLayout" name="gridLayout_29">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3175,16 +3097,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="quadric_clustering">
           <layout class="QGridLayout" name="gridLayout_30">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3236,16 +3149,7 @@ background-color: transparent;
          <widget class="QWidget" name="butterfly_subdivision"/>
          <widget class="QWidget" name="smooth">
           <layout class="QGridLayout" name="gridLayout_2">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3325,16 +3229,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="windowed_sinc">
           <layout class="QGridLayout" name="gridLayout">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -3459,16 +3354,7 @@ background-color: transparent;
          </widget>
          <widget class="QWidget" name="boolean">
           <layout class="QGridLayout" name="gridLayout_31">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>0</number>
            </property>
            <property name="spacing">

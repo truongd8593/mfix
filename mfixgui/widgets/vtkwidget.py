@@ -362,6 +362,8 @@ class VtkWidget(QtWidgets.QWidget):
 
         action = QtWidgets.QAction('STL File', self.add_geometry_menu)
         action.triggered.connect(self.add_stl)
+        action.setIcon(get_icon('geometry.png'))
+        action.setIconVisibleInMenu(True)
         self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
@@ -369,7 +371,9 @@ class VtkWidget(QtWidgets.QWidget):
         # --- implicit functions ---
         for geo in IMPLICIT_DICT.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
-            action.triggered.connect(partial(self.add_implicit, primtype=geo))
+            action.triggered.connect(partial(self.add_implicit, implicittype=geo))
+            action.setIcon(get_icon('function.png'))
+            action.setIconVisibleInMenu(True)
             self.add_geometry_menu.addAction(action)
 
         self.add_geometry_menu.addSeparator()
@@ -383,15 +387,21 @@ class VtkWidget(QtWidgets.QWidget):
         for geo in PRIMITIVE_DICT.keys():
             action = QtWidgets.QAction(geo, p_menu)
             action.triggered.connect(partial(self.add_primitive, primtype=geo))
+            action.setIcon(get_icon('geometry.png'))
+            action.setIconVisibleInMenu(True)
             p_menu.addAction(action)
 
         # --- parametric ---
         p_menu = self.add_geometry_parametric = QtWidgets.QMenu(self)
         p_menu.setTitle('Parametrics')
-        self.add_geometry_menu.addMenu(p_menu)
+        p_menu.setIcon(get_icon('geometry.png'))
+        a = self.add_geometry_menu.addMenu(p_menu)
+        a.setIconVisibleInMenu(True)
         for geo in PARAMETRIC_DICT.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '), p_menu)
             action.triggered.connect(partial(self.add_parametric, paramtype=geo))
+            action.setIcon(get_icon('geometry.png'))
+            action.setIconVisibleInMenu(True)
             p_menu.addAction(action)
 
 
@@ -400,9 +410,10 @@ class VtkWidget(QtWidgets.QWidget):
         self.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
         for geo in FILTER_DICT.keys():
-            action = QtWidgets.QAction(geo.replace('_', ' '),
-                                       self.add_filter_menu)
+            action = QtWidgets.QAction(geo.replace('_', ' '), self.add_filter_menu)
             action.triggered.connect(partial(self.add_filter, filtertype=geo))
+            action.setIcon(get_icon('filter.png'))
+            action.setIconVisibleInMenu(True)
             self.add_filter_menu.addAction(action)
 
         # setup signals
@@ -715,12 +726,16 @@ class VtkWidget(QtWidgets.QWidget):
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
             data = self.geometrydict.get(text)
+            type_ = data['type']
+            geo_type = data.get('geo_type', None)
+            if geo_type == 'implicit':
+                type_ += '_implicit'
 
             new_index = 0
             for i in range(
                     self.ui.geometry.stackedWidgetGeometryDetails.count()):
                 widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(i)
-                if str(widget.objectName()) == data['type']:
+                if str(widget.objectName()) == type_:
                     new_index = i
                     break
 
@@ -856,6 +871,7 @@ class VtkWidget(QtWidgets.QWidget):
 
             # Add to tree
             item = QtWidgets.QTreeWidgetItem([name])
+            item.setIcon(0, get_icon('geometry.png'))
             item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
             item.setCheckState(0, QtCore.Qt.Checked)
             self.geometrytree.addTopLevelItem(item)
@@ -895,16 +911,19 @@ class VtkWidget(QtWidgets.QWidget):
         if value is not None:
             self.update_parameter_map(value, name, key)
             geo_data[key] = value
-            geo_type = geo_data['type']
+            type_ = geo_data['type']
+            geo_type = geo_data.get('geo_type')
 
-            if geo_type in list(PRIMITIVE_DICT.keys()):
+            if type_ in PRIMITIVE_DICT and geo_type == 'primitive':
                 self.update_primitive(name)
-            elif geo_type in list(FILTER_DICT.keys()):
+            elif type_ in FILTER_DICT:
                 self.update_filter(name)
-            elif geo_type in list(PARAMETRIC_DICT.keys()):
+            elif type_ in PARAMETRIC_DICT:
                 self.update_parametric(name)
+            elif type_ in IMPLICIT_DICT:
+                self.update_implicit(name)
 
-            if 'transform' in geo_data and not 'filter' == geo_data.get('geo_type'):
+            if 'transform' in geo_data and not geo_type in ['filter', 'implicit']:
                 self.update_transform(name)
             self.render()
 
@@ -1052,6 +1071,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # Add to tree
         item = QtWidgets.QTreeWidgetItem([name])
+        item.setIcon(0, get_icon('geometry.png'))
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
@@ -1062,9 +1082,168 @@ class VtkWidget(QtWidgets.QWidget):
 
         return name
 
-    def add_implicit(self, name):
+    def update_implicit(self, name):
+        """update the implicit function"""
+        implicittype = self.geometrydict[name]['type']
+        geo = self.geometrydict.get(name)
+
+        source = geo.get('source', None)
+        sample = geo.get('sample', None)
+        surface = geo.get('surface', None)
+        transform = geo.get('transform', None)
+
+        x, y, z = safe_float(geo['centerx']), safe_float(geo['centery']), safe_float(geo['centerz'])
+        r = safe_float(geo['radius'])
+        h = safe_float(geo['height'])
+
+        # update transform
+        if transform:
+            # reset to Identity
+            transform.Identity()
+            transform.PostMultiply()
+
+            # translate to center
+            transform.Translate(-x, -y, -z)
+
+            # rotation
+            transform.RotateWXYZ(safe_float(geo['rotationx']), 1, 0, 0)
+            transform.RotateWXYZ(safe_float(geo['rotationy']), 0, 1, 0)
+            transform.RotateWXYZ(safe_float(geo['rotationz']), 0, 0, 1)
+
+            # back to position
+            transform.Translate(x, y, z)
+
+        # update source
+        bounds = [0.0]*6
+        if implicittype == 'sphere':
+            source.SetRadius(r)
+            bounds = [x-r, x+r, y-r, y+r, z-r, z+r]
+        elif implicittype == 'box':
+            dx = safe_float(geo['lengthx'])
+            dy = safe_float(geo['lengthy'])
+            dz = safe_float(geo['lengthz'])
+            bounds = [0, dx, 0, dy, 0, dz]
+            source.SetBounds(*bounds)
+        elif implicittype == 'cone':
+            angle = safe_float(geo['angle'])
+            geo['cone_source'].SetAngle(angle)
+            r = np.tan(np.deg2rad(angle))*h
+            geo['plane1'].SetOrigin(h, 0, 0)
+            geo['plane1'].SetNormal(-1, 0, 0)
+            geo['plane2'].SetOrigin(0, 0, 0)
+            geo['plane2'].SetNormal(1, 0, 0)
+            bounds = [0, h, -r, r, -r, r]
+        elif implicittype == 'cylinder':
+            geo['cylinder_source'].SetRadius(r)
+            geo['plane1'].SetOrigin(x, y + h/2, z)
+            geo['plane1'].SetNormal(0, -1, 0)
+            geo['plane2'].SetOrigin(x, y - h/2, z)
+            geo['plane2'].SetNormal(0, 1, 0)
+            bounds = [x-r, x+r, y-h/2, y+h/2, z-r, z+r]
+        else:
+            return
+
+        # common props
+        if source is not None and hasattr(source, 'SetCenter'):
+            source.SetCenter(x, y, z)
+
+        if source is not None and hasattr(source, 'Update'):
+            source.Update()
+
+        if sample:
+            sample.SetModelBounds(*bounds)
+            sample.SetSampleDimensions(20, 20, 20)
+            sample.Update()
+
+        if surface:
+            surface.Update()
+
+    def add_implicit(self, implicittype, name=None, data=None, loading=False):
         """Add an implicit function"""
-        pass
+
+        if name is None:
+            name = get_unique_string(implicittype, list(self.geometrydict.keys()))
+
+        # create implicit
+        if data is not None:
+            implicittype = data['type']
+        if implicittype in IMPLICIT_DICT:
+            source = IMPLICIT_DICT[implicittype]()
+        else:
+            return
+
+        if data is None:
+            self.geometrydict[name] = copy.deepcopy(DEFAULT_IMPLICIT_PARAMS)
+            self.geometrydict[name]['type'] = implicittype
+        else:
+            self.geometrydict[name] = data
+        geo = self.geometrydict.get(name)
+
+        # transform
+        transform = vtk.vtkTransform()
+        source.SetTransform(transform)
+
+        if implicittype == 'cylinder':
+            boolean = vtk.vtkImplicitBoolean()
+            boolean.SetOperationTypeToDifference()
+            boolean.AddFunction(source)
+            geo['cylinder_source'] = source
+            p1 = geo['plane1'] = vtk.vtkPlane()
+            boolean.AddFunction(p1)
+            p2 = geo['plane2'] = vtk.vtkPlane()
+            boolean.AddFunction(p2)
+            source = boolean
+        elif implicittype == 'cone':
+            boolean = vtk.vtkImplicitBoolean()
+            boolean.SetOperationTypeToDifference()
+            boolean.AddFunction(source)
+            geo['cone_source'] = source
+            p1 = geo['plane1'] = vtk.vtkPlane()
+            boolean.AddFunction(p1)
+            p2 = geo['plane2'] = vtk.vtkPlane()
+            boolean.AddFunction(p2)
+            source = boolean
+
+        sample = vtk.vtkSampleFunction()
+        sample.SetSampleDimensions(20, 20, 20)
+        sample.SetImplicitFunction(source)
+        sample.ComputeNormalsOff()
+
+        # contour
+        surface = vtk.vtkContourFilter()
+        surface.SetInputConnection(sample.GetOutputPort())
+        surface.SetValue(0, 0.0)
+
+        geo['source'] = source
+        geo['sample'] = sample
+        geo['surface'] = surface
+        geo['transform'] = transform
+
+        self.update_implicit(name)
+
+        # Create a mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(surface.GetOutputPort())
+        mapper.ScalarVisibilityOff()
+
+        # Create an actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        self.set_geometry_actor_props(actor, name)
+        self.vtkrenderer.AddActor(actor)
+        self.render()
+
+        geo['mapper'] = mapper
+        geo['actor'] = actor
+
+        # Add to tree
+        item = QtWidgets.QTreeWidgetItem([name])
+        item.setIcon(0, get_icon('function.png'))
+        item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+        item.setCheckState(0, QtCore.Qt.Checked)
+        self.geometrytree.addTopLevelItem(item)
+        self.geometrytree.setCurrentItem(item)
 
     def update_parametric(self, name):
         """Update the specified parameteric object."""
@@ -1186,6 +1365,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # Add to tree
         item = QtWidgets.QTreeWidgetItem([name])
+        item.setIcon(0, get_icon('geometry.png'))
         item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
@@ -1224,10 +1404,13 @@ class VtkWidget(QtWidgets.QWidget):
 
         if booltype == 'union':
             boolean_operation.SetOperationToUnion()
+            icon = 'union'
         elif booltype == 'intersection':
             boolean_operation.SetOperationToIntersection()
+            icon = 'intersect'
         else:
             boolean_operation.SetOperationToDifference()
+            icon = 'difference'
 
         for i, selection in enumerate(current_selection):
             name = str(selection.text(0)).lower()
@@ -1263,6 +1446,7 @@ class VtkWidget(QtWidgets.QWidget):
 
         # Add to tree
         toplevel = QtWidgets.QTreeWidgetItem([boolname])
+        toplevel.setIcon(0, get_icon(icon+'.png'))
         toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
         toplevel.setCheckState(0, QtCore.Qt.Checked)
 
@@ -1506,6 +1690,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.animate = False
         # Add to tree
         toplevel = QtWidgets.QTreeWidgetItem([name])
+        toplevel.setIcon(0, get_icon('filter.png'))
         toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
         toplevel.setCheckState(0, QtCore.Qt.Checked)
 
