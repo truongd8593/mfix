@@ -223,6 +223,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree = self.ui.geometry.treeWidgetGeometry
 
         # --- data ---
+        self.animate = True
         self.geometrydict = {}
         self.defer_render = False
         self.region_dict = {}
@@ -698,15 +699,15 @@ class VtkWidget(QtWidgets.QWidget):
             text = str(current_selection[-1].text(0)).lower()
             data = self.geometrydict.get(text)
 
-            current_index = 0
+            new_index = 0
             for i in range(
                     self.ui.geometry.stackedWidgetGeometryDetails.count()):
                 widget = self.ui.geometry.stackedWidgetGeometryDetails.widget(i)
                 if str(widget.objectName()) == data['type']:
-                    current_index = i
+                    new_index = i
                     break
 
-            # set the widget parameters
+            # set the widget values
             for child in widget_iter(widget):
                 name = str(child.objectName()).lower().replace('_', '')
                 for key, value in data.items():
@@ -721,18 +722,20 @@ class VtkWidget(QtWidgets.QWidget):
             self.ui.geometry.groupBoxGeometryParameters.setTitle(text)
 
         else:
-            current_index = 0
-
+            new_index = 0
             self.ui.geometry.groupBoxGeometryParameters.setTitle('Parameters')
             self.ui.geometry.toolbutton_remove_geometry.setEnabled(False)
 
 
-        self.parent.animate_stacked_widget(
-            self.ui.geometry.stackedWidgetGeometryDetails,
-            self.ui.geometry.stackedWidgetGeometryDetails.currentIndex(),
-            current_index,
-            'horizontal',
-            )
+        current_index = self.ui.geometry.stackedWidgetGeometryDetails.currentIndex()
+
+        if self.animate:
+            self.parent.animate_stacked_widget(
+                self.ui.geometry.stackedWidgetGeometryDetails,
+                current_index,
+                new_index,
+                'horizontal',
+                )
 
     def get_tree_item(self, name):
         """return the tree item with name"""
@@ -1469,6 +1472,8 @@ class VtkWidget(QtWidgets.QWidget):
         geo['actor'] = actor
         geo['mapper'] = mapper
 
+
+        self.animate = False
         # Add to tree
         toplevel = QtWidgets.QTreeWidgetItem([name])
         toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
@@ -1482,6 +1487,7 @@ class VtkWidget(QtWidgets.QWidget):
             toplevel.addChild(item)
 
         self.geometrytree.addTopLevelItem(toplevel)
+        self.animate = True
         self.geometrytree.setCurrentItem(toplevel)
 
         if not loading:
