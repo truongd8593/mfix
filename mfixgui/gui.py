@@ -1329,10 +1329,8 @@ class MfixGui(QtWidgets.QMainWindow,
                         line_to = i
                         break
 
-        # animation group FIXME why 2 callbacks?
-        self.stack_animation.finished.connect(lambda: self.animate_stacked_widget_finished(
-            stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
-
+        # animation group
+        # call back for when the animation is finsished/canceled.
         self.stack_animation.stateChanged.connect(lambda: self.animate_stacked_widget_finished(
             stackedwidget, from_, to, btn_layout, to_btn, line, line_to))
 
