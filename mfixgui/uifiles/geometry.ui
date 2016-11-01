@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>8</number>
+          <number>6</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -863,7 +863,7 @@ background-color: transparent;
             <widget class="LineEdit" name="lineedit_box_implicit_length_x"/>
            </item>
            <item row="1" column="2">
-            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_x"/>
+            <widget class="LineEdit" name="lineedit_box_implicit_rotation_x"/>
            </item>
            <item row="1" column="1">
             <widget class="QLabel" name="label_41">
@@ -873,10 +873,10 @@ background-color: transparent;
             </widget>
            </item>
            <item row="1" column="3">
-            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_y"/>
+            <widget class="LineEdit" name="lineedit_box_implicit_rotation_y"/>
            </item>
            <item row="1" column="4">
-            <widget class="QLineEdit" name="lineedit_box_implicit_rotation_z"/>
+            <widget class="LineEdit" name="lineedit_box_implicit_rotation_z"/>
            </item>
           </layout>
          </widget>
@@ -1056,7 +1056,7 @@ background-color: transparent;
          <widget class="QWidget" name="cone_implicit">
           <layout class="QGridLayout" name="gridLayout_17">
            <item row="3" column="1" colspan="3">
-            <widget class="LineEdit" name="lineedit_cone_implicit_angle"/>
+            <widget class="LineEdit" name="lineedit_cone_implicit_radius"/>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_39">
@@ -1074,7 +1074,7 @@ background-color: transparent;
            <item row="3" column="0">
             <widget class="QLabel" name="label_38">
              <property name="text">
-              <string>Angle</string>
+              <string>Radius</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1121,13 +1121,13 @@ background-color: transparent;
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_x"/>
+            <widget class="LineEdit" name="lineedit_cone_implicit_rotation_x"/>
            </item>
            <item row="1" column="2">
-            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_y"/>
+            <widget class="LineEdit" name="lineedit_cone_implicit_rotation_y"/>
            </item>
            <item row="1" column="3">
-            <widget class="QLineEdit" name="lineedit_cone_implicit_rotation_z"/>
+            <widget class="LineEdit" name="lineedit_cone_implicit_rotation_z"/>
            </item>
           </layout>
          </widget>
@@ -1319,10 +1319,10 @@ background-color: transparent;
             </widget>
            </item>
            <item row="1" column="3">
-            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_y"/>
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_rotation_y"/>
            </item>
            <item row="1" column="1" colspan="2">
-            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_x"/>
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_rotation_x"/>
            </item>
            <item row="4" column="1" colspan="4">
             <spacer name="verticalSpacer_16">
@@ -1338,7 +1338,7 @@ background-color: transparent;
             </spacer>
            </item>
            <item row="1" column="4">
-            <widget class="QLineEdit" name="lineedit_cylinder_implicit_rotation_z"/>
+            <widget class="LineEdit" name="lineedit_cylinder_implicit_rotation_z"/>
            </item>
           </layout>
          </widget>

@@ -66,7 +66,6 @@ DEFAULT_IMPLICIT_PARAMS = {
     'lengthy':   1.0,
     'lengthz':   1.0,
     'height':    1.0,
-    'angle':     45.0,
     'geo_type':  'implicit',
     'type':      '',
     }

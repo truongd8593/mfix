@@ -981,6 +981,7 @@ class VtkWidget(QtWidgets.QWidget):
         # reset to Identity
         transform.Identity()
         transform.PostMultiply()
+        transform.PreMultiply()
 
         # translate to center
         transform.Translate(-safe_float(geo['centerx']),
@@ -1093,6 +1094,7 @@ class VtkWidget(QtWidgets.QWidget):
         transform = geo.get('transform', None)
 
         x, y, z = safe_float(geo['centerx']), safe_float(geo['centery']), safe_float(geo['centerz'])
+        rotx, roty, rotz = safe_float(geo['rotationx']), safe_float(geo['rotationy']), safe_float(geo['rotationz'])
         r = safe_float(geo['radius'])
         h = safe_float(geo['height'])
 
@@ -1106,9 +1108,9 @@ class VtkWidget(QtWidgets.QWidget):
             transform.Translate(-x, -y, -z)
 
             # rotation
-            transform.RotateWXYZ(safe_float(geo['rotationx']), 1, 0, 0)
-            transform.RotateWXYZ(safe_float(geo['rotationy']), 0, 1, 0)
-            transform.RotateWXYZ(safe_float(geo['rotationz']), 0, 0, 1)
+            transform.RotateWXYZ(rotx, 1, 0, 0)
+            transform.RotateWXYZ(roty, 0, 1, 0)
+            transform.RotateWXYZ(rotz, 0, 0, 1)
 
             # back to position
             transform.Translate(x, y, z)
@@ -1119,19 +1121,41 @@ class VtkWidget(QtWidgets.QWidget):
             source.SetRadius(r)
             bounds = [x-r, x+r, y-r, y+r, z-r, z+r]
         elif implicittype == 'box':
-            dx = safe_float(geo['lengthx'])
-            dy = safe_float(geo['lengthy'])
-            dz = safe_float(geo['lengthz'])
-            bounds = [0, dx, 0, dy, 0, dz]
-            source.SetBounds(*bounds)
+            dx = safe_float(geo['lengthx'])/2.0
+            dy = safe_float(geo['lengthy'])/2.0
+            dz = safe_float(geo['lengthz'])/2.0
+            source.SetBounds([-dx, dx, -dy, dy, -dz, dz])
+
+            zx = abs(dx/np.cos(np.deg2rad(rotz)))
+            zy = abs(dy/np.cos(np.deg2rad(rotz)))
+
+            yx = abs(dx/np.cos(np.deg2rad(roty)))
+            yz = abs(dz/np.cos(np.deg2rad(roty)))
+
+            xy = abs(dy/np.cos(np.deg2rad(rotx)))
+            xz = abs(dz/np.cos(np.deg2rad(rotx)))
+
+            ex = max(zx, yx)
+            ey = max(xy, zy)
+            ez = max(xz, yz)
+
+            bounds = [x-ex, x+ex, y-ey, y+ey, z-ez, z+ez]
+
         elif implicittype == 'cone':
-            angle = safe_float(geo['angle'])
+            angle = np.rad2deg(np.arctan(r/h))
             geo['cone_source'].SetAngle(angle)
-            r = np.tan(np.deg2rad(angle))*h
             geo['plane1'].SetOrigin(h, 0, 0)
             geo['plane1'].SetNormal(-1, 0, 0)
             geo['plane2'].SetOrigin(0, 0, 0)
             geo['plane2'].SetNormal(1, 0, 0)
+
+            c = np.sqrt(r**2 + h**2)
+
+            zx = abs(c*np.cos(np.rad2deg(rotz + angle)))
+
+            print(zx)
+
+
             bounds = [0, h, -r, r, -r, r]
         elif implicittype == 'cylinder':
             geo['cylinder_source'].SetRadius(r)
@@ -1139,7 +1163,7 @@ class VtkWidget(QtWidgets.QWidget):
             geo['plane1'].SetNormal(0, -1, 0)
             geo['plane2'].SetOrigin(x, y - h/2, z)
             geo['plane2'].SetNormal(0, 1, 0)
-            bounds = [x-r, x+r, y-h/2, y+h/2, z-r, z+r]
+            bounds = [-r, r, -h/2, h/2, -r, r]
         else:
             return
 
@@ -1189,8 +1213,10 @@ class VtkWidget(QtWidgets.QWidget):
             boolean.AddFunction(source)
             geo['cylinder_source'] = source
             p1 = geo['plane1'] = vtk.vtkPlane()
+            p1.SetTransform(transform)
             boolean.AddFunction(p1)
             p2 = geo['plane2'] = vtk.vtkPlane()
+            p2.SetTransform(transform)
             boolean.AddFunction(p2)
             source = boolean
         elif implicittype == 'cone':
@@ -1199,8 +1225,10 @@ class VtkWidget(QtWidgets.QWidget):
             boolean.AddFunction(source)
             geo['cone_source'] = source
             p1 = geo['plane1'] = vtk.vtkPlane()
+            p1.SetTransform(transform)
             boolean.AddFunction(p1)
             p2 = geo['plane2'] = vtk.vtkPlane()
+            p2.SetTransform(transform)
             boolean.AddFunction(p2)
             source = boolean
 
