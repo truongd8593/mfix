@@ -153,12 +153,6 @@ endif
 
 if PYTHON
 
-lib_LTLIBRARIES = libmfixsolver.la
-libmfixsolver_la_FCFLAGS = $(PYTHON_FCFLAGS)
-libmfixsolver_la_LIBADD = $(LIBMFIX)
-libmfixsolver_la_SOURCES = mfixsolver-f2pywrappers.F mfixsolver-f2pywrappers2.f mfixsolvermodule.c
-libmfixsolver_la_LDFLAGS = -avoid-version -module -shared -export-dynamic
-
 AM_FCFLAGS += $(patsubst %,-Xlinker -rpath=%, $(subst :, ,$(LD_LIBRARY_PATH)))
 
 pymfix_src = \
@@ -203,10 +197,12 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
+F2PY_FLAGS =
+
 if MPI
 AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
-PYTHON_FCFLAGS = $(FC_DEFINE)MPI
+F2PY_FLAGS += $(FC_DEFINE)MPI
 
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
 	MPICMD="$(MPICMD)" ${top_srcdir}/runtests.sh

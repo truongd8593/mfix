@@ -2,7 +2,6 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-LT_PREREQ([2.4])
 AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
 AC_CONFIG_AUX_DIR([../build-aux])
 
@@ -52,7 +51,6 @@ AM_CONDITIONAL([GNU], [$FC --version|grep GNU\ Fortran])
 AM_CONDITIONAL([INTEL], [$FC --version|grep ifort])
 AM_CONDITIONAL([IBM], [$FC --version|grep -i ibm])
 AM_CONDITIONAL([PGI], [$FC --version|grep Portland])
-LT_INIT
 
 # If pymfix support is enabled, require f2py to be in PATH and
 # add -fPIC to FCFLAGS and FFLAGS.
