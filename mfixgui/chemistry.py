@@ -284,15 +284,6 @@ class Chemistry(object):
             self.current_reaction_name = None
             self.working_reaction = None
 
-        # trim partly-defined reactions.  note, this causes runtime crashes, why?
-        #try:
-        #    tw.itemSelectionChanged.disconnect()
-        #    for row2 in range(tw.rowCount()-1, -1, -1): # We navigated away from a partly-defined reaction
-        #        if row2 != row and tw.item(row2, COL_CHEM_EQ).text() == '':
-        #            self.chemistry_delete_reaction(row2)
-        #finally:
-        #    tw.itemSelectionChanged.connect(self.chemistry_handle_selection)
-
         self.reaction_edited = False
         self.chemistry_update_detail_pane()
 
@@ -337,7 +328,7 @@ class Chemistry(object):
         def handle_phase(tw, cb, row, idx):
             ui = self.ui.chemistry
             # We have to replace the species widget
-            old_item = tw.cellWidget(row,  COL_SPECIES)
+            old_species_cb = tw.cellWidget(row,  COL_SPECIES)
             if self.working_reaction is None:
                 return
             reaction = self.working_reaction
@@ -346,8 +337,15 @@ class Chemistry(object):
             reaction[side][row][0] = species
             item = make_species_item(tw, row, idx, species)
             tw.setCellWidget(row, COL_SPECIES, item)
-            if old_item: # necessary?
-                old_item.disconnect()
+            if old_species_cbm: # necessary?
+                try:
+                    old_species_cb.activated.disconnect()
+                except:
+                    pass
+                try:
+                    old_species_cb.currentIndexChanged.disconnect()
+                except:
+                    pass
                 old_item.deleteLater()
             self.reaction_edited = True
             self.chemistry_restrict_phases()
@@ -725,8 +723,20 @@ class Chemistry(object):
                     w = tw.cellWidget(row, col)
                     if w:
                         #w.zombie = True
-                        w.disconnect()
+                        try:
+                            w.value_updated.disconnect()
+                        except:
+                            pass
+                        try:
+                            w.activated.disconnect()
+                        except:
+                            pass
+                        try:
+                            w.currentIndexChanged.disconnect()
+                        except:
+                            pass
                         tw.removeCellWidget(row, col)
+                        w.deleteLater()
             tw.clearContents()
             tw.setRowCount(0)
             self.fixup_chemistry_table(tw)
