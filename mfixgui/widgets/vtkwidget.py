@@ -1104,7 +1104,7 @@ class VtkWidget(QtWidgets.QWidget):
             transform.Identity()
             transform.PostMultiply()
 
-            # translate to center
+            # back to position
             transform.Translate(-x, -y, -z)
 
             # rotation
@@ -1112,15 +1112,11 @@ class VtkWidget(QtWidgets.QWidget):
             transform.RotateWXYZ(roty, 0, 1, 0)
             transform.RotateWXYZ(rotz, 0, 0, 1)
 
-            # back to position
-            transform.Translate(x, y, z)
-
-
         # update source
         bounds = [0.0]*6
         if implicittype == 'sphere':
             source.SetRadius(r)
-            bounds = [x-r, x+r, y-r, y+r, z-r, z+r]
+            bounds = [-r, r, -r, r, -r, r]
         elif implicittype == 'box':
             dx = safe_float(geo['lengthx'])/2.0
             dy = safe_float(geo['lengthy'])/2.0
@@ -1146,27 +1142,24 @@ class VtkWidget(QtWidgets.QWidget):
             return
 
         # common props
-        if source is not None and hasattr(source, 'SetCenter'):
-            source.SetCenter(x, y, z)
-
         if source is not None and hasattr(source, 'Update'):
             source.Update()
 
         if sample:
             # transform bounds
-            t_mat = transform.GetMatrix()
-
+            t_mat = transform.GetInverse().GetMatrix()
             bounds_list = []
             for dx in bounds[:2]:
                 for dy in bounds[2:4]:
                     for dz in bounds[4:]:
-                        bounds_list.append(t_mat.MultiplyPoint([dx, dy, dz, 1]))
+                        bounds_list.append(t_mat.MultiplyFloatPoint([dx, dy, dz, 1]))
 
             xs = [i[0] for i in bounds_list]
             ys = [i[1] for i in bounds_list]
             zs = [i[2] for i in bounds_list]
 
-            sample.SetModelBounds([min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)])
+            bounds = [min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)]
+            sample.SetModelBounds(*bounds)
             sample.SetSampleDimensions(20, 20, 20)
             sample.Update()
 
