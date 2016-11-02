@@ -366,17 +366,18 @@ class VtkWidget(QtWidgets.QWidget):
         action.setIconVisibleInMenu(True)
         self.add_geometry_menu.addAction(action)
 
-        self.add_geometry_menu.addSeparator()
-
         # --- implicit functions ---
+        p_menu = self.add_geometry_implicit = QtWidgets.QMenu(self)
+        p_menu.setTitle('Implicits')
+        p_menu.setIcon(get_icon('function.png'))
+        a = self.add_geometry_menu.addMenu(p_menu)
+        a.setIconVisibleInMenu(True)
         for geo in IMPLICIT_DICT.keys():
-            action = QtWidgets.QAction(geo.replace('_', ' '), self.add_geometry_menu)
+            action = QtWidgets.QAction(geo.replace('_', ' '), p_menu)
             action.triggered.connect(partial(self.add_implicit, implicittype=geo))
             action.setIcon(get_icon('function.png'))
             action.setIconVisibleInMenu(True)
-            self.add_geometry_menu.addAction(action)
-
-        self.add_geometry_menu.addSeparator()
+            p_menu.addAction(action)
 
         # --- primitives ---
         p_menu = self.add_geometry_primitive = QtWidgets.QMenu(self)
@@ -432,7 +433,7 @@ class VtkWidget(QtWidgets.QWidget):
             if isinstance(widget, QtWidgets.QLineEdit):
                 widget.editingFinished.connect(partial(self.parameter_edited, widget))
             elif isinstance(widget, QtWidgets.QCheckBox):
-                widget.stateChanged.connect(partial(self.parameter_edited, widget))
+                widget.stateChanged.connect(lambda i, w=widget: self.parameter_edited(w))
 
         # --- mesh ---
         self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
@@ -701,9 +702,13 @@ class VtkWidget(QtWidgets.QWidget):
         top_level_items = [self.geometrytree.indexOfTopLevelItem(select) > -1
                            for select in current_selection]
 
+        implicits = ['implicit' in self.geometrydict.get(select.text(0)).get('geo_type') for select in current_selection]
+
         # boolean btns
         enableboolbtn = False
-        if len(current_selection) == 2 and all(top_level_items):
+        if len(current_selection) == 2 and all(top_level_items) and not any(implicits):
+            enableboolbtn = True
+        elif len(current_selection) >= 2 and all(top_level_items) and all(implicits):
             enableboolbtn = True
         for btn in self.booleanbtndict.values():
             btn.setEnabled(enableboolbtn)
@@ -1113,7 +1118,7 @@ class VtkWidget(QtWidgets.QWidget):
             transform.RotateWXYZ(rotz, 0, 0, 1)
 
         # update source
-        bounds = [0.0]*6
+        bounds = [safe_float(geo[k]) for k in ['minx','maxx','miny', 'maxy', 'minz', 'maxz']]
         if implicittype == 'sphere':
             source.SetRadius(r)
             bounds = [-r, r, -r, r, -r, r]
@@ -1130,6 +1135,7 @@ class VtkWidget(QtWidgets.QWidget):
             geo['plane1'].SetNormal(-1, 0, 0)
             geo['plane2'].SetOrigin(0, 0, 0)
             geo['plane2'].SetNormal(1, 0, 0)
+            transform.Translate(h/2.0, 0, 0)
             bounds = [0, h, -r, r, -r, r]
         elif implicittype == 'cylinder':
             geo['cylinder_source'].SetRadius(r)
@@ -1138,6 +1144,24 @@ class VtkWidget(QtWidgets.QWidget):
             geo['plane2'].SetOrigin(x, y - h/2, z)
             geo['plane2'].SetNormal(0, 1, 0)
             bounds = [-r, r, -h/2, h/2, -r, r]
+        elif implicittype == 'quadric':
+            source.SetCoefficients(
+                safe_float(geo['a0']),
+                safe_float(geo['a1']),
+                safe_float(geo['a2']),
+                safe_float(geo['a3']),
+                safe_float(geo['a4']),
+                safe_float(geo['a5']),
+                safe_float(geo['a6']),
+                safe_float(geo['a7']),
+                safe_float(geo['a8']),
+                safe_float(geo['a9']),
+                )
+        elif implicittype == 'superquadric':
+            source.SetPhiRoundness(safe_float(geo['phi']))
+            source.SetThetaRoundness(safe_float(geo['theta']))
+            source.SetThickness(safe_float(geo['thickness']))
+            source.SetToroidal(safe_int(geo['toroidal']))
         else:
             return
 
@@ -1159,14 +1183,15 @@ class VtkWidget(QtWidgets.QWidget):
             zs = [i[2] for i in bounds_list]
 
             bounds = [min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)]
+            geo['bounds'] = bounds
             sample.SetModelBounds(*bounds)
-            sample.SetSampleDimensions(20, 20, 20)
+            sample.SetSampleDimensions(IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES)
             sample.Update()
 
         if surface:
             surface.Update()
 
-    def add_implicit(self, implicittype, name=None, data=None, loading=False):
+    def add_implicit(self, implicittype=None, name=None, data=None, loading=False):
         """Add an implicit function"""
 
         if name is None:
@@ -1217,7 +1242,7 @@ class VtkWidget(QtWidgets.QWidget):
             source = boolean
 
         sample = vtk.vtkSampleFunction()
-        sample.SetSampleDimensions(20, 20, 20)
+        sample.SetSampleDimensions(IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES)
         sample.SetImplicitFunction(source)
         sample.ComputeNormalsOff()
 
@@ -1398,48 +1423,90 @@ class VtkWidget(QtWidgets.QWidget):
                 current_selection.append(self.get_tree_item(child))
         else:
             current_selection = self.geometrytree.selectedItems()
-            if len(current_selection) != 2:
-                return
 
         if boolname is None:
             boolname = get_unique_string(booltype, list(self.geometrydict.keys()))
 
         # Save references
         if data is not None:
-            self.geometrydict[boolname] = data
+            bool_data = self.geometrydict[boolname] = data
             booltype = data['type']
         else:
-            self.geometrydict[boolname] = copy.deepcopy(DEFAULT_BOOLEAN_PARAMS)
-            self.geometrydict[boolname]['type'] = booltype
+            bool_data = self.geometrydict[boolname] = copy.deepcopy(DEFAULT_BOOLEAN_PARAMS)
+            bool_data['type'] = booltype
 
-        boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
+        implicit = all(['implicit' in self.geometrydict.get(select.text(0)).get('geo_type') for select in current_selection])
+
+        if implicit:
+            boolean_operation = vtk.vtkImplicitBoolean()
+        else:
+            boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
 
         if booltype == 'union':
-            boolean_operation.SetOperationToUnion()
+            if implicit:
+                boolean_operation.SetOperationTypeToUnion()
+            else:
+                boolean_operation.SetOperationToUnion()
             icon = 'union'
         elif booltype == 'intersection':
-            boolean_operation.SetOperationToIntersection()
+            if implicit:
+                boolean_operation.SetOperationTypeToIntersection()
+            else:
+                boolean_operation.SetOperationToIntersection()
             icon = 'intersect'
         else:
-            boolean_operation.SetOperationToDifference()
+            if implicit:
+                boolean_operation.SetOperationTypeToDifference()
+            else:
+                boolean_operation.SetOperationToDifference()
             icon = 'difference'
 
+        union_list = []
         for i, selection in enumerate(current_selection):
             name = str(selection.text(0)).lower()
-            self.geometrydict[boolname]['children'].append(name)
-
-            geometry = self.get_input_data(name)
-            boolean_operation.SetInputConnection(
-                i, geometry.GetOutputPort())
+            bool_data['children'].append(name)
+            child = self.geometrydict[name]
+            if implicit:
+                boolean_operation.AddFunction(child['source'])
+                union_list.append(child['bounds'])
+            else:
+                geometry = self.get_input_data(name)
+                boolean_operation.SetInputConnection(
+                    i, geometry.GetOutputPort())
 
             # hide the sources
-            self.geometrydict[name]['actor'].VisibilityOff()
-            self.geometrydict[name]['visible'] = False
-
-        boolean_operation.Update()
+            child['actor'].VisibilityOff()
+            child['visible'] = False
 
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(boolean_operation.GetOutputPort())
+
+        if implicit:
+            sample = vtk.vtkSampleFunction()
+            sample.SetSampleDimensions(IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES, IMPLICIT_DEFAULT_RES)
+            sample.SetImplicitFunction(boolean_operation)
+            sample.ComputeNormalsOff()
+
+            # union the bounds
+            array = np.asarray(union_list)
+            bounds = []
+            for i in range(0, 6, 2):
+                bounds += [min(array[:,i]), max(array[:,i+1])]
+            sample.SetModelBounds(*bounds)
+
+            # contour
+            surface = vtk.vtkContourFilter()
+            surface.SetInputConnection(sample.GetOutputPort())
+            surface.SetValue(0, 0.0)
+
+            bool_data['sample'] = sample
+            bool_data['surface'] = surface
+            bool_data['geo_type'] = 'boolean_implicit'
+            bool_data['source'] = boolean_operation
+
+            mapper.SetInputConnection(surface.GetOutputPort())
+        else:
+            boolean_operation.Update()
+            mapper.SetInputConnection(boolean_operation.GetOutputPort())
         mapper.ScalarVisibilityOff()
 
         actor = vtk.vtkActor()
@@ -1452,9 +1519,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.render()
 
         # save references
-        self.geometrydict[boolname]['booleanoperation'] = boolean_operation
-        self.geometrydict[boolname]['mapper'] = mapper
-        self.geometrydict[boolname]['actor'] = actor
+        bool_data['booleanoperation'] = boolean_operation
+        bool_data['mapper'] = mapper
+        bool_data['actor'] = actor
 
         # Add to tree
         toplevel = QtWidgets.QTreeWidgetItem([boolname])
@@ -1553,6 +1620,8 @@ class VtkWidget(QtWidgets.QWidget):
             name = self.boolean_operation(data=data)
         elif geo_type == 'stl':
             name = self.add_stl(None, filename=data['filename'], data=data)
+        elif geo_type == 'implicit':
+            name = self.add_implicit(data=data)
         return name
 
     def update_filter(self, name):

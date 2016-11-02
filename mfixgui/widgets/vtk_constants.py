@@ -45,16 +45,24 @@ CELL_TYPE_ENUM = {
     }
 
 # Implicits
+IMPLICIT_DEFAULT_RES = 40
 IMPLICIT_DICT = OrderedDict([
     ('sphere',        vtk.vtkSphere),
     ('box',           vtk.vtkBox),
     ('cylinder',      vtk.vtkCylinder),
     ('cone',          vtk.vtkCone),
     ('quadric',       vtk.vtkQuadric),
-    ('super_quadric', vtk.vtkSuperquadric),
+    ('superquadric', vtk.vtkSuperquadric),
     ])
 
 DEFAULT_IMPLICIT_PARAMS = {
+    'bounds':    [-1.0, 1.0, -1.0, 1.0, -1.0, 1.0],
+    'minx':      -1.0,
+    'maxx':      1.0,
+    'miny':      -1.0,
+    'maxy':      1.0,
+    'minz':      -1.0,
+    'maxz':      1.0,
     'centerx':   0.0,
     'centery':   0.0,
     'centerz':   0.0,
@@ -66,6 +74,20 @@ DEFAULT_IMPLICIT_PARAMS = {
     'lengthy':   1.0,
     'lengthz':   1.0,
     'height':    1.0,
+    'a0':        0.5,
+    'a1':        1.0,
+    'a2':        0.2,
+    'a3':        0.0,
+    'a4':        0.1,
+    'a5':        0.0,
+    'a6':        0.0,
+    'a7':        0.2,
+    'a8':        0.0,
+    'a9':        0.0,
+    'phi':       1.0,
+    'theta':     1.0,
+    'thickness': 0.3333,
+    'toroidal':  True,
     'geo_type':  'implicit',
     'type':      '',
     }
