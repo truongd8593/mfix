@@ -1115,6 +1115,7 @@ class VtkWidget(QtWidgets.QWidget):
             # back to position
             transform.Translate(x, y, z)
 
+
         # update source
         bounds = [0.0]*6
         if implicittype == 'sphere':
@@ -1124,23 +1125,8 @@ class VtkWidget(QtWidgets.QWidget):
             dx = safe_float(geo['lengthx'])/2.0
             dy = safe_float(geo['lengthy'])/2.0
             dz = safe_float(geo['lengthz'])/2.0
-            source.SetBounds([-dx, dx, -dy, dy, -dz, dz])
-
-            zx = abs(dx/np.cos(np.deg2rad(rotz)))
-            zy = abs(dy/np.cos(np.deg2rad(rotz)))
-
-            yx = abs(dx/np.cos(np.deg2rad(roty)))
-            yz = abs(dz/np.cos(np.deg2rad(roty)))
-
-            xy = abs(dy/np.cos(np.deg2rad(rotx)))
-            xz = abs(dz/np.cos(np.deg2rad(rotx)))
-
-            ex = max(zx, yx)
-            ey = max(xy, zy)
-            ez = max(xz, yz)
-
-            bounds = [x-ex, x+ex, y-ey, y+ey, z-ez, z+ez]
-
+            bounds = [-dx, dx, -dy, dy, -dz, dz]
+            source.SetBounds(bounds)
         elif implicittype == 'cone':
             angle = np.rad2deg(np.arctan(r/h))
             geo['cone_source'].SetAngle(angle)
@@ -1148,14 +1134,6 @@ class VtkWidget(QtWidgets.QWidget):
             geo['plane1'].SetNormal(-1, 0, 0)
             geo['plane2'].SetOrigin(0, 0, 0)
             geo['plane2'].SetNormal(1, 0, 0)
-
-            c = np.sqrt(r**2 + h**2)
-
-            zx = abs(c*np.cos(np.rad2deg(rotz + angle)))
-
-            print(zx)
-
-
             bounds = [0, h, -r, r, -r, r]
         elif implicittype == 'cylinder':
             geo['cylinder_source'].SetRadius(r)
@@ -1175,7 +1153,20 @@ class VtkWidget(QtWidgets.QWidget):
             source.Update()
 
         if sample:
-            sample.SetModelBounds(*bounds)
+            # transform bounds
+            t_mat = transform.GetMatrix()
+
+            bounds_list = []
+            for dx in bounds[:2]:
+                for dy in bounds[2:4]:
+                    for dz in bounds[4:]:
+                        bounds_list.append(t_mat.MultiplyPoint([dx, dy, dz, 1]))
+
+            xs = [i[0] for i in bounds_list]
+            ys = [i[1] for i in bounds_list]
+            zs = [i[2] for i in bounds_list]
+
+            sample.SetModelBounds([min(xs), max(xs), min(ys), max(ys), min(zs), max(zs)])
             sample.SetSampleDimensions(20, 20, 20)
             sample.Update()
 
