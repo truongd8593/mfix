@@ -340,16 +340,43 @@ class Mfix(object):
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
-        self.status = json.dumps(output)
+        try:
+            self.status = json.dumps(output)
+        except UnicodeDecodeError:
+            log.exception("exception when decoding:  %s" % output)
 
+    def check_pidfile(self):
+        if 0 != COMPAR.mype:
+            return True
+
+        global pidfilename
+        try:
+            pidfile = open(pidfilename)
+            pid = pidfile.readline()[4:]
+            url = pidfile.readline()[4:]
+            token = pidfile.readline()[6:]
+            pidfile.close()
+        except IOError:
+            log.exception("could not find PID file ", pidfilename)
+            return False
+
+        if int(pid) != os.getpid():
+            log.error('did not find pidfile containing PID %d', os.getpid())
+            return False
+        return True
 
     def check_requests(self):
         "check for requests sent by the Flask thread"
+
+        # exit if pidfile is missing
+        self.check_pidfile()
 
         while True:
             if self.requests:
                 # requests would only arrive at rank 0
                 req_id, cmd_args = self.requests.popitem()
+                if not check_pidfile():
+                    cmd_args = ('EXIT', None)
             else:
                 # command is empty for rank>0, or when rank 0 hasn't received anything
                 req_id = None
@@ -369,20 +396,6 @@ class Mfix(object):
                     self.responses[req_id] = getattr(self, cmd)(args)
                 else:
                     self.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
-
-            # exit if pidfile is missing
-            try:
-                pidfile = open(pidfilename)
-                pid = pidfile.readline()[4:]
-                url = pidfile.readline()[4:]
-                token = pidfile.readline()[6:]
-                if int(pid) != os.getpid():
-                    log.error('did not find pidfile containing PID %d', os.getpid())
-                    os._exit(-1)
-                pidfile.close()
-            except:
-                log.error('did not find pidfile containing PID %d', os.getpid())
-                os._exit(-1)
 
             self.update_status()
             if not self.paused:
