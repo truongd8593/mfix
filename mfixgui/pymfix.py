@@ -375,7 +375,7 @@ class Mfix(object):
             if self.requests:
                 # requests would only arrive at rank 0
                 req_id, cmd_args = self.requests.popitem()
-                if not check_pidfile():
+                if not self.check_pidfile():
                     cmd_args = ('EXIT', None)
             else:
                 # command is empty for rank>0, or when rank 0 hasn't received anything
