@@ -625,13 +625,6 @@ def reinitialize():
         command_output = "Error saving submitted project file"
     return api_response(status_code, command_output)
 
-@FLASK_APP.route('/')
-@token_required
-def index():
-    "renders pymfix web interface"
-    return render_template('index.html', mfixdat_filename=request.args.get('filename', ''))
-
-
 @FLASK_APP.route('/set/<modname>/<varname>', methods=['POST'])
 @token_required
 def set_variable(modname, varname):
