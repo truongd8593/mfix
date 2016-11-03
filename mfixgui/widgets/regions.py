@@ -534,6 +534,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 # if extents are not already used by a region, add it
                 if not self.check_extents_in_regions(extents):
 
+                    name = condtype.upper() + str(cond.ind) # "BC_1"
+
                     extents = [extents[::2], extents[1::2]]
                     if ('bc_type' in cond and
                             cond['bc_type'].value.lower().startswith('cg')):
@@ -541,10 +543,13 @@ class RegionsWidget(QtWidgets.QWidget):
                         if cond.ind == proj.get_value('stl_bc_id'):
                             ext = [Equation(s) for s in ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax']]
                             extents = [ext[::2], ext[1::2]]
+                            for key, value in [('from', ext[::2]), ('to', ext[1::2])]:
+                                for v, k in zip(value, ['x', 'y', 'z']):
+                                    self.update_parameter_map(v, name, '_'.join([key,k]))
                     else:
                         rtype = self.get_region_type(extents)
 
-                    name = condtype.upper() + str(cond.ind) # "BC_1"
+
 
                     self.new_region(name, extents, rtype, defer_update=True)
 
@@ -596,7 +601,6 @@ class RegionsWidget(QtWidgets.QWidget):
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
         name_key = ','.join([name, key])
-
         # new params
         new_params = []
         if isinstance(new_value, Equation):

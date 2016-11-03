@@ -1194,9 +1194,6 @@ class VtkWidget(QtWidgets.QWidget):
     def add_implicit(self, implicittype=None, name=None, data=None, loading=False):
         """Add an implicit function"""
 
-        if name is None:
-            name = get_unique_string(implicittype, list(self.geometrydict.keys()))
-
         # create implicit
         if data is not None:
             implicittype = data['type']
@@ -1204,6 +1201,9 @@ class VtkWidget(QtWidgets.QWidget):
             source = IMPLICIT_DICT[implicittype]()
         else:
             return
+
+        if name is None:
+            name = get_unique_string(implicittype, list(self.geometrydict.keys()))
 
         if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_IMPLICIT_PARAMS)
@@ -1502,6 +1502,7 @@ class VtkWidget(QtWidgets.QWidget):
             bool_data['surface'] = surface
             bool_data['geo_type'] = 'boolean_implicit'
             bool_data['source'] = boolean_operation
+            bool_data['bounds'] = bounds
 
             mapper.SetInputConnection(surface.GetOutputPort())
         else:
