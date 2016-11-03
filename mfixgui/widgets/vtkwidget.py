@@ -647,12 +647,14 @@ class VtkWidget(QtWidgets.QWidget):
                     geo_type = geo_dict[node]['geo_type']
                     if geo_type == 'primitive':
                         self.add_primitive(name=node, data=geo_data, loading=True)
+                    elif geo_type == 'implicit':
+                        self.add_implicit(name=node, data=geo_data, loading=True)
                     elif geo_type == 'parametric':
                         self.add_parametric(name=node, data=geo_data, loading=True)
                     elif geo_type == 'filter':
                         self.add_filter(name=node, data=geo_data,
                                         child=tree[node].pop(), loading=True)
-                    elif geo_type == 'boolean':
+                    elif geo_type == 'boolean' or geo_type == 'boolean_implicit':
                         self.boolean_operation(boolname=node, data=geo_data,
                                                children=tree[node], loading=True)
                     elif geo_type == 'stl':
@@ -1282,6 +1284,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
 
+        if not loading:
+            self.parent.set_unsaved_flag()
+
     def update_parametric(self, name):
         """Update the specified parameteric object."""
         geo = self.geometrydict.get(name)
@@ -1813,9 +1818,11 @@ class VtkWidget(QtWidgets.QWidget):
 
         for top_num in range(item_count):
             item = self.geometrytree.topLevelItem(top_num)
-            if item.checkState(0) == QtCore.Qt.Checked:
+            name = str(item.text(0))
+            geo_type = self.geometrydict.get(name).get('geo_type', '')
+            if item.checkState(0) == QtCore.Qt.Checked and not 'implicit' in geo_type:
                 append_filter.AddInputData(
-                    self.get_input_data(str(item.text(0))).GetOutput())
+                    self.get_input_data(name).GetOutput())
 
         geo = None
         if append_filter.GetTotalNumberOfInputConnections() > 0:

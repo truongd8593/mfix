@@ -90,6 +90,7 @@ DEFAULT_IMPLICIT_PARAMS = {
     'toroidal':  True,
     'geo_type':  'implicit',
     'type':      '',
+    'visible':  True,
     }
 
 # Primitives
@@ -238,6 +239,7 @@ DEFAULT_BOOLEAN_PARAMS = {
     'visible':  True,
     'type':     '',
     'geo_type': 'boolean',
+    'bounds':   [-1, 1, -1, 1, -1, 1],
     }
 
 DEFAULT_STL_PARAMS = {
@@ -256,11 +258,13 @@ DEFAULT_STL_PARAMS = {
     'geo_type':        'stl'}
 
 DEFAULT_PARAMS = {
-    'primitive':   DEFAULT_PRIMITIVE_PARAMS,
-    'parametric':  DEFAULT_PARAMETRIC_PARAMS,
-    'filter':      DEFAULT_FILTER_PARAMS,
-    'boolean':     DEFAULT_BOOLEAN_PARAMS,
-    'stl':         DEFAULT_STL_PARAMS,
+    'primitive':        DEFAULT_PRIMITIVE_PARAMS,
+    'parametric':       DEFAULT_PARAMETRIC_PARAMS,
+    'filter':           DEFAULT_FILTER_PARAMS,
+    'boolean':          DEFAULT_BOOLEAN_PARAMS,
+    'boolean_implicit': DEFAULT_BOOLEAN_PARAMS,
+    'stl':              DEFAULT_STL_PARAMS,
+    'implicit':         DEFAULT_IMPLICIT_PARAMS,
 }
 
 
