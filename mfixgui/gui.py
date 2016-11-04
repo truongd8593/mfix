@@ -2020,7 +2020,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # FIXME, this can clobber files
         template = os.path.join(get_mfix_home(), 'mfixgui', 'mfix.dat.template')
         shutil.copyfile(template, project_file)
-        self.open_project(project_file, auto_rename=False)
+        self.open_project(project_file)
         self.update_keyword('run_name', run_name)
 
         # add some info
