@@ -180,6 +180,7 @@ DEFAULT_PARAMETRIC_PARAMS = {
 
 # Filters
 FILTER_DICT = OrderedDict([
+    ('sample_implicit',       vtk.vtkContourFilter),
     ('transform',             vtk.vtkTransformPolyDataFilter),
     ('clean',                 vtk.vtkCleanPolyData),
     ('fill_holes',            vtk.vtkFillHolesFilter),
@@ -192,7 +193,7 @@ FILTER_DICT = OrderedDict([
     ('butterfly_subdivision', vtk.vtkButterflySubdivisionFilter),
     ('smooth',                vtk.vtkSmoothPolyDataFilter),
     ('windowed_sinc',         vtk.vtkWindowedSincPolyDataFilter),
-    ('reverse_sense',        vtk.vtkReverseSense),
+    ('reverse_sense',         vtk.vtkReverseSense),
     ])
 
 DEFAULT_FILTER_PARAMS = {
@@ -231,6 +232,15 @@ DEFAULT_FILTER_PARAMS = {
     'translatex':           0.0,
     'translatey':           0.0,
     'translatez':           0.0,
+    'minx':                 -1.0,
+    'maxx':                 1.0,
+    'miny':                 -1.0,
+    'maxy':                 1.0,
+    'minz':                 -1.0,
+    'maxz':                 1.0,
+    'samplesx':             40,
+    'samplesy':             40,
+    'samplesz':             40,
     'geo_type':             'filter',
     'type':                 ''}
 

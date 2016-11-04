@@ -409,12 +409,14 @@ class VtkWidget(QtWidgets.QWidget):
         # --- filter button ---
         self.add_filter_menu = QtWidgets.QMenu(self)
         self.ui.geometry.toolbutton_add_filter.setMenu(self.add_filter_menu)
-
+        self.add_filter_menu.aboutToShow.connect(self.enable_filters)
+        self.filter_actions = []
         for geo in FILTER_DICT.keys():
             action = QtWidgets.QAction(geo.replace('_', ' '), self.add_filter_menu)
             action.triggered.connect(partial(self.add_filter, filtertype=geo))
             action.setIcon(get_icon('filter.png'))
             action.setIconVisibleInMenu(True)
+            self.filter_actions.append(action)
             self.add_filter_menu.addAction(action)
 
         # setup signals
@@ -1736,8 +1738,35 @@ class VtkWidget(QtWidgets.QWidget):
             transform.Translate(x + safe_float(geo['translatex']),
                                 y + safe_float(geo['translatey']),
                                 z + safe_float(geo['translatez']))
+        elif filtertype == 'sample_implicit':
+            geo['samplefunction'].SetSampleDimensions(
+                safe_int(geo['samplesx']), safe_int(geo['samplesy']), safe_int(geo['samplesz']))
+            bounds = [safe_float(geo[k]) for k in ['minx','maxx','miny', 'maxy', 'minz', 'maxz']]
+            geo['samplefunction'].SetModelBounds(bounds)
+            geo['samplefunction'].Update()
+
 
         vtkfilter.Update()
+
+    def enable_filters(self):
+        """filter menu about to show, enable/disable based on geo selected"""
+
+        current_selection = self.geometrytree.selectedItems()
+        if current_selection:
+            name = str(current_selection[-1].text(0)).lower()
+        else:
+            return
+
+        geo_data = self.geometrydict.get(name)
+        geo_type = geo_data.get('geo_type')
+
+        enable = [True]*len(self.filter_actions)
+        if 'implicit' in geo_type:
+            enable = [False]*len(self.filter_actions)
+            enable[0] = True
+
+        for en, act in zip(enable, self.filter_actions):
+            act.setEnabled(en)
 
     def add_filter(self, filtertype=None, name=None, data=None, child=None, loading=False):
         """add the selected filter with the input being the currently selected
@@ -1774,8 +1803,16 @@ class VtkWidget(QtWidgets.QWidget):
             vtkfilter.SetTransform(t)
 
         # set input data
-        inputdata = self.get_input_data(selection_text)
-        vtkfilter.SetInputConnection(inputdata.GetOutputPort())
+        if 'implicit' in filtertype:
+            sample = vtk.vtkSampleFunction()
+            sample.SetImplicitFunction(self.geometrydict.get(selection_text).get('source'))
+            sample.ComputeNormalsOff()
+            geo['samplefunction'] = sample
+            vtkfilter.SetInputConnection(sample.GetOutputPort())
+            vtkfilter.SetValue(0, 0.0)
+        else:
+            inputdata = self.get_input_data(selection_text)
+            vtkfilter.SetInputConnection(inputdata.GetOutputPort())
 
         # update filter
         self.update_filter(name)

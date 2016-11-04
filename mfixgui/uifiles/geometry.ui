@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>10</number>
+          <number>39</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -3616,6 +3616,95 @@ background-color: transparent;
            </item>
            <item row="2" column="0">
             <spacer name="verticalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="sample_implicit">
+          <layout class="QGridLayout" name="gridLayout_23">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <item row="0" column="1">
+            <widget class="LineEdit" name="lineedit_sample_implicit_samplesx"/>
+           </item>
+           <item row="0" column="3">
+            <widget class="LineEdit" name="lineedit_sample_implicit_samplesz"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_125">
+             <property name="text">
+              <string>Samples</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="LineEdit" name="lineedit_sample_implicit_samplesy"/>
+           </item>
+           <item row="1" column="0" colspan="4">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Extents</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_22">
+              <property name="margin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
+               <number>5</number>
+              </property>
+              <item row="1" column="2">
+               <widget class="LineEdit" name="lineedit_sample_implicit_maxy"/>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_122">
+                <property name="text">
+                 <string>min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_123">
+                <property name="text">
+                 <string>max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="LineEdit" name="lineedit_sample_implicit_maxx"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="LineEdit" name="lineedit_sample_implicit_minx"/>
+              </item>
+              <item row="0" column="2">
+               <widget class="LineEdit" name="lineedit_sample_implicit_miny"/>
+              </item>
+              <item row="0" column="3">
+               <widget class="LineEdit" name="lineedit_sample_implicit_minz"/>
+              </item>
+              <item row="1" column="3">
+               <widget class="LineEdit" name="lineedit_sample_implicit_maxz"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <spacer name="verticalSpacer_20">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
