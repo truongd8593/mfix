@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>25</number>
+          <number>10</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -1525,6 +1525,9 @@ background-color: transparent;
            <property name="spacing">
             <number>5</number>
            </property>
+           <item row="2" column="1">
+            <widget class="LineEdit" name="lineedit_superquadric_implicit_radius"/>
+           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_47">
              <property name="text">
@@ -1557,82 +1560,35 @@ background-color: transparent;
            <item row="1" column="3">
             <widget class="LineEdit" name="lineedit_superquadric_implicit_rotation_z"/>
            </item>
-           <item row="2" column="0">
+           <item row="3" column="0">
             <widget class="QLabel" name="label_44">
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Phi&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
+           <item row="3" column="1">
             <widget class="LineEdit" name="lineedit_superquadric_implicit_phi"/>
            </item>
-           <item row="3" column="0">
+           <item row="4" column="0">
             <widget class="QLabel" name="label_45">
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Theta&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
+           <item row="4" column="1">
             <widget class="LineEdit" name="lineedit_superquadric_implicit_theta"/>
            </item>
-           <item row="4" column="0">
+           <item row="5" column="0">
             <widget class="QLabel" name="label_46">
              <property name="text">
               <string>Thickness</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
+           <item row="5" column="1">
             <widget class="LineEdit" name="lineedit_superquadric_implicit_thickness"/>
-           </item>
-           <item row="6" column="0" colspan="4">
-            <widget class="QGroupBox" name="groupBox_3">
-             <property name="title">
-              <string>Extents</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_22">
-              <property name="margin">
-               <number>0</number>
-              </property>
-              <property name="spacing">
-               <number>5</number>
-              </property>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_122">
-                <property name="text">
-                 <string>Max</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="LineEdit" name="lineedit_superquadric_minx"/>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_123">
-                <property name="text">
-                 <string>Min</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="LineEdit" name="lineedit_superquadric_miny"/>
-              </item>
-              <item row="0" column="3">
-               <widget class="LineEdit" name="lineedit_superquadric_minz"/>
-              </item>
-              <item row="1" column="1">
-               <widget class="LineEdit" name="lineedit_superquadric_maxx"/>
-              </item>
-              <item row="1" column="2">
-               <widget class="LineEdit" name="lineedit_superquadric_maxy"/>
-              </item>
-              <item row="1" column="3">
-               <widget class="LineEdit" name="lineedit_superquadric_maxz"/>
-              </item>
-             </layout>
-            </widget>
            </item>
            <item row="7" column="0">
             <spacer name="verticalSpacer_19">
@@ -1647,10 +1603,17 @@ background-color: transparent;
              </property>
             </spacer>
            </item>
-           <item row="5" column="0" colspan="4">
+           <item row="6" column="0" colspan="4">
             <widget class="CheckBox" name="checkbox_superquadric_implicit_toroidal">
              <property name="text">
               <string>Toroidal</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_124">
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Radius&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>

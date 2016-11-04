@@ -1193,7 +1193,9 @@ class VtkWidget(QtWidgets.QWidget):
             source.SetPhiRoundness(safe_float(geo['phi']))
             source.SetThetaRoundness(safe_float(geo['theta']))
             source.SetThickness(safe_float(geo['thickness']))
+            source.SetSize(r)
             source.SetToroidal(safe_int(geo['toroidal']))
+            bounds = [-r, r, -r, r, -r, r]
         else:
             return
 
