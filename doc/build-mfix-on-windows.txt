@@ -156,5 +156,5 @@ If it fails to import, it is helpful to use Cygwin 'strace':
 
   *** https://www.microsoft.com/en-us/download/confirmation.aspx?id=48145
 
-  We can either have users download this from Microsoft, or include it in the
-  mfix-on-Windows distribution
+  There is a zipfile FORTRAN_DLLs.zip in build_aux/Win64 which contains the
+  needed DLLs.  These can be installed in the same directory as mfixsolver.pyd
