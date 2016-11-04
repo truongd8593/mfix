@@ -255,6 +255,13 @@ DEFAULT_STL_PARAMS = {
     'translationy':    0.0,
     'translationz':    0.0,
     'visible':         True,
+    'extentxmin':      0.0,
+    'extentxmax':      0.0,
+    'extentymin':      0.0,
+    'extentymax':      0.0,
+    'extentzmin':      0.0,
+    'extentzmax':      0.0,
+    'scale':           1.0,
     'geo_type':        'stl'}
 
 DEFAULT_PARAMS = {

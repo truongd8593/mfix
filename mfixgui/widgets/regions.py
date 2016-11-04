@@ -524,43 +524,57 @@ class RegionsWidget(QtWidgets.QWidget):
                                 ('is_', proj.iss), ('ps_', proj.pss)):
             for cond in conds:
                 extents = []
+                extents_keys = False
                 for key in ('x_w', 'x_e', 'y_s', 'y_n', 'z_b', 'z_t'):
                     key = condtype + key
                     if key in cond:
                         extents.append(float(cond[key]))
+                        extents_keys = True
                     else:
                         extents.append(0.0)
 
+                # reformat extents
+                extents = [extents[::2], extents[1::2]]
+
+                # infer region type from extents
+                rtype = self.get_region_type(extents)
+
+                # create a name
+                name = condtype.upper() + str(cond.ind) # "BC_1"
+
+                add = False
+                # handle CG_* regions
+                if ('bc_type' in cond and cond['bc_type'].value.lower().startswith('cg')):
+                    rtype = 'STL'
+                    add = True
+                    # single stl bc
+                    if cond.ind == proj.get_value('stl_bc_id'):
+
+                        ext = [Equation(s) for s in ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax']]
+                        extents = [ext[::2], ext[1::2]]
+                        for key, value in [('from', ext[::2]), ('to', ext[1::2])]:
+                            for v, k in zip(value, ['x', 'y', 'z']):
+                                self.update_parameter_map(v, name, '_'.join([key,k]))
+
+
+
                 # if extents are not already used by a region, add it
-                if not self.check_extents_in_regions(extents):
+                elif not self.check_extents_in_regions(extents) and extents_keys:
+                    add = True
+                elif not extents_keys:
+                    self.warn('{} does not have extents defined and is not a cartesian grid, ignoring'.format(name))
+                else:
+                    self.warn('could not infer region from {}'.format(name))
 
-                    name = condtype.upper() + str(cond.ind) # "BC_1"
-
-                    extents = [extents[::2], extents[1::2]]
-                    if ('bc_type' in cond and
-                            cond['bc_type'].value.lower().startswith('cg')):
-                        rtype = 'STL'
-                        if cond.ind == proj.get_value('stl_bc_id'):
-                            ext = [Equation(s) for s in ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax']]
-                            extents = [ext[::2], ext[1::2]]
-                            for key, value in [('from', ext[::2]), ('to', ext[1::2])]:
-                                for v, k in zip(value, ['x', 'y', 'z']):
-                                    self.update_parameter_map(v, name, '_'.join([key,k]))
-                    else:
-                        rtype = self.get_region_type(extents)
-
-
-
+                if add:
                     self.new_region(name, extents, rtype, defer_update=True)
 
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """
         region_dict = self.tablewidget_regions.value
         for key in region_dict.keys():
-            region_extent = [None]*6
-            region_extent[::2] = region_dict[key]['from']
-            region_extent[1::2] = region_dict[key]['to']
-
+            region = region_dict.get(key)
+            region_extent = [region['from'], region['to']]
             if extents == region_extent:
                 return True
         return False

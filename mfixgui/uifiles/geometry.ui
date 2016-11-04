@@ -484,7 +484,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>10</number>
+          <number>25</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">

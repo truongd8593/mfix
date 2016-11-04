@@ -843,6 +843,12 @@ class VtkWidget(QtWidgets.QWidget):
             transform_filter = vtk.vtkTransformPolyDataFilter()
             transform_filter.SetTransform(transform)
             transform_filter.SetInputConnection(reader.GetOutputPort())
+            transform_filter.Update()
+
+            bounds = transform_filter.GetOutput().GetBounds()
+            for key, bound in zip(['extentxmin', 'extentxmax', 'extentymin', 'extentymax', 'extentzmin', 'extentzmax'],
+                                  bounds):
+                geo_data[key] = bound
 
             # mapper
             mapper = vtk.vtkPolyDataMapper()
@@ -1006,7 +1012,7 @@ class VtkWidget(QtWidgets.QWidget):
                             safe_float(geo['centerz']))
 
         # translate stl files
-        if self.geometrydict[name]['type'] in ['stl'] + list(PARAMETRIC_DICT.keys()):
+        if geo['type'] in ['stl'] + list(PARAMETRIC_DICT.keys()):
             transform.Translate(
                 safe_float(geo['translationx']),
                 safe_float(geo['translationy']),
@@ -1015,6 +1021,15 @@ class VtkWidget(QtWidgets.QWidget):
 
         # update
         transform_filter.Update()
+
+        # update stl extents
+        if geo['type'] in ['stl']:
+            bounds = transform_filter.GetOutput().GetBounds()
+            for key, bound in zip(['extentxmin', 'extentxmax', 'extentymin', 'extentymax', 'extentzmin', 'extentzmax'],
+                                  bounds):
+                geo[key] = bound
+
+            self.selected_geometry_changed()
 
         return transform_filter
 
