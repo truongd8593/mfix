@@ -1,0 +1,160 @@
+Building the MFIX solver module for Python on Windows
+
+The binary Python module (mfixsolver.pyd) was built using a virtual machine
+running a free version of Windows 10.
+
+These instructions should work the same on a non-virtual Windows build host,
+except step 0 can be skipped.
+
+0)  Set up the VM instance:
+
+ Install VirtualBox if needed, download Windows ISO, and create a new 64-bit
+ Windows 10 instance.
+
+ It is convenient to enable 'bidirectional copy and paste'
+(Settings/General/Advanced)
+
+ It is also very helpful to enable a shared folder, which requires installation
+ of VirtualBox "Guest additions".  This way you can use your exisiting Unix
+ tools (editor, git) to work with files on the Windows filesystem.
+
+ These instructions assume that you have created a shared folder as E:
+ which points to a directory containing a git checkout of 'mfix':
+
+ $ mkdir /somewhere/VBOX_SHARE
+ $ cd /somewhere/VBOX_SHARE
+ $ git clone -b gui <working_dir>/mfix  # clone local mfix repo
+
+ Then set a shared folder pointing to VBOX_SHARE, and you should see
+ E:\mfix in the Windows file browser
+
+ On non-virtual Windows you'll have to install Git and clone mfix u
+
+1) Install Anaconda
+  As of this writing the current version is Anaconda2 4.2.0,
+  Make sure to install the 64-bit Python 2.7 version
+
+   *** https://www.continuum.io/downloads
+
+2) Install TDM-GCC compiler, including Fortran support
+   Make sure to install 64-bit versions and check the box
+   for 'Fortran support' in the installer
+
+   *** http://tdm-gcc.tdragon.net/about
+
+3) Install Cygwin
+   We need this to run the configure scripts, to run make,
+   and for perl (needed by fdep script).  The 'base package'
+   is sufficient.
+
+   *** https://cygwin.com/setup-x86_64.exe
+
+4) Install Microsoft Visual C++ "Community Edition"
+   This is used to compile some C code, and for the final
+   link phase.
+
+   *** https://www.visualstudio.com/vs/community/
+
+5) Create an 'f2py' wrapper script.
+
+   Note: f2py is already installed as part of numpy, but the
+   wrapper script is not installed
+
+   In a Cygwin command prompt (bash):
+   $ echo 'python -m numpy.f2py "$@"' > /usr/bin/f2py
+   $ chmod +x f2py
+
+   Make sure it works:
+   $ f2py -h
+
+6) Configure mfix
+   In Cygwin bash:
+
+   $ cd /cygdrive/e/mfix
+   $ ./configure_mfix --enable-python
+
+7) Modify the generated Makefile
+
+7.0)  All references to '/cygdrive/E:' must all be replaced with 'E:',
+   since the native Microsoft tools don't know or care about 'cygdrive'
+
+   The same goes for any other drive letters, of course.  If you're using the
+   shared filesystem, it's E.
+
+   $ grep cygdrive Makefile
+   $ sed -i s=/cygdrive/e=E:= Makefile
+
+
+   Now, open Makefile in an editor to make the remaining changes.  You may
+   find this easier to do from the host OS using the editor of your choice
+
+   Make the following changes:
+
+7.1) Find the line that starts FCLIBS =
+          change '-lgfortran' to '-lgfortran.dll'
+          remove everything after -lgcc
+     After the -L flags, there should only be 2 '-l' flags,
+          -lgfortran.dll and -lgcc
+
+7.2) Append $(FCLIBS) to F2PY_FLAGS:
+     F2PY_FLAGS = $(am__append_6) $(FCLIBS)
+
+7.3) Add --verbose to the 'F2PY' command: (not needed but will make it
+       easier to track down errors)
+
+     The line should read:
+         $(F2PY) -c --verbose --f77exec=...
+
+8) Set VC90COMNTOOLS environment variable
+
+  This Anaconda version was built with Visual Studio 9.0, but the MSVC we have
+  installed is newer (14.0).
+
+  $ export VS90COMNTOOLS=$VS140COMNTOOLS
+
+
+9) Build it!
+
+  $ make
+
+  If you see the message "unable to find vcvarsall.bat"  that means that the MSVC compiler
+is not being found.   Type 'env|grep VS' and check that VS90COMNTOOLS is set,
+also check the --verbose output of f2py
+
+10)  Test
+
+  Note that if you start Anaconda python on Cygwin, you need to specify '-i'
+  $ python -c 'import mfixsolver; print dir(mfixsolver)'
+  $ python -i
+  >>> import mfixsolver
+
+
+If it fails to import, it is helpful to use Cygwin 'strace':
+
+  $ strace python -c 'import mfixsolver'
+  will show all file accesses and helps resolve dependencies
+
+
+11) Dependencies and redistribution
+
+  Thie generated mfixsolver.pyd depends on a few DLLs.  It will run on the build
+  host, but these DLLs must be present on target hosts as well.
+
+  The Fortran libs in C:\TDM-GCC-64\bin are required (but not the rest of the
+  TDM package),  from watching 'strace' it can be seen that only the following 3
+  are used:
+
+  C:\TDM-GCC-64\bin\libgfortran_64-3.dll
+  C:\TDM-GCC-64\bin\libquadmath_64-0.dll
+  C:\TDM-GCC-64\bin\libgcc_s_seh_64-1.dll
+
+  These are freely redistributable, and can simply be placed in the same directory as
+  mfixsolver.pyd
+
+  The other remaining dependency is C:\Windows\System32\vcruntime140.dll  which
+  is part of the "Visual C++ Redistributable Runtime" vc_redist.x64.exe
+
+  *** https://www.microsoft.com/en-us/download/confirmation.aspx?id=48145
+
+  We can either have users download this from Microsoft, or include it in the
+  mfix-on-Windows distribution
