@@ -802,6 +802,21 @@ class VtkWidget(QtWidgets.QWidget):
 
         self.render()
 
+    def get_stl_extents(self, filename):
+        '''given an stl file, return the extents of that file'''
+
+        # purge solids
+        if is_stl_ascii(filename):
+            filename = purge_multi_solids(filename)
+
+        # reader
+        reader = vtk.vtkSTLReader()
+        reader.SetFileName(filename)
+        reader.MergingOn()
+        reader.Update()
+
+        return reader.GetOutput().GetBounds()
+
     def add_stl(self, widget, filename=None, name=None, data=None, loading=False):
         """Open browse dialog and load selected stl file"""
 

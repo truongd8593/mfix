@@ -4,6 +4,7 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import os
+import glob
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtGui, QtCore
@@ -26,6 +27,11 @@ DEFAULT_REGION_DATA = {
     'type': 'box',
     'visibility': True}
 
+def safe_int(obj, default=None):
+    try:
+        return int(obj)
+    except:
+        return default
 
 def clean_region_dict(region_dict):
     """remove qt objects and values that are equal to the default"""
@@ -520,6 +526,11 @@ class RegionsWidget(QtWidgets.QWidget):
             # from mfix_gui_comments.
             return
 
+        # look for geometry_#####.stl files
+        stl_files = glob.glob(os.path.join(self.parent.get_project_dir(), 'geometry_*.stl'))
+        # extract numbers
+        stl_nums = [safe_int(f.split('.')[0].split('_')[-1]) for f in stl_files]
+
         for condtype, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
                                 ('is_', proj.iss), ('ps_', proj.pss)):
             for cond in conds:
@@ -547,14 +558,18 @@ class RegionsWidget(QtWidgets.QWidget):
                 if ('bc_type' in cond and cond['bc_type'].value.lower().startswith('cg')):
                     rtype = 'STL'
                     add = True
-                    # single stl bc
+                    # single stl bc, assume region fills domain
                     if cond.ind == proj.get_value('stl_bc_id'):
-
                         ext = [Equation(s) for s in ['xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax']]
                         extents = [ext[::2], ext[1::2]]
                         for key, value in [('from', ext[::2]), ('to', ext[1::2])]:
                             for v, k in zip(value, ['x', 'y', 'z']):
                                 self.update_parameter_map(v, name, '_'.join([key,k]))
+                    else:
+                        if cond.ind in stl_nums:
+                            extents = self.vtkwidget.get_stl_extents(stl_files[stl_nums.index(cond.ind)])
+                            # reformat extents
+                            extents = [extents[::2], extents[1::2]]
 
 
 
