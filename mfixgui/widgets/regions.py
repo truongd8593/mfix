@@ -519,17 +519,20 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.fit_to_contents()
 
 
-    def extract_regions(self, proj):
+    def extract_regions(self, proj, proj_dir=None):
         """ extract regions from IC, BC, PS, IS """
         if self.tablewidget_regions.value:
             # We assume regions_dict has been initialized correctly
             # from mfix_gui_comments.
             return
 
-        # look for geometry_#####.stl files
-        stl_files = glob.glob(os.path.join(self.parent.get_project_dir(), 'geometry_*.stl'))
-        # extract numbers
-        stl_nums = [safe_int(f.split('.')[0].split('_')[-1]) for f in stl_files]
+        stl_files = []
+        stl_nums = []
+        if proj_dir:
+            # look for geometry_#####.stl files
+            stl_files = glob.glob(os.path.join(proj_dir, 'geometry_*.stl'))
+            # extract numbers
+            stl_nums = [safe_int(f.split('.')[0].split('_')[-1]) for f in stl_files]
 
         for condtype, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
                                 ('is_', proj.iss), ('ps_', proj.pss)):
