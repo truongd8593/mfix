@@ -695,6 +695,9 @@
       CHARACTER(LEN=100) :: FNAME
       integer :: stl_unit, nf
 
+      LOGICAL :: MULTISTL
+
+      MULTISTL = .FALSE.
       BC_PATCH_FOUND_IN_STL = .FALSE.
 
       geometryfile(0) = 'geometry.stl'
@@ -718,6 +721,8 @@
             BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
             WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),200) 'geometry_',BCV
 
+            INQUIRE(FILE=TRIM(geometryfile(NN)),EXIST=PRESENT)
+            MULTISTL = MULTISTL .OR. PRESENT
             IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
 
          ENDIF
@@ -761,7 +766,9 @@
 
       ELSE  ! More than one CG BC type
          INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
-         IF(PRESENT) THEN
+! The multistl flag was added to support GUI cases where the original
+! geometry.stl file is still in the run directory.
+         IF(PRESENT .AND. .NOT.MULTISTL) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,100) 'The file geometry.stl exists and several CG BC types are defined.'
                WRITE(*,100) 'All BC patches will be read from geometry.stl.'
