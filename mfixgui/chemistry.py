@@ -92,7 +92,10 @@ class Chemistry(object):
                 if len(text) == 0:
                     return (QValidator.Acceptable, text, pos)
                 elif 1 <= len(text) <= 32 and text[0].isalpha() and all(c.isalnum() or c=='_' for c in text):
-                    return (QValidator.Acceptable, text, pos)
+                    if text.lower() in self.parent.keyword_doc: # cannot use keywords as reaction names!
+                        return (QValidator.Intermediate, text, pos)
+                    else:
+                        return (QValidator.Acceptable, text, pos)
                 else:
                     return (QValidator.Invalid, text, pos)
         ui.lineedit_reaction_name.setValidator(RxnIdValidator(parent=self))
@@ -337,7 +340,7 @@ class Chemistry(object):
             reaction[side][row][0] = species
             item = make_species_item(tw, row, idx, species)
             tw.setCellWidget(row, COL_SPECIES, item)
-            if old_species_cbm: # necessary?
+            if old_species_cb: # necessary?
                 try:
                     old_species_cb.activated.disconnect()
                 except:
