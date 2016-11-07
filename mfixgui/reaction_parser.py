@@ -33,11 +33,9 @@ class ReactionParser(object):
                 self.d[k] = to_float(v)
 
         self.reactions[self.reaction_id] = self.d
-        chem_eq = self.d.get('chem_eq')
-        if chem_eq is None:
-            chem_eq = "NONE"
+        chem_eq = self.d.get('chem_eq','NONE')
         self.d['reactants'], self.d['products'] = self.parse_chem_eq(chem_eq)
-        if chem_eq != "NONE":
+        if chem_eq.upper() != "NONE":
             # Reformat chemical equation to canonicalize format
             fmt = {}
             for side in 'reactants', 'products':
@@ -68,7 +66,7 @@ class ReactionParser(object):
                         yield tok
                         tok = ''
                     yield c
-                elif c=='!' and not quote:
+                elif c in ('!', '#') and not quote:
                     if tok:
                         yield tok
                         tok = ''
