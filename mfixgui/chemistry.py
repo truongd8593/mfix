@@ -542,7 +542,7 @@ class Chemistry(object):
             return
         chem_eq = self.format_chem_eq(reaction.get('reactants',[]), reaction.get('products',[]))
         display_text = chem_eq.replace('-->', '→')
-        if reaction['chem_eq'] == 'NONE': # Update disabled reaction
+        if reaction['chem_eq'].upper() == 'NONE': # Update disabled reaction
             self.disabled_reactions[name] = chem_eq
         else: # Update active reaction
             reaction['chem_eq'] = chem_eq
