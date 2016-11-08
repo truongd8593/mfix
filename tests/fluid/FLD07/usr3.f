@@ -25,7 +25,6 @@
       use functions, only: funijk
 
       Use param1, only: zero, small_number, half
-      use turb, only: C_MU => turb_C_MU
 
       IMPLICIT NONE
 
@@ -51,7 +50,7 @@
       j = jmin1 + (jmax1-jmin1)/2
       i = imin1
 
-      xt = zero
+      xt = -half*dx(imin1)
 
       Vstar = sqrt(delP_Y)
       Nu_g0 = mu_g0/Ro_g0

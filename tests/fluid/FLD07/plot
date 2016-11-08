@@ -39,7 +39,7 @@ set terminal wxt 1 size 900,400 enhanced
 
 set multiplot layout 1,2 title
 
-set ylabel "Streamwise Velocity, v (m/sec)"
+set ylabel "Velocity, v (m/sec)"
 set xlabel "Channel Width, x_ (m)"
 
 set key inside right bottom
@@ -50,13 +50,12 @@ set yrange [*:*]
 set title
 plot LeeMoser using 1:(scaled(column(3),0.0543496)) w points \
         ls 1 pt 6 ps 0.5 title 'Lee and Moser, 2015', \
-     'POST_VEL.dat' index 0 using 1:2 w points ls 2 title ' 8 mesh', \
-     'POST_VEL.dat' index 1 using 1:2 w points ls 4 title '16 mesh', \
-     'POST_VEL.dat' index 2 using 1:2 w points ls 6 title '32 mesh', \
-     'POST_VEL.dat' index 3 using 1:2 w points ls 8 title '64 mesh'
+     'POST_VEL.dat' index 0 using 1:2 w points ls 4 title ' 6 mesh', \
+     'POST_VEL.dat' index 1 using 1:2 w points ls 6 title '12 mesh', \
+     'POST_VEL.dat' index 2 using 1:2 w points ls 8 title '18 mesh'
 
-set ylabel "Streamwise velocity, v/v_*"
-set xlabel "Channel Width, xv_*{/Symbol r}/{/Symbol m}"
+set ylabel "Normalized velocity, v^+ = v/v_*"
+set xlabel "Wall units, x^+ = xv_*{/Symbol r}/{/Symbol m}"
 
 set key inside left top
 
@@ -68,10 +67,9 @@ set logscale x
 
 set title
 plot LeeMoser using 2:3 w points ls 1 pt 6 ps 0.5 title 'Lee and Moser, 2015', \
-     'POST_VEL.dat' index 0 using 3:4 w points ls 2 title ' 8 mesh', \
-     'POST_VEL.dat' index 1 using 3:4 w points ls 4 title '16 mesh', \
-     'POST_VEL.dat' index 2 using 3:4 w points ls 6 title '32 mesh', \
-     'POST_VEL.dat' index 3 using 3:4 w points ls 8 title '64 mesh'
+     'POST_VEL.dat' index 0 using 3:4 w points ls 4 title ' 6 mesh', \
+     'POST_VEL.dat' index 1 using 3:4 w points ls 6 title '12 mesh', \
+     'POST_VEL.dat' index 2 using 3:4 w points ls 8 title '18 mesh'
 
 unset logscale x
 unset logscale y

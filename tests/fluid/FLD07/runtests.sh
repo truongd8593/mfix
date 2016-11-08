@@ -5,7 +5,7 @@ RUN_NAME="FLD07"
 rm -f POST_*.dat &> /dev/null
 
 #IMAX=64
-for IMAX in 8 16 32 64; do
+for IMAX in 6 12 18; do
   rm -f ${RUN_NAME}.* &> /dev/null
   time -p ./mfix IMAX=${IMAX}
 done
