@@ -98,7 +98,6 @@ class WSGICopyBody(object):
 FLASK_APP.wsgi_app = WSGICopyBody(FLASK_APP.wsgi_app)
 
 def find_free_port():
-    # find free port
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(("",0))
     sock.listen(1)
@@ -122,16 +121,17 @@ def main():
     def setup_ssl():
         # not too critical until remote host connections are supported
         # Use default cert/key, read commandline options, etc
-        try:
-            # intentionally break this for now
-            #import ssl
-            sslcert = sslkey = None
-            sslcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            sslcontext.load_cert_chain(sslcert, sslkey)
-            return True
-        except:
-            sslcontext = None
-            return False
+        # disabled for now
+
+        # try:
+        #     import ssl
+        #     sslcert = sslkey = None
+        #     sslcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        #     sslcontext.load_cert_chain(sslcert, sslkey)
+        #     return True
+        # except Exception as e:
+        #     sslcontext = None
+        #     return False
 
     protocol = 'https' if setup_ssl() else 'http'
 
@@ -181,13 +181,10 @@ def main():
 
 # FIXME: it would be make sense to subclass Thread
 class Mfix(object):
-    " Class to represent the running instance of MFIX "
-
     requests = {}
     responses = {}
 
     def __init__(self, mfix_dat, paused, keyword_args, port):
-        " constructor "
         self.keyword_args = keyword_args
         self.thread = None
         self.status = json.dumps({})
@@ -267,7 +264,7 @@ class Mfix(object):
         MAIN.finalize()
 
     def do_step(self):
-        "Run one timestep"
+        """Run MFIX for a single timestep"""
         start = timer()
         STEP.time_step_init(self.mfix_dat)
         self.time_step_init_walltime = float(timer() - start)
@@ -305,7 +302,7 @@ class Mfix(object):
         self.time_step_end_walltime = float(timer() - start)
 
     def dem_time_march(self):
-        "Run DEM timesteps "
+        """Run DEM timesteps"""
         start = timer()
         for ii in range(DES_TIME_MARCH.factor):
             print("DEM timestep %d / %d" % (ii, DES_TIME_MARCH.factor))
@@ -484,7 +481,7 @@ class Mfix(object):
                     try:
                         # give the full array if the client is asking for an array (not recommended)
                         val = val.tolist()
-                    except:
+                    except Exception as e:
                         pass
                     if elem:
                         elem = int(elem)
@@ -620,7 +617,7 @@ def reinitialize():
             relative_name = tmp.name.split(os.getcwdu())[-1].lstrip('/')
             status_code, command_output = \
               mfix_thread.do_command("REINIT", args={'mfix_dat': relative_name})
-    except:
+    except Exception as e:
         status_code = 500
         command_output = "Error saving submitted project file"
     return api_response(status_code, command_output)
@@ -679,7 +676,6 @@ def write_dbg_vt():
 @FLASK_APP.route('/backupres', methods=['POST'])
 @token_required
 def backupres():
-    "calls BACKUP_RES"
     status_code, command_output = mfix_thread.do_command("BACKUPRES")
     return api_response(status_code, command_output)
 
@@ -687,7 +683,6 @@ def backupres():
 @FLASK_APP.route('/exit', methods=['POST'])
 @token_required
 def exit_mfix():
-    "exits the main loop in run_mfix"
     status_code, command_output = mfix_thread.do_command("EXIT")
     mfix_thread.thread.join()
     global pidfilename
@@ -702,7 +697,7 @@ def exit_mfix():
 @FLASK_APP.route('/step', methods=['POST'])
 @token_required
 def step():
-    "runs mfix for one timestep, regardless of TIME and TSTOP"
+    """runs mfix for one timestep, regardless of TIME and TSTOP"""
     args = dict(request.form)
     status_code, command_output = mfix_thread.do_command("STEP", args=args)
     return api_response(status_code, command_output)
