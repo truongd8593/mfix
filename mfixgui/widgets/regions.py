@@ -245,7 +245,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
                 new_name = get_unique_string(name, list(data.keys()))
                 # update parameters before the new region is added to the dictionary
-                self.update_parameter_name(new_name, None, new_region)
+                self.update_parameter_name(None,new_name, new_region)
                 data[new_name] = new_region
                 data[new_name]['visible'] = self.get_visibility_image(
                     data[new_name]['visibility'])
@@ -355,17 +355,16 @@ class RegionsWidget(QtWidgets.QWidget):
             # update data dict
             data[name][item[0]][index] = val
 
-            # check for and update plane extents
-            typ = data[name]['type']
-            if 'plane' in typ and item[1] not in typ.lower():
+            # check for and update point and plane extents
+            shape = data[name]['type']
+            if shape in ('plane', 'point') and item[1] not in shape.lower():
                 self.update_parameter_map(val, name, 'to_'+str(item[1]))
                 data[name]['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
 
             # propagate values
             for update in (self.vtkwidget.update_region,
-                           self.parent.ics_update_region,
-                           self.parent.bcs_update_region):
+                           self.parent.update_region):
                 update(name, data[name])
 
         elif 'name' in key and name != value.values()[0]:
@@ -377,22 +376,29 @@ class RegionsWidget(QtWidgets.QWidget):
             # TODO FIXME fit table to contents
 
             # update parameter map
-            self.update_parameter_name(new_name, name, data[new_name])
+            self.update_parameter_name(name, new_name, data[new_name])
 
         elif 'type' in key:
-            typ = value.values()[0]
-            data[name]['type'] = typ
+            shape = value.values()[0]
+            data[name]['type'] = shape
             self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
 
             # check for plane, update extents
-            if 'plane' in typ:
-                typ = typ.lower()
-                index = [d not in typ for d in 'xyz'].index(True)
+            if 'plane' in shape:
+                shape = shape.lower()
+                index = [d not in shape for d in 'xyz'].index(True)
                 f_value = data[name]['from'][index]
                 self.update_parameter_map(f_value, name, 'to_'+'xyz'[index])
                 data[name]['to'][index] = f_value
                 self.extent_lineedits[index*2+1].updateValue(None, f_value)
+            # check for point, update extents
+            elif shape == 'point':
+                for index in (0,1,2):
+                    f_value = data[name]['from'][index]
+                    data[name]['to'][index] = f_value
+                    self.update_parameter_map(f_value, name, 'to_'+'xyz'[index])
+                    self.extent_lineedits[index*2+1].updateValue(None, f_value)
 
         elif 'stl_shape' in key:
             data[name]['stl_shape'] = value.values()[0]
@@ -685,7 +691,7 @@ class RegionsWidget(QtWidgets.QWidget):
             else:
                 self._remove_key(key, value)
 
-    def update_parameter_name(self, new_name, old_name, region):
+    def update_parameter_name(self, old_name, new_name, region):
         """a region name changed, update map"""
         if old_name:
             self.remove_from_parameter_map(old_name, region)

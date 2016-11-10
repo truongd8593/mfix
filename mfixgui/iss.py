@@ -400,6 +400,13 @@ class ISS(object):
         return any(data.get('region')==name for data in self.iss.values())
 
 
+
+    def iss_update_region(self, name, data):
+        for (i,is_) in self.iss.items():
+            if is_.get('region') == name:
+                self.iss_set_region_keys(name, i, data)
+
+
     def setup_iss(self):
         ui = self.ui.internal_surfaces
 
