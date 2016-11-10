@@ -721,7 +721,8 @@
             BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
             WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),200) 'geometry_',BCV
 
-            INQUIRE(FILE=TRIM(geometryfile(NN)),EXIST=PRESENT)
+            INQUIRE(FILE=TRIM(geometryfile(NUMBER_OF_GEOMETRY_FILES)),&
+               EXIST=PRESENT)
             MULTISTL = MULTISTL .OR. PRESENT
             IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
 
