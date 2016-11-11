@@ -49,6 +49,10 @@ except steps 0/1 can be skipped
    As the help text states: "If you disable or do not configure this policy
    setting, BITS uses all available unused bandwidth."
 
+   Microsoft Search Service also uses a lot of bandwidth. To disable that,
+   run "System Configuration" from the Start menu, select "Services"
+   and disable "Windows Search"
+
    If you're going to do any serious work it is also helpful to disable Cortana:
 
 ***  http://www.pcworld.com/article/2949759/windows/killing-cortana-how-to-disable-windows-10s-info-hungry-digital-assistant.html
