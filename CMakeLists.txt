@@ -1,0 +1,647 @@
+cmake_minimum_required(VERSION 2.8)
+project("MFIX" Fortran)
+enable_language (Fortran)
+
+include_directories(model/include)
+
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/mod)
+
+option(MPI "MPI support" OFF)
+
+if ( SMP )
+  find_package ( OpenMP REQUIRED)
+    message("openmp found")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_Fortran_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif ( SMP )
+
+if ( MPI )
+  find_package ( MPI REQUIRED)
+  if ( MPI_Fortran_COMPILER )
+    include_directories( ${MPI_INCLUDE_PATH} )
+    set(CMAKE_Fortran_COMPILER ${MPI_Fortran_COMPILER})
+    add_definitions(-DMPI)
+  else ( MPI_Fortran_COMPILER )
+    message (FATAL_ERROR " MPI support requested but MPI compiler not found ")
+  endif ( MPI_Fortran_COMPILER )
+endif ( MPI )
+
+if (CMAKE_Fortran_COMPILER MATCHES "gfortran.*")
+  # gfortran
+  set (COMPILER_FREE_FLAGS "-ffree-form;-fimplicit-none;-fconvert=big-endian;-cpp")
+  set (COMPILER_FIXED_FLAGS "-ffixed-form")
+elseif (CMAKE_Fortran_COMPILER MATCHES "ifort.*")
+  # ifort
+  set (COMPILER_FREE_FLAGS "-free;-implicitnone;-convert;big_endian;-cpp")
+  set (COMPILER_FIXED_FLAGS "-fixed")
+endif (CMAKE_Fortran_COMPILER MATCHES "gfortran.*")
+
+set(SOURCES
+  model/GhdTheory/adjust_eps_ghd.f
+  model/mfix.f
+  model/read_database.f
+  model/read_namelist.f
+  model/GhdTheory/bulk_viscosity.f
+  model/GhdTheory/calc_d_ghd.f
+  model/GhdTheory/calc_external_forces.f
+  model/GhdTheory/calc_nflux.f
+  model/GhdTheory/chi_ij_GHD.f
+  model/GhdTheory/cooling_rate.f
+  model/GhdTheory/cooling_rate_tc.f
+  model/GhdTheory/dufour_coeff.f
+  model/GhdTheory/ghd.f
+  model/GhdTheory/ghdmassflux.f
+  model/GhdTheory/ghdtheory_mod.f
+  model/GhdTheory/mass_mobility.f
+  model/GhdTheory/ordinary_diff.f
+  model/GhdTheory/partial_elim_ghd.f
+  model/GhdTheory/pressure.f
+  model/GhdTheory/shear_viscosity.f
+  model/GhdTheory/source_ghd_granular_energy.f
+  model/GhdTheory/thermal_conductivity.f
+  model/GhdTheory/thermal_diffusivity.f
+  model/GhdTheory/thermal_mobility.f
+  model/GhdTheory/transport_coeff_ghd.f
+  model/accum_resid.f
+  model/adjust_a_u_g.f
+  model/adjust_a_u_s.f
+  model/adjust_a_v_g.f
+  model/adjust_a_v_s.f
+  model/adjust_a_w_g.f
+  model/adjust_a_w_s.f
+  model/adjust_eps.f
+  model/adjust_leq.f
+  model/adjust_theta.f
+  model/allocate_arrays.f
+  model/ambm_mod.f
+  model/b_m_p_star.f
+  model/bc_mod.f
+  model/bc_phi.f
+  model/bc_theta.f
+  model/bodyforce_mod.f
+  model/cal_d.f
+  model/calc_cell.f
+  model/calc_coeff.f
+  model/calc_d_e.f
+  model/calc_d_n.f
+  model/calc_d_t.f
+  model/calc_dif_g.f
+  model/calc_dif_s.f
+  model/calc_e.f
+  model/calc_gama.f
+  model/calc_grbdry.f
+  model/calc_h.f
+  model/calc_k_cp.f
+  model/calc_k_g.f
+  model/calc_k_s.f
+  model/calc_mflux.f
+  model/calc_mu_g.f
+  model/calc_mu_s.f
+  model/calc_outflow.f
+  model/calc_p_star.f
+  model/calc_resid.f
+  model/calc_s_ddot_s.f
+  model/calc_trd_g.f
+  model/calc_trd_s.f
+  model/calc_u_friction.f
+  model/calc_vol_fr.f
+  model/cartesian_grid/CG_set_bc0.f
+  model/cartesian_grid/CG_set_outflow.f
+  model/cartesian_grid/CG_source_u_g.f
+  model/cartesian_grid/CG_source_u_s.f
+  model/cartesian_grid/CG_source_v_g.f
+  model/cartesian_grid/CG_source_v_s.f
+  model/cartesian_grid/CG_source_w_g.f
+  model/cartesian_grid/CG_source_w_s.f
+  model/cartesian_grid/allocate_cut_cell_arrays.f
+  model/cartesian_grid/allocate_dummy_cut_cell_arrays.f
+  model/cartesian_grid/calc_vort_out.f
+  model/cartesian_grid/cartesian_grid_init_namelist.f
+  model/cartesian_grid/check_data_cartesian.f
+  model/cartesian_grid/cut_cell_preprocessing.f
+  model/cartesian_grid/cutcell_mod.f
+  model/cartesian_grid/dashboard_mod.f
+  model/cartesian_grid/deallocate_cut_cell_arrays.f
+  model/cartesian_grid/define_quadrics.f
+  model/cartesian_grid/dmp_cartesian.f
+  model/cartesian_grid/eval_usr_fct.f
+  model/cartesian_grid/get_alpha.f
+  model/cartesian_grid/get_connectivity.f
+  model/cartesian_grid/get_cut_cell_flags.f
+  model/cartesian_grid/get_cut_cell_volume_area.f
+  model/cartesian_grid/get_delh.f
+  model/cartesian_grid/get_master.f
+  model/cartesian_grid/get_poly_data.f
+  model/cartesian_grid/get_stl_data.f
+  model/cartesian_grid/polygon_mod.f
+  model/cartesian_grid/progress_bar_mod.f
+  model/cartesian_grid/quadric_mod.f
+  model/cartesian_grid/set_Odxyz.f
+  model/cartesian_grid/stl_mod.f
+  model/cartesian_grid/update_dashboard.f
+  model/cartesian_grid/vtk_mod.f
+  model/cartesian_grid/vtk_out.f
+  model/cartesian_grid/write_progress_bar.f
+  model/cdist_mod.f
+  model/check_ab_m.f
+  model/check_bqend.f
+  model/check_convergence.f
+  model/check_data/check_axis.f
+  model/check_data/check_bc_dem.f
+  model/check_data/check_bc_geometry.f
+  model/check_data/check_bc_inflow.f
+  model/check_data/check_bc_outflow.f
+  model/check_data/check_bc_pic.f
+  model/check_data/check_bc_walls.f
+  model/check_data/check_boundary_conditions.f
+  model/check_data/check_chemical_rxns.f
+  model/check_data/check_dmp_prereqs.f
+  model/check_data/check_gas_phase.f
+  model/check_data/check_geometry.f
+  model/check_data/check_geometry_prereqs.f
+  model/check_data/check_ic_common_discrete.f
+  model/check_data/check_ic_dem.f
+  model/check_data/check_ic_mppic.f
+  model/check_data/check_initial_conditions.f
+  model/check_data/check_internal_surfaces.f
+  model/check_data/check_numerics.f
+  model/check_data/check_odepack_stiff_chem.f
+  model/check_data/check_output_control.f
+  model/check_data/check_point_sources.f
+  model/check_data/check_run_control.f
+  model/check_data/check_solids_common_all.f
+  model/check_data/check_solids_common_discrete.f
+  model/check_data/check_solids_continuum.f
+  model/check_data/check_solids_dem.f
+  model/check_data/check_solids_model_prereqs.f
+  model/check_data/check_solids_mppic.f
+  model/check_data/check_solids_phases.f
+  model/check_data_20.f
+  model/check_data_30.f
+  model/check_mod.f
+  model/check_plane.f
+  model/chem/stiff_chem_dbg_mod.f
+  model/chem/stiff_chem_maps_mod.f
+  model/chem/stiff_chem_mod.f
+  model/chem/stiff_chem_rrates.f
+  model/chem/stiff_chem_stats_mod.f
+  model/chischeme_mod.f
+  model/cn_extrapol.f
+  model/coeff_mod.f
+  model/constant_mod.f
+  model/conv_dif_phi.f
+  model/conv_dif_u_g.f
+  model/conv_dif_u_s.f
+  model/conv_dif_v_g.f
+  model/conv_dif_v_s.f
+  model/conv_dif_w_g.f
+  model/conv_dif_w_s.f
+  model/conv_pp_g.f
+  model/conv_rop.f
+  model/conv_rop_g.f
+  model/conv_rop_s.f
+  model/conv_source_epp.f
+  model/copy_a.f
+  model/corner.f
+  model/corner_mod.f
+  model/correct_0.f
+  model/correct_1.f
+  model/dbg_mod.f
+  model/deprecated.f
+  model/des/calc_collision_wall_mod.f
+  model/des/calc_des_2fluid.f
+  model/des/calc_drag_des.f
+  model/des/calc_epg_des.f
+  model/des/calc_force_dem.f
+  model/des/calc_gamma_des.f
+  model/des/calc_grad_des.f
+  model/des/calc_interp_weights.f
+  model/des/calc_pg_grad.f
+  model/des/calc_rrates_des.f
+  model/des/calc_thermo_des.f
+  model/des/cfassign.f
+  model/des/cffctowall.f
+  model/des/cfnewvalues.f
+  model/des/cfrelvel.f
+  model/des/cfslide.f
+  model/des/cfupdateold.f
+  model/des/cfwallcontact.f
+  model/des/cfwallposvel.f
+  model/des/check_cell_movement.f
+  model/des/comp_mean_fields.f
+  model/des/comp_mean_fields0.f
+  model/des/comp_mean_fields1.f
+  model/des/derived_types_mod.f
+  model/des/des_allocate_mod.f
+  model/des/des_bc_mod.f
+  model/des/des_cluster_mod.f
+  model/des/des_functions.f
+  model/des/des_granular_temperature.f
+  model/des/des_init_arrays.f
+  model/des/des_init_namelist.f
+  model/des/des_physical_prop.f
+  model/des/des_reaction_model.f
+  model/des/des_rxns_mod.f
+  model/des/des_thermo_cond_mod.f
+  model/des/des_thermo_conv.f
+  model/des/des_thermo_mod.f
+  model/des/des_thermo_newvalues.f
+  model/des/des_thermo_rad.f
+  model/des/des_time_march.f
+  model/des/desgrid_mod.f
+  model/des/desmpi_mod.f
+  model/des/desmpi_wrapper_mod.f
+  model/des/dif_phi_bc_des.f
+  model/des/dif_phi_des.f
+  model/des/dif_phi_source_des.f
+  model/des/diffuse_mean_fields.f
+  model/des/discretelement_mod.f
+  model/des/drag_gp_des.f
+  model/des/drag_gs_des0.f
+  model/des/drag_gs_des1.f
+  model/des/drag_ss_dem_noninterp.f
+  model/des/gas_drag.f
+  model/des/generate_particles_mod.f
+  model/des/init_settling_dem.f
+  model/des/interpolation_mod.f
+  model/des/layout_mi_dem.f
+  model/des/list.f
+  model/des/make_arrays_des.f
+  model/des/mass_inflow_dem.f
+  model/des/mass_outflow_dem.f
+  model/des/mpi_comm_des_mod.f
+  model/des/mpi_funs_des_mod.f
+  model/des/mpi_init_des_mod.f
+  model/des/mpi_node_des_mod.f
+  model/des/mpi_pack_des_mod.f
+  model/des/mpi_unpack_des_mod.f
+  model/des/neighbour.f
+  model/des/nsquare.f
+  model/des/particle_filter_mod.f
+  model/des/particles_in_cell.f
+  model/des/pic/apply_wall_bc_pic.f
+  model/des/pic/calc_dtpic.f
+  model/des/pic/calc_ps_grad_pic.f
+  model/des/pic/calc_ps_pic.f
+  model/des/pic/integrate_time_pic.f
+  model/des/pic/interpolate_pic.f
+  model/des/pic/mass_inflow_pic.f
+  model/des/pic/mass_outflow_pic.f
+  model/des/pic/mfix_pic_mod.f
+  model/des/pic/pic_bc_mod.f
+  model/des/pic/pic_routines.f
+  model/des/pic/report_stats_pic.f
+  model/des/pic/set_bc_pic.f
+  model/des/pic/set_bc_pic_mi.f
+  model/des/pic/set_bc_pic_mo.f
+  model/des/pic/time_march_pic.f
+  model/des/randomno_mod.f
+  model/des/read_particle_input.f
+  model/des/read_res0_des.f
+  model/des/read_res1_des_mod.f
+  model/des/resize.f
+  model/des/rxns_gs_des1.f
+  model/des/sendrecvnode_mod.f
+  model/des/set_bc_dem.f
+  model/des/set_bc_dem_mi.f
+  model/des/set_bc_dem_mo.f
+  model/des/set_filter_des.f
+  model/des/set_geometry_des.f
+  model/des/set_ic_dem.f
+  model/des/set_phase_index.f
+  model/des/solid_drag.f
+  model/des/stl_dbg_des_mod.f
+  model/des/stl_functions_des_mod.f
+  model/des/stl_preproc_des_mod.f
+  model/des/usr0_des.f
+  model/des/usr1_des.f
+  model/des/usr2_des.f
+  model/des/usr3_des.f
+  model/des/usr4_des.f
+  model/des/usr_rates_des.f
+  model/des/vtp_mod.f
+  model/des/write_des_data.f
+  model/des/write_res0_des.f
+  model/des/write_res1_des_mod.f
+  model/dgtsl.f
+  model/dif_u_is.f
+  model/dif_v_is.f
+  model/dif_w_is.f
+  model/discretization_mod.f
+  model/display_resid.f
+  model/dmp_modules/dbg_util_mod.f
+  model/dmp_modules/debug_mod.f
+  model/dmp_modules/gridmap_mod.f
+  model/dmp_modules/sendrecv3_mod.f
+  model/dmp_modules/sendrecv_mod.f
+  model/dqmom/gaussj.f
+  model/dqmom/odeint.f
+  model/dqmom/rkck.f
+  model/dqmom/rkqs.f
+  model/dqmom/source_population_eq.f
+  model/dqmom/usr_dqmom.f
+  model/drag_gs.f
+  model/drag_mod.f
+  model/drag_ss.f
+  model/energy_mod.f
+  model/eos_mod.f
+  model/error_manager_mod.f
+  model/exchange.f
+  model/fldvar_mod.f
+  model/flow_to_vel.f
+  model/fun_avg_mod.f
+  model/function3_mod.f
+  model/get_bc_area.f
+  model/get_eq.f
+  model/get_flow_bc.f
+  model/get_hloss.f
+  model/get_is.f
+  model/get_philoss.f
+  model/get_ps.f
+  model/get_smass.f
+  model/get_stats.f
+  model/get_walls_bc.f
+  model/ic_mod.f
+  model/in_binary_512_mod.f
+  model/in_binary_512i_mod.f
+  model/include/boundary_conditions.inc
+  model/include/cartesian_grid_namelist.inc
+  model/include/chem_equations.inc
+  model/include/desnamelist.inc
+  model/include/dmp_batch_control.inc
+  model/include/fun_avg.inc
+  model/include/functions.inc
+  model/include/gas_phase.inc
+  model/include/geometry.inc
+  model/include/initial_conditions.inc
+  model/include/internal_surfaces.inc
+  model/include/legacy.inc
+  model/include/netcdf.inc
+  model/include/numerical_params.inc
+  model/include/output_control.inc
+  model/include/physical_params.inc
+  model/include/point_sources.inc
+  model/include/qmomknamelist.inc
+  model/include/run_control.inc
+  model/include/solids_phase.inc
+  model/include/species.inc
+  model/include/species_indices.inc
+  model/include/tfm_solids.inc
+  model/include/usr_hooks.inc
+  model/include/usrnlst.inc
+  model/include/version.inc
+  model/include/xforms.inc
+  model/init_ab_m.f
+  model/init_fvars.f
+  model/init_namelist.f
+  model/init_resid.f
+  model/is_mod.f
+  model/iterate.f
+  model/k_epsilon_prop.f
+  model/kintheory_mod.f
+  model/kintheory_u_s.f
+  model/kintheory_v_s.f
+  model/kintheory_w_s.f
+  model/leq_bicgs.f
+  model/leq_bicgst.f
+  model/leq_cg.f
+  model/leq_gmres.f
+  model/leq_sor.f
+  model/leqsol_mod.f
+  model/location_check.f
+  model/machine_mod.f
+  model/main.f
+  model/make_upper_case.f
+  model/mark_phase_4_cor.f
+  model/mfix_netcdf_mod.f
+  model/mflux_mod.f
+  model/mms_mod.f
+  model/mod_bc_i.f
+  model/mod_bc_j.f
+  model/mod_bc_k.f
+  model/open_file.f
+  model/open_files.f
+  model/out_array.f
+  model/out_array_c.f
+  model/out_array_k.f
+  model/out_array_kc.f
+  model/out_bin_512.f
+  model/out_bin_512i.f
+  model/out_bin_512r.f
+  model/out_bin_r.f
+  model/output_manager.f
+  model/output_mod.f
+  model/parallel_mod.f
+  model/parse_line.f
+  model/parse_mod.f
+  model/parse_resid_string.f
+  model/parse_rxn.f
+  model/partial_elim.f
+  model/pgcor_mod.f
+  model/physical_prop.f
+  model/physprop_mod.f
+  model/ps_mod.f
+  model/pscor_mod.f
+  model/qmomk/qmom_kinetic_equation_mod.f
+  model/qmomk/qmomk_allocate_arrays.f
+  model/qmomk/qmomk_bc_mod.f
+  model/qmomk/qmomk_collision_mod.f
+  model/qmomk/qmomk_fluxes_mod.f
+  model/qmomk/qmomk_gas_drag.f
+  model/qmomk/qmomk_init_bc.f
+  model/qmomk/qmomk_init_namelist.f
+  model/qmomk/qmomk_initial_conditions.f
+  model/qmomk/qmomk_make_arrays.f
+  model/qmomk/qmomk_parameters_mod.f
+  model/qmomk/qmomk_quadrature_mod.f
+  model/qmomk/qmomk_read_restart.f
+  model/qmomk/qmomk_set_bc.f
+  model/qmomk/qmomk_time_march.f
+  model/qmomk/qmomk_tools_mod.f
+  model/qmomk/qmomk_write_restart.f
+  model/radial_vel_correction.f
+  model/rdf_mod.f
+  model/read_res1.f
+  model/reinitialize.f
+  model/remove_comment.f
+  model/reset_new.f
+  model/residual_mod.f
+  model/rrates.f
+  model/rrates0.f
+  model/rrates_init.f
+  model/run_mod.f
+  model/rxn_com_mod.f
+  model/rxns_mod.f
+  model/scalar_prop.f
+  model/scalars_mod.f
+  model/scales_mod.f
+  model/set_bc0.f
+  model/set_bc1.f
+  model/set_bc_flow.f
+  model/set_constprop.f
+  model/set_flags.f
+  model/set_fluidbed_p.f
+  model/set_geometry.f
+  model/set_geometry1.f
+  model/set_ic.f
+  model/set_icbc_flags.f
+  model/set_increments.f
+  model/set_increments3.f
+  model/set_index1.f
+  model/set_index1a.f
+  model/set_index1a3.f
+  model/set_max2.f
+  model/set_mw_mix_g.f
+  model/set_outflow.f
+  model/set_param.f
+  model/set_ps.f
+  model/set_ro_g.f
+  model/set_ro_s.f
+  model/set_wall_bc.f
+  model/shift_dxyz.f
+  model/solids_pressure_mod.f
+  model/solve_continuity.f
+  model/solve_energy_eq.f
+  model/solve_epp.f
+  model/solve_granular_energy.f
+  model/solve_k_epsilon_eq.f
+  model/solve_lin_eq.f
+  model/solve_pp_g.f
+  model/solve_scalar_eq.f
+  model/solve_species_eq.f
+  model/solve_vel_star.f
+  model/source_granular_energy.f
+  model/source_phi.f
+  model/source_pp_g.f
+  model/source_rop_g.f
+  model/source_rop_s.f
+  model/source_u_g.f
+  model/source_u_s.f
+  model/source_v_g.f
+  model/source_v_s.f
+  model/source_w_g.f
+  model/source_w_s.f
+  model/tau_g_mod.f
+  model/tau_s_mod.f
+  model/tau_u_g.f
+  model/tau_u_s.f
+  model/tau_v_g.f
+  model/tau_v_s.f
+  model/tau_w_g.f
+  model/tau_w_s.f
+  model/test_lin_eq.f
+  model/thermochemical/get_values.f
+  model/thermochemical/read_thermochemical_mod.f
+  model/time_cpu_mod.f
+  model/time_step.f
+  model/toleranc_mod.f
+  model/trace_mod.f
+  model/transport_prop.f
+  model/turb_mod.f
+  model/undef_2_0.f
+  model/under_relax.f
+  model/update_old.f
+  model/ur_facs_mod.f
+  model/usr0.f
+  model/usr1.f
+  model/usr2.f
+  model/usr3.f
+  model/usr_drag.f
+  model/usr_init_namelist.f
+  model/usr_mod.f
+  model/usr_prop_mod.f
+  model/usr_properties.f
+  model/usr_rates.f
+  model/usr_sources.f
+  model/usr_src_mod.f
+  model/usr_write_out0.f
+  model/usr_write_out1.f
+  model/utilities_mod.f
+  model/vavg_u_g.f
+  model/vavg_u_s.f
+  model/vavg_v_g.f
+  model/vavg_v_s.f
+  model/vavg_w_g.f
+  model/vavg_w_s.f
+  model/vf_gs_x.f
+  model/vf_gs_y.f
+  model/vf_gs_z.f
+  model/visc_g_mod.f
+  model/visc_s_mod.f
+  model/vshear_mod.f
+  model/vtc_scalar.f
+  model/write_ab_m.f
+  model/write_ab_m_var.f
+  model/write_error.f
+  model/write_header.f
+  model/write_out0.f
+  model/write_out1.f
+  model/write_out3.f
+  model/write_res0.f
+  model/write_res1.f
+  model/write_spx0.f
+  model/write_spx1.f
+  model/write_table.f
+  model/write_usr0.f
+  model/write_usr1.f
+  model/xsi_mod.f
+  model/zero_norm_vel.f
+)
+
+set(ODEDEPS
+  model/BLAS.f
+  model/DGTSV.f
+  model/dmp_modules/compar_mod.f
+  model/dmp_modules/mpi_utility_mod.f
+  model/dmp_modules/parallel_mpi_mod.f
+  model/exit.f
+  model/functions_mod.f
+  model/funits_mod.f
+  model/geometry_mod.f
+  model/indices_mod.f
+  model/param1_mod.f
+  model/param_mod.f
+  model/xerbla.f
+  )
+
+FILE(GLOB USR_OVERRIDES ${CMAKE_CURRENT_BINARY_DIR}/*.f)
+add_executable(mfix model/mfix.f ${USR_OVERRIDES})
+add_library(model STATIC ${SOURCES} model/ODEPACK.F ${ODEDEPS})
+# add_library(odepack STATIC model/ODEPACK.F)
+# add_library(blas STATIC ${ODEDEPS})
+
+string (REPLACE ";" " " FREE_STR "${COMPILER_FREE_FLAGS}")
+string (REPLACE ";" " " FIXED_STR "${COMPILER_FIXED_FLAGS}")
+set_source_files_properties(model/mfix.f ${SOURCES} ${USR_OVERRIDES} ${ODEDEPS} PROPERTIES COMPILE_FLAGS "${FREE_STR}")
+set_source_files_properties(model/ODEPACK.F PROPERTIES COMPILE_FLAGS "${FIXED_STR}")
+
+# set_target_properties(mfix PROPERTIES Fortran_FORMAT "FREE")
+# set_target_properties(model PROPERTIES Fortran_FORMAT "FREE")
+# set_target_properties(odepack PROPERTIES Fortran_FORMAT "FIXED")
+# set_target_properties(blas PROPERTIES Fortran_FORMAT "FREE")
+
+# target_link_libraries(mfix model odepack blas)
+target_link_libraries(mfix model)
+
+find_package(PythonLibs)
+find_package(PythonInterp)
+
+set(PYMFIX_SOURCES
+  model/param_mod.f
+  model/param1_mod.f
+  model/dmp_modules/compar_mod.f
+  model/dmp_modules/debug_mod.f
+  model/dmp_modules/parallel_mpi_mod.f
+  model/fldvar_mod.f
+  model/des/discretelement_mod.f
+  model/des/des_time_march.f
+  model/iterate.f
+  model/residual_mod.f
+  model/time_step.f
+  model/main.f
+  model/run_mod.f
+)
+
+add_custom_target(mfixsolver
+  COMMAND f2py -c --f77exec=${CMAKE_Fortran_COMPILER} --f90exec=${CMAKE_Fortran_COMPILER} -m mfixsolver -I${CMAKE_Fortran_MODULE_DIRECTORY} ${PYMFIX_SOURCES} ${model} -lgomp --f90flags="${COMPILER_FREE_FLAGS};-DPYMFIX" --f77flags="${COMPILER_FIXED_FLAGS}" --noopt --noarch
+  )
