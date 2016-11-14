@@ -192,7 +192,7 @@ def expand_shorthand(string):
 
 
 def remove_spaces_from_equations(string):
-    # Can't do this with regex, here's a simple lexical scanner.
+    # Can't do this with regex, so here's a simple lexical scanner.
     quote = None
     escape = False
     paren_level = 0
@@ -205,7 +205,7 @@ def remove_spaces_from_equations(string):
             if quote and c==quote and not escape:
                 quote = False
             elif c == '"' or c == "'": # Start of quoted text
-                                # We're not doing triple-strings!
+                                # (We're not doing triple-quotes!)
                 quote = c
             elif not (quote or escape):
                 if c == '@':
