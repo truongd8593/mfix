@@ -204,9 +204,24 @@ class ProjectManager(Project):
         return SINGLE
 
     def load_project_file(self, project_file):
-        """Load an MFiX project file.
+        """Loads an MFiX project file updating certain keywords to match expectations
+        of MFIX-GUI:
+           * reject certain types of files (cylindrical coordinates)
+           * autoconvert CGS to SI
+           * filter out keywords which will be passed on commandline  (issues/149)
+           * migrate mw_g/mw_s to THERMO DATA section
+           * prefetch entries from Burcat db and add to THERMO DATA
+           * set ic_ep_s from ic_ep_g  (issues/142)
+           * convert gravity scalar to vector
+           *
+
+        Reports any non-fatal load errors via the 'warnings' module
+
         Returns False if input file rejected, True if opened (with possible warnings)
-        See also gui.open_project"""
+
+        See also project.parsemfixdat and gui.open_project
+        """
+
         n_errs = 0
         errlist = []
         with warnings.catch_warnings(record=True) as ws:
@@ -257,15 +272,13 @@ class ProjectManager(Project):
                               (nmax_g, len(self.gasSpecies)))
 
 
-
             # Make sure they are sorted by index before inserting into gui
             self.gasSpecies.sort(key=lambda a: a.ind)
             self.solids.sort(key=lambda a:a.ind)
 
             db = self.gui.species_popup.db
 
-            # Note that parsemfixdat does not modify the THERMO DATA section into
-            # Species objects
+            # Parse THERMO DATA section (parsemfixdat does not handle this)
             user_species = {}
             if self.thermo_data is not None:
                 for (species, lines) in self.thermo_data.items():
@@ -281,11 +294,12 @@ class ProjectManager(Project):
                 species = g.get('species_g')
 
                 source = "User Defined"
-                if species is None:
+                if species is None: # Should not happen (?)
                     species = 'Gas %s' % g.ind
                     source = "Auto"
                     #warnings.warn("no species_g for gas %d" % g.ind)
                 alias = g.get('species_alias_g', species)
+
                 mw_g = g.get('mw_g', None)
                 # Note, we're going to unset mw_g and migrate it into THERMO DATA
 
@@ -351,9 +365,13 @@ class ProjectManager(Project):
                         'a_low': [0.0]*7,
                         'a_high': [0.0]*7}
 
-                if species in self.gui.fluid_species:
-                    self.gui.print_internal("Copying %s to %s" % (species, alias))
+                # Species/alias unification!
+                if species != alias:
+                    self.gui.print_internal("Renaming %s to %s" % (species, alias), font="Monospace") # log?
+                    self.gui.set_unsaved_flag()
+                    self.thermo_data.pop(species, None)
                     species = alias # Create a new species, so we can override mol. weight, etc
+
 
                 self.gui.fluid_species[species] = species_data
 
@@ -421,8 +439,8 @@ class ProjectManager(Project):
 
                     else:
                         # get this from the species popup so we don't have to load
-                        # another copy of the database.  currently the database is
-                        # owned by the species popup.
+                        # another copy of the database.  (the database is owned by
+                        # the species popup.
                         species_data = self.gui.species_popup.get_species_data(species, phase)
                         if not species_data:
                             # Look for mismatched phase definition
@@ -457,6 +475,14 @@ class ProjectManager(Project):
                             'a_high': [0.0]*7}
 
                     species_data['density'] = density
+
+                    # Species/alias unification!
+                    if species != alias:
+                        self.gui.print_internal("Renaming %s to %s" % (species, alias), font="Monospace") #log?
+                        self.gui.set_unsaved_flag()
+                        self.thermo_data.pop(species, None)
+                        species = alias # Create a new species, so we can override mol. weight, etc
+
                     self.gui.solids_species[s.ind][species] = species_data
 
                 self.update_thermo_data(self.gui.solids_species[s.ind])
