@@ -84,8 +84,11 @@ except steps 0/1 can be skipped
    binutils                             2.25-4
    mingw64-86_64-gcc-fortran            5.4.0-3
 
+   Be sure to install 86_64 packages not i686 (which are 32-bit).
+
    Do *not* install Cygwin Python.  We are using, and linking against,
    Anaconda.
+
 
 
 5) Install Anaconda gcc compatibility lib (needed to build Python
