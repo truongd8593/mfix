@@ -135,7 +135,6 @@ class MfixGui(QtWidgets.QMainWindow,
                          buttons=['ok'],
                          default='ok')
 
-
     def warn(self, msg, popup=False):
         # Show the user a warning & log it - use instead of log.warn
         if not popup:
@@ -408,7 +407,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.pressed.connect(lambda mode=mode: self.mode_changed(mode))
+            btn.pressed.connect(lambda mode=mode: self.change_mode(mode))
 
         # navigation tree
         ui.toolbutton_collapse_navigation.clicked.connect(self.toggle_nav_menu)
@@ -480,7 +479,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.parameter_dialog = ParameterDialog(self)
 
         # --- default ---
-        self.mode_changed('modeler')
+        self.change_mode('modeler')
         self.change_pane('model setup')
 
         # Update run options
@@ -720,7 +719,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def toggle_nav_menu(self):
         nav_menu = self.ui.treewidget_navigation
         if self.mode != 'modeler':
-            self.mode_changed('modeler')
+            self.change_mode('modeler')
             self.change_pane('model setup')
             nav_menu.setVisible(True)
         else:
@@ -1155,7 +1154,7 @@ class MfixGui(QtWidgets.QMainWindow,
         project_file = self.get_project_file()
         return os.path.dirname(project_file) if project_file else None
 
-    def mode_changed(self, mode):
+    def change_mode(self, mode):
         """change the Modeler, Workflow, Developer tab"""
         self.mode = mode
         to_index = None
@@ -1180,20 +1179,27 @@ class MfixGui(QtWidgets.QMainWindow,
             #font.setBold(mode == key)
             #btn.setFont(font)
 
-        workflow = mode == 'workflow'
+        workflow = (mode=='workflow')
         if PYQTNODE_AVAILABLE:
             nc = self.ui.workflow_widget.nodeChart
             for btn in [nc.runToolButton, nc.autorunToolButton, nc.stopToolButton, nc.stepToolButton]:
                 btn.setVisible(workflow)
 
         ui = self.ui
-        for btn in [ui.toolbutton_reset_mfix, ui.toolbutton_run_mfix, ui.toolbutton_pause_mfix, ui.toolbutton_stop_mfix]:
+        for btn in (ui.toolbutton_reset_mfix, ui.toolbutton_run_mfix,
+                    ui.toolbutton_pause_mfix, ui.toolbutton_stop_mfix):
             btn.setVisible(not workflow)
 
         self.animate_stacked_widget(self.ui.stackedwidget_mode,
                                     self.ui.stackedwidget_mode.currentIndex(),
                                     to_index,
                                     'horizontal')
+
+        if mode == 'modeler': # open navigation menu whenever we go back to Modeler mode
+            if not self.ui.treewidget_navigation.isVisible():
+                self.toggle_nav_menu()
+
+
 
     # --- modeler pane navigation ---
     def change_pane(self, name):
@@ -2576,7 +2582,7 @@ def main():
         if last_prj == project_file:
             m = SETTINGS.value('mode')
             if m is not None:
-                gui.mode_changed(m)
+                gui.change_mode(m)
             n = SETTINGS.value('navigation')
             if n is not None:
                 gui.change_pane(n)
