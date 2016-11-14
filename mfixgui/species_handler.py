@@ -31,31 +31,21 @@ class SpeciesHandler(object):
             count += 1
 
 
-    def find_species_phase(self, species_or_alias):
-        if species_or_alias in self.fluid_species:
+    def find_species_phase(self, species):
+        if species in self.fluid_species:
             return 0
-        for (name, data) in self.fluid_species.items():
-            if data.get('alias') == species_or_alias:
-                return 0
 
         for (p, s) in self.solids_species.items():
-            if species_or_alias in s:
+            if species in s:
                 return p
-            for (name, data) in s.items():
-                if data.get('alias') == species_or_alias:
-                    return p
 
 
-    def species_mol_weight(self, species_or_alias):
-        for (name, data) in self.fluid_species.items():
-            alias = data.get('alias', name)
-            if alias == species_or_alias:
-                return data.get('mol_weight')
+    def species_mol_weight(self, species):
+        if species in self.fluid_species:
+            return self.fluid_species[species].get('mol_weight')
         for (p, subdict) in self.solids_species.items():
-            for (name, data) in subdict.items():
-                alias = data.get('alias', name)
-                if alias == species_or_alias:
-                    return data.get('mol_weight')
+            if species in subdict:
+                return subdict[species].get('mol_weight')
 
         return None
 
@@ -64,8 +54,6 @@ class SpeciesHandler(object):
         if p is None:
             return []
         elif p == 0:
-            return [data.get('alias', name)
-                    for (name, data) in self.fluid_species.items()]
+            return self.fluid_species.keys()
         else:
-            return [data.get('alias', name)
-                    for (name, data) in self.solids_species[p].items()]
+            return self.solids_species[p].keys()
