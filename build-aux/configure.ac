@@ -73,12 +73,6 @@ if test x"$PYUIC" = x; then
 AC_MSG_ERROR([Enabling python support requires pyuic to be in PATH])
 fi
 
-AC_CHECK_PROG(F2PY,f2py,f2py)
-
-if test x"$F2PY" = x; then
-   AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])
-fi
-
 AC_MSG_CHECKING(whether fPIC compiler option is accepted)
 SAVED_FCFLAGS="$FCFLAGS"
 FCFLAGS="$FCFLAGS -fPIC -Werror"
