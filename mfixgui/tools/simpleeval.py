@@ -8,6 +8,11 @@ generate a string, or a number from some other input, without allowing full
 eval() or other unsafe or needlessly complex linguistics.
 
 -------------------------------------
+Modified for MFIX:
+
+   2016-11-13 - allow 'd' in floating-point constants
+
+-------------------------------------
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +66,7 @@ repo.
 
 -----------
 
-If you don't need to re-use the evaluator (with it's names, functions, etc),
+If you don't need to re-use the evaluator (with its names, functions, etc),
 then you can use the simple_eval() function:
 
 >>> simple_eval("21 + 19")
@@ -79,6 +84,7 @@ import ast
 import operator as op
 from random import random
 import math
+import re
 
 ########################################
 # Module wide 'globals'
@@ -171,13 +177,22 @@ DEFAULT_OPERATORS = {ast.Add: safe_add, ast.Sub: op.sub, ast.Mult: safe_mult,
                      ast.UAdd: op.pos}
 
 DEFAULT_FUNCTIONS = {"rand": random, "randint": random_int,
-                     "int": int, "float": float,
-                     "abs": abs, 
-                     "sin": math.sin, "cos": math.cos, "tan": math.tan,
-                     "asin": math.asin, "acos": math.acos, "atan": math.atan,
-                     "exp": math.exp, "log": math.log, "log10": math.log10,
-                     "sqrt": math.sqrt, "pow": math.pow,
-                     "radians": math.radians, "degrees": math.degrees,
+                     "int": int,
+                     "float": float,
+                     "abs": abs,
+                     "sin": math.sin,
+                     "cos": math.cos,
+                     "tan": math.tan,
+                     "asin": math.asin,
+                     "acos": math.acos,
+                     "atan": math.atan,
+                     "exp": math.exp,
+                     "log": math.log,
+                     "log10": math.log10,
+                     "sqrt": math.sqrt,
+                     "pow": math.pow,
+                     "radians": math.radians,
+                     "degrees": math.degrees,
                      }
 
 DEFAULT_NAMES = {"True": True, "False": False, 'e': math.e, 'pi': math.pi}
@@ -213,6 +228,10 @@ class SimpleEval(object): # pylint: disable=too-few-public-methods
         # set a copy of the expression aside, so we can give nice errors...
 
         self.expr = expr
+
+        # handle Fortran-style floats with 'd' - cgw 2016-11-14
+        r = re.compile(r'([0-9]+\.?)([dD])([-+]?[0-9]+)')
+        expr = r.sub(r'\1e\3', expr)
 
         # and evaluate:
         return self._eval(ast.parse(expr).body[0].value)
@@ -287,3 +306,18 @@ def simple_eval(expr, names={}):
     ''' Simply evaluate an expresssion '''
     s = SimpleEval(names=names)
     return s.eval(expr)
+
+
+if (__name__ == '__main__'):
+    for expr in ('cos(2)',
+                 'e + pi',
+                 '3e4',
+                 'degrees(pi)',
+                 '3e+4',
+                 '3d+4',
+                 '3d4',
+                 '3.d+4'
+                 '1/2',
+                 '1/(1+sin(pi))',
+                 ):
+        print("%s = %s" %(expr, simple_eval(expr)))
