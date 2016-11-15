@@ -71,5 +71,7 @@ if [ -f ${FDEP_USR} ] ; then
 fi
 
 if [[ $(uname -a) =~ "CYGWIN" ]]; then
-    sed -i 's=/cygdrive/(.)/=\1:/=' Makefile
+    cd ${RUN_DIR}
+    cp Makefile Makefile.cyg
+    sed 's=/cygdrive/\(.\)/=\1:/=' Makefile.cyg > Makefile
 fi
