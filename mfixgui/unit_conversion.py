@@ -2,8 +2,40 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-""" Factors for converting CGS to SI models, etc
-    converting CGS to SI models"""
+
+"""
+Simulation Units
+Simulations can be setup using the International System of Units (SI) or the centimetergram-second system (CGS). Although the majority of units are consistent with the specified systems, there are exceptions. The following table provides the SI and CGS units employed by MFIX for various quantities.
+
+
+Quantity                      MFIX SI unit              MFIX CGS unit
+
+length, position              meter(m)                  centimeter (cm)
+mass                          kilogram (kg)             gram (g)
+time                          second (s)                second (s)
+thermal temperature           Kelvin (K)                Kelvin (K)
+energy†                       Joule (J)                 calorie (cal)
+amount of substance‡          kilomole (kmol)           mole (mol)
+force                         Newton (1 N = 1 kg·m·s-2) dyne (1 dyn = 1 g·cm·s-2)
+pressure                      Pascal (1 Pa = 1 N·m-2)   barye (1 Ba = 1 dyn·cm-2)
+dynamic viscosity             Pa·s                      poise (1 P = 1 g·cm-1·s-1)
+kinematic viscosity           m2·s-1                    Stokes (1 St = 1 cm2·s-1)
+gas constant                  J·K-1·kmol-1              erg·K-1·mol-1
+enthalpy                      J                         cal
+specific heat                 J·kg-1·K-1                cal·g-1·K-1
+thermal conductivity          J·m-1·K-1·s-1             cal·cm-1·K-1·s-1
+
+† The CGS unit for energy is the ergon (1 erg = 1 dyne·cm). This is reflected in MFIX
+through the gas constant. However, all thermochemical properties related to the energy
+equations are based in calories for CGS units. Entries in the Burcat database are
+always specified in terms of calories regardless of the simulation units. MFIX converts
+the entries to joules after reading the database when SI units are used.
+‡ The SI unit for the amount of a substance is the mole (mol). These units are needed
+when specifying reaction rates:
+• amount per time per volume for Eulerian model reactions
+• amount per time for Lagrangian model reactions
+"""
+
 
 # Running this file will add to the definitions below, but will not modify or delete any
 # existing definitions
@@ -41,7 +73,7 @@ cgs_to_SI = {
   'bc_k_turb_g':    None, # UNKNOWN                : Boundary value of K for K-Epsilon Equation.
   'bc_massflow_g':  None, # UNKNOWN                : Gas mass flow rate through the boundary.
   'bc_massflow_s':  None, # UNKNOWN                : Solids mass flow rate through the boundary.
-  'bc_p_g':         None, # UNKNOWN                : Gas pressure at the BC plane.
+  'bc_p_g':         0.1,  # barye -> Pa            : Gas pressure at the BC plane.
   'bc_pic_mi_const_statwt':None,# UNKNOWN          : Flag to specify the constant statistical weight for
   'bc_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Bulk density of solids phase at the BC plane.
   'bc_scalar':      None, # UNKNOWN                : Boundary value for user-defined scalar equation.
@@ -104,9 +136,9 @@ cgs_to_SI = {
   'cpy':            None, # UNKNOWN                : Location of control points in y-direction.
   'cpz':            None, # UNKNOWN                : Location of control points in z-direction.
   'd_p0':           0.01, # cm -> m                : Initial particle diameters .
-  'delp_x':         None, # UNKNOWN                : Fluid pressure drop across XLENGTH when a cyclic boundary
-  'delp_y':         None, # UNKNOWN                : Fluid pressure drop across YLENGTH when a cyclic boundary
-  'delp_z':         None, # UNKNOWN                : Fluid pressure drop across ZLENGTH when a cyclic boundary
+  'delp_x':         0.1,  # barye -> Pa            : Fluid pressure drop across XLENGTH when a cyclic boundary
+  'delp_y':         0.1,  # barye -> Pa            : Fluid pressure drop across YLENGTH when a cyclic boundary
+  'delp_z':         0.1,  # barye -> Pa            : Fluid pressure drop across ZLENGTH when a cyclic boundary
   'des_diffuse_width':None,# UNKNOWN               : The length scale used to smooth dispersed phase averaged
   'des_em':         None, # UNKNOWN                : Emissivity of solids phase M.
   'des_en_input':   1,    # factor                 : The normal restitution coefficient for inter-particle
@@ -136,7 +168,7 @@ cgs_to_SI = {
   'e_young_actual': 0.1,  # barye -> Pa            : Actual Young's modulus for the particle . Used for computing
   'ep_s_max':       1,    # volume fraction        : Maximum solids volume fraction at packing for polydisperse
   'ep_star':        1,    # void fraction          : Packed bed void fraction. Used to calculate plastic stresses
-  'eps_f_min':      None, # UNKNOWN                : Minimum solids fraction above which friction sets in.  (when
+  'eps_f_min':      1,    # solids fraction        : Minimum solids fraction above which friction sets in.  (when
   'erx':            1,    # ratio                  : Expansion ratio (last DX/first DX) in a segment
   'ery':            1,    # ratio                  : Expansion ratio (last DY/first DY) in a segment
   'erz':            1,    # ratio                  : Expansion ratio (last DZ/first DZ) in a segment
@@ -149,9 +181,9 @@ cgs_to_SI = {
   'first_dy':       None, # UNKNOWN                : Value of first DY in a segment (y-direction). A negative
   'first_dz':       None, # UNKNOWN                : Value of first DZ in a segment (z-direction). A negative
   'flpc':           0.01, # cm -> m                : Fluid lens proportion constant used to calculate the radius
-  'flux_g':         None, # UNKNOWN                : If a value is specified, the domain-averaged gas flux is
+  'flux_g':         0.1,  # barye -> Pa            : If a value is specified, the domain-averaged gas flux is
   'fric_exp_pic':   None, # UNKNOWN                : Beta term in the frictional stress model of Snider.
-  'gravity':        0.01, # cm/s^2 -> m/s^2        : Gravitational acceleration. 
+  'gravity':        0.01, # cm/s^2 -> m/s^2        : Gravitational acceleration.
   'gravity_x':      0.01, # cm/s^2 -> m/s^2        : X-component of gravitational acceleration vector.
   'gravity_y':      0.01, # cm/s^2 -> m/s^2        : Y-component of gravitational acceleration vector.
   'gravity_z':      0.01, # cm/s^2 -> m/s^2        : Z-component of gravitational acceleration vector.
@@ -164,8 +196,8 @@ cgs_to_SI = {
   'ic_gama_rs':     None, # UNKNOWN                : Solids phase-m radiation coefficient in the IC region.
   'ic_k_turb_g':    None, # UNKNOWN                : Initial value of K in K-Epsilon.
   'ic_l_scale':     None, # UNKNOWN                : Turbulence length scale in the IC region.
-  'ic_p_g':         None, # UNKNOWN                : Initial gas pressure in the IC region. If this quantity is
-  'ic_p_star':      None, # UNKNOWN                : Initial solids pressure in the IC region. Usually, this
+  'ic_p_g':         0.1,  # barye -> Pa            : Initial gas pressure in the IC region. If this quantity is
+  'ic_p_star':      0.1,  # barye -> Pa            : Initial solids pressure in the IC region. Usually, this
   'ic_pic_const_statwt':None,# UNKNOWN             : Flag to specify the initial constant statistical weight for
   'ic_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Initial bulk density (rop_s = ro_s x ep_s) of solids phase-m
   'ic_scalar':      None, # UNKNOWN                : Initial value of Scalar n.
@@ -188,7 +220,7 @@ cgs_to_SI = {
   'ic_y_s':         0.01, # cm -> m                : Y coordinate of the south face.
   'ic_z_b':         0.01, # cm -> m                : Z coordinate of the bottom face.
   'ic_z_t':         0.01, # cm -> m                : Z coordinate of the top face.
-  'is_pc':          None, # UNKNOWN                : Parameters defining the internal surface. These values need
+  'is_pc':          0.1,  # barye -> Pa            : Parameters defining the internal surface. These values need
   'is_vel_s':       0.01, # cm/s -> m/s            : Value of fixed solids velocity through semipermeable
   'is_x_e':         0.01, # cm -> m                : X coordinate of the east face or edge.
   'is_x_w':         0.01, # cm -> m                : X coordinate of the west face or edge.
@@ -219,7 +251,7 @@ cgs_to_SI = {
   'mppic_coeff_et_wall':None,# UNKNOWN             : Tangential coefficient of restitution for parcel-wall
   'mu_g0':          0.1,  # g/cm.s -> kg/m.s       : Specified constant gas viscosity .
   'mu_gmax':        None, # UNKNOWN                : Maximum value of the turbulent viscosity of the fluid, which
-  'mu_s0':          None, # UNKNOWN                : Specified constant viscosity. If any value is specified
+  'mu_s0':          0.1,  # barye -> Pa            : Specified constant viscosity. If any value is specified
   'mw_avg':         1,    # g/mol                  : Average molecular weight of gas . Used in calculating the
   'mw_g':           1,    # g/mol                  : Molecular weight of gas species .
   'mw_s':           1,    # g/mol                  : Molecular weight of solids phase species .
@@ -232,8 +264,8 @@ cgs_to_SI = {
   'out_dt':         1,    # s                      : Interval at which standard output (.OUT) file is updated.
   'out_msh_value':  None, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
   'out_stl_value':  None, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. a value
-  'p_ref':          None, # UNKNOWN                : Reference pressure. 
-  'p_scale':        1,    # factor                 : Scale factor for pressure. 
+  'p_ref':          0.1,  # barye -> Pa            : Reference pressure.
+  'p_scale':        1,    # factor                 : Scale factor for pressure.
   'phi':            1,    # angle                  : Angle of internal friction (in degrees). Set this value to
   'phi_w':          1,    # angle                  : Angle of internal friction (in degrees) at walls. Set this
   'phip':           1,    # max = 1.0              : Specularity coefficient associated with particle-wall
@@ -357,7 +389,7 @@ cgs_to_SI = {
 }
 
 
-if (__name__ == '__main__'):
+def main():
     import os
     import re
     from tools.general import SCRIPT_DIRECTORY
@@ -377,7 +409,7 @@ if (__name__ == '__main__'):
         return s
 
     doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY, os.pardir, 'model'))
-    keys = doc.keys()
+    keys = list(doc.keys())
     keys.sort()
 
     pat = re.compile(r'\[(.*) in SI.*\]')
@@ -395,8 +427,9 @@ if (__name__ == '__main__'):
     # Try to get units from keyword doc. Add to predefined factors above
 
     for key in keys[:]:
-        if key in cgs_to_SI:
+        if cgs_to_SI.pop(key, None):
             continue # Don't modify existing entries
+            # TODO clean up handling of existing
         entry = doc[key]
         if not isinstance(entry, dict): # 'keywordlist' & 'categories'
             keys.remove(key)
@@ -426,7 +459,7 @@ if (__name__ == '__main__'):
 
         if SI_unit is None:
             # Anything which is a fraction is dimensionless
-            for s in ('volume fraction', 'void fraction', 'mass fraction'):
+            for s in ('volume fraction', 'void fraction', 'mass fraction', 'solids fraction'):
                 if s in desc_lower:
                     SI_unit = s
                     break
@@ -461,6 +494,9 @@ if (__name__ == '__main__'):
             # Ratios too
             elif 'ratio' in desc_lower:
                 SI_unit = 'ratio'
+            # Pressures are Pa
+            elif 'pressure' in desc_lower:
+                SI_unit = 'Pa'
             # Densities
             elif 'density' in desc_lower:
                 SI_unit = 'kg/m^3'
@@ -534,12 +570,14 @@ if (__name__ == '__main__'):
 
     infile = open(__file__, 'r')
     outfile = open(__file__ + '.tmp', 'w')
-    skip = False
+    in_gen_section = False
     for line in infile:
         line = line.decode('utf-8')
         if line.startswith('#<start'):
             outfile.write(line)
             for key in keys:
+                if key not in cgs_to_SI:
+                    continue
                 factor, comment = cgs_to_SI.get(key, (None, ''))
                 desc = doc[key].get('description').strip()
                 l = "  '%s':" % key
@@ -549,49 +587,27 @@ if (__name__ == '__main__'):
                 l += '# %s' % (comment if factor else 'UNKNOWN')
                 l += ' '*(50-len(l))
                 l += ' : ' + trim(desc)
-                outfile.write(l+'\n')
+                outfile.write(l.rstrip()+'\n')
 
-            skip = True
-        elif line.startswith('#<end'):
-            outfile.write(line)
-            skip = False
+            in_gen_section = True
             continue
-        elif not skip:
+
+        if line.startswith('#<end'):
+            outfile.write(line)
+            in_gen_section = False
+            continue
+
+        if in_gen_section: # In 'generated' section
+            lkey = line.split(':', 1)[0].strip()[1:-1] # Find keyword on line
+            if lkey not in cgs_to_SI: # Retain line if we haven't calculated a new value
+                outfile.write(line.encode('utf-8'))
+
+        else: # pass the rest
             outfile.write(line.encode('utf-8'))
 
     # We could replace the input file, but let's not go crazy
     print("Generated %s" % (__file__ + '.tmp'))
 
 
-"""
-Simulation Units
-Simulations can be setup using the International System of Units (SI) or the centimetergram-second system (CGS). Although the majority of units are consistent with the specified systems, there are exceptions. The following table provides the SI and CGS units employed by MFIX for various quantities.
-
-
-Quantity                      MFIX SI unit              MFIX CGS unit
-
-length, position              meter(m)                  centimeter (cm)
-mass                          kilogram (kg)             gram (g)
-time                          second (s)                second (s)
-thermal temperature           Kelvin (K)                Kelvin (K)
-energy†                       Joule (J)                 calorie (cal)
-amount of substance‡          kilomole (kmol)           mole (mol)
-force                         Newton (1 N = 1 kg·m·s-2) dyne (1 dyn = 1 g·cm·s-2)
-pressure                      Pascal (1 Pa = 1 N·m-2)   barye (1 Ba = 1 dyn·cm-2)
-dynamic viscosity             Pa·s                      poise (1 P = 1 g·cm-1·s-1)
-kinematic viscosity           m2·s-1                    Stokes (1 St = 1 cm2·s-1)
-gas constant                  J·K-1·kmol-1              erg·K-1·mol-1
-enthalpy                      J                         cal
-specific heat                 J·kg-1·K-1                cal·g-1·K-1
-thermal conductivity          J·m-1·K-1·s-1             cal·cm-1·K-1·s-1
-
-† The CGS unit for energy is the ergon (1 erg = 1 dyne·cm). This is reflected in MFIX
-through the gas constant. However, all thermochemical properties related to the energy
-equations are based in calories for CGS units. Entries in the Burcat database are
-always specified in terms of calories regardless of the simulation units. MFIX converts
-the entries to joules after reading the database when SI units are used.
-‡ The SI unit for the amount of a substance is the mole (mol). These units are needed
-when specifying reaction rates:
-• amount per time per volume for Eulerian model reactions
-• amount per time for Lagrangian model reactions
-"""
+if (__name__ == '__main__'):
+    main()
