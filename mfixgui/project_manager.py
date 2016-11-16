@@ -248,7 +248,7 @@ class ProjectManager(Project):
                         try:
                             kw.value = factor * float(kw.value) # message?
                             self.gui.set_unsaved_flag()
-                        except Exception, e:
+                        except Exception as e:
                             warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
                     else:
                         warnings.warn('no conversion for %s' % (kw.key))
