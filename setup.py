@@ -6,20 +6,42 @@ http://mfix.netl.doe.gov/
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
-# To use a consistent encoding
 from codecs import open
+from distutils.command.build_ext import build_ext
 from glob import glob
-from os import path
+from os import makedirs, path
+from shutil import copyfile
 
-here = path.abspath(path.dirname(__file__))
+from setuptools import setup, Extension
+
+HERE = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README'), encoding='utf-8') as f:
+with open(path.join(HERE, 'README'), encoding='utf-8') as f:
     long_description = f.read()
+
+# setup_args = { ... }
+# if platform.system() == 'Windows':
+
+class MfixBuildExt(build_ext):
+    """Override build_extension to copy the shared library file"""
+
+    def build_extension(self, ext):
+        ''' Copies the already-compiled pyd
+        '''
+        # subprocess.call(["./configure", "--disable-maintainer-mode"])
+        # subprocess.call(["make"])
+        extpath = path.dirname(self.get_ext_fullpath(ext.name))
+        if not path.exists(extpath):
+            makedirs(extpath)
+
+        mfixsolver_sharedlib = [p for p in glob('mfixsolver*') if path.isfile(p)]
+        mfixsolver_sharedlib = mfixsolver_sharedlib[0]
+        copyfile(path.join(HERE, mfixsolver_sharedlib), self.get_ext_fullpath(ext.name))
 
 setup(
     name='mfixgui',
+    cmdclass={'build_ext': MfixBuildExt},
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -68,12 +90,13 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['mfixgui',
-              'mfixgui.doc',
-              'mfixgui.icons',
-              'mfixgui.tests',
-              'mfixgui.tools',
-              'mfixgui.widgets',
+    packages=[
+        'mfixgui',
+        'mfixgui.doc',
+        'mfixgui.icons',
+        'mfixgui.tests',
+        'mfixgui.tools',
+        'mfixgui.widgets',
     ],
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -81,6 +104,8 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['qtpy'],
+
+    ext_modules=[Extension('mfixsolver', sources=[])],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -96,14 +121,15 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=[('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
-                ('mfixgui/icons', glob('mfixgui/icons/*')),
-                ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
-                ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
-                ('model', glob('model/*.f')),
-                ('model/des', glob('model/des/*.f')),
-                ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
-                ],
+    data_files=[
+        ('mfixgui/icons', glob('mfixgui/icons/*')),
+        ('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
+        ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
+        ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
+        ('model', glob('model/*.f')),
+        ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
+        ('model/des', glob('model/des/*.f')),
+    ],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
