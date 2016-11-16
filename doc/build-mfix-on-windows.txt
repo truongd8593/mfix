@@ -100,20 +100,7 @@ except steps 0/1 can be skipped
    This will probably trigger some other updates, say "yes" to everything.
 
 
-6) Create an 'f2py' wrapper script.
-
-   Note: f2py is already installed as part of numpy, but the
-   wrapper script is not installed
-
-   In a Cygwin terminal (bash):
-   $ echo 'python -m numpy.f2py "$@"' > /usr/bin/f2py
-   $ chmod +x f2py
-
-   Make sure it works:
-   $ f2py -h
-
-
-7) Fix up compiler names for f2py
+6) Fix up compiler names for f2py
 
    'make' and 'autoconf' can deal with the compiler name being prefixed
    with a host triple, but f2py expects the compilers to be called
@@ -129,19 +116,11 @@ except steps 0/1 can be skipped
    not link these files)
 
 
-8) Configure mfix
+9) Configure mfix
 
    $ cd /cygdrive/e/mfix
    $ ./configure_mfix --enable-python --host=x86_64-w64-mingw32
 
-
-9) Fix up references to /cygdrive in the generated Makefile
-
-   $ grep /cygdrive Makefile
-   $ sed -i 's=/cygdrive/e/=E:/=' Makefile
-
-   The same goes for any other drive letters, of course.  If you're using the
-   shared filesystem, it's E.
 
 10) Add --verbose to the 'F2PY' command: (not needed but will make it
        easier to track down errors)
