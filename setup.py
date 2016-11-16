@@ -29,13 +29,15 @@ class MfixBuildExt(build_ext):
     def build_extension(self, ext):
         ''' Copies the already-compiled pyd
         '''
-        # subprocess.call(["./configure", "--disable-maintainer-mode"])
+        # subprocess.call(["./configure", "--python"])
         # subprocess.call(["make"])
         extpath = path.dirname(self.get_ext_fullpath(ext.name))
         if not path.exists(extpath):
             makedirs(extpath)
 
         mfixsolver_sharedlib = [p for p in glob('mfixsolver*') if path.isfile(p)]
+        if not mfixsolver_sharedlib:
+            raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
         mfixsolver_sharedlib = mfixsolver_sharedlib[0]
         copyfile(path.join(HERE, mfixsolver_sharedlib), self.get_ext_fullpath(ext.name))
 
