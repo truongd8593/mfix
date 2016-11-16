@@ -132,6 +132,7 @@ def main():
         # except Exception as e:
         #     sslcontext = None
         #     return False
+        return False
 
     protocol = 'https' if setup_ssl() else 'http'
 
