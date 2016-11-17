@@ -9,11 +9,11 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 
 ### Set up the Windows 10 VM instance in VirtualBox
 
-   Install VirtualBox:
-*** virtualbox.org
+   Install [VirtualBox](virtualbox.org)
 
    Download 64-bit Windows 10 VM image, and import it into VirtualBox:
-*** https://www.microsoft.com/en-us/evalcenter/evaluate-windows-10-enterprise
+   
+   https://www.microsoft.com/en-us/evalcenter/evaluate-windows-10-enterprise
 
    It is convenient to enable 'bidirectional copy and paste'
    (Settings/General/Advanced)
@@ -56,7 +56,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 
    If you're going to do any serious work it is also helpful to disable Cortana:
 
-***  http://www.pcworld.com/article/2949759/windows/killing-cortana-how-to-disable-windows-10s-info-hungry-digital-assistant.html
+   http://www.pcworld.com/article/2949759/windows/killing-cortana-how-to-disable-windows-10s-info-hungry-digital-assistant.html
 
 
 ### Install Anaconda
@@ -64,26 +64,26 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    Make sure to install the 64-bit Python 2.7 version, and
    say "No" to "Anaconda cloud" (not needed)
 
-   *** https://www.continuum.io/downloads
+   https://www.continuum.io/downloads
 
 
 ### Install Cygwin
 
    Cygwin is needed for MinGW, GNU make, and autotools in order to build MFIX.
 
-   *** https://cygwin.com/setup-x86_64.exe
+   https://cygwin.com/setup-x86_64.exe
 
    You need the following packages, in addition to the minimal 'base'
    packages.  Versions used are listed here for reference, but you
    should use the latest available packages.
 
-   Cygwin package                       (version as of this writing)
-
-   autoconf                             13.1
-   automake                             9.1
-   make                                 4.2.1-1
-   binutils                             2.25-4
-   mingw64-x86_64-gcc-fortran            5.4.0-3
+   Cygwin package                  |    (version as of this writing)
+-----------------------------------|----------------------------------
+   autoconf                        |    13.1
+   automake                        |    9.1
+   make                            |    4.2.1-1
+   binutils                        |    2.25-4
+   mingw64-x86_64-gcc-fortran      |    5.4.0-3
 
    Be sure to install 86_64 packages not i686 (which are 32-bit).
 
@@ -119,10 +119,9 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    (Since f2py executes in Anaconda Python, which is *not* part of cygwin, it
    cannot handle cygwin-style symlinks, so you must copy, not link these files)
 
-### (Optional) Add --verbose when calling F2PY in Makefile.usr.am command:
-              Helpful if getting errors when building
+### (Optional) Add --verbose when calling F2PY in Makefile.usr.am command (helpful for debugging errors)
 
-     The line in Makefile.usr.am should read:
+The line in Makefile.usr.am should read:
 ```shell
      python -m numpy.f2py --verbose -c --f77exec=...
 ```
@@ -164,10 +163,10 @@ redistributed with the mfixsolver.pyd extension.
 
 ## Installing MFIX
 
-   If installing on the same system that was used for building, the runtime
-   dependency requirements are already satisfied. Cygwin is not a runtime
-   dependency, so the commands are shown for the Window Command Prompt
-   (CMD.exe).
+If installing on the same system that was used for building, the runtime
+dependency requirements are already satisfied. Cygwin is not a runtime
+dependency, so the commands are shown for the Window Command Prompt
+(CMD.exe).
 
 ### Install dependency (Anaconda)
 
@@ -175,7 +174,7 @@ redistributed with the mfixsolver.pyd extension.
    Make sure to install the 64-bit Python 2.7 version, and
    say "No" to "Anaconda cloud" (not needed)
 
-   *** https://www.continuum.io/downloads
+   https://www.continuum.io/downloads
 
    TODO: document dependencies when installing with miniconda
 
@@ -213,6 +212,8 @@ redistributed with the mfixsolver.pyd extension.
 ```shell
    C:\> pip uninstall mfixgui
 ```
+
+Or, from the Start menu go to "Add or remove program" and to uninstall mfixgui.
 
 ## Running MFIX
 
