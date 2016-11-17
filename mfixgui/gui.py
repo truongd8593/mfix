@@ -73,7 +73,7 @@ from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
                            format_key_with_args, to_unicode_from_fs,
                            get_username)
 
-from mfixgui.tools.namelistparser import buildKeywordDoc
+from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.keyword_args import keyword_args
 
 from mfixgui.constants import *
@@ -268,9 +268,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # end of ui loading
 
         # build keyword documentation from namelist docstrings
-        # TODO: pregenerate this?
-        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
-                                                        os.pardir, 'model'))
+        self.keyword_doc = getKeywordDoc()
 
         # Fixes
         doc = self.keyword_doc['turbulence_model']

@@ -393,7 +393,7 @@ def main():
     import os
     import re
     from tools.general import SCRIPT_DIRECTORY
-    from tools.namelistparser import buildKeywordDoc
+    from tools.namelistparser import getKeywordDoc
 
     def trim(s, maxlen=60):
         pat = re.compile(r'\[[^]]*\]') # Remove anything inside []
@@ -408,7 +408,7 @@ def main():
                 break
         return s
 
-    doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY, os.pardir, 'model'))
+    doc = getKeywordDoc()
     keys = list(doc.keys())
     keys.sort()
 

@@ -14,14 +14,16 @@ from shutil import copyfile
 
 from setuptools import setup, Extension
 
+from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
+
 HERE = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
 with open(path.join(HERE, 'README'), encoding='utf-8') as f:
-    long_description = f.read()
+    LONG_DESCRIPTION = f.read()
 
-# setup_args = { ... }
-# if platform.system() == 'Windows':
+MODEL_DIR = path.join(HERE, 'model')
+writeFiles(buildKeywordDoc(MODEL_DIR))
 
 class MfixBuildExt(build_ext):
     """Override build_extension to copy the shared library file"""
@@ -29,6 +31,7 @@ class MfixBuildExt(build_ext):
     def build_extension(self, ext):
         ''' Copies the already-compiled pyd
         '''
+        # if platform.system() == 'Windows':
         # subprocess.call(["./configure", "--python"])
         # subprocess.call(["make"])
 
@@ -55,7 +58,7 @@ setup(
     version='0.1.0',
 
     description='A GUI for the MFiX computational fluid dynamics solver',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
 
     # The project's main homepage.
     url='http://mfix.netl.doe.gov/',
@@ -119,7 +122,7 @@ setup(
     # have to be included in MANIFEST.in as well.
     package_data={
         'mfixgui.widgets': ['burcat.pickle'],
-        'mfixgui.tools': ['keyword_args.txt'],
+        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
         'mfixgui.icons': ['*.png'],
         'mfixgui.uifiles': ['*'],
     },
@@ -131,11 +134,8 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=[
-        ('model', glob('model/*.f')),
-        ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
-        ('model/des', glob('model/des/*.f')),
-    ],
+    # data_files=[
+    # ],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow

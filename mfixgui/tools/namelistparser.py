@@ -16,12 +16,30 @@ files to extract documentation of the keywords.
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import re, os, glob
-import json
 import codecs
+import glob
+import json
+import os
+import re
 from collections import OrderedDict
 
+from mfixgui.tools.general import SCRIPT_DIRECTORY
+
+PACKAGE = os.path.dirname(__file__)
+KEYWORDDOC_JSON = os.path.join(PACKAGE, 'keywordDoc.json')
+KEYWORDLIST_TXT = os.path.join(PACKAGE, 'keywordList.txt')
+
+def getKeywordDoc():
+    """ return dict from json file if it exists, otherwise build from mfix source"""
+    if os.path.exists(KEYWORDDOC_JSON):
+        with open(KEYWORDDOC_JSON, 'r') as json_file:
+            return json.load(json_file)
+    else:
+        mfixSourcePath = os.path.join(SCRIPT_DIRECTORY, os.path.pardir, 'model')
+        return buildKeywordDoc(mfixSourcePath)
+
 def buildKeywordDoc(mfixSourcePath):
+    """ build keyword dict from mfix source"""
 
     searchPath = os.path.join(mfixSourcePath, 'model')
 
@@ -372,8 +390,8 @@ def parse(fname = None, string = None):
     return keywordDocDict
 
 def writeFiles(d):
-    json.dump(d, open('./keywordDoc.json','w'))
-    with open('./keywordList.txt','w') as fb:
+    json.dump(d, open(KEYWORDDOC_JSON, 'w'))
+    with open(KEYWORDLIST_TXT,'w') as fb:
         fb.write('\n'.join(d['keywordlist']))
 
 def test_1():
