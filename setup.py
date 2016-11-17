@@ -99,6 +99,7 @@ setup(
         'mfixgui.tests',
         'mfixgui.tools',
         'mfixgui.widgets',
+        'mfixgui.uifiles',
     ],
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -112,9 +113,12 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    # package_data={
-    #     'mfixgui/widgets': ['burcat.pickle'],
-    # },
+    package_data={
+        'mfixgui.widgets': ['burcat.pickle'],
+        'mfixgui.tools': ['keyword_args.txt'],
+        'mfixgui.icons': ['*.png'],
+        'mfixgui.uifiles': ['*'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
@@ -124,10 +128,6 @@ setup(
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
     data_files=[
-        ('mfixgui/icons', glob('mfixgui/icons/*')),
-        ('mfixgui/tools', ['mfixgui/tools/keyword_args.txt']),
-        ('mfixgui/uifiles', glob('mfixgui/uifiles/*')),
-        ('mfixgui/widgets', ['mfixgui/widgets/burcat.pickle']),
         ('model', glob('model/*.f')),
         ('model/cartesian_grid', glob('model/cartesian_grid/*.f')),
         ('model/des', glob('model/des/*.f')),
