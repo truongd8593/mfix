@@ -31,6 +31,10 @@ class MfixBuildExt(build_ext):
         '''
         # subprocess.call(["./configure", "--python"])
         # subprocess.call(["make"])
+
+        # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
+        # ./configure_mfix --python --host=x86_64-w64-mingw32
+
         extpath = path.dirname(self.get_ext_fullpath(ext.name))
         if not path.exists(extpath):
             makedirs(extpath)
