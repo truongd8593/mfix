@@ -12,7 +12,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    Install [VirtualBox](virtualbox.org)
 
    Download 64-bit Windows 10 VM image, and import it into VirtualBox:
-   
+
    https://www.microsoft.com/en-us/evalcenter/evaluate-windows-10-enterprise
 
    It is convenient to enable 'bidirectional copy and paste'
@@ -66,6 +66,13 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 
    https://www.continuum.io/downloads
 
+   To build with Python 3, you don't need to download the Anaconda3 installer.
+   Just setup a Python 3 environment in your existing installation:
+
+```shell
+   C:\> conda create -n py3 anaconda
+```
+
 
 ### Install Cygwin
 
@@ -90,10 +97,8 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    Do *not* install Cygwin Python.  We are using, and linking against,
    Anaconda.
 
-
-
-### Install Anaconda gcc compatibility lib (needed to build Python
-   extensions, since we're not using MSVC):
+### Install Anaconda gcc compatibility lib
+   A compatibility library is needed to build Python extensions, since we're not using MSVC.
 
    In a Cygwin terminal (bash):
 ```shell
@@ -132,7 +137,7 @@ The line in Makefile.usr.am should read:
    $ ./configure_mfix --enable-python --host=x86_64-w64-mingw32
 ```
 
-### Build mfix
+### Build mfix (Python 2)
 
 There is no "-static-libquadmath" linker option in GCC yet, so we use the workaround mentioned here:
 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=46539
@@ -160,6 +165,64 @@ redistributed with the mfixsolver.pyd extension.
    $ python setup.py bdist_wheel
 ```
 
+```shell
+   $ ls -1 dist
+
+mfixgui-0.1.0-cp27-cp27m-win_amd64.whl
+mfixgui-0.1.0.win-amd64-py2.7.exe
+mfixgui-0.1.0.win-amd64-py2.7.msi
+```
+### Build mfix (Python 3)
+
+You do not need to re-run configure_mfix to build both for Python 2 and 3.
+
+Python environments do not work in Cygwin, but you can run the make command from
+the CMD.exe command line.
+
+```shell
+   C:\mfix\> activate py3
+   (py3) C:\mfix\> python --version
+   Python 3.5.2
+   C:\mfix\> conda install libpython
+```
+
+You will also need to patch some source files in the Anaconda installation.
+Python 3 was compiled with Microsoft Visual Studio 2015, but distutils has not
+yet been updated for that MSVC version, so it needs to be patched manually:
+
+In Anaconda2/envs/py3/Lib/distutils/cygwinccompiler.py:85  add the line
+```python
+   elif msc_ver == '1900':
+       $ VS2014 / MSVC 14.0
+       return ['msvcsr140']
+```
+
+In Anaconda2/envs/py3/Lib/site-packages/numpy/distutils/misc_util.py:402 add the line
+```python
+'1900': 'msvcr140',  # MVCS 14 (aka 2014)
+```
+
+You will need to add the cygwin bin directory to your PATH.
+
+```shell
+   C:\mfix\> set PATH=%PATH%;C:\cygwin64\bin
+   C:\mfix\> make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
+```
+
+Run the same commands as before to build the package files.
+```shell
+   (py3) C:\mfix\> python setup.py bdist_wininst
+   (py3) C:\mfix\> python setup.py bdist_msi
+   (py3) C:\mfix\> python setup.py bdist_wheel
+   (py3) C:\mfix\> ls -1 dist
+
+mfixgui-0.1.0-cp27-cp27m-win_amd64.whl
+mfixgui-0.1.0-cp35-cp35m-win_amd64.whl
+mfixgui-0.1.0.win-amd64-py2.7.exe
+mfixgui-0.1.0.win-amd64-py2.7.msi
+mfixgui-0.1.0.win-amd64-py3.5.exe
+mfixgui-0.1.0.win-amd64-py3.5.msi
+```
 
 ## Installing MFIX
 
