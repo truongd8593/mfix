@@ -85,20 +85,20 @@ cgs_to_SI = {
   'bc_tw_s':        1,    # K                      : Specified solids phase wall temperature, Tw_s, in diffusion
   'bc_u_g':         0.01, # cm/s -> m/s            : X-component of gas velocity at the BC plane.
   'bc_u_s':         0.01, # cm/s -> m/s            : X-component of solids-phase velocity at the BC plane.
-  'bc_uw_g':        None, # UNKNOWN                : Gas phase Uw for partial slip boundary.
-  'bc_uw_s':        None, # UNKNOWN                : Solids phase Uw for partial slip boundary.
+  'bc_uw_g':        0.01, # cm/s -> m/s            : Gas phase Uw for partial slip boundary.
+  'bc_uw_s':        0.01, # cm/s -> m/s            : Solids phase Uw for partial slip boundary.
   'bc_v_g':         0.01, # cm/s -> m/s            : Y-component of gas velocity at the BC plane.
   'bc_v_s':         0.01, # cm/s -> m/s            : Y-component of solids-phase velocity at the BC plane.
   'bc_velmag_g':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
   'bc_velmag_s':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
   'bc_volflow_g':   1e-06,# cm^3/s -> m^3/s        : Gas volumetric flow rate through the boundary.
   'bc_volflow_s':   1e-06,# cm^3/s -> m^3/s        : Solids volumetric flow rate through the boundary.
-  'bc_vw_g':        None, # UNKNOWN                : Gas phase Vw for partial slip boundary.
-  'bc_vw_s':        None, # UNKNOWN                : Solids phase Vw for partial slip boundary.
+  'bc_vw_g':        0.01, # cm/s -> m/s            : Gas phase Vw for partial slip boundary.
+  'bc_vw_s':        0.01, # cm/s -> m/s            : Solids phase Vw for partial slip boundary.
   'bc_w_g':         0.01, # cm/s -> m/s            : Z-component of gas velocity at the BC plane.
   'bc_w_s':         0.01, # cm/s -> m/s            : Z-component of solids-phase velocity at the BC plane.
-  'bc_ww_g':        None, # UNKNOWN                : Gas phase Ww for partial slip boundary.
-  'bc_ww_s':        None, # UNKNOWN                : Solids phase Ww for partial slip boundary.
+  'bc_ww_g':        0.01, # cm/s -> m/s            : Gas phase Ww for partial slip boundary.
+  'bc_ww_s':        0.01, # cm/s -> m/s            : Solids phase Ww for partial slip boundary.
   'bc_x_e':         0.01, # cm -> m                : X coordinate of the east face or edge.
   'bc_x_g':         1,    # mass fraction          : Mass fraction of gas species at the BC plane.
   'bc_x_s':         1,    # mass fraction          : Mass fraction of solids species at the BC plane.
@@ -490,12 +490,15 @@ def main():
                 SI_unit = 'kg/s'
             elif 'volflow' in key:
                 SI_unit = 'm^3/s'
-            # Length, avoid 'across xlength'
+            # Length, but avoid 'across xlength'
             elif 'length' in desc_lower and 'across' not in desc_lower:
                 SI_unit = 'm'
             # Region boundaries are all meters
             elif 'coordinate' in desc_lower:
                 SI_unit = 'm'
+            # BC velocity keys
+            elif any (key.startswith(x) for x in ('bc_uw', 'bc_vw', 'bc_ww')):
+                SI_unit = 'm/s'
             # Temperatures are all kelvin
             elif 'temperature' in desc_lower:
                 SI_unit = 'K'
