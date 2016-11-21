@@ -41,17 +41,10 @@ when specifying reaction rates:
 # existing definitions
 
 cgs_to_SI = {
-#<start generated section>
-  'bc_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the boundary.
-  'bc_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the boundary.
-  'bc_volflow_g':   1e-06,# cm^3/s -> m^3/s        : Gas volumetric flow rate through the boundary.
-  'bc_volflow_s':   1e-06,# cm^3/s -> m^3/s        : Solids volumetric flow rate through the boundary.
-  'ps_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the point source.
-  'ps_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the point source.
   'aggregation_eff':1,    # factor                 : Success-factor for aggregation.
   'alpha_max':      1,    # factor                 : Maximum acceptable value of interpolation correction factor.
   'asperities':     0.01, # cm -> m                : Mean radius of surface asperities that influence the
-  'bar_resolution': None, # UNKNOWN                : Update frequency of progress bar, expressed in percent of
+  'bar_resolution': 1,    # max = 100.0            : Update frequency of progress bar, expressed in percent of
   'batch_wallclock':1,    # s                      : Total wall-clock duration of the job, in seconds.
   'bc_c_scalar':    None, # UNKNOWN                : Specified constant scalar flux, C, in diffusion boundary
   'bc_c_t_g':       None, # UNKNOWN                : Specified constant gas phase heat flux, C, in diffusion
@@ -77,6 +70,8 @@ cgs_to_SI = {
   'bc_jet_gh':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_h.
   'bc_jet_gl':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_L.
   'bc_k_turb_g':    None, # UNKNOWN                : Boundary value of K for K-Epsilon Equation.
+  'bc_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the boundary.
+  'bc_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the boundary.
   'bc_p_g':         0.1,  # barye -> Pa            : Gas pressure at the BC plane.
   'bc_pic_mi_const_statwt':None,# UNKNOWN          : Flag to specify the constant statistical weight for
   'bc_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Bulk density of solids phase at the BC plane.
@@ -96,6 +91,8 @@ cgs_to_SI = {
   'bc_v_s':         0.01, # cm/s -> m/s            : Y-component of solids-phase velocity at the BC plane.
   'bc_velmag_g':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
   'bc_velmag_s':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
+  'bc_volflow_g':   1e-06,# cm^3/s -> m^3/s        : Gas volumetric flow rate through the boundary.
+  'bc_volflow_s':   1e-06,# cm^3/s -> m^3/s        : Solids volumetric flow rate through the boundary.
   'bc_vw_g':        None, # UNKNOWN                : Gas phase Vw for partial slip boundary.
   'bc_vw_s':        None, # UNKNOWN                : Solids phase Vw for partial slip boundary.
   'bc_w_g':         0.01, # cm/s -> m/s            : Z-component of gas velocity at the BC plane.
@@ -141,7 +138,7 @@ cgs_to_SI = {
   'delp_x':         0.1,  # barye -> Pa            : Fluid pressure drop across XLENGTH when a cyclic boundary
   'delp_y':         0.1,  # barye -> Pa            : Fluid pressure drop across YLENGTH when a cyclic boundary
   'delp_z':         0.1,  # barye -> Pa            : Fluid pressure drop across ZLENGTH when a cyclic boundary
-  'des_diffuse_width':None,# UNKNOWN               : The length scale used to smooth dispersed phase averaged
+  'des_diffuse_width':0.01,# cm -> m               : The length scale used to smooth dispersed phase averaged
   'des_em':         None, # UNKNOWN                : Emissivity of solids phase M.
   'des_en_input':   1,    # factor                 : The normal restitution coefficient for inter-particle
   'des_en_wall_input':1,  # factor                 : The normal restitution coefficient for particle-wall
@@ -149,7 +146,7 @@ cgs_to_SI = {
   'des_et_wall_input':1,  # max = 1.0              : Tangential restitution coefficient for particle wall
   'des_etat_fac':   1,    # factor                 : Ratio of the tangential damping factor to the normal damping
   'des_etat_w_fac': 1,    # factor                 : Ratio of the tangential damping factor to the normal damping
-  'des_interp_width':None,# UNKNOWN                : The length used in interpolating data to/from a particle's
+  'des_interp_width':0.01,# cm -> m                : The length used in interpolating data to/from a particle's
   'des_min_cond_dist':1,  # ratio                  : Minimum separation distance between the surfaces of two
   'dif_g0':         0.0001,# cm^2/s -> m^2/s       : Specified constant gas diffusivity .
   'dif_s0':         0.0001,# cm^2/s -> m^2/s       : Specified constant solids diffusivity .
@@ -197,7 +194,7 @@ cgs_to_SI = {
   'ic_gama_rg':     None, # UNKNOWN                : Gas phase radiation coefficient in the IC region. Modify
   'ic_gama_rs':     None, # UNKNOWN                : Solids phase-m radiation coefficient in the IC region.
   'ic_k_turb_g':    None, # UNKNOWN                : Initial value of K in K-Epsilon.
-  'ic_l_scale':     None, # UNKNOWN                : Turbulence length scale in the IC region.
+  'ic_l_scale':     0.01, # cm -> m                : Turbulence length scale in the IC region.
   'ic_p_g':         0.1,  # barye -> Pa            : Initial gas pressure in the IC region. If this quantity is
   'ic_p_star':      0.1,  # barye -> Pa            : Initial solids pressure in the IC region. Usually, this
   'ic_pic_const_statwt':None,# UNKNOWN             : Flag to specify the initial constant statistical weight for
@@ -278,6 +275,8 @@ cgs_to_SI = {
   'piece_ymin':     None, # UNKNOWN                : Lower y-limit where the quadric is defined in a piecewise
   'piece_zmax':     None, # UNKNOWN                : Upper z-limit where the quadric is defined in a piecewise
   'piece_zmin':     None, # UNKNOWN                : Lower z-limit where the quadric is defined in a piecewise
+  'ps_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the point source.
+  'ps_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the point source.
   'ps_t_g':         1,    # K                      : Temperature of incoming gas.
   'ps_t_s':         1,    # K                      : Temperature of incoming solids.
   'ps_u_g':         0.01, # cm/s -> m/s            : X-component of incoming gas velocity.
@@ -381,11 +380,10 @@ cgs_to_SI = {
   'wall_vdw_inner_cutoff':1,# ratio                : Minimum separation distance below which van der Waals forces
   'wall_vdw_outer_cutoff':1,# ratio                : Maximum separation distance above which van der Waals forces
   'x_s0':           1,    # mass fraction          : Baseline species mass fraction. Specifically, the mass
-  'xlength':        None, # UNKNOWN                : Reactor length in the x (r) direction.
+  'xlength':        0.01, # cm -> m                : Reactor length in the x (r) direction.
   'xmin':           0.01, # cm -> m                : The inner radius in the simulation of an annular cylindrical
-  'ylength':        None, # UNKNOWN                : Reactor length in the y-direction.
-  'zlength':        None, # UNKNOWN                : Reactor length in the z (theta) direction.
-#<end generated section>
+  'ylength':        0.01, # cm -> m                : Reactor length in the y-direction.
+  'zlength':        0.01, # cm -> m                : Reactor length in the z (theta) direction.
 }
 
 
@@ -426,19 +424,20 @@ def main():
 
     # Try to get units from keyword doc. Add to predefined factors above
 
+    new_cgs_to_SI = {}
     for key in keys[:]:
-        if cgs_to_SI.pop(key, None):
-            continue # Don't modify existing entries
-            # TODO clean up handling of existing
+
         entry = doc[key]
         if not isinstance(entry, dict): # 'keywordlist' & 'categories'
             keys.remove(key)
             del doc[key]
             continue
+
         dtype = entry['dtype']
         if dtype !=  'DP':  # We're not going to worry about any non-float keys
             keys.remove(key)
             continue
+
         desc = entry['description']
         desc_lower = desc.lower()
         SI_unit = None
@@ -446,6 +445,13 @@ def main():
         # Handle keys with bad keyword doc first - we'll ignore the doc entry
         if 'gravity' in key:
             SI_unit = 'm/s^2'
+
+        # Anything with a maximum must be dimensionless
+        r = entry.get('validrange')
+        if r:
+            m = r.get('max')
+            if m:
+                SI_unit = 'max = %s' % m
 
         # Now look for description in keyword doc
         if SI_unit is None:
@@ -484,6 +490,9 @@ def main():
                 SI_unit = 'kg/s'
             elif 'volflow' in key:
                 SI_unit = 'm^3/s'
+            # Length, avoid 'across xlength'
+            elif 'length' in desc_lower and 'across' not in desc_lower:
+                SI_unit = 'm'
             # Region boundaries are all meters
             elif 'coordinate' in desc_lower:
                 SI_unit = 'm'
@@ -511,14 +520,6 @@ def main():
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
-
-            # Anything with a maximum of 1 must be dimensionless
-            else:
-                r = entry.get('validrange')
-                if r:
-                    m = r.get('max')
-                    if m == 1:
-                        SI_unit = 'max = %s' % m
 
 
         if SI_unit:
@@ -573,46 +574,53 @@ def main():
                 comment = '%s -> %s' % (comment, SI_unit)
                 comment = comment.replace('(', '')
                 comment = comment.replace(')', '')
-            cgs_to_SI[key] = (factor, comment)
+            new_cgs_to_SI[key] = (factor, comment)
 
     infile = open(__file__, 'r')
+    lines = [line.decode('utf-8') for line in infile]
+    start = lines.index('cgs_to_SI = {\n') + 1
+    end = lines.index('}\n')
+
+
+    head = lines[:start]
+    data = lines[start:end]
+    tail = lines[end:]
+
     outfile = open(__file__ + '.tmp', 'w')
-    in_gen_section = False
-    for line in infile:
-        line = line.decode('utf-8')
-        if line.startswith('#<start'):
-            outfile.write(line)
-            for key in keys:
-                if key not in cgs_to_SI:
-                    continue
-                factor, comment = cgs_to_SI.get(key, (None, ''))
-                desc = doc[key].get('description').strip()
-                l = "  '%s':" % key
-                l += ' '*(20-len(l))
-                l += '%s,' % factor
-                l += ' '*(26-len(l))
-                l += '# %s' % (comment if factor else 'UNKNOWN')
-                l += ' '*(50-len(l))
-                l += ' : ' + trim(desc)
-                outfile.write(l.rstrip()+'\n')
 
-            in_gen_section = True
+    for line in head:
+        outfile.write(line.encode('utf-8'))
+
+    line_by_key = {}
+    for line in data:
+        key = line.split(':',1)[0].strip()[1:-1] # remove quotes
+        line_by_key[key] = line
+
+    new_data = [] # Updated 'data' section
+    for key in keys:
+        if cgs_to_SI.get(key): # Already have an entry
+            new_data.append(line_by_key[key])
             continue
 
-        if line.startswith('#<end'):
-            outfile.write(line)
-            in_gen_section = False
-            continue
+        factor, comment = new_cgs_to_SI.get(key, (None, ''))
+        desc = doc[key].get('description').strip()
+        l = "  '%s':" % key
+        l += ' '*(20-len(l))
+        l += '%s,' % factor
+        l += ' '*(26-len(l))
+        l += '# %s' % (comment if factor else 'UNKNOWN')
+        l += ' '*(50-len(l))
+        l += ' : ' + trim(desc)
+        l = l.rstrip()+'\n'
+        new_data.append(l)
 
-        if in_gen_section: # In 'generated' section
-            lkey = line.split(':', 1)[0].strip()[1:-1] # Find keyword on line
-            if lkey not in cgs_to_SI: # Retain line if we haven't calculated a new value
-                outfile.write(line.encode('utf-8'))
+    new_data.sort()
+    for line in new_data:
+        outfile.write(line.encode('utf-8'))
 
-        else: # pass the rest
-            outfile.write(line.encode('utf-8'))
+    for line in tail:
+        outfile.write(line.encode('utf-8'))
 
-    # We could replace the input file, but let's not go crazy
     print("Generated %s" % (__file__ + '.tmp'))
 
 
