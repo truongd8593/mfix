@@ -42,6 +42,12 @@ when specifying reaction rates:
 
 cgs_to_SI = {
 #<start generated section>
+  'bc_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the boundary.
+  'bc_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the boundary.
+  'bc_volflow_g':   1e-06,# cm^3/s -> m^3/s        : Gas volumetric flow rate through the boundary.
+  'bc_volflow_s':   1e-06,# cm^3/s -> m^3/s        : Solids volumetric flow rate through the boundary.
+  'ps_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the point source.
+  'ps_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the point source.
   'aggregation_eff':1,    # factor                 : Success-factor for aggregation.
   'alpha_max':      1,    # factor                 : Maximum acceptable value of interpolation correction factor.
   'asperities':     0.01, # cm -> m                : Mean radius of surface asperities that influence the
@@ -71,8 +77,6 @@ cgs_to_SI = {
   'bc_jet_gh':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_h.
   'bc_jet_gl':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_L.
   'bc_k_turb_g':    None, # UNKNOWN                : Boundary value of K for K-Epsilon Equation.
-  'bc_massflow_g':  None, # UNKNOWN                : Gas mass flow rate through the boundary.
-  'bc_massflow_s':  None, # UNKNOWN                : Solids mass flow rate through the boundary.
   'bc_p_g':         0.1,  # barye -> Pa            : Gas pressure at the BC plane.
   'bc_pic_mi_const_statwt':None,# UNKNOWN          : Flag to specify the constant statistical weight for
   'bc_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Bulk density of solids phase at the BC plane.
@@ -92,8 +96,6 @@ cgs_to_SI = {
   'bc_v_s':         0.01, # cm/s -> m/s            : Y-component of solids-phase velocity at the BC plane.
   'bc_velmag_g':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
   'bc_velmag_s':    0.01, # cm/s -> m/s            : Magnitude of gas velocity in a specified boundary region.
-  'bc_volflow_g':   None, # UNKNOWN                : Gas volumetric flow rate through the boundary.
-  'bc_volflow_s':   None, # UNKNOWN                : Solids volumetric flow rate through the boundary.
   'bc_vw_g':        None, # UNKNOWN                : Gas phase Vw for partial slip boundary.
   'bc_vw_s':        None, # UNKNOWN                : Solids phase Vw for partial slip boundary.
   'bc_w_g':         0.01, # cm/s -> m/s            : Z-component of gas velocity at the BC plane.
@@ -276,8 +278,6 @@ cgs_to_SI = {
   'piece_ymin':     None, # UNKNOWN                : Lower y-limit where the quadric is defined in a piecewise
   'piece_zmax':     None, # UNKNOWN                : Upper z-limit where the quadric is defined in a piecewise
   'piece_zmin':     None, # UNKNOWN                : Lower z-limit where the quadric is defined in a piecewise
-  'ps_massflow_g':  None, # UNKNOWN                : Gas mass flow rate through the point source.
-  'ps_massflow_s':  None, # UNKNOWN                : Solids mass flow rate through the point source.
   'ps_t_g':         1,    # K                      : Temperature of incoming gas.
   'ps_t_s':         1,    # K                      : Temperature of incoming solids.
   'ps_u_g':         0.01, # cm/s -> m/s            : X-component of incoming gas velocity.
@@ -479,6 +479,11 @@ def main():
                   or 'time' in desc_lower
                   or 'clock' in desc_lower):
                 SI_unit = 's'
+            # Flow rates
+            elif 'massflow' in key:
+                SI_unit = 'kg/s'
+            elif 'volflow' in key:
+                SI_unit = 'm^3/s'
             # Region boundaries are all meters
             elif 'coordinate' in desc_lower:
                 SI_unit = 'm'
@@ -503,8 +508,10 @@ def main():
             # Radii are meters
             elif 'radius' in desc_lower:
                 SI_unit = 'm'
+            # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
+
             # Anything with a maximum of 1 must be dimensionless
             else:
                 r = entry.get('validrange')
