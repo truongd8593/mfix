@@ -47,11 +47,11 @@ cgs_to_SI = {
   'bar_resolution': 1,    # max = 100.0            : Update frequency of progress bar, expressed in percent of
   'batch_wallclock':1,    # s                      : Total wall-clock duration of the job, in seconds.
   'bc_c_scalar':    None, # UNKNOWN                : Specified constant scalar flux, C, in diffusion boundary
-  'bc_c_t_g':       None, # UNKNOWN                : Specified constant gas phase heat flux, C, in diffusion
-  'bc_c_t_s':       None, # UNKNOWN                : Specified constant solids phase heat flux, C, in diffusion
+  'bc_c_t_g':       100,  # K/cm -> K/m            : Specified constant gas phase heat flux, C, in diffusion
+  'bc_c_t_s':       100,  # K/cm -> K/m            : Specified constant solids phase heat flux, C, in diffusion
   'bc_c_theta_m':   None, # UNKNOWN                : Specified constant flux, C, in diffusion boundary condition:
-  'bc_c_x_g':       None, # UNKNOWN                : Specified constant gas species mass flux, C, in diffusion
-  'bc_c_x_s':       None, # UNKNOWN                : Specified constant solids species mass flux, C, in diffusion
+  'bc_c_x_g':       100,  # 1/cm -> 1/m            : Specified constant gas species mass flux, C, in diffusion
+  'bc_c_x_s':       100,  # 1/cm -> 1/m            : Specified constant solids species mass flux, C, in diffusion
   'bc_dt_0':        1,    # s                      : The interval at the beginning when the normal velocity at
   'bc_dt_h':        1,    # s                      : The interval when normal velocity is equal to BC_Jet_gh.
   'bc_dt_l':        1,    # s                      : The interval when normal velocity is equal to BC_JET_gL.
@@ -156,7 +156,7 @@ cgs_to_SI = {
   'drag_c1':        None, # UNKNOWN                : Quantity for calibrating Syamlal-O'Brien drag correlation
   'drag_d1':        None, # UNKNOWN                : Quantity for calibrating Syamlal-O'Brien drag correlation
   'dt':             1,    # s                      : Initial time step size. If left undefined, a steady-state
-  'dt_fac':         1,    # s                      : Factor for adjusting time step. * The value must be less
+  'dt_fac':         1,    # max = 1.0              : Factor for adjusting time step. * The value must be less
   'dt_max':         1,    # s                      : Maximum time step size.
   'dt_min':         1,    # s                      : Minimum time step size.
   'dx':             0.01, # cm -> m                : Cell sizes in the x (r) direction. Enter values from DX(0)
@@ -180,7 +180,7 @@ cgs_to_SI = {
   'first_dy':       None, # UNKNOWN                : Value of first DY in a segment (y-direction). A negative
   'first_dz':       None, # UNKNOWN                : Value of first DZ in a segment (z-direction). A negative
   'flpc':           0.01, # cm -> m                : Fluid lens proportion constant used to calculate the radius
-  'flux_g':         0.1,  # barye -> Pa            : If a value is specified, the domain-averaged gas flux is
+  'flux_g':         100,  # 1/cm -> 1/m            : If a value is specified, the domain-averaged gas flux is
   'fric_exp_pic':   None, # UNKNOWN                : Beta term in the frictional stress model of Snider.
   'gravity':        0.01, # cm/s^2 -> m/s^2        : Gravitational acceleration.
   'gravity_x':      0.01, # cm/s^2 -> m/s^2        : X-component of gravitational acceleration vector.
@@ -479,7 +479,7 @@ def main():
                 SI_unit = 'tolerance'
             # all 'dt' are in seconds, but watch out for 'width'
             elif ('_dt' in key
-                  or key.startswith('dt')
+                  or (key.startswith('dt') and key != 'dt_fac')
                   or key=='time'
                   or key=='tstop'
                   or 'time' in desc_lower
@@ -499,6 +499,10 @@ def main():
             # BC velocity keys
             elif any (key.startswith(x) for x in ('bc_uw', 'bc_vw', 'bc_ww')):
                 SI_unit = 'm/s'
+            elif 'heat flux' in desc_lower:
+                SI_unit = 'K/m' # per GUI
+            elif 'mass flux' in desc_lower:
+                SI_unit = '1/m' # mass fraction per meter:  d(X_g)/dn + Hw (X_g - Xw_g) = C
             # Temperatures are all kelvin
             elif 'temperature' in desc_lower:
                 SI_unit = 'K'
@@ -511,10 +515,7 @@ def main():
             # Ratios too
             elif 'ratio' in desc_lower:
                 SI_unit = 'ratio'
-            # Pressures are Pa
-            elif 'pressure' in desc_lower:
-                SI_unit = 'Pa'
-            # Densities
+               # Densities
             elif 'density' in desc_lower:
                 SI_unit = 'kg/m^3'
             # Radii are meters
@@ -523,6 +524,9 @@ def main():
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
+            # Pressures are Pa # do this last, due to many references to 'pressure drop' etc
+            elif 'pressure' in desc_lower:
+                SI_unit = 'Pa'
 
 
         if SI_unit:
