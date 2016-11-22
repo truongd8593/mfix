@@ -60,12 +60,12 @@ cgs_to_SI = {
   'bc_ep_s':        1,    # volume fraction        : Solids volume fraction at the BC plane.
   'bc_hw_g':        None, # UNKNOWN                : Gas phase hw for partial slip boundary.
   'bc_hw_s':        None, # UNKNOWN                : Solids phase hw for partial slip boundary.
-  'bc_hw_scalar':   None, # UNKNOWN                : Scalar transfer coefficient, Hw, in diffusion boundary
-  'bc_hw_t_g':      None, # UNKNOWN                : Gas phase heat transfer coefficient, Hw, in diffusion
-  'bc_hw_t_s':      None, # UNKNOWN                : Solids phase heat transfer coefficient, Hw, in diffusion
-  'bc_hw_theta_m':  None, # UNKNOWN                : Transfer coefficient, Hw, in diffusion boundary condition:
-  'bc_hw_x_g':      None, # UNKNOWN                : Gas phase species mass transfer coefficient, Hw, in
-  'bc_hw_x_s':      None, # UNKNOWN                : Solid phase species mass transfer coefficient, Hw, in
+  'bc_hw_scalar':   100,  # 1/cm -> 1/m            : Scalar transfer coefficient, Hw, in diffusion boundary
+  'bc_hw_t_g':      100,  # 1/cm -> 1/m            : Gas phase heat transfer coefficient, Hw, in diffusion
+  'bc_hw_t_s':      100,  # 1/cm -> 1/m            : Solids phase heat transfer coefficient, Hw, in diffusion
+  'bc_hw_theta_m':  100,  # 1/cm -> 1/m            : Transfer coefficient, Hw, in diffusion boundary condition:
+  'bc_hw_x_g':      100,  # 1/cm -> 1/m            : Gas phase species mass transfer coefficient, Hw, in
+  'bc_hw_x_s':      100,  # 1/cm -> 1/m            : Solid phase species mass transfer coefficient, Hw, in
   'bc_jet_g0':      0.01, # cm/s -> m/s            : Value of normal velocity during the initial interval
   'bc_jet_gh':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_h.
   'bc_jet_gl':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_L.
@@ -503,8 +503,10 @@ def main():
                 SI_unit = 'K/m' # per GUI
             elif 'mass flux' in desc_lower:
                 SI_unit = '1/m' # mass fraction per meter:  d(X_g)/dn + Hw (X_g - Xw_g) = C
-            # Temperatures are all kelvin
-            elif 'temperature' in desc_lower:
+            elif 'transfer coefficient' in desc_lower:
+                SI_unit = '1/m' # 'Hw' term in d(T_g)/dn + Hw (T_g - Tw_g) = C
+            # Temperatures are all Kelvin, except for granular
+            elif 'temperature' in desc_lower and 'granular temperature' not in desc_lower:
                 SI_unit = 'K'
             # Velocities are m/s
             elif 'velocity' in desc_lower:
