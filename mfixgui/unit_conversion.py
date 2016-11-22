@@ -79,7 +79,7 @@ cgs_to_SI = {
   'bc_scalarw':     None, # UNKNOWN                : Specified scalar value at the wall, ScalarW, in diffusion
   'bc_t_g':         1,    # K                      : Gas phase temperature at the BC plane.
   'bc_t_s':         1,    # K                      : Solids phase-m temperature at the BC plane.
-  'bc_theta_m':     1,    # K                      : Solids phase-m granular temperature at the BC plane.
+  'bc_theta_m':     None, # UNKNOWN                : Solids phase-m granular temperature at the BC plane.
   'bc_thetaw_m':    None, # UNKNOWN                : Specified wall value, THETAw_M, in diffusion boundary
   'bc_tw_g':        1,    # K                      : Specified gas phase wall temperature, Tw_g, in diffusion
   'bc_tw_s':        1,    # K                      : Specified solids phase wall temperature, Tw_s, in diffusion
@@ -204,7 +204,7 @@ cgs_to_SI = {
   'ic_t_rg':        1,    # K                      : Gas phase radiation temperature in the IC region.
   'ic_t_rs':        1,    # K                      : Solids phase-m radiation temperature in the IC region.
   'ic_t_s':         1,    # K                      : Initial solids phase-m temperature in the IC region.
-  'ic_theta_m':     1,    # K                      : Initial solids phase-m granular temperature in the IC
+  'ic_theta_m':     None, # UNKNOWN                : Initial solids phase-m granular temperature in the IC
   'ic_u_g':         0.01, # cm/s -> m/s            : Initial x-component of gas velocity in the IC region.
   'ic_u_s':         0.01, # cm/s -> m/s            : Initial x-component of solids-phase velocity in the IC
   'ic_v_g':         0.01, # cm/s -> m/s            : Initial y-component of gas velocity in the IC region.
