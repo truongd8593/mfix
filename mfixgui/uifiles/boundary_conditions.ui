@@ -1972,7 +1972,7 @@
                    <item row="2" column="2">
                     <widget class="QLabel" name="label_bc_c_theta_m_units">
                      <property name="text">
-                      <string>m/s²</string>
+                      <string>???m/s²</string>
                      </property>
                     </widget>
                    </item>
