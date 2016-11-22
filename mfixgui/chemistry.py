@@ -501,28 +501,31 @@ class Chemistry(object):
                       ui.label_fracdh_2, ui.lineedit_fracdh_2):
                 w.hide()
         elif num_phases == 1:
-            ui.label_fracdh_1.setText('Fraction assigned to %s' % phase_name(phases[0]))
-            ui.label_fracdh_1.show()
-            ui.lineedit_fracdh_1.show()
-            ui.lineedit_fracdh_1.updateValue('fracdh', 1.0)
-            ui.lineedit_fracdh_1.setReadOnly(True)
-            ui.lineedit_fracdh_1.setEnabled(False)
-            for w in ui.label_fracdh_2, ui.lineedit_fracdh_2:
-                w.hide()
+            if phases[0] is not None:
+                ui.label_fracdh_1.setText('Fraction assigned to %s' % phase_name(phases[0]))
+                ui.label_fracdh_1.show()
+                ui.lineedit_fracdh_1.show()
+                ui.lineedit_fracdh_1.updateValue('fracdh', 1.0)
+                ui.lineedit_fracdh_1.setReadOnly(True)
+                ui.lineedit_fracdh_1.setEnabled(False)
+                for w in ui.label_fracdh_2, ui.lineedit_fracdh_2:
+                    w.hide()
         elif num_phases == 2:
             fracdh = reaction.get('fracdh', {})
-            fracdh1 = fracdh.get(phases[0])
-            fracdh2 = fracdh.get(phases[1])
-            ui.label_fracdh_1.setText('Fraction assigned to %s' % phase_name(phases[0]))
-            ui.label_fracdh_1.show()
-            ui.lineedit_fracdh_1.show()
-            ui.lineedit_fracdh_1.setReadOnly(False)
-            ui.lineedit_fracdh_1.setEnabled(ui.groupbox_dh.isChecked())
-            ui.lineedit_fracdh_1.updateValue('fracdh', fracdh1)
-            ui.label_fracdh_2.setText('Fraction assigned to %s' % phase_name(phases[1]))
-            ui.label_fracdh_2.show()
-            ui.lineedit_fracdh_2.show()
-            ui.lineedit_fracdh_2.updateValue('fracdh', fracdh2)
+            if phases[0] is not None:
+                fracdh1 = fracdh.get(phases[0])
+                ui.label_fracdh_1.setText('Fraction assigned to %s' % phase_name(phases[0]))
+                ui.label_fracdh_1.show()
+                ui.lineedit_fracdh_1.show()
+                ui.lineedit_fracdh_1.setReadOnly(False)
+                ui.lineedit_fracdh_1.setEnabled(ui.groupbox_dh.isChecked())
+                ui.lineedit_fracdh_1.updateValue('fracdh', fracdh1)
+            if phases[1] is not None:
+                fracdh2 = fracdh.get(phases[1])
+                ui.label_fracdh_2.setText('Fraction assigned to %s' % phase_name(phases[1]))
+                ui.label_fracdh_2.show()
+                ui.lineedit_fracdh_2.show()
+                ui.lineedit_fracdh_2.updateValue('fracdh', fracdh2)
         else:
             self.error("num_phases = %s" % num_phases)
 
@@ -568,7 +571,7 @@ class Chemistry(object):
                 species = tw.cellWidget(row, COL_SPECIES).currentText()
                 m_w = self.species_mol_weight(species)
                 if m_w is None: # Undefined mol. wt - species_mol_wt printed a warning
-                    self.warning("Molecular weight for %s not found" % species)
+                    self.warning("Molecular weight for '%s' not found" % species)
                     continue
                 coeff = tw.cellWidget(row, COL_COEFF).value
                 if coeff in (None, ''):

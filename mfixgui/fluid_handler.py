@@ -13,7 +13,9 @@ from qtpy import QtWidgets, PYQT5
 
 #local imports
 from mfixgui.constants import *
-from mfixgui.tools.general import set_item_noedit, get_selected_row
+from mfixgui.tools.general import set_item_noedit, get_selected_row, format_key_with_args
+from mfixgui.tools import keyword_args
+
 from mfixgui.species_handler import SpeciesHandler
 
 class FluidHandler(SpeciesHandler):
@@ -332,10 +334,14 @@ class FluidHandler(SpeciesHandler):
         if row is None: # No selection
             return
 
-        tw.clearSelection() #?
         alias = tw.item(row,0).text()
-        del self.fluid_species[alias]
+        msg = self.fluid_check_species_in_use(alias)
+        if msg:
+            self.message(text="%s is used in %s " % (alias, msg))
+            return
 
+        tw.clearSelection() #?
+        self.fluid_species.pop(alias, None)
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
@@ -363,6 +369,33 @@ class FluidHandler(SpeciesHandler):
         sp.enable_density(False)
         sp.popup()
 
+
+    def fluid_check_species_in_use(self, species):
+        """return False if OK to delete given species, else a string indicating
+        what species is referenced by (BC, chem eq, etc)"""
+        msg = self.chemistry_check_species_in_use(species)
+        if msg:
+            return("reaction %s" % msg)
+
+        species_num = 1 + list(self.fluid_species.keys()).index(species) # :(
+
+        for k in keyword_args.keys_by_type['species']:
+            indices = self.project.get_key_indices(k)
+            if not indices: #Keys not set
+                continue
+            arg_types = keyword_args.keyword_args[k]
+            if 'phase' in arg_types: # It's a solid species, not fluid
+                continue
+            if arg_types == ['species']: # This will be deleted
+                continue
+            species_pos = arg_types.index('species')
+            for args in indices:
+                if args[species_pos] != species_num:
+                    continue
+                if self.project.get_value(k, args=args) is not None:
+                    return format_key_with_args(k,args)
+
+            return False
 
     def setup_fluid(self):
         # Called whenever we switch to fluid tab

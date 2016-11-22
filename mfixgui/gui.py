@@ -1635,7 +1635,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if not message_text:
             message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
-        ok_to_delete = self.check_if_ok_to_delete_files(message_text)
+        ok_to_delete = self.confirm_delete_files(message_text)
 
         if not ok_to_delete:
             return False
@@ -2348,11 +2348,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         if interactive and not project_path.endswith(runname_mfx):
-            ok_to_write =  self.check_if_ok_to_rename(project_file, runname_mfx)
+            ok_to_write =  self.confirm_rename(project_file, runname_mfx)
             if ok_to_write:
                 renamed_project_file = os.path.join(project_dir, runname_mfx)
                 if os.path.exists(renamed_project_file):
-                    ok_to_write = self.check_if_ok_to_clobber(renamed_project_file)
+                    ok_to_write = self.confirm_clobber(renamed_project_file)
             if not ok_to_write:
                 self.print_internal("Rename canceled at user request")
                 return
@@ -2462,7 +2462,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     # Following functions are overrideable for test runner
-    def check_if_ok_to_rename(self, project_file, runname_mfx):
+    def confirm_rename(self, project_file, runname_mfx):
         rename_msg = 'Renaming %s to %s based on run name' % (project_file, runname_mfx)
         response = self.message(title='Info',
                                 icon='question',
@@ -2471,7 +2471,7 @@ class MfixGui(QtWidgets.QMainWindow,
                                 default='ok')
         return response == 'ok'
 
-    def check_if_ok_to_clobber(self, renamed_project_file):
+    def confirm_clobber(self, renamed_project_file):
         clobber_msg = '%s exists, replace?' % renamed_project_file
         response = self.message(title='Warning',
                         icon='question',
@@ -2480,7 +2480,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         default='no')
         return response == 'yes'
 
-    def check_if_ok_to_delete_files(self, message_text):
+    def confirm_delete_files(self, message_text):
         response = self.message(title="Info",
                                icon="info",
                                text=message_text,

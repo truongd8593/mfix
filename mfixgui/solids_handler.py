@@ -362,6 +362,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
         tw.updateGeometry() #? needed?
 
+
     def handle_solids_species_eq(self, enabled):
         ui = self.ui.solids
         if not enabled:
@@ -377,6 +378,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         #    Set keyword BC_C_X_S(#,#,#) to 0.0
         #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
         # getting this right is tricky - how about when we add phases & species?
+
 
     def setup_combobox_solids_model(self):
         """solids model combobox is tied to solver setting"""
@@ -438,6 +440,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                 break
             n += 1
         return name
+
 
     def solids_add(self):
         ui = self.ui.solids
@@ -744,7 +747,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         phase = row+1
         phase_name = tw.item(row,0).text()
 
-        key = self.solids_phase_in_use(phase)
+        key = self.solids_check_phase_in_use(phase)
         if key:
             self.message(text="%s is referenced by %s" %
                          (phase_name, key))
@@ -769,7 +772,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
             # Fix holes
             # Fixup phase names in mfix_gui_comments
-            # TODO make some util functions to manage mfix_gui_comments in a less ad-hoc manner
             for (k,v) in list(self.project.mfix_gui_comments.items()):
                 if k.startswith('solids_phase_name('):
                     del self.project.mfix_gui_comments[k]
@@ -1114,6 +1116,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             except:
                 pass
 
+
     def solids_species_add(self):
         phase = self.solids_current_phase
         if phase is None:
@@ -1135,6 +1138,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         sp.enable_density(True)
         sp.popup()
 
+
     def solids_make_extra_aliases(self, phase):
         # Construct the 'extra_aliases' set to pass to the species popup
         # Exclude the specified phase
@@ -1144,6 +1148,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                continue
             aliases.update(s['alias'] for s in ss.values())
         return aliases
+
 
     def solids_species_delete(self):
         phase = self.solids_current_phase
@@ -1157,9 +1162,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
 
         alias = tw.item(row,0).text()
-        msg = self.chemistry_check_species_in_use(alias)
+        msg = self.solids_check_species_in_use(alias)
         if msg:
-            self.message(text="%s is used in reaction %s " % (alias, msg))
+            self.message(text="%s is used in %s " % (alias, msg))
             return
 
         tw.clearSelection() #?
@@ -1202,14 +1207,42 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         sp.enable_density(True)
         sp.popup()
 
-    def solids_phase_in_use(self, phase):
+
+    def solids_check_species_in_use(self, phase, species):
+        """return False if OK to delete given species, else a string indicating
+        what species is referenced by (BC, chem eq, etc)"""
+        msg = self.chemistry_check_species_in_use(species)
+        if msg:
+            return("reaction %s" % msg)
+        species_num = 1 + list(self.solids_species[phase].keys()).index(species) # :(
+
+        for k in keyword_args.keys_by_type['species']:
+            indices = self.project.get_key_indices(k)
+            if not indices: #Keys not set
+                continue
+            arg_types = keyword_args.keyword_args[k]
+            if 'phase' not in arg_types: # It's a fluid species, not solid
+                continue
+            if arg_types == ['phase', 'species']: # This will be deleted
+                continue
+            phase_pos = arg_types.index('phase')
+            species_pos = arg_types.index('species')
+            if args[phase_pos] != phase or args[species_pos] != species_num:
+                continue
+            if self.project.get_value(k, args=args) is not None:
+                return format_key_with_args(k,args)
+
+            return False
+
+
+    def solids_check_phase_in_use(self, phase):
         """return False if OK to delete phase, else a string indicating
-        what phase is referenced by (BC, chem eq, etc)"""
+        what object holds a reference to this phase (BC, chem eq, etc)"""
 
         for species in self.solids_species[phase]:
-            msg = self.chemistry_check_species_in_use(species)
+            msg = self.solids_check_species_in_use(phase, species)
             if msg:
-                return("reaction %s (%s)" % (msg, species))
+                return ("%s (%s)" % (msg, species))
 
         for k in keyword_args.keys_by_type['phase']:
             indices = self.project.get_key_indices(k)
@@ -1221,17 +1254,23 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                 # Single reference is OK.  We will
                 # delete these keys along with the phase in solids_delete_phase_keys
                 continue
-            if arg_types == ['ic', 'phase']:
-                for args in indices:
-                    if args[1] != phase:
-                        continue
-                    # TODO check if value is default, if so allow delete
-                    if self.project.get_value(k, args=args) is not None:
-                        return format_key_with_args(k,args)
+            if arg_types == ['phase', 'species']:
+                # These will all be deleted when we delete the phase
+                continue
+            phase_pos = arg_types.index('phase')
+
+            for args in indices:
+                if args[phase_pos] != phase:
+                    continue
+                # TODO check if value is default and if so, allow delete
+                if self.project.get_value(k, args=args) is not None:
+                    return format_key_with_args(k,args)
 
         return False # Ok to delete phase, no refs
 
+
     def solids_delete_phase_keys(self, phase):
+        """Delete all keywords associated with specified phase"""
         prev_size = len(self.solids) + 1 # Size before row deleted
         for key in keyword_args.keys_by_type['phase']:
             arg_types = keyword_args.keyword_args[key]

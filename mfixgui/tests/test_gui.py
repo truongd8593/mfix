@@ -68,9 +68,9 @@ class MfixGuiTests(TestQApplication):
         self.assertTrue(waitForWindow(self.mfix), "main mfix app not open")
 
         self.mfix.get_open_filename = lambda: mfix_dat
-        self.mfix.check_if_ok_to_write = lambda *args: True
-        self.mfix.check_if_ok_to_rename = lambda *args: True
-        self.mfix.check_if_ok_to_delete_files = lambda *args: True
+        self.mfix.confirm_write = lambda *args: True
+        self.mfix.confirm_rename = lambda *args: True
+        self.mfix.confirm_delete_files = lambda *args: True
         self.mfix.main_menu_animation_speed = 0
         self.mfix.animation_speed = 0
         QTest.mouseClick(self.mfix.ui.toolbutton_file, Qt.LeftButton)
