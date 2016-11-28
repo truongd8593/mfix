@@ -482,8 +482,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     else:
                         self.update_keyword(key, val, args=i)
 
-
-
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
         if len(self.solids) >= DIM_M:
@@ -768,6 +766,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             self.update_keyword('mmax', len(self.solids))
 
             # Clear out all keywords related to deleted phase
+            # Note Must delete self.solids[name] before calling delete_phase_keys
             self.solids_delete_phase_keys(phase)
 
             # Fix holes
@@ -1021,8 +1020,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
         self.update_scalar_equations(prev_nscalar)
 
+
     def solids_species_revert(self):
         pass
+
 
     def solids_species_save(self):
         ui = self.ui.solids
@@ -1043,6 +1044,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
+
 
     def update_solids_species_table(self):
         """Update table in solids pane.  Also sets nmax_s, species_s and species_alias_s keywords,
@@ -1096,10 +1098,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
-        # Autoselect unique row
+        # Autoselect if unique row
         for tw in (ui.tablewidget_solids_species, ui.tablewidget_solids_baseline):
             if tw.rowCount()==1 and get_selected_row(tw) is None:
                 tw.setCurrentCell(0, 0)
+
 
     def handle_solids_species_selection(self):
         ui = self.ui.solids
