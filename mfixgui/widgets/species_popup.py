@@ -3,6 +3,12 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 """Species selector dialog for MFIX GUI, includes stand-alone test"""
 
+# 2016-11-20  Species/alias unification
+#  we will only expose 'alias' to the user.  'species' is only used
+#  as a key into Burcat/THERMO_DATA, and we're going to inline all
+#  of the thermodynamic data - cgw
+
+
 import os
 import sys
 import signal
@@ -394,7 +400,6 @@ class SpeciesPopup(QtWidgets.QDialog):
         item.setData(UserRole, self.current_species)
         set_item_noedit(item)
         tw.setItem(row, 0, item)
-        print("SET ALIAS", val)
         self.defined_species[self.current_species]['alias'] = val
 
     def set_save_button(self, state):
