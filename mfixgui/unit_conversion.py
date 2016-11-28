@@ -517,7 +517,10 @@ def main():
             # Ratios too
             elif 'ratio' in desc_lower:
                 SI_unit = 'ratio'
-               # Densities
+            # Coefficient of restitition is dimensionless
+            elif 'coefficient of restitution' in desc_lower:
+                SI_unit = 'coefficient'
+            # Densities
             elif 'density' in desc_lower:
                 SI_unit = 'kg/m^3'
             # Radii are meters
@@ -529,6 +532,7 @@ def main():
             # Pressures are Pa # do this last, due to many references to 'pressure drop' etc
             elif 'pressure' in desc_lower:
                 SI_unit = 'Pa'
+
 
 
         if SI_unit:
