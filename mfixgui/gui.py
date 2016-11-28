@@ -2125,7 +2125,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def open_project(self, project_path, interactive=True):
         """Open MFiX Project"""
-        # Too much going on here, split some of this out
+        # Too much going on in this method, maybe split some of this out
 
         if self.main_menu.isVisible():
             self.handle_main_menu_hide()
