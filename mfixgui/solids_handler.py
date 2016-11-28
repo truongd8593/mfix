@@ -1169,13 +1169,17 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             return
 
         alias = tw.item(row,0).text()
-        msg = self.solids_check_species_in_use(alias)
+        msg = self.solids_check_species_in_use(phase, alias)
         if msg:
             self.message(text="%s is used in %s " % (alias, msg))
             return
 
         tw.clearSelection() #?
+
+        # NB Must remove from solids species before calling 'delete_species_keys'
         self.solids_species[phase].pop(alias, None)
+        self.solids_delete_species_keys(phase, alias)
+
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)
@@ -1221,25 +1225,27 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         msg = self.chemistry_check_species_in_use(species)
         if msg:
             return("reaction %s" % msg)
+
         species_num = 1 + list(self.solids_species[phase].keys()).index(species) # :(
 
-        for k in keyword_args.keys_by_type['species']:
-            indices = self.project.get_key_indices(k)
+        for key in keyword_args.keys_by_type['species']:
+            indices = self.project.get_key_indices(key)
             if not indices: #Keys not set
                 continue
-            arg_types = keyword_args.keyword_args[k]
+            arg_types = keyword_args.keyword_args[key]
             if 'phase' not in arg_types: # It's a fluid species, not solid
                 continue
             if arg_types == ['phase', 'species']: # This will be deleted
                 continue
             phase_pos = arg_types.index('phase')
             species_pos = arg_types.index('species')
-            if args[phase_pos] != phase or args[species_pos] != species_num:
-                continue
-            if self.project.get_value(k, args=args) is not None:
-                return format_key_with_args(k,args)
+            for args in indices:
+                if args[phase_pos] != phase or args[species_pos] != species_num:
+                    continue
+                if self.project.get_value(key, args=args) is not None:
+                    return format_key_with_args(key,args)
 
-            return False
+            return False # Ok to delete, no refs
 
 
     def solids_check_phase_in_use(self, phase):
@@ -1251,11 +1257,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             if msg:
                 return ("%s (%s)" % (msg, species))
 
-        for k in keyword_args.keys_by_type['phase']:
-            indices = self.project.get_key_indices(k)
+        for key in keyword_args.keys_by_type['phase']:
+            indices = self.project.get_key_indices(key)
             if not indices:
                 continue
-            arg_types = keyword_args.keyword_args[k]
+            arg_types = keyword_args.keyword_args[key]
 
             if arg_types == ['phase']:
                 # Single reference is OK.  We will
@@ -1270,14 +1276,49 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                 if args[phase_pos] != phase:
                     continue
                 # TODO check if value is default and if so, allow delete
-                if self.project.get_value(k, args=args) is not None:
-                    return format_key_with_args(k,args)
+                if self.project.get_value(key, args=args) is not None:
+                    return format_key_with_args(key,args)
 
         return False # Ok to delete phase, no refs
 
 
+    def solids_delete_species_keys(self, phase, species):
+        """Delete all keywords associated with specified species,
+        fixing up the resulting gap in sequence"""
+        prev_size = len(self.solids_species[phase]) + 1 # Size before species deleted
+        for key in keyword_args.keys_by_type['species']:
+            indices = self.project.get_key_indices(key)
+            if not indices:
+                continue
+            arg_types = keyword_args.keyword_args[key]
+            if 'phase' not in arg_types: # fluid species
+                continue
+            phase_pos = arg_types.index('phase')
+            species_pos = arg_types.index('species')
+
+            # Multidimensional copy-and-slide, using dict instead of list
+            new_vals = {}
+            for args in indices:
+                args_phase = args[phase_pos]
+                args_species = args[species_pos]
+                if args_phase != phase:
+                    continue
+                new_args = list(args)
+                if args_species > species:
+                    new_args[species_pos] -= 1 #Slide along 'species_pos' axis
+                new_vals[tuple(new_args)] = self.project.get_value(key, args=args)
+            for (args, val) in new_vals.items():
+                self.update_keyword(key, val, args=args)
+            for args in indices: # Trim
+                key_phase = args[phase_pos]
+                key_species = args[species_pos]
+                if (key_phase, key_species) == (args_phase, prev_size):
+                    self.unset_keyword(key, args)
+
+
     def solids_delete_phase_keys(self, phase):
-        """Delete all keywords associated with specified phase"""
+        """Delete all keywords associated with specified phase,
+        fixing up the resulting gap in sequence"""
         prev_size = len(self.solids) + 1 # Size before row deleted
         for key in keyword_args.keys_by_type['phase']:
             arg_types = keyword_args.keyword_args[key]
