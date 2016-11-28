@@ -346,6 +346,8 @@ class FluidHandler(SpeciesHandler):
 
         tw.clearSelection() #?
         self.fluid_species.pop(alias, None)
+        self.fluid_delete_species_keys(alias) # Must remove fluid species first
+
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?
@@ -399,7 +401,42 @@ class FluidHandler(SpeciesHandler):
                 if self.project.get_value(k, args=args) is not None:
                     return format_key_with_args(k,args)
 
-            return False
+            return False # Ok to delete, no refs
+
+
+    def fluid_delete_species_keys(self, species):
+        """Delete all keywords associated with specified species,
+        fixing up the resulting gap in sequence"""
+        prev_size = len(self.fluid_species) + 1 # Size before species deleted
+        for key in keyword_args.keys_by_type['species']:
+            indices = self.project.get_key_indices(key)
+            if not indices:
+                continue
+            arg_types = keyword_args.keyword_args[key]
+            if 'phase' not in arg_types: # fluid species
+                continue
+            phase_pos = arg_types.index('phase')
+            species_pos = arg_types.index('species')
+
+            # Multidimensional copy-and-slide, using dict instead of list
+            new_vals = {}
+            for args in indices:
+                args_phase = args[phase_pos]
+                args_species = args[species_pos]
+                if args_phase != phase:
+                    continue
+                new_args = list(args)
+                if args_species > species:
+                    new_args[species_pos] -= 1 #Slide along 'species_pos' axis
+                new_vals[tuple(new_args)] = self.project.get_value(key, args=args)
+            for (args, val) in new_vals.items():
+                self.update_keyword(key, val, args=args)
+            for args in indices: # Trim
+                key_phase = args[phase_pos]
+                key_species = args[species_pos]
+                if (key_phase, key_species) == (args_phase, prev_size):
+                    self.unset_keyword(key, args)
+
 
     def setup_fluid(self):
         # Called whenever we switch to fluid tab
