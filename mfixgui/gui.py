@@ -590,7 +590,7 @@ class MfixGui(QtWidgets.QMainWindow,
         """set_keyword(key, value, args)
              sets key(args) = value and updates GUI state.
              Always use this function,
-             do not assign to keyword object directly """
+             do not assign to keyword object directly! """
         self.set_unsaved_flag()
         self.project.submit_change(None, {key:value}, args)
 
