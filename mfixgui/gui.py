@@ -1194,9 +1194,8 @@ class MfixGui(QtWidgets.QMainWindow,
                                     'horizontal')
 
         if mode == 'modeler': # open navigation menu whenever we go back to Modeler mode
-            if not self.ui.treewidget_navigation.isVisible():
-                self.toggle_nav_menu()
-
+            ui.treewidget_navigation.setVisible(True)
+            self.ui.toolbutton_collapse_navigation.setIcon(self.icon_collapse_left)
 
 
     # --- modeler pane navigation ---
