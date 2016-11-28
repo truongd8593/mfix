@@ -233,7 +233,11 @@ class FluidHandler(SpeciesHandler):
             new_alias = self.species_popup.defined_species.get(name,{}).get('alias', name)
             if new_alias != old_alias:
                 rename[old_alias] = new_alias
-        self.fluid_species = deepcopy(self.species_popup.defined_species)
+        # Species/alias unification
+        #self.fluid_species = deepcopy(self.species_popup.defined_species)
+        self.fluid_species = OrderedDict((data.get('alias', species), deepcopy(data))
+            for (species, data) in self.species_popup.defined_species.items())
+
         self.update_fluid_species_table()
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
