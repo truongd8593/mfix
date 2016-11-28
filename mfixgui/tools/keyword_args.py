@@ -10,6 +10,7 @@ thisdir = os.path.abspath(os.path.dirname(__file__))
 
 keyword_args = {}
 with open(os.path.join(thisdir, 'keyword_args.txt')) as f:
+    # Could get this from keyword doc instead of external file ...
     for line in f:
         line = line.lower().strip()
         key, rest = line.split('(')
