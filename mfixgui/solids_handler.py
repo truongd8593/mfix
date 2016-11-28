@@ -1037,7 +1037,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             new_alias = self.species_popup.defined_species.get(name,{}).get('alias', name)
             if new_alias != old_alias:
                 rename[old_alias] = new_alias
-        self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
+        # Species/alias unification
+        #self.solids_species[phase] = deepcopy(self.species_popup.defined_species)
+        self.solids_species[phase] = OrderedDict((data.get('alias', species), deepcopy(data))
+            for (species, data) in self.species_popup.defined_species.items())
+
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)
