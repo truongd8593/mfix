@@ -2159,9 +2159,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # --- read the mfix.dat or *.mfx file
 
-
         self.reset() # resets gui, keywords, file system watchers, etc
-        # May not be needed on initial load
+        # (may not be needed on initial load)
 
         basename, pathname = os.path.split(project_file)
 
