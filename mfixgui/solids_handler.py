@@ -1335,9 +1335,17 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     self.update_keyword(key, val, args=i)
                 self.unset_keyword(key, args=prev_size) #Trim off the end
 
-            # the only phase-phase keyword is R_P,  this code doesn't handle that yet
-            elif arg_types == ['phase', 'phase']: # FIXME
-                raise TypeError(key, arg_types)
+            elif arg_types == ['phase', 'phase']:
+                tmp_data = {}
+                for args in indices:
+                    p1, p2 = args
+                    p1a = p1-1 if p1>=phase else p1
+                    p2a = p2-1 if p2>=phase else p2
+                    tmp_data[(p1a,p2a)] = self.project.get_value(key, args=args)
+                    if (p1==prev_size or p2==prev_size):
+                        self.unset_keyword(key, args=(p1, p2))
+                for (args, val) in tmp_data.items():
+                    self.update_keyword(key, val, args=args)
 
             else:
                 # Multidimensional copy-and-slide, using dict instead of list
