@@ -693,6 +693,10 @@ class VtkWidget(QtWidgets.QWidget):
                     elif geo_type == 'stl':
                         self.add_stl(None, filename=geo_data['filename'],
                                      name=node, data=geo_data, loading=True)
+
+                    # update parameter mapping
+                    for key, value in geo_data.items():
+                        self.update_parameter_map(value, node, key, check_old=False)
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
@@ -1693,6 +1697,10 @@ class VtkWidget(QtWidgets.QWidget):
             name = self.add_stl(None, filename=data['filename'], data=data)
         elif geo_type == 'implicit':
             name = self.add_implicit(data=data)
+
+        # update parameter mapping
+        for key, value in data.items():
+            self.update_parameter_map(value, name, key, check_old=False)
         return name
 
     def update_filter(self, name):
@@ -1966,7 +1974,7 @@ class VtkWidget(QtWidgets.QWidget):
             actor.VisibilityOff()
 
     # --- parameters ---
-    def update_parameter_map(self, new_value, name, key):
+    def update_parameter_map(self, new_value, name, key, check_old=True):
         """update the mapping of parameters and keywords"""
 
         data = self.geometrydict
@@ -1978,11 +1986,11 @@ class VtkWidget(QtWidgets.QWidget):
             new_params = new_value.get_used_parameters()
 
         # old params
-        old_value = data[name][key]
-
         old_params = []
-        if isinstance(old_value, Equation):
-            old_params = old_value.get_used_parameters()
+        if check_old:
+            old_value = data[name][key]
+            if isinstance(old_value, Equation):
+                old_params = old_value.get_used_parameters()
 
         add = set(new_params)-set(old_params)
         for param in add:
