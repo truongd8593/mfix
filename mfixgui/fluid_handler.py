@@ -328,10 +328,6 @@ class FluidHandler(SpeciesHandler):
 
 
     def fluid_species_delete(self):
-        # XXX FIXME this is potentially a big problem since
-        # it results in species being renumbered, or a hole in
-        # the sequence - either way is trouble.  Have to warn
-        # user, if species is referenced elsewhere.
         ui = self.ui.fluid
         tw = ui.tablewidget_fluid_species
         row = get_selected_row(tw)
@@ -345,6 +341,8 @@ class FluidHandler(SpeciesHandler):
             return
 
         tw.clearSelection() #?
+        index = list(self.fluid_species.keys()).index(alias)
+        self.bcs_delete_fluid_species(index)
         self.fluid_species.pop(alias, None)
         self.fluid_delete_species_keys(alias) # Must remove fluid species first
 

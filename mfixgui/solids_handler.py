@@ -770,6 +770,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             self.solids_delete_phase_keys(phase)
 
             # Fix holes
+            self.bcs_delete_solids_phase(phase)
+
             # Fixup phase names in mfix_gui_comments
             for (k,v) in list(self.project.mfix_gui_comments.items()):
                 if k.startswith('solids_phase_name('):
@@ -1221,7 +1223,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
     def solids_check_species_in_use(self, phase, species):
         """return False if OK to delete given species, else a string indicating
-        what species is referenced by (BC, chem eq, etc)"""
+        what species is referenced by (B,C chem eq, etc)"""
         msg = self.chemistry_check_species_in_use(species)
         if msg:
             return("reaction %s" % msg)
@@ -1242,8 +1244,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             for args in indices:
                 if args[phase_pos] != phase or args[species_pos] != species_num:
                     continue
-                if self.project.get_value(key, args=args) is not None:
-                    return format_key_with_args(key,args)
+                val = self.project.get_value(key, args=args)
+                if val is not None:
+                    if val != 0.0: # Assume 0 is default value (?)
+                        return format_key_with_args(key,args)
 
             return False # Ok to delete, no refs
 
@@ -1275,9 +1279,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             for args in indices:
                 if args[phase_pos] != phase:
                     continue
+                val = self.project.get_value(key, args=args)
+                if val is not None:
                 # TODO check if value is default and if so, allow delete
-                if self.project.get_value(key, args=args) is not None:
-                    return format_key_with_args(key,args)
+                    if val != 0.0: # Assume 0 is default
+                        return format_key_with_args(key,args)
 
         return False # Ok to delete phase, no refs
 

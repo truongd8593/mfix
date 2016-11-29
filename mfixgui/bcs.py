@@ -99,7 +99,7 @@ class BCS(object):
         self.add_tooltip(cb, 'flux_g')
 
         # Combobox callbacks
-        for name in ('fluid_energy_eq', #'fluid_species_eq',
+        for name in ('fluid_energy_eq', #'fluid_species_eq' (created below per-species),
                      'bc_jj_ps',
                      'solids_energy_eq', 'solids_granular_energy_eq'): # no solids_species_eq?
             item = getattr(ui, 'combobox_%s_type' % name)
@@ -424,6 +424,37 @@ class BCS(object):
         self.fixup_bcs_table(tw)
         self.bcs_setup_current_tab()
         self.update_nav_tree()
+
+    def bcs_delete_fluid_species(self, species_index):
+        """Update internal memoized values when fluid species deleted"""
+        keys = ['fluid_species_eq_type']
+        for bc in self.bcs.values():
+            for key in keys:
+                d = bc.get(key)
+                if d:
+                    for i in range(species_index, 1+max(d.keys())):
+                        d[i] = d.get(i+1)
+
+
+    def bcs_delete_solids_phase(self, phase_index):
+        """Update internal memoized values when solids phase deleted"""
+        keys = ['solid_energy_eq_type',
+                'solid_granular_energy_eq_type',
+                'solid_inflow_type',
+                'solid_outflow_type']
+
+        for bc in self.bcs.values():
+            for key in keys:
+                d = bc.get(key)
+                if d:
+                    for i in range(phase_index, 1+max(d.keys())):
+                        d[i] = d.get(i+1)
+
+
+        print("CURTAB = %s PI= %s" % (self.bcs_current_tab, phase_index))
+        if self.bcs_current_tab >= phase_index:
+            print("DECR", self.bcs_current_tab)
+            self.bcs_current_tab -= 1
 
 
     def handle_bcs_region_selection(self):
@@ -969,8 +1000,9 @@ class BCS(object):
             return
 
         for BC in self.bcs_current_indices:
-            #FIXME will not survive species deletion
-            self.bcs[BC]['fluid_species_%s_eq_type'%species_index] = eq_type
+            if 'fluid_species_eq_type' not in self.bcs[BC]:
+                self.bcs[BC]['fluid_species_eq_type'] = {}
+            self.bcs[BC]['fluid_species_eq_type'][species_index] = eq_type
             for (key, val) in (('bc_hw_x_g', hw), ('bc_c_x_g', c), ('bc_xw_g', xw)):
                 if val is True:
                     pass # 'required'
@@ -1053,8 +1085,9 @@ class BCS(object):
             return
 
         for BC in self.bcs_current_indices:
-            # FIXME this won't survive index remapping when solids are deleted!
-            self.bcs[BC]['solid_%s_energy_eq_type'%P] = eq_type
+            if 'solid_energy_eq_type' not in self.bcs[BC]:
+                self.bcs[BC]['solid_energy_eq_type'] = {}
+            self.bcs[BC]['solid_energy_eq_type'][P] = eq_type
             for (key, val) in (('bc_hw_t_s', hw), ('bc_c_t_s', c), ('bc_tw_s', tw)):
                 if val is True:
                     pass # 'required'
@@ -1101,7 +1134,9 @@ class BCS(object):
             return
 
         for BC in self.bcs_current_indices:
-            self.bcs[BC]['solid_%s_granular_energy_eq_type'%P] = eq_type
+            if 'solid_granular_energy_eq_type' not in self.bcs[BC]:
+                self.bcs[BC]['solid_granular_energy_eq_type'] = {}
+            self.bcs[BC]['solid_granular_energy_eq_type'][P] = eq_type
             for (key, val) in (('bc_hw_theta_m', hw), ('bc_c_theta_m', c), ('bc_thetaw_m', theta)):
                 if val is True:
                     pass # 'required'
@@ -1378,7 +1413,7 @@ class BCS(object):
             box.setEnabled(enabled)
             eq_type = None
             if enabled:
-                eq_type = self.bcs[BC0].get('fluid_species_%s_eq_type'%species_index)
+                eq_type = self.bcs[BC0].get('fluid_species_eq_type', {}).get(species_index)
                 if eq_type is None: # Attempt to infer from keywords
                     hw = self.project.get_value('bc_hw_x_g', args=[BC0, species_index])
                     c = self.project.get_value('bc_c_x_g', args=[BC0, species_index])
@@ -1679,7 +1714,7 @@ class BCS(object):
         ui.groupbox_solids_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            eq_type = self.bcs[BC0].get('solid_%s_energy_eq_type' % P)
+            eq_type = self.bcs[BC0].get('solid_energy_eq_type',{}).get(P)
             if eq_type is None: # Attempt to infer from keywords
                 hw = self.project.get_value('bc_hw_t_s', args=[BC0,P])
                 c =  self.project.get_value('bc_c_t_s', args=[BC0,P])
@@ -1785,7 +1820,7 @@ class BCS(object):
         ui.groupbox_solids_granular_energy_eq.setEnabled(enabled)
         eq_type = None
         if enabled:
-            eq_type = self.bcs[BC0].get('solid_%d_granular_energy_eq_type'%P)
+            eq_type = self.bcs[BC0].get('solid_granular_energy_eq_type',{}).get(P)
             if eq_type is None:
                 hw = self.project.get_value('bc_hw_theta_m', args=[BC0,P])
                 c =  self.project.get_value('bc_c_theta_m', args=[BC0,P])
@@ -1949,8 +1984,11 @@ class BCS(object):
             return
 
         for BC in self.bcs_current_indices:
-            # FIXME this won't survive index remapping when solids are deleted!
-            self.bcs[BC]['scalar_%s_eq_type'%i] = eq_type
+            # memoize value.
+            if 'scalar_eq_type' not in self.bcs[BC]:
+                self.bcs[BC]['scalar_eq_type'] = {}
+            self.bcs[BC]['scalar_eq_type'][i] = eq_type
+
             for (key, val) in (('bc_hw_scalar', hw), ('bc_c_scalar', c), ('bc_scalarw', sw)):
                 if val is True:
                     pass # 'required'
@@ -2046,9 +2084,9 @@ class BCS(object):
             old_nscalar = 0
         for i in range(nscalar+1, old_nscalar+2):
             for bc in self.bcs.values():
-                for k in list(bc.keys()):
-                    if k.startswith('scalar_%s' % i):
-                        del bc[k]
+                d = bc.get('scalar_eq_type')
+                if d:
+                    d.pop(i,None)
 
 
         def get_widget(key, i):
@@ -2079,7 +2117,7 @@ class BCS(object):
             hw = self.project.get_value('bc_hw_scalar', args=[BC0,i])
             c = self.project.get_value('bc_c_scalar', args=[BC0,i])
             sw = self.project.get_value('bc_scalarw', args=[BC0,i])
-            eq_type = self.bcs[BC0].get('scalar_%s_eq_type'%i)
+            eq_type = self.bcs[BC0].get('scalar_eq_type',{}).get(i)
             cb = getattr(ui, 'combobox_scalar_%s_eq_type'%i)
             if eq_type is None:
                 #  No-Flux [DEFAULT]
@@ -2235,13 +2273,16 @@ class BCS(object):
         le = getattr(ui, 'lineedit_%s' % widget.key)
         prev_val = le.value
 
-        # Memoize selection in 'bcs' object.  FIXME, this will not survive
-        #  deleting/remapping solids
-        bc_key = ('solid_%s_%s_type' % (P, flow_direction) if phase_type=='solids'
-                  else 'fluid_%s_type'%flow_direction)
-
-        for BC in self.bcs_current_indices:
-            self.bcs[BC][bc_key] = index
+        if phase_type == 'solids':
+            bc_key = 'solid_%s_type' % flow_direction
+            for BC in self.bcs_current_indices:
+                if bc_key not in self.bcs[BC]:
+                    self.bcs[BC][bc_key] = {}
+                self.bcs[BC][bc_key][P] = index
+        else:
+            bc_key = 'fluid_%s_type' % flow_direction
+            for BC in self.bcs_current_indices:
+                self.bcs[BC][bc_key] = index
 
         #    Available selections:
         # FLUID                                # SOLIDS
@@ -2855,7 +2896,7 @@ class BCS(object):
             cb = ui.combobox_solids_inflow_type
             item = get_combobox_item(cb, 0)
             item.setText('%s-axial velocity' % normal)
-            inflow_type = self.bcs[BC0].get('solids_%s_inflow_type'%P)
+            inflow_type = self.bcs[BC0].get('solids_inflow_type',{}).get(P)
             keys = ['bc_%s_s'%xmap[normal], 'bc_volflow_s', 'bc_massflow_s']
             vals = [self.project.get_value(k, args=[BC0, P]) for k in keys]
             if inflow_type is None:
