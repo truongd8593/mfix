@@ -473,8 +473,10 @@ class PSS(object):
             ui.tab_layout.addWidget(b, 0, i)
             if model == 'TFM':
                 b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
+                b.setToolTip(None)
             else:
                 b.setEnabled(False)
+                b.setToolTip("Only TFM solids can be defined as point sources""")
                 if (self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid):
                     change_tab = True
 

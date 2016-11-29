@@ -495,7 +495,7 @@ class BCS(object):
                 setup_done = True
         else: # Not cyclic
             ui.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
-            if.self.fluid_solver_disabled:
+            if self.fluid_solver_disabled:
                 ui.pushbutton_fluid.setToolTip("Fluid solver disabled")
             else:
                 ui.pushbutton_fluid.setToolTip(None)
