@@ -6,6 +6,18 @@ import vtk
 # Qt imports
 from qtpy import QtGui
 
+CONVERSION_TO_M = OrderedDict([
+    ('km',     1000),
+    ('m',      1),
+    ('cm',     0.01),
+    ('mm',     0.001),
+    ('mile',   1609.34),
+    ('yard',   0.9144),
+    ('ft',     0.3048),
+    ('in',     0.0254),
+    ('custom', 0)
+])
+
 DEFAULT_MESH_NAME = 'mesh.vtu'
 
 CELL_TYPE_ENUM = {

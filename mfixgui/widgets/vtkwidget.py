@@ -241,6 +241,7 @@ class VtkWidget(QtWidgets.QWidget):
         self.parent = parent
 
         self.ui = parent.ui
+        ui = self.ui.geometry
         self.geometrytree = self.ui.geometry.treeWidgetGeometry
 
         # --- data ---
@@ -288,6 +289,12 @@ class VtkWidget(QtWidgets.QWidget):
         for widget in widget_iter(self.ui.geometry.groupBoxGeometryParameters):
             if isinstance(widget, LineEdit):
                 widget.allow_parameters = True
+
+        # ui file widget tweaks
+        ui.combobox_stl_units.clear()
+        ui.combobox_stl_units.addItems(CONVERSION_TO_M.keys())
+        ui.combobox_stl_units.setCurrentIndex(1)
+        ui.combobox_stl_units.currentIndexChanged.connect(self.handle_stl_units)
 
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
@@ -611,6 +618,14 @@ class VtkWidget(QtWidgets.QWidget):
 
     def handle_visible_menu_close(self):
         self.toolbutton_visible.setDown(False)
+
+    def handle_stl_units(self):
+        unit = str(self.ui.geometry.combobox_stl_units.currentText())
+        enable = unit == 'custom'
+        if not enable:
+            self.ui.geometry.lineedit_stl_scale.setText(str(CONVERSION_TO_M[unit]))
+            self.parameter_edited(self.ui.geometry.lineedit_stl_scale)
+        self.ui.geometry.lineedit_stl_scale.setEnabled(enable)
 
     def emitUpdatedValue(self, key, value, args=None):
         """emit an updates value"""
@@ -1052,6 +1067,12 @@ class VtkWidget(QtWidgets.QWidget):
         transform.Translate(-safe_float(geo['centerx']),
                             -safe_float(geo['centery']),
                             -safe_float(geo['centerz']))
+
+        # scale
+        if 'scale' in geo:
+            transform.Scale(safe_float(geo['scale']),
+                            safe_float(geo['scale']),
+                            safe_float(geo['scale']))
 
         # rotation
         transform.RotateWXYZ(safe_float(geo['rotationx']), 1, 0, 0)
@@ -2695,6 +2716,7 @@ class VtkWidget(QtWidgets.QWidget):
 
     def set_representation(self, actor, rep):
         """set the representation of an actor"""
+        if actor is None: return
         if rep == 'wire':
             actor.GetProperty().SetRepresentationToWireframe()
         elif rep == 'solid':
