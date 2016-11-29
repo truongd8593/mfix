@@ -450,11 +450,11 @@ class BCS(object):
                     for i in range(phase_index, 1+max(d.keys())):
                         d[i] = d.get(i+1)
 
-
-        print("CURTAB = %s PI= %s" % (self.bcs_current_tab, phase_index))
-        if self.bcs_current_tab >= phase_index:
-            print("DECR", self.bcs_current_tab)
-            self.bcs_current_tab -= 1
+        if (self.bcs_current_solid is not None and
+            self.bcs_current_solid >= phase_index):
+            self.bcs_current_solid -= 1
+            if self.bcs_current_solid == 0:
+                self.bcs_current_solid = 1
 
 
     def handle_bcs_region_selection(self):
@@ -482,7 +482,11 @@ class BCS(object):
         if self.bc_is_cyclic(BC0):
             for i in range(ui.tab_layout.columnCount()-1): # Skip 'Cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
+                if not item:
+                    continue
                 widget = item.widget()
+                if not widget:
+                    continue
                 widget.setEnabled(False)
             ui.pushbutton_cyclic.setEnabled(True)
             ui.pushbutton_cyclic.setToolTip(None)
@@ -3825,7 +3829,11 @@ class BCS(object):
         ncols = ui.tab_layout.columnCount()
         for i in range(ncols-1):
             item = ui.tab_layout.itemAtPosition(0, i)
+            if not item:
+                continue
             widget = item.widget()
+            if not widget:
+                continue
             widget.setEnabled(False)
         ui.pushbutton_cyclic.setEnabled(True)
 

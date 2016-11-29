@@ -195,6 +195,15 @@ class PSS(object):
         self.update_nav_tree()
 
 
+    def pss_delete_solids_phase(self, phase_index):
+        """adjust pss_current_solid when solids phase deleted"""
+        if (self.pss_current_solid is not None and
+            self.pss_current_solid >= phase_index):
+            self.pss_current_solid -= 1
+            if self.pss_current_solid == 0:
+                self.pss_current_solid = None
+
+
     def handle_pss_region_selection(self):
         ui = self.ui.point_sources
         table = ui.tablewidget_regions

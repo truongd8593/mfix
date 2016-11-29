@@ -217,6 +217,17 @@ class ISS(object):
         self.update_nav_tree()
 
 
+    def iss_delete_solids_phase(self, phase_index):
+        """adjust iss_current_solid when solids phase deleted"""
+        if (self.iss_current_solid is not None and
+            self.iss_current_solid >= phase_index):
+            self.iss_current_solid -= 1
+            if self.iss_current_solid == 0:
+                self.iss_current_solid = None
+
+
+
+
     def handle_iss_region_selection(self):
         ui = self.ui.internal_surfaces
         table = ui.tablewidget_regions

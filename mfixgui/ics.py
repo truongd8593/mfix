@@ -286,6 +286,15 @@ class ICS(object):
         self.update_nav_tree()
 
 
+    def ics_delete_solids_phase(self, phase_index):
+        """adjust ics_current_solid when solids phase deleted"""
+        if (self.ics_current_solid is not None and
+            self.ics_current_solid >= phase_index):
+            self.ics_current_solid -= 1
+            if self.ics_current_solid == 0:
+                self.ics_current_solid = None
+
+
     def handle_ics_region_selection(self):
         ui = self.ui.initial_conditions
         table = ui.tablewidget_regions

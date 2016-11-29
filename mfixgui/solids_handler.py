@@ -769,8 +769,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             # Note Must delete self.solids[name] before calling delete_phase_keys
             self.solids_delete_phase_keys(phase)
 
-            # Fix holes
+            # these panels all have a 'current solid' (index) which must
+            # be adjusted
             self.bcs_delete_solids_phase(phase)
+            self.ics_delete_solids_phase(phase)
+            self.pss_delete_solids_phase(phase)
+            self.iss_delete_solids_phase(phase)
+
+
 
             # Fixup phase names in mfix_gui_comments
             for (k,v) in list(self.project.mfix_gui_comments.items()):
