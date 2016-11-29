@@ -839,10 +839,25 @@ class BCS(object):
                 self.bcs_change_tab(*self.bcs_find_valid_tab())
                 setup_done = True
 
+
         self.P = self.bcs_current_solid
 
         if not setup_done:
             self.bcs_setup_current_tab()
+
+        # make sure underline is in the right place, as # of solids may
+        # have changed (lifted from animate_stacked_widget, which we
+        # don't want to call here)
+        tab = self.bcs_current_tab
+        line_to = (0 if tab==FLUID_TAB
+                   else len(self.solids)+1 if tab==SCALAR_TAB
+                   else len(self.solids)+2 if tab==CYCLIC_TAB
+                   else self.bcs_current_solid)
+        line = ui.tab_underline
+        btn_layout = ui.tab_layout
+        btn_layout.addItem(btn_layout.takeAt(
+            btn_layout.indexOf(line)), 1, line_to)
+
 
 
     def bcs_setup_current_tab(self):
