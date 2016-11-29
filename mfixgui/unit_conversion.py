@@ -55,7 +55,7 @@ cgs_to_SI = {
   'bc_dt_0':        1,    # s                      : The interval at the beginning when the normal velocity at
   'bc_dt_h':        1,    # s                      : The interval when normal velocity is equal to BC_Jet_gh.
   'bc_dt_l':        1,    # s                      : The interval when normal velocity is equal to BC_JET_gL.
-  'bc_e_turb_g':    None, # UNKNOWN                : Boundary value of Epsilon for K-Epsilon Equation.
+  'bc_e_turb_g':    0.0001,# cm^2/s^3 -> m^2/s^3   : Boundary value of Epsilon for K-Epsilon Equation.
   'bc_ep_g':        1,    # void fraction          : Void fraction at the BC plane.
   'bc_ep_s':        1,    # volume fraction        : Solids volume fraction at the BC plane.
   'bc_hw_g':        None, # UNKNOWN                : Gas phase hw for partial slip boundary.
@@ -69,7 +69,7 @@ cgs_to_SI = {
   'bc_jet_g0':      0.01, # cm/s -> m/s            : Value of normal velocity during the initial interval
   'bc_jet_gh':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_h.
   'bc_jet_gl':      0.01, # cm/s -> m/s            : Value of normal velocity during the interval BC_DT_L.
-  'bc_k_turb_g':    None, # UNKNOWN                : Boundary value of K for K-Epsilon Equation.
+  'bc_k_turb_g':    0.0001,# cm^2/s^2 -> m^2/s^2   : Boundary value of K for K-Epsilon Equation.
   'bc_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the boundary.
   'bc_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the boundary.
   'bc_p_g':         0.1,  # barye -> Pa            : Gas pressure at the BC plane.
@@ -188,12 +188,12 @@ cgs_to_SI = {
   'gravity_z':      0.01, # cm/s^2 -> m/s^2        : Z-component of gravitational acceleration vector.
   'half_angle':     1,    # angle                  : Cone half angle, expressed in degrees (used when
   'hamaker_constant':None,# UNKNOWN                : Hamaker constant used in particle-particle cohesive
-  'ic_e_turb_g':    None, # UNKNOWN                : Initial value of Epsilon in K-Epsilon.
+  'ic_e_turb_g':    0.0001,# cm^2/s^3 -> m^2/s^3   : Initial value of Epsilon in K-Epsilon.
   'ic_ep_g':        1,    # void fraction          : Initial void fraction in the IC region.
   'ic_ep_s':        1,    # volume fraction        : Initial solids volume fraction of solids phase-m in the IC
   'ic_gama_rg':     None, # UNKNOWN                : Gas phase radiation coefficient in the IC region. Modify
   'ic_gama_rs':     None, # UNKNOWN                : Solids phase-m radiation coefficient in the IC region.
-  'ic_k_turb_g':    None, # UNKNOWN                : Initial value of K in K-Epsilon.
+  'ic_k_turb_g':    0.0001,# cm^2/s^2 -> m^2/s^2   : Initial value of K in K-Epsilon.
   'ic_l_scale':     0.01, # cm -> m                : Turbulence length scale in the IC region.
   'ic_p_g':         0.1,  # barye -> Pa            : Initial gas pressure in the IC region. If this quantity is
   'ic_p_star':      0.1,  # barye -> Pa            : Initial solids pressure in the IC region. Usually, this
@@ -244,10 +244,10 @@ cgs_to_SI = {
   'max_inlet_vel_fac':0.01,# cm/s -> m/s           : The code declares divergence if the velocity anywhere in the
   'mew':            1,    # max = 1.0              : Inter-particle Coulomb friction coefficient.
   'mew_w':          1,    # max = 1.0              : Particle-wall Coulomb friction coefficient.
-  'mppic_coeff_en1':None, # UNKNOWN                : First coefficient of restitution for the frictional stress
-  'mppic_coeff_en2':None, # UNKNOWN                : Second coefficient of restitution for the frictional stress
-  'mppic_coeff_en_wall':None,# UNKNOWN             : Normal coefficient of restitution for parcel-wall collisions
-  'mppic_coeff_et_wall':None,# UNKNOWN             : Tangential coefficient of restitution for parcel-wall
+  'mppic_coeff_en1':1,    # coefficient            : First coefficient of restitution for the frictional stress
+  'mppic_coeff_en2':1,    # coefficient            : Second coefficient of restitution for the frictional stress
+  'mppic_coeff_en_wall':1,# coefficient            : Normal coefficient of restitution for parcel-wall collisions
+  'mppic_coeff_et_wall':1,# coefficient            : Tangential coefficient of restitution for parcel-wall
   'mu_g0':          0.1,  # g/cm.s -> kg/m.s       : Specified constant gas viscosity .
   'mu_gmax':        None, # UNKNOWN                : Maximum value of the turbulent viscosity of the fluid, which
   'mu_s0':          0.1,  # barye -> Pa            : Specified constant viscosity. If any value is specified
@@ -294,7 +294,7 @@ cgs_to_SI = {
   'ps_z_b':         0.01, # cm -> m                : Z coordinate of the bottom face or edge.
   'ps_z_t':         0.01, # cm -> m                : Z coordinate of the top face or edge.
   'quadric_scale':  1,    # factor                 : Scaling factor, applied to all quadric geometry parameters.
-  'r_p':            None, # UNKNOWN                : Coefficient of restitution for particle-particle collisions
+  'r_p':            1,    # coefficient            : Coefficient of restitution for particle-particle collisions
   'radius':         0.01, # cm -> m                : Cylinder radius (used when QUADRIC_FORM = *_CYL_***)
   'reactor1_r1':    0.01, # cm -> m                : Reactor 1, lower cylinder radius.
   'reactor1_r2':    0.01, # cm -> m                : Reactor 1, upper cylinder radius.
@@ -529,6 +529,12 @@ def main():
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
+            # K-epsilon
+            elif 'k-epsilon' in desc_lower:
+                if 'value of epsilon' in desc_lower:
+                    SI_unit = 'm^2/s^3' # From GUI
+                elif 'value of k' in desc_lower:
+                    SI_unit = 'm^2/s^2'
             # Pressures are Pa # do this last, due to many references to 'pressure drop' etc
             elif 'pressure' in desc_lower:
                 SI_unit = 'Pa'
