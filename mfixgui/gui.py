@@ -1947,7 +1947,8 @@ class MfixGui(QtWidgets.QMainWindow,
         title = self.solver_name or 'MFIX'
         project_file = self.get_project_file()
         if project_file:
-            title += " - " + os.path.basename(project_file)
+            # add entire path to title, abbreviate user dir
+            title += " - " + project_file.replace(os.path.expanduser('~'), '~')
             if self.unsaved_flag:
                 title += '*'
 
