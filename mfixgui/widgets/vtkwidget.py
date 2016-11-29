@@ -145,7 +145,7 @@ def clean_visual_dict(dirty_dict):
 
 
 def is_stl_ascii(fname):
-    """see if the stl file is ASCII by checkign the first line for solid"""
+    """see if the stl file is ASCII by checking the first line for solid"""
     with open(fname, 'rb') as stlFile:
         try:
             solid = stlFile.readline().strip().lower().startswith(b'solid')
@@ -1658,8 +1658,11 @@ class VtkWidget(QtWidgets.QWidget):
             self.geometrytree.setCurrentItem(children[0])
         else:
             i = self.geometrytree.topLevelItemCount() - 1
-            item = self.geometrytree.topLevelItem(i)
-            self.geometrytree.setCurrentItem(item)
+            if i >= 0:
+                item = self.geometrytree.topLevelItem(i)
+                self.geometrytree.setCurrentItem(item)
+            else:
+                self.selected_geometry_changed()
 
         self.render()
 
