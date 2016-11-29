@@ -495,7 +495,9 @@ class VtkWidget(QtWidgets.QWidget):
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
         self.visible_menu = QtWidgets.QMenu(self)
-        self.toolbutton_visible.setMenu(self.visible_menu)
+        self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
+        #self.toolbutton_visible.setMenu(self.visible_menu)
+        self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
         self.toolbutton_visible.setPopupMode(
             QtWidgets.QToolButton.InstantPopup)
 
@@ -601,6 +603,14 @@ class VtkWidget(QtWidgets.QWidget):
                         wid.setStyleSheet("QToolButton{{ background: {};}}".format(value.name()))
                     elif key == 'opacity':
                         wid.setValue(value)
+
+    def handle_visible_menu(self):
+        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
+        g = self.mapToGlobal(bottom_left)
+        self.visible_menu.popup(g)
+
+    def handle_visible_menu_close(self):
+        self.toolbutton_visible.setDown(False)
 
     def emitUpdatedValue(self, key, value, args=None):
         """emit an updates value"""
