@@ -485,21 +485,40 @@ class BCS(object):
                 widget = item.widget()
                 widget.setEnabled(False)
             ui.pushbutton_cyclic.setEnabled(True)
+            ui.pushbutton_cyclic.setToolTip(None)
             if self.bcs_current_tab != CYCLIC_TAB:
                 self.bcs_change_tab(CYCLIC_TAB, None)
                 setup_done = True
         else: # Not cyclic
             ui.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
-            ui.pushbutton_scalar.setEnabled(self.project.get_value('nscalar',default=0) != 0)
+            if.self.fluid_solver_disabled:
+                ui.pushbutton_fluid.setToolTip("Fluid solver disabled")
+            else:
+                ui.pushbutton_fluid.setToolTip(None)
+            nscalar = self.project.get_value('nscalar',default=0)
+            ui.pushbutton_scalar.setEnabled(nscalar != 0)
+            if nscalar == 0:
+                ui.pushbutton_scalar.setToolTip("No scalar equations defined")
+            else:
+                ui.pushbutton_scalar.setToolTip(None)
+
+
             for i in range(1, ui.tab_layout.columnCount()-2): # Skip 'fluid', 'scalar' and 'cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
+                if item is None:
+                    continue
                 widget = item.widget()
+                if not widget:
+                    continue
                 widget.setEnabled(True)
 
             ui.pushbutton_cyclic.setEnabled(False)
+            ui.pushbutton_cyclic.setToolTip("Only available for cyclic boundary conditions")
+
             if self.bcs_current_tab == CYCLIC_TAB:
                 self.bcs_change_tab(*self.bcs_find_valid_tab())
                 setup_done = True
+
         if not setup_done:
             self.bcs_setup_current_tab() # reinitialize all widgets in current tab
 
