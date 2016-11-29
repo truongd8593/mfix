@@ -25,7 +25,7 @@ except ImportError:
 try:
     # Try Qt 5.x
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-    
+
     # patch vtk 7
     # known bug with vtk 7
     # fixed with commit: https://gitlab.kitware.com/vtk/vtk/commit/90ee1cca513db11d3401cc25997c9a0b4ee15166
@@ -35,17 +35,17 @@ try:
                 cls.__wheelDelta += ev.delta()
             else:
                 cls.__wheelDelta += ev.angleDelta().y()
-            
+
             if cls.__wheelDelta >= 120:
                 cls._Iren.MouseWheelForwardEvent()
                 cls.__wheelDelta = 0
             elif cls.__wheelDelta <= -120:
                 cls._Iren.MouseWheelBackwardEvent()
                 cls.__wheelDelta = 0
-            
+
         QVTKRenderWindowInteractor.__wheelDelta = 0
         QVTKRenderWindowInteractor.wheelEvent = wheelEvent
-                
+
 except ImportError:
     try:
         # Fall back to Qt 4.x
@@ -1826,9 +1826,12 @@ class VtkWidget(QtWidgets.QWidget):
         # set input data
         if 'implicit' in filtertype:
             sample = vtk.vtkSampleFunction()
-            sample.SetImplicitFunction(self.geometrydict.get(selection_text).get('source'))
+            source_data = self.geometrydict.get(selection_text)
+            sample.SetImplicitFunction(source_data.get('source'))
             sample.ComputeNormalsOff()
             geo['samplefunction'] = sample
+            extents = dict([(k, copy.deepcopy(v)) for k, v in zip(['minx', 'maxx', 'miny', 'maxy', 'minz', 'maxz'], source_data['bounds'])])
+            geo.update(extents)
             vtkfilter.SetInputConnection(sample.GetOutputPort())
             vtkfilter.SetValue(0, 0.0)
         else:
