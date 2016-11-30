@@ -239,14 +239,19 @@ class ProjectManager(Project):
                 self.gui.update_keyword('units', 'SI')
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
-                    if kw.dtype != float:
+                    # Don't attempt to convert non-floating point values
+                    #if kw.key not in cgs_to_SI:
+                    #   continue
+                    dtype = self.keyword_doc.get(kw.key,{}).get('dtype')
+                    if dtype != 'DP':
                         continue
+
                     factor = cgs_to_SI.get(kw.key)
                     if factor == 1:
                         continue
                     if factor is not None:
                         try:
-                            kw.value = factor * float(kw.value) # message?
+                            kw.value *= factor
                             self.gui.set_unsaved_flag()
                         except Exception as e:
                             warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
