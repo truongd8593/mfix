@@ -43,14 +43,15 @@ class SolidsTFM(object):
         added_mass = self.project.get_value('m_am') or self.project.get_value('added_mass')
         drag_type = self.project.get_value('drag_type')
         friction_model = self.project.get_value('friction_model')
-        enabled = [True, #Algebraic
-                   True, #Lun
-                   True, #Iddir
-                   k_e,  #Simonin
-                   k_e,  #Cao
-                   mmax==1, #Garzo99
-                   mmax==1, #Garzo12
-                   mmax<=2 and (not added_mass) and drag_type in ('WEN_YU', 'HYS')] # Garzo07
+        enabled = [True, #ALGEBRAIC
+                   True, #LUN_1984
+                   True, #IA_NONEP
+                   k_e,  #SIMONIN
+                   k_e,  #AHMADI
+                   mmax==1, #GD99
+                   mmax==1, #GTSH
+                   mmax<=2 and (not added_mass) and drag_type in ('WEN_YU', 'HYS')] # GHD
+        #assert len(enabled) == len(KT_TYPES)
         for (i,e) in enumerate(enabled):
             set_item_enabled(get_combobox_item(cb,i), e)
 
@@ -86,6 +87,42 @@ class SolidsTFM(object):
         enabled = (mmax>=2) or (kt_type not in ('GHD', 'ALGEBRAIC'))
         for item in (ui.label_c_e, ui.lineedit_keyword_c_e):
             item.setEnabled(enabled)
+
+        #  Garzo, Hrenya and Dufty, 2007
+        #    Selection not available for MMAX > 2
+        #    Selection not available with added mass force
+        #    Sets keyword KT_TYPE to GHD
+        #    Requires WEN_YU or HYS drag model
+        #    Specify coefficient of restitution; R_p (optional)
+        # note R_P *replaces* C_E for kt_type==GHD
+
+        ghd = (kt_type=='GHD')
+        if ghd:
+            names = list(self.solids.keys())
+
+            if names:
+                ui.label_r_p_1_1.setText(
+                    "%s restitution coeff." % names[0])
+            if len(names) > 1:
+                ui.label_r_p_1_2.setText(
+                    "%s-%s restitution coeff." % (names[0], names[1]))
+                ui.label_r_p_2_2.setText(
+                    "%s restitution coeff." % names[1])
+
+        for item in (ui.label_c_e,
+                     ui.lineedit_keyword_c_e):
+            item.hide() if ghd else item.show()
+
+        for item in (ui.label_r_p_1_1,
+                     ui.lineedit_keyword_r_p_args_1_1):
+            item.show() if ghd else item.hide()
+
+        for item in (ui.label_r_p_1_2,
+                     ui.label_r_p_2_2,
+                     ui.lineedit_keyword_r_p_args_1_2,
+                     ui.lineedit_keyword_r_p_args_2_2):
+            item.show() if (ghd and len(names)>1) else item.hide()
+
 
         #Specify interphase friction coefficient
         # Specification available only when required
@@ -197,6 +234,7 @@ class SolidsTFM(object):
         kt_type = KT_TYPES[val]
         self.update_keyword('kt_type', kt_type)
         self.setup_tfm_tab()
+
 
     def set_friction_model(self, val):
         self.update_keyword('friction_model',

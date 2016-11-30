@@ -1218,7 +1218,7 @@ QPushButton:checked {
         <number>5</number>
        </property>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_35">
+        <widget class="QGroupBox" name="groupbox_parameters">
          <property name="title">
           <string>Parameters</string>
          </property>
@@ -1227,7 +1227,7 @@ QPushButton:checked {
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <property name="leftMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <property name="topMargin">
            <number>10</number>
@@ -1366,7 +1366,7 @@ QPushButton:checked {
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_14">
+           <layout class="QHBoxLayout" name="layout_c_e">
             <item>
              <widget class="QLabel" name="label_c_e">
               <property name="text">
@@ -1376,6 +1376,69 @@ QPushButton:checked {
             </item>
             <item>
              <widget class="LineEdit" name="lineedit_keyword_c_e">
+              <property name="maximumSize">
+               <size>
+                <width>150</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layout_r_p_1_1">
+            <item>
+             <widget class="QLabel" name="label_r_p_1_1">
+              <property name="text">
+               <string>Restitution coeff. 1-1</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_r_p_args_1_1">
+              <property name="maximumSize">
+               <size>
+                <width>150</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layout_r_p_1_2">
+            <item>
+             <widget class="QLabel" name="label_r_p_1_2">
+              <property name="text">
+               <string>Restitution coeff. 1-2</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_r_p_args_1_2">
+              <property name="maximumSize">
+               <size>
+                <width>150</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layout_r_p_2_2">
+            <item>
+             <widget class="QLabel" name="label_r_p_2_2">
+              <property name="text">
+               <string>Restitution coeff. 2-2</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="LineEdit" name="lineedit_keyword_r_p_args_2_2">
               <property name="maximumSize">
                <size>
                 <width>150</width>
@@ -1671,7 +1734,7 @@ background-color:white;
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>10</number>
@@ -2123,6 +2186,13 @@ background-color:white;
             </widget>
            </item>
            <item>
+            <widget class="Line" name="line_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QLabel" name="label_des_en_input">
              <property name="font">
               <font>
@@ -2246,6 +2316,13 @@ background-color:white;
            </item>
            <item>
             <widget class="Line" name="line_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_6">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
