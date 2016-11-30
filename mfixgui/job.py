@@ -406,7 +406,7 @@ class JobManager(QObject):
                                    color='blue')
 
         proc = Popen(submit_cmd, shell=True, stdout=PIPE, stderr=PIPE,
-	             cwd=self.parent.get_project_dir())
+                     cwd=self.parent.get_project_dir())
         out, err = proc.communicate()
         if job_id_regex is not None and out:
             job_id = re.findall(job_id_regex, out)

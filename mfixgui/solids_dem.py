@@ -608,7 +608,7 @@ class SolidsDEM(object):
         for i in range(tw.columnCount()):
             item = tw.horizontalHeaderItem(i)
             if item:
-	        item.setTextAlignment(Qt.AlignLeft)
+                item.setTextAlignment(Qt.AlignLeft)
 
         #Select cohesion model
         # Selection always available
