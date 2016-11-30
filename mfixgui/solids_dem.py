@@ -451,7 +451,15 @@ class SolidsDEM(object):
             set_item_noedit(item)
             set_item_enabled(item, False)
             return item
-        if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
+
+        header_labels = (item.text() if item else None
+                         for item in
+                         (tw.horizontalHeaderItem(i)
+                          for i in range(tw.columnCount())))
+
+        if (tw.rowCount() != mmax+1
+            or tw.columnCount() != mmax
+            or header_labels != self.solids.keys()):
             # Clear out old lineedit widgets
             for row in range(tw.rowCount()):
                 for col in range(tw.columnCount()):
@@ -464,12 +472,9 @@ class SolidsDEM(object):
             # Make a new batch
             tw.setRowCount(mmax+1) # extra row for "Wall"
             tw.setColumnCount(mmax)
-
-            # Really only need to do this if a name changes
             names = list(self.solids.keys())
             tw.setHorizontalHeaderLabels(names)
             tw.setVerticalHeaderLabels(names + ['Wall'])
-
 
             arg = 1 # One-based
             key = 'des_en_input'
@@ -478,7 +483,7 @@ class SolidsDEM(object):
                     if col < row:
                         tw.setItem(row, col, make_item('--'))
                     else:
-                        le = LineEdit() # lineedit in table works but looks a bit odd
+                        le = LineEdit()
                         le.setMaximumWidth(150)
                         le.key = key
                         le.args = [arg]
@@ -512,7 +517,9 @@ class SolidsDEM(object):
         tw.setShowGrid(False)
         # Move column headers to left so they line up with lineedits
         for i in range(tw.columnCount()):
-            tw.horizontalHeaderItem(i).setTextAlignment(Qt.AlignLeft)
+            item =  tw.horizontalHeaderItem(i)
+            if item:
+                item.setTextAlignment(Qt.AlignLeft)
 
         #Specify tangential restitution coefficient
         # Specification available for Hertzian collision model
@@ -536,7 +543,14 @@ class SolidsDEM(object):
 
         if enabled:
             # Table size changed
-            if tw.rowCount() != mmax+1 or tw.columnCount() != mmax:
+            header_labels = (item.text() if item else None
+                             for item in
+                             (tw.horizontalHeaderItem(i)
+                              for i in range(tw.columnCount())))
+
+            if (tw.rowCount() != mmax+1
+                or tw.columnCount() != mmax
+                or header_labels != self.solids.keys()):
 
                 # Clear out old lineedit widgets
                 for row in range(tw.rowCount()):
@@ -550,7 +564,6 @@ class SolidsDEM(object):
                 tw.setRowCount(mmax+1) # extra row for "Wall"
                 tw.setColumnCount(mmax)
                 names = list(self.solids.keys())
-                # Really only need to do this if a name changes
                 tw.setHorizontalHeaderLabels(names)
                 tw.setVerticalHeaderLabels(names + ['Wall'])
 
@@ -561,7 +574,7 @@ class SolidsDEM(object):
                         if col < row:
                             tw.setItem(row, col, make_item('--'))
                         else:
-                            le = LineEdit()#lineedit in table works but looks a bit odd
+                            le = LineEdit()
                             le.setMaximumWidth(150)
                             le.key = key
                             le.args = [arg]
@@ -593,8 +606,9 @@ class SolidsDEM(object):
         tw.setShowGrid(False)
         # Move column headers to left so they line up with lineedits
         for i in range(tw.columnCount()):
-            tw.horizontalHeaderItem(i).setTextAlignment(Qt.AlignLeft)
-
+            item = tw.horizontalHeaderItem(i)
+            if item:
+	        item.setTextAlignment(Qt.AlignLeft)
 
         #Select cohesion model
         # Selection always available
