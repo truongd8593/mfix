@@ -484,8 +484,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
-        if len(self.solids) >= DIM_M:
-            ui.toolbutton_solids_add.setEnabled(False)
 
 
     def handle_solids_table_selection(self):
@@ -650,6 +648,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # Advanced
         enabled = (model=='TFM')
         ui.groupbox_advanced.setEnabled(enabled)
+        kt_type = self.project.get_value('kt_type')
         if enabled:
             close_packed = self.project.get_value('close_packed', default=True, args=phase)
             self.disable_close_pack(not(close_packed))
@@ -660,7 +659,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         added_mass = self.project.get_value('added_mass', default=False)
         m_am = self.project.get_value('m_am', default=None)
         self.enable_added_mass_force(added_mass and (m_am == phase))
-
+        # Added mass force not allowed with GHD model
+        ui.checkbox_enable_added_mass_force.setEnabled(kt_type != 'GHD')
 
     def update_solids_table(self):
         ui = self.ui.solids
@@ -705,6 +705,22 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         else:
             table.setMaximumHeight(header_height+nrows*table.rowHeight(0) + 4)
             # a little extra to avoid horiz scrollbar when not needed
+
+        # Enable/disable the 'add' button
+        if len(self.solids) >= DIM_M:
+            ui.toolbutton_solids_add.setEnabled(False)
+
+        # GHD is only valid for MMAX <= 2
+        # NB: If we are going to enforce this, there are many other
+        # MMAX-dependent settings ... search spec.txt for 'MMAX'
+        kt_type  = self.project.get_value('kt_type')
+        if kt_type == 'GHD':
+            if len(self.solids) > 1:
+                ui.toolbutton_solids_add.setEnabled(False)
+        elif kt_type in ('GD_99', 'GTSH'):
+            if len(self.solids):
+                ui.toolbutton_solids_add.setEnabled(False)
+
 
 
     def handle_solids_phase_name(self, widget, value_dict, args):
