@@ -1,8 +1,8 @@
 # Methods to deal with solids tfm tab, slip off from solids_handler.py
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from qtpy import QtWidgets
-from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLabel, QTableWidgetItem
+from qtpy.QtCore import Qt
 
 from mfixgui.widgets.base import LineEdit
 from mfixgui.project import Equation
@@ -447,7 +447,7 @@ class SolidsDEM(object):
         tw = ui.tablewidget_des_en_input
         # Table size changed
         def make_item(str):
-            item = QtWidgets.QTableWidgetItem(str)
+            item = QTableWidgetItem(str)
             set_item_noedit(item)
             set_item_enabled(item, False)
             return item
@@ -508,6 +508,11 @@ class SolidsDEM(object):
                 arg += 1
 
         self.fixup_solids_table(tw, stretch_column=mmax-1)
+        # This makes the table look a little nicer
+        tw.setShowGrid(False)
+        # Move column headers to left so they line up with lineedits
+        for i in range(tw.columnCount()):
+            tw.horizontalHeaderItem(i).setTextAlignment(Qt.AlignLeft)
 
         #Specify tangential restitution coefficient
         # Specification available for Hertzian collision model
@@ -516,7 +521,7 @@ class SolidsDEM(object):
         enabled = (des_coll_model=='HERTZIAN')
         ui.label_des_et_input.setEnabled(enabled)
         tw = ui.tablewidget_des_et_input
-        # TODO - this is too much of a duplicate of des_en_input above
+        # note - this is too much of a duplicate of des_en_input above
         if not enabled:
             # Clear out old lineedit widgets
             for row in range(tw.rowCount()):
@@ -584,6 +589,12 @@ class SolidsDEM(object):
                     self.project.register_widget(le, keys=[key], args=[arg])
                     arg += 1
         self.fixup_solids_table(tw, stretch_column=mmax-1)
+        # This makes the table look a little nicer
+        tw.setShowGrid(False)
+        # Move column headers to left so they line up with lineedits
+        for i in range(tw.columnCount()):
+            tw.horizontalHeaderItem(i).setTextAlignment(Qt.AlignLeft)
+
 
         #Select cohesion model
         # Selection always available
