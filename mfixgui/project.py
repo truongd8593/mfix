@@ -319,7 +319,7 @@ class Equation(object):
                                          names=name_dict))
 
             except:
-                raise ValueError(self.eq) # TODO make an EquationError class
+                raise ValueError(self.eq)
 
     def __nonzero__(self):  # Python 2
         return not math.isnan(self._eval())
@@ -346,20 +346,53 @@ class Equation(object):
         elif f > value: return 1
         elif f == value: return 0
 
-    def __add__(self, value):
-        return float(self._eval()) + float(value)
+    # def __add__(self, value):
+    #     return float(self._eval()) + float(value)
 
-    def __sub__(self, value):
-        return float(self._eval()) - float(value)
+    # def __sub__(self, value):
+    #     return float(self._eval()) - float(value)
 
-    def __mul__(self, value):
-        return float(self._eval()) * float(value)
+    # def __mul__(self, value):
+    #     return float(self._eval()) * float(value)
 
-    def __div__(self, value):
-        return float(self._eval()) / float(value)
+    # def __div__(self, value):
+    #     return float(self._eval()) / float(value)
 
-    def __pow__(self, value):
-        return float(self._eval()) ** float(value)
+    # def __pow__(self, value):
+    #     return float(self._eval()) ** float(value)
+
+    def binop(self, x, c):
+        if isinstance(x, Equation):
+            return Equation('(%s)%s(%s)' % (self.eq, c, x.eq))
+        else:
+            return Equation('(%s)%s%s' % (self.eq, c, x))
+
+    def r_binop(self, x, c=''):
+        if isinstance(x, Equation):
+            return Equation('(%s)%s(%s)' % (x.eq, c, self.eq))
+        else:
+            return Equation('%s%s(%s)' % (x, c, self.eq))
+
+    def __add__(self, x):
+        return self.binop(x, '+')
+
+    def __radd__(self,x):
+        return self.r_binop(x, '+')
+
+    def __sub__(self, x):
+        return self.binop(x, '-')
+
+    def __rsub__(self,x):
+        return self.r_binop(x, '-')
+
+    def __mul__(self, x):
+        return self.binop(x, '*')
+
+    def __rmul__(self,x):
+        return self.r_binop(x, '*')
+
+    def __pow__(self, x):
+        return self.binop(x, '**')
 
 
 class Keyword(Comparable):
@@ -1281,8 +1314,20 @@ class Project(object):
         keyword = None
 
         # Normalize some values
-        if value == 'USR_DRAG':
-            value = 'USER_DRAG'
+        if is_text_string(value):
+            v_upper= value.upper()
+            if v_upper == 'USR_DRAG':
+                value = 'USER_DRAG'
+
+            if value != v_upper:
+                for l in (TURBULENCE_MODELS, FRICTION_MODELS,
+                          DRAG_TYPES, SUBGRID_TYPES, KT_TYPES,
+                          RDF_TYPES, BLENDING_FUNCTIONS, BC_TYPES,
+                          IS_TYPES):
+                    if v_upper in l:
+                        print("XXXXX %s -> %s" % (value, v_upper))
+                        value = v_upper
+                        break
 
         if args:
             # Find condition keywords and separate
