@@ -1811,7 +1811,7 @@ class BCS(object):
             setup_key_widget(key, default, enabled)
             # Hack to prevent dup. display
             if enabled:
-                ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
+                ui.lineedit_keyword_bc_tw_s_2_args_BC_P.setText('')
             else:
                 ui.lineedit_keyword_bc_tw_s_args_BC_P.setText('')
 
