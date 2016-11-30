@@ -544,9 +544,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                 val = self.project.get_value(key, default=True, args=phase)
                 cb.setEnabled(True)
                 cb.setChecked(val)
+                self.add_tooltip(cb, key)
             else:
                 cb.setEnabled(False)
                 cb.setChecked(False)
+                self.add_tooltip(cb, key, 'Only available for TFM solids model')
 
         # Set species eq checkbox to correct value
         key = 'species_eq'
