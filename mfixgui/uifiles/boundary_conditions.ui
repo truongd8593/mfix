@@ -423,7 +423,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -545,7 +545,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -1004,7 +1004,7 @@
                     <number>5</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -1060,7 +1060,7 @@
                     <number>5</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>0</number>
@@ -1188,7 +1188,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -1551,7 +1551,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -1754,7 +1754,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -1894,7 +1894,7 @@
                     <number>10</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -2248,7 +2248,7 @@
                     <number>5</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>5</number>
@@ -2321,7 +2321,7 @@
                     <number>5</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="bottomMargin">
                     <number>0</number>
