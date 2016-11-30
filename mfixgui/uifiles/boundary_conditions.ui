@@ -2680,7 +2680,7 @@
                <item row="1" column="2" colspan="2">
                 <widget class="QLabel" name="label_flux_g_units">
                  <property name="text">
-                  <string>???kg/m²s</string>
+                  <string>kg/m²s</string>
                  </property>
                 </widget>
                </item>
