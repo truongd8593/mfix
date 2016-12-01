@@ -58,7 +58,7 @@ except ImportError:
 # local imports
 from mfixgui.tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
-from mfixgui.widgets.base import LineEdit
+from mfixgui.widgets.base import LineEdit, ComboBox
 try:
     from mfixgui.widgets.distributed_popup import DistributionPopUp
     from mfixgui.widgets.cyclone_popup import CyclonePopUp
@@ -293,7 +293,7 @@ class VtkWidget(QtWidgets.QWidget):
         # ui file widget tweaks
         ui.combobox_stl_units.clear()
         ui.combobox_stl_units.addItems(CONVERSION_TO_M.keys())
-        ui.combobox_stl_units.setCurrentIndex(1)
+        ui.combobox_stl_units.setCurrentText('m')
         ui.combobox_stl_units.currentIndexChanged.connect(self.handle_stl_units)
 
         # --- setup vtk stuff ---
@@ -461,9 +461,9 @@ class VtkWidget(QtWidgets.QWidget):
         for widget in widget_iter(
                 self.ui.geometry.stackedWidgetGeometryDetails):
             if isinstance(widget, QtWidgets.QLineEdit):
-                widget.editingFinished.connect(partial(self.parameter_edited, widget))
+                widget.editingFinished.connect(partial(self.handle_widget_value_changed, widget))
             elif isinstance(widget, QtWidgets.QCheckBox):
-                widget.stateChanged.connect(lambda i, w=widget: self.parameter_edited(w))
+                widget.stateChanged.connect(lambda i, w=widget: self.handle_widget_value_changed(w))
 
         # --- mesh ---
         self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
@@ -512,8 +512,7 @@ class VtkWidget(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(self.visible_menu)
         layout.setContentsMargins(5, 5, 5, 5)
         self.visual_btns = {}
-        for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
-                                 'Regions', ]):
+        for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry', 'Regions']):
             geo_name = geo
             geo = geo.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
@@ -624,7 +623,8 @@ class VtkWidget(QtWidgets.QWidget):
         enable = unit == 'custom'
         if not enable:
             self.ui.geometry.lineedit_stl_scale.setText(str(CONVERSION_TO_M[unit]))
-            self.parameter_edited(self.ui.geometry.lineedit_stl_scale)
+            self.handle_widget_value_changed(self.ui.geometry.lineedit_stl_scale)
+        self.handle_widget_value_changed(self.ui.geometry.combobox_stl_units)
         self.ui.geometry.lineedit_stl_scale.setEnabled(enable)
 
     def emitUpdatedValue(self, key, value, args=None):
@@ -809,6 +809,8 @@ class VtkWidget(QtWidgets.QWidget):
                     child.updateValue(None, value)
                 elif isinstance(child, QtWidgets.QCheckBox):
                     child.setChecked(value)
+                elif isinstance(child, ComboBox):
+                    child.updateValue(None, value)
 
             self.ui.geometry.groupBoxGeometryParameters.setTitle(text)
 
@@ -962,8 +964,9 @@ class VtkWidget(QtWidgets.QWidget):
 
             return name
 
-    def parameter_edited(self, widget, name=None, value=None, key=None):
+    def handle_widget_value_changed(self, widget, name=None, value=None, key=None):
         """Update the value of edited parameter in the geometrydict"""
+
         if name is None:
             current_selection = self.geometrytree.selectedItems()
 
@@ -975,6 +978,7 @@ class VtkWidget(QtWidgets.QWidget):
             parameter = ''.join(parameters[1:])
 
             geo_data = self.geometrydict.get(name)
+            if geo_data is None: return
 
             for key in geo_data.keys():
                 if key in parameter:
@@ -985,6 +989,8 @@ class VtkWidget(QtWidgets.QWidget):
                 value = widget.value
             elif isinstance(widget, QtWidgets.QCheckBox):
                 value = widget.isChecked()
+            elif isinstance(widget, ComboBox):
+                value = widget.value
         else:
             geo_data = self.geometrydict.get(name)
 
@@ -1098,11 +1104,17 @@ class VtkWidget(QtWidgets.QWidget):
         # update stl extents
         if geo['type'] in ['stl']:
             bounds = transform_filter.GetOutput().GetBounds()
-            for key, bound in zip(['extentxmin', 'extentxmax', 'extentymin', 'extentymax', 'extentzmin', 'extentzmax'],
-                                  bounds):
+            ui = self.ui.geometry
+            for key, bound, widget in zip(
+                    ['extentxmin', 'extentxmax', 'extentymin', 'extentymax', 'extentzmin', 'extentzmax'],
+                    bounds,
+                    [ui.lineedit_stl_extent_x_min, ui.lineedit_stl_extent_x_max,
+                     ui.lineedit_stl_extent_y_min, ui.lineedit_stl_extent_y_max,
+                     ui.lineedit_stl_extent_z_min, ui.lineedit_stl_extent_z_max]):
                 geo[key] = bound
+                # manually update stl bounds widgets
+                widget.updateValue(None, bound)
 
-            self.selected_geometry_changed()
 
         return transform_filter
 
@@ -1823,7 +1835,7 @@ class VtkWidget(QtWidgets.QWidget):
         geo_data = self.geometrydict.get(name)
         geo_type = geo_data.get('geo_type')
 
-        enable = [True]*len(self.filter_actions)
+        enable = [False] + [True]*(len(self.filter_actions)-1)
         if 'implicit' in geo_type:
             enable = [False]*len(self.filter_actions)
             enable[0] = True
@@ -2037,7 +2049,7 @@ class VtkWidget(QtWidgets.QWidget):
                 for var in self.parameter_key_map[param]:
                     name, key = var.split(',')
                     value = data[name][key]
-                    self.parameter_edited(None, name, value, key)
+                    self.handle_widget_value_changed(None, name, value, key)
         self.render(defer_render=False)
 
     def remove_from_parameter_map(self, name, del_geo):

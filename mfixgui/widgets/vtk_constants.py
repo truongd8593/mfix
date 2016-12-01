@@ -284,6 +284,7 @@ DEFAULT_STL_PARAMS = {
     'extentzmin':      0.0,
     'extentzmax':      0.0,
     'scale':           1.0,
+    'units':           'm',
     'geo_type':        'stl'}
 
 DEFAULT_PARAMS = {
