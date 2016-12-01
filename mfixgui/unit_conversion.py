@@ -46,10 +46,10 @@ cgs_to_SI = {
   'asperities':     0.01, # cm -> m                : Mean radius of surface asperities that influence the
   'bar_resolution': 1,    # max = 100.0            : Update frequency of progress bar, expressed in percent of
   'batch_wallclock':1,    # s                      : Total wall-clock duration of the job, in seconds.
-  'bc_c_scalar':    None, # UNKNOWN                : Specified constant scalar flux, C, in diffusion boundary
+  'bc_c_scalar':    100,  # 1/cm -> 1/m            : Specified constant scalar flux, C, in diffusion boundary
   'bc_c_t_g':       100,  # K/cm -> K/m            : Specified constant gas phase heat flux, C, in diffusion
   'bc_c_t_s':       100,  # K/cm -> K/m            : Specified constant solids phase heat flux, C, in diffusion
-  'bc_c_theta_m':   None, # UNKNOWN                : Specified constant flux, C, in diffusion boundary condition:
+  'bc_c_theta_m':   0.01, # cm/s^2 -> m/s^2        : Specified constant flux, C, in diffusion boundary condition:
   'bc_c_x_g':       100,  # 1/cm -> 1/m            : Specified constant gas species mass flux, C, in diffusion
   'bc_c_x_s':       100,  # 1/cm -> 1/m            : Specified constant solids species mass flux, C, in diffusion
   'bc_dt_0':        1,    # s                      : The interval at the beginning when the normal velocity at
@@ -58,8 +58,8 @@ cgs_to_SI = {
   'bc_e_turb_g':    0.0001,# cm^2/s^3 -> m^2/s^3   : Boundary value of Epsilon for K-Epsilon Equation.
   'bc_ep_g':        1,    # void fraction          : Void fraction at the BC plane.
   'bc_ep_s':        1,    # volume fraction        : Solids volume fraction at the BC plane.
-  'bc_hw_g':        None, # UNKNOWN                : Gas phase hw for partial slip boundary.
-  'bc_hw_s':        None, # UNKNOWN                : Solids phase hw for partial slip boundary.
+  'bc_hw_g':        100,  # 1/cm -> 1/m            : Gas phase hw for partial slip boundary.
+  'bc_hw_s':        100,  # 1/cm -> 1/m            : Solids phase hw for partial slip boundary.
   'bc_hw_scalar':   100,  # 1/cm -> 1/m            : Scalar transfer coefficient, Hw, in diffusion boundary
   'bc_hw_t_g':      100,  # 1/cm -> 1/m            : Gas phase heat transfer coefficient, Hw, in diffusion
   'bc_hw_t_s':      100,  # 1/cm -> 1/m            : Solids phase heat transfer coefficient, Hw, in diffusion
@@ -76,11 +76,11 @@ cgs_to_SI = {
   'bc_pic_mi_const_statwt':None,# UNKNOWN          : Flag to specify the constant statistical weight for
   'bc_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Bulk density of solids phase at the BC plane.
   'bc_scalar':      None, # UNKNOWN                : Boundary value for user-defined scalar equation.
-  'bc_scalarw':     None, # UNKNOWN                : Specified scalar value at the wall, ScalarW, in diffusion
+  'bc_scalarw':     1,    # scalar                 : Specified scalar value at the wall, ScalarW, in diffusion
   'bc_t_g':         1,    # K                      : Gas phase temperature at the BC plane.
   'bc_t_s':         1,    # K                      : Solids phase-m temperature at the BC plane.
-  'bc_theta_m':     None, # UNKNOWN                : Solids phase-m granular temperature at the BC plane.
-  'bc_thetaw_m':    None, # UNKNOWN                : Specified wall value, THETAw_M, in diffusion boundary
+  'bc_theta_m':     0.0001,# cm^2/s^2 -> m^2/s^2   : Solids phase-m granular temperature at the BC plane.
+  'bc_thetaw_m':    0.0001,# cm^2/s^2 -> m^2/s^2   : Specified wall value, THETAw_M, in diffusion boundary
   'bc_tw_g':        1,    # K                      : Specified gas phase wall temperature, Tw_g, in diffusion
   'bc_tw_s':        1,    # K                      : Specified solids phase wall temperature, Tw_s, in diffusion
   'bc_u_g':         0.01, # cm/s -> m/s            : X-component of gas velocity at the BC plane.
@@ -204,7 +204,7 @@ cgs_to_SI = {
   'ic_t_rg':        1,    # K                      : Gas phase radiation temperature in the IC region.
   'ic_t_rs':        1,    # K                      : Solids phase-m radiation temperature in the IC region.
   'ic_t_s':         1,    # K                      : Initial solids phase-m temperature in the IC region.
-  'ic_theta_m':     None, # UNKNOWN                : Initial solids phase-m granular temperature in the IC
+  'ic_theta_m':     0.0001,# cm^2/s^2 -> m^2/s^2   : Initial solids phase-m granular temperature in the IC
   'ic_u_g':         0.01, # cm/s -> m/s            : Initial x-component of gas velocity in the IC region.
   'ic_u_s':         0.01, # cm/s -> m/s            : Initial x-component of solids-phase velocity in the IC
   'ic_v_g':         0.01, # cm/s -> m/s            : Initial y-component of gas velocity in the IC region.
@@ -503,10 +503,19 @@ def main():
                 SI_unit = 'K/m' # per GUI
             elif 'mass flux' in desc_lower:
                 SI_unit = '1/m' # mass fraction per meter:  d(X_g)/dn + Hw (X_g - Xw_g) = C
-            elif 'transfer coefficient' in desc_lower:
+            elif 'scalar flux' in desc_lower:
+                SI_unit = '1/m'
+            elif 'scalar value' in desc_lower:
+                SI_unit = 'scalar'
+            elif 'transfer coefficient' in desc_lower or key in ('bc_hw_g', 'bc_hw_s'):
                 SI_unit = '1/m' # 'Hw' term in d(T_g)/dn + Hw (T_g - Tw_g) = C
+            elif 'granular temperature' in desc_lower or key=='bc_thetaw_m':
+                SI_unit = 'm^2/s^2' # per Jordan
+            elif key == 'bc_c_theta_m': # Granular energy flux
+                SI_unit = 'm/s^2' # per Jordan
+            # (when granular temperature is units length^2/time^2 then hw = 1/length and c = length/time^2)
             # Temperatures are all Kelvin, except for granular
-            elif 'temperature' in desc_lower and 'granular temperature' not in desc_lower:
+            elif 'temperature' in desc_lower:
                 SI_unit = 'K'
             # Velocities are m/s
             elif 'velocity' in desc_lower:
