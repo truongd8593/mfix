@@ -2109,8 +2109,7 @@ class BCS(object):
                     self.project.register_widget(le, [key], ['BC', i])
                     setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key+suffix, i), le)
 
-                    units = '1/m' if '_c_' in key else '' # Scalars are dimensionless,
-                    # flux is per meter
+                    units = '/m' if ('_c_' in key or '_hw_' in key) else '' # Scalars are dimensionless
                     label = QLabel(units)
                     groupbox_layout.addWidget(label, row, 2)
 
