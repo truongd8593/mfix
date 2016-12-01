@@ -447,7 +447,7 @@
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_bc_hw_g_units">
                      <property name="text">
-                      <string/>
+                      <string>/m</string>
                      </property>
                     </widget>
                    </item>
@@ -678,7 +678,7 @@
                    <item row="3" column="2">
                     <widget class="QLabel" name="label_bc_hw_t_g_units">
                      <property name="text">
-                      <string/>
+                      <string>/m</string>
                      </property>
                     </widget>
                    </item>
@@ -1683,7 +1683,7 @@
                    <item row="6" column="2">
                     <widget class="QLabel" name="label_bc_hw_s_units">
                      <property name="text">
-                      <string/>
+                      <string>/m</string>
                      </property>
                     </widget>
                    </item>
@@ -1854,7 +1854,7 @@
                    <item row="3" column="2">
                     <widget class="QLabel" name="label_bc_hw_t_s_units">
                      <property name="text">
-                      <string/>
+                      <string>/m</string>
                      </property>
                     </widget>
                    </item>
