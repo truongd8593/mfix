@@ -1657,15 +1657,16 @@ class MfixGui(QtWidgets.QMainWindow,
     # Don't make these depend on current state, since (esp for pymfix)
     # the state variables are cached and potentially outdated
     def handle_run(self):
-        # name?
-        name = 'Run'
         try:
+            # no job, create a new one
             if not self.job_manager.job:
                 # open the run dialog for job options
                 self.open_run_dialog()
                 return
+            # paused
             else:
-                name='unpause' #?
+                if self.unsaved_flag and self.job_manager.job.is_paused():
+                    self.handle_reinit()
                 self.job_manager.job.unpause()
         except Exception as e:
             self.error('handle_run: %s' % str(e))
