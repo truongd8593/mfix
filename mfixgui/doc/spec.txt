@@ -8,7 +8,7 @@ Prepared by J.Musser, J.Weber, W. Rogers, M. Meredith
 National Energy Technology Laboratory
 Research and Innovation Center
 
-October, 2016
+December, 2016
 
 Table of Contents
 Table of Contents .......................................................................................................................... ii
@@ -873,7 +873,7 @@ Specify tangential damping coefficient factor
 #    Only available for LSD collision model
 #    Sets keyword DES_ETAT_FAC (DES_ETAT_W_FAC)
 #    Default values of 0.5
-searSpecify Young's modulus
+Specify Young's modulus
 #    Only available for Hertzian collision model
 #    Sets keyword E_YOUNG (EW_YOUNG)
 Specify Poisson ratio:
@@ -2209,7 +2209,7 @@ chemical reaction is activated/deactivated by checking/unchecking the box. If th
 the chemical equation, the CHEM_EQ reaction construct keyword should get set to "NONE."
 
 Numerics Task Pane Window:
-The numerics input is split into tabs to group similar inputs and reduce the amount of intput needed
+The numerics input is split into tabs to group similar inputs and reduce the amount of input needed
 on a single pane.
 Residuals (tab)
 
