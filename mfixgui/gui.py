@@ -39,7 +39,6 @@ PRECOMPILE_UI = False
 if not PRECOMPILE_UI:
     from qtpy import uic
 
-
 # local imports
 from mfixgui.project_manager import ProjectManager
 from mfixgui.job import JobManager
@@ -65,6 +64,7 @@ from mfixgui.iss import ISS
 from mfixgui.mesh import Mesh
 from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
+from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
 
@@ -109,7 +109,7 @@ class MfixGui(QtWidgets.QMainWindow,
               FluidHandler,
               SolidsHandler,
               ICS, BCS, PSS, ISS,
-              Chemistry,
+              Chemistry, GraphicTabs,
               Interpreter,
               MainMenu):
     # Main window class for MFIX-GUI
@@ -349,6 +349,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_pss()
         self.init_iss()
         self.init_chemistry()
+        self.init_graphic_tabs()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -798,11 +799,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def slot_update_residuals(self):
         """Get job status from JobManager and update residuals pane"""
-        #if not self.job_manager:
-        #    return
         if self.job_manager and self.job_manager.job:
             log.debug('update_residuals')
             self.ui.residuals.setText(self.job_manager.job.pretty_status)
+            if self.plot_dict:
+                self.plot_dict.values()[0].plot(self.job_manager.job.status['dt'], append=True)
         else:
             log.debug('no Job object (update_residuals)')
 
