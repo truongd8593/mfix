@@ -36,7 +36,7 @@
       USE physprop, only: c_ps0, k_s0, c_ps, k_s, dif_s0, dif_s
       USE physprop, only: cv
 
-      USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
+      USE constant, only: ep_s_max, m_max
       use constant, only: ep_star
 
       USE run, only: RUN_TYPE
@@ -250,12 +250,6 @@
 
          IF (.NOT.CALL_DQMOM) THEN
 
-! refer to Syam's dissertation
-            IF (SMAX == 2) THEN
-               ep_s_max_ratio(1,2) = ep_s_max(1)/ &
-                  (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2))
-            ENDIF
-
 ! initialize local variables
             DO I = 1, SMAX
                DP_TMP(I) = D_P0(I)
@@ -265,29 +259,23 @@
 ! Rearrange the indices from coarsest particles to finest to be
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
-            DO I = 1, SMAX
-               DO J = I, SMAX
+            DO I = 1, SMAX-1
+               DO J = I+1, SMAX
                   IF(DP_TMP(I) < DP_TMP(J)) THEN
                      old_value = DP_TMP(I)
                      DP_TMP(I) = DP_TMP(J)
                      DP_TMP(J) = old_value
+                     old_value = m_max(i)
+                     m_max(i) = m_max(j)
+                     m_max(j) = old_value
                   ENDIF
                ENDDO
             ENDDO
 
-            DO I = 1, SMAX
-               DO J = 1, SMAX
-                  IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
-                     M_MAX(I) = J
-                  ENDIF
-               ENDDO
-            ENDDO
          ENDIF    ! if .not. call_dqmom
       ELSE   ! if .not. Yu-standish or Fedors-Landel
-         EP_S_MAX(:) = ZERO
-         EP_S_MAX_RATIO(:,:) = ZERO
-         D_P_RATIO(:,:) = ZERO
-         M_MAX(:) = 0
+         EP_S_MAX(:) = ONE-EP_STAR
+         M_MAX(:) = 1
       ENDIF
 
       RETURN
