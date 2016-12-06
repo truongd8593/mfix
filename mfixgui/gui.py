@@ -65,6 +65,7 @@ from mfixgui.iss import ISS
 from mfixgui.mesh import Mesh
 from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
+from mfixgui.numerics import Numerics
 
 from mfixgui.interpreter import Interpreter
 
@@ -110,6 +111,7 @@ class MfixGui(QtWidgets.QMainWindow,
               SolidsHandler,
               ICS, BCS, PSS, ISS,
               Chemistry,
+              Numerics,
               Interpreter,
               MainMenu):
     # Main window class for MFIX-GUI
@@ -349,6 +351,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_pss()
         self.init_iss()
         self.init_chemistry()
+        self.init_numerics()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -462,7 +465,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # --- Register widgets ---
         self.register_keyword_widgets()
-        self.register_numerics()
+        ##self.register_numerics()
 
         # --- Create main menu ---
         self.init_main_menu()
@@ -1276,6 +1279,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_iss()
         elif text == 'chemistry':
             self.setup_chemistry()
+        elif text == 'numerics':
+            self.setup_numerics()
 
 
     # --- animation methods ---
