@@ -353,8 +353,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if tw == ui.tablewidget_solids: # In a splitter
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
-            ui.top_frame.setMaximumHeight(height+40)
-            ui.top_frame.setMinimumHeight(header_height+40)
+            #ui.top_frame.setMaximumHeight(height+40) # results in extra space between button and underline
+            #ui.top_frame.setMinimumHeight(header_height+40)
             ui.top_frame.updateGeometry()
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
