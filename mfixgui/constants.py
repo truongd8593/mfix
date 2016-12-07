@@ -75,6 +75,8 @@ DEFAULT_IS_TYPE = 'IMPERMEABLE'
 
 # ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
 DIM_M = 10
+#model/param_mod.f:      INTEGER, PARAMETER :: DIM_EQS = 10
+DIM_EQS = 10
 
 
 SPECIAL_PARAMETERS = ['min', 'max']
