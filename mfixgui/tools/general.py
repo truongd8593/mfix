@@ -453,7 +453,8 @@ def clear_layout(layout):
     while layout.count():
         item = layout.takeAt(0)
         widget = item.widget()
-        widget.deleteLater()
+        if widget:
+            widget.deleteLater()
 
 def extract_config(path):
     '''Given a path to a file, extract the section that starts with ## CONFIG
