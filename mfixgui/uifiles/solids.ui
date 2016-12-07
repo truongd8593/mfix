@@ -248,6 +248,9 @@ QPushButton:checked {
           </property>
           <item>
            <widget class="QToolButton" name="toolbutton_solids_add">
+            <property name="toolTip">
+             <string>Define new solid phase</string>
+            </property>
             <property name="text">
              <string>Add</string>
             </property>
@@ -258,6 +261,9 @@ QPushButton:checked {
           </item>
           <item>
            <widget class="QToolButton" name="toolbutton_solids_delete">
+            <property name="toolTip">
+             <string>Delete selected solid phase</string>
+            </property>
             <property name="text">
              <string>Delete</string>
             </property>
@@ -1168,6 +1174,9 @@ QPushButton:checked {
                   </property>
                   <item row="0" column="0">
                    <widget class="QToolButton" name="toolbutton_solids_species_add">
+                    <property name="toolTip">
+                     <string>Add species to solid phase</string>
+                    </property>
                     <property name="text">
                      <string>Add</string>
                     </property>
@@ -1178,6 +1187,9 @@ QPushButton:checked {
                   </item>
                   <item row="0" column="1">
                    <widget class="QToolButton" name="toolbutton_solids_species_delete">
+                    <property name="toolTip">
+                     <string>Delete selected species</string>
+                    </property>
                     <property name="text">
                      <string>Delete</string>
                     </property>
@@ -1188,6 +1200,9 @@ QPushButton:checked {
                   </item>
                   <item row="0" column="2">
                    <widget class="QToolButton" name="toolbutton_solids_species_copy">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
                     <property name="text">
                      <string>Copy</string>
                     </property>
