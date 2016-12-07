@@ -98,11 +98,11 @@ class Numerics(object):
             cb = ComboBox()
             for name in DISCRETIZATION_NAMES:
                 cb.addItem(name)
-            for i in range(len(DISCRETIZATION_NAMES)):
-                self.add_tooltip(get_combobox_item(cb, i), key, value=i)
+            for j in range(len(DISCRETIZATION_NAMES)):
+                self.add_tooltip(get_combobox_item(cb, j), key, value=j)
             cb.setToolTip(get_combobox_item(cb,0).toolTip())
 
-            cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(i, val))
+            cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(val, i))
             tw.setCellWidget(row, COL_SCHEME, cb)
 
             key = 'ur_fac'
@@ -133,10 +133,10 @@ class Numerics(object):
             cb = ComboBox()
             for name in LEQ_METHOD_NAMES:
                 cb.addItem(name)
-            for i in range(len(LEQ_METHODS)):
-                self.add_tooltip(get_combobox_item(cb, i), key, value=LEQ_METHODS[i])
+            for j in range(len(LEQ_METHODS)):
+                self.add_tooltip(get_combobox_item(cb, j), key, value=LEQ_METHODS[j])
             cb.setToolTip(get_combobox_item(cb,0).toolTip())
-            cb.currentIndexChanged.connect(lambda val, i=i: self.set_linear_solver(i, val))
+            cb.currentIndexChanged.connect(lambda val, i=i: self.set_leq_method(val, i))
             tw.setCellWidget(row, COL_SOLVER, cb)
 
             key = 'leq_it'
@@ -175,7 +175,7 @@ class Numerics(object):
             cb = ComboBox()
             for name in PRECON_NAMES:
                 cb.addItem(name)
-            cb.currentIndexChanged.connect(lambda val, i=i: self.set_preconditioner(i, val))
+            cb.currentIndexChanged.connect(lambda val, i=i: self.set_preconditioner(val, i))
             tw.setCellWidget(row, COL_PRECON, cb)
             self.add_tooltip(cb, key)
 
@@ -183,11 +183,11 @@ class Numerics(object):
             cb = ComboBox()
             for name in SWEEP_NAMES:
                 cb.addItem(name)
-            cb.currentIndexChanged.connect(lambda val, i=i: self.set_sweep(i, val))
+            cb.currentIndexChanged.connect(lambda val, i=i: self.set_sweep(val, i))
             tw.setCellWidget(row, COL_SWEEP, cb)
             self.add_tooltip(cb, key)
-            for i in range(len(SWEEP_TYPES)):
-                self.add_tooltip(get_combobox_item(cb, i), key, value=SWEEP_TYPES[i])
+            for j in range(len(SWEEP_TYPES)):
+                self.add_tooltip(get_combobox_item(cb, j), key, value=SWEEP_TYPES[j])
 
 
     def set_cn_on(self, val):
@@ -198,9 +198,7 @@ class Numerics(object):
         cb.setToolTip(get_combobox_item(cb, int(val)).toolTip())
 
 
-    def set_discretize(self, index, val):
-        print("SD", index, val)
-
+    def set_discretize(self, val, index):
         ui = self.ui.numerics
         key = 'discretize'
         self.update_keyword(key, val, args=[index])
@@ -209,7 +207,7 @@ class Numerics(object):
         self.setup_numerics() # update checkboxes etc
 
 
-    def set_linear_solver(self, index, val):
+    def set_leq_method(self, val, index):
         ui = self.ui.numerics
         cb = ui.tablewidget_linear_solver.cellWidget(index-1, COL_SOLVER)
         cb.setToolTip(get_combobox_item(cb, val).toolTip())
@@ -219,7 +217,7 @@ class Numerics(object):
         #self.setup_numerics() # not needed
 
 
-    def set_preconditioner(self, index, val):
+    def set_preconditioner(self, val, index):
         ui = self.ui.numerics
         cb = ui.tablewidget_preconditioner.cellWidget(index-1, COL_PRECON)
         cb.setToolTip(get_combobox_item(cb, val).toolTip())
@@ -229,7 +227,7 @@ class Numerics(object):
         self.setup_numerics()
 
 
-    def set_sweep(self, index, val):
+    def set_sweep(self, val, index):
         ui = self.ui.numerics
         cb = ui.tablewidget_preconditioner.cellWidget(index-1, COL_SWEEP)
         cb.setToolTip(get_combobox_item(cb, val).toolTip())
@@ -555,6 +553,10 @@ class Numerics(object):
                         val = default
                 cb.setCurrentIndex(PRECON_TYPES.index(val))
             else:
+                cb.currentIndexChanged.disconnect()
+                cb.setCurrentIndex(1) # default: LINE
+                cb.currentIndexChanged.connect(lambda val, i=i: self.set_leq_method(val, i))
+                self.unset_keyword(key, args=[i])
                 self.add_tooltip(cb, key) #explain why it's disabled
 
             key = 'leq_sweep'
@@ -573,7 +575,12 @@ class Numerics(object):
                         val = default
                 cb.setCurrentIndex(SWEEP_TYPES.index(val))
             else:
+                cb.currentIndexChanged.disconnect()
+                cb.setCurrentIndex(0)
+                cb.currentIndexChanged.connect(lambda val, i=i: self.set_sweep(val, i))
+                self.unset_keyword(key, args=[i])
                 self.add_tooltip(cb, key) #explain why it's disabled
+
 
     def numerics_setup_advanced_tab(self):
         """Advanced (tab)"""

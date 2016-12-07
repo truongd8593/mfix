@@ -571,6 +571,9 @@ QPushButton:checked {
        </property>
        <item row="0" column="0">
         <widget class="QTableWidget" name="tablewidget_linear_solver">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::NoSelection</enum>
+         </property>
          <row>
           <property name="text">
            <string>Gas pressure</string>
@@ -675,6 +678,9 @@ QPushButton:checked {
        </property>
        <item row="0" column="0">
         <widget class="QTableWidget" name="tablewidget_preconditioner">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::NoSelection</enum>
+         </property>
          <row>
           <property name="text">
            <string>Gas pressure</string>
