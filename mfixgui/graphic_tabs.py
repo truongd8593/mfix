@@ -29,6 +29,7 @@ PLOT_ITEMS = OrderedDict([
     ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
     ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
+DEFAULT_PEN = pg.mkPen(color='#64B5F6', width=2)
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
@@ -140,7 +141,8 @@ class BaseGraphicTab(QtWidgets.QWidget):
         plot.setLabel('bottom', props['bottom'])
         plot.getPlotItem().showGrid(True, True, 0.5)
         plot.setDownsampling(ds=True, auto=True, mode='subsample')
-        self.curve = plot.plot([], pen='b', name=name)
+
+        self.curve = plot.plot([], pen=DEFAULT_PEN, name=name)
         self.layout.addWidget(plot)
 
     def create_vtk_widget(self):
