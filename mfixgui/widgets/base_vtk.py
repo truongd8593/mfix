@@ -17,6 +17,8 @@ try:
     VTK_MAJOR_VERSION = vtk.VTK_MAJOR_VERSION
 except ImportError:
     VTK_AVAILABLE = False
+    vtk = None
+    VTK_MAJOR_VERSION = None
     e = traceback.format_exc()
     LOG.info("can't import vtk:\n{}".format(e))
 try:
