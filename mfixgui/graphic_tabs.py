@@ -183,7 +183,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         self.name = name
 
 class GraphicTabs(object):
-    """mixin to the gui.MfixGui class to handle plots etc."""
+    """mixin to the gui.MfixGui class to handle plots and graphics"""
     def init_graphic_tabs(self):
 
         self.plot_dict = {}
@@ -191,8 +191,8 @@ class GraphicTabs(object):
         # Add corner widget to tabs
         corner_widget = QtWidgets.QWidget()
         corner_layout = QtWidgets.QHBoxLayout(corner_widget)
-        corner_layout.setSpacing(0)
-        corner_layout.setMargin(0)
+        #corner_layout.setSpacing(0) # cgw FIXME
+        #corner_layout.setMargin(0) # cgw FIXME
         toolbutton_add_plot = QtWidgets.QToolButton()
         toolbutton_add_plot.setAutoRaise(True)
         toolbutton_add_plot.setIcon(get_icon('add.png'))
