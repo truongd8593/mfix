@@ -5,20 +5,19 @@ log = logging.getLogger(__name__)
 
 #import Qt
 from qtpy import QtWidgets, PYQT5
-from qtpy.QtCore import Qt
 
 #local imports
 from mfixgui.constants import *
-from mfixgui.tools.general import (set_item_noedit, get_selected_row,
-                                   widget_iter, format_key_with_args,
-                                   get_combobox_item, set_item_enabled)
+from mfixgui.tools.general import get_combobox_item
 
+from mfixgui.widgets.base import (LineEdit, ComboBox)
 
-from mfixgui.tools import keyword_args
 
 
 (TAB_RESIDUALS, TAB_DISCRETIZATION, TAB_LINEAR_SOLVER,
  TAB_PRECONDITIONER, TAB_ADVANCED) = range(5)
+
+(COL_SCHEME, COL_RELAX) = (0,1)
 
 class Numerics(object):
     """Numerics Task Pane Window
@@ -36,6 +35,73 @@ class Numerics(object):
             btn.pressed.connect(lambda i=i, btn=btn: self.numerics_change_tab(i, btn))
 
         self.numerics_current_tab = TAB_RESIDUALS
+
+        #Residuals pane
+        #Discretization pane
+        # Add some extra tooltips
+        cb = ui.combobox_cn_on
+        key = 'cn_on'
+        cb.currentIndexChanged.connect(self.set_cn_on)
+        self.add_tooltip(get_combobox_item(cb,0), key, value='.FALSE.')
+        self.add_tooltip(get_combobox_item(cb,1), key, value='.TRUE.')
+        tw = ui.tablewidget_discretization
+        #hv = QtWidgets.QHeaderView
+        #if PYQT5:
+        #    resize = tw.verticalHeader().setSectionResizeMode
+        #else:
+        #    resize = tw.verticalalHeader().setResizeMode
+
+
+        def make_combobox():
+            key = 'discretize'
+            cb = ComboBox()
+            choices = ["First-order upwind",
+                       "First-order upwind (dwf)",
+                       "Superbee",
+                       "SMART",
+                       "ULTRA-QUICK",
+                       "QUICKEST",
+                       "MUSCL",
+                       "van Leer",
+                       "minmod",
+                       "Central"]
+            map(cb.addItem, choices)
+            for i in range(len(choices)):
+                self.add_tooltip(get_combobox_item(cb, i), key, value=i)
+            cb.setToolTip(get_combobox_item(cb,0).toolTip())
+            return cb
+
+        for i in range(1,1+DIM_EQS):
+            row = i-1
+            cb = make_combobox()
+            cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(i, val))
+            tw.setCellWidget(row, COL_SCHEME, cb)
+
+            #resize(row, hv.ResizeToContents)
+            key = 'ur_fac'
+            le = LineEdit()
+            le.dtype = float
+            le.key = key
+            le.args = [i]
+            tw.setCellWidget(row, COL_RELAX, le)
+            le.value_updated.connect(self.project.submit_change)
+            self.add_tooltip(le, key)
+
+    def set_cn_on(self, val):
+        ui = self.ui.numerics
+        cb = ui.combobox_cn_on
+        key = 'cn_on'
+        self.update_keyword(key, bool(val))
+        cb.setToolTip(get_combobox_item(cb, int(val)).toolTip())
+
+
+    def set_discretize(self, index, val):
+        ui = self.ui.numerics
+        key = 'discretize'
+        self.update_keyword(key, val, args=[index])
+        cb = ui.tablewidget_discretization.cellWidget(index-1, COL_SCHEME)
+        cb.setToolTip(get_combobox_item(cb, val).toolTip())
+        self.setup_numerics() # update checkboxes, etc
 
 
     def numerics_update_tabs(self):
@@ -85,14 +151,12 @@ class Numerics(object):
 
 
     def reset_numerics(self):
-        ui = self.ui.numerics
+        pass
         # Set all numeric-related state back to default
 
 
     def numerics_setup_residuals_tab(self):
         """Residuals (tab)"""
-        pass
-
         #Specify residual for continuity plus momentum equations
         #    Specification always available
         #    Sets keyword TOL_RESID
@@ -113,26 +177,53 @@ class Numerics(object):
         #    Specification always available
         #    Sets keyword TOL_RESID_SCALAR
         #    DEFAULT value of 1.0e-4
+        # handled by keyword widgets
+        pass
+
+    def fixup_numerics_table(self, tw, stretch_column=1):
+        # TODO catch resize & call fixup
+        ui = self.ui.numerics
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.columnCount()
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        # trim excess vertical space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        nrows = tw.rowCount()
+
+        height =  (header_height+scrollbar_height
+                   + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+        tw.setMaximumHeight(height)
+        tw.setMinimumHeight(height)
+        ui.groupbox_discretization.setMaximumHeight(height+40)
+        tw.updateGeometry() #? needed?
+
 
     def numerics_setup_discretization_tab(self):
         """Discretization (tab)"""
-
+        ui = self.ui.numerics
         #Select temporal discretization scheme
         #    Selection always available
         #    Available selections:
         #  Implicit Euler [DEFAULT]
         #    Sets keyword CN_ON to .FALSE.
-        #  Crank-Nicholson
+        #  Crank-Nicolson
         #    Sets keyword CN_ON to .TRUE.
-        #Specify spatial discretization and under relation factors (table format)
-        #    Specification always available
-        #    Column 1: List of equations
-        #    Column 2: Select discretization scheme for equation #
+        cb = ui.combobox_cn_on
+        cb.setCurrentIndex(1 if self.project.get_value('cn_on') else 0)
+
+        tw = ui.tablewidget_discretization
+
         #  Available selections
         #    First-order upwind [DEFAULT for all equations]
-
         # Sets keyword DISCRETIZE(#) to 0
-        #First-order upwind (dwf)
+        #    First-order upwind (dwf)
         # Sets keyword DISCRETIZE(#) to 1
         #    Superbee
         # Sets keyword DISCRETIZE(#) to 2
@@ -150,29 +241,72 @@ class Numerics(object):
         # Sets keyword DISCRETIZE(#) to 8
         #    Central
         # Sets keyword DISCRETIZE(#) to 9
-        #    Column 3: Specify under relation factors
+        # see "make_combobox"
+
+        #    Column 3: Specify under relaxation factors
         #  Specification always available
         #  Sets keyword UR_FAC for each equation #
         #  DEFAULTS are equation type specific
-        #    1 - gas pressure: 0.8
-        #    2 - volume fraction: 0.5
-        #    3 - u-momentum: 0.5
-        #    4 - v-momentum: 0.5
-        #    5 - w-momentum: 0.5
-        #    6 - energy: 1.0
-        #    7 - species: 1.0
-        #    8 - granular energy: 0.5
-        #    9 - user-scalar/k-epsilon: 0.8
-        #    10 - DES diffusion: 1.0
+        defaults = [None,#    0 - unused
+                    0.8, #    1 - gas pressure: 0.8
+                    0.5, #    2 - volume fraction: 0.5
+                    0.5, #    3 - u-momentum: 0.5
+                    0.5, #    4 - v-momentum: 0.5
+                    0.5, #    5 - w-momentum: 0.5
+                    1.0, #    6 - energy: 1.0
+                    1.0, #    7 - species: 1.0
+                    0.5, #    8 - granular energy: 0.5
+                    0.8, #    9 - user-scalar/k-epsilon: 0.8
+                    1.0] #    10 - DES diffusion: 1.0
+
+        self.fixup_numerics_table(tw)
+        for i in range(1, 1+DIM_EQS):
+            row = i-1
+            key = 'discretize'
+            default = 0
+            cb = tw.cellWidget(row, COL_SCHEME)
+            val = self.project.get_value(key, args=[i])
+            if val is None:
+                val = default
+                self.update_keyword(key, val, args=[i])
+            cb.setCurrentIndex(val)
+
+            key = 'ur_fac'
+            le = tw.cellWidget(row, COL_RELAX)
+            val = self.project.get_value(key, args=[i])
+            if val is None:
+                val = defaults[i]
+                self.update_keyword(key, val, args=[i])
+            le.updateValue(key, val) # initialize lineedit, since it's not registered
+
         #Enable deferred correction
         #    Selection only available if minval(discretize) > 0
         #    Sets keyword DEF_COR
         #    DEFAULT value .FALSE.
+        key = 'discretize'
+        enabled = min(self.project.get_value(key, args=[i], default=0)
+                      for i in range(1, 1+DIM_EQS)) > 0
+        key = 'def_cor'
+        cb = ui.checkbox_keyword_def_cor
+        cb.setEnabled(enabled)
+        self.add_tooltip(cb, key)
+        if not enabled:
+            cb.setToolTip(cb.toolTip() + " Disabled for first-order upwinding.")
+            cb.setChecked(False)
+            self.unset_keyword(key)
+
         #Enable chi-scheme correction
         #    Selection only available if the species equation spatial discretization is SMART or
         #MUSCL (DISCRETIZE(7) = 3 or 6)
         #    Sets keyword CHI_SCHEME
         #    DEFAULT value .FALSE.
+        enabled = self.project.get_value('discretize', args=[7]) in (3,6)
+        key = 'chi_scheme'
+        cb = ui.checkbox_keyword_chi_scheme
+        cb.setEnabled(enabled)
+        if not enabled:
+            cb.setChecked(False)
+            self.unset_keyword(key)
 
 
     def numerics_setup_linear_solver_tab(self):
