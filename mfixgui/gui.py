@@ -802,8 +802,10 @@ class MfixGui(QtWidgets.QMainWindow,
         if self.job_manager and self.job_manager.job:
             log.debug('update_residuals')
             self.ui.residuals.setText(self.job_manager.job.pretty_status)
-            if self.plot_dict:
-                self.plot_dict.values()[0].plot(self.job_manager.job.status['dt'], append=True)
+
+            # update plot data
+            if not self.job_manager.job.is_paused():
+                self.update_plots(self.job_manager.job.status)
         else:
             log.debug('no Job object (update_residuals)')
 
