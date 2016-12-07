@@ -602,7 +602,7 @@ class ProjectManager(Project):
             # Note, most widgets don't really need the callback from the
             # project manager, especially after the file is initially loaded.
             # Maybe remove project manager -> widget callbacks completely
-            # and follow the IC/BC model everywhere
+            # and follow the IC/BC model everywhere ?
             if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_', 'is_')):
                 continue
             if key not in d:

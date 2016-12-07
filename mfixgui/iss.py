@@ -365,7 +365,7 @@ class ISS(object):
                 continue # should not get empty tuple
             # is_type should already be set
             is_type = self.project.get_value('is_type', args=[indices[0]])
-            self.iss_add_regions_1(regions, is_type=None, indices=indices, autoselect=False)
+            self.iss_add_regions_1(regions, is_type=is_type, indices=indices, autoselect=False)
 
 
     def iss_extract_regions(self):

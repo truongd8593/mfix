@@ -2250,7 +2250,6 @@ Specify spatial discretization and under relation factors (table format)
 #    Column 2: Select discretization scheme for equation #
 #  Available selections
 #    First-order upwind [DEFAULT for all equations]
-
 # Sets keyword DISCRETIZE(#) to 0
 First-order upwind (dwf)
 # Sets keyword DISCRETIZE(#) to 1
@@ -2270,6 +2269,7 @@ First-order upwind (dwf)
 # Sets keyword DISCRETIZE(#) to 8
 #    Central
 # Sets keyword DISCRETIZE(#) to 9
+#
 #    Column 3: Specify under relation factors
 #  Specification always available
 #  Sets keyword UR_FAC for each equation #
@@ -2289,8 +2289,7 @@ Enable deferred correction
 #    Sets keyword DEF_COR
 #    DEFAULT value .FALSE.
 Enable chi-scheme correction
-#    Selection only available if the species equation spatial discretization is SMART or
-MUSCL (DISCRETIZE(7) = 3 or 6)
+#    Selection only available if the species equation spatial discretization is SMART or MUSCL (DISCRETIZE(7) = 3 or 6)
 #    Sets keyword CHI_SCHEME
 #    DEFAULT value .FALSE.
 
@@ -3004,4 +3003,3 @@ HELYX-OS
 SimScale
 
 DICEhub
-

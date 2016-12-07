@@ -1,6 +1,8 @@
 # Constants
 from collections import OrderedDict
 
+
+
 # Solver types
 # must match combobox_solver in model.ui
 SINGLE, TFM, DEM, PIC, HYBRID = range(5)
@@ -71,6 +73,10 @@ IS_TYPES = ['IMPERMEABLE', 'X_IMPERMEABLE', 'Y_IMPERMEABLE', 'Z_IMPERMEABLE',
 
 DEFAULT_IS_TYPE = 'IMPERMEABLE'
 
+# ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
+DIM_M = 10
+#model/param_mod.f:      INTEGER, PARAMETER :: DIM_EQS = 10
+DIM_EQS = 10
 
 
 SPECIAL_PARAMETERS = ['min', 'max']

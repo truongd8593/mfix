@@ -12,10 +12,6 @@ log = logging.getLogger(__name__)
 from qtpy import QtWidgets, PYQT5
 from qtpy.QtCore import Qt
 
-
-# ./model/param_mod.f:67:      INTEGER, PARAMETER :: DIM_M = 10 # max # of solids phases
-DIM_M = 10
-
 #local imports
 from mfixgui.constants import *
 from mfixgui.tools.general import (set_item_noedit, get_selected_row,
@@ -35,6 +31,8 @@ from mfixgui.solids_pic import SolidsPIC
 
 from mfixgui.species_handler import SpeciesHandler
 
+TAB_MATERIALS, TAB_TFM, TAB_DEM, TAB_PIC = range(4)
+
 class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
     def init_solids_default_models(self):
@@ -50,16 +48,21 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.solids_current_phase = None
         self.solids_species = {} #dict of OrderedDict, keyed by phase num
         #  The value dict  is keyed by species, but probably should
-        #  be keyed by alias FIXME.
+        #  be keyed by alias.
+        #  Note we now enforce Alias=Species (alias-species integration)
 
         # Avoid circular deps
         self.fluid_nscalar_eq = self.solids_nscalar_eq = 0
 
-        self.solids_current_tab = 0 # Materials
-
-
+        self.solids_current_tab = TAB_MATERIALS
 
         ui = self.ui.solids
+        self.solids_pushbuttons = (ui.pushbutton_solids_materials,
+                                   ui.pushbutton_solids_tfm,
+                                   ui.pushbutton_solids_dem,
+                                   ui.pushbutton_solids_pic)
+
+
         tb = ui.toolbutton_solids_add
         tb.clicked.connect(self.solids_add)
         tb = ui.toolbutton_solids_delete
@@ -189,10 +192,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.add_tooltip(cb, 'added_mass')
 
         # connect solid tab buttons
-        for i, btn in enumerate((ui.pushbutton_solids_materials,
-                                 ui.pushbutton_solids_tfm,
-                                 ui.pushbutton_solids_dem,
-                                 ui.pushbutton_solids_pic)):
+        for i, btn in enumerate(self.solids_pushbuttons):
             btn.pressed.connect(lambda i=i, btn=btn: self.solids_change_tab(i, btn))
 
         for tw in (ui.tablewidget_solids, ui.tablewidget_solids_species,
@@ -209,18 +209,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if solver == SINGLE: # We shouldn't be here
             return
 
-        items = (ui.pushbutton_solids_tfm,
-                 ui.pushbutton_solids_dem,
-                 ui.pushbutton_solids_pic)
+        enable_dict = {TFM: (True, True, False, False),
+                       DEM: (True, False, True, False),
+                       PIC: (True, False, False, True),
+                       HYBRID: (True, True, True, False)}
 
-        enable_dict = {TFM: (True, False, False),
-                       DEM: (False, True, False),
-                       PIC: (False, False, True),
-                       HYBRID: (True, True, False)}
+        enabled = enable_dict[solver] if self.solids else (True, False, False, False)
 
-        enabled = enable_dict[solver] if self.solids else (False, False, False)
-
-        for (item, e) in zip(items, enabled):
+        for (item, e) in zip(self.solids_pushbuttons, enabled):
             item.setDisabled(not e)
 
         # Don't stay on a disabled tab!
@@ -237,6 +233,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                 i, p = 3, ui.pushbutton_solids_pic
             self.solids_change_tab(i, p)
 
+
     # Solids sub-pane navigation
     def solids_change_tab(self, tabnum, to_btn):
         ui = self.ui.solids
@@ -248,10 +245,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             direction='horizontal',
             line=ui.line_solids,
             to_btn=to_btn,
-            btn_layout=ui.gridlayout_solid_tab_btns)
+            btn_layout=ui.gridlayout_tab_btns)
         self.setup_solids_tab(tabnum)
-        for btn in (ui.pushbutton_solids_pic, ui.pushbutton_solids_dem, ui.pushbutton_solids_tfm,
-                    ui.pushbutton_solids_materials):
+        for btn in self.solids_pushbuttons:
             btn.setChecked(btn==to_btn)
             font = btn.font()
             font.setBold(btn==to_btn)
@@ -263,15 +259,18 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def setup_solids_tab(self, tabnum):
-        if tabnum == 1:
-            self.setup_tfm_tab()
-        elif tabnum == 2:
-            self.setup_dem_tab()
-        elif tabnum == 3:
-            self.setup_pic_tab()
-        else: # Materials
+        if tabnum == TAB_MATERIALS:
             self.update_solids_table()
             self.update_solids_detail_pane()
+        elif tabnum == TAB_TFM:
+            self.setup_tfm_tab()
+        elif tabnum == TAB_DEM:
+            self.setup_dem_tab()
+        elif tabnum == TAB_PIC:
+            self.setup_pic_tab()
+        else:
+            raise ValueError(tabnum)
+
 
     # Advanced
     def disable_close_pack(self, val):
@@ -354,8 +353,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if tw == ui.tablewidget_solids: # In a splitter
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
-            ui.top_frame.setMaximumHeight(height+40)
-            ui.top_frame.setMinimumHeight(header_height+40)
+            #ui.top_frame.setMaximumHeight(height+40) # results in extra space between button and underline
+            #ui.top_frame.setMinimumHeight(header_height+40)
             ui.top_frame.updateGeometry()
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox

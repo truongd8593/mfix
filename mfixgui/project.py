@@ -1325,7 +1325,6 @@ class Project(object):
                           RDF_TYPES, BLENDING_FUNCTIONS, BC_TYPES,
                           IS_TYPES):
                     if v_upper in l:
-                        print("XXXXX %s -> %s" % (value, v_upper))
                         value = v_upper
                         break
 

@@ -586,7 +586,7 @@ class Chemistry(object):
     def chemistry_check_reaction_balance(self):
         ui = self.ui.chemistry
         if not self.working_reaction:
-            return False
+            return False, "No reaction"
         reaction = self.working_reaction
         reactants = reaction.get('reactants',[])
         products = reaction.get('products',[])
