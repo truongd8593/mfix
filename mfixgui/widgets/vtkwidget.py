@@ -156,10 +156,9 @@ class VtkWidget(BaseVtkWidget):
         # --- data ---
         self.animate = True
         self.geometrydict = {}
-        self.defer_render = False
         self.region_dict = {}
         self.parameter_key_map = {}
-        self.view_flip = [False]*3
+
         self.booleanbtndict = {
             'union':        self.ui.geometry.toolbutton_geometry_union,
             'intersection': self.ui.geometry.toolbutton_geometry_intersect,
@@ -179,14 +178,6 @@ class VtkWidget(BaseVtkWidget):
             self.parent.ui.mesh.lineedit_mesh_cells_size_y,
             self.parent.ui.mesh.lineedit_mesh_cells_size_z
             ]
-
-        # --- layout ---
-        self.button_bar = QtWidgets.QWidget(self)
-        self.button_bar_layout = QtWidgets.QHBoxLayout(self.button_bar)
-        self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
-        self.button_bar.setLayout(self.button_bar_layout)
-        self.button_bar.setGeometry(QtCore.QRect(0, 0, 300, 300))
-        self.grid_layout.addWidget(self.button_bar, 0, 0)
 
         # enable parameters
         for widget in widget_iter(self.ui.geometry.groupBoxGeometryParameters):
@@ -326,29 +317,7 @@ class VtkWidget(BaseVtkWidget):
 
     def __add_tool_buttons(self):
 
-        self.toolbutton_reset = QtWidgets.QToolButton()
-        self.toolbutton_reset.pressed.connect(self.reset_view)
-        self.toolbutton_reset.setIcon(get_icon('overscan.png'))
-
-        self.toolbutton_perspective = QtWidgets.QToolButton()
-        self.toolbutton_perspective.pressed.connect(self.perspective)
-        self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
-
-        self.toolbutton_view_xy = QtWidgets.QToolButton()
-        self.toolbutton_view_xy.pressed.connect(lambda: self.set_view('xy'))
-        self.toolbutton_view_xy.setIcon(get_icon('xy.png'))
-
-        self.toolbutton_view_yz = QtWidgets.QToolButton()
-        self.toolbutton_view_yz.pressed.connect(lambda: self.set_view('yz'))
-        self.toolbutton_view_yz.setIcon(get_icon('yz.png'))
-
-        self.toolbutton_view_xz = QtWidgets.QToolButton()
-        self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
-        self.toolbutton_view_xz.setIcon(get_icon('xz.png'))
-
-        self.toolbutton_screenshot = QtWidgets.QToolButton()
-        self.toolbutton_screenshot.pressed.connect(self.screenshot)
-        self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
+        self.init_base_toolbar()
 
         self.toolbutton_visible = QtWidgets.QToolButton()
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
@@ -592,14 +561,6 @@ class VtkWidget(BaseVtkWidget):
         self.set_visual_btn_values()
         for actor in self.grid_viewer_dict['actors']:
             self.set_background_mesh_actor_props(actor)
-
-    # --- render ---
-    def render(self, force_render=False, defer_render=None):
-        """render the vtk scene, checks for defer_render"""
-        if defer_render is not None:
-            self.defer_render = defer_render
-        if not self.defer_render or force_render:
-            self.vtkRenderWindow.Render()
 
     # --- geometry ---
     def selected_geometry_changed(self):
@@ -2204,46 +2165,6 @@ class VtkWidget(BaseVtkWidget):
         gw.SetInputConnection(grid)
         gw.Write()
 
-    def screenshot(self, fname=None):
-        """take a snapshot of the vtk window"""
-        self.toolbutton_screenshot.setDown(False)
-
-        if fname is None:
-            fname = str(QtWidgets.QFileDialog.getSaveFileName(
-                self.parent,
-                "Save screenshot",
-                self.parent.settings.value('project_dir'),
-                ';;'.join(["PNG (*.png)",
-                           "JPEG (*.jpg)",
-                           "PostScript (*.ps)",
-                           "All Files (*.*)",
-                          ]),
-                ))
-
-        if not fname:
-            return
-
-        # screenshot code:
-        window_image = vtk.vtkWindowToImageFilter()
-        window_image.SetInput(self.vtkRenderWindow)
-        window_image.SetMagnification(3)
-        window_image.SetInputBufferTypeToRGBA()
-#        window_image.ReadFrontBufferOff()
-        window_image.Update()
-
-        if fname.endswith('.png'):
-            writer = vtk.vtkPNGWriter()
-        elif fname.endswith('.jpg'):
-            writer = vtk.vtkJPEGWriter()
-        elif fname.endswith('.ps'):
-            writer = vtk.vtkPostScriptWriter()
-        else:
-            raise TypeError('No available writer')
-
-        writer.SetFileName(fname)
-        writer.SetInputConnection(window_image.GetOutputPort())
-        writer.Write()
-
     # --- mesh ---
     def auto_size_mesh_extents(self):
         """collect and set the extents of the visible geometry"""
@@ -2473,67 +2394,6 @@ class VtkWidget(BaseVtkWidget):
         self.render()
 
     # --- view ---
-    def change_interaction(self, style_2d=False):
-        if style_2d:
-            self.vtkiren.SetInteractorStyle(self.style_2d)
-            self.view_flip[1] = False
-            self.set_view()
-            enabled = False
-        else:
-            self.vtkiren.SetInteractorStyle(self.style_3d)
-            self.perspective(False)
-            enabled = True
-
-        for btn in [self.toolbutton_perspective, self.toolbutton_view_yz,
-                    self.toolbutton_view_xz]:
-            btn.setEnabled(enabled)
-
-    def perspective(self, parallel=None):
-        """change the perspective of the vtk scene"""
-        camera = self.vtkrenderer.GetActiveCamera()
-
-        if parallel is None:
-            parallel = not camera.GetParallelProjection()
-
-        if parallel:
-            camera.ParallelProjectionOn()
-            self.toolbutton_perspective.setIcon(get_icon('parallel.png'))
-        else:
-            camera.ParallelProjectionOff()
-            self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
-
-        self.render()
-
-    def set_view(self, view='xy'):
-        """set the 2D view of the scene"""
-        self.perspective(parallel=True)
-        camera = self.vtkrenderer.GetActiveCamera()
-        if view == 'xy':
-            camera.SetPosition(0, 0, 10000000)
-            camera.SetViewUp(0, 1, 0)
-            if self.view_flip[1]:
-                camera.Azimuth(180)
-            self.view_flip[1] = not self.view_flip[1]
-        elif view == 'yz':
-            camera.SetPosition(0, 10000000, 0)
-            camera.SetViewUp(1, 0, 0)
-            if self.view_flip[2]:
-                camera.Azimuth(180)
-            self.view_flip[2] = not self.view_flip[2]
-        elif view == 'xz':
-            camera.SetPosition(10000000, 0, 0)
-            camera.SetViewUp(0, 1, 0)
-            if self.view_flip[2]:
-                camera.Azimuth(180)
-            self.view_flip[2] = not self.view_flip[2]
-
-        self.reset_view()
-
-    def reset_view(self):
-        """reset the camera so that the geometry is visible in the scene"""
-        self.vtkrenderer.ResetCamera()
-        self.render()
-
     def change_visibility(self, name, toolbutton):
         """change the visibility of one of the scene objects"""
         actors = None

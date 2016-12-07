@@ -35,13 +35,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def __init__(self, parent=None):
         BaseVtkWidget.__init__(self, parent)
 
-        # --- layout ---
-        self.button_bar = QtWidgets.QWidget(self)
-        self.button_bar_layout = QtWidgets.QHBoxLayout(self.button_bar)
-        self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
-        self.button_bar.setLayout(self.button_bar_layout)
-        self.button_bar.setGeometry(QtCore.QRect(0, 0, 300, 300))
-        self.grid_layout.addWidget(self.button_bar, 0, 0)
+        self.init_base_toolbar()
 
 
     def showEvent(self, event):
