@@ -2340,15 +2340,15 @@ Specify linear solver, number of preconditioner and sweep direction (table forma
 #  Selection only available for equations with LINE preconditioner
 #  Available selections
 #    'Red-black sweep' [DEFAULT for all equations]
-# Sets keyword LEQ_PC(#) to 'RSRS'
+# Sets keyword LEQ_SWEEP(#) to 'RSRS'
 #    All sweep
-# Sets keyword LEQ_PC(#) to 'ASAS'
+# Sets keyword LEQ_SWEEP(#) to 'ASAS'
 #    I-sweep
-# Sets keyword LEQ_PC(#) to 'ISIS'
+# Sets keyword LEQ_SWEEP(#) to 'ISIS'
 #    J-sweep
-# Sets keyword LEQ_PC(#) to 'JSJS'
+# Sets keyword LEQ_SWEEP(#) to 'JSJS'
 #    K-sweep
-# Sets keyword LEQ_PC(#) to 'KSKS'
+# Sets keyword LEQ_SWEEP(#) to 'KSKS'
 
 Advanced (tab)
 

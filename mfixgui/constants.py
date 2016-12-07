@@ -78,6 +78,8 @@ DIM_M = 10
 #model/param_mod.f:      INTEGER, PARAMETER :: DIM_EQS = 10
 DIM_EQS = 10
 
+PRECON_TYPES = ['NONE', 'LINE', 'DIAG']
+SWEEP_TYPES = ['RSRS', 'ASAS', 'ISIS', 'JSJS', 'KSKS']
 
 SPECIAL_PARAMETERS = ['min', 'max']
 for c in ['x', 'y', 'z']:

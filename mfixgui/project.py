@@ -1322,8 +1322,9 @@ class Project(object):
             if value != v_upper:
                 for l in (TURBULENCE_MODELS, FRICTION_MODELS,
                           DRAG_TYPES, SUBGRID_TYPES, KT_TYPES,
-                          RDF_TYPES, BLENDING_FUNCTIONS, BC_TYPES,
-                          IS_TYPES):
+                          RDF_TYPES, BLENDING_FUNCTIONS,
+                          BC_TYPES, IS_TYPES,
+                          PRECON_TYPES, SWEEP_TYPES):
                     if v_upper in l:
                         value = v_upper
                         break
