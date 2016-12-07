@@ -324,7 +324,7 @@ QPushButton:checked {
           <item row="4" column="0">
            <widget class="QLabel" name="label_tol_resid_scalar">
             <property name="text">
-             <string>Scalar/K-Epsilon</string>
+             <string>Scalar/K-ε</string>
             </property>
            </widget>
           </item>
@@ -363,19 +363,191 @@ QPushButton:checked {
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>220</y>
-         <width>57</width>
-         <height>15</height>
-        </rect>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
        </property>
-       <property name="text">
-        <string>2</string>
+       <property name="topMargin">
+        <number>5</number>
        </property>
-      </widget>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="1" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_cn_on">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Temporal discretization</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="ComboBox" name="combobox_cn_on">
+         <item>
+          <property name="text">
+           <string>Implicit Euler</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Crank-Nicholson</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>451</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupbox_discretization">
+         <property name="title">
+          <string>Spatial discretization</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <property name="horizontalSpacing">
+           <number>6</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QTableWidget" name="tablewidget_discretization">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::NoSelection</enum>
+            </property>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>150</number>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderStretchLastSection">
+             <bool>false</bool>
+            </attribute>
+            <row>
+             <property name="text">
+              <string>Gas pressure</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Volume fraction</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>U-Momentum</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>V-Momentum</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>W-Momentum</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Energy</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Mass Fraction</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Granular Energy</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Scalar/K-ε</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>DES Diffusion</string>
+             </property>
+            </row>
+            <column>
+             <property name="text">
+              <string>Scheme</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Relaxation Factor</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="CheckBox" name="checkbox_keyword_def_cor">
+         <property name="text">
+          <string>Enable deferred correction</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="CheckBox" name="checkbox_keyword_chi_scheme">
+         <property name="text">
+          <string>Enable chi-scheme correction</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="linear_solver">
       <property name="sizePolicy">
@@ -442,6 +614,16 @@ QPushButton:checked {
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
