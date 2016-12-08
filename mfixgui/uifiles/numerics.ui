@@ -187,7 +187,7 @@ QPushButton:checked {
       </string>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="residuals">
       <layout class="QGridLayout" name="gridLayout_2">
