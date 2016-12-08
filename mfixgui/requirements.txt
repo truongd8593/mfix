@@ -4,10 +4,10 @@ qtpy
 vtk
 numpy
 
+pyqtgraph - need at least version 0.10.0 for Qt5 support
+
 #future - not used currently
 #thermochem - not used currently
-MORE?
-
 
 # To run the included tests, these packages are required:
 xvfbwrapper
