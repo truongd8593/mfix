@@ -324,7 +324,7 @@ class VtkWidget(BaseVtkWidget):
 
         self.visible_menu = QtWidgets.QMenu(self)
         self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
-        #self.toolbutton_visible.setMenu(self.visible_menu)
+#        self.toolbutton_visible.setMenu(self.visible_menu)
         self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
         self.toolbutton_visible.setPopupMode(
             QtWidgets.QToolButton.InstantPopup)

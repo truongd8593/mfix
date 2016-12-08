@@ -45,9 +45,87 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.init_base_toolbar()
 
+        # more buttons
+        self.toolbutton_visible = QtWidgets.QToolButton()
+        self.toolbutton_visible.setIcon(get_icon('visibility.png'))
+        self.visible_menu = QtWidgets.QMenu()
+        self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
+        self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
+        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+
+        # --- visual representation menu ---
+        layout = QtWidgets.QGridLayout(self.visible_menu)
+        layout.setContentsMargins(5, 5, 5, 5)
+        self.visual_btns = {}
+        for i, geo in enumerate(['Cells', 'Nodes', 'Points']):
+            geo_name = geo
+            geo = geo.lower().replace(' ', '_')
+            btns = self.visual_btns[geo] = {}
+            # tool button
+            toolbutton = QtWidgets.QToolButton()
+#            toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
+            toolbutton.setCheckable(True)
+            toolbutton.setChecked(True)
+            toolbutton.setAutoRaise(True)
+            toolbutton.setIcon(get_icon('visibility.png'))
+            layout.addWidget(toolbutton, i, 0)
+            btns['visible'] = toolbutton
+
+            # opacity
+            opacity = QtWidgets.QDoubleSpinBox()
+            opacity.setRange(0, 1)
+            opacity.setSingleStep(0.1)
+#            opacity.valueChanged.connect(partial(self.change_opacity, geo, opacity))
+            layout.addWidget(opacity, i, 3)
+            btns['opacity'] = opacity
+
+            # label
+            label = QtWidgets.QLabel(geo_name)
+            layout.addWidget(label, i, 4)
+
+        self.toolbutton_back = QtWidgets.QToolButton()
+        self.toolbutton_back.pressed.connect(self.play)
+        self.toolbutton_back.setIcon(get_icon('previous.png'))
+
+        self.toolbutton_play = QtWidgets.QToolButton()
+        self.toolbutton_play.pressed.connect(self.play)
+        self.toolbutton_play.setIcon(get_icon('play.png'))
+
+        self.toolbutton_forward = QtWidgets.QToolButton()
+        self.toolbutton_forward.pressed.connect(self.play)
+        self.toolbutton_forward.setIcon(get_icon('next.png'))
+
+        for btn in [self.toolbutton_visible, self.toolbutton_back,
+                    self.toolbutton_play, self.toolbutton_forward]:
+            self.button_bar_layout.addWidget(btn)
+            btn.setAutoRaise(True)
+
+        self.button_bar_layout.addStretch()
+
     def showEvent(self, event):
         # has to be called after the widget is visible
         self.vtkiren.Initialize()
+
+    def handle_visible_menu(self):
+        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
+        g = self.mapToGlobal(bottom_left)
+        self.visible_menu.popup(g)
+        self.visible_menu.setVisible(True)
+
+    def handle_visible_menu_close(self):
+        self.toolbutton_visible.setDown(False)
+
+    def play(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def back(self):
+        pass
+
+    def forward(self):
+        pass
 
 
 class BaseGraphicTab(QtWidgets.QWidget):
@@ -121,7 +199,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
 
         # vtk
         plotbtn = QtWidgets.QToolButton()
-        plotbtn.setText('3D Graphics')
+        plotbtn.setText('VTK')
         plotbtn.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Expanding))
         plotbtn.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         plotbtn.setIcon(get_icon('geometry.png'))
@@ -153,7 +231,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
 
     def create_vtk_widget(self):
         clear_layout(self.layout)
-        self.change_name('3D Graphics')
+        self.change_name('VTK')
         vtk_widget = GraphicsVtkWidget()
         self.layout.addWidget(vtk_widget)
 
@@ -203,6 +281,7 @@ class GraphicTabs(object):
         toolbutton_add_plot.setIcon(get_icon('add.png'))
         toolbutton_add_plot.pressed.connect(self.handle_new_tab)
         corner_layout.addWidget(toolbutton_add_plot)
+        corner_layout.addStretch() #TODO: this doesn't work
 
         # graphics tab widget
         self.ui.tabWidgetGraphics.setCornerWidget(corner_widget)
