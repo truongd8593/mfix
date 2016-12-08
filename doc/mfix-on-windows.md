@@ -73,6 +73,22 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    C:\> conda create -n py3 anaconda
 ```
 
+#### Patch Anaconda for Python 3
+At the time of this writing, distutils does not support Visual Studio 2015, which is what Python 3 is built with. As a result, to build for Python patching distutils is needed.
+
+ - Edit `Anaconda3\Lib\distutils\cygwinccompiler.py`.
+ - Search for VS2010
+ - Add an elif clause after it for Visual Studio 2015 (msc_ver=='1900')
+ 
+```python
+        elif msc_ver == '1600':
+            # VS2010 / MSVC 10.0
+            return ['msvcr100']
+        elif msc_ver == '1900':
+            # VS2015 / MSVC 14.0
+            return ['msvcr140']
+```
+
 
 ### Install Cygwin
 
@@ -118,6 +134,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    $ pushd /usr/bin
    $ cp x86_64-w64-mingw32-gcc.exe gcc.exe
    $ cp x86_64-w64-mingw32-gfortran.exe gfortran.exe
+   $ cp x86_64-w64-mingw32-ldd.exe ldd.exe
    $ popd
 ```
 
