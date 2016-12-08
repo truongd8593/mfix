@@ -9,12 +9,15 @@ try:
     PYQTGRAPH_AVAILABLE = True
     pg.setConfigOption('background', 'w')
     pg.setConfigOption('foreground', 'k')
+    DEFAULT_PEN = pg.mkPen(color='#64B5F6', width=2)
 except ImportError:
     pg = None
     PYQTGRAPH_AVAILABLE = False
+    DEFAULT_PEN = 'b'
 except RuntimeError:
     pg = None
     PYQTGRAPH_AVAILABLE = False
+    DEFAULT_PEN = 'b'
 
 try:
     import vtk
@@ -33,7 +36,7 @@ PLOT_ITEMS = OrderedDict([
     ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
     ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
-DEFAULT_PEN = pg.mkPen(color='#64B5F6', width=2)
+
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
@@ -194,8 +197,7 @@ class GraphicTabs(object):
         # Add corner widget to tabs
         corner_widget = QtWidgets.QWidget()
         corner_layout = QtWidgets.QHBoxLayout(corner_widget)
-        #corner_layout.setSpacing(0) # cgw FIXME
-        #corner_layout.setMargin(0) # cgw FIXME
+        corner_layout.setContentsMargins(0,0,0,0)
         toolbutton_add_plot = QtWidgets.QToolButton()
         toolbutton_add_plot.setAutoRaise(True)
         toolbutton_add_plot.setIcon(get_icon('add.png'))
