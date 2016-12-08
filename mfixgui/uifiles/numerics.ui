@@ -823,7 +823,7 @@ QPushButton:checked {
         </widget>
        </item>
        <item row="5" column="0" colspan="4">
-        <widget class="CheckBox" name="checkbox_keyword_fpfoi">
+        <widget class="CheckBox" name="checkbox_fpfoi">
          <property name="text">
           <string>Enable 4-point, fourth-order interpolation</string>
          </property>

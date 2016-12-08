@@ -192,8 +192,10 @@ class Numerics(object):
 
     def init_numerics_advanced_pane(self):
         ui = self.ui.numerics
-        cb = ui.checkbox_keyword_fpfoi
-        cb.toggled.connect(self.setup_numerics_tab)
+        key = 'fpfoi'
+        cb = ui.checkbox_fpfoi
+        cb.toggled.connect(self.set_fpfoi)
+        self.add_tooltip(cb, key)
 
 
     def set_cn_on(self, val):
@@ -242,7 +244,9 @@ class Numerics(object):
         cb.setToolTip(get_combobox_item(cb, val).toolTip())
         self.setup_numerics()
 
-
+    def set_fpfoi(self, val):
+        self.update_keyword('fpfoi', val)
+        self.setup_numerics() # enable/disable C_FAC
 
     # Numerics sub-pane navigation
     def numerics_change_tab(self, tabnum, to_btn):
@@ -606,7 +610,7 @@ class Numerics(object):
             item.setEnabled(enabled)
             self.add_tooltip(item, key)
             if not enabled:
-                item.setToolTip(item.toolTip()+"<br>Only avaiable for TFM and Hybrid solvers")
+                item.setToolTip(item.toolTip()+"<br>&bull;Only available for TFM and Hybrid solvers")
 
         #Specify IA theory conductivity under relation factor
         #    Specification only available with KT_TYPE = 'IA_NONEP'
@@ -619,7 +623,7 @@ class Numerics(object):
             item.setEnabled(enabled)
             self.add_tooltip(item, key)
             if not enabled:
-                item.setToolTip(item.toolTip() + '<br>Only available with kt_type=IA_NONEP')
+                item.setToolTip(item.toolTip() + '<br>&bull;Only available with kt_type=IA_NONEP')
 
         #Enable four point, fourth order interpolation
         #    Specification always available
@@ -633,8 +637,12 @@ class Numerics(object):
         #    Error check: value bounded between 0 and 1
         key = 'c_fac'
         enabled = bool(self.project.get_value('fpfoi'))
+        ui.checkbox_fpfoi.setChecked(enabled)
         for item in (ui.label_c_fac, ui.lineedit_keyword_c_fac):
             item.setEnabled(enabled)
             self.add_tooltip(item, key)
-            if not enabled:
-                item.setToolTip(item.toolTip() + "<br>Only available with 4-point interpolation")
+        if enabled:
+            val = self.project.get_value(key)
+            if val is None:
+                val = 1.0
+                self.update_keyword(key, val)
