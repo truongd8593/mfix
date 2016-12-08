@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
+from distutils.version import LooseVersion
 
 # graphics libraries
 try:
@@ -9,6 +10,9 @@ try:
     pg.setConfigOption('background', 'w')
     pg.setConfigOption('foreground', 'k')
 except ImportError:
+    pg = None
+    PYQTGRAPH_AVAILABLE = False
+except RuntimeError:
     pg = None
     PYQTGRAPH_AVAILABLE = False
 
@@ -37,7 +41,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         BaseVtkWidget.__init__(self, parent)
 
         self.init_base_toolbar()
-
 
     def showEvent(self, event):
         # has to be called after the widget is visible
