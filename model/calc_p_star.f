@@ -327,7 +327,7 @@
                EPs_max_sort(1)
          ENDIF
 ! this is gas volume fraction at packing
-         CALC_EP_star = ONE - CALC_EP_star
+         CALC_EP_star = ONE - EPs_max_local
       ENDIF ! for Yu_Standish and Fedors_Landel correlations
 ! end FEDORS_LANDEL correlation
 ! ----------------------------------------------------------------<<<
