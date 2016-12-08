@@ -62,7 +62,7 @@ class Numerics(object):
         self.init_numerics_discretization_pane()
         self.init_numerics_linear_solver_pane()
         self.init_numerics_preconditioner_pane()
-        #self.init_numerics_advanced_pane()
+        self.init_numerics_advanced_pane()
         self.numerics_current_tab = TAB_RESIDUALS
 
 
@@ -188,6 +188,12 @@ class Numerics(object):
             self.add_tooltip(cb, key)
             for j in range(len(SWEEP_TYPES)):
                 self.add_tooltip(get_combobox_item(cb, j), key, value=SWEEP_TYPES[j])
+
+
+    def init_numerics_advanced_pane(self):
+        ui = self.ui.numerics
+        cb = ui.checkbox_keyword_fpfoi
+        cb.toggled.connect(self.setup_numerics_tab)
 
 
     def set_cn_on(self, val):
@@ -394,7 +400,6 @@ class Numerics(object):
             default = 0
             cb = tw.cellWidget(row, COL_SCHEME)
             val = self.project.get_value(key, args=[i])
-            #print("GOT", val, "FOR", key, i)
             if val is None:
                 val = default
                 #self.update_keyword(key, val, args=[i]) #?
@@ -584,6 +589,7 @@ class Numerics(object):
 
     def numerics_setup_advanced_tab(self):
         """Advanced (tab)"""
+        ui = self.ui.numerics
         #Specify maximum inlet velocity factor
         #    Specification always available
         #    Sets keyword MAX_INLET_VEL_FAC
@@ -594,18 +600,41 @@ class Numerics(object):
         #    Sets keyword UR_F_GS
         #    DEFAULT value of 1.0
         #    Error check: Value bounded between 0 and 1
+        key = 'ur_f_gs'
+        enabled = self.project.solver in (TFM, HYBRID)
+        for item in (ui.label_ur_f_gs, ui.lineedit_keyword_ur_f_gs):
+            item.setEnabled(enabled)
+            self.add_tooltip(item, key)
+            if not enabled:
+                item.setToolTip(item.toolTip()+"<br>Only avaiable for TFM and Hybrid solvers")
+
         #Specify IA theory conductivity under relation factor
         #    Specification only available with KT_TYPE = 'IA_NONEP'
-        #    Sets keyword IA_NONEP
+        #    Sets keyword UR_KTH_SML
         #    DEFAULT value of 1.0
         #    Error check: value bounded between 0 and 1
+        key = 'ur_kth_sml'
+        enabled = self.project.get_value('kt_type') == 'IA_NONEP'
+        for item in (ui.label_ur_kth_sml, ui.lineedit_keyword_ur_kth_sml):
+            item.setEnabled(enabled)
+            self.add_tooltip(item, key)
+            if not enabled:
+                item.setToolTip(item.toolTip() + '<br>Only available with kt_type=IA_NONEP')
+
         #Enable four point, fourth order interpolation
         #    Specification always available
         #    Sets keyword FPFOI
         #    DEFAULT value of .FALSE.
+
         #Specify the universal limiter
         #    Specification only available if four point, forth order interpolation is enabled
         #    Sets keyword C_FAC
         #    DEFAULT value of 1.0
         #    Error check: value bounded between 0 and 1
-        pass
+        key = 'c_fac'
+        enabled = bool(self.project.get_value('fpfoi'))
+        for item in (ui.label_c_fac, ui.lineedit_keyword_c_fac):
+            item.setEnabled(enabled)
+            self.add_tooltip(item, key)
+            if not enabled:
+                item.setToolTip(item.toolTip() + "<br>Only available with 4-point interpolation")

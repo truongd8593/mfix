@@ -47,7 +47,7 @@ from mfixgui.monitor import Monitor
 from mfixgui.widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
                           Table, BaseWidget)
 from mfixgui.widgets.regions import RegionsWidget
-from mfixgui.widgets.linear_equation_table import LinearEquationTable
+
 from mfixgui.widgets.species_popup import SpeciesPopup
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
@@ -502,6 +502,14 @@ class MfixGui(QtWidgets.QMainWindow,
                     'phip0'):
             self.keyword_doc[key]['validrange'] = {'min':0.0, 'max':1.0}
 
+        # MAX_INLET_VEL_FAC
+        # DEFAULT value of 1.0
+        # Error check: Value greater than or equal to 1.0
+        self.keyword_doc['max_inlet_vel_fac']['validrange'] = {'min': 1.0}
+        # Error check: value bounded between 0 and 1
+        self.keyword_doc['ur_kth_sml']['validrange'] = {'min':0.0, 'max':1.0}
+
+        # of particles must be non-negative
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
         # Remove mention of 'cylindrical' since we don't support it
