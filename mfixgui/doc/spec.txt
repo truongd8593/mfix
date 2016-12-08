@@ -2364,7 +2364,7 @@ Specify drag under relation factor
 #    Error check: Value bounded between 0 and 1
 Specify IA theory conductivity under relation factor
 #    Specification only available with KT_TYPE = 'IA_NONEP'
-#    Sets keyword IA_NONEP
+#    Sets keyword UR_KTH_SML
 #    DEFAULT value of 1.0
 #    Error check: value bounded between 0 and 1
 Enable four point, fourth order interpolation
