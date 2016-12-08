@@ -2426,8 +2426,15 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Clean it up a little
         description = description.strip()
-        description = description.replace('-', '&#8209;') # non-breaking hyphen
 
+        # '>' and '<' will mess up HTML
+        description = description.replace('<', '&lt;')
+        description = description.replace('>', '&gt;')
+
+        # non-breaking hyphen
+        description = description.replace('-', '&#8209;')
+
+        ### epsilon
         description = description.replace('epsilon', 'ε')
 
         # Don't split diff. eq's over multiple lines
@@ -2447,7 +2454,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #    description = description.replace(text, '<i>Default: %s</i>'%text[1:-1])
 
         # Bullets
-        description = description.replace(' o ', '<br/>')
+        description = description.replace(' o ', '<br/>&bull;')
 
         args = widget.args if hasattr(widget, 'args') else None
         if args is None:
