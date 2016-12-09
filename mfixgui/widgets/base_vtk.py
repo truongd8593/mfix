@@ -258,7 +258,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         elif fname.endswith('.ps'):
             writer = vtk.vtkPostScriptWriter()
         else:
-            raise TypeError('No available writer')
+            raise TypeError('No available writer') # FIXME this will cause gui to exit
 
         writer.SetFileName(fname)
         writer.SetInputConnection(window_image.GetOutputPort())
