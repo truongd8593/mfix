@@ -20,6 +20,7 @@
 *.swp
 *.vtk
 *.vtp
+*.vtu
 *~
 .build
 .dirstamp

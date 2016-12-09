@@ -2,6 +2,8 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 from distutils.version import LooseVersion
+import glob
+import os
 
 # graphics libraries
 try:
@@ -26,7 +28,7 @@ except:
     vtk = None
     VTK_AVAILABLE = False
 
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
 from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE
 from mfixgui.tools.general import get_icon, clear_layout, get_unique_string
 
@@ -37,12 +39,48 @@ PLOT_ITEMS = OrderedDict([
     ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
 
+SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
+
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
     def __init__(self, parent=None):
         BaseVtkWidget.__init__(self, parent)
 
+        self.cell_arrays = {}
+        self.frame_index = -1
+
+        self.play_timer = QtCore.QTimer()
+        self.play_timer.timeout.connect(self.forward)
+
+        # look for vtu files
+        self.project_dir = os.path.dirname(SETTINGS.value('project_file'))
+        self.vtu_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtu')))
+
+
+        self.init_vtk()
+        self.init_toolbar()
+
+        self.change_frame(0)
+        self.reset_view()
+
+    def init_vtk(self):
+
+        self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
+        self.ugrid_reader.SetFileName(None)
+
+        self.ugrid_mapper = vtk.vtkDataSetMapper()
+        self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
+        self.ugrid_mapper.SetScalarVisibility(True)
+        self.ugrid_mapper.SetScalarModeToUseCellFieldData()
+        self.ugrid_mapper.CreateDefaultLookupTable()
+
+        self.ugrid_actor = vtk.vtkActor()
+        self.ugrid_actor.SetMapper(self.ugrid_mapper)
+
+        self.vtkrenderer.AddActor(self.ugrid_actor)
+
+    def init_toolbar(self):
         self.init_base_toolbar()
 
         # more buttons
@@ -84,21 +122,27 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(label, i, 4)
 
         self.toolbutton_back = QtWidgets.QToolButton()
-        self.toolbutton_back.pressed.connect(self.play)
+        self.toolbutton_back.pressed.connect(self.begining)
         self.toolbutton_back.setIcon(get_icon('previous.png'))
 
         self.toolbutton_play = QtWidgets.QToolButton()
-        self.toolbutton_play.pressed.connect(self.play)
+        self.toolbutton_play.pressed.connect(self.play_stop)
         self.toolbutton_play.setIcon(get_icon('play.png'))
 
         self.toolbutton_forward = QtWidgets.QToolButton()
-        self.toolbutton_forward.pressed.connect(self.play)
+        self.toolbutton_forward.pressed.connect(self.end)
         self.toolbutton_forward.setIcon(get_icon('next.png'))
 
+        self.frame_spinbox = QtWidgets.QSpinBox()
+        self.frame_spinbox.valueChanged.connect(self.change_frame)
+        self.frame_spinbox.setMaximum(99999)
+
         for btn in [self.toolbutton_visible, self.toolbutton_back,
-                    self.toolbutton_play, self.toolbutton_forward]:
+                    self.toolbutton_play, self.toolbutton_forward,
+                    self.frame_spinbox]:
             self.button_bar_layout.addWidget(btn)
-            btn.setAutoRaise(True)
+            if isinstance(btn, QtWidgets.QToolButton):
+                btn.setAutoRaise(True)
 
         self.button_bar_layout.addStretch()
 
@@ -112,20 +156,65 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.visible_menu.popup(g)
         self.visible_menu.setVisible(True)
 
+    def close(self):
+        BaseVtkWidget.close(self)
+
+        # clean up timer
+        self.play_timer.stop()
+
     def handle_visible_menu_close(self):
         self.toolbutton_visible.setDown(False)
 
-    def play(self):
-        pass
+    def play_stop(self):
+        if self.play_timer.isActive():
+            self.toolbutton_play.setIcon(get_icon('play.png'))
+            self.play_timer.stop()
+        else:
+            self.toolbutton_play.setIcon(get_icon('stop.png'))
+            self.play_timer.start(10)
 
-    def stop(self):
-        pass
+    def begining(self):
+        self.change_frame(0)
 
-    def back(self):
-        pass
+    def end(self):
+        self.change_frame(len(self.vtu_files))
 
     def forward(self):
-        pass
+        self.change_frame(self.frame_index + 1)
+
+    def change_frame(self, index):
+        # look for more files
+        self.vtu_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtu')))
+        n_files = len(self.vtu_files)
+        if n_files == 0: return
+        if index >= n_files:
+            index = n_files-1
+        elif index < 0:
+            index = 0
+
+        if index == self.frame_index:
+            return
+        else:
+            self.frame_index = index
+
+        self.frame_spinbox.setValue(index)
+        self.read_vtu(self.vtu_files[index])
+        self.render()
+
+    # --- vtk functions ---
+    def read_vtu(self, path):
+
+        self.ugrid_reader.SetFileName(path)
+        self.ugrid_reader.Update()
+
+        data = self.ugrid_reader.GetOutput()
+        cell_data = data.GetCellData()
+        self.cell_arrays = {}
+        for i in range(cell_data.GetNumberOfArrays()):
+            self.cell_arrays[cell_data.GetArrayName(i)] = {'i':i, 'components':cell_data.GetArray(i).GetNumberOfComponents()}
+
+        self.ugrid_mapper.ColorByArrayComponent(0,0)
+        self.ugrid_mapper.Update()
 
 
 class BaseGraphicTab(QtWidgets.QWidget):
@@ -232,8 +321,8 @@ class BaseGraphicTab(QtWidgets.QWidget):
     def create_vtk_widget(self):
         clear_layout(self.layout)
         self.change_name('VTK')
-        vtk_widget = GraphicsVtkWidget()
-        self.layout.addWidget(vtk_widget)
+        self.vtk_widget = GraphicsVtkWidget()
+        self.layout.addWidget(self.vtk_widget)
 
     def plot(self, x=None, y=None, append=False):
         if append:
@@ -257,6 +346,9 @@ class BaseGraphicTab(QtWidgets.QWidget):
         self.tabWidget.removeTab(self.get_index())
         if self.name in self.plot_dict:
             self.plot_dict.pop(self.name)
+
+        if hasattr(self, 'vtk_widget'):
+            self.vtk_widget.close()
 
     def change_name(self, name):
         self.tabWidget.tabBar().setTabText(self.get_index(), name)
