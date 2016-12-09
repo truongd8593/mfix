@@ -857,7 +857,7 @@
 !    P_s term in the frictional stress model of Snider.
 !  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
-      PSFAC_FRIC_PIC = 100
+      PSFAC_FRIC_PIC = 100.0d0
 !</keyword>
 
 !<keyword category="Particle In Cell" required="false">
