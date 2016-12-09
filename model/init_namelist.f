@@ -1356,7 +1356,7 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids stress firction model selection.
+!    Solids stress friction model selection.
 !  </description>
 !  <valid value="NONE" note="Only solids pressure"/>
 !  <valid value="SCHAEFFER" note="Schaeffer friction model"/>
