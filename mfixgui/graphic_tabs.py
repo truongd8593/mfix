@@ -89,7 +89,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.visible_menu = QtWidgets.QMenu()
         self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
         self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
-        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+#        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
 
         # --- visual representation menu ---
         layout = QtWidgets.QGridLayout(self.visible_menu)
