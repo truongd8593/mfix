@@ -181,27 +181,27 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.grid_layout.addWidget(self.button_bar, 0, 0)
 
         self.toolbutton_reset = QtWidgets.QToolButton()
-        self.toolbutton_reset.pressed.connect(self.reset_view)
+        self.toolbutton_reset.clicked.connect(self.reset_view)
         self.toolbutton_reset.setIcon(get_icon('overscan.png'))
 
         self.toolbutton_perspective = QtWidgets.QToolButton()
-        self.toolbutton_perspective.pressed.connect(self.perspective)
+        self.toolbutton_perspective.clicked.connect(self.perspective)
         self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
 
         self.toolbutton_view_xy = QtWidgets.QToolButton()
-        self.toolbutton_view_xy.pressed.connect(lambda: self.set_view('xy'))
+        self.toolbutton_view_xy.clicked.connect(lambda: self.set_view('xy'))
         self.toolbutton_view_xy.setIcon(get_icon('xy.png'))
 
         self.toolbutton_view_yz = QtWidgets.QToolButton()
-        self.toolbutton_view_yz.pressed.connect(lambda: self.set_view('yz'))
+        self.toolbutton_view_yz.clicked.connect(lambda: self.set_view('yz'))
         self.toolbutton_view_yz.setIcon(get_icon('yz.png'))
 
         self.toolbutton_view_xz = QtWidgets.QToolButton()
-        self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
+        self.toolbutton_view_xz.clicked.connect(lambda: self.set_view('xz'))
         self.toolbutton_view_xz.setIcon(get_icon('xz.png'))
 
         self.toolbutton_screenshot = QtWidgets.QToolButton()
-        self.toolbutton_screenshot.pressed.connect(self.screenshot)
+        self.toolbutton_screenshot.clicked.connect(self.screenshot)
         self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
 
         for btn in [self.toolbutton_reset,
@@ -221,7 +221,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not self.defer_render or force_render:
             self.vtkRenderWindow.Render()
 
-    def screenshot(self, fname=None):
+    def screenshot(self, checked, fname=None):
         """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 

@@ -88,7 +88,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
         self.visible_menu = QtWidgets.QMenu()
         self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
-        self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
+        self.toolbutton_visible.clicked.connect(self.handle_visible_menu)
 #        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
 
         # --- visual representation menu ---
@@ -122,15 +122,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(label, i, 4)
 
         self.toolbutton_back = QtWidgets.QToolButton()
-        self.toolbutton_back.pressed.connect(self.begining)
+        self.toolbutton_back.clicked.connect(self.begining)
         self.toolbutton_back.setIcon(get_icon('previous.png'))
 
         self.toolbutton_play = QtWidgets.QToolButton()
-        self.toolbutton_play.pressed.connect(self.play_stop)
+        self.toolbutton_play.clicked.connect(self.play_stop)
         self.toolbutton_play.setIcon(get_icon('play.png'))
 
         self.toolbutton_forward = QtWidgets.QToolButton()
-        self.toolbutton_forward.pressed.connect(self.end)
+        self.toolbutton_forward.clicked.connect(self.end)
         self.toolbutton_forward.setIcon(get_icon('next.png'))
 
         self.frame_spinbox = QtWidgets.QSpinBox()
@@ -154,6 +154,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         bottom_left = self.toolbutton_visible.geometry().bottomLeft()
         g = self.mapToGlobal(bottom_left)
         self.visible_menu.popup(g)
+        self.show()
+        self.raise_()
+        self.activateWindow()
         self.visible_menu.setVisible(True)
 
     def close(self):
@@ -235,7 +238,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         self.close_btn = QtWidgets.QToolButton()
         self.close_btn.setAutoRaise(True)
         self.close_btn.setIcon(get_icon('close.png'))
-        self.close_btn.pressed.connect(self.close)
+        self.close_btn.clicked.connect(self.close)
         self.close_btn.setIconSize(QtCore.QSize(10, 10))
 
         # plot selection btns
@@ -281,7 +284,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         plotbtn.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         plotbtn.setIcon(get_icon('timeline.png'))
         plotbtn.setIconSize(QtCore.QSize(24, 24))
-        plotbtn.pressed.connect(lambda: self.create_plot_widget(combobox))
+        plotbtn.clicked.connect(lambda: self.create_plot_widget(combobox))
         self.layout.addWidget(plotbtn, 1, 2)
 
         combobox.setEnabled(PYQTGRAPH_AVAILABLE)
@@ -294,7 +297,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         plotbtn.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         plotbtn.setIcon(get_icon('geometry.png'))
         plotbtn.setIconSize(QtCore.QSize(24, 24))
-        plotbtn.pressed.connect(self.create_vtk_widget)
+        plotbtn.clicked.connect(self.create_vtk_widget)
         self.layout.addWidget(plotbtn, 2, 2)
 
         plotbtn.setEnabled(VTK_AVAILABLE)
@@ -372,14 +375,14 @@ class GraphicTabs(object):
         toolbutton_add_plot = QtWidgets.QToolButton()
         toolbutton_add_plot.setAutoRaise(True)
         toolbutton_add_plot.setIcon(get_icon('add.png'))
-        toolbutton_add_plot.pressed.connect(self.handle_new_tab)
+        toolbutton_add_plot.clicked.connect(self.handle_new_tab)
         corner_layout.addWidget(toolbutton_add_plot)
         corner_layout.addStretch() #TODO: this doesn't work
 
         # graphics tab widget
         self.ui.tabWidgetGraphics.setCornerWidget(corner_widget)
 
-    def handle_new_tab(self, name='New'):
+    def handle_new_tab(self, checked, name='New'):
         """callback to add a new tab to tabWidgetGraphics"""
 
         name = get_unique_string(name, self.plot_dict.keys())

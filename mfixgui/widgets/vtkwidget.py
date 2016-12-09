@@ -291,14 +291,14 @@ class VtkWidget(BaseVtkWidget):
             self.add_filter_menu.addAction(action)
 
         # setup signals
-        self.ui.geometry.toolbutton_remove_geometry.pressed.connect(
+        self.ui.geometry.toolbutton_remove_geometry.clicked.connect(
             self.remove_geometry)
-        self.ui.geometry.toolbutton_copy_geometry.pressed.connect(
+        self.ui.geometry.toolbutton_copy_geometry.clicked.connect(
             self.handle_copy_geometry)
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
-            btn.pressed.connect(partial(self.boolean_operation, booltype=key))
+            btn.clicked.connect(partial(self.boolean_operation, booltype=key))
 
         # connect parameter widgets
         for widget in widget_iter(
@@ -309,11 +309,11 @@ class VtkWidget(BaseVtkWidget):
                 widget.stateChanged.connect(lambda i, w=widget: self.handle_widget_value_changed(w))
 
         # --- mesh ---
-        self.ui.geometry.pushbutton_mesh_autosize.pressed.connect(
+        self.ui.geometry.pushbutton_mesh_autosize.clicked.connect(
             self.auto_size_mesh_extents)
 
-        self.ui.mesh.pushbutton_generate_mesh.pressed.connect(self.mesher)
-        self.ui.mesh.pushbutton_remove_mesh.pressed.connect(self.remove_mesh)
+        self.ui.mesh.pushbutton_generate_mesh.clicked.connect(self.mesher)
+        self.ui.mesh.pushbutton_remove_mesh.clicked.connect(self.remove_mesh)
 
     def __add_tool_buttons(self):
 
@@ -325,7 +325,7 @@ class VtkWidget(BaseVtkWidget):
         self.visible_menu = QtWidgets.QMenu(self)
         self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
 #        self.toolbutton_visible.setMenu(self.visible_menu)
-        self.toolbutton_visible.pressed.connect(self.handle_visible_menu)
+        self.toolbutton_visible.clicked.connect(self.handle_visible_menu)
         self.toolbutton_visible.setPopupMode(
             QtWidgets.QToolButton.InstantPopup)
 
@@ -339,7 +339,7 @@ class VtkWidget(BaseVtkWidget):
             btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
+            toolbutton.clicked.connect(partial(self.change_visibility, geo, toolbutton))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
@@ -357,7 +357,7 @@ class VtkWidget(BaseVtkWidget):
             # color
             if not geo == 'regions':
                 toolbutton = QtWidgets.QToolButton()
-                toolbutton.pressed.connect(partial(self.change_color, geo, toolbutton))
+                toolbutton.clicked.connect(partial(self.change_color, geo, toolbutton))
                 toolbutton.setAutoRaise(True)
                 layout.addWidget(toolbutton, i, 2)
                 btns['color'] = toolbutton
