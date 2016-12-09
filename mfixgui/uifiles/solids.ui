@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>1000</height>
+    <height>991</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1284,7 +1284,7 @@ QPushButton:checked {
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="label_138">
+             <widget class="QLabel" name="label_ep_star_2">
               <property name="text">
                <string>Packed Bed Void Fraction</string>
               </property>
@@ -1762,9 +1762,9 @@ QPushButton:checked {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>582</width>
-            <height>1292</height>
+            <y>-368</y>
+            <width>587</width>
+            <height>1314</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -2060,14 +2060,14 @@ background-color:white;
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLabel" name="label_179">
+              <widget class="QLabel" name="label_column_1">
                <property name="text">
                 <string>particle-particle</string>
                </property>
               </widget>
              </item>
              <item row="0" column="2">
-              <widget class="QLabel" name="label_180">
+              <widget class="QLabel" name="label_column_2">
                <property name="text">
                 <string>particle-wall</string>
                </property>
@@ -2613,7 +2613,7 @@ background-color:white;
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
-                 <widget class="QLabel" name="label_220">
+                 <widget class="QLabel" name="label_des_neighbor_search">
                   <property name="text">
                    <string>Neighbor search method</string>
                   </property>
@@ -2651,7 +2651,7 @@ background-color:white;
               <item>
                <layout class="QGridLayout" name="gridLayout_14">
                 <item row="0" column="0">
-                 <widget class="QLabel" name="label_217">
+                 <widget class="QLabel" name="label_neighbor_search_n">
                   <property name="text">
                    <string>Max steps between neighbor search</string>
                   </property>
@@ -2668,7 +2668,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QLabel" name="label_216">
+                 <widget class="QLabel" name="label_factor_rlm">
                   <property name="text">
                    <string>Factor defining particle neighborhood</string>
                   </property>
@@ -2685,7 +2685,7 @@ background-color:white;
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="label_219">
+                 <widget class="QLabel" name="label_neighbor_search_rad_ratio">
                   <property name="text">
                    <string>Distance/diameter triggering search</string>
                   </property>
@@ -2905,7 +2905,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_26">
             <item>
-             <widget class="QLabel" name="label_228">
+             <widget class="QLabel" name="label_ep_star">
               <property name="text">
                <string>Packed bed void fraction</string>
               </property>
@@ -2926,7 +2926,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_27">
             <item>
-             <widget class="QLabel" name="label_229">
+             <widget class="QLabel" name="label_cfl_pic">
               <property name="text">
                <string>Parcel CFL number</string>
               </property>
@@ -2947,14 +2947,14 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_28">
             <item>
-             <widget class="QLabel" name="label_230">
+             <widget class="QLabel" name="label_mppic_solid_stress_snider">
               <property name="text">
                <string>Solids Stress Model</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="ComboBox" name="combobox">
+             <widget class="ComboBox" name="combobox_mppic_solid_stress_snider">
               <item>
                <property name="text">
                 <string>Snider, 2001</string>
@@ -2995,7 +2995,7 @@ background-color:white;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_22">
                <item>
-                <widget class="QLabel" name="label_231">
+                <widget class="QLabel" name="label_mppic_coeff_en1">
                  <property name="text">
                   <string>Particle-particle momentum retention</string>
                  </property>
@@ -3016,7 +3016,7 @@ background-color:white;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_24">
                <item>
-                <widget class="QLabel" name="label_232">
+                <widget class="QLabel" name="label_mppic_coeff_en_wall">
                  <property name="text">
                   <string>Wall normal momentum retention</string>
                  </property>
@@ -3037,7 +3037,7 @@ background-color:white;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_25">
                <item>
-                <widget class="QLabel" name="label_233">
+                <widget class="QLabel" name="label_mppic_coeff_et_wall">
                  <property name="text">
                   <string>Wall tangential momentum retention</string>
                  </property>
@@ -3107,7 +3107,7 @@ background-color:white;
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_33">
                <item>
-                <widget class="QLabel" name="label_237">
+                <widget class="QLabel" name="label_des_interp_2">
                  <property name="text">
                   <string>Interpolation</string>
                  </property>
@@ -3145,6 +3145,9 @@ background-color:white;
                 <spacer name="horizontalSpacer_26">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
@@ -3245,7 +3248,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_29">
             <item>
-             <widget class="QLabel" name="label_224">
+             <widget class="QLabel" name="label_psfrac_fric_pic">
               <property name="text">
                <string>Pressure constant</string>
               </property>
@@ -3275,7 +3278,7 @@ background-color:white;
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_225">
+             <widget class="QLabel" name="label_psfrac_fric_pic_units">
               <property name="maximumSize">
                <size>
                 <width>25</width>
@@ -3292,7 +3295,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_30">
             <item>
-             <widget class="QLabel" name="label_226">
+             <widget class="QLabel" name="label_fric_exp_pic">
               <property name="text">
                <string>Volume fraction exponent</string>
               </property>
@@ -3313,7 +3316,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_31">
             <item>
-             <widget class="QLabel" name="label_227">
+             <widget class="QLabel" name="label_fric_non_sing_fac">
               <property name="text">
                <string>Non-singularity factor</string>
               </property>
@@ -3355,11 +3358,6 @@ background-color:white;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
-   <header>mfixgui.widgets.base</header>
-  </customwidget>
-  <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
@@ -3367,6 +3365,11 @@ background-color:white;
   <customwidget>
    <class>ComboBox</class>
    <extends>QComboBox</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
