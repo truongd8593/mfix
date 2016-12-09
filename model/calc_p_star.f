@@ -286,8 +286,10 @@
             DO J = 1,SMAX
                IF (I == J) CYCLE  ! do nothing
 ! equation 22 denominator
-! note if x_i = 0 then sum_local will remain unchanged
-               SUM_LOCAL = SUM_LOCAL + &
+! note if x_i = 0 then sum_local will remain unchanged. also in cases
+! where r_ij=1 and i!=j (i.e., different phases but equal size)
+! x_ij will evaluate to zero when j < i.
+               IF (X_IJ(I,J) > ZERO) SUM_LOCAL = SUM_LOCAL + &
                   (ONE - EPs_max_sort(I)/P_IJ(I,J))*X_I(J)/X_IJ(I,J)
             ENDDO
 
