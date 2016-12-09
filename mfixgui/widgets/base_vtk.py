@@ -226,7 +226,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.toolbutton_screenshot.setDown(False)
 
         if fname is None:
-            fname = str(QtWidgets.QFileDialog.getSaveFileName(
+            fname = QtWidgets.QFileDialog.getSaveFileName(
                 self,
                 "Save screenshot",
                 os.path.dirname(SETTINGS.value('project_file')),
@@ -235,10 +235,9 @@ class BaseVtkWidget(QtWidgets.QWidget):
                            "PostScript (*.ps)",
                            "All Files (*.*)",
                           ]),
-                ))
+                )
             if PYQT5:
                 fname = fname[0]
-
         if not fname:
             return
 
@@ -258,7 +257,13 @@ class BaseVtkWidget(QtWidgets.QWidget):
         elif fname.endswith('.ps'):
             writer = vtk.vtkPostScriptWriter()
         else:
+<<<<<<< Updated upstream
             raise TypeError('No available writer') # FIXME this will cause gui to exit
+=======
+            # force to png
+            writer = vtk.vtkPNGWriter()
+            fname += '.png'
+>>>>>>> Stashed changes
 
         writer.SetFileName(fname)
         writer.SetInputConnection(window_image.GetOutputPort())

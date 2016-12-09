@@ -193,6 +193,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             index = 0
 
         if index == self.frame_index:
+            self.frame_spinbox.setValue(index)
             return
         else:
             self.frame_index = index
