@@ -8,7 +8,13 @@ from mfixgui.constants import *
 class SolidsTFM(object):
     def init_solids_tfm(self):
         ui = self.ui.solids
-        ui.combobox_kt_type.activated.connect(self.set_kt_type)
+        key = 'kt_type'
+        cb = ui.combobox_kt_type
+        cb.activated.connect(self.set_kt_type)
+        self.add_tooltip(cb, key)
+        for (i, v) in enumerate(KT_TYPES):
+            self.add_tooltip(get_combobox_item(cb, i), key, value=v)
+
         ui.combobox_friction_model.activated.connect(self.set_friction_model)
         ui.combobox_rdf_type.activated.connect(self.set_rdf_type)
         ui.combobox_blending_function.activated.connect(self.set_blending_function)

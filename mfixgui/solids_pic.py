@@ -17,6 +17,7 @@ class SolidsPIC(object):
         ui.combobox_des_interp_2.activated.connect(self.set_des_interp_2)
         ui.combobox_des_interp_scheme_2.activated.connect(self.set_des_interp_scheme_2)
         ui.combobox_coupling_method_2.activated.connect(self.set_coupling_method_2)
+        self.add_tooltip(ui.combobox_mppic_solid_stress_snider, 'mppic_solid_stress_snider')
 
     def set_des_interp_2(self, val):
         des_interp_on = not bool(val>>1)
