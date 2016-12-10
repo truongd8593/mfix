@@ -154,9 +154,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         bottom_left = self.toolbutton_visible.geometry().bottomLeft()
         g = self.mapToGlobal(bottom_left)
         self.visible_menu.popup(g)
-        self.show()
-        self.raise_()
-        self.activateWindow()
         self.visible_menu.setVisible(True)
 
     def close(self):

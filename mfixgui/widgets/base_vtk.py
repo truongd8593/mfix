@@ -185,7 +185,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.toolbutton_reset.setIcon(get_icon('overscan.png'))
 
         self.toolbutton_perspective = QtWidgets.QToolButton()
-        self.toolbutton_perspective.clicked.connect(self.perspective)
+        self.toolbutton_perspective.clicked.connect(lambda ignore: self.perspective())
         self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
 
         self.toolbutton_view_xy = QtWidgets.QToolButton()

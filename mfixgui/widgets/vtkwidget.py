@@ -298,7 +298,7 @@ class VtkWidget(BaseVtkWidget):
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
-            btn.clicked.connect(partial(self.boolean_operation, booltype=key))
+            btn.clicked.connect(lambda ignore, k=key: self.boolean_operation(k))
 
         # connect parameter widgets
         for widget in widget_iter(
@@ -339,7 +339,7 @@ class VtkWidget(BaseVtkWidget):
             btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.clicked.connect(partial(self.change_visibility, geo, toolbutton))
+            toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton: self.change_visibility(g, t))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
@@ -350,14 +350,14 @@ class VtkWidget(BaseVtkWidget):
             # style
             combobox = QtWidgets.QComboBox()
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
-            combobox.activated.connect(partial(self.change_representation, geo, combobox))
+            combobox.activated.connect(lambda ignore, g=geo, c=combobox: self.change_representation(g, c))
             layout.addWidget(combobox, i, 1)
             btns['rep'] = combobox
 
             # color
             if not geo == 'regions':
                 toolbutton = QtWidgets.QToolButton()
-                toolbutton.clicked.connect(partial(self.change_color, geo, toolbutton))
+                toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton: self.change_color(g, t))
                 toolbutton.setAutoRaise(True)
                 layout.addWidget(toolbutton, i, 2)
                 btns['color'] = toolbutton
@@ -366,7 +366,7 @@ class VtkWidget(BaseVtkWidget):
             opacity = QtWidgets.QDoubleSpinBox()
             opacity.setRange(0, 1)
             opacity.setSingleStep(0.1)
-            opacity.valueChanged.connect(partial(self.change_opacity, geo, opacity))
+            opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(o, g))
             layout.addWidget(opacity, i, 3)
             btns['opacity'] = opacity
 
@@ -2482,14 +2482,14 @@ class VtkWidget(BaseVtkWidget):
 
         self.render()
 
-    def change_opacity(self, name, opacity):
+    def change_opacity(self, opacity, name):
         """given a scene actor type, change the opacity"""
-        value = opacity.value()
-        self.visual_props[name]['opacity'] = value
+
+        self.visual_props[name]['opacity'] = opacity
 
         for actor in self.get_actors(name):
             if actor is not None:
-                actor.GetProperty().SetOpacity(value)
+                actor.GetProperty().SetOpacity(opacity)
         self.render()
 
     def set_visible_btn_image(self, btn, checked):
