@@ -1202,6 +1202,8 @@ class VtkWidget(BaseVtkWidget):
         if not loading:
             self.parent.set_unsaved_flag()
 
+        return name
+
     def update_parametric(self, name):
         """Update the specified parameteric object."""
         geo = self.geometrydict.get(name)
