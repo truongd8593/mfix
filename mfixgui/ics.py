@@ -1095,9 +1095,10 @@ class ICS(object):
         # SOLIDS_MODEL(#)=DEM' or SOLIDS_MODEL(#)='PIC'
         # Sets keyword IC_THETA_M(#,#)
         # DEFAULT value of 0.0
-        # TODO: use (m^2/sec^2) for solids granular energy units.
-        # Some of the KT_TYPES also include a mass unit (kg) -
-        # but the default model (Lun) will have units of m^s/sec^2
+        # Use (m^2/sec^2) for solids granular energy units.
+        # # Note:
+        # # Some of the KT_TYPES also include a mass unit (kg) -
+        # # but the default model (Lun) will have units of m^s/sec^2
         solids_model = self.project.get_value('solids_model', args=[P])
         kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
         enabled = ( (solids_model=='TFM' and kt_type != 'ALGEBRAIC')
