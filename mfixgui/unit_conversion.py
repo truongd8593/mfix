@@ -293,6 +293,7 @@ cgs_to_SI = {
   'ps_y_s':         0.01, # cm -> m                : Y coordinate of the south face or edge.
   'ps_z_b':         0.01, # cm -> m                : Z coordinate of the bottom face or edge.
   'ps_z_t':         0.01, # cm -> m                : Z coordinate of the top face or edge.
+  'psfac_fric_pic': None, # UNKNOWN                : P_s term in the frictional stress model of Snider.
   'quadric_scale':  1,    # factor                 : Scaling factor, applied to all quadric geometry parameters.
   'r_p':            1,    # coefficient            : Coefficient of restitution for particle-particle collisions
   'radius':         0.01, # cm -> m                : Cylinder radius (used when QUADRIC_FORM = *_CYL_***)
