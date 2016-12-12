@@ -30,6 +30,7 @@ except:
 
 from qtpy import QtCore, QtWidgets, QtGui
 from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE
+from mfixgui.widgets.base import CustomPopUp
 from mfixgui.tools.general import get_icon, clear_layout, get_unique_string
 
 PLOT_ITEMS = OrderedDict([
@@ -40,7 +41,7 @@ PLOT_ITEMS = OrderedDict([
     ])
 
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
-
+DEFAULT_PLAYBACK_SPEED = 100
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
@@ -86,10 +87,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # more buttons
         self.toolbutton_visible = QtWidgets.QToolButton()
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
-        self.visible_menu = QtWidgets.QMenu()
-        self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
-        self.toolbutton_visible.clicked.connect(self.handle_visible_menu)
-#        self.toolbutton_visible.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
+        self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
+        self.toolbutton_visible.pressed.connect(self.visible_menu.popup)
 
         # --- visual representation menu ---
         layout = QtWidgets.QGridLayout(self.visible_menu)
@@ -137,9 +137,25 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.frame_spinbox.valueChanged.connect(self.change_frame)
         self.frame_spinbox.setMaximum(99999)
 
+        self.toolbutton_play_speed = QtWidgets.QToolButton()
+        self.toolbutton_play_speed.clicked.connect(self.change_speed)
+        self.toolbutton_play_speed.setIcon(get_icon('speed.png'))
+
+        self.speed_menu = CustomPopUp(self, self.toolbutton_play_speed)
+        self.speed_menu.finished.connect(lambda ignore: self.toolbutton_play_speed.setDown(False))
+        self.speed_menu_layout = QtWidgets.QVBoxLayout(self.speed_menu)
+        self.speed_menu_layout.setContentsMargins(5,5,5,5)
+        self.speed_slider = QtWidgets.QSlider()
+        self.speed_slider.setRange(0, 1000)
+        self.speed_slider.setValue(DEFAULT_PLAYBACK_SPEED)
+        self.speed_slider.setOrientation(QtCore.Qt.Horizontal)
+        self.speed_slider.valueChanged.connect(self.speed_changed)
+        self.speed_menu_layout.addWidget(self.speed_slider)
+        self.toolbutton_play_speed.pressed.connect(self.speed_menu.popup)
+
         for btn in [self.toolbutton_visible, self.toolbutton_back,
                     self.toolbutton_play, self.toolbutton_forward,
-                    self.frame_spinbox]:
+                    self.frame_spinbox, self.toolbutton_play_speed]:
             self.button_bar_layout.addWidget(btn)
             if isinstance(btn, QtWidgets.QToolButton):
                 btn.setAutoRaise(True)
@@ -150,20 +166,16 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # has to be called after the widget is visible
         self.vtkiren.Initialize()
 
-    def handle_visible_menu(self):
-        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
-        g = self.mapToGlobal(bottom_left)
-        self.visible_menu.popup(g)
-        self.visible_menu.setVisible(True)
-
     def close(self):
         BaseVtkWidget.close(self)
 
         # clean up timer
         self.play_timer.stop()
 
-    def handle_visible_menu_close(self):
-        self.toolbutton_visible.setDown(False)
+    def speed_changed(self):
+        if self.play_timer.isActive():
+            self.play_timer.stop()
+            self.play_stop()
 
     def play_stop(self):
         if self.play_timer.isActive():
@@ -171,7 +183,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.play_timer.stop()
         else:
             self.toolbutton_play.setIcon(get_icon('stop.png'))
-            self.play_timer.start(10)
+            self.play_timer.start(self.speed_slider.value())
 
     def begining(self):
         self.change_frame(0)
@@ -201,6 +213,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.frame_spinbox.setValue(index)
         self.read_vtu(self.vtu_files[index])
         self.render()
+
+    def change_speed(self):
+        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
+        g = self.mapToGlobal(bottom_left)
+        self.speed_slider.setGeometry(g.x(), g.y(), 200, 30)
+        self.speed_slider.show()
 
     # --- vtk functions ---
     def read_vtu(self, path):

@@ -14,7 +14,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 # local imports
 from mfixgui.tools.general import (get_unique_string, widget_iter, get_icon,
                            get_image_path, topological_sort)
-from mfixgui.widgets.base import LineEdit, ComboBox
+from mfixgui.widgets.base import LineEdit, ComboBox, CustomPopUp
 from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE, VTK_MAJOR_VERSION
 try:
     from mfixgui.widgets.distributed_popup import DistributionPopUp
@@ -322,10 +322,9 @@ class VtkWidget(BaseVtkWidget):
         self.toolbutton_visible = QtWidgets.QToolButton()
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
-        self.visible_menu = QtWidgets.QMenu(self)
-        self.visible_menu.aboutToHide.connect(self.handle_visible_menu_close)
-#        self.toolbutton_visible.setMenu(self.visible_menu)
-        self.toolbutton_visible.clicked.connect(self.handle_visible_menu)
+        self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
+        self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
+        self.toolbutton_visible.pressed.connect(self.visible_menu.popup)
         self.toolbutton_visible.setPopupMode(
             QtWidgets.QToolButton.InstantPopup)
 
@@ -430,14 +429,6 @@ class VtkWidget(BaseVtkWidget):
                         wid.setStyleSheet("QToolButton{{ background: {};}}".format(value.name()))
                     elif key == 'opacity':
                         wid.setValue(value)
-
-    def handle_visible_menu(self):
-        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
-        g = self.mapToGlobal(bottom_left)
-        self.visible_menu.popup(g)
-
-    def handle_visible_menu_close(self):
-        self.toolbutton_visible.setDown(False)
 
     def handle_stl_units(self):
         unit = str(self.ui.geometry.combobox_stl_units.currentText())

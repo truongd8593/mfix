@@ -1215,6 +1215,25 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |
                 QtCore.Qt.ItemIsSelectable)
 
+# --- custom popup ---
+class CustomPopUp(QtWidgets.QWidget):
+    finished = QtCore.Signal(bool)
+    def __init__(self, parent=None, widget=None):
+        QtWidgets.QWidget.__init__(self, parent)
+
+        self.widget = widget
+        # make it look/act like a popup
+        self.setWindowFlags(QtCore.Qt.Popup)
+
+    def popup(self):
+        bottom_left = self.widget.rect().bottomLeft()
+        g = self.widget.mapToGlobal(bottom_left)
+        self.move(g.x(), g.y())
+        self.show()
+
+    def closeEvent(self, event):
+        self.finished.emit(True)
+
 BASE_WIDGETS = {
     'lineedit': LineEdit,
     'combobox': ComboBox,
