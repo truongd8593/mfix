@@ -15,7 +15,13 @@ class SolidsTFM(object):
         for (i, v) in enumerate(KT_TYPES):
             self.add_tooltip(get_combobox_item(cb, i), key, value=v)
 
+        key = 'friction_model'
+        cb = ui.combobox_friction_model
+        self.add_tooltip(cb, key)
+        for (i, v) in enumerate(FRICTION_MODELS):
+            self.add_tooltip(get_combobox_item(cb, i), key, value=v)
         ui.combobox_friction_model.activated.connect(self.set_friction_model)
+
         ui.combobox_rdf_type.activated.connect(self.set_rdf_type)
         ui.combobox_blending_function.activated.connect(self.set_blending_function)
         ui.combobox_max_packing_correlation.activated.connect(self.set_max_packing_correlation)
