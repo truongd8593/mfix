@@ -54,7 +54,7 @@ class SolidsTFM(object):
         k_e = (self.project.get_value('turbulence_model') == 'K_EPSILON')
         added_mass = self.project.get_value('m_am') or self.project.get_value('added_mass')
         drag_type = self.project.get_value('drag_type')
-        friction_model = self.project.get_value('friction_model')
+        friction_model = self.project.get_value('friction_model', default='NONE')
         enabled = [True, #ALGEBRAIC
                    True, #LUN_1984
                    True, #IA_NONEP
