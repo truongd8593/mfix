@@ -199,8 +199,6 @@ class ISS(object):
             if key.startswith('is_') and args and args[0] in self.iss_current_indices:
                 self.unset_keyword(key, args=args)
 
-        # TODO: fix any resulting holes in index sequence!
-
         for r in self.iss_current_regions:
             if r in self.iss_region_dict:
                 self.iss_region_dict[r]['available'] = True

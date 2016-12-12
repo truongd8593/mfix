@@ -177,8 +177,6 @@ class PSS(object):
             if key.startswith('ps_') and args and args[0] in self.pss_current_indices:
                 self.unset_keyword(key, args=args)
 
-        # TODO: fix any resulting holes in index sequence!
-
         for r in self.pss_current_regions:
             if r in self.pss_region_dict:
                 self.pss_region_dict[r]['available'] = True

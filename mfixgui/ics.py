@@ -268,8 +268,6 @@ class ICS(object):
             if key.startswith('ic_') and args and args[0] in self.ics_current_indices:
                 self.unset_keyword(key, args=args)
 
-        # TODO: fix any resulting holes in index sequence!
-
         for r in self.ics_current_regions:
             if r in self.ics_region_dict:
                 self.ics_region_dict[r]['available'] = True
