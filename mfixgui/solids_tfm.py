@@ -153,7 +153,7 @@ class SolidsTFM(object):
         if rdf_type not in RDF_TYPES:
             self.warn('Invalid rdf_type %s' % rdf_type)
             rdf_type = 'LEBOWITZ'
-            self.update_keyword('rdf_type', rfd_type)
+            self.update_keyword('rdf_type', rdf_type)
 
         if rdf_type == 'LEBOWITZ':
             if mmax == 1:
