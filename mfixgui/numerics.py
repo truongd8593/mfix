@@ -354,7 +354,9 @@ class Numerics(object):
         #  Crank-Nicolson
         #    Sets keyword CN_ON to .TRUE.
         cb = ui.combobox_cn_on
-        cb.setCurrentIndex(1 if self.project.get_value('cn_on') else 0)
+        idx = 1 if self.project.get_value('cn_on') else 0
+        cb.setCurrentIndex(idx)
+        cb.setToolTip(get_combobox_item(cb, idx).toolTip())
 
         tw = ui.tablewidget_discretization
         self.fixup_numerics_table(tw)
