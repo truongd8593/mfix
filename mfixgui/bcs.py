@@ -2070,7 +2070,7 @@ class BCS(object):
                 page_layout.addWidget(groupbox)
                 groupbox_layout = QGridLayout()
                 groupbox.setLayout(groupbox_layout)
-                #    Select scalar boundary type:
+                #  Select scalar boundary type:
                 hbox = QHBoxLayout()
                 label = QLabel("Type")
                 hbox.addWidget(label)
@@ -3282,6 +3282,7 @@ class BCS(object):
         #Define scalar value
         # Sets keyword BC_SCALAR(#,#)
         # NO DEFAULT value
+        # TODO implement this tab
         pass
 
 
