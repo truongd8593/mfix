@@ -522,7 +522,7 @@ class ICS(object):
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
             if self.ics_current_tab == 0: # Don't stay on disabled tab
-                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR,None))
+                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR_TAB,None))
         font = b.font()
         font.setBold(self.ics_current_tab == 0)
         b.setFont(font)
