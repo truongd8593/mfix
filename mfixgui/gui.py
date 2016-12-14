@@ -65,6 +65,7 @@ from mfixgui.mesh import Mesh
 from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
 from mfixgui.numerics import Numerics
+from mfixgui.output import Output
 from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
@@ -81,20 +82,26 @@ from mfixgui.constants import *
 
 if PRECOMPILE_UI:
     try:
-        from uifiles.boundary_conditions import Ui_boundary_conditions
-        from uifiles.fluid import Ui_fluid
-        from uifiles.geometry import Ui_geometry
-        from uifiles.initial_conditions import Ui_initial_conditions
-        from uifiles.gui import Ui_MainWindow
-        from uifiles.mesh import Ui_mesh
         from uifiles.model_setup import Ui_model_setup
+        from uifiles.mesh import Ui_mesh
+        from uifiles.fluid import Ui_fluid
+        from uifiles.solids import Ui_solids
+        from uifiles.geometry import Ui_geometry
+        from uifiles.gui import Ui_MainWindow
+        from uifiles.initial_conditions import Ui_initial_conditions
+        from uifiles.boundary_conditions import Ui_boundary_conditions
+        from uifiles.point_sources import Ui_point_sources
+        from uifiles.internal_surfaces import Ui_internal_surfaces
+        from uifiles.chemistry import Ui_chemistry
+        from uifiles.numerics import Ui_numerics
+        from uifiles.output import Ui_output
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
-        from uifiles.solids import Ui_solids
-        from uifiles.vtk import Ui_vtk
+
+
     except ImportError as e:
         print(e)
         print("You must compile ui files! (run 'make')")
@@ -113,6 +120,7 @@ class MfixGui(QtWidgets.QMainWindow,
               ICS, BCS, PSS, ISS,
               Chemistry,
               Numerics,
+              Output,
               GraphicTabs,
               Interpreter,
               MainMenu):
