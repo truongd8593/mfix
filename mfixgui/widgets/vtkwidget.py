@@ -329,8 +329,7 @@ class VtkWidget(BaseVtkWidget):
             QtWidgets.QToolButton.InstantPopup)
 
         # --- visual representation menu ---
-        layout = QtWidgets.QGridLayout(self.visible_menu)
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout = self.visible_menu.layout
         self.visual_btns = {}
         for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry', 'Regions']):
             geo_name = geo

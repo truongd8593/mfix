@@ -228,6 +228,26 @@ class MainMenu(object):
         sc.currentIndexChanged.connect(lambda: self.change_app_style(sc.currentText()))
         sw_layout.addWidget(sc, 2, 1)
 
+        # animation settings
+        gb = QtWidgets.QGroupBox()
+        gb.setCheckable(True)
+        gb.setChecked(self.settings.value('animate', True))
+        gb.setTitle('Enable Animations')
+        sw_layout.addWidget(gb, 3, 0, 1, 2)
+        gb_layout = QtWidgets.QGridLayout(gb)
+
+        al = QtWidgets.QLabel('Animation Speed')
+        gb_layout.addWidget(al, 0, 0)
+        gb_layout.setContentsMargins(5, 5, 5, 5)
+        asb = QtWidgets.QSpinBox()
+        asb.valueChanged.connect(lambda n: self.settings.setValue('animation_speed', n))
+        asb.setRange(0, 1000)
+        asb.setValue(int(self.settings.value('animation_speed', 400)))
+        gb_layout.addWidget(asb, 0, 1)
+
+        au = QtWidgets.QLabel('milli seconds')
+        gb_layout.addWidget(au, 0, 2)
+
         sw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
         # --- build help ---

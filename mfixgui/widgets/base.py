@@ -54,6 +54,9 @@ from mfixgui.tools.general import (to_text_string, get_icon, insert_append_actio
 from mfixgui.tools.simpleeval import VALID_EXPRESION_NAMES
 VALID_EXP_NAMES = VALID_EXPRESION_NAMES + SPECIAL_PARAMETERS
 
+SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
+ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
+
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
@@ -1225,11 +1228,32 @@ class CustomPopUp(QtWidgets.QWidget):
         # make it look/act like a popup
         self.setWindowFlags(QtCore.Qt.Popup)
 
+        # add a layout
+        self.layout = QtWidgets.QGridLayout(self)
+        self.layout.setContentsMargins(5,5,5,5)
+        # this is really important when animating geometry
+        self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
+
     def popup(self):
-        bottom_left = self.widget.rect().bottomLeft()
+        rect = self.widget.rect()
+        bottom_left = rect.bottomLeft()
         g = self.widget.mapToGlobal(bottom_left)
-        self.move(g.x(), g.y())
+        x, y = g.x(), g.y()
+        size = self.sizeHint()
+        width = rect.width()
+
+        self.setGeometry(x, y, width, 0)
+        start = QtCore.QRect(x, y, width, 0)
+        stop = QtCore.QRect(x, y, size.width(), size.height())
+
+        self.animation = QtCore.QPropertyAnimation(self, "geometry".encode('utf-8'))
+        self.animation.setDuration(ANIMATION_SPEED)
+        self.animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        self.animation.setStartValue(start)
+        self.animation.setEndValue(stop)
+
         self.show()
+        self.animation.start()
 
     def closeEvent(self, event):
         self.finished.emit(True)

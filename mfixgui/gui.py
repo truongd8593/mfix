@@ -101,6 +101,7 @@ if PRECOMPILE_UI:
         sys.exit(1)
 
 SETTINGS = QSettings('MFIX', 'MFIX')
+ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
 
 # --- Main Gui ---
 
@@ -363,7 +364,6 @@ class MfixGui(QtWidgets.QMainWindow,
                                'workflow':  self.ui.pushButtonWorkflow,
                                'developer': self.ui.pushButtonDeveloper,
                                'interpreter': self.ui.pushButtonInterpreter}
-        self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
 
@@ -1371,7 +1371,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def animation_setup(self, target, x_start, y_start, x_end, y_end):
         """setup an animation widget"""
         animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
-        animation.setDuration(self.animation_speed)
+        animation.setDuration(ANIMATION_SPEED)
         animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))
         animation.setEndValue(QtCore.QPoint(x_end,y_end))

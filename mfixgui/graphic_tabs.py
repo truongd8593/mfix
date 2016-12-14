@@ -92,15 +92,14 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.toolbutton_visible.pressed.connect(self.visible_menu.popup)
 
         # --- visual representation menu ---
-        layout = QtWidgets.QGridLayout(self.visible_menu)
-        layout.setContentsMargins(5, 5, 5, 5)
+        layout = self.visible_menu.layout
         self.visual_btns = {}
         for i, geo in enumerate(['Cells', 'Nodes', 'Points']):
             geo_name = geo
             geo = geo.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
             # tool button
-            toolbutton = QtWidgets.QToolButton()
+            toolbutton = QtWidgets.QToolButton(self.visible_menu)
 #            toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
@@ -110,7 +109,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             btns['visible'] = toolbutton
 
             # opacity
-            opacity = QtWidgets.QDoubleSpinBox()
+            opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
             opacity.setSingleStep(0.1)
 #            opacity.valueChanged.connect(partial(self.change_opacity, geo, opacity))
@@ -118,7 +117,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             btns['opacity'] = opacity
 
             # label
-            label = QtWidgets.QLabel(geo_name)
+            label = QtWidgets.QLabel(geo_name, self.visible_menu)
             layout.addWidget(label, i, 4)
 
         self.toolbutton_back = QtWidgets.QToolButton()
@@ -143,14 +142,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.speed_menu = CustomPopUp(self, self.toolbutton_play_speed)
         self.speed_menu.finished.connect(lambda ignore: self.toolbutton_play_speed.setDown(False))
-        self.speed_menu_layout = QtWidgets.QVBoxLayout(self.speed_menu)
-        self.speed_menu_layout.setContentsMargins(5,5,5,5)
         self.speed_slider = QtWidgets.QSlider()
         self.speed_slider.setRange(0, 1000)
         self.speed_slider.setValue(DEFAULT_PLAYBACK_SPEED)
         self.speed_slider.setOrientation(QtCore.Qt.Horizontal)
         self.speed_slider.valueChanged.connect(self.speed_changed)
-        self.speed_menu_layout.addWidget(self.speed_slider)
+        self.speed_menu.layout.addWidget(self.speed_slider)
         self.toolbutton_play_speed.pressed.connect(self.speed_menu.popup)
 
         for btn in [self.toolbutton_visible, self.toolbutton_back,
