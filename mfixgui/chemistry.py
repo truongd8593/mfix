@@ -1003,7 +1003,7 @@ class Chemistry(object):
 
 
     def chemistry_toggle_reaction(self, row, enabled):
-        name = self.project.reactions.keys()[row]
+        name = list(self.project.reactions.keys())[row]
         reaction = self.project.reactions[name]
         if enabled:
             reaction['chem_eq'] = self.disabled_reactions.pop(name, 'NONE')
