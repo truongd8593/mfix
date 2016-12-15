@@ -169,7 +169,7 @@ class RunPopup(QDialog):
 
     def collect_template_values(self):
         tp =  self.ui.combobox_template.currentText()
-        template = self.templates[tp]
+        template = self.templates.get(tp,{})
         replace_dict = {}
         for name, wid in template.items():
             if not isinstance(wid, dict): continue
