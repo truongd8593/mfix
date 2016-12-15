@@ -495,7 +495,7 @@ class Chemistry(object):
             if phase == 0:
                 return self.fluid_phase_name
             else:
-                return self.solids.keys()[phase-1]
+                return list(self.solids.keys())[phase-1]
         if num_phases == 0:
             for w in (ui.label_fracdh_1, ui.lineedit_fracdh_1,
                       ui.label_fracdh_2, ui.lineedit_fracdh_2):
