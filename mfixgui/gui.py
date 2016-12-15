@@ -1134,7 +1134,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.register_widget(
             self.vtkwidget, ['xmin', 'xlength', 'ymin', 'ylength', 'zmin',
                              'zlength', 'imax', 'jmax', 'kmax', 'no_k',
-                             'out_stl_value'])
+                             ])
 
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget
