@@ -73,7 +73,7 @@ from mfixgui.interpreter import Interpreter
 from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
                            is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs,
-                           get_username)
+                           get_username, convert_string_to_python)
 
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.keyword_args import keyword_args
@@ -1108,12 +1108,18 @@ class MfixGui(QtWidgets.QMainWindow,
 
                     self.add_tooltip(widget, key)
 
+                    # NB not all widgets get set up this way
                     if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in (int, float):
                         widget.allow_parameters = True
-                        # NB not all widgets get set up this way
-
-                    if isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
+                    elif isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
+                    elif isinstance(widget, QtWidgets.QCheckBox):
+                        # TODO: infer which value is true/false?
+                        values = sorted([convert_string_to_python(v) for v in doc['valids'].keys()])
+                        if len(values) == 2:
+                            widget.false_value = values[0]
+                            widget.true_value = values[1]
+
                 else:
                     log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
                     continue
@@ -1154,7 +1160,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.register_widget(
             self.vtkwidget, ['xmin', 'xlength', 'ymin', 'ylength', 'zmin',
                              'zlength', 'imax', 'jmax', 'kmax', 'no_k',
-                             'out_stl_value'])
+                             ])
 
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget

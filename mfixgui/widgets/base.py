@@ -436,21 +436,26 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
         self.clicked.connect(self.emitUpdatedValue)
         self.context_menu = QtWidgets.QMenu
         self.dtype = bool
+        self.true_value = None
+        self.false_value = None
 
     @property
     def value(self):
-        if self.dtype == int:
-            return int(self.isChecked())
+        checked = self.isChecked()
+        if self.true_value is not None and self.false_value is not None:
+            return self.true_value if checked else self.false_value
+        elif self.dtype == int:
+            return int(checked)
         elif self.dtype == float:
-            return float(self.isChecked())
+            return float(checked)
         elif self.dtype == bool:
-            return bool(self.isChecked())
+            return bool(checked)
         else:
             raise TypeError("Invalid dtype %s" % self.dtype)
 
     def updateValue(self, key, new_value, args=None):
         assert not isinstance(new_value, Keyword)  # value should not be keyword!
-        if not isinstance(new_value, bool):
+        if hasattr(new_value, 'lower'):
             new_value = new_value.lower()
             try:
                 if 'true' in new_value:
@@ -461,6 +466,10 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
                     v = bool(new_value)
             except TypeError:
                 v = bool(new_value)
+        elif isinstance(new_value, (int, float)):
+            v = True
+            if new_value <= 0:
+                v = False
         else:
             v = new_value
         self.setChecked(v)

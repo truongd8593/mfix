@@ -176,12 +176,12 @@ class StlParser(object):
                 num = re.findall('(\d+)', solidName)
                 if num:
                     num = int(num[-1])
-                    if num==0 or num in self.solidNumDict.keys():
+                    if num==0 or num in self.solidNumDict:
                         num=min(set(range(1,max(list(self.solidNumDict.keys())+[1])+2))-set(self.solidNumDict.keys()))
                 else:
                     num=min(set(range(1,max(list(self.solidNumDict.keys())+[1])+2))-set(self.solidNumDict.keys()))
 
-                if not solidName in self.solids.keys():
+                if not solidName in self.solids:
                     self.solids[solidName]=[]
                     self.solidNumDict[int(num)]=solidName
                 else:

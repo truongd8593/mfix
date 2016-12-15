@@ -121,15 +121,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(label, i, 4)
 
         self.toolbutton_back = QtWidgets.QToolButton()
-        self.toolbutton_back.clicked.connect(self.begining)
+        self.toolbutton_back.clicked.connect(self.handle_begining)
         self.toolbutton_back.setIcon(get_icon('previous.png'))
 
         self.toolbutton_play = QtWidgets.QToolButton()
-        self.toolbutton_play.clicked.connect(self.play_stop)
+        self.toolbutton_play.clicked.connect(self.handle_play_stop)
         self.toolbutton_play.setIcon(get_icon('play.png'))
 
         self.toolbutton_forward = QtWidgets.QToolButton()
-        self.toolbutton_forward.clicked.connect(self.end)
+        self.toolbutton_forward.clicked.connect(self.handle_end)
         self.toolbutton_forward.setIcon(get_icon('next.png'))
 
         self.frame_spinbox = QtWidgets.QSpinBox()
@@ -137,7 +137,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.frame_spinbox.setMaximum(99999)
 
         self.toolbutton_play_speed = QtWidgets.QToolButton()
-        self.toolbutton_play_speed.clicked.connect(self.change_speed)
         self.toolbutton_play_speed.setIcon(get_icon('speed.png'))
 
         self.speed_menu = CustomPopUp(self, self.toolbutton_play_speed)
@@ -146,7 +145,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.speed_slider.setRange(0, 1000)
         self.speed_slider.setValue(DEFAULT_PLAYBACK_SPEED)
         self.speed_slider.setOrientation(QtCore.Qt.Horizontal)
-        self.speed_slider.valueChanged.connect(self.speed_changed)
+        self.speed_slider.valueChanged.connect(self.handle_speed_changed)
         self.speed_menu.layout.addWidget(self.speed_slider)
         self.toolbutton_play_speed.pressed.connect(self.speed_menu.popup)
 
@@ -163,29 +162,35 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # has to be called after the widget is visible
         self.vtkiren.Initialize()
 
+    def hideEvent(self, event):
+        self.stop()
+
     def close(self):
         BaseVtkWidget.close(self)
 
         # clean up timer
         self.play_timer.stop()
 
-    def speed_changed(self):
+    def handle_speed_changed(self):
         if self.play_timer.isActive():
             self.play_timer.stop()
             self.play_stop()
 
-    def play_stop(self):
+    def stop(self):
+        self.toolbutton_play.setIcon(get_icon('play.png'))
+        self.play_timer.stop()
+
+    def handle_play_stop(self):
         if self.play_timer.isActive():
-            self.toolbutton_play.setIcon(get_icon('play.png'))
-            self.play_timer.stop()
+            self.stop()
         else:
             self.toolbutton_play.setIcon(get_icon('stop.png'))
             self.play_timer.start(self.speed_slider.value())
 
-    def begining(self):
+    def handle_begining(self):
         self.change_frame(0)
 
-    def end(self):
+    def handle_end(self):
         self.change_frame(len(self.vtu_files))
 
     def forward(self):
@@ -210,12 +215,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.frame_spinbox.setValue(index)
         self.read_vtu(self.vtu_files[index])
         self.render()
-
-    def change_speed(self):
-        bottom_left = self.toolbutton_visible.geometry().bottomLeft()
-        g = self.mapToGlobal(bottom_left)
-        self.speed_slider.setGeometry(g.x(), g.y(), 200, 30)
-        self.speed_slider.show()
 
     # --- vtk functions ---
     def read_vtu(self, path):
@@ -284,7 +283,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         model = combobox.model()
         for i in range(combobox.count()):
             item = model.item(i)
-            if item.text() in self.plot_dict.keys():
+            if item.text() in self.plot_dict:
                 item.setFlags(item.flags() & ~(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled))
 
 
