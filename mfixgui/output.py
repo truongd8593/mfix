@@ -190,7 +190,7 @@ class Output(object):
 
 
     def setup_output_spx_tab(self):
-
+        ui = self.ui.output
         #Write interval for gas volume fraction
         #    Specification only if write binary SPx files is enabled (currently always true)
         #    Sets keyword SPX_DT(1)
@@ -263,6 +263,8 @@ class Output(object):
         #    DEFAULT value of 1.0
         #    Error check: value must be greater than or equal to RES_DT
 
+        res_dt = self.project.get_value('res_dt', default=1.0)
+
         key = 'spx_dt'
         default = 1.0
         for sp in range(1, 12):
@@ -275,9 +277,6 @@ class Output(object):
                     val = res_dt
                 self.update_keyword(key, val, args=[sp])
 
-
-    def setup_output_spx_tab(self):
-        pass
 
     def setup_output_vtk_tab(self):
         pass
