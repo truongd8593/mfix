@@ -71,9 +71,9 @@ def linspace(f, t, c):
     """copy of numpy's linspace"""
     if c == 1:
         return [f, t]
-    dx = (t-f)/float(c-1)
+    dx = (t-f)/float(c)
     l = [f]
-    for i in range(c-1):
+    for i in range(c):
         l.append(l[-1]+dx)
     l[-1] = t # make sure the last value is the one given
     return l
@@ -222,9 +222,9 @@ class Mesh(object):
 
         self.mesh_cells = []
         for key in MESH_CELL_KEYS:
-            self.mesh_cells.append(safe_int(prj.get_value(key, default=0)) + 1)
+            self.mesh_cells.append(safe_int(prj.get_value(key, default=1)))
 
-        # collect dx, dy, dx
+        # collect dx, dy, dz
         for i, (s, c, e) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS, MESH_EXTENT_KEYS[1::2])):
             d = [prj.get_value(s, args=args) for args in sorted(prj.get_key_indices(s))]
             l = len(d)
@@ -424,8 +424,8 @@ class Mesh(object):
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
-            if c-1 > 0:
-                w = (t-f)/(c-1)
+            if c > 0:
+                w = (t-f)/c
             else:
                 w = t-f
             wid.setText('{0:.2e}'.format(w))

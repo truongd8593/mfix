@@ -123,7 +123,7 @@ class ParameterDialog(QtWidgets.QDialog):
             for row in rows:
                 index = list(data.keys())[row]
                 name = data[index]['parameter']
-                if name in self.parent().project.parameter_key_map.keys():
+                if name in self.parent().project.parameter_key_map:
                     cant_remove.append(name)
                 else:
                     data.pop(index)
@@ -250,7 +250,7 @@ class ParameterDialog(QtWidgets.QDialog):
         param_names = [val['parameter'] for val in data.values()]
         param_names.remove(name)
 
-        if name in PROTECTED_NAMES + self.parent().keyword_doc.keys():
+        if name in PROTECTED_NAMES or name in self.parent().keyword_doc:
             self.parent().message(title='Error', text='The parameter name: <b>{}</b> is protected and cannot be used'.format(name))
             return old_name
         elif name in param_names:
@@ -265,7 +265,7 @@ class ParameterDialog(QtWidgets.QDialog):
         proj = self.parent().project
         p_map = proj.parameter_key_map
 
-        if old_name in p_map.keys():
+        if old_name in p_map:
             for keyword in p_map[old_name]:
                 key, args = parse_key_with_args(keyword)
                 eq = proj.get_value(key, default=None, args=args)
@@ -280,7 +280,7 @@ class ParameterDialog(QtWidgets.QDialog):
         p_map = regions.parameter_key_map
         data = regions.tablewidget_regions.value
 
-        if old_name in p_map.keys():
+        if old_name in p_map:
             for keyword in p_map[old_name]:
                 name, key = keyword.split(',')
                 if 'to' in key or 'from' in key:
@@ -303,7 +303,7 @@ class ParameterDialog(QtWidgets.QDialog):
         p_map = geo.parameter_key_map
         data = geo.geometrydict
 
-        if old_name in p_map.keys():
+        if old_name in p_map:
             for keyword in p_map[old_name]:
                 name, key = keyword.split(',')
                 val = data[name][key]

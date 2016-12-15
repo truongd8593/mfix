@@ -422,7 +422,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         dir_base = os.path.basename(proj_dir)
 
         data = self.job_status_table.value
-        if dir_base in data.keys():
+        if dir_base in data:
             self.mfixgui.print_internal("Error: Project already submited: %s" % proj_dir)
             return
 

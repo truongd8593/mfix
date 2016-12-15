@@ -862,6 +862,7 @@ class VtkWidget(BaseVtkWidget):
     def update_transform(self, name):
         """Update the specified object's transform filter."""
         geo = self.geometrydict.get(name)
+        geo_type = geo['type']
         transform = geo['transform']
         transform_filter = geo['transformfilter']
 
@@ -892,7 +893,7 @@ class VtkWidget(BaseVtkWidget):
                             safe_float(geo['centerz']))
 
         # translate stl files
-        if geo['type'] in ['stl'] + list(PARAMETRIC_DICT.keys()):
+        if geo_type == 'stl' or geo_type in PARAMETRIC_DICT:
             transform.Translate(
                 safe_float(geo['translationx']),
                 safe_float(geo['translationy']),
@@ -903,7 +904,7 @@ class VtkWidget(BaseVtkWidget):
         transform_filter.Update()
 
         # update stl extents
-        if geo['type'] in ['stl']:
+        if geo_type == 'stl':
             bounds = transform_filter.GetOutput().GetBounds()
             ui = self.ui.geometry
             for key, bound, widget in zip(
