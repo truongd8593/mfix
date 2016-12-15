@@ -513,6 +513,42 @@ def get_username():
         name = 'unknown'
     return name
 
+def convert_string_to_python(string):
+    """Attempt to convert strings to python types"""
+
+    if not string:
+        return ''
+
+    # remove all quotes
+    string = string.replace("'", '').replace('"', '')
+    # remove any leading or trailing space, after removing quotes
+    string = string.strip()
+    # Remove comma separators if present
+    if string.endswith(','):
+        string = string[:-1]
+
+    # lower-case version of string
+    s_low = string.lower()
+
+    if s_low in ('.t.',  '.true.'):
+        return True
+    elif s_low in ('.f.', '.false.'):
+        return False
+
+    # Maybe it's a number (would a regex be better?)
+    if any(char.isdigit() for char in string):
+        try:
+            return int(string)
+        except ValueError:
+            try:
+                return float(string)
+            except ValueError:
+                pass
+
+    # default - return string unchanged
+    return string
+
+
 if __name__ == '__main__':
     def test_recurse_dict():
         d = {1: {2:3,

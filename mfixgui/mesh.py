@@ -135,7 +135,6 @@ class Mesh(object):
 
         ui.combobox_mesher.currentIndexChanged.connect(
             self.change_mesher_options)
-        ui.checkbox_internal_external_flow.value_updated.connect(self.toggle_out_stl_value)
 
         column_delegate = {0: {'widget': 'lineedit',
                                'dtype':  'dp'},
@@ -167,12 +166,6 @@ class Mesh(object):
                 ('split', lambda ignore, t=table, d=d: self.mesh_split(t, d))])
             table.auto_update_rows(True)
             table.set_delegate(col=column_delegate, row=None)
-
-    def toggle_out_stl_value(self, wid, value, args):
-        val = -1.0
-        if list(value.values())[0]:
-            val = 1.0
-        self.update_keyword('out_stl_value', val)
 
     def change_mesh_tab(self, tabnum, btn):
         """switch mesh stacked widget based on selected"""

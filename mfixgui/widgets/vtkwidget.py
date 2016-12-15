@@ -447,8 +447,6 @@ class VtkWidget(BaseVtkWidget):
 
         if key == 'no_k':
             self.change_interaction(newValue)
-        elif key == 'out_stl_value':
-            self.ui.mesh.checkbox_internal_external_flow.setChecked(newValue == 1.0)
 
     def objectName(self):
         """return the name of this object"""

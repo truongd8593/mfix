@@ -600,7 +600,7 @@
                <widget class="LineEdit" name="lineedit_keyword_dim_facets_per_cell"/>
               </item>
               <item row="0" column="0" colspan="2">
-               <widget class="CheckBox" name="checkbox_internal_external_flow">
+               <widget class="CheckBox" name="checkbox_keyword_out_stl_value">
                 <property name="text">
                  <string>Internal Flow</string>
                 </property>

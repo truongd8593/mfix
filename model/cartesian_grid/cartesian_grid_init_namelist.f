@@ -763,10 +763,11 @@ MODULE CG_INIT_NAMELIST
 !</keyword>
 
 !<keyword category="Cartesian grid" required="false">
-!  <description>Defines value of F_STL outside of the STL geometry. a
+!  <description>Defines value of F_STL outside of the STL geometry. A
 !  value of 1.0 means the domain outside of the STL geometry is
 !  excluded from computation, i.e., an internal flow is
-!  computed.</description>
+!  computed. Note: This depends on the direction of the facet normal vecotors.
+!  </description>
 !  <valid value="-1.0" note="model an external flow"/>
 !  <valid value="1.0" note="model an internal flow"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
