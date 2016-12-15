@@ -316,7 +316,7 @@ cgs_to_SI = {
   'scale_msh':      1,    # factor                 : Scaling factor, applied to the .msh geometry. Note that
   'scale_stl':      1,    # factor                 : Scaling factor, applied to the STL geometry. Note that
   'segregation_slope_coefficient':None,# UNKNOWN   : Used in calculating the initial slope of segregation: see
-  'spx_dt':         1,    # void fraction          : Interval at which .SPX files are updated. o SP1: void
+  'spx_dt':         1,    # s                      : Interval at which .SPX files are updated.
   'stl_small_angle':1,    # angle                  : Smallest angle accepted for valid STL triangles (in
   't_x':            None, # UNKNOWN                : Translation in x-direction.
   't_y':            None, # UNKNOWN                : Translation in y-direction.
@@ -355,7 +355,7 @@ cgs_to_SI = {
   'ucoil_r2':       0.01, # cm -> m                : U-shaped coil Radius 2 (used when QUADRIC_FORM = UCOIL*),
   'ucoil_y2':       None, # UNKNOWN                : U-shaped coil ymin (used when QUADRIC_FORM = UCOIL*),
   'ur_f_gs':        1,    # s                      : The implicitness calculation of the gas-solids drag
-  'ur_fac':         1,    # factor                 : Under relaxation factors. o 0.8 for equation types 1,9 o 0.5
+  'ur_fac':         1,    # factor                 : Under relaxation factors.
   'ur_kth_sml':     1,    # factor                 : Under relaxation factor for conductivity coefficient
   'usr_dt':         1,    # s                      : Intervals at which subroutine write_usr1 is called.
   'usr_x_e':        0.01, # cm -> m                : Udf Hook: x coordinate of the east face or edge.
@@ -440,6 +440,9 @@ def main():
             continue
 
         desc = entry['description']
+        if ' o ' in desc:
+            desc = desc[:desc.index(' o ')] # Strip bullets
+            entry['description'] = desc # Save it
         desc_lower = desc.lower()
         SI_unit = None
 
@@ -465,11 +468,17 @@ def main():
         # If units are not explicitly documented, add units for some known types of keys
 
         if SI_unit is None:
-            # Anything which is a fraction is dimensionless
-            for s in ('volume fraction', 'void fraction', 'mass fraction', 'solids fraction'):
-                if s in desc_lower:
-                    SI_unit = s
-                    break
+
+            # All 'dt's are time.
+            if key.endswith('_dt'):
+                SI_unit = 's'
+            else:
+                # Anything which is a fraction is dimensionless
+                for s in ('volume fraction', 'void fraction', 'mass fraction', 'solids fraction'):
+                    if s in desc_lower:
+                        SI_unit = s
+                        break
+
             if SI_unit:
                 pass
             # Assuming tolerances dimensionless also,
