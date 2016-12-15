@@ -10,227 +10,542 @@
     <height>656</height>
    </rect>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <property name="margin">
-    <number>5</number>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
    </property>
-   <property name="spacing">
-    <number>5</number>
+   <property name="topMargin">
+    <number>0</number>
    </property>
-   <item row="2" column="0">
-    <widget class="CheckBox" name="checkbox_keyword_print_des_data">
-     <property name="text">
-      <string>Write discrete particle data to output files</string>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="top_frame">
+     <property name="styleSheet">
+      <string notr="true">QPushButton:hover {
+    color:#64B5F6;;
+    background-color: transparent;
+}
+QPushButton:pressed {
+    color: #64B5F6;
+    background-color: transparent;
+}
+QPushButton:checked {
+    font: bold;
+    background-color: transparent;
+}
+</string>
      </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="0">
-    <widget class="CheckBox" name="checkbox_keyword_full_log">
-     <property name="text">
-      <string>Full Log</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="CheckBox" name="checkbox_keyword_group_resid">
-     <property name="text">
-      <string>Display residuals by equation</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="CheckBox" name="checkbox_keyword_report_neg_density">
-     <property name="text">
-      <string>Report negative density</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="7" column="0">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>SPX Output Files</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
+     <layout class="QGridLayout" name="gridlayout_tab_btns">
       <property name="leftMargin">
        <number>0</number>
       </property>
       <property name="topMargin">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <property name="spacing">
-       <number>5</number>
-      </property>
-     </layout>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>Write Frequencies</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <property name="leftMargin">
        <number>0</number>
       </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="spacing">
-       <number>5</number>
-      </property>
-      <item row="4" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_out_dt"/>
-      </item>
-      <item row="3" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_nlog"/>
+      <item row="1" column="0">
+       <widget class="Line" name="line_output">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>3</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>3</height>
+         </size>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QWidget{
+  background-color: #64B5F6;
+  border-color: #64B5F6;
+}</string>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QLabel" name="label_2">
+       <widget class="QPushButton" name="pushbutton_spx">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
-         <string>s</string>
+         <string>SPx</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_137">
-        <property name="text">
-         <string>.LOG file update</string>
+      <item row="0" column="4">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-       </widget>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_136">
+       <widget class="QPushButton" name="pushbutton_basic">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
         <property name="text">
-         <string>Restart</string>
+         <string>Basic</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_res_dt"/>
-      </item>
-      <item row="1" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_res_backup_dt"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="0" column="3">
+       <widget class="QPushButton" name="pushbutton_vtk">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Discrete Element Model</string>
+        </property>
         <property name="text">
-         <string>Restart backup</string>
+         <string>VTK</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_res_backups"/>
-      </item>
-      <item row="4" column="2">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>s</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Number of restart backup files to keep</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>.OUT file update</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>s</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Time Steps</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Mass balance</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_report_mass_balance_dt"/>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="6" column="0">
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item>
+    <widget class="QStackedWidget" name="stackedwidget_output">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Maximum</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
+     <widget class="QWidget" name="page_basic">
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_res_dt">
+         <property name="text">
+          <string>Restart/checkpoint write interval</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="LineEdit" name="lineedit_keyword_res_dt"/>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="label_res_dt_units">
+         <property name="text">
+          <string>s</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3">
+        <widget class="QLabel" name="label_res_backups">
+         <property name="text">
+          <string>Number of backup copies to keep</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3" colspan="2">
+        <widget class="LineEdit" name="lineedit_keyword_res_backups"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_res_backup_dt">
+         <property name="text">
+          <string>Backup interval</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="label_res_backup_dt_units">
+         <property name="text">
+          <string>s</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="CheckBox" name="checkbox_keyword_write_vtk_files">
+         <property name="text">
+          <string>Enable VTK output</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="4">
+        <widget class="CheckBox" name="checkbox_keyword_time_dependent_filename">
+         <property name="text">
+          <string>Enable time-dependent VTK files</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_vtu_dir">
+         <property name="text">
+          <string>VTK directory</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="CheckBox" name="checkbox_binary_spx_files">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Feature under development</string>
+         </property>
+         <property name="text">
+          <string>Enable binary SPx files</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="CheckBox" name="checkbox_netcdf_files">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Feature under development, currently not available</string>
+         </property>
+         <property name="text">
+          <string>Enable NetCDF output files</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="3">
+        <widget class="LineEdit" name="lineedit_keyword_res_backup_dt"/>
+       </item>
+       <item row="5" column="1" colspan="4">
+        <widget class="LineEdit" name="lineedit_keyword_vtu_dir"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_spx">
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupbox_write_intervals">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Write Intervals</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_10">
+            <property name="text">
+             <string>Reaction rates</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_10"/>
+          </item>
+          <item row="9" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_10">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_11">
+            <property name="text">
+             <string>Turbulence quantities</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_11">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_8">
+            <property name="text">
+             <string>Granular temperature</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_8"/>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_8">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_9">
+            <property name="text">
+             <string>User defined scalars</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_2"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_2">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_3">
+            <property name="text">
+             <string>Fluid velocity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_1">
+            <property name="text">
+             <string>Fluid volume fraction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_1"/>
+          </item>
+          <item row="8" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_7"/>
+          </item>
+          <item row="8" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_9">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_11"/>
+          </item>
+          <item row="5" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_6"/>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_6">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_7">
+            <property name="text">
+             <string>Mass fractions</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_9"/>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_7">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_5">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_6">
+            <property name="text">
+             <string>Temperature</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_3"/>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_3">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_4">
+            <property name="text">
+             <string>Solids velocity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_4"/>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_4">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_5">
+            <property name="text">
+             <string>Solids bulk density</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_5"/>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_1">
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_2">
+            <property name="text">
+             <string>Fluid and solids pressure</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="page_vtk"/>
+    </widget>
    </item>
   </layout>
  </widget>
