@@ -455,6 +455,7 @@
               ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'SEQUENTIAL' if 'STREAM' is not supported
               ACTION   = 'WRITE',            &
+              CONVERT  = 'BIG_ENDIAN',       &
               IOSTAT=ISTAT)
 
 
