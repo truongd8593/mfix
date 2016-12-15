@@ -115,7 +115,12 @@ def cleanString(string):
     if string:
         strings = string.split('!')
         strings = [s.strip() for s in strings]
-        return ' '.join(strings)
+        string =  ' '.join(strings)
+
+    # Some of the 'valids' are lower-case, which breaks our tooltip setter
+    if string in ('.false.', '.true.'):
+        string = string.upper()
+
 
     return string
 
