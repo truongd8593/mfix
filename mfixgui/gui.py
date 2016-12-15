@@ -65,6 +65,7 @@ from mfixgui.mesh import Mesh
 from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
 from mfixgui.numerics import Numerics
+from mfixgui.output import Output
 from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
@@ -81,20 +82,26 @@ from mfixgui.constants import *
 
 if PRECOMPILE_UI:
     try:
-        from uifiles.boundary_conditions import Ui_boundary_conditions
-        from uifiles.fluid import Ui_fluid
-        from uifiles.geometry import Ui_geometry
-        from uifiles.initial_conditions import Ui_initial_conditions
-        from uifiles.gui import Ui_MainWindow
-        from uifiles.mesh import Ui_mesh
         from uifiles.model_setup import Ui_model_setup
+        from uifiles.mesh import Ui_mesh
+        from uifiles.fluid import Ui_fluid
+        from uifiles.solids import Ui_solids
+        from uifiles.geometry import Ui_geometry
+        from uifiles.gui import Ui_MainWindow
+        from uifiles.initial_conditions import Ui_initial_conditions
+        from uifiles.boundary_conditions import Ui_boundary_conditions
+        from uifiles.point_sources import Ui_point_sources
+        from uifiles.internal_surfaces import Ui_internal_surfaces
+        from uifiles.chemistry import Ui_chemistry
+        from uifiles.numerics import Ui_numerics
+        from uifiles.output import Ui_output
         from uifiles.monitors import Ui_monitors
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
-        from uifiles.solids import Ui_solids
-        from uifiles.vtk import Ui_vtk
+
+
     except ImportError as e:
         print(e)
         print("You must compile ui files! (run 'make')")
@@ -113,6 +120,7 @@ class MfixGui(QtWidgets.QMainWindow,
               ICS, BCS, PSS, ISS,
               Chemistry,
               Numerics,
+              Output,
               GraphicTabs,
               Interpreter,
               MainMenu):
@@ -212,7 +220,6 @@ class MfixGui(QtWidgets.QMainWindow,
                         Ui_chemistry,
                         Ui_numerics,
                         Ui_output,
-                        Ui_vtk,
                         Ui_monitors,
                         Ui_post_processing,
                         Ui_run):
@@ -247,7 +254,6 @@ class MfixGui(QtWidgets.QMainWindow,
                          'chemistry',
                          'numerics',
                          'output',
-                         'vtk',
                          'monitors',
                          'run',
                          #'post-processing'
@@ -354,6 +360,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_iss()
         self.init_chemistry()
         self.init_numerics()
+        self.init_output()
         self.init_graphic_tabs()
 
         # In-process REPL (for development, should we enable this for users?)
@@ -495,7 +502,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
+        # TODO , move all of this to *.f
         # These are all fractions, must be btwn 0 and 1, not documented as such
+
         for key in ('des_em',
                     'eps_f_min',
                     'bc_xw_g',
@@ -512,8 +521,16 @@ class MfixGui(QtWidgets.QMainWindow,
         # of particles must be non-negative
         self.keyword_doc['particles']['validrange'] = {'min':0.0}
 
+        # Times must be nonnegative
+        self.keyword_doc['res_dt']['validrange'] = {'min':0.0}
+
+        self.keyword_doc['res_backups']['validrange'] = {'min': 0}
+
+        self.keyword_doc['nrr']['validrange'] = {'min': 0}
+
         # Remove mention of 'cylindrical' since we don't support it
         self.keyword_doc['no_k']['description'] = 'Flag to disable the third dimension (i.e., 2D simulation).'
+
         # Remove this docstring completely - it refers to cylindrical coordinates (annluar region)
         del self.keyword_doc['xmin']['description']
 
@@ -1031,11 +1048,20 @@ class MfixGui(QtWidgets.QMainWindow,
         for widget in widget_iter(self):
             name_list = str(widget.objectName()).split('_')
 
-            if name_list[0] == 'label':
-                if name_list[-1].isdigit(): # strip suffix
-                    name_list = name_list[:-1]
-                key = '_'.join(name_list[1:])
-                self.add_tooltip(widget, key)
+            if name_list[0] == 'label': # Note no 'keyword'
+                if 'args' in name_list:
+                    args_idx = name_list.index('args')
+                    args = [try_int(name) for name in name_list[args_idx+1:]]
+                    key = '_'.join(name_list[1:args_idx])
+                else:
+                    if name_list[-1].isdigit(): # strip suffix
+                        name_list = name_list[:-1]
+                    args = None
+                    key = '_'.join(name_list[1:])
+                if args:
+                    self.add_tooltip(widget, key, value=args[0])
+                else:
+                    self.add_tooltip(widget, key)
 
             elif 'keyword' in name_list:
                 key_idx = name_list.index('keyword')
@@ -1266,10 +1292,10 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.stackedWidgetTaskPane.currentIndex(),
             to_index)
 
-        self.setup_current_tab()
+        self.setup_current_pane()
 
 
-    def setup_current_tab(self):
+    def setup_current_pane(self):
         # Force any open popup to close
         # (if dialog is modal we don't need this)
         self.species_popup.done(0)
@@ -1299,7 +1325,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_chemistry()
         elif text == 'numerics':
             self.setup_numerics()
-
+        elif text == 'output':
+            self.setup_output()
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
@@ -2213,7 +2240,7 @@ class MfixGui(QtWidgets.QMainWindow,
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
 
-        self.setup_current_tab() # update vals in any open tabs
+        self.setup_current_pane() # update vals in any open tabs
         self.update_source_view()
 
         # set up rundir watcher

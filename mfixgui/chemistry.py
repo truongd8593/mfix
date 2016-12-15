@@ -349,7 +349,7 @@ class Chemistry(object):
                     old_species_cb.currentIndexChanged.disconnect()
                 except:
                     pass
-                old_item.deleteLater()
+                old_species_cb.deleteLater()
             self.reaction_edited = True
             self.chemistry_restrict_phases()
             self.chemistry_restrict_species()

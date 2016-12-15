@@ -1082,9 +1082,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         table = ui.tablewidget_solids_species
         table.clearContents()
         phase = self.solids_current_phase
-        if phase is None:
-            return
-        if self.solids_species.get(phase) is None:
+        if phase is None or self.solids_species.get(phase) is None:
+            self.update_solids_species_groupbox()
             return
 
         nrows = len(self.solids_species[phase])

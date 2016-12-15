@@ -115,7 +115,12 @@ def cleanString(string):
     if string:
         strings = string.split('!')
         strings = [s.strip() for s in strings]
-        return ' '.join(strings)
+        string =  ' '.join(strings)
+
+    # Some of the 'valids' are lower-case, which breaks our tooltip setter
+    if string in ('.false.', '.true.'):
+        string = string.upper()
+
 
     return string
 
@@ -230,7 +235,7 @@ def parse(fname = None, string = None):
         # get dtype from init_value
         dtype = None
         init_value = init_value.lower().replace(' ', '')
-        if init_value in dtypeDict.keys():
+        if init_value in dtypeDict:
             dtype = dtypeDict[init_value]
         elif intMatch.findall(init_value):
             dtype = 'I'
@@ -289,7 +294,7 @@ def parse(fname = None, string = None):
         for match in conflictMatch.findall(keywordBlock):
             conflicts.append(keyvalueMatch.findall(match))
 
-        # find valids and valid attritbutes: value="" note="" alias=""
+        # find valids and valid attributes: value="" note="" alias=""
         valids = []
         for match in validMatch.findall(keywordBlock):
             valids.append(keyvalueMatch.findall(match))
@@ -341,7 +346,7 @@ def parse(fname = None, string = None):
         for arg in args:
             argDict = dict(arg)
             for key in ['id', 'min', 'max', 'index']:
-                if key not in argDict.keys():
+                if key not in argDict:
                     argDict[key] = None
             if argDict['index']:
                 keywordDocDict[keyword]['args'][argDict['index']]= {'id': argDict['id'],
@@ -351,7 +356,7 @@ def parse(fname = None, string = None):
         for dependent in dependents:
             dependentDict = dict(dependent)
             for key in ['keyword', 'value']:
-                if key not in dependentDict.keys():
+                if key not in dependentDict:
                     dependentDict[key] = None
                 else:
                     dependentDict[key] = cleanString(dependentDict[key])
@@ -361,7 +366,7 @@ def parse(fname = None, string = None):
         for conflict in conflicts:
             conflictDict = dict(conflict)
             for key in ['keyword', 'value']:
-                if key not in conflictDict.keys():
+                if key not in conflictDict:
                     conflictDict[key] = None
                 else:
                     conflictDict[key] = cleanString(conflictDict[key])
@@ -371,7 +376,7 @@ def parse(fname = None, string = None):
         for valid in valids:
             validDict = dict(valid)
             for key in ['value', 'note', 'alias']:
-                if key not in validDict.keys():
+                if key not in validDict:
                     validDict[key] = None
                 else:
                     validDict[key] = cleanString(validDict[key])

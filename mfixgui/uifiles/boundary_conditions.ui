@@ -355,19 +355,19 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>325</width>
-            <height>693</height>
+            <width>318</width>
+            <height>732</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>

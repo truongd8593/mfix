@@ -132,6 +132,9 @@ class ProjectManager(Project):
         if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
             self.gui.update_parameters([key.replace('length', 'max')]) #??  length==max-min?
 
+        if hasattr(widget, 'post_update'):
+            widget.post_update()
+
 
     def args_match(self, args, target):
         if len(args) != len(target):
@@ -611,8 +614,6 @@ class ProjectManager(Project):
 
         if hasattr(widget, 'value_updated'):
             widget.value_updated.connect(self.submit_change)
-            #widget.value_updated.connect(self.gui.set_unsaved_flag) # ?
-            # we are setting unsaved_flag based on keyword changes, not widgets
 
         self.registered_keywords = self.registered_keywords.union(set(keys))
 
