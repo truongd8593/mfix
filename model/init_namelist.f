@@ -2873,7 +2873,7 @@
 !    o SP6: Gas and solids temperature (T_G, T_S)
 !    o SP7: Gas and solids mass fractions (X_G, X_S)
 !    o SP8: Granular temperature (THETA_M)
-!    o SP9: User defined scalars. (SCALAR)
+!    o SP9: User defined scalars (SCALAR)
 !    o SPA: Reaction Rates (ReactionRates)
 !    o SPB: Turbulence quantities (K_TURB_G, E_TURB_G)
 !  </description>
