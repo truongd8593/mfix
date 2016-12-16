@@ -106,7 +106,7 @@ class MainMenu(object):
                 self.tutorial_paths.append(root.replace(tut_path,''))
         if self.tutorial_paths:
             loc += ['Tutorials']
-            self.tutorial_paths.sort()
+            self.tutorial_paths.sort(key=lambda y: y.lower())
 
         self.benchmark_paths = []
         bench_path = os.path.join(mfx_dir, 'benchmarks', '')
@@ -115,7 +115,7 @@ class MainMenu(object):
                 self.benchmark_paths.append(root.replace(bench_path, ''))
         if self.benchmark_paths:
             loc += ['Benchmarks']
-            self.benchmark_paths.sort()
+            self.benchmark_paths.sort(key=lambda y: y.lower())
 
         lw.addItems(loc)
         ow_layout.addWidget(lw, 2, 0)
