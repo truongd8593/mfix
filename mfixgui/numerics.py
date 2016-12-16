@@ -163,7 +163,7 @@ class Numerics(object):
     def init_numerics_preconditioner_pane(self):
         ui = self.ui.numerics
         tw = ui.tablewidget_preconditioner
-        # Add some tooltips
+        # Add some tooltips to column headers
         key = 'leq_pc'
         self.add_tooltip(tw.horizontalHeaderItem(COL_PRECON), key)
         key = 'leq_sweep'
@@ -228,7 +228,6 @@ class Numerics(object):
     def set_preconditioner(self, val, index):
         ui = self.ui.numerics
         cb = ui.tablewidget_preconditioner.cellWidget(index-1, COL_PRECON)
-        cb.setToolTip(get_combobox_item(cb, val).toolTip())
         key = 'leq_pc'
         self.update_keyword(key, PRECON_TYPES[val], args=[index])
         #cb.setToolTip(get_combobox_item(cb, val).toolTip()) # No useful per-item values
