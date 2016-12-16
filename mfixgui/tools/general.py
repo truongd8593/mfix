@@ -549,6 +549,22 @@ def convert_string_to_python(string):
     return string
 
 
+def safe_float(value, default=0.0):
+    """try to convert the value to a float, if ValueError, return default"""
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
+def safe_int(value, default=0):
+    """try to convert the value to a int, if ValueError, return default"""
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 if __name__ == '__main__':
     def test_recurse_dict():
         d = {1: {2:3,

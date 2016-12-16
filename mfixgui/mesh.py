@@ -5,29 +5,14 @@ from itertools import groupby
 
 from qtpy import QtCore, QtWidgets
 
-# local i,ports
-from mfixgui.tools.general import sort_dict
+# local imports
+from mfixgui.tools.general import sort_dict, safe_float, safe_int
 
 MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
 TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
                      'first': 'first_d', 'last': 'last_d'}
 CELL_MFIX_KEYS = ['imax', 'jmax', 'kmax']
-
-def safe_float(value, default=0.0):
-    """try to convert the value to a float, if ValueError, return default"""
-    try:
-        return float(value)
-    except ValueError:
-        return default
-
-
-def safe_int(value, default=0):
-    """try to convert the value to a int, if ValueError, return default"""
-    try:
-        return int(value)
-    except ValueError:
-        return default
 
 
 def ctrl_pts_to_loc(ctrl):
