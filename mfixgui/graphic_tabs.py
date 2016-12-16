@@ -67,8 +67,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def init_vtk(self):
 
+        # unstructured grid
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
-        self.ugrid_reader.SetFileName(None)
 
         self.ugrid_mapper = vtk.vtkDataSetMapper()
         self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
@@ -80,6 +80,24 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.ugrid_actor.SetMapper(self.ugrid_mapper)
 
         self.vtkrenderer.AddActor(self.ugrid_actor)
+
+        # particles
+        self.particle_reader = vtk.vtkXMLPolyDataReader()
+
+        ss = vtk.vtkSphereSource()
+
+        self.glyph = vtk.vtkGlyph3D()
+        self.glyph.SetInputConnection(self.particle_reader.GetOutputPort())
+        self.glyph.SetSourceConnection(ss.GetOutputPort())
+
+        self.particle_mapper = vtk.vtkPolyDataMapper()
+        self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
+        self.particle_mapper.CreateDefaultLookupTable()
+
+        self.particle_actor = vtk.vtkActor()
+        self.particle_actor.SetMapper(self.particle_mapper)
+
+        self.vtkrenderer.AddActor(self.particle_actor)
 
     def init_toolbar(self):
         self.init_base_toolbar()
@@ -100,7 +118,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
-#            toolbutton.pressed.connect(partial(self.change_visibility, geo, toolbutton))
+            toolbutton.clicked.connect(lambda down, g=geo: self.change_visibility(geo, down))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
@@ -108,11 +126,21 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(toolbutton, i, 0)
             btns['visible'] = toolbutton
 
-            # opacity
+            # color by
+            combo = QtWidgets.QComboBox(self.visible_menu)
+            combo.activated.connect(lambda item, g=geo: self.change_color_by(g, item))
+            layout.addWidget(combo, i, 1)
+
+            # color bar
+            combo = QtWidgets.QComboBox(self.visible_menu)
+            combo.activated.connect(lambda item, g=geo: self.change_color_bar(g, item))
+            layout.addWidget(combo, i, 2)
+
             opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
+            opacity.setValue(1.0)
             opacity.setSingleStep(0.1)
-#            opacity.valueChanged.connect(partial(self.change_opacity, geo, opacity))
+            opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(geo, o))
             layout.addWidget(opacity, i, 3)
             btns['opacity'] = opacity
 
@@ -174,7 +202,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def handle_speed_changed(self):
         if self.play_timer.isActive():
             self.play_timer.stop()
-            self.play_stop()
+            self.handle_play_stop()
 
     def stop(self):
         self.toolbutton_play.setIcon(get_icon('play.png'))
@@ -200,20 +228,38 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # look for more files
         self.vtu_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtu')))
         n_files = len(self.vtu_files)
-        if n_files == 0: return
-        if index >= n_files:
-            index = n_files-1
-        elif index < 0:
-            index = 0
+        if n_files> 0:
+            if index >= n_files:
+                index = n_files-1
+            elif index < 0:
+                index = 0
 
-        if index == self.frame_index:
+            if index == self.frame_index:
+                self.frame_spinbox.setValue(index)
+                return
+            else:
+                self.frame_index = index
+
             self.frame_spinbox.setValue(index)
-            return
-        else:
-            self.frame_index = index
+            self.read_vtu(self.vtu_files[index])
 
-        self.frame_spinbox.setValue(index)
-        self.read_vtu(self.vtu_files[index])
+        self.vtp_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtp')))
+        n_files = len(self.vtp_files)
+        if n_files> 0:
+            if index >= n_files:
+                index = n_files-1
+            elif index < 0:
+                index = 0
+
+            if index == self.frame_index:
+                self.frame_spinbox.setValue(index)
+                return
+            else:
+                self.frame_index = index
+
+            self.frame_spinbox.setValue(index)
+            self.read_vtp(self.vtp_files[index])
+
         self.render()
 
     # --- vtk functions ---
@@ -222,14 +268,43 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.ugrid_reader.SetFileName(path)
         self.ugrid_reader.Update()
 
+        # TODO: Build Once
         data = self.ugrid_reader.GetOutput()
         cell_data = data.GetCellData()
         self.cell_arrays = {}
         for i in range(cell_data.GetNumberOfArrays()):
             self.cell_arrays[cell_data.GetArrayName(i)] = {'i':i, 'components':cell_data.GetArray(i).GetNumberOfComponents()}
 
-        self.ugrid_mapper.ColorByArrayComponent(0,0)
-        self.ugrid_mapper.Update()
+        self.ugrid_mapper.ColorByArrayComponent(0, 0)
+
+    def read_vtp(self, path):
+        self.particle_reader.SetFileName(path)
+        self.ugrid_reader.Update()
+
+        data = self.ugrid_reader.GetOutput()
+        point_data = data.GetPointData()
+        self.point_arrays = {}
+        for i in range(point_data.GetNumberOfArrays()):
+            self.cell_arrays[point_data.GetArrayName(i)] = {'i':i, 'components':point_data.GetArray(i).GetNumberOfComponents()}
+
+        self.glyph.SetScaleModeToScaleByScalar()
+        self.glyph.SetColorModeToColorByVector()
+        self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
+        self.glyph.SetInputArrayToProcess(1, 0, 0, 0, 'Velocity')
+
+        self.particle_mapper.SetScalarRange(0, 100)
+
+    def change_visibility(self, geo, visible):
+        print(geo, visible)
+
+    def change_color_by(self, geo, item):
+        print(geo, item)
+
+    def change_color_bar(self, geo, item):
+        print(geo, item)
+
+    def change_opacity(self, geo, opacity):
+        print(geo, opacity)
 
 
 class BaseGraphicTab(QtWidgets.QWidget):

@@ -1230,6 +1230,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
 # --- custom popup ---
 class CustomPopUp(QtWidgets.QWidget):
     finished = QtCore.Signal(bool)
+    visibilityChanged = QtCore.Signal(bool)
     def __init__(self, parent=None, widget=None):
         QtWidgets.QWidget.__init__(self, parent)
 
@@ -1244,6 +1245,7 @@ class CustomPopUp(QtWidgets.QWidget):
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
 
     def popup(self):
+        """popup and animate"""
         rect = self.widget.rect()
         bottom_left = rect.bottomLeft()
         g = self.widget.mapToGlobal(bottom_left)
@@ -1263,6 +1265,12 @@ class CustomPopUp(QtWidgets.QWidget):
 
         self.show()
         self.animation.start()
+
+    def showEvent(self, event):
+        self.visibilityChanged.emit(True)
+
+    def hideEvent(self, event):
+        self.visibilityChanged.emit(False)
 
     def closeEvent(self, event):
         self.finished.emit(True)
