@@ -96,8 +96,6 @@ if PRECOMPILE_UI:
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.monitors import Ui_monitors
-        from uifiles.numerics import Ui_numerics
-        from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
 
@@ -326,14 +324,9 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Chemistry',
-                     'Monitors',
-                     'Points',
-                     'Planes',
-                     'Volumes',
-                     'Post-processing',
-                     'Export',
-                     'Plugins'):
+        for name in ('Monitors',
+                     'Post-processing'):
+
             self.find_navigation_tree_item(name).setDisabled(True)
 
         # Initialize popup dialogs

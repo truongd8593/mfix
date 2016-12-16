@@ -644,21 +644,6 @@ QPushButton:checked {
                   <property name="text">
                    <string>Monitors</string>
                   </property>
-                  <item>
-                   <property name="text">
-                    <string>Points</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Planes</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Volumes</string>
-                   </property>
-                  </item>
                  </item>
                  <item>
                   <property name="text">
@@ -669,16 +654,6 @@ QPushButton:checked {
                   <property name="text">
                    <string>Post-processing</string>
                   </property>
-                  <item>
-                   <property name="text">
-                    <string>Export</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Plugins</string>
-                   </property>
-                  </item>
                  </item>
                 </widget>
                </item>
