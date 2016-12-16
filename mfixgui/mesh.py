@@ -207,6 +207,13 @@ class Mesh(object):
         """handle a new selection"""
         self.mesh_delete_btns[index].setEnabled(len(to)>0)
 
+    def update_mesh_keyword(self, key, value, args=None):
+        """check the keywords and correct the index"""
+        # erx, ery, erz, ncx, ncy, ncz, first_dx, first_dy, first_dz, last_dx, last_dy, last_dz all start at 1
+        if args is not None and key[:-1] != 'cp':
+            args += 1
+        self.update_keyword(key, value, args)
+
     def init_background_mesh(self):
         """init the background mesh"""
         prj = self.project
@@ -230,12 +237,12 @@ class Mesh(object):
             l = len(d)
 
             # if there are spacing, update the keywords.
-            if l>0:
+            if l > 0:
                 self.mesh_cells[i] = l
-                self.update_keyword(c, l)
+                self.update_mesh_keyword(c, l)
                 m = sum(d)
                 self.mesh_extents[i*2+1] = m
-                self.update_keyword(e, m)
+                self.update_mesh_keyword(e, m)
                 self.mesh_spacing[i] = d
                 self.extract_mesh_spacing(i, d)
 
@@ -245,12 +252,13 @@ class Mesh(object):
             if indices:
                 table_dic = OrderedDict()
                 for j, ind in enumerate(sorted(indices)):
+                    ind = ind[0]
                     table_dic[j] = {
                         'position': prj.get_value('cp' + k, 0, args=ind),
-                        'cells': prj.get_value('nc' + k, 1, args=ind),
-                        'stretch': prj.get_value('er' + k, 1, args=ind),
-                        'first': prj.get_value('first_d' + k, 0, args=ind),
-                        'last': prj.get_value('last_d' + k, 0, args=ind)}
+                        'cells': prj.get_value('nc' + k, 1, args=ind+1),
+                        'stretch': prj.get_value('er' + k, 1, args=ind+1),
+                        'first': prj.get_value('first_d' + k, 0, args=ind+1),
+                        'last': prj.get_value('last_d' + k, 0, args=ind+1)}
                 self.mesh_tables[i].set_value(table_dic)
                 self.mesh_tables[i].fit_to_contents()
 
@@ -266,12 +274,12 @@ class Mesh(object):
         for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)], 1):
             loc = count*val + start
             start = loc
-            self.update_keyword('cp' + d, loc, args=i)
-            self.update_keyword('nc' + d, count, args=i)
+            self.update_mesh_keyword('cp' + d, loc, args=i)
+            self.update_mesh_keyword('nc' + d, count, args=i)
             table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
                             'first': 0.0, 'last': 0.0}
         for i in range(len(spacing)):
-            self.update_keyword('d' + d, None, args=i)
+            self.update_mesh_keyword('d' + d, None, args=i)
 
         self.mesh_tables[index].set_value(table_dic)
         self.mesh_tables[index].fit_to_contents()
@@ -285,10 +293,11 @@ class Mesh(object):
             table.fit_to_contents()
             for i, val in sort.items():
                 self.mesh_update_mfixkeys(val, i, d)
-            self.update_keyword(d + 'length', val['position'])
+            self.update_mesh_keyword(d + 'length', val['position'])
         else:
             mfix_key = TABLE_MFIXKEY_MAP[col] + d
-            self.update_keyword(mfix_key, val, args=row)
+
+            self.update_mesh_keyword(mfix_key, val, args=row)
 
         self.update_background_mesh()
 
@@ -296,7 +305,7 @@ class Mesh(object):
         """delete the selected control point"""
         table = self.mesh_tables[index]
         data = table.value
-        rows = [row+1 for row in table.current_rows()]
+        rows = table.current_rows()
         if not rows: return
         max_i = max(data.keys())
         min_row = min(rows)
@@ -309,7 +318,7 @@ class Mesh(object):
         # rebuild dict
         # TODO: better way?
         new = OrderedDict()
-        for i, ctrl in enumerate(data.values(), 1):
+        for i, ctrl in enumerate(data.values()):
             new[i] = ctrl
             if i >= min_row:
                 self.mesh_update_mfixkeys(ctrl, i, d)
@@ -331,7 +340,7 @@ class Mesh(object):
         for i in range(m, max_i):
             ind = i + 1
             for key in TABLE_MFIXKEY_MAP.values():
-                self.update_keyword(key+d, None, args=ind)
+                self.update_mesh_keyword(key+d, None, args=ind)
 
     def mesh_add(self, index):
         """add a control point to the end"""
@@ -339,7 +348,7 @@ class Mesh(object):
         data = table.value
         d = ['x', 'y', 'z'][index]
         k = data.keys()
-        i = 1
+        i = 0
         if k:
             i = max(k) + 1
             loc = safe_float(data.values()[-1]['position']) + 1
@@ -357,7 +366,6 @@ class Mesh(object):
     def mesh_split(self, table, d):
         """split the selected control point"""
         row, col = table.get_clicked_cell()
-        row += 1
         data = table.value
         split_data = data[row]
         prev_data_loc = 0
@@ -391,7 +399,7 @@ class Mesh(object):
     def mesh_update_mfixkeys(self, ctrl, index, dir_):
         for key, value in ctrl.items():
             mfix_key = TABLE_MFIXKEY_MAP[key] + dir_
-            self.update_keyword(mfix_key, value, args=index)
+            self.update_mesh_keyword(mfix_key, value, args=index)
 
     def update_background_mesh_cells(self, key, val, args):
         """collect cells changes, check if value is different"""
@@ -440,7 +448,7 @@ class Mesh(object):
                 # disable imax, jmax, kmax
                 self.cell_count_widgets[i].setEnabled(False)
                 # update imax, jmax, kmax
-                self.update_keyword(CELL_MFIX_KEYS[i], len(s)-1) # TODO: fix reduentent update calls
+                self.update_mesh_keyword(CELL_MFIX_KEYS[i], len(s)-1) # TODO: fix reduentent update calls
             else:
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
                 # enable imax, jmax, kmax
