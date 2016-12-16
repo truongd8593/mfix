@@ -395,7 +395,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 (ui.toolbutton_run_mfix, 'play', self.handle_run),
                 (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
                 (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
-                (ui.toolbutton_reset_mfix, 'restart', self.remove_output_files),
+                (ui.toolbutton_reset_mfix, 'delete', self.remove_output_files),
                 (ui.toolbutton_compile, 'build', self.handle_compile),
                 (ui.toolbutton_parameters, 'functions', self.handle_parameters),
                 ):
