@@ -42,6 +42,7 @@ build_job3:
   script:
     - make -C mfixgui ../mfix
   artifacts:
+    expire_in: 1 week
     paths:
     - mfix
     - mfixsolver*
