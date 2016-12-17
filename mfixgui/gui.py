@@ -713,6 +713,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_update_enabled()
         self.chemistry_update_enabled()
 
+
     def update_region(self, name, data):
         for update in (self.ics_update_region,
                        self.bcs_update_region,
