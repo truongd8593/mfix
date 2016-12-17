@@ -953,10 +953,13 @@ class Project(object):
         r = self.get(key, args)
         return default if r is None else r.value
 
+
     def get_key_indices(self, key):
-        """return an iterator over the set of indices (args) for which
-        the key is defined"""
-        return self.keyword_dict.get(key, {}).keys()
+        """return a list of indices (args) for which the key is defined"""
+        # Returning as a list makes this safe to iterate over, even if keys are
+        # added/deleted
+        return list(self.keyword_dict.get(key, {}).keys())
+
 
     def removeKeyword(self, key, args=None, warn=True):
         """Remove a keyword from the project. (keyword_dict and dat_file_list)
