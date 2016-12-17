@@ -1809,7 +1809,7 @@ background-color:white;
               </widget>
              </item>
              <item>
-              <widget class="LineEdit" name="lineedit_particles">
+              <widget class="LineEdit" name="lineedit_keyword_particles">
                <property name="minimumSize">
                 <size>
                  <width>0</width>

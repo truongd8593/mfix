@@ -45,12 +45,11 @@ class SolidsDEM(object):
         if val:
             self.unset_keyword("particles")
         else:
-            self.update_keyword("particles", ui.lineedit_particles.value)
-
-
+            self.update_keyword("particles", ui.lineedit_keyword_particles.value or 0)
         enabled = not val
-        for item in (ui.label_particles, ui.lineedit_particles):
+        for item in (ui.label_particles, ui.lineedit_keyword_particles):
             item.setEnabled(enabled)
+
 
     def set_des_intg_method(self, val):
         self.update_keyword('des_intg_method', des_intg_methods[val])
@@ -121,19 +120,26 @@ class SolidsDEM(object):
         # Enabled sets keyword GENER_PART_CONFIG to true
         # Disabled enables the user to specify number of entries in particle input file
         # Default value is 0
+        default = 0
         # Sets keyword PARTICLES
         gener_part_config = self.project.get_value('gener_part_config')
-        particles = self.project.get_value('particles', default=0)
-        if particles < 0:
-            self.warning("Invalid particles %s" % particles)
-            self.update_keyword('particles', 0)
-            particles = 0
-        if particles > 0 and gener_part_config:
-            self.warning("gener_part_config set, particles=%s" % particles)
-            self.update_keyword('gener_part_config', False)
-            gener_part_config = False
+        particles = self.project.get_value('particles')
+
+        if gener_part_config:
+            if particles: # Should not both be set
+                self.warning("gener_part_config set, particles=%s" % particles)
+                particles = default
+        else:
+            if particles is None: # set to 0 if not set
+                particles = default
+            elif particles < 0:
+                self.warning("Invalid particles %s" % particles)
+                particles = default
+        self.update_keyword('particles', particles)
+
+
         enabled = not gener_part_config
-        for item in (ui.label_particles, ui.lineedit_particles):
+        for item in (ui.label_particles, ui.lineedit_keyword_particles):
             item.setEnabled(enabled)
 
         #Select numerical integration method
