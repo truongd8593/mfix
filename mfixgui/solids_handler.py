@@ -1073,6 +1073,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
+        self.update_nav_tree() # Chemistry
 
 
     def update_solids_species_table(self):
@@ -1208,6 +1209,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.update_solids_baseline_groupbox(self.solids_density_model)
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
+
+        self.update_nav_tree() # Chemistry
 
         # Sigh, we have to update the row in the popup too.
         # Should the popup just be modal, to avoid this?

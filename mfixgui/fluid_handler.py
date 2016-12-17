@@ -241,7 +241,7 @@ class FluidHandler(SpeciesHandler):
         self.update_fluid_species_table()
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
-
+        self.update_nav_tree() # Chemistry
 
     def update_fluid_species_table(self):
         """Update table in fluid pane.  Also set nmax_g, species_g and species_alias_g keywords,
@@ -352,7 +352,7 @@ class FluidHandler(SpeciesHandler):
         sp = self.species_popup
         sp.defined_species = deepcopy(self.fluid_species)
         sp.update_defined_species()
-
+        self.update_nav_tree() # Chemistry
 
     def fluid_species_edit(self):
         tw = self.ui.fluid.tablewidget_fluid_species
