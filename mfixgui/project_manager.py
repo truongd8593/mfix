@@ -260,6 +260,15 @@ class ProjectManager(Project):
                             warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
                     else:
                         warnings.warn('no conversion for %s' % (kw.key))
+                # issues/191 convert particle_input.dat if found
+                particle_file = os.path.join(os.path.dirname(project_file), 'particle_input.dat')
+                if os.path.exists(particle_file):
+                    try:
+                        self.convert_particle_file_units(particle_file)
+                    except Exception as e:
+                        warnings.warn("Error %s while converting %s" % (e, particle_file))
+
+
             elif units.lower() == 'si':
                 pass
             else:
@@ -283,8 +292,6 @@ class ProjectManager(Project):
             # Make sure they are sorted by index before inserting into gui
             self.gasSpecies.sort(key=lambda a: a.ind)
             self.solids.sort(key=lambda a:a.ind)
-
-            db = self.gui.species_popup.db
 
             # Parse THERMO DATA section (parsemfixdat does not handle this)
             user_species = {}
@@ -573,6 +580,67 @@ class ProjectManager(Project):
                                            color='red')
             else:
                 self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
+
+
+    def convert_particle_file_units(self, filename):
+        basename = os.path.basename(filename)
+        cgs_file = filename + '.cgs'
+        if os.path.exists(cgs_file):
+            # If we've converted before, use the '.cgs' file as input to avoid
+            # double-converting
+            warnings.warn('%s found, not converting particle data (already converted?)' % cgs_file)
+            return
+        else:
+            warnings.warn('%s saved as %s' % (basename, basename+'.cgs')) # info?
+            os.rename(filename, cgs_file)
+        lineno = 0
+        rdmn = None
+        with open(filename, 'w') as out_file:
+            for line in open(cgs_file):
+                lineno += 1
+                line = line.strip()
+                if not line: # blank
+                    continue
+                line = line.replace('d', 'e').replace('D', 'E')
+                tok = line.split()
+                # from read_particle_input.f
+                #! In distributed IO the first line of the file will be number of
+                #! particles in that processor
+                if lineno == 1 and len(tok) == 1:
+                    out_line = line # Pass through
+                else:
+                    # read (lunit,*,IOSTAT=IOS)                               &
+                    # (dpar_pos(lcurpar,k),k=1,RDMN),dpar_rad(lcurpar),       &
+                    # dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,RDMN)
+                    if len(tok) == 6: # 2D
+                        if rdmn is None:
+                            rdmn = 2
+                        elif rdmn != 2: # Changed mid-file
+                            warnings.warn('%s: bad line %s' % (filename, lineno))
+                            break
+                    elif len(tok) == 8: # 3d
+                        if rdmn is None:
+                            rdmn = 3
+                        elif rdmn != 3: # Changed mid-file
+                            warnings.warn('%s: bad line %s' % (filename, lineno))
+                            break
+                    else:
+                        warnings.warn('%s: bad line %s' % (filename, lineno))
+                        break
+                    try:
+                        vals = list(map(float, tok))
+                    except ValueError:
+                        warnings.warn('%s: bad value on line %s' % (filename, lineno))
+                        break
+
+                    factors = ([0.01] * rdmn +  # position, cm -> m
+                               [0.01] +         # radius,   cm -> m
+                               [1000] +         # density,  g/cm^3 -> kg/m^3
+                               [0.01] * rdmn)   # velocity
+
+                    out_line = ''.join('%-16s'%round((v*f),12) for (f,v) in zip(vals, factors))
+
+                out_file.write(out_line.strip()+'\n')
 
 
     def register_widget(self, widget, keys=None, args=None):
