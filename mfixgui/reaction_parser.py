@@ -239,10 +239,10 @@ Char_CO2_s1 { chem_eq = "FC1 + CO2 --> 2CO"}            ! Forward
 Char_CO2_s1r { chem_eq = "2CO + 0.FC1 --> Soot + CO2"}  ! Reverse
 Char_CO2_s2 { chem_eq = "FC2 + CO2 --> 2CO"}            ! Forward
 Char_CO2_s2r { chem_eq = "2CO + 0.FC2 --> Soot + CO2"}  ! Reverse
-CO_Combustion { chem_eq = "CO + 0.5O2 --> CO2" }
-Char_to_Char { chem_eq = 'FC2 --> FC1' }
-Ash_to_Ash { chem_eq = 'Ash2 --> Ash1' }
-Drying { chem_eq = 'Moisture --> H2O' }
+CO_Combustion1 { chem_eq = "CO + 0.5O2 --> CO2" }
+Char_to_Char1 { chem_eq = 'FC2 --> FC1' }
+Ash_to_Ash1{ chem_eq = 'Ash2 --> Ash1' }
+Drying1 { chem_eq = 'Moisture --> H2O' }
 Pyrolysis {
 chem_eq = 'Biomass --> ' &
 '0.9639 * CO + 0.8771 * CO2 + 0.3491 * CH4 + ' &
