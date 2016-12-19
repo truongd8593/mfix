@@ -119,7 +119,7 @@ cgs_to_SI = {
   'c2c_r2':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 2 (used when QUADRIC_FORM =
   'c2c_y2':         None, # UNKNOWN                : Cylinder-cone_cylinder Y2 (used when QUADRIC_FORM = C2C*).
   'c_e':            1,    # max = 1.0              : Coefficient of restitution for particle-particle collisions.
-  'c_f':            None, # UNKNOWN                : Coefficient of friction between the particles of two solids
+  'c_f':            1,    # friction               : Coefficient of friction between the particles of two solids
   'c_fac':          1,    # factor                 : Factor between zero and one used in the universal limiter
   'c_pg0':          4184, # cal/g.K -> J/kg.K      : Specified constant gas specific heat .
   'c_ps0':          4184, # cal/g.K -> J/kg.K      : Specified constant solids specific heat .
@@ -262,7 +262,7 @@ cgs_to_SI = {
   'norm_s':         1,    # volume fraction        : Factor to normalize the solids continuity equation residual.
   'out_dt':         1,    # s                      : Interval at which standard output (.OUT) file is updated.
   'out_msh_value':  None, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
-  'out_stl_value':  None, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. a value
+  'out_stl_value':  None, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. A value
   'p_ref':          0.1,  # barye -> Pa            : Reference pressure.
   'p_scale':        1,    # factor                 : Scale factor for pressure.
   'phi':            1,    # angle                  : Angle of internal friction (in degrees). Set this value to
@@ -495,6 +495,9 @@ def main():
                   or 'time' in desc_lower
                   or 'clock' in desc_lower):
                 SI_unit = 's'
+            # Coefficient of friction is unitless
+            elif 'coefficient of friction' in desc_lower:
+                SI_unit = 'friction'
             # Flow rates
             elif 'massflow' in key:
                 SI_unit = 'kg/s'
