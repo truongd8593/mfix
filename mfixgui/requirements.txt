@@ -9,6 +9,9 @@ pyqtgraph - need at least version 0.10.0 for Qt5 support
 #future - not used currently
 #thermochem - not used currently
 
+To run 'pymfix' (Python wrapper to mfix) you will need:
+flask
+
 # To run the included tests, these packages are required:
 xvfbwrapper
 nose
