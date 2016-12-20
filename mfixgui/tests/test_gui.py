@@ -90,10 +90,6 @@ class MfixGuiTests(TestQApplication):
         self.mfix.save_project()
         self.assertTrue('*' not in self.mfix.windowTitle())
 
-        # used to break out of waitFor state tests in test_run_mfix
-        self.attempts = 0
-        self.maxattempts = 100
-
 
     def tearDown(self):
         patterns = [
@@ -134,147 +130,6 @@ class MfixGuiTests(TestQApplication):
         self.assertEqual(newname, self.mfix.project.get_value('run_name'))
         self.assertTrue(os.path.exists(newpath))
 
-
-    def test_run_mfix(self):
-
-        self.skipTest("temporarily disabling to test the test harness")
-        # avoid test hangs in the waitFor loops below
-        def retry(msg, delay):
-            print('retrying test of "%s" state' % msg)
-            self.attempts += 1
-            # timed waits don't work well when testing system is loaded
-            if self.attempts >= self.maxattempts:
-                self.fail('FAIL in %s test' % msg)
-            waitFor(delay)
-
-        #  FIXME:  The run dialog will get the exe from the ~/.config/MFIX file,
-        #   need to control the QSettings for running tests
-        mfix_exe = os.path.join(self.mfix_home, "mfix")
-
-        # Don't run the test if default mfix binary doesn't exist
-        if not (os.path.isfile(mfix_exe) and os.access(mfix_exe, os.X_OK)):
-            self.skipTest("Only valid when %s is present" % mfix_exe)
-
-        self.open_tree_item("run")
-        while self.mfix.ui.run.button_run_mfix.text() != "Run":
-            retry('runnable', 100)
-        self.attempts = 0
-        print("RUNNABLE")
-
-        # Before running, button says 'Run'
-        #self.assertTrue(cme.isVisibleTo(self.mfix.ui.run))
-        self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Run MFIX")
-        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isVisible())
-        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-
-        # Open run dialog
-        # FIXME: This will hang if run dialog doesn't find exe.
-        # Need to dismiss the warning message box.
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
-        while not self.mfix.ui.run:
-            retry('run dialog open', delay=100)
-        self.attempts = 0
-
-        rr = range(self.mfix.run_dialog.combobox_mfix_exe.count())
-        self.assertTrue(mfix_exe in [self.mfix.run_dialog.combobox_mfix_exe.itemText(i) for i in rr])
-        self.mfix.run_dialog.combobox_mfix_exe.setEditText(mfix_exe)
-        self.mfix.run_dialog.handle_exe_change()
-        self.mfix.run_dialog.mfix_exe = mfix_exe
-
-        # Press OK in run dialog
-        QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
-            retry('running/paused', delay=500)
-        self.attempts = 0
-        print("PAUSED")
-
-        # Job is running/paused:
-        #   run button disabled
-        #   pause button disabled
-        #   unpause button enabled
-        #   stop button enabled
-        #   reset button disabled
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isVisible())
-        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_pause_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-
-        # Unpause
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
-        while self.mfix.ui.run.button_run_mfix.isEnabled():
-            retry('unpaused', delay=500)
-        self.attempts = 0
-        print("UNPAUSED")
-
-        # Job is running/UNpaused:
-        #   run button disabled
-        #   pause button enabled
-        #   unpause button disabled
-        #   stop button enabled
-        #   reset button disabled
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isVisible())
-        self.assertFalse(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_pause_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_pause_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-
-        #self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Pause")
-        #self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Stop MFIX")
-
-        # Stop run, button should say 'Resume'
-        QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
-        while self.mfix.ui.run.button_run_mfix.text() != "Resume":
-            retry('stopped/resumable', delay=500)
-        self.attempts = 0
-        print("STOPPED")
-
-        # Job is stopped/resumable:
-        #   run button enabled with text 'Resume'
-        #   pause button disabled
-        #   unpause button invisible
-        #   stop button disabled
-        #   reset button enabled
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-
-        self.assertEqual(self.mfix.ui.run.button_run_mfix.text(), "Resume")
-        self.assertEqual(self.mfix.ui.toolbutton_run_mfix.toolTip(), "Resume previous MFIX run")
-
-        # Resume
-        # FIXME: isn't this the same ui state as running/paused?
-        QTest.mouseClick(self.mfix.ui.run.button_run_mfix, Qt.LeftButton)
-        waitFor(100)
-
-        # Press OK in run dialog
-        QTest.mouseClick(self.mfix.run_dialog.button_local_run, Qt.LeftButton)
-        waitFor(5000)
-
-        # Press OK to delete output files
-
-        while self.mfix.ui.run.button_run_mfix.text() != "Unpause":
-            retry('resumed/paused', delay=500)
-        self.attempts = 0
-        print("RESUMED")
-
-        self.assertTrue(self.mfix.ui.run.button_run_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_run_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.run.button_pause_mfix.isEnabled())
-        self.assertFalse(self.mfix.ui.toolbutton_pause_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.run.button_stop_mfix.isEnabled())
-        self.assertTrue(self.mfix.ui.toolbutton_stop_mfix.isEnabled())
-        waitFor(300)
-
-        # Stop mfix, check for log.
-        QTest.mouseClick(self.mfix.ui.run.button_stop_mfix, Qt.LeftButton)
-        waitFor(100)
-
     def test_description_ascii(self):
         self.open_tree_item('run')
         cb = self.mfix.ui.model_setup.combobox_keyword_description
@@ -297,6 +152,12 @@ class MfixGuiTests(TestQApplication):
                     found += 1
 
         self.assertEqual(found, 1)
+
+    def test_run_mfix(self):
+        self.skipTest("test removed, see issues/186")
+        # Need to write a new test.  The old test relied heavily
+        # on the Run pane toolbuttons & their label text
+
 
     def test_description_unicode(self):
         self.open_tree_item('run')
