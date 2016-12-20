@@ -352,11 +352,11 @@ class MfixGuiTests(TestQApplication):
     # TODO:  write more tests: tests for kill job, select different mfix exe,
     # close window with job running, failure to start job, etc
 
-class MfixGuiTests2(MfixGuiTests):
+# class MfixGuiTests2(MfixGuiTests):
 
-    def __init__(self, *args, **kwargs):
-        super(MfixGuiTests, self).__init__(*args, **kwargs)
-        self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.mfix_home = os.path.dirname(self.rundir)
-        self.rundir = os.path.join(self.mfix_home, 'benchmarks', 'dem', 'mini-cfb')
-        self.runname = 'MINI-CFB'
+    # def __init__(self, *args, **kwargs):
+    #     super(MfixGuiTests, self).__init__(*args, **kwargs)
+    #     self.rundir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    #     self.mfix_home = os.path.dirname(self.rundir)
+    #     self.rundir = os.path.join(self.mfix_home, 'benchmarks', 'dem', 'mini-cfb')
+    #     self.runname = 'MINI-CFB'
