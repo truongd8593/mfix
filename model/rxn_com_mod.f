@@ -237,7 +237,7 @@ MODULE RXN_COM
 
  1004 FORMAT('Warning 1004: Unable to locate the species.inc file. No ',&
          'verification',/'of mfix.dat species aliases or reaction ',    &
-         'names can be preformed.')
+         'names can be performed.')
 
          REWIND(FUNIT)
          READ_LP: DO

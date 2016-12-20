@@ -461,7 +461,7 @@
       ENDIF
 
 ! Check that gas phase void fraction is initialized. Patched ICs may
-! have an undefined volume fration. A second check is preformed on
+! have an undefined volume fration. A second check is performed on
 ! the solids.
       IF(IC_EP_G(ICV) == UNDEFINED .AND. BASIC_IC) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('IC_EP_g',ICV))
