@@ -55,3 +55,11 @@ test_job3:
     - make -C mfixgui test
   only:
     - branches
+
+test_install_job3:
+  stage: test_install
+  script:
+    - python setup.py bdist_wheel
+    - pip install dist/mfixgui-*.whl
+  only:
+    - branches

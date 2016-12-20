@@ -7,17 +7,19 @@ try:
 except:
     pass
 
-import re
-import os
-import sys
+import copy
 import locale
 import logging
-import shlex
-import copy
-import random
 import operator
-from collections import OrderedDict
+import os
+import random
+import re
+import shlex
+import site
 import subprocess
+import sys
+
+from collections import OrderedDict
 
 log = logging.getLogger(__name__)
 
@@ -34,8 +36,16 @@ PY3 = sys.version_info.major == 3
 # Helper functions
 def get_mfix_home():
     """return the top level directory"""
-    return os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    top_level_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    # if configure_mfix is present, we weren't installed via setup.py
+    if os.path.exists(os.path.join(top_level_pkg_dir,'configure_mfix')):
+        return top_level_pkg_dir
+    elif os.path.exists(os.path.join(site.USER_BASE, 'share', 'mfix')):
+        return os.path.join(site.USER_BASE, 'share', 'mfix')
+    elif os.path.exists(os.path.join(sys.prefix, 'share', 'mfix')):
+        return os.path.join(sys.prefix, 'share', 'mfix')
+    else:
+        raise Exception("Unable to find MFIX_HOME")
 
 
 def format_key_with_args(key, args=None):

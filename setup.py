@@ -9,7 +9,7 @@ http://mfix.netl.doe.gov/
 from codecs import open
 from distutils.command.build_ext import build_ext
 from glob import glob
-from os import makedirs, path
+from os import makedirs, path, walk
 from shutil import copyfile
 
 from setuptools import setup, Extension
@@ -17,6 +17,7 @@ from setuptools import setup, Extension
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
 HERE = path.abspath(path.dirname(__file__))
+NAME = 'mfix'
 
 # Get the long description from the README file
 with open(path.join(HERE, 'README'), encoding='utf-8') as f:
@@ -24,6 +25,13 @@ with open(path.join(HERE, 'README'), encoding='utf-8') as f:
 
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
+
+data_files = []
+for root,dirs,files in walk('tutorials'):
+    dir_files = []
+    for f in files:
+        dir_files.append(path.join(root,f))
+    data_files.append((path.join('share', NAME, root), dir_files))
 
 class MfixBuildExt(build_ext):
     """Override build_extension to copy the shared library file"""
@@ -135,8 +143,7 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    # data_files=[
-    # ],
+    data_files=data_files,
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
