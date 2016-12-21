@@ -341,10 +341,9 @@ class Equation(object):
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, other): # Python2
-        if isinstance(other, Equation):
-            other = float(other._eval())
-        f = float(self._eval())
-        return -1 if f < other else 1 if f > other else 0
+        a = float(self)
+        b = float(other)
+        return -1 if a<b else 1 if a>b else 0
 
     def __lt__(self, other): #Python3
         return self.__cmp__(other) < 0
