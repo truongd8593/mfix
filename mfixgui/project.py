@@ -340,27 +340,22 @@ class Equation(object):
         return '%s #!MFIX-GUI eq{%s}' % (
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
-    def __cmp__(self, value):
+    def __cmp__(self, other): # Python2
+        if isinstance(other, Equation):
+            other = float(other._eval())
         f = float(self._eval())
-        if f < value: return -1
-        elif f > value: return 1
-        elif f == value: return 0
+        return -1 if f < other else 1 if f > other else 0
 
-    # def __add__(self, value):
-    #     return float(self._eval()) + float(value)
+    def __lt__(self, other): #Python3
+        return self.__cmp__(other) < 0
 
-    # def __sub__(self, value):
-    #     return float(self._eval()) - float(value)
+    def __gt__(self, other):
+        return self.__cmp__(other) > 0
 
-    # def __mul__(self, value):
-    #     return float(self._eval()) * float(value)
+    def __eq__(self, other):
+        return self.__cmp__(other) == 0
 
-    # def __div__(self, value):
-    #     return float(self._eval()) / float(value)
-
-    # def __pow__(self, value):
-    #     return float(self._eval()) ** float(value)
-
+    # Symbolic math on equations
     def binop(self, x, c):
         if isinstance(x, Equation):
             return Equation('(%s)%s(%s)' % (self.eq, c, x.eq))
