@@ -336,7 +336,7 @@ class Mesh(object):
         i = 0
         if k:
             i = max(k) + 1
-            loc = safe_float(data.values()[-1]['position']) + 1
+            loc = safe_float(list(data.values())[-1]['position']) + 1
             c = 1
         else:
             loc = self.project.get_value(d + 'length', 1)

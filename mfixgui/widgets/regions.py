@@ -367,8 +367,8 @@ class RegionsWidget(QtWidgets.QWidget):
                            self.parent.update_region):
                 update(name, data[name])
 
-        elif 'name' in key and name != value.values()[0]:
-            new_name = get_unique_string(value.values()[0], list(data.keys()))
+        elif 'name' in key and name != list(value.values())[0]:
+            new_name = get_unique_string(list(value.values())[0], list(data.keys()))
             data = OrderedDict(((new_name, v) if k == name else (k, v) for
                                 (k, v) in data.items()))
 
@@ -379,7 +379,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.update_parameter_name(name, new_name, data[new_name])
 
         elif 'type' in key:
-            shape = value.values()[0]
+            shape = list(value.values())[0]
             data[name]['type'] = shape
             self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
@@ -401,24 +401,24 @@ class RegionsWidget(QtWidgets.QWidget):
                     self.extent_lineedits[index*2+1].updateValue(None, f_value)
 
         elif 'stl_shape' in key:
-            data[name]['stl_shape'] = value.values()[0]
+            data[name]['stl_shape'] = list(value.values())[0]
             self.vtkwidget.update_region(name, data[name])
 
         elif 'slice' in key:
-            data[name]['slice'] = value.values()[0]
+            data[name]['slice'] = list(value.values())[0]
             self.vtkwidget.update_region(name, data[name])
 
         elif 'filter' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
-            data[name][item[0]][index] = value.values()[0]
+            data[name][item[0]][index] = list(value.values())[0]
             self.vtkwidget.update_region(name, data[name])
 
             if update_param:
                 self.update_parameter_map(value[key], name, key)
 
         elif 'deviation_angle' in key:
-            data[name]['deviation_angle'] = value.values()[0]
+            data[name]['deviation_angle'] = list(value.values())[0]
             self.vtkwidget.update_region(name, data[name])
 
             if update_param:
