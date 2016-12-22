@@ -371,12 +371,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                                                 VARIABLE), enabled)
         self.update_solids_species_groupbox() # availability
 
-        # TODO integrate with BCs
-        #When solving solids species equations:
-        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
-        #    Set keyword BC_C_X_S(#,#,#) to 0.0
-        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
-        # getting this right is tricky - how about when we add phases & species?
+        # issues/183
+        self.bcs_check_wall_keys()
 
 
     def setup_combobox_solids_model(self):
@@ -481,13 +477,28 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     else:
                         self.update_keyword(key, val, args=i)
 
+        # Clear out lineedits
+        for w in widget_iter(ui.groupbox_solids_parameters):
+            if isinstance(w, LineEdit):
+                w.setText('')
+
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
+        # Set BC keys for solids species at any defined walls
+        self.bcs_check_wall_keys()
+        # ICs enabled/disabled depends on number of solids
+        self.update_nav_tree()
+
 
 
     def handle_solids_table_selection(self):
         ui = self.ui.solids
         self.P = self.solids_current_phase # should already be set
+        # Clear out lineedits
+        for w in widget_iter(ui.groupbox_solids_parameters):
+            if isinstance(w, LineEdit):
+                w.setText('')
+
         tw = ui.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
@@ -1074,6 +1085,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
         self.update_nav_tree() # Chemistry
+        self.bcs_check_wall_keys() ## Set BC keys for solids species at any defined walls
 
 
     def update_solids_species_table(self):
