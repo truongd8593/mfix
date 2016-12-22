@@ -729,7 +729,7 @@ QPushButton:checked {
              </spacer>
             </item>
             <item row="3" column="0" colspan="6">
-             <widget class="QGroupBox" name="groupBox_solids_parameters">
+             <widget class="QGroupBox" name="groupbox_solids_parameters">
               <property name="title">
                <string>Parameters</string>
               </property>
@@ -1763,7 +1763,7 @@ QPushButton:checked {
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>577</width>
+            <width>345</width>
             <height>1314</height>
            </rect>
           </property>
@@ -3358,13 +3358,13 @@ background-color:white;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>

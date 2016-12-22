@@ -438,16 +438,21 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def solids_add(self):
+        """Define a new solids phase.  It is given a generic name which can be
+        changed by the user"""
+
+        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
+            return
+        else:
+            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+
         ui = self.ui.solids
         tw = ui.tablewidget_solids
         nrows = tw.rowCount()
         n = nrows + 1 # index of new solid
         tw.setRowCount(n)
         name = self.make_solids_name(n)
-        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
-            return
-        else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+
         diameter = 0.0
         density = 0.0
         self.update_keyword('solids_model', model, args=n)
@@ -460,9 +465,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
-
-        # ICs enabled/disabled depends on number of solids
-        self.update_nav_tree()
 
         # Reshape triangular matrices
         for key in ('des_et_input', 'des_en_input'):
@@ -1058,6 +1060,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def solids_species_revert(self):
+        # Nothing to do, popup was operating on a copy all along
         pass
 
 
@@ -1413,6 +1416,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
     def reset_solids(self):
         ui = self.ui.solids
         # Set all solid-related state back to default
+        self.init_solids_default_models()
         self.solids_current_phase = self.P = None
         self.solids_current_phase_name = None
         self.solids.clear()
