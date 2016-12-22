@@ -26,11 +26,16 @@ except RuntimeError:
 try:
     import vtk
     VTK_AVAILABLE = True
+    from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, get_color_map_pngs
+    LOOKUP_TABLES = build_vtk_lookup_tables()
+    print(LOOKUP_TABLES)
 except:
     vtk = None
     VTK_AVAILABLE = False
+    build_vtk_lookup_tables, get_color_map_pngs = None, None
+    LOOKUP_TABLES = {}
 
-from qtpy import QtCore, QtWidgets, QtGui
+from qtpy import QtCore, QtWidgets, QtGui, uic
 from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE
 from mfixgui.widgets.base import CustomPopUp
 from mfixgui.tools.general import get_icon, clear_layout, get_unique_string
@@ -45,6 +50,7 @@ PLOT_ITEMS = OrderedDict([
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 DEFAULT_PLAYBACK_SPEED = 100
 DEFAULT_MAXIMUM_POINTS = 10000
+
 
 def parse_pvd_file(fname):
     '''given a pvd file, return a dict of time (float) : file_name'''
@@ -79,6 +85,59 @@ def build_time_dict(search_str):
         if time is not None:
             f_dict[time] = os.path.basename(f)
     return f_dict
+
+
+class ColorMapPopUp(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent)
+
+        thisdir = os.path.abspath(os.path.dirname(__file__))
+        uidir = os.path.join(thisdir, 'uifiles')
+        ui = self.ui = uic.loadUi(os.path.join(uidir, 'color_map.ui'), self)
+
+        self.setWindowTitle('Color Map')
+
+        ui.toolbutton_select_color.clicked.connect(self.select_color)
+        ui.lineedit_from.dtype = float
+        ui.lineedit_to.dtype = float
+
+        for name, path in get_color_map_pngs().items():
+            ui.combobox_color_map.addItem(QtGui.QIcon(QtGui.QPixmap(path).scaled(60,25)), name)
+
+        self.set_color_map('viridis')
+
+    def close(self):
+
+        QtWidgets.QDialog.close(self)
+
+    def set_(self, array):
+        self.array = array
+
+        self.set_color(self.array.get('color'))
+
+    def get(self):
+        return {
+            'color':self.color,
+            'single_color': self.ui.checkbox_single_color.isChecked(),
+            }
+
+    def select_color(self):
+        col = QtWidgets.QColorDialog.getColor()
+        if not col.isValid():
+            return
+        self.color = col
+
+        self.set_color(col)
+
+    def set_color(self, color):
+        if isinstance(color, QtGui.QColor):
+            self.ui.toolbutton_select_color.setStyleSheet("QToolButton{{ background: {};}}".format(
+                color.name()))
+
+    def set_color_map(self, color_map):
+        index = self.ui.combobox_color_map.findText(color_map)
+        self.ui.combobox_color_map.setCurrentIndex(index)
+
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
@@ -121,7 +180,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
         self.ugrid_mapper.SetScalarVisibility(True)
         self.ugrid_mapper.SetScalarModeToUseCellFieldData()
-        self.ugrid_mapper.CreateDefaultLookupTable()
+        self.ugrid_mapper.SetLookupTable(LOOKUP_TABLES['viridis'])
 
         self.ugrid_actor = vtk.vtkActor()
         self.ugrid_actor.SetMapper(self.ugrid_mapper)
@@ -147,7 +206,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.particle_mapper = vtk.vtkPolyDataMapper()
         self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
-        self.particle_mapper.CreateDefaultLookupTable()
+        self.particle_mapper.SetLookupTable(LOOKUP_TABLES['viridis'])
 
         self.particle_actor = vtk.vtkActor()
         self.particle_actor.SetMapper(self.particle_mapper)
@@ -182,31 +241,40 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(toolbutton, i, 0)
             btns['visible'] = toolbutton
 
-
-            if not geo == 'Geometry':
+            combo = None
+            if not geo == 'geometry':
                 # color by
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
                 layout.addWidget(combo, i, 1)
                 btns['color_by'] = combo
 
-                # color bar
-                combo = QtWidgets.QComboBox(self.visible_menu)
-                combo.activated.connect(lambda item, g=geo: self.change_color_bar(g, item))
-                layout.addWidget(combo, i, 2)
-                btns['color_bar'] = combo
+                # component
+                combo2 = QtWidgets.QComboBox(self.visible_menu)
+                combo2.activated.connect(lambda item, g=geo, c=combo, c2=combo2: self.change_color_by(g, c, c2))
+                combo2.addItems(['mag', 'x', 'y', 'z'])
+                combo2.setEnabled(False)
+                layout.addWidget(combo2, i, 2)
+                btns['component'] = combo2
+
+
+            toolbutton = QtWidgets.QToolButton()
+            toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
+            toolbutton.setAutoRaise(True)
+            layout.addWidget(toolbutton, i, 3)
+            btns['color'] = toolbutton
 
             opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
             opacity.setValue(1.0)
             opacity.setSingleStep(0.1)
             opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(g, o))
-            layout.addWidget(opacity, i, 3)
+            layout.addWidget(opacity, i, 4)
             btns['opacity'] = opacity
 
             # label
             label = QtWidgets.QLabel(geo_name, self.visible_menu)
-            layout.addWidget(label, i, 4)
+            layout.addWidget(label, i, 10)
 
         self.toolbutton_back = QtWidgets.QToolButton()
         self.toolbutton_back.clicked.connect(self.handle_begining)
@@ -246,6 +314,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.button_bar_layout.addStretch()
 
+        self.color_dialog  = ColorMapPopUp()
+
     def showEvent(self, event):
         # has to be called after the widget is visible
         self.vtkiren.Initialize()
@@ -261,13 +331,18 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def show_visible_menu(self):
         # update comboboxes based on avaliable arrays
-        cells = self.visual_btns['cells']
-        cells['color_by'].clear()
-        cells['color_by'].addItems(self.cell_arrays.keys())
 
-        points = self.visual_btns['points']
-        points['color_by'].clear()
-        points['color_by'].addItems(self.point_arrays.keys())
+        for type_, array in [('cells', self.cell_arrays),
+                             ('points', self.point_arrays)]:
+            btns = self.visual_btns[type_]
+            combo = btns['color_by']
+            text = combo.currentText()
+            combo.clear()
+            if array:
+                combo.addItems(array.keys())
+                index = combo.findText(text)
+                combo.setCurrentIndex(index)
+            combo.setEnabled(bool(array))
 
         self.visible_menu.popup()
 
@@ -349,7 +424,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
         cell_data = data.GetCellData()
         self.cell_arrays = {}
         for i in range(cell_data.GetNumberOfArrays()):
-            self.cell_arrays[cell_data.GetArrayName(i)] = {'i':i, 'components':cell_data.GetArray(i).GetNumberOfComponents()}
+            array = cell_data.GetArray(i)
+            self.cell_arrays[cell_data.GetArrayName(i)] = {
+                'i':i,
+                'components':array.GetNumberOfComponents(),
+                'range': array.GetRange(),}
 
     def read_vtp(self, path):
         path = os.path.join(self.project_dir, path)
@@ -360,7 +439,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
         point_data = data.GetPointData()
         self.point_arrays = {}
         for i in range(point_data.GetNumberOfArrays()):
-            self.point_arrays[point_data.GetArrayName(i)] = {'i':i, 'components':point_data.GetArray(i).GetNumberOfComponents()}
+            array = point_data.GetArray(i)
+            self.point_arrays[point_data.GetArrayName(i)] = {
+                'i':i,
+                'components':array.GetNumberOfComponents(),
+                'range': array.GetRange()}
 
         if 'Diameter' in self.point_arrays:
             self.glyph.SetScaleModeToScaleByScalar()
@@ -374,20 +457,59 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.actors[geo].SetVisibility(visible)
             self.render()
 
-    def change_color_by(self, geo, combo):
-        array_name = combo.currentText()
+    def change_color_by(self, geo, colorby, component=None):
+        array_name = colorby.currentText()
+
+        index = None
+        if component is not None:
+            comp = component.currentText()
+            index = {'x':0, 'y':1, 'z':2, 'mag':None}[comp]
+
         if geo == 'points':
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, array_name)
-
+            array = self.point_arrays[array_name]
         elif geo == 'cells':
             self.ugrid_mapper.SelectColorArray(array_name)
+            if index is not None:
+                self.ugrid_mapper.SetArrayComponent(index)
+            array = self.cell_arrays[array_name]
         else:
             return
 
+        is_comp = array['components'] == 3
+        self.visual_btns[geo]['component'].setEnabled(is_comp)
+
         self.render()
 
-    def change_color_bar(self, geo, item):
-        print(geo, item)
+    def change_color(self, geo, button, colorby):
+
+        array_name = colorby.currentText()
+        if geo == 'points':
+            array = self.point_arrays[array_name]
+        elif geo == 'cells':
+            array = self.cell_arrays[array_name]
+        else:
+            return
+
+        self.color_dialog.set_(array)
+        self.color_dialog.exec_()
+        params = self.color_dialog.get()
+
+        array.update(params)
+        color = params['color']
+
+        button.setStyleSheet("QToolButton{{ background: {};}}".format(
+            color.name()))
+
+        actor = None
+        if geo == 'points':
+            actor = self.particle_actor
+        elif geo == 'cells':
+            actor = self.ugrid_actor
+        if actor is not None:
+            actor.GetProperty().SetColor(color.getRgbF()[:3])
+
+        self.render()
 
     def change_opacity(self, geo, opacity):
         if geo in self.actors:

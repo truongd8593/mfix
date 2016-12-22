@@ -40,6 +40,14 @@ def get_color_map_dict():
         color_dict[name] = read_rgb(f)
     return color_dict
 
+def get_color_map_pngs():
+    '''return a dictionary of name:path_to_png'''
+    pngs = OrderedDict()
+    for f in glob.glob(os.path.join(SCRIPT_DIRECTORY,'*.png')):
+        name = os.path.basename(f).replace('.png', '').lower()
+        pngs[name] = f
+    return pngs
+
 def build_vtk_lookup_tables():
     '''build and return lookup tables for vtk'''
     LUTs = OrderedDict()
@@ -61,12 +69,12 @@ if __name__ == "__main__":
     from matplotlib.colors import LinearSegmentedColormap
 
     def plot_color_gradients(name, cmap, gradient):
-        fig, axes = plt.subplots(1, figsize=(1, 0.25))
+        fig, axes = plt.subplots(1, figsize=(20, 1))
         fig.subplots_adjust(top=1, bottom=0, left=0, right=1)
         axes.imshow(gradient, aspect='auto', cmap=cmap)
         # Turn off *all* ticks & spines, not just the ones with colormaps.
         axes.set_axis_off()
-        fig.savefig(name+'.png', dpi=5)
+        fig.savefig(name+'.png', dpi=1)
 
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
