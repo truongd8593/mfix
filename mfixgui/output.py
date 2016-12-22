@@ -15,7 +15,7 @@ from qtpy.QtCore import Qt
 from mfixgui.constants import *
 
 from mfixgui.tools import keyword_args
-from mfixgui.tools.general import (widget_iter, get_combobox_item)
+from mfixgui.tools.general import (widget_iter, get_combobox_item, safe_float)
 
 from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
 
@@ -94,8 +94,8 @@ class Output(object):
         # 'reverse constraint', res_dt must be less than a whole bunch
         # of other keys which must be greater than it
 
-        m = min(self.project.get_value('spx_dt', default=1.0, args=[i]) for i in range(1,12))
-        m = min(m, self.project.get_value('res_backup_dt', default=1.0))
+        m = min(safe_float(self.project.get_value('spx_dt', default=1.0, args=[i])) for i in range(1,12))
+        m = min(m, safe_float(self.project.get_value('res_backup_dt', default=1.0)))
         ui.lineedit_keyword_res_dt.max = m
         #if res_dt > m:
         #    res_dt = m

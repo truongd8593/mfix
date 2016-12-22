@@ -42,6 +42,7 @@ build_job3:
   script:
     - make -C mfixgui ../mfix
   artifacts:
+    expire_in: 1 week
     paths:
     - mfix
     - mfixsolver*
@@ -52,5 +53,13 @@ test_job3:
   stage: test
   script:
     - make -C mfixgui test
+  only:
+    - branches
+
+test_install_job3:
+  stage: test_install
+  script:
+    - python setup.py bdist_wheel
+    - pip install dist/mfixgui-*.whl
   only:
     - branches

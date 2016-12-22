@@ -49,7 +49,7 @@
       LOGICAL, INTENT(OUT) :: RXN_FLAG
 
 ! Indicate whether to do a namelist read on the line. A namelist read
-! is still preformed when an arithmetic operation is found.
+! is still performed when an arithmetic operation is found.
       LOGICAL, INTENT(OUT) :: READ_FLAG
 
 ! Start and end locations for the search parameters.

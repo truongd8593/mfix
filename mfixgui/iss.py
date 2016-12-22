@@ -9,17 +9,13 @@ UserRole = QtCore.Qt.UserRole
 from mfixgui.constants import *
 from mfixgui.widgets.base import LineEdit
 
-from mfixgui.tools.general import set_item_noedit, get_selected_row, widget_iter
+from mfixgui.tools.general import (set_item_noedit, get_selected_row,
+                                   widget_iter, safe_float)
 
 from mfixgui.tools.keyword_args import mkargs
 
 from json import JSONDecoder, JSONEncoder
 
-def safe_float(val):
-    try:
-        return float(val)
-    except ValueError:
-        return 0.0
 
 class ISS(object):
     #Internal Surfaces Task Pane Window: This section allows a user to define internal surfaces for

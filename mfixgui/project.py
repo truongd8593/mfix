@@ -340,27 +340,21 @@ class Equation(object):
         return '%s #!MFIX-GUI eq{%s}' % (
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
-    def __cmp__(self, value):
-        f = float(self._eval())
-        if f < value: return -1
-        elif f > value: return 1
-        elif f == value: return 0
+    def __cmp__(self, other): # Python2
+        a = float(self)
+        b = float(other)
+        return -1 if a<b else 1 if a>b else 0
 
-    # def __add__(self, value):
-    #     return float(self._eval()) + float(value)
+    def __lt__(self, other): #Python3
+        return self.__cmp__(other) < 0
 
-    # def __sub__(self, value):
-    #     return float(self._eval()) - float(value)
+    def __gt__(self, other):
+        return self.__cmp__(other) > 0
 
-    # def __mul__(self, value):
-    #     return float(self._eval()) * float(value)
+    def __eq__(self, other):
+        return self.__cmp__(other) == 0
 
-    # def __div__(self, value):
-    #     return float(self._eval()) / float(value)
-
-    # def __pow__(self, value):
-    #     return float(self._eval()) ** float(value)
-
+    # Symbolic math on equations
     def binop(self, x, c):
         if isinstance(x, Equation):
             return Equation('(%s)%s(%s)' % (self.eq, c, x.eq))
@@ -953,10 +947,13 @@ class Project(object):
         r = self.get(key, args)
         return default if r is None else r.value
 
+
     def get_key_indices(self, key):
-        """return an iterator over the set of indices (args) for which
-        the key is defined"""
-        return self.keyword_dict.get(key, {}).keys()
+        """return a list of indices (args) for which the key is defined"""
+        # Returning as a list makes this safe to iterate over, even if keys are
+        # added/deleted
+        return list(self.keyword_dict.get(key, {}).keys())
+
 
     def removeKeyword(self, key, args=None, warn=True):
         """Remove a keyword from the project. (keyword_dict and dat_file_list)

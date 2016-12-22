@@ -2271,7 +2271,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>
 !    Specified solids species mass fraction at the wall, Xw, in diffusion boundary condition:
-!    d(X_g)/dn + Hw (X_g - Xw_g) = C, where n is the fluid-to-wall normal.
+!    d(X_s)/dn + Hw (X_s - Xw_s) = C, where n is the fluid-to-wall normal.
 !  </description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>

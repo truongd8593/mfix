@@ -96,8 +96,6 @@ if PRECOMPILE_UI:
         from uifiles.numerics import Ui_numerics
         from uifiles.output import Ui_output
         from uifiles.monitors import Ui_monitors
-        from uifiles.numerics import Ui_numerics
-        from uifiles.output import Ui_output
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
 
@@ -326,14 +324,9 @@ class MfixGui(QtWidgets.QMainWindow,
                             old_method(event))[-1]))(tw.resizeEvent)
 
         # Disable items that are not yet implemented
-        for name in ('Chemistry',
-                     'Monitors',
-                     'Points',
-                     'Planes',
-                     'Volumes',
-                     'Post-processing',
-                     'Export',
-                     'Plugins'):
+        for name in ('Monitors',
+                     'Post-processing'):
+
             self.find_navigation_tree_item(name).setDisabled(True)
 
         # Initialize popup dialogs
@@ -454,14 +447,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.monitor = Monitor(self)
 
-        # buttons in 'run' pane
-        run = ui.run
-        run.button_run_mfix.clicked.connect(self.handle_run)
-        run.button_pause_mfix.clicked.connect(self.handle_pause)
-        run.button_reinit_mfix.clicked.connect(self.handle_reinit)
-        run.button_stop_mfix.clicked.connect(self.handle_stop)
-        run.button_reset_mfix.clicked.connect(self.remove_output_files)
-        run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
+        # setup Run pane #TODO move to 'setup_run'
+        ui.run.checkbox_pymfix_output.stateChanged.connect(self.handle_set_pymfix_output)
 
         # Print welcome message.  Do this early so it appears before any
         # other messages that may occur during this __init__
@@ -720,6 +707,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.iss_update_enabled()
         self.chemistry_update_enabled()
 
+
     def update_region(self, name, data):
         for update in (self.ics_update_region,
                        self.bcs_update_region,
@@ -779,44 +767,30 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
-            self.ui.run.button_run_mfix.setText(text)
             self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFIX run' if text=='Resume'
                                                    else text+' MFIX')
         if enabled is not None:
-            for b in (self.ui.run.button_run_mfix, self.ui.toolbutton_run_mfix):
-                b.setEnabled(enabled)
+            b = self.ui.toolbutton_run_mfix
+            b.setEnabled(enabled)
 
 
     def set_pause_button(self, text=None, enabled=None):
-        buttons = (self.ui.run.button_pause_mfix, self.ui.toolbutton_pause_mfix)
-
+        b = self.ui.toolbutton_pause_mfix
         if enabled is not None:
-            for b in buttons:
-                b.setEnabled(enabled)
-
+            b.setEnabled(enabled)
         if text is not None:
-            self.ui.run.button_pause_mfix.setText(text)
-            self.ui.toolbutton_pause_mfix.setToolTip(text + ' MFIX')
+            b.setToolTip(text + ' MFIX')
 
 
     def set_stop_button(self, enabled):
-        for b in (self.ui.run.button_stop_mfix, self.ui.toolbutton_stop_mfix):
-            b.setEnabled(enabled)
+        b = self.ui.toolbutton_stop_mfix
+        b.setEnabled(enabled)
+        # tooltip?
 
 
-    def set_reset_button(self, enabled, visible=None):
-        for b in (self.ui.run.button_reset_mfix, self.ui.toolbutton_reset_mfix):
-            b.setEnabled(enabled)
-        # run.ui reset and reinit buttons share same location
-        if visible is not None:
-            self.ui.run.button_reset_mfix.setVisible(visible)
-
-
-    def set_reinit_button(self, enabled, visible=None):
-        self.ui.run.button_reinit_mfix.setEnabled(enabled)
-        # run.ui reset and reinit buttons share same location
-        if visible:
-            self.ui.run.button_reinit_mfix.setVisible(visible)
+    def set_reset_button(self, enabled):
+        b =  self.ui.toolbutton_reset_mfix
+        b.setEnabled(enabled)
 
 
     def enable_input(self, enabled):
@@ -876,46 +850,43 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_window_title() # put run state in window titlebar
 
         self.enable_input(editable)
-        self.ui.run.setEnabled(project_open)
+        ui.run.setEnabled(project_open)
 
         #handle buttons in order:  RESET RUN PAUSE STOP
+
         if pending:
             self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
-            self.set_reset_button(enabled=False, visible=True)
+            self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
-            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         elif unpaused:
             self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
-            self.set_reset_button(enabled=False, visible=False)
+            self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=True)
             self.set_stop_button(enabled=True)
-            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
-            self.set_reset_button(enabled=False, visible=False)
+            self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
-            self.set_reinit_button(enabled=(self.unsaved_flag and editable), visible=True)
             self.set_stop_button(enabled=True)
             # FIXME support reinit: edits can be made while paused
             #self.change_pane('run')
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
-            self.set_reset_button(enabled=True, visible=True)
+            self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=False)
-            self.set_reinit_button(enabled=False, visible=False)
             self.change_pane('run')
 
         else: # Not running, ready for input
@@ -924,10 +895,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(text="Run", enabled=project_open)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=False)
-            self.set_reinit_button(enabled=False, visible=False)
 
-        ui.run.use_spx_checkbox.setEnabled(resumable)
-        ui.run.use_spx_checkbox.setChecked(resumable)
         ui.run.checkbox_pymfix_output.setEnabled(bool(paused or unpaused))
 
 

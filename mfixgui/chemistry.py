@@ -495,7 +495,7 @@ class Chemistry(object):
             if phase == 0:
                 return self.fluid_phase_name
             else:
-                return self.solids.keys()[phase-1]
+                return list(self.solids.keys())[phase-1]
         if num_phases == 0:
             for w in (ui.label_fracdh_1, ui.lineedit_fracdh_1,
                       ui.label_fracdh_2, ui.lineedit_fracdh_2):
@@ -647,10 +647,13 @@ class Chemistry(object):
     def chemistry_update_enabled(self):
         #Chemistry pane is disabled if any solids are specified as PIC.
         disabled = False
+        # Fewer than 2 species, no chemistry possible
+        if len(self.fluid_species) + sum(map(len, self.solids_species.values())) < 2:
+            disabled = True
         if any(self.project.get_value('solids_model', args=[i])=='PIC'
                for (i,s) in enumerate(self.solids, 1)):
             disabled = True
-        if self.project.reactions: # Don't disable panes if reactions are defined (?)
+        if self.project.reactions: # Don't ever disable pane if reactions are defined
             disabled = False
         self.find_navigation_tree_item("Chemistry").setDisabled(disabled)
 
@@ -806,6 +809,8 @@ class Chemistry(object):
             chem_eq = tw.item(row, COL_CHEM_EQ)
             if not (chem_eq and chem_eq.text()):
                 self.chemistry_delete_reaction()
+        self.reaction_edited = False
+        self.chemistry_update_buttons()
         self.chemistry_handle_selection()
 
 
@@ -876,6 +881,8 @@ class Chemistry(object):
         self.chemistry_handle_reactant_selection(row=row)
         if self.chemistry_find_available_species('reactants'):
             ui.toolbutton_add_reactant.setEnabled(True)
+        self.chemistry_update_buttons()
+
 
     def chemistry_add_product(self):
         ui = self.ui.chemistry
@@ -1003,7 +1010,7 @@ class Chemistry(object):
 
 
     def chemistry_toggle_reaction(self, row, enabled):
-        name = self.project.reactions.keys()[row]
+        name = list(self.project.reactions.keys())[row]
         reaction = self.project.reactions[name]
         if enabled:
             reaction['chem_eq'] = self.disabled_reactions.pop(name, 'NONE')

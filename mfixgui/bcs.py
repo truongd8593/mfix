@@ -17,19 +17,13 @@ from mfixgui.widgets.base import LineEdit, ComboBox
 from mfixgui.project import FloatExp
 
 from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
-                           get_combobox_item, get_selected_row,
-                           widget_iter)
+                                   get_combobox_item, get_selected_row,
+                                   widget_iter, safe_float)
 
 from mfixgui.tools.keyword_args import mkargs
 
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
-
-def safe_float(val):
-    try:
-        return float(val)
-    except ValueError:
-        return 0.0
 
 FLUID_TAB = 0
 SOLIDS_TAB_DUMMY_L = 1

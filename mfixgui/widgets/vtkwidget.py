@@ -39,6 +39,8 @@ LOG = logging.getLogger(__name__)
 def safe_float(value):
     """try to convert the value to a float, if ValueError, send error to gui
     and return 0"""
+    # Note this is slightly different from the function in tools.general, which does
+    #  not have the reporting
     try:
         return float(value)
     except ValueError as error:

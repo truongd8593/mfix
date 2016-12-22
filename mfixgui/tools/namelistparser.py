@@ -31,7 +31,8 @@ KEYWORDLIST_TXT = os.path.join(PACKAGE, 'keywordList.txt')
 
 def getKeywordDoc():
     """ return dict from json file if it exists, otherwise build from mfix source"""
-    if os.path.exists(KEYWORDDOC_JSON):
+    # FIXME.   We have no way to ensure json file is not stale! So don't use it.
+    if False and os.path.exists(KEYWORDDOC_JSON):
         with open(KEYWORDDOC_JSON, 'r') as json_file:
             return json.load(json_file)
     else:
@@ -84,7 +85,7 @@ def buildKeywordDoc(mfixSourcePath):
         mfixKeywordDict['keywordlist'] = keywordlist+parsedNameList['keywordlist']
         mfixKeywordDict['categories'] = catlist+parsedNameList['categories']
     cgs_re = re.compile(r' *\[.*CGS.*\] *', flags=re.IGNORECASE)
-    def redact(v):
+    def redact(v): # TODO: propagate these modifications in the Fortran sources & docs
         if not isinstance(v, dict): # 'categories' and 'keywordlist'
             return v
         d = v.get('description')

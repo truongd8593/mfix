@@ -738,7 +738,6 @@
 !    Actual Youngs modulus for the walls [Pa in SI]. Used for
 !    computing correction terms for DEM conduction.
 !  </description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       EW_YOUNG_ACTUAL = UNDEFINED
 !</keyword>
