@@ -128,8 +128,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     return
 
                 if model == CONSTANT:
-                    # FIXME: we could have a saved value from a different phase
-                    #  (Clear out lineedits on phase change?)
                     value = lineedit.value # Possibly re-enabled gui item
                     if value=='None':
                         value = ''
@@ -461,10 +459,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
-        #self.update_keyword('nmax_s', 0, args=[n])
+        #self.update_keyword('nmax_s', 0, args=[n]) ? needed
         self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
+        #Since c_ps0 is not defined the spec. heat model will default to VARIABLE.  But SRS
+        # says default should be CONSTANT, so force that.  However, if user leaves this pane
+        # without setting a value for spec. heat, the setting will revert to VARIABLE
+        self.set_solids_specific_heat_model(CONSTANT)
 
         # Reshape triangular matrices
         for key in ('des_et_input', 'des_en_input'):
@@ -490,7 +492,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         self.bcs_check_wall_keys()
         # ICs enabled/disabled depends on number of solids
         self.update_nav_tree()
-
 
 
     def handle_solids_table_selection(self):
