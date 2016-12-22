@@ -4,6 +4,8 @@ from collections import OrderedDict
 from distutils.version import LooseVersion
 import glob
 import os
+from bisect import  bisect_left
+from xml.etree import ElementTree
 
 # graphics libraries
 try:
@@ -42,6 +44,41 @@ PLOT_ITEMS = OrderedDict([
 
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 DEFAULT_PLAYBACK_SPEED = 100
+DEFAULT_MAXIMUM_POINTS = 10000
+
+def parse_pvd_file(fname):
+    '''given a pvd file, return a dict of time (float) : file_name'''
+    f_dict = OrderedDict()
+    if not os.path.exists(fname): return f_dict
+    tree = ElementTree.parse(fname)
+    root = tree.getroot()
+    for data_set in root.iter('DataSet'):
+        f_dict[float(data_set.attrib['timestep'])] = data_set.attrib['file']
+
+    return f_dict
+
+def build_time_dict(search_str):
+    '''given a glob search string, return a dictionary of
+    time (float) : file_name'''
+    f_dict = OrderedDict()
+
+    files = glob.glob(search_str)
+    for f in sorted(files):
+        time = None
+        with open(f) as xml:
+            for i, line in enumerate(xml):
+                if '<!-- Time =' in line:
+                    try:
+                        time = float(line.replace('<!-- Time =', '').replace('sec. -->', ''))
+                    except:
+                        pass
+                    break
+
+                if i > 4:
+                    break
+        if time is not None:
+            f_dict[time] = os.path.basename(f)
+    return f_dict
 
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
@@ -49,15 +86,23 @@ class GraphicsVtkWidget(BaseVtkWidget):
         BaseVtkWidget.__init__(self, parent)
 
         self.cell_arrays = {}
+        self.point_arrays = {}
         self.frame_index = -1
 
         self.play_timer = QtCore.QTimer()
         self.play_timer.timeout.connect(self.forward)
 
         # look for vtu files
-        self.project_dir = os.path.dirname(SETTINGS.value('project_file'))
-        self.vtu_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtu')))
+        self.project_file = SETTINGS.value('project_file')
+        self.project_name = os.path.splitext(os.path.basename(self.project_file))[0]
+        self.project_dir = os.path.dirname(self.project_file)
 
+        self.file_watcher = QtCore.QFileSystemWatcher()
+        self.file_watcher.addPath(self.project_dir)
+        self.file_watcher.directoryChanged.connect(self.look_for_files)
+
+        # look for files
+        self.look_for_files()
 
         self.init_vtk()
         self.init_toolbar()
@@ -66,6 +111,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.reset_view()
 
     def init_vtk(self):
+
+        self.actors = {}
 
         # unstructured grid
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
@@ -78,6 +125,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.ugrid_actor = vtk.vtkActor()
         self.ugrid_actor.SetMapper(self.ugrid_mapper)
+        self.actors['cells'] = self.ugrid_actor
 
         self.vtkrenderer.AddActor(self.ugrid_actor)
 
@@ -86,9 +134,16 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         ss = vtk.vtkSphereSource()
 
+        self.glyph_mask = vtk.vtkMaskPoints()
+        self.glyph_mask.SetInputConnection(self.particle_reader.GetOutputPort())
+        self.glyph_mask.RandomModeOn()
+        self.glyph_mask.SetRandomModeType(1)
+        self.glyph_mask.SetMaximumNumberOfPoints(DEFAULT_MAXIMUM_POINTS)
+
         self.glyph = vtk.vtkGlyph3D()
-        self.glyph.SetInputConnection(self.particle_reader.GetOutputPort())
+        self.glyph.SetInputConnection(self.glyph_mask.GetOutputPort())
         self.glyph.SetSourceConnection(ss.GetOutputPort())
+        self.glyph.SetColorModeToColorByVector()
 
         self.particle_mapper = vtk.vtkPolyDataMapper()
         self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
@@ -96,6 +151,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.particle_actor = vtk.vtkActor()
         self.particle_actor.SetMapper(self.particle_mapper)
+        self.actors['points'] = self.particle_actor
 
         self.vtkrenderer.AddActor(self.particle_actor)
 
@@ -107,18 +163,18 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
         self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
         self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
-        self.toolbutton_visible.pressed.connect(self.visible_menu.popup)
+        self.toolbutton_visible.pressed.connect(self.show_visible_menu)
 
         # --- visual representation menu ---
         layout = self.visible_menu.layout
         self.visual_btns = {}
-        for i, geo in enumerate(['Cells', 'Nodes', 'Points']):
+        for i, geo in enumerate(['Cells', 'Nodes', 'Points', 'Geometry']):
             geo_name = geo
             geo = geo.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
-            toolbutton.clicked.connect(lambda down, g=geo: self.change_visibility(geo, down))
+            toolbutton.clicked.connect(lambda down, g=geo: self.change_visibility(g, down))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
@@ -126,21 +182,25 @@ class GraphicsVtkWidget(BaseVtkWidget):
             layout.addWidget(toolbutton, i, 0)
             btns['visible'] = toolbutton
 
-            # color by
-            combo = QtWidgets.QComboBox(self.visible_menu)
-            combo.activated.connect(lambda item, g=geo: self.change_color_by(g, item))
-            layout.addWidget(combo, i, 1)
 
-            # color bar
-            combo = QtWidgets.QComboBox(self.visible_menu)
-            combo.activated.connect(lambda item, g=geo: self.change_color_bar(g, item))
-            layout.addWidget(combo, i, 2)
+            if not geo == 'Geometry':
+                # color by
+                combo = QtWidgets.QComboBox(self.visible_menu)
+                combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
+                layout.addWidget(combo, i, 1)
+                btns['color_by'] = combo
+
+                # color bar
+                combo = QtWidgets.QComboBox(self.visible_menu)
+                combo.activated.connect(lambda item, g=geo: self.change_color_bar(g, item))
+                layout.addWidget(combo, i, 2)
+                btns['color_bar'] = combo
 
             opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
             opacity.setValue(1.0)
             opacity.setSingleStep(0.1)
-            opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(geo, o))
+            opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(g, o))
             layout.addWidget(opacity, i, 3)
             btns['opacity'] = opacity
 
@@ -199,6 +259,18 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # clean up timer
         self.play_timer.stop()
 
+    def show_visible_menu(self):
+        # update comboboxes based on avaliable arrays
+        cells = self.visual_btns['cells']
+        cells['color_by'].clear()
+        cells['color_by'].addItems(self.cell_arrays.keys())
+
+        points = self.visual_btns['points']
+        points['color_by'].clear()
+        points['color_by'].addItems(self.point_arrays.keys())
+
+        self.visible_menu.popup()
+
     def handle_speed_changed(self):
         if self.play_timer.isActive():
             self.play_timer.stop()
@@ -219,52 +291,56 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.change_frame(0)
 
     def handle_end(self):
-        self.change_frame(len(self.vtu_files))
+        self.change_frame(max(len(self.vtu_files), len(self.vtp_files)))
 
     def forward(self):
         self.change_frame(self.frame_index + 1)
 
     def change_frame(self, index):
-        # look for more files
-        self.vtu_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtu')))
-        n_files = len(self.vtu_files)
-        if n_files> 0:
-            if index >= n_files:
-                index = n_files-1
+
+        # assume that whatever one is bigger has the smaller time step
+        n_vtp = len(self.vtp_files)
+        n_vtu = len(self.vtu_files)
+        n_max = max(n_vtp, n_vtu)
+
+        if n_max > 0:
+            if index >= n_max:
+                index = n_max-1
             elif index < 0:
                 index = 0
 
+            self.frame_spinbox.setValue(index)
+
             if index == self.frame_index:
-                self.frame_spinbox.setValue(index)
                 return
             else:
                 self.frame_index = index
 
-            self.frame_spinbox.setValue(index)
-            self.read_vtu(self.vtu_files[index])
-
-        self.vtp_files = sorted(glob.glob(os.path.join(self.project_dir, '*.vtp')))
-        n_files = len(self.vtp_files)
-        if n_files> 0:
-            if index >= n_files:
-                index = n_files-1
-            elif index < 0:
-                index = 0
-
-            if index == self.frame_index:
-                self.frame_spinbox.setValue(index)
-                return
+            if n_vtp > n_vtu:
+                time = self.vtp_files.keys()[index]
+                self.read_vtp(self.vtp_files[time])
+                if n_vtu:
+                    self.read_vtu(self.vtu_files.values()[bisect_left(self.vtu_files.keys(), time)-1])
             else:
-                self.frame_index = index
+                time = self.vtu_files.keys()[index]
+                self.read_vtu(self.vtu_files[time])
+                if n_vtp:
+                    self.read_vtp(self.vtp_files.values()[bisect_left(self.vtp_files.keys(), time)-1])
+            self.render()
+        else:
+            self.frame_spinbox.setValue(0)
 
-            self.frame_spinbox.setValue(index)
-            self.read_vtp(self.vtp_files[index])
-
-        self.render()
+    def look_for_files(self):
+        base_name = os.path.join(self.project_dir, self.project_name)
+        self.vtu_files = parse_pvd_file(base_name + '.pvd')
+        if not self.vtu_files:
+            self.vtu_files = build_time_dict(os.path.join(self.project_dir, '*.vtu'))
+        self.vtp_files = parse_pvd_file(base_name + '_DES.pvd')
 
     # --- vtk functions ---
     def read_vtu(self, path):
 
+        path = os.path.join(self.project_dir, path)
         self.ugrid_reader.SetFileName(path)
         self.ugrid_reader.Update()
 
@@ -275,36 +351,48 @@ class GraphicsVtkWidget(BaseVtkWidget):
         for i in range(cell_data.GetNumberOfArrays()):
             self.cell_arrays[cell_data.GetArrayName(i)] = {'i':i, 'components':cell_data.GetArray(i).GetNumberOfComponents()}
 
-        self.ugrid_mapper.ColorByArrayComponent(0, 0)
-
     def read_vtp(self, path):
+        path = os.path.join(self.project_dir, path)
         self.particle_reader.SetFileName(path)
-        self.ugrid_reader.Update()
+        self.particle_reader.Update()
 
-        data = self.ugrid_reader.GetOutput()
+        data = self.particle_reader.GetOutput()
         point_data = data.GetPointData()
         self.point_arrays = {}
         for i in range(point_data.GetNumberOfArrays()):
-            self.cell_arrays[point_data.GetArrayName(i)] = {'i':i, 'components':point_data.GetArray(i).GetNumberOfComponents()}
+            self.point_arrays[point_data.GetArrayName(i)] = {'i':i, 'components':point_data.GetArray(i).GetNumberOfComponents()}
 
-        self.glyph.SetScaleModeToScaleByScalar()
-        self.glyph.SetColorModeToColorByVector()
-        self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
-        self.glyph.SetInputArrayToProcess(1, 0, 0, 0, 'Velocity')
+        if 'Diameter' in self.point_arrays:
+            self.glyph.SetScaleModeToScaleByScalar()
+            self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
+
 
         self.particle_mapper.SetScalarRange(0, 100)
 
     def change_visibility(self, geo, visible):
-        print(geo, visible)
+        if geo in self.actors:
+            self.actors[geo].SetVisibility(visible)
+            self.render()
 
-    def change_color_by(self, geo, item):
-        print(geo, item)
+    def change_color_by(self, geo, combo):
+        array_name = combo.currentText()
+        if geo == 'points':
+            self.glyph.SetInputArrayToProcess(1, 0, 0, 0, array_name)
+
+        elif geo == 'cells':
+            self.ugrid_mapper.SelectColorArray(array_name)
+        else:
+            return
+
+        self.render()
 
     def change_color_bar(self, geo, item):
         print(geo, item)
 
     def change_opacity(self, geo, opacity):
-        print(geo, opacity)
+        if geo in self.actors:
+            self.actors[geo].GetProperty().SetOpacity(opacity)
+            self.render()
 
 
 class BaseGraphicTab(QtWidgets.QWidget):
