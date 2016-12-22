@@ -14,10 +14,10 @@ import re
 import shutil
 import signal
 import sys
-import traceback
-import datetime
+import time
 from collections import OrderedDict
 import json
+import traceback
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
@@ -2038,25 +2038,46 @@ class MfixGui(QtWidgets.QMainWindow,
         if not project_file.endswith(".mfx"):
             project_file = project_file + ".mfx"
 
-        project_filename = os.path.basename(project_file)
+        if os.path.exists(project_file):
+            if not self.confirm_clobber(project_file):
+                return
+
+        basename = os.path.basename(project_file)
         project_dir = os.path.dirname(project_file)
-        run_name = os.path.splitext(project_filename)[0]
+        run_name = os.path.splitext(basename)[0]
         if not self.check_writable(project_dir):
             self.message(text='Unable to write to %s' % project_dir,
                          buttons=['ok'],
                          default='ok')
             return
         # Start with a nice template - note, there's too much set in this file.
-        # FIXME, this can clobber files
         template = os.path.join(get_mfix_home(), 'mfixgui', 'mfix.dat.template')
-        shutil.copyfile(template, project_file)
+
+        creator = get_username()
+        creation_time = time.strftime('%Y-%m-%d %H:%M')
+        try:
+            with open(template) as infile:
+                with open(project_file,'w') as outfile:
+                    for line in infile:
+                        if line.startswith('# Generic'):
+                            # Put something better in the comment field, otherwise
+                            # "generic template" lingers there forever
+                            line = '# Created by %s on %s\n' % (creator, creation_time)
+                        elif '${run_name}' in line:
+                            line = line.replace('${run_name}', run_name)
+                        outfile.write(line)
+        except Exception as e:
+            self.message(text="Error %s creating new project" % e,
+                         buttons=['ok'],
+                         default=['ok'])
+            self.set_no_project()
+            return
+
         self.open_project(project_file)
-        self.update_keyword('run_name', run_name)
 
         # add some info
-        self.project.mfix_gui_comments['author'] = get_username()
-        self.project.mfix_gui_comments['created_date'] = datetime.datetime.strftime(
-            datetime.datetime.now(), '%Y-%m-%d %H:%M')
+        self.project.mfix_gui_comments['author'] = creator
+        self.project.mfix_gui_comments['created_date'] = creation_time
 
         self.save_project()
 

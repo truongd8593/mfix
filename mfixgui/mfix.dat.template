@@ -4,8 +4,8 @@
 #                                                                      #
 ########################################################################
 
-  RUN_NAME = 'MFIX01'
-  DESCRIPTION = 'Example MFiX Simulation'
+  RUN_NAME = '${run_name}'
+  DESCRIPTION = 'MFiX Simulation'
 
 #_______________________________________________________________________
 # RUN CONTROL SECTION
