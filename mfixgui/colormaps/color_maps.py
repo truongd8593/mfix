@@ -6,9 +6,16 @@ displayed in the gui.
 from __future__ import print_function, absolute_import, unicode_literals, division
 import glob
 import os
+from collections import OrderedDict
+
+try:
+    import vtk
+except ImportError:
+    vtk = None
 
 SCRIPT_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
-COLOR_MAPS = glob.glob(os.path.join(SCRIPT_DIRECTORY, '*.rgb'))
+COLOR_MAP_EXT = '.rgb'
+COLOR_MAPS = glob.glob(os.path.join(SCRIPT_DIRECTORY, '*' + COLOR_MAP_EXT))
 
 def read_rgb(path):
     """
@@ -25,10 +32,30 @@ def read_rgb(path):
                     pass
     return rgb_list
 
+def get_color_map_dict():
+    '''return a dictionary of color maps'''
+    color_dict = OrderedDict()
+    for f in COLOR_MAPS:
+        name = os.path.basename(f).replace(COLOR_MAP_EXT, '').lower()
+        color_dict[name] = read_rgb(f)
+    return color_dict
+
+def build_vtk_lookup_tables():
+    '''build and return lookup tables for vtk'''
+    LUTs = OrderedDict()
+    for name, colors in get_color_map_dict().items():
+        lookup_table = vtk.vtkLookupTable()
+        lookup_table.SetNumberOfTableValues(len(colors))
+
+        for i, c in enumerate(colors):
+            lookup_table.SetTableValue(i, c[0], c[1], c[2], 1.0)
+
+        LUTs[name] = lookup_table
+    return LUTs
 
 if __name__ == "__main__":
-    '''Use matplotlib to generate previws of the color maps and save them as
-    png files so that they can be saved in the gui'''
+    '''Use matplotlib to generate previews of the color maps and save them as
+    png files so that they can be displayed in the gui'''
     import numpy as np
     from matplotlib import pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
@@ -44,10 +71,6 @@ if __name__ == "__main__":
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
-    ext = '.rgb'
-    for f in COLOR_MAPS:
-        name = os.path.basename(f).replace(ext, '')
-        colors = read_rgb(f)
+    for name, colors in get_color_map_dict().items():
         cmap = LinearSegmentedColormap.from_list(name, colors)
-
         plot_color_gradients(name, cmap, gradient)
