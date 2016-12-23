@@ -159,6 +159,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def __init__(self, app, parent=None, project_file=None):
         self.app = app
         QtWidgets.QMainWindow.__init__(self, parent)
+        self.setObjectName('mfixgui')
         if project_file is not None:
             self.set_project_file(project_file)
 

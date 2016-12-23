@@ -149,6 +149,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def __init__(self, parent=None):
         BaseVtkWidget.__init__(self, parent)
 
+        # find MfixGui
+        def find_gui(parent):
+            if parent.objectName() == 'mfixgui':
+                return parent
+            else:
+                return find_gui(parent.parent())
+
+        self.mfixgui = find_gui(self)
+
         self.cell_arrays = {}
         self.point_arrays = {}
         self.frame_index = -1
@@ -170,6 +179,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.init_toolbar()
         self.init_vtk()
+        self.init_geometry()
 
         self.change_frame(0)
         self.reset_view()
@@ -180,21 +190,28 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.mappers = {}
         self.lookuptables = {}
 
-        # unstructured grid
+        self.ugrid_mapper = None
+        self.particle_mapper = None
+
+    def init_ugrid(self):
+        '''setup the cell vtk stuff'''
+        self.enable_toolbar_geo('cells')
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
 
         self.ugrid_mapper = self.mappers['cells'] = vtk.vtkDataSetMapper()
         self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
         self.ugrid_mapper.SetScalarVisibility(True)
         self.ugrid_mapper.SetScalarModeToUseCellFieldData()
-
+        self.change_color_bar('cells', 'viridis')
 
         actor = self.actors['cells'] = vtk.vtkActor()
         actor.SetMapper(self.ugrid_mapper)
 
         self.vtkrenderer.AddActor(actor)
 
-        # particles
+    def init_particles(self):
+        '''setup the particle vtk stuff'''
+        self.enable_toolbar_geo('points')
         self.particle_reader = vtk.vtkXMLPolyDataReader()
 
         ss = vtk.vtkSphereSource()
@@ -212,14 +229,32 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.particle_mapper = self.mappers['points'] = vtk.vtkPolyDataMapper()
         self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
+        self.change_color_bar('points', 'viridis')
 
         actor = self.actors['points'] = vtk.vtkActor()
         actor.SetMapper(self.particle_mapper)
 
         self.vtkrenderer.AddActor(actor)
 
-        for geo in ['cells', 'points']:
-            self.change_color_bar(geo, 'viridis')
+    def init_geometry(self):
+        self.enable_toolbar_geo('geometry')
+        poly_data = self.mfixgui.vtkwidget.collect_toplevel_geometry()
+
+        # Create a mapper
+        mapper = self.mappers['geometry'] = vtk.vtkPolyDataMapper()
+        if poly_data is not None:
+            mapper.SetInputConnection(poly_data.GetOutputPort())
+
+        # Create an actor
+        actor = self.actors['geometry'] = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+        self.vtkrenderer.AddActor(actor)
+
+    def enable_toolbar_geo(self, geo):
+        for name, wid in self.visual_btns[geo].items():
+            if name == 'component': continue
+            wid.setEnabled(True)
 
     def init_toolbar(self):
         self.init_base_toolbar()
@@ -245,6 +280,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             toolbutton.setChecked(True)
             toolbutton.setAutoRaise(True)
             toolbutton.setIcon(get_icon('visibility.png'))
+            toolbutton.setEnabled(False)
             layout.addWidget(toolbutton, i, 0)
             btns['visible'] = toolbutton
 
@@ -253,6 +289,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 # color by
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
+                combo.setEnabled(False)
                 layout.addWidget(combo, i, 1)
                 btns['color_by'] = combo
 
@@ -269,6 +306,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
             toolbutton.setAutoRaise(True)
             toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
+            toolbutton.setEnabled(False)
             layout.addWidget(toolbutton, i, 3)
             btns['color'] = toolbutton
 
@@ -277,12 +315,22 @@ class GraphicsVtkWidget(BaseVtkWidget):
             opacity.setValue(1.0)
             opacity.setSingleStep(0.1)
             opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(g, o))
+            opacity.setEnabled(False)
             layout.addWidget(opacity, i, 4)
             btns['opacity'] = opacity
 
             # label
             label = QtWidgets.QLabel(geo_name, self.visible_menu)
             layout.addWidget(label, i, 10)
+
+            # more
+            if geo in ['points']:
+                toolbutton = QtWidgets.QToolButton()
+                toolbutton.setAutoRaise(True)
+                toolbutton.setIcon(get_icon('right.png'))
+                toolbutton.setEnabled(False)
+                layout.addWidget(toolbutton, i, 11)
+                btns['more'] = toolbutton
 
         self.toolbutton_back = QtWidgets.QToolButton()
         self.toolbutton_back.clicked.connect(self.handle_begining)
@@ -422,6 +470,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     # --- vtk functions ---
     def read_vtu(self, path):
+        if self.ugrid_mapper is None:
+            self.init_ugrid()
 
         path = os.path.join(self.project_dir, path)
         self.ugrid_reader.SetFileName(path)
@@ -439,6 +489,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'range': array.GetRange(),}
 
     def read_vtp(self, path):
+        if self.particle_mapper is None:
+            self.init_particles()
+
         path = os.path.join(self.project_dir, path)
         self.particle_reader.SetFileName(path)
         self.particle_reader.Update()
@@ -666,7 +719,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
     def create_vtk_widget(self):
         clear_layout(self.layout)
         self.change_name('VTK')
-        self.vtk_widget = GraphicsVtkWidget()
+        self.vtk_widget = GraphicsVtkWidget(self)
         self.layout.addWidget(self.vtk_widget)
 
     def plot(self, x=None, y=None, append=False):
