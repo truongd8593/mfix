@@ -91,6 +91,8 @@ class ColorMapPopUp(QtWidgets.QDialog):
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent)
 
+        self.color = None
+
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(thisdir, 'uifiles')
         ui = self.ui = uic.loadUi(os.path.join(uidir, 'color_map.ui'), self)
@@ -102,23 +104,28 @@ class ColorMapPopUp(QtWidgets.QDialog):
         ui.lineedit_to.dtype = float
 
         for name, path in get_color_map_pngs().items():
-            ui.combobox_color_map.addItem(QtGui.QIcon(QtGui.QPixmap(path).scaled(60,25)), name)
+            ui.combobox_color_map.addItem(QtGui.QIcon(QtGui.QPixmap(path).scaled(100, 25, transformMode=QtCore.Qt.SmoothTransformation)), name)
 
         self.set_color_map('viridis')
 
-    def close(self):
-
-        QtWidgets.QDialog.close(self)
-
     def set_(self, array):
         self.array = array
+        self.set_color(self.array.get('color', QtCore.Qt.white))
+        self.set_color_map(self.array.get('color_map', 'viridis'))
 
-        self.set_color(self.array.get('color'))
+        d_range = [0, 1]
+        self.ui.lineedit_from.updateValue(None,
+            self.array.get('from', self.array.get('range', d_range)[0]))
+        self.ui.lineedit_to.updateValue(None,
+            self.array.get('to', self.array.get('range', d_range)[1]))
 
     def get(self):
         return {
-            'color':self.color,
+            'color':        self.color,
             'single_color': self.ui.checkbox_single_color.isChecked(),
+            'color_map':    self.ui.combobox_color_map.currentText(),
+            'from':         self.ui.lineedit_from.value,
+            'to':           self.ui.lineedit_to.value,
             }
 
     def select_color(self):
@@ -126,7 +133,6 @@ class ColorMapPopUp(QtWidgets.QDialog):
         if not col.isValid():
             return
         self.color = col
-
         self.set_color(col)
 
     def set_color(self, color):
@@ -486,8 +492,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
         array_name = colorby.currentText()
         if geo == 'points':
             array = self.point_arrays[array_name]
+            mapper = self.particle_mapper
         elif geo == 'cells':
             array = self.cell_arrays[array_name]
+            mapper = self.ugrid_mapper
         else:
             return
 
@@ -496,17 +504,20 @@ class GraphicsVtkWidget(BaseVtkWidget):
         params = self.color_dialog.get()
 
         array.update(params)
-        color = params['color']
 
-        button.setStyleSheet("QToolButton{{ background: {};}}".format(
-            color.name()))
+        color = params['color']
+        if isinstance(color, QtGui.QColor):
+            button.setStyleSheet("QToolButton{{ background: {};}}".format(
+                color.name()))
+
+        mapper.SetLookupTable(LOOKUP_TABLES[params.get('color_map', 'viridis')])
 
         actor = None
         if geo == 'points':
             actor = self.particle_actor
         elif geo == 'cells':
             actor = self.ugrid_actor
-        if actor is not None:
+        if actor is not None and color is not None:
             actor.GetProperty().SetColor(color.getRgbF()[:3])
 
         self.render()

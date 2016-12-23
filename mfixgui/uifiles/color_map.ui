@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>238</width>
+    <width>411</width>
     <height>167</height>
    </rect>
   </property>
@@ -62,16 +62,6 @@
       <item row="2" column="1" colspan="2">
        <widget class="LineEdit" name="lineedit_from"/>
       </item>
-      <item row="0" column="2" colspan="3">
-       <widget class="QComboBox" name="combobox_color_map">
-        <property name="iconSize">
-         <size>
-          <width>60</width>
-          <height>25</height>
-         </size>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="4">
        <widget class="LineEdit" name="lineedit_to"/>
       </item>
@@ -86,6 +76,16 @@
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>To</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="3">
+       <widget class="QComboBox" name="combobox_color_map">
+        <property name="iconSize">
+         <size>
+          <width>100</width>
+          <height>25</height>
+         </size>
         </property>
        </widget>
       </item>
