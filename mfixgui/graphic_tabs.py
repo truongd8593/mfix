@@ -28,7 +28,6 @@ try:
     VTK_AVAILABLE = True
     from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, build_qicons
     LOOKUP_TABLES = build_vtk_lookup_tables()
-    print(LOOKUP_TABLES)
 except:
     vtk = None
     VTK_AVAILABLE = False
