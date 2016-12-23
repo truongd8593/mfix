@@ -26,7 +26,7 @@ except RuntimeError:
 try:
     import vtk
     VTK_AVAILABLE = True
-    from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, get_color_map_pngs
+    from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, build_qicons
     LOOKUP_TABLES = build_vtk_lookup_tables()
     print(LOOKUP_TABLES)
 except:
@@ -103,9 +103,8 @@ class ColorMapPopUp(QtWidgets.QDialog):
         ui.lineedit_from.dtype = float
         ui.lineedit_to.dtype = float
 
-        for name, path in get_color_map_pngs().items():
-            ui.combobox_color_map.addItem(QtGui.QIcon(QtGui.QPixmap(path).scaled(100, 25, transformMode=QtCore.Qt.SmoothTransformation)), name)
-
+        for name, icons in build_qicons().items():
+            ui.combobox_color_map.addItem(icons.get('bar', QtGui.QIcon()), name)
         self.set_color_map('viridis')
 
     def set_(self, array):
@@ -169,8 +168,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # look for files
         self.look_for_files()
 
-        self.init_vtk()
         self.init_toolbar()
+        self.init_vtk()
 
         self.change_frame(0)
         self.reset_view()
@@ -178,21 +177,22 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def init_vtk(self):
 
         self.actors = {}
+        self.mappers = {}
+        self.lookuptables = {}
 
         # unstructured grid
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
 
-        self.ugrid_mapper = vtk.vtkDataSetMapper()
+        self.ugrid_mapper = self.mappers['cells'] = vtk.vtkDataSetMapper()
         self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
         self.ugrid_mapper.SetScalarVisibility(True)
         self.ugrid_mapper.SetScalarModeToUseCellFieldData()
-        self.ugrid_mapper.SetLookupTable(LOOKUP_TABLES['viridis'])
 
-        self.ugrid_actor = vtk.vtkActor()
-        self.ugrid_actor.SetMapper(self.ugrid_mapper)
-        self.actors['cells'] = self.ugrid_actor
 
-        self.vtkrenderer.AddActor(self.ugrid_actor)
+        actor = self.actors['cells'] = vtk.vtkActor()
+        actor.SetMapper(self.ugrid_mapper)
+
+        self.vtkrenderer.AddActor(actor)
 
         # particles
         self.particle_reader = vtk.vtkXMLPolyDataReader()
@@ -210,15 +210,16 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.glyph.SetSourceConnection(ss.GetOutputPort())
         self.glyph.SetColorModeToColorByVector()
 
-        self.particle_mapper = vtk.vtkPolyDataMapper()
+        self.particle_mapper = self.mappers['points'] = vtk.vtkPolyDataMapper()
         self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
-        self.particle_mapper.SetLookupTable(LOOKUP_TABLES['viridis'])
 
-        self.particle_actor = vtk.vtkActor()
-        self.particle_actor.SetMapper(self.particle_mapper)
-        self.actors['points'] = self.particle_actor
+        actor = self.actors['points'] = vtk.vtkActor()
+        actor.SetMapper(self.particle_mapper)
 
-        self.vtkrenderer.AddActor(self.particle_actor)
+        self.vtkrenderer.AddActor(actor)
+
+        for geo in ['cells', 'points']:
+            self.change_color_bar(geo, 'viridis')
 
     def init_toolbar(self):
         self.init_base_toolbar()
@@ -267,6 +268,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             toolbutton = QtWidgets.QToolButton()
             toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
             toolbutton.setAutoRaise(True)
+            toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
             layout.addWidget(toolbutton, i, 3)
             btns['color'] = toolbutton
 
@@ -456,7 +458,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
 
 
-        self.particle_mapper.SetScalarRange(0, 100)
+
 
     def change_visibility(self, geo, visible):
         if geo in self.actors:
@@ -476,26 +478,54 @@ class GraphicsVtkWidget(BaseVtkWidget):
             array = self.point_arrays[array_name]
         elif geo == 'cells':
             self.ugrid_mapper.SelectColorArray(array_name)
-            if index is not None:
-                self.ugrid_mapper.SetArrayComponent(index)
             array = self.cell_arrays[array_name]
         else:
             return
+
+        self.change_color_bar(geo, array.get('color_map', 'viridis'), index)
+        mapper = self.mappers.get(geo)
+        mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
 
         is_comp = array['components'] == 3
         self.visual_btns[geo]['component'].setEnabled(is_comp)
 
         self.render()
 
+    def change_color_bar(self, geo, colormap, component=None):
+        mapper = self.mappers.get(geo, None)
+        if mapper is None: return
+        lut = self.lookuptables.get(geo, None)
+
+        if colormap is not None:
+            new_lut = vtk.vtkLookupTable()
+            new_lut.DeepCopy(LOOKUP_TABLES.get(colormap, 'viridis'))
+            # check component in old lut
+            if lut is not None and component is None and lut.GetVectorMode() != 0:
+                component = lut.GetVectorComponent()
+        else:
+            new_lut = lut
+
+        if isinstance(component, int):
+            new_lut.SetVectorModeToComponent()
+            new_lut.SetVectorComponent(component)
+        else:
+            new_lut.SetVectorModeToMagnitude()
+
+        mapper.SetLookupTable(new_lut)
+        self.lookuptables[geo] = new_lut
+
+        if colormap is not None:
+            self.visual_btns[geo]['color'].setIcon(build_qicons().get(colormap).get('icon', QtGui.QIcon()))
+
     def change_color(self, geo, button, colorby):
 
+        mapper = self.mappers.get(geo)
+        actor = self.actors.get(geo)
         array_name = colorby.currentText()
         if geo == 'points':
             array = self.point_arrays[array_name]
-            mapper = self.particle_mapper
         elif geo == 'cells':
             array = self.cell_arrays[array_name]
-            mapper = self.ugrid_mapper
         else:
             return
 
@@ -505,20 +535,24 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         array.update(params)
 
-        color = params['color']
-        if isinstance(color, QtGui.QColor):
+        color = params.get('color', QtCore.Qt.white)
+        color_map = params.get('color_map', 'viridis')
+
+        self.change_color_bar(geo, color_map)
+
+        single_color = params.get('single_color', False)
+        if single_color:
             button.setStyleSheet("QToolButton{{ background: {};}}".format(
                 color.name()))
-
-        mapper.SetLookupTable(LOOKUP_TABLES[params.get('color_map', 'viridis')])
-
-        actor = None
-        if geo == 'points':
-            actor = self.particle_actor
-        elif geo == 'cells':
-            actor = self.ugrid_actor
-        if actor is not None and color is not None:
             actor.GetProperty().SetColor(color.getRgbF()[:3])
+            button.setIcon(QtGui.QIcon())
+            mapper.ScalarVisibilityOff()
+        else:
+            button.setStyleSheet("QToolButton{{ background: {};}}".format(
+                None))
+            mapper.ScalarVisibilityOn()
+
+        mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
 
         self.render()
 

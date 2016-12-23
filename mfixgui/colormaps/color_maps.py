@@ -7,6 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import glob
 import os
 from collections import OrderedDict
+from qtpy import QtGui, QtCore
 
 try:
     import vtk
@@ -47,6 +48,21 @@ def get_color_map_pngs():
         name = os.path.basename(f).replace('.png', '').lower()
         pngs[name] = f
     return pngs
+
+icon_cache = OrderedDict()
+def build_qicons():
+    if icon_cache:
+        return icon_cache
+
+    icons = OrderedDict()
+    for name, png in get_color_map_pngs().items():
+        pix = QtGui.QPixmap(png)
+        icons[name] = {
+            'bar': QtGui.QIcon(pix.scaled(100, 25, transformMode=QtCore.Qt.SmoothTransformation)),
+            'icon': QtGui.QIcon(pix.scaled(25, 25, transformMode=QtCore.Qt.SmoothTransformation)),
+            }
+    icon_cache.update(icons)
+    return icons
 
 def build_vtk_lookup_tables():
     '''build and return lookup tables for vtk'''
