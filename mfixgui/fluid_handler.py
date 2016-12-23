@@ -323,7 +323,7 @@ class FluidHandler(SpeciesHandler):
         # Exclude the fluid phase
         aliases = set()
         for ss in self.solids_species.values():
-            aliases.update(set(s['alias'] for s in ss.values()))
+            aliases.update(set(s['alias'].lower() for s in ss.values()))
         return aliases
 
 

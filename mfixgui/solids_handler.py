@@ -1190,11 +1190,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
     def solids_make_extra_aliases(self, phase):
         # Construct the 'extra_aliases' set to pass to the species popup
         # Exclude the specified phase
-        aliases = set(f['alias'] for f in self.fluid_species.values())
+        aliases = set(f['alias'].lower() for f in self.fluid_species.values())
         for (p, ss) in self.solids_species.items():
             if p == phase:
                continue
-            aliases.update(s['alias'] for s in ss.values())
+            aliases.update(s['alias'].lower() for s in ss.values())
         return aliases
 
 

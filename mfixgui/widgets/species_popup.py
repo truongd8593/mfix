@@ -20,7 +20,6 @@ from qtpy import QtCore, QtWidgets, PYQT5, uic
 from qtpy.QtWidgets import QTableWidgetItem, QTableWidget, QLineEdit
 from qtpy.QtGui import QValidator, QDoubleValidator
 from qtpy.QtCore import QObject, QEvent
-UserRole = QtCore.Qt.UserRole
 
 from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
                            get_selected_row, get_selected_rows,
@@ -237,20 +236,27 @@ class SpeciesPopup(QtWidgets.QDialog):
         else:
             self.ui.pushbutton_delete.setEnabled(True)
             self.ui.pushbutton_copy.setEnabled(True)
-            self.current_species = tw.item(row, 0).data(UserRole)
+            self.current_species = tw.item(row, 0).text()
             self.enable_species_panel()
 
 
     def make_alias(self, species):
-        species = species.split(' ', 1)[0]
-        return self.parent().species_make_alias(species)
+        alias = self.parent().species_make_alias(species)
+        count = 1
+        while alias in self.defined_species: # Append numeric suffix as needed
+            if '_' in species and species.split('_')[-1].isdigit():
+                species = species[:species.rindex('_')] # Strip old suffix
+            alias = self.parent().species_make_alias('%s_%s' % (species, count))
+            count += 1
+        return alias
+
 
 
     def make_user_species_name(self):
         n=1
-        while ("Species %d" % n) in self.user_species_names:
+        while ("Species_%d" % n) in self.user_species_names:
             n += 1
-        name = "Species %d" % n
+        name = "Species_%d" % n
         self.user_species_names.add(name)
         return name
 
@@ -273,12 +279,13 @@ class SpeciesPopup(QtWidgets.QDialog):
             return # Don't allow duplicates in tmp list (?)
 
         alias = self.make_alias(species)
+
         a_low = coeffs[:7]
         a_high = coeffs[7:14]
         h_f = coeffs[14]
 
         species_data = {'phase': phase,
-                        'alias': alias,
+                        'alias': alias, # == species
                         'mol_weight': mol_weight,
                         'h_f': h_f,
                         'tmin':  tmin,
@@ -287,8 +294,8 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'a_high': a_high}
         if self.density_enabled:
             species_data['density'] = None # ? where do we get this?
-        self.defined_species[species] = species_data
-        self.add_defined_species_row(species, select=True)
+        self.defined_species[alias] = species_data
+        self.add_defined_species_row(alias, select=True)
         self.set_save_button(True)
 
 
@@ -306,10 +313,10 @@ class SpeciesPopup(QtWidgets.QDialog):
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
         alias = species_data['alias']
+        assert (alias == species)
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
         set_item_noedit(item)
-        item.setData(UserRole, species)
         tw.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
         set_item_noedit(item)
@@ -325,8 +332,20 @@ class SpeciesPopup(QtWidgets.QDialog):
         if row is None:
             return
         species = tw.item(row,0).text()
-        alias = self.parent().species_make_alias(species)
-
+        alias = self.make_alias(species)
+        if species not in self.defined_species:
+            return
+        species_data = deepcopy(self.defined_species[species])
+        species_data['alias'] = alias
+        species = alias
+        self.defined_species[species] = species_data
+        self.current_species = species
+        self.enable_species_panel()
+        self.add_defined_species_row(alias, select=True)
+        lineedit = self.ui.lineedit_alias
+        lineedit.selectAll()
+        lineedit.setFocus()
+        self.ui.combobox_phase.setEnabled(True)
 
 
     def handle_delete(self):
@@ -338,8 +357,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         if not current_species:
             return
 
-        # we use initial list, b/c alias may be changed but unsaved
-        alias = self.initial_species[current_species].get('alias', current_species)
+        alias = current_species
         msg = self.parent().chemistry_check_species_in_use(alias)
         if msg:
             self.parent().message(text="%s is used in reaction %s" % (alias, msg))
@@ -360,8 +378,7 @@ class SpeciesPopup(QtWidgets.QDialog):
 
     def handle_new(self):
         phase = self.default_phase
-        species = self.make_user_species_name()
-        alias = species.replace(' ', '') #?
+        alias = species = self.make_user_species_name()
         mol_weight = 0
         density = None
         h_f = 0
@@ -383,27 +400,34 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.defined_species[species] = species_data
         self.current_species = species
         self.enable_species_panel()
-        self.add_defined_species_row(species, select=True)
+        self.add_defined_species_row(alias, select=True)
         lineedit = self.ui.lineedit_alias
         lineedit.selectAll()
         lineedit.setFocus()
         self.ui.combobox_phase.setEnabled(True)
 
     def handle_alias(self):
-        val = self.ui.lineedit_alias.text()
+        val = self.ui.lineedit_alias.text() # Already validated (?)
         tw = self.ui.tablewidget_defined_species
         row = get_selected_row(tw)
         if row is None: # No selection
             return
         #note, making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
-        item.setData(UserRole, self.current_species)
         set_item_noedit(item)
         tw.setItem(row, 0, item)
-        self.defined_species[self.current_species]['alias'] = val
+        defined_species = OrderedDict()
+        for (key, data) in self.defined_species.items():
+            if key == self.current_species:
+                key = val
+                data['alias'] = val
+            defined_species[key] = data
+        self.current_species = val
+        self.defined_species = defined_species
 
-    def set_save_button(self, state):
+    def set_save_button(self, state, msg=''):
         self.ui.pushbutton_save.setEnabled(state)
+        self.ui.label_status.setText(msg)
 
     def handle_combobox_phase(self, index):
         phase = 'GLSC'[index]
@@ -446,8 +470,9 @@ class SpeciesPopup(QtWidgets.QDialog):
 
         # key=species, val=data tuple.  can add phase to key if needed
         self.defined_species = OrderedDict()
-        self.initial_species = OrderedDict()
-        self.extra_aliases = set() # To support enforcing
+        self.extra_aliases = set() # To support enforcing uniqueness
+        self.mfix_keywords = set(k.lower() for k in self.parent().keyword_doc.keys())
+        self.mfix_fortran_globals = set() # TODO: implement this
         # uniqueness of aliases across all phases
 
         self.search_results = []
@@ -489,31 +514,29 @@ class SpeciesPopup(QtWidgets.QDialog):
                 if text=="":
                     self.parent.set_save_button(False)
                     return (QValidator.Intermediate, text, pos)
-                if " " in text: # ?is space allowed?
-                    self.parent.set_save_button(False)
-                    # More visual indication of invalid alias?
+                if text[0].isdigit() or text[0]=='_' or not all(c.isalnum() or c=='_' for c in text):
                     return (QValidator.Invalid, text, pos)
                 current_species = self.parent.current_species
-                if current_species not in self.parent.defined_species:
+                if current_species not in self.parent.defined_species: # Why would this happen?
                     self.parent.set_save_button(False)
-                    # More visual indication of invalid alias?
                     return (QValidator.Invalid, text, pos)
                 current_alias = self.parent.defined_species[current_species].get('alias')
                 if current_alias is None:
                     self.parent.set_save_button(False)
-                    # More visual indication of invalid alias?
                     return (QValidator.Invalid, text, pos)
                 for (k,v) in self.parent.defined_species.items():
-                    v_alias = v.get('alias')
-                    if v_alias == current_alias: # Skip selected item
+                    v_alias = v.get('alias','')
+                    if v_alias.lower() == current_alias.lower(): # Skip selected item
                         continue
-                    if v_alias == text:
-                        self.parent.set_save_button(False)
-                        # More visual indication of invalid alias?
+                    if v_alias.lower() == text.lower():
+                        self.parent.set_save_button(False, 'Alias must be unique')
                         return (QValidator.Intermediate, text, pos)
-                if text in self.parent.extra_aliases:
-                    self.parent.set_save_button(False)
-                    # More visual indication of invalid alias?
+                tlower = text.lower()
+                if tlower in self.parent.extra_aliases:
+                    self.parent.set_save_button(False, 'Alias must be unique')
+                    return (QValidator.Intermediate, text, pos)
+                if tlower in self.parent.mfix_keywords:
+                    self.parent.set_save_button(False, '%s is an MFIX keyword'%text)
                     return (QValidator.Intermediate, text, pos)
                 self.parent.set_save_button(True)
                 return (QValidator.Acceptable, text, pos)
@@ -560,8 +583,6 @@ class SpeciesPopup(QtWidgets.QDialog):
 
 
     def popup(self):
-        # Keep initial aliases, we need them to check species in use
-        self.initial_species = deepcopy(self.defined_species)
         self.show()
         self.raise_()
         self.activateWindow()
