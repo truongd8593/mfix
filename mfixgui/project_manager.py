@@ -572,7 +572,7 @@ class ProjectManager(Project):
 
             # report any errors
             for w in errlist + ws:
-                self.gui.print_internal("Warning: %s" % w.message, color='red')
+                self.gui.print_internal("Warning: %s" % w, color='red')
             n_errs = len(errlist) + len(ws)
             if n_errs:
                 self.gui.print_internal("Warning: %s loading %s" %

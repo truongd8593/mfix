@@ -373,6 +373,9 @@ class BCS(object):
         if autoselect:
             tw.setCurrentCell(nrows, 0)
 
+        # Issues/183
+        self.bcs_check_wall_keys(indices)
+
 
     def bcs_find_index(self):
         n = 1
@@ -692,6 +695,39 @@ class BCS(object):
             if no_k and key in ('z_t', 'z_b'):
                 continue
             self.update_keyword('bc_'+key, val, args=[idx])
+
+    def bcs_check_wall_keys(self, indices=None):
+        # SRS p 37:
+        # When solving solids species equations:
+        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
+        #    Set keyword BC_C_X_S(#,#,#) to 0.0
+        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
+        #
+        #  Note: this needs to be set:
+        #  1:  when toggling solids species eq
+        #  2:  when adding a new solids phase or species
+        #  3:  when adding a new BC
+        #  When deleting BC/phase/species, the keys also need to be deleted,
+        #  but this does not need to be done explicitly - all associated keys
+        #  are deleted automatically when one of these objects is destroyed
+        #
+        # See also issues/183
+
+        if indices is None: # Check all BCs
+            indices = self.bcs.keys()
+        for BC in indices:
+            bc_type = self.project.get_value('bc_type', args=[BC])
+            for P in range(1, 1+self.project.get_value('mmax', default=0)):
+                hw, c, xw = None, None, None # Unset all 3 keys by default
+                if bc_type is not None and bc_type.endswith('W'): # Wall
+                    if self.project.get_value('species_eq', args=[P]):
+                        hw, c, xw = 0.0, 0.0, None
+
+                for S in range(1, 1+self.project.get_value('nmax_s', default=0, args=[P])):
+                    for (key, val) in (('bc_hw_x_s', hw),
+                                       ('bc_c_x_s', c),
+                                       ('bc_xw_s', xw)):
+                        self.update_keyword(key, val, args=[BC,P,S])
 
 
     def reset_bcs(self):
@@ -1903,16 +1939,6 @@ class BCS(object):
             key = 'bc_c_theta_m'
             default = 0.0
             setup_key_widget(key, default, enabled)
-
-        #When solving solids species equations:
-        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
-        #    Set keyword BC_C_X_S(#,#,#) to 0.0
-        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
-        #
-        # TODO:  Where do we set this?
-        #  1:  when toggling solids species eq
-        #  2:  when adding a new species
-        #  3:  when adding a new BC
 
 
     def setup_bcs_scalar_tab(self):

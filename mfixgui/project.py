@@ -341,8 +341,12 @@ class Equation(object):
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, other): # Python2
-        a = float(self)
-        b = float(other)
+        if isinstance(other, (float, int, Equation)): # Value comparison
+            a = float(self)
+            b = float(other)
+        else: # String comparison
+            a = self.eq
+            b = other
         return -1 if a<b else 1 if a>b else 0
 
     def __lt__(self, other): #Python3

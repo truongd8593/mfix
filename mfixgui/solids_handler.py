@@ -128,8 +128,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     return
 
                 if model == CONSTANT:
-                    # FIXME: we could have a saved value from a different phase
-                    #  (Clear out lineedits on phase change?)
                     value = lineedit.value # Possibly re-enabled gui item
                     if value=='None':
                         value = ''
@@ -371,12 +369,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                                                 VARIABLE), enabled)
         self.update_solids_species_groupbox() # availability
 
-        # TODO integrate with BCs
-        #When solving solids species equations:
-        #    Set keyword BC_HW_X_S(#,#,#) to 0.0
-        #    Set keyword BC_C_X_S(#,#,#) to 0.0
-        #    Set keyword BC_XW_S(#,#,#) to UNDEFINED
-        # getting this right is tricky - how about when we add phases & species?
+        # issues/183
+        self.bcs_check_wall_keys()
 
 
     def setup_combobox_solids_model(self):
@@ -442,16 +436,21 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def solids_add(self):
+        """Define a new solids phase.  It is given a generic name which can be
+        changed by the user"""
+
+        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
+            return
+        else:
+            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+
         ui = self.ui.solids
         tw = ui.tablewidget_solids
         nrows = tw.rowCount()
         n = nrows + 1 # index of new solid
         tw.setRowCount(n)
         name = self.make_solids_name(n)
-        if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
-            return
-        else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+
         diameter = 0.0
         density = 0.0
         self.update_keyword('solids_model', model, args=n)
@@ -460,13 +459,14 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                              'density': density} # more?
         self.solids_species[n] = OrderedDict()
         self.update_keyword('mmax', len(self.solids))
-        #self.update_keyword('nmax_s', 0, args=[n])
+        #self.update_keyword('nmax_s', 0, args=[n]) ? needed
         self.update_keyword('species_eq', False, args=[n]) # Disable species eq by default, per SRS
         self.update_solids_table()
         tw.setCurrentCell(nrows, 0) # Select new item
-
-        # ICs enabled/disabled depends on number of solids
-        self.update_nav_tree()
+        #Since c_ps0 is not defined the spec. heat model will default to VARIABLE.  But SRS
+        # says default should be CONSTANT, so force that.  However, if user leaves this pane
+        # without setting a value for spec. heat, the setting will revert to VARIABLE
+        self.set_solids_specific_heat_model(CONSTANT)
 
         # Reshape triangular matrices
         for key in ('des_et_input', 'des_en_input'):
@@ -481,13 +481,27 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                     else:
                         self.update_keyword(key, val, args=i)
 
+        # Clear out lineedits
+        for w in widget_iter(ui.groupbox_solids_parameters):
+            if isinstance(w, LineEdit):
+                w.setText('')
+
         # Tabs enable/disable depending on number of solids
         self.solids_update_tabs()
+        # Set BC keys for solids species at any defined walls
+        self.bcs_check_wall_keys()
+        # ICs enabled/disabled depends on number of solids
+        self.update_nav_tree()
 
 
     def handle_solids_table_selection(self):
         ui = self.ui.solids
         self.P = self.solids_current_phase # should already be set
+        # Clear out lineedits
+        for w in widget_iter(ui.groupbox_solids_parameters):
+            if isinstance(w, LineEdit):
+                w.setText('')
+
         tw = ui.tablewidget_solids
         row = get_selected_row(tw)
         enabled = (row is not None)
@@ -1047,6 +1061,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def solids_species_revert(self):
+        # Nothing to do, popup was operating on a copy all along
         pass
 
 
@@ -1074,6 +1089,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         for (old_alias, new_alias) in rename.items():
             self.chemistry_rename_species(old_alias, new_alias)
         self.update_nav_tree() # Chemistry
+        self.bcs_check_wall_keys() ## Set BC keys for solids species at any defined walls
 
 
     def update_solids_species_table(self):
@@ -1401,6 +1417,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
     def reset_solids(self):
         ui = self.ui.solids
         # Set all solid-related state back to default
+        self.init_solids_default_models()
         self.solids_current_phase = self.P = None
         self.solids_current_phase_name = None
         self.solids.clear()
