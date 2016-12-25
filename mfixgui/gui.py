@@ -70,7 +70,7 @@ from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
 
-from mfixgui.tools.general import (get_icon, get_mfix_home, widget_iter,
+from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, widget_iter,
                            is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs,
                            get_username, convert_string_to_python)
@@ -2051,7 +2051,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          default='ok')
             return
         # Start with a nice template - note, there's too much set in this file.
-        template = os.path.join(get_mfix_home(), 'mfixgui', 'mfix.dat.template')
+        template = os.path.join(SCRIPT_DIRECTORY, 'mfixgui', 'mfix.dat.template')
 
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')

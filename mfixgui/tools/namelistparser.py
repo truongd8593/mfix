@@ -23,7 +23,7 @@ import os
 import re
 from collections import OrderedDict
 
-from mfixgui.tools.general import SCRIPT_DIRECTORY
+from mfixgui.tools.general import SCRIPT_DIRECTORY, get_mfix_home
 
 PACKAGE = os.path.dirname(__file__)
 KEYWORDDOC_JSON = os.path.join(PACKAGE, 'keywordDoc.json')
@@ -36,7 +36,7 @@ def getKeywordDoc():
         with open(KEYWORDDOC_JSON, 'r') as json_file:
             return json.load(json_file)
     else:
-        mfixSourcePath = os.path.join(SCRIPT_DIRECTORY, os.path.pardir, 'model')
+        mfixSourcePath = os.path.join(get_mfix_home(), 'model')
         return buildKeywordDoc(mfixSourcePath)
 
 def buildKeywordDoc(mfixSourcePath):
