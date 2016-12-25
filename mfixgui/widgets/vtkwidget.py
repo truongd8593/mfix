@@ -188,7 +188,7 @@ class VtkWidget(BaseVtkWidget):
 
         # ui file widget tweaks
         ui.combobox_stl_units.clear()
-        ui.combobox_stl_units.addItems(CONVERSION_TO_M.keys())
+        ui.combobox_stl_units.addItems(list(CONVERSION_TO_M.keys()))
         ui.combobox_stl_units.setCurrentText('m')
         ui.combobox_stl_units.currentIndexChanged.connect(self.handle_stl_units)
 
