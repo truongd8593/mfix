@@ -84,17 +84,20 @@ def buildKeywordDoc(mfixSourcePath):
         mfixKeywordDict.update(parsedNameList)
         mfixKeywordDict['keywordlist'] = keywordlist+parsedNameList['keywordlist']
         mfixKeywordDict['categories'] = catlist+parsedNameList['categories']
-    cgs_re = re.compile(r' *\[.*CGS.*\] *', flags=re.IGNORECASE)
+    #cgs_re = re.compile(r' *\[.*CGS.*\] *', flags=re.IGNORECASE)
+    #si_re = re.compile(r' *\[.*SI.*\] *', flags=re.IGNORECASE)
     def redact(v): # TODO: propagate these modifications in the Fortran sources & docs
         if not isinstance(v, dict): # 'categories' and 'keywordlist'
             return v
         d = v.get('description')
         if d:
-            d = cgs_re.sub('', d)
+            #d = cgs_re.sub('', d) # no longer needed
+            #d = si_re.sub('', d) # leave units in tooltips
             d = d.replace("Youngs", "Young's")
             d = d.replace("Poissons", "Poisson's")
             d = d.replace("Poisson ratio", "Poisson's ratio")
             d = d.replace(" (in units of g/cm^2.s)", "")
+            d = d.replace("phase M", "phase") # Should we use "M" internally instead of "P"?   Probably...
             d = d.replace(" By default, the gravity force acts in the negative y-direction.", "")
             v['description'] = d
         return v
