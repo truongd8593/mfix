@@ -110,7 +110,8 @@ class ColorMapPopUp(QtWidgets.QDialog):
 
     def set_(self, array):
         self.array = array
-        self.set_color(self.array.get('color', QtCore.Qt.white))
+        self.color = self.array.get('color', DEFAULT_GEO_COLOR)
+        self.set_color(self.color)
         self.set_color_map(self.array.get('color_map', 'viridis'))
 
         d_range = [0, 1]
@@ -118,6 +119,10 @@ class ColorMapPopUp(QtWidgets.QDialog):
             self.array.get('from', self.array.get('range', d_range)[0]))
         self.ui.lineedit_to.updateValue(None,
             self.array.get('to', self.array.get('range', d_range)[1]))
+
+        single_color = self.array.get('single_color', False)
+        self.ui.checkbox_single_color.setChecked(single_color)
+        self.ui.widget_color_map.setEnabled(not single_color)
 
     def get(self):
         return {
@@ -250,6 +255,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         actor = self.actors['geometry'] = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetColor(DEFAULT_GEO_COLOR.getRgbF()[:3])
+        actor.GetProperty().SetOpacity(0.4)
 
         self.vtkrenderer.AddActor(actor)
 
@@ -548,9 +554,20 @@ class GraphicsVtkWidget(BaseVtkWidget):
         else:
             return
 
-        self.change_color_bar(geo, array.get('color_map', 'viridis'), index)
         mapper = self.mappers.get(geo)
         mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
+
+        single_color = array.get('single_color', False)
+        if single_color:
+            mapper.ScalarVisibilityOff()
+            color = array.get('color', QtCore.Qt.white)
+            btn = self.visual_btns[geo]['color']
+            btn.setStyleSheet("QToolButton{{ background: {};}}".format(color.name()))
+            btn.setIcon(QtGui.QIcon())
+        else:
+            self.change_color_bar(geo, array.get('color_map', 'viridis'), index)
+            mapper.ScalarVisibilityOn()
+
 
         is_comp = array['components'] == 3
         self.visual_btns[geo]['component'].setEnabled(is_comp)
@@ -582,7 +599,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.lookuptables[geo] = new_lut
 
         if colormap is not None:
-            self.visual_btns[geo]['color'].setIcon(build_qicons().get(colormap).get('icon', QtGui.QIcon()))
+            btn = self.visual_btns[geo]['color']
+            btn.setIcon(build_qicons().get(colormap).get('icon', QtGui.QIcon()))
+            btn.setStyleSheet("QToolButton{{ background: {};}}".format(None))
 
     def change_color(self, geo, button, colorby):
         """change the color or color map of an actor"""
@@ -610,14 +629,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         single_color = params.get('single_color', False)
         if single_color:
-            button.setStyleSheet("QToolButton{{ background: {};}}".format(
-                color.name()))
+            button.setStyleSheet("QToolButton{{ background: {};}}".format(color.name()))
             actor.GetProperty().SetColor(color.getRgbF()[:3])
             button.setIcon(QtGui.QIcon())
             mapper.ScalarVisibilityOff()
         else:
-            button.setStyleSheet("QToolButton{{ background: {};}}".format(
-                None))
+            button.setStyleSheet("QToolButton{{ background: {};}}".format(None))
             mapper.ScalarVisibilityOn()
 
         mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))

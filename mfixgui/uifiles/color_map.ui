@@ -57,7 +57,7 @@
     </spacer>
    </item>
    <item row="1" column="0" colspan="3">
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="widget_color_map" native="true">
      <layout class="QGridLayout" name="gridLayout">
       <item row="2" column="1" colspan="2">
        <widget class="LineEdit" name="lineedit_from"/>
@@ -155,7 +155,7 @@
   <connection>
    <sender>checkbox_single_color</sender>
    <signal>clicked(bool)</signal>
-   <receiver>widget</receiver>
+   <receiver>widget_color_map</receiver>
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
