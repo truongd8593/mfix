@@ -70,7 +70,7 @@ from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
 
-from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, widget_iter,
+from mfixgui.tools.general import (get_icon, widget_iter,
                            is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs,
                            get_username, convert_string_to_python)
@@ -1147,7 +1147,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 def __getattr__(self, key):
                     return self if key=='nodeChart' else self.noop
             self.ui.workflow_widget = FakeWorkflow()
-            self.ui.pushButtonWorkflow.setEnabled(False)
+            self.ui.pushButtonWorkflow.setEnabled(False)# FIXME leaves a hole in GUI (qt5.7)
             self.ui.pushButtonWorkflow.setToolTip(
                 "Workflow disabled, can't import pyqtnode")
 
@@ -2050,9 +2050,8 @@ class MfixGui(QtWidgets.QMainWindow,
                          buttons=['ok'],
                          default='ok')
             return
-        # Start with a nice template - note, there's too much set in this file.
-        template = os.path.join(SCRIPT_DIRECTORY, 'mfixgui', 'mfix.dat.template')
-
+        # Start from template
+        template = os.path.join(SCRIPT_DIRECTORY,  'mfix.dat.template')
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')
         try:
