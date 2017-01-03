@@ -365,7 +365,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.frame_spinbox = QtWidgets.QSpinBox()
         self.frame_spinbox.valueChanged.connect(self.change_frame)
-        self.frame_spinbox.setMaximum(99999)
+        self.frame_spinbox.setMaximum(9999999)
 
         self.toolbutton_play_speed = QtWidgets.QToolButton()
         self.toolbutton_play_speed.setIcon(get_icon('speed.png'))
@@ -406,7 +406,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def show_visible_menu(self):
         # update comboboxes based on avaliable arrays
-
         for type_, array in [('cells', self.cell_arrays),
                              ('points', self.point_arrays)]:
             btns = self.visual_btns[type_]
@@ -489,8 +488,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     # --- vtk functions ---
     def read_vtu(self, path):
+        init = False
         if self.ugrid_mapper is None:
             self.init_ugrid()
+            init = True
 
         path = os.path.join(self.project_dir, path)
         self.ugrid_reader.SetFileName(path)
@@ -507,9 +508,18 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange(),}
 
+        if init:
+            name = cell_data.GetArrayName(0)
+            self.ugrid_mapper.SelectColorArray(name)
+            combo = self.visual_btns['cells']['color_by']
+            combo.addItems(self.cell_arrays.keys())
+            combo.setCurrentIndex(combo.findText(name))
+
     def read_vtp(self, path):
+        init = False
         if self.particle_mapper is None:
             self.init_particles()
+            init = True
 
         path = os.path.join(self.project_dir, path)
         self.particle_reader.SetFileName(path)
@@ -528,9 +538,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
         if 'Diameter' in self.point_arrays:
             self.glyph.SetScaleModeToScaleByScalar()
             self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
-
-
-
+        if init:
+            name = point_data.GetArrayName(0)
+            self.glyph.SetInputArrayToProcess(1, 0, 0, 0, name)
+            combo = self.visual_btns['points']['color_by']
+            combo.addItems(self.point_arrays.keys())
+            combo.setCurrentIndex(combo.findText(name))
 
     def change_visibility(self, geo, visible):
         if geo in self.actors:
@@ -567,7 +580,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         else:
             self.change_color_bar(geo, array.get('color_map', 'viridis'), index)
             mapper.ScalarVisibilityOn()
-
 
         is_comp = array['components'] == 3
         self.visual_btns[geo]['component'].setEnabled(is_comp)
