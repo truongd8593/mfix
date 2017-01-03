@@ -25,7 +25,6 @@ log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 from mfixgui.tools.general import SCRIPT_DIRECTORY
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 
-
 # import qt
 from qtpy import QtCore, QtWidgets, QtGui, PYQT5
 from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, Signal
@@ -98,7 +97,6 @@ if PRECOMPILE_UI:
         from uifiles.monitors import Ui_monitors
         from uifiles.post_processing import Ui_post_processing
         from uifiles.run import Ui_run
-
 
     except ImportError as e:
         print(e)
@@ -411,6 +409,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
             btn.pressed.connect(lambda mode=mode: self.change_mode(mode))
+            btn.released.connect(lambda btn=btn:  btn.setChecked(True)) # Force button to remain in 'checked' state
 
         # navigation tree
         ui.toolbutton_collapse_navigation.clicked.connect(self.toggle_nav_menu)
@@ -475,7 +474,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # --- parameter dialog
         self.parameter_dialog = ParameterDialog(self)
 
-        # --- default ---
+        # --- default --- # do we need this?  note this gets reset in main anyhow
         self.change_mode('modeler')
         self.change_pane('model setup')
 
@@ -1147,7 +1146,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 def __getattr__(self, key):
                     return self if key=='nodeChart' else self.noop
             self.ui.workflow_widget = FakeWorkflow()
-            self.ui.pushButtonWorkflow.setEnabled(False)# FIXME leaves a hole in GUI (qt5.7)
+            self.ui.pushButtonWorkflow.setEnabled(False)
             self.ui.pushButtonWorkflow.setToolTip(
                 "Workflow disabled, can't import pyqtnode")
 
@@ -1186,11 +1185,7 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         for key, btn in self.modebuttondict.items():
-            btn.setChecked(mode == key) # what does this do? buttons are not checkable
-            # Bold-facing the current selection seems a little heavy
-            #font = btn.font()
-            #font.setBold(mode == key)
-            #btn.setFont(font)
+            btn.setChecked(mode == key)
 
         workflow = (mode=='workflow')
         if PYQTNODE_AVAILABLE:
