@@ -49,6 +49,7 @@ PLOT_ITEMS = OrderedDict([
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 DEFAULT_PLAYBACK_SPEED = 100
 DEFAULT_MAXIMUM_POINTS = 10000
+DEFAULT_GEO_COLOR = QtGui.QColor(224, 224, 224)
 
 
 def parse_pvd_file(fname):
@@ -99,6 +100,7 @@ class ColorMapPopUp(QtWidgets.QDialog):
         self.setWindowTitle('Color Map')
 
         ui.toolbutton_select_color.clicked.connect(self.select_color)
+        ui.toolbutton_select_color.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_GEO_COLOR.name()))
         ui.lineedit_from.dtype = float
         ui.lineedit_to.dtype = float
 
@@ -247,6 +249,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # Create an actor
         actor = self.actors['geometry'] = vtk.vtkActor()
         actor.SetMapper(mapper)
+        actor.GetProperty().SetColor(DEFAULT_GEO_COLOR.getRgbF()[:3])
 
         self.vtkrenderer.AddActor(actor)
 
@@ -302,16 +305,27 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
 
             toolbutton = QtWidgets.QToolButton()
-            toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
+            size = QtCore.QSize(25, 25)
+            toolbutton.setMinimumSize(size)
+            toolbutton.setMaximumSize(size)
+            toolbutton.setIconSize(size)
+            if not geo == 'geometry':
+                toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
+                toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
+            else:
+                toolbutton.clicked.connect(lambda ignore, t=toolbutton: self.change_geo_color(t))
+                toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_GEO_COLOR.name()))
             toolbutton.setAutoRaise(True)
-            toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
             toolbutton.setEnabled(False)
             layout.addWidget(toolbutton, i, 3)
             btns['color'] = toolbutton
 
             opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
-            opacity.setValue(1.0)
+            if geo == 'geometry':
+                opacity.setValue(0.4)
+            else:
+                opacity.setValue(1.0)
             opacity.setSingleStep(0.1)
             opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(g, o))
             opacity.setEnabled(False)
@@ -544,6 +558,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.render()
 
     def change_color_bar(self, geo, colormap, component=None):
+        """change the color map"""
         mapper = self.mappers.get(geo, None)
         if mapper is None: return
         lut = self.lookuptables.get(geo, None)
@@ -570,10 +585,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.visual_btns[geo]['color'].setIcon(build_qicons().get(colormap).get('icon', QtGui.QIcon()))
 
     def change_color(self, geo, button, colorby):
-
+        """change the color or color map of an actor"""
         mapper = self.mappers.get(geo)
         actor = self.actors.get(geo)
         array_name = colorby.currentText()
+        if len(array_name) == 0: return
         if geo == 'points':
             array = self.point_arrays[array_name]
         elif geo == 'cells':
@@ -608,7 +624,21 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.render()
 
+    def change_geo_color(self, button):
+        """Change the color of the geometry actor"""
+        col = QtWidgets.QColorDialog.getColor()
+        if not col.isValid():
+            return
+
+        button.setStyleSheet("QToolButton{{ background: {};}}".format(
+            col.name()))
+
+        self.actors['geometry'].GetProperty().SetColor(col.getRgbF()[:3])
+
+        self.render()
+
     def change_opacity(self, geo, opacity):
+        """change the opactiy of an actor"""
         if geo in self.actors:
             self.actors[geo].GetProperty().SetOpacity(opacity)
             self.render()
