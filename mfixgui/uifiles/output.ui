@@ -577,6 +577,31 @@ QPushButton:checked {
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushbutton_basic</tabstop>
+  <tabstop>pushbutton_spx</tabstop>
+  <tabstop>pushbutton_vtk</tabstop>
+  <tabstop>lineedit_keyword_res_dt</tabstop>
+  <tabstop>lineedit_keyword_res_backups</tabstop>
+  <tabstop>lineedit_keyword_res_backup_dt</tabstop>
+  <tabstop>checkbox_keyword_write_vtk_files</tabstop>
+  <tabstop>checkbox_keyword_time_dependent_filename</tabstop>
+  <tabstop>lineedit_keyword_vtu_dir</tabstop>
+  <tabstop>checkbox_binary_spx_files</tabstop>
+  <tabstop>checkbox_netcdf_files</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_1</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_2</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_3</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_4</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_5</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_6</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_9</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_8</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_7</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_10</tabstop>
+  <tabstop>lineedit_keyword_spx_dt_args_11</tabstop>
+  <tabstop>lineedit_keyword_nrr</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

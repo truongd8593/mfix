@@ -234,6 +234,12 @@ QPushButton:checked {
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QGroupBox" name="groupbox_residuals">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Maximum residual at convergence</string>
          </property>
@@ -875,6 +881,30 @@ QPushButton:checked {
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushbutton_residuals</tabstop>
+  <tabstop>pushbutton_discretization</tabstop>
+  <tabstop>pushbutton_linear_solver</tabstop>
+  <tabstop>pushbutton_preconditioner</tabstop>
+  <tabstop>pushbutton_advanced</tabstop>
+  <tabstop>lineedit_keyword_tol_resid</tabstop>
+  <tabstop>lineedit_keyword_tol_resid_t</tabstop>
+  <tabstop>lineedit_keyword_tol_resid_x</tabstop>
+  <tabstop>lineedit_keyword_tol_resid_th</tabstop>
+  <tabstop>lineedit_keyword_tol_resid_scalar</tabstop>
+  <tabstop>lineedit_keyword_tol_diverge</tabstop>
+  <tabstop>combobox_cn_on</tabstop>
+  <tabstop>tablewidget_discretization</tabstop>
+  <tabstop>checkbox_keyword_def_cor</tabstop>
+  <tabstop>checkbox_keyword_chi_scheme</tabstop>
+  <tabstop>tablewidget_linear_solver</tabstop>
+  <tabstop>tablewidget_preconditioner</tabstop>
+  <tabstop>lineedit_keyword_max_inlet_vel_fac</tabstop>
+  <tabstop>lineedit_keyword_ur_f_gs</tabstop>
+  <tabstop>lineedit_keyword_ur_kth_sml</tabstop>
+  <tabstop>checkbox_fpfoi</tabstop>
+  <tabstop>lineedit_keyword_c_fac</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
