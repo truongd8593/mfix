@@ -8,7 +8,7 @@ Prepared by J.Musser, J.Weber, W. Rogers, M. Meredith
 National Energy Technology Laboratory
 Research and Innovation Center
 
-December, 2016
+January, 2017
 
 Table of Contents
 Table of Contents .......................................................................................................................... ii
@@ -31,23 +31,23 @@ Assumptions and Dependencies ...................................................
 
 3. External Interface Requirements ...........................................................................................3
 User Interfaces .......................................................................................................................................... 3
-Hardware Interfaces ................................................................................................................................ 68
-0Software Interfaces ............................................................................................................................... 68
-Communications Interfaces .................................................................................................................... 68
+Hardware Interfaces ................................................................................................................................ 74
+0Software Interfaces ............................................................................................................................... 74
+Communications Interfaces .................................................................................................................... 74
 
-4. System Features .....................................................................................................................68
-5. Other Nonfunctional Requirements .....................................................................................74
-Performance Requirements ..................................................................................................................... 74
-Safety Requirements ............................................................................................................................... 74
-Security Requirements ............................................................................................................................ 74
-Software Quality Attributes .................................................................................................................... 74
-Code Style Guide .................................................................................................................................... 74
-Business Rules ........................................................................................................................................ 74
+4. System Features .....................................................................................................................75
+5. Other Nonfunctional Requirements .....................................................................................80
+Performance Requirements ..................................................................................................................... 80
+Safety Requirements ............................................................................................................................... 80
+Security Requirements ............................................................................................................................ 80
+Software Quality Attributes .................................................................................................................... 80
+Code Style Guide .................................................................................................................................... 81
+Business Rules ........................................................................................................................................ 81
 
-6. Other Requirements ..............................................................................................................75
-Appendix A: Glossary..................................................................................................................75
-Appendix B: Analysis Models .....................................................................................................75
-Appendix C: To Be Determined List ..........................................................................................75
+6. Other Requirements ..............................................................................................................81
+Appendix A: Glossary..................................................................................................................81
+Appendix B: Analysis Models .....................................................................................................81
+Appendix C: To Be Determined List ..........................................................................................81
 
 Revision History
 Name
@@ -555,9 +555,9 @@ Select Solids Density model
 #  Variable Solids Density
 #    Selection available with species equations enable
 #    Keyword RO_S0(#) must be undefined
-#    Requires material densities for all solids species
-#    Requires base composition be specified
-#    Requires an inert species be identified
+#    Requires material densities for all solids species, RO_XS0(#,#)
+#    Requires base composition be specified, X_S0(#,#)
+#    Requires an inert species be identified, INERT_SPECIES(#)
 Select Solids Viscosity Model:
 #    Selection only available for MFIX-TFM solids model
 #    Available selections:
@@ -615,11 +615,15 @@ Specify solids phase emissivity
 #    Specification only available when solving energy equations
 #    Sets keyword DES_EM(#)
 Solids phase species selection:
+#    Total number of species for each phase must be specified, NMAX_S(#)
 #    Species data required under any of the following conditions:
 #  Solving species equations
 #  Energy equations are solved with mixture specific heat model
 #    Specification panel operates as a popup window triggered by an Add/Edit button
 #    Summary window provides a list of the species and an overview of some properties
+#    Variable solids density requires users to specify the material density for each species
+#  Sets keyword RO_XS0(#,#)
+#  Value must be positive, non-zero
 Baseline (unreacted) composition selection:
 #    Available only for variable solids density model
 #    Select the solids phase species that comprise the initial particle composition
@@ -1107,9 +1111,10 @@ Solid-# (tab) - Rename tab to user provided solids name.
 #    Some input decks may or may not contain IC_EP_S keyword:
 #  Volume fraction is specified using the solids bulk density
 #    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
-#    Solids density IC_ROs is determined by the solids density model
-# IC_ROs(#) = RO_S0(#)
-# IC_ROs(#) = -- FINISH LATER -#  Volume fraction may be inferred from IC_EP_G
+#    Solids density IC_ROs is determined by the solids density model. For
+constant solids density, use RO_S0. For variable solids density, see
+“Calculating Variable Solids Density” section in the appendix.
+#  Volume fraction may be inferred from IC_EP_G
 #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
 #    Only valid for one solids phase (MMAX=1)
 #    Define temperature
@@ -1194,6 +1199,12 @@ Select boundary type
 #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
 #  Partial Slip Wall
+
+# 
+
+# 
+
+# 
 
 #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
@@ -1288,6 +1299,8 @@ Select species equation boundary type:
 #    Sets keyword BC_HW_X_G(#) to 0.0
 #    Requires BC_C_X_G(#)
 #    Sets keyword BC_XW_G(#) to UNDEFINED
+
+# 
 
 Convective Flux
 #    Requires BC_HW_X_G(#)
@@ -1429,6 +1442,8 @@ Select granular energy equation boundary type:
 #    Sets keyword BC_HW_THETA_M(#,#) to 0.0
 #    Sets keyword BC_C_THETA_M (#,#) to 0.0
 #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
+
+# 
 
 Specified Temperature
 #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
@@ -1619,11 +1634,14 @@ leave [UNDEFINED] for PI
 #  Some input decks may or may not contain BC_EP_S keyword:
 #    Volume fraction is specified using the solids bulk density
 # BC_EP_S(#,#) == BC_ROP_S(#,#) / BC_ROs(#)
-# Solids density BC_ROs is determined by solids density model
-#  BC_ROs(#) = RO_S0(#)
-#  BC_ROs(#) = -- FINISH LATER -#    Volume fraction may be inferred from BC_EP_G
+# Solids density BC_ROs is determined by the solids density
+model. For constant solids density, use RO_S0. For variable
+solids density, see “Calculating Variable Solids Density”
+section in the appendix.
+#    Volume fraction may be inferred from BC_EP_G
 # BC_EP_S(#,#) = 1.0 - BC_EP_G(#)
 # Only valid for one solids phase (MMAX=1)
+# 
 Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
 Region orientation (e.g., XZ-Plane)
 #    For BC_TYPE='MI' and XZ-Plane region
@@ -1634,8 +1652,8 @@ Region orientation (e.g., XZ-Plane)
 # DEFAULT value of 0.0
 #    Volumetric Flowrate (m3/s)
 # Sets keyword BC_VOLFLOW_S(#,#)
-# DEFAULT value of 0.0
 
+# DEFAULT value of 0.0
 Mass Flowrate (kg/s)
 # Sets keyword BC_MASSFLOW_S(#,#)
 # DEFAULT value of 0.0
@@ -1689,8 +1707,8 @@ For BC_TYPE='CG_MI' or 'PI'
 #    Define X-Axial Velocity
 # Sets keyword BC_U_S(#,#)
 # DEFAULT value of 0.0
-#    Define Y-Axial Velocity
 
+Define Y-Axial Velocity
 # Sets keyword BC_V_S(#,#)
 # DEFAULT value of 0.0
 Define Z-Axial Velocity
@@ -1722,7 +1740,8 @@ Fluid (tab)
 #    Specification always available
 #    Input required
 #    Sets keyword BC_P_G(#)
-#    DEFAULT 101.325d3
+
+DEFAULT 101.325d3
 
 The remaining inputs are "optional." They do not have default values, because MFIX will calculate
 appropriate values if they are unspecified and 'backflow' occurs at the outlet.
@@ -2193,13 +2212,14 @@ Specify heat of reaction
 #    Only available if user-defined heat of reaction is enabled
 #    DEFAULT value 0.0
 #    Sets reaction construct keyword DH
-Specify HoR fraction assigned to -phase#    Only available if user-defined heat of reaction is enabled
 #    Homogeneous chemical reactions
 #  Specification is not available
 #  Set reaction construct keyword fracDH(#) to 1.0 where # is the phase index
 #    Heterogeneous chemical reactions
 #  Entry for each phase referenced by the reaction
 #  DEFAULT value 0.5 for both entires
+
+# 
 
 Sets reaction construct keyword fracDH(#) for each referenced phase
 
@@ -2250,6 +2270,7 @@ Specify spatial discretization and under relation factors (table format)
 #    Column 2: Select discretization scheme for equation #
 #  Available selections
 #    First-order upwind [DEFAULT for all equations]
+
 # Sets keyword DISCRETIZE(#) to 0
 First-order upwind (dwf)
 # Sets keyword DISCRETIZE(#) to 1
@@ -2269,7 +2290,6 @@ First-order upwind (dwf)
 # Sets keyword DISCRETIZE(#) to 8
 #    Central
 # Sets keyword DISCRETIZE(#) to 9
-#
 #    Column 3: Specify under relation factors
 #  Specification always available
 #  Sets keyword UR_FAC for each equation #
@@ -2289,7 +2309,8 @@ Enable deferred correction
 #    Sets keyword DEF_COR
 #    DEFAULT value .FALSE.
 Enable chi-scheme correction
-#    Selection only available if the species equation spatial discretization is SMART or MUSCL (DISCRETIZE(7) = 3 or 6)
+#    Selection only available if the species equation spatial discretization is SMART or
+MUSCL (DISCRETIZE(7) = 3 or 6)
 #    Sets keyword CHI_SCHEME
 #    DEFAULT value .FALSE.
 
@@ -2410,60 +2431,68 @@ Specify VTK Directory
 #    Sets keyword VTU_DIR
 #    No default (empty string)
 Write binary Single Precision files (SPx)
-#    No keyword association at this time.
-#    The checkbox is a placeholder for capabilities under-development.
-#    Enables SPx tab
-Enable NetCDF output files
 #    No keyword association.
+#    Enables SPx tab
+#    Backwards compatibility: Enabled if any SPx time values are specified
+Enable NetCDF output files
+#    Not available when SPx output is enabled
+#    No keyword association.
+#    Enables NetCDF tab
+
+SPx (tab)
+Note: Technically, MFIX will now permit a user to mix-and-match the SPx output files meaning that
+some can be written and others not. However, this is likely to break the ParaView reader.
+Therefore, if the “Write binary SPx” checkbox is enabled, output is required for all SPx files.
+Otherwise, all should remain unspecified to skip writing the SPx files.
+
 Write interval for gas volume fraction
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(1)
 #    DEFAULT value of 1.0
+#    Required if SPx data is enabled.
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for gas and solids pressure
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(2)
+#    Required if SPx data is enabled.
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for gas velocity
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(3)
+#    Required if SPx data is enabled.
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
+
 Write interval for solids velocity
-#    Specification only if write binary SPx files is enabled (currently always true)
+#    Required if SPx data is enabled.
 #    Sets keyword SPX_DT(4)
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for solids bulk density
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(5)
+#    Required if SPx data is enabled.
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for gas and solids temperature
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(6)
+#    Required if SPx data is enabled and solving any energy equations.
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for gas and solids mass fractions
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(7)
+#    Required if SPx data is enabled and solving any species equations.
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for granular temperature
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(8)
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for user defined scalars
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(9)
+#    Required if SPx data is enabled and solving any user defined scalar equations
 #    DEFAULT value of 1.0
-
 #    Error check: value must be greater than or equal to RES_DT
 Write interval for reaction rates
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(10)
+#    Required if SPx data is enabled and NRR > 0 (see below)
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Number of reaction rates to write
@@ -2472,23 +2501,27 @@ Number of reaction rates to write
 #    DEFAULT value of 0
 #    Error check: value must be greater than or equal to 0
 Write interval for turbulence quantities
-#    Specification only if write binary SPx files is enabled (currently always true)
 #    Sets keyword SPX_DT(11)
+#    Required if SPx data is enabled and TURBULENCE_MODEL = “K_EPSILON”
 #    DEFAULT value of 1.0
 #    Error check: value must be greater than or equal to RES_DT
 Write ASCII particle data
 #    Selection only available if DEM or PIC solids
 #    Sets keyword PRINT_DES_DATA
 #    DEFAULT value of .TRUE.
+Specify VTP Directory
+#    Specification only if PRINT_DES_DATA = .TRUE.
+#    Sets keyword VTP_DIR
+#    No default (empty string)
 Select particle data format
-#    Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
-#    Sets keyword DES_OUTPUT_TYPE
-#    Available Selections
+
+Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
+Sets keyword DES_OUTPUT_TYPE
+Available Selections
 #  ParaView - VTK/.vtp [DEFAULT]
 #  Tecplot - .dat
 
-VTK IO (tab)
-
+VTK (tab)
 Icons and table similar to IC/BC/PS/IS for adding VTK regions. This section requires
 WRITE_VTK_FILES = .TRUE.
 
@@ -2509,6 +2542,9 @@ Select Output type
 #    Sets keyword VTK_DATA(#) to 'P'
 
 Cell data sub-pane
+There is a need for some hand waving here. Many mfix.dat files may use a different specification
+for VTK input. There will need to be a way of catching the 'old' format and converting it to this
+input style.
 
 Specify filename base
 # Specification is required.
@@ -2530,6 +2566,9 @@ Specify region z-axis slices
 # Specification always available
 # Sets keyword VTK_NZS(#)
 # DEFAULT value of 0
+
+Fluid Phase (tab?)
+
 Enable writing gas volume fraction
 # Selection always available
 # Sets keyword VTK_EP_G(#)
@@ -2537,6 +2576,7 @@ Enable writing gas volume fraction
 Enable writing gas pressure
 # Requires fluid solver (RO_G0 /= 0.0)
 # Sets keyword VTK_P_G(#)
+
 # DEFAULT value .FALSE.
 Enable writing solids pressure
 # Requires TFM solids
@@ -2563,20 +2603,35 @@ Enable writing gas temperature
 # Sets keyword VTK_T_G(#)
 # DEFAULT value .FALSE.
 Enable writing gas species N (an entry for each defined species)
-
 # Requires defined gas phase species
 # Sets keyword VTK_X_G(#,N)
 # DEFAULT value .FALSE.
-
 Enable writing gas temperature
 # Requires fluid solver (RO_G0 /= 0.0) and ENERGY_EQ = .TRUE.
 # Sets keyword VTK_T_G(#)
 # DEFAULT value .FALSE.
-o
+Enable writing gas species N
+# Requires fluid solver (RO_G0 /= 0.0) and SPECIES_EQ(0) = .TRUE.
+# Sets keyword VTK_X_G(#,N)
+# DEFAULT value .FALSE.
+Enable writing turbulent kinetic energy
+#    Requires fluid solver (RO_G0 /= 0.0) and TURBULENCE_MODEL='K_EPSILON'
+#    Sets keyword VTK_K_TURB_G(#)
+#    DEFAULT value of .FALSE.
+Enable writing turbulent dissipation
+#    Requires fluid solver (RO_G0 /= 0.0) and TURBULENCE_MODEL='K_EPSILON'
+#    Sets keyword VTK_E_TURB_G(#)
+#    DEFAULT value of .FALSE.
+Enable writing reaction rates
+# Requires nRR > 0
+# Sets keyword VTK_RRATE(#)
+# DEFAULT value .FALSE.
+
+Solids Phase (tab?)
 
 Enable writing solids velocity vector
 # Requires TMF solids
-# Sets keyword VTK_VEL_G(#)
+# Sets keyword VTK_VEL_S(#,#)
 # DEFAULT value .FALSE.
 Enable writing solids velocity x-component
 # Requires TMF solids
@@ -2594,8 +2649,208 @@ Enable writing solids bulk density
 # Requires TMF solids
 # Sets keyword VTK_ROP_S(#,#)
 # DEFAULT value .FALSE.
+Enable writing solids temperature
+# Requires TFM solids and ENERGY_EQ = .TRUE.
+# Sets keyword VTK_S_G(#,#)
+# DEFAULT value .FALSE.
+Enable writing solids phase M, species N
+# Requires TFM solids and SPECIES_EQ(#) = .TRUE.
+# Sets keyword VTK_X_S(#,M,N)
+# DEFAULT value .FALSE.
+Enable writing solids phase granular temperature
+# Requires TFM solids and KT_TYPE /= “ALGEBRAIC”
+# Sets keyword VTK_THETA_M(#,#)
+# DEFAULT value .FALSE.
+
+Scalar (tab?)
+
+Enable writing user defined scalar
+# Requires NSCALAR > 0
+# Sets keyword VTK_SCALAR(#)
+# DEFAULT value .FALSE.
+
+Other (tab?)
+
+Enable writing vorticity
+# Requires fluid solver (RO_G0 /= 0.0)
+# Sets keyword VTK_VORTICITY (#)
+# Sets keyword VTK_LAMBDA_2(#)
+# DEFAULT value .FALSE.
+Enable writing partition
+# Sets keyword VTK_PARTITION(#)
+# DEFAULT value .FALSE.
+Enable writing boundary ID
+# Sets keyword VTK_BC_ID(#)
+# DEFAULT value .FALSE.
+
+Enable writing wall distance
+# Sets keyword VTK_DWALL(#)
+# DEFAULT value .FALSE.
+Enable writing cell index
+# Sets keyword VTK_IJK(#)
+# DEFAULT value .FALSE.
+
+Particle data sub-pane
+There is a need for some hand waving here. Many mfix.dat files may use a different specification
+for VTK input. There will need to be a way of catching the 'old' format and converting it to this
+input style.
+
+Specify filename base
+# Specification is required.
+# Sets keyword VTK_FILEBASE(#)
+# DEFAULT value of region name
+Specify write interval
+# Specification is required
+# Sets keyword VTK_DT(#)
+# DEFAULT value of 1.0 (must write)
+Specify region x-axis slices
+# Specification always available
+# Sets keyword VTK_NXS(#)
+# DEFAULT value of 0
+Specify region y-axis slices
+# Specification always available
+# Sets keyword VTK_NYS(#)
+# DEFAULT value of 0
+Specify region z-axis slices
+
+# Specification always available
+# Sets keyword VTK_NZS(#)
+# DEFAULT value of 0
+
+Enable writing particle diameter
+# Requires DEM or PIC solids
+# Sets keyword VTK_PART_DIAMETER(#)
+# DEFAULT value .FALSE.
+Enable writing particle translational velocity
+# Requires DEM or PIC solids
+# Sets keyword VTK_PART_VEL(#)
+# DEFAULT value .FALSE.
+Enable writing particle rotational velocity
+# Requires DEM or PIC solids
+# Sets keyword VTK_ANGULAR_VEL(#)
+# DEFAULT value .FALSE.
+Enable writing particle orientation
+# Requires DEM or PIC solids
+# Sets keyword PARTICLE_ORIENTATION = .TRUE.
+# Sets keyword VTK_ORIENTATION(#)
+# DEFAULT value .FALSE.
+Enable writing particle user variable
+# Requires DEM or PIC solids and DES_USR_VAR > 0
+# Sets keyword VTK_PART_USR_VAR(#,#)
+# DEFAULT value .FALSE.
+Enable writing particle rotational velocity
+# Requires DEM or PIC solids
+# Sets keyword VTK_ANGULAR_VEL(#)
+# DEFAULT value .FALSE.
+Enable writing particle temperature
+# Requires DEM or PIC solids and ENERGY_EQ=.TRUE.
+# Sets keyword VTK_PART_TEMP(#)
+# DEFAULT value .FALSE.
+Enable writing particle species composition
+# Requires DEM or PIC solids and any SPECIES_EQ=.TRUE.
+# Sets keyword VTK_PART_X_S(#)
+# DEFAULT value .FALSE.
+Enable writing particle MPI rank
+# Requires DEM or PIC solids
+# Sets keyword VTK_PART_RANK(#)
+# DEFAULT value .FALSE.
+Enable writing particle global ID
+# Requires DEM or PIC solids
+# Sets keyword VTK_PART_ID(#)
+# DEFAULT value .FALSE.
+
+NetCDF (tab)
+Note: NetCDF support 'piggy-backs' off of the SPx keywords. The output time values are specified
+via SPX_DT while NetCDF output is triggered by a BWRITE_NETCDF flag. To make this less
+opaque to users, both SPx and netCDF output cannot be enabled at the same time.
+
+Write interval for gas volume fraction
+
+#    Sets keyword BWRITE_NETCDF(1) = .TRUE.
+#    Sets keyword SPX_DT(1)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for gas and solids pressure
+#    Sets keyword BWRITE_NETCDF(2) = .TRUE.
+#    Sets keyword BWRITE_NETCDF(3) = .TRUE.
+#    Sets keyword SPX_DT(2)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for gas velocity
+#    Sets keyword BWRITE_NETCDF(4) = .TRUE.
+#    Sets keyword SPX_DT(3)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for solids velocity
+#    Sets keyword BWRITE_NETCDF(5) = .TRUE.
+#    Sets keyword SPX_DT(4)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for solids bulk density
+#    Sets keyword BWRITE_NETCDF(6) = .TRUE.
+#    Sets keyword SPX_DT(5)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for gas and solids temperature
+#    Only available when solving energy equations
+#    Sets keyword BWRITE_NETCDF(7) = .TRUE.
+#    Sets keyword BWRITE_NETCDF(8) = .TRUE.
+#    Sets keyword SPX_DT(6)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for gas and solids mass fractions
+#    Only available when solving species equations
+#    Sets keyword BWRITE_NETCDF(9) = .TRUE.
+#    Sets keyword BWRITE_NETCDF(10) = .TRUE.
+#    Sets keyword SPX_DT(7)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for granular temperature
+#    Only available when KT_TYPE =/ 'ALGEBRAIC'
+#    Sets keyword BWRITE_NETCDF(11) = .TRUE.
+#    Sets keyword SPX_DT(8)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for user defined scalars
+#    Only available when solving any user defined scalar equations
+#    Sets keyword BWRITE_NETCDF(12) = .TRUE.
+#    Sets keyword SPX_DT(9)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Write interval for reaction rates
+#    Only available if NRR > 0 (see below)
+#    Sets keyword BWRITE_NETCDF(13) = .TRUE.
+
+#    Sets keyword SPX_DT(10)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+Number of reaction rates to write
+#    Specification always available
+#    Sets keyword NRR
+#    DEFAULT value of 0
+#    Error check: value must be greater than or equal to 0
+Write interval for turbulence quantities
+#    Only available if TURBULENCE_MODEL = “K_EPSILON”
+#    Sets keyword BWRITE_NETCDF(14) = .TRUE.
+#    Sets keyword SPX_DT(11)
+#    DEFAULT value of 1.0
+#    Error check: value must be greater than or equal to RES_DT
+
+This is the same particle section as the SPx section.
+
+Write ASCII particle data
+#    Selection only available if DEM or PIC solids
+#    Sets keyword PRINT_DES_DATA
+#    DEFAULT value of .TRUE.
+Specify VTP Directory
+#    Specification only if PRINT_DES_DATA = .TRUE.
+#    Sets keyword VTP_DIR
+#    No default (empty string)
+Select particle data format
+#    Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
 
 3.1.3 Job submission/Interactive Control
+
 This section describes the interface for running a job and how to interact with the running solver.
 When the MFIX solver is launched the following actions are taken:
 1) Initializes MPI for DMP enabled solvers.
@@ -2606,7 +2861,6 @@ a. Check and setup base background mesh
 b. Setup MPI domain decomposition
 c. Preform sanity checks on user inputs
 d. Set flags and loop structures for background mesh
-
 e. Invoke Cartesian grid cut-cell preprocessing
 f. Allocate data arrays
 5) Process RES (restart) files
@@ -2618,7 +2872,6 @@ yeStep 4 is where the majority of failures will be caught when starting the MFIX
 should catch the error and report it back to the GUI so the user may correct the issue. To facilitate
 
 3.1.4 Workflow Mode
-
 Workflow mode utilizes pyqtnode's graphical programing interface and provides a collection of
 MFIX specific blocks for creating, running, and post processing MFIX simulations. This is where
 design of experiments, uncertainty quantification, and optimization can be performed.
@@ -2640,7 +2893,7 @@ completion, and inline error checking (Note: could use spyder's editor, however 
 sluggish and “heavy” sometimes, especially on the SBEUC).
 
 Hardware Interfaces
-XBOX Kinetic control of the interface with hand motions .
+XBOX Kinetic control of the interface with hand motions ☺.
 
 Software Interfaces
 
@@ -2660,7 +2913,10 @@ Interaction with the MFS Website
 # Read/display news
 # Import particle properties from the MFS particle database
 # Download updates?
-# UDF repository?
+
+o
+
+UDF repository?
 
 4. System Features
 4.1 Guided Simulation Setup
@@ -2705,6 +2961,7 @@ High priority: Create a primitive 3D graphics environment to help visualize the 
 setup including:
 
 Displaying geometry
+
 Displaying the grid
 Displaying defined regions
 
@@ -2724,7 +2981,6 @@ Display regions (point, plane, volume)
 
 4.4 3D Graphics – Interaction
 4.4.1 Description and Priority
-
 Medium priority: Provide user interactivity with the 3D environment for changing the size,
 rotation, and position of objects such as the geometry, grid, and regions.
 
@@ -2758,6 +3014,7 @@ Write the collected keywords
 
 4.6 Installer
 4.6.1 Description and Priority
+
 High priority: Create a self-contained installed program each targeted platform.
 
 4.6.2 Stimulus/Response Sequences
@@ -2775,7 +3032,6 @@ Installation on Linux (ubunutu, opensuse, fedora, …)
 Installation on OSX
 
 4.7 Creating mfix.dat
-
 4.7.1 Description and Priority
 High priority: Create an mfix.dat file through the GUI.
 
@@ -2807,12 +3063,14 @@ options: SMP, DMP, different Fortran compilers and MPI implementations.
 REQ-1:
 REQ-2:
 REQ-3:
-REQ-4:
-REQ-5:
 
 Build on Linux
 Build on OSX
 Build using Autotools
+
+REQ-4:
+REQ-5:
+
 Build using SMP
 Build using DMP
 
@@ -2827,9 +3085,7 @@ progress of the job and various statistics.
 
 4.9.3 Functional Requirements
 REQ-1:
-
 Remove existing run files
-
 REQ-2:
 Check to make sure a compiled MFIX source is available
 REQ-3:
@@ -2874,6 +3130,7 @@ Monitor queue availability and automatically move queued jobs to other
 
 4.11 External Programs
 4.11.1 Description and Priority
+
 Medium Priority: After running MFIX, provide a button to open simulation results in
 Paraview.
 
@@ -2886,12 +3143,11 @@ REQ-1:
 REQ-2:
 REQ-3:
 
-4.12 Plugins
-
 Launch Paraview by pressing a button in the UI
 Open the current simulation's graphics stack in Paraview
 Set a state file to setup the visualization in Paraview
 
+4.12 Plugins
 4.12.1 Description and Priority
 Medium Priority: Provide a structure for user supplied plugins
 
@@ -2900,7 +3156,6 @@ Users will be able to create plugins for the UI to handle:
 
 queue submissions
 widgets
-
 Post processing
 
 4.12.3 Functional Requirements
@@ -2935,7 +3190,6 @@ http://www.grc.nasa.gov/WWW/CEAWeb/ceaThermoBuild.htm
 4.14.2 Stimulus/Response Sequences
 Where needed, a user can search and import gas, liquid, and solids species from a database.
 4.14.3 Functional Requirements
-
 REQ-1:
 REQ-2:
 
@@ -2994,7 +3248,7 @@ Appendix C: To Be Determined List
 can be tracked to closure.>
 
 Appendix D: UI Resources
-Other CFD UI's
+6.1.1 Other CFD UI's
 
 SimFlow
 
@@ -3003,3 +3257,14 @@ HELYX-OS
 SimScale
 
 DICEhub
+
+Appendix E: Calculating Variable Solids Density
+Calculating the solids density is done in the context an initial condition (IC) region, but it is the
+same calculations hold for boundary conditions (BCs).
+1) Calculate the baseline density, RO_S0(M) = 1.0/sumk(X_S0(M,K)/RO_XS0(M,K))
+2) Calculate the solids density:
+a. Let I=INERT_SPECIES(M)
+b. IC_RO_S(M) = RO_S0(M) * X_S0(M,I)/IC_X_S(#,M,I)
+Note that RO_S0 is used for example and that it should not be set in the input deck file for variable
+solid density cases.
+

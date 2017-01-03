@@ -6,6 +6,7 @@ pdftotext -nopgbrk 'MFIX-UI SRS.pdf'
 
 # Clean out page headers, footers, non-ascii chars, duplicate blank lines
 
-sed "s/ /#    /;s/ /#  /;s/^o /# /;s/‘/'/g;s/’/'/g" < 'MFIX-UI SRS.txt' |
+sed "s/^• /#    /;s/▪/# /;s//#   /;s/^o /# /;s/‘/'/g;s/’/'/g" < 'MFIX-UI SRS.txt' |
     egrep -v '^Software Requirements Specification|^UI$|^Page||' |
+    grep -v • |  # Why do we need to filter this again?
     uniq > spec.txt
