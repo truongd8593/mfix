@@ -45,6 +45,10 @@ def get_mfix_home():
     elif os.path.exists(os.path.join(sys.prefix, 'share', 'mfix')):
         return os.path.join(sys.prefix, 'share', 'mfix')
     else:
+        for p in sys.path:
+            mfix_path = os.path.join(p, 'share', 'mfix')
+            if os.path.exists(mfix_path):
+                return mfix_path
         raise Exception("Unable to find MFIX_HOME")
 
 
