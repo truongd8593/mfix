@@ -23,8 +23,6 @@ from collections import OrderedDict
 
 log = logging.getLogger(__name__)
 
-SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
-
 # TODO: factor out util funcs which don't require Qt
 # import qt
 from qtpy import QtGui, QtWidgets, QtCore
@@ -32,10 +30,13 @@ from qtpy import QtGui, QtWidgets, QtCore
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
 
+SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
 # Helper functions
 def get_mfix_home():
-    """return the top level directory"""
+    """return the top level MFIX directory"""
+    # TODO:  This is confusing, add comment why both get_mfix_home and
+    # SCRIPT_DIRECTORY are needed, and how they differ
     top_level_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
     # if configure_mfix is present, we weren't installed via setup.py
     if os.path.exists(os.path.join(top_level_pkg_dir,'configure_mfix')):
