@@ -817,6 +817,8 @@
                   DO K = K1, K2
                   DO J = J1, J2
                   DO I = I1, I2
+                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+                     IJK = FUNIJK(I,J,K)
                      IJKT = TOP_OF(IJK)
                      IJKP = KP_OF(IJK)
 
