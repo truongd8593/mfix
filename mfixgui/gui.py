@@ -51,7 +51,6 @@ from mfixgui.widgets.regions import RegionsWidget
 from mfixgui.widgets.species_popup import SpeciesPopup
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
 from mfixgui.widgets.parameter_dialog import ParameterDialog
 
 from mfixgui.model_setup import ModelSetup
@@ -156,7 +155,8 @@ class MfixGui(QtWidgets.QMainWindow,
     warning = warn
 
 
-    def __init__(self, app, parent=None, project_file=None):
+    def __init__(self, app, parent=None, project_file=None, loadworkflow=True,
+                 loadvtk=True):
         self.app = app
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setObjectName('mfixgui')
@@ -468,10 +468,10 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_main_menu()
 
         # --- vtk setup ---
-        self.init_vtk_widget()
+        self.init_vtk_widget(loadvtk)
 
         # --- workflow setup ---
-        self.init_workflow_widget()
+        self.init_workflow_widget(loadworkflow)
 
         # --- parameter dialog
         self.parameter_dialog = ParameterDialog(self)
@@ -1097,10 +1097,10 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.project.register_widget(widget, keys=[key], args=args)
 
 
-    def init_vtk_widget(self):
+    def init_vtk_widget(self, load_vtk=True):
         #initialize the vtk widget
         disable_vtk = False
-        if not 'MFIX_NO_VTK' in os.environ: # Avoid importing vtkwidget if MFIX_NO_VTK set
+        if not 'MFIX_NO_VTK' in os.environ and load_vtk: # Avoid importing vtkwidget if MFIX_NO_VTK set
             from mfixgui.widgets.vtkwidget import VTK_AVAILABLE
             disable_vtk = not VTK_AVAILABLE
         else: # env var set
@@ -1135,22 +1135,31 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ui.regions.vtkwidget = self.vtkwidget
 
 
-    def init_workflow_widget(self):
+    def init_workflow_widget(self, load_workflow=True):
         # initialize the workflow widgets if pyqtnode is available
-        if PYQTNODE_AVAILABLE:
-            self.ui.workflow_widget = WorkflowWidget(self.project, self)
-            self.ui.verticallayout_workflow_mode.addWidget(
-                self.ui.workflow_widget)
+        if load_workflow:
+            from mfixgui.widgets.workflow import WorkflowWidget, PYQTNODE_AVAILABLE
+            if PYQTNODE_AVAILABLE:
+                self.ui.workflow_widget = WorkflowWidget(self.project, self)
+                self.ui.workflow_widget.PYQTNODE_AVAILABLE = True
+                self.ui.verticallayout_workflow_mode.addWidget(
+                    self.ui.workflow_widget)
+            else:
+                self.make_fake_workflow()
         else:
-            class FakeWorkflow:
-                def noop(self, *args, **kwargs):
-                    return None
-                def __getattr__(self, key):
-                    return self if key=='nodeChart' else self.noop
-            self.ui.workflow_widget = FakeWorkflow()
-            self.ui.pushButtonWorkflow.setEnabled(False)
-            self.ui.pushButtonWorkflow.setToolTip(
-                "Workflow disabled, can't import pyqtnode")
+            self.make_fake_workflow()
+
+    def make_fake_workflow(self):
+        class FakeWorkflow:
+            PYQTNODE_AVAILABLE = False
+            def noop(self, *args, **kwargs):
+                return None
+            def __getattr__(self, key):
+                return self if key=='nodeChart' else self.noop
+        self.ui.workflow_widget = FakeWorkflow()
+        self.ui.pushButtonWorkflow.setEnabled(False)
+        self.ui.pushButtonWorkflow.setToolTip(
+            "Workflow disabled, can't import pyqtnode")
 
 
     @classmethod
@@ -1194,7 +1203,7 @@ class MfixGui(QtWidgets.QMainWindow,
             #btn.setFont(font)
 
         workflow = (mode=='workflow')
-        if PYQTNODE_AVAILABLE:
+        if self.ui.workflow_widget.PYQTNODE_AVAILABLE:
             nc = self.ui.workflow_widget.nodeChart
             for btn in [nc.runToolButton, nc.autorunToolButton, nc.stopToolButton, nc.stepToolButton]:
                 btn.setVisible(workflow)
@@ -1871,7 +1880,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.writeDatFile(project_file)
 
         # save workflow
-        if PYQTNODE_AVAILABLE:
+        if self.ui.workflow_widget.PYQTNODE_AVAILABLE:
             self.ui.workflow_widget.save(
                 os.path.abspath(os.path.join(project_dir, 'workflow.nc')))
 
@@ -2379,7 +2388,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.chemistry_extract_info()
 
         ### Workflow
-        if PYQTNODE_AVAILABLE:
+        if self.ui.workflow_widget.PYQTNODE_AVAILABLE:
             workflow_file = os.path.abspath(os.path.join(project_dir, 'workflow.nc'))
             if os.path.exists(workflow_file):
                 self.ui.workflow_widget.clear()
@@ -2554,6 +2563,10 @@ def main():
                         help='specify app style (windowsvista, fusion, cleanlooks,...)')
     parser.add_argument('-n', '--noload', action='store_true',
                         help='do not autoload previous project')
+    parser.add_argument('-w', '--noworkflow', action='store_false',
+                        help='do not load the workflow environment')
+    parser.add_argument('-k', '--novtk', action='store_false',
+                         help='do not load vtk')
     parser.add_argument('-q', '--quit', action='store_true',
                         help='quit after opening file (for testing)')
     parser.add_argument('-d', '--default_geo', action='store_true',
@@ -2598,7 +2611,8 @@ def main():
         qapp.setStyle(app_style_settings.lower())
 
     # create the gui
-    gui = MfixGui(qapp, project_file=project_file)
+    gui = MfixGui(qapp, project_file=project_file, loadworkflow=args.noworkflow,
+                  loadvtk=args.novtk)
 
     # set previous geometry
     geo = SETTINGS.value('geometry')

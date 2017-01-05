@@ -33,7 +33,7 @@ def safe_int(obj, default=None):
     except:
         return default
 
-def clean_region_dict(region_dict):
+def clean_region_dict(region_dict, remove_defaults=True):
     """remove qt objects and values that are equal to the default"""
     clean_dict = {}
     for key, value in region_dict.items():
@@ -45,8 +45,9 @@ def clean_region_dict(region_dict):
             clean_dict[key] = value
         elif value != DEFAULT_REGION_DATA[key]:
             clean_dict[key] = value
+        elif not remove_defaults:
+            clean_dict[key] = value
     return clean_dict
-
 
 class RegionsWidget(QtWidgets.QWidget):
 
@@ -619,7 +620,10 @@ class RegionsWidget(QtWidgets.QWidget):
     def get_region_dict(self):
         """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
-        return copy.deepcopy(region_dict)  # Allow clients to modify dict
+        new_region_dict = OrderedDict()
+        for key, value in region_dict.items():
+            new_region_dict[key] = clean_region_dict(value, remove_defaults=False)
+        return copy.deepcopy(new_region_dict) # Allow clients to modify dict
 
     def get_value(self, name, key):
         """given a region name and value key, return the value"""
