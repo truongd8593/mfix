@@ -2212,6 +2212,8 @@ Specify heat of reaction
 #    Only available if user-defined heat of reaction is enabled
 #    DEFAULT value 0.0
 #    Sets reaction construct keyword DH
+Specify HoR fraction assigned to -phase-
+#  Only available if user-defined heat of reaction is enabled
 #    Homogeneous chemical reactions
 #  Specification is not available
 #  Set reaction construct keyword fracDH(#) to 1.0 where # is the phase index
