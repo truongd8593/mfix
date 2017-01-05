@@ -88,6 +88,7 @@ def build_time_dict(search_str):
 
 
 class ColorMapPopUp(QtWidgets.QDialog):
+    applyEvent = QtCore.Signal(object, object, object)
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent)
 
@@ -107,6 +108,12 @@ class ColorMapPopUp(QtWidgets.QDialog):
         for name, icons in build_qicons().items():
             ui.combobox_color_map.addItem(icons.get('bar', QtGui.QIcon()), name)
         self.set_color_map('viridis')
+
+        btn = self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
+        btn.clicked.connect(self.emit_apply_event)
+
+    def emit_apply_event(self):
+        self.applyEvent.emit(self.geo, self.button, self.array)
 
     def set_(self, array):
         self.array = array
@@ -261,7 +268,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def enable_toolbar_geo(self, geo):
         for name, wid in self.visual_btns[geo].items():
-            if name == 'component': continue
+            if name == 'component':
+                continue
+            if name == 'visible':
+                wid.setChecked(True)
             wid.setEnabled(True)
 
     def init_toolbar(self):
@@ -285,7 +295,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
             toolbutton.clicked.connect(lambda down, g=geo: self.change_visibility(g, down))
             toolbutton.setCheckable(True)
-            toolbutton.setChecked(True)
+            toolbutton.setChecked(False)
             toolbutton.setAutoRaise(True)
             toolbutton.setIcon(get_icon('visibility.png'))
             toolbutton.setEnabled(False)
@@ -316,7 +326,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             toolbutton.setMaximumSize(size)
             toolbutton.setIconSize(size)
             if not geo == 'geometry':
-                toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.change_color(g, t, c))
+                toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.handle_change_color(g, t, c))
                 toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
             else:
                 toolbutton.clicked.connect(lambda ignore, t=toolbutton: self.change_geo_color(t))
@@ -390,6 +400,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.button_bar_layout.addStretch()
 
         self.color_dialog  = ColorMapPopUp()
+        self.color_dialog.applyEvent.connect(self.change_color)
+
 
     def showEvent(self, event):
         # has to be called after the widget is visible
@@ -466,12 +478,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 self.frame_index = index
 
             if n_vtp > n_vtu:
-                time = self.vtp_files.keys()[index]
+                time = list(self.vtp_files.keys())[index]
                 self.read_vtp(self.vtp_files[time])
                 if n_vtu:
                     self.read_vtu(self.vtu_files.values()[bisect_left(self.vtu_files.keys(), time)-1])
             else:
-                time = self.vtu_files.keys()[index]
+                time = list(self.vtu_files.keys())[index]
                 self.read_vtu(self.vtu_files[time])
                 if n_vtp:
                     self.read_vtp(self.vtp_files.values()[bisect_left(self.vtp_files.keys(), time)-1])
@@ -615,10 +627,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
             btn.setIcon(build_qicons().get(colormap).get('icon', QtGui.QIcon()))
             btn.setStyleSheet("QToolButton{{ background: {};}}".format(None))
 
-    def change_color(self, geo, button, colorby):
-        """change the color or color map of an actor"""
-        mapper = self.mappers.get(geo)
-        actor = self.actors.get(geo)
+    def handle_change_color(self, geo, button, colorby):
+        """popup the color bar dialog"""
+
         array_name = colorby.currentText()
         if len(array_name) == 0: return
         if geo == 'points':
@@ -629,7 +640,19 @@ class GraphicsVtkWidget(BaseVtkWidget):
             return
 
         self.color_dialog.set_(array)
-        self.color_dialog.exec_()
+        self.color_dialog.geo = geo
+        self.color_dialog.button = button
+        result = self.color_dialog.exec_()
+        if result == QtWidgets.QDialog.Rejected:
+            return
+
+        self.change_color(geo, button, array)
+
+    def change_color(self, geo, button, array):
+        """change the color or color map of an actor"""
+        mapper = self.mappers.get(geo)
+        actor = self.actors.get(geo)
+
         params = self.color_dialog.get()
 
         array.update(params)
