@@ -1051,7 +1051,6 @@ class DictTableModel(QtCore.QAbstractTableModel):
             cols = 0
             for value in self.datatable.values():
                 cols = max(cols, len(value))
-
         return cols
 
     def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
@@ -1237,6 +1236,7 @@ class CustomPopUp(QtWidgets.QWidget):
         self.widget = widget
         # make it look/act like a popup
         self.setWindowFlags(QtCore.Qt.Popup)
+        #self.setWindowFlags(QtCore.Qt.Tool|QtCore.Qt.FramelessWindowHint)
 
         # add a layout
         self.layout = QtWidgets.QGridLayout(self)
@@ -1264,6 +1264,7 @@ class CustomPopUp(QtWidgets.QWidget):
         self.animation.setEndValue(stop)
 
         self.show()
+        #self.setFocus()
         self.animation.start()
 
     def showEvent(self, event):
@@ -1274,6 +1275,10 @@ class CustomPopUp(QtWidgets.QWidget):
 
     def closeEvent(self, event):
         self.finished.emit(True)
+
+#    def focusOutEvent(self, event):
+#        print('focus out')
+#        self.close()
 
 BASE_WIDGETS = {
     'lineedit': LineEdit,

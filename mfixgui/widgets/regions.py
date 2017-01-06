@@ -12,7 +12,8 @@ from qtpy import QtWidgets, QtGui, QtCore
 from qtpy import uic
 
 # local imports
-from mfixgui.tools.general import (get_unique_string, widget_iter, CellColor, get_pixmap)
+from mfixgui.tools.general import (get_unique_string, widget_iter, CellColor,
+                                   get_pixmap, deepcopy_dict)
 
 from mfixgui.project import Equation, ExtendedJSON
 
@@ -33,7 +34,7 @@ def safe_int(obj, default=None):
     except:
         return default
 
-def clean_region_dict(region_dict, remove_defaults=True):
+def clean_region_dict(region_dict):
     """remove qt objects and values that are equal to the default"""
     clean_dict = {}
     for key, value in region_dict.items():
@@ -44,8 +45,6 @@ def clean_region_dict(region_dict, remove_defaults=True):
         elif isinstance(value, list) and any(isinstance(v, Equation) for v in value):
             clean_dict[key] = value
         elif value != DEFAULT_REGION_DATA[key]:
-            clean_dict[key] = value
-        elif not remove_defaults:
             clean_dict[key] = value
     return clean_dict
 
@@ -181,7 +180,7 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
 
-        reg_dat = data[name] = copy.deepcopy(DEFAULT_REGION_DATA)
+        reg_dat = data[name] = deepcopy_dict(DEFAULT_REGION_DATA, qobjects=True)
         if rtype is not None and extents is not None:
             reg_dat['type'] = rtype
             reg_dat['from'] = extents[0]
@@ -242,7 +241,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             for row in rows:
                 name = list(data.keys())[row]
-                new_region = copy.deepcopy(data[name])
+                new_region = deepcopy_dict(data[name], qobjects=True)
 
                 new_name = get_unique_string(name, list(data.keys()))
                 # update parameters before the new region is added to the dictionary
@@ -276,7 +275,7 @@ class RegionsWidget(QtWidgets.QWidget):
             # enable widgets
             self.enable_disable_widgets(name)
         else:
-            data = copy.deepcopy(DEFAULT_REGION_DATA)
+            data = deepcopy_dict(DEFAULT_REGION_DATA, qobjects=True)
             name = ''
 
         # color
@@ -503,7 +502,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         for region in loaded_data['order']:
             # Copy dictionary entry to ordered dict
-            region_data = data[region] = copy.deepcopy(DEFAULT_REGION_DATA)
+            region_data = data[region] = deepcopy_dict(DEFAULT_REGION_DATA, qobjects=True)
             region_data.update(loaded_data['regions'][region])
             if 'visibility' in region_data:
                 # Create pixmap for 'visible' column
@@ -620,10 +619,7 @@ class RegionsWidget(QtWidgets.QWidget):
     def get_region_dict(self):
         """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
-        new_region_dict = OrderedDict()
-        for key, value in region_dict.items():
-            new_region_dict[key] = clean_region_dict(value, remove_defaults=False)
-        return copy.deepcopy(new_region_dict) # Allow clients to modify dict
+        return deepcopy_dict(region_dict) # Allow clients to modify dict
 
     def get_value(self, name, key):
         """given a region name and value key, return the value"""

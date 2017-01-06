@@ -1096,7 +1096,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)
 
-
     def init_vtk_widget(self, load_vtk=True):
         #initialize the vtk widget
         disable_vtk = False
@@ -1133,7 +1132,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # add reference to other widgets
         self.ui.regions.vtkwidget = self.vtkwidget
-
 
     def init_workflow_widget(self, load_workflow=True):
         # initialize the workflow widgets if pyqtnode is available

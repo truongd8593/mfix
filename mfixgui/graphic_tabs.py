@@ -320,7 +320,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 btns['component'] = combo2
 
 
-            toolbutton = QtWidgets.QToolButton()
+            toolbutton = QtWidgets.QToolButton(self.visible_menu)
             size = QtCore.QSize(25, 25)
             toolbutton.setMinimumSize(size)
             toolbutton.setMaximumSize(size)
@@ -361,28 +361,28 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 layout.addWidget(toolbutton, i, 11)
                 btns['more'] = toolbutton
 
-        self.toolbutton_back = QtWidgets.QToolButton()
+        self.toolbutton_back = QtWidgets.QToolButton(self.visible_menu)
         self.toolbutton_back.clicked.connect(self.handle_begining)
         self.toolbutton_back.setIcon(get_icon('previous.png'))
 
-        self.toolbutton_play = QtWidgets.QToolButton()
+        self.toolbutton_play = QtWidgets.QToolButton(self.visible_menu)
         self.toolbutton_play.clicked.connect(self.handle_play_stop)
         self.toolbutton_play.setIcon(get_icon('play.png'))
 
-        self.toolbutton_forward = QtWidgets.QToolButton()
+        self.toolbutton_forward = QtWidgets.QToolButton(self.visible_menu)
         self.toolbutton_forward.clicked.connect(self.handle_end)
         self.toolbutton_forward.setIcon(get_icon('next.png'))
 
-        self.frame_spinbox = QtWidgets.QSpinBox()
+        self.frame_spinbox = QtWidgets.QSpinBox(self.visible_menu)
         self.frame_spinbox.valueChanged.connect(self.change_frame)
         self.frame_spinbox.setMaximum(9999999)
 
-        self.toolbutton_play_speed = QtWidgets.QToolButton()
+        self.toolbutton_play_speed = QtWidgets.QToolButton(self.visible_menu)
         self.toolbutton_play_speed.setIcon(get_icon('speed.png'))
 
         self.speed_menu = CustomPopUp(self, self.toolbutton_play_speed)
         self.speed_menu.finished.connect(lambda ignore: self.toolbutton_play_speed.setDown(False))
-        self.speed_slider = QtWidgets.QSlider()
+        self.speed_slider = QtWidgets.QSlider(self.speed_menu)
         self.speed_slider.setRange(0, 1000)
         self.speed_slider.setValue(DEFAULT_PLAYBACK_SPEED)
         self.speed_slider.setOrientation(QtCore.Qt.Horizontal)

@@ -13,7 +13,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 
 # local imports
 from mfixgui.tools.general import (get_unique_string, widget_iter, get_icon,
-                           get_image_path, topological_sort)
+                           get_image_path, topological_sort, deepcopy_dict)
 from mfixgui.widgets.base import LineEdit, ComboBox, CustomPopUp
 from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE, VTK_MAJOR_VERSION
 try:
@@ -166,7 +166,7 @@ class VtkWidget(BaseVtkWidget):
             'intersection': self.ui.geometry.toolbutton_geometry_intersect,
             'difference':   self.ui.geometry.toolbutton_geometry_difference,
             }
-        self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
+        self.visual_props = deepcopy_dict(DEFAULT_VISUAL_PROPS, qobjects=True)
 
         self.rectilinear_grid = vtk.vtkRectilinearGrid()
         self.grid_viewer_dict = {
@@ -338,7 +338,7 @@ class VtkWidget(BaseVtkWidget):
             geo = geo.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
             # tool button
-            toolbutton = QtWidgets.QToolButton()
+            toolbutton = QtWidgets.QToolButton(self.visible_menu)
             toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton: self.change_visibility(g, t))
             toolbutton.setCheckable(True)
             toolbutton.setChecked(True)
@@ -348,7 +348,7 @@ class VtkWidget(BaseVtkWidget):
             btns['visible'] = toolbutton
 
             # style
-            combobox = QtWidgets.QComboBox()
+            combobox = QtWidgets.QComboBox(self.visible_menu)
             combobox.addItems(['wire', 'solid', 'edges', 'points'])
             combobox.activated.connect(lambda ignore, g=geo, c=combobox: self.change_representation(g, c))
             layout.addWidget(combobox, i, 1)
@@ -356,14 +356,14 @@ class VtkWidget(BaseVtkWidget):
 
             # color
             if not geo == 'regions':
-                toolbutton = QtWidgets.QToolButton()
+                toolbutton = QtWidgets.QToolButton(self.visible_menu)
                 toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton: self.change_color(g, t))
                 toolbutton.setAutoRaise(True)
                 layout.addWidget(toolbutton, i, 2)
                 btns['color'] = toolbutton
 
             # opacity
-            opacity = QtWidgets.QDoubleSpinBox()
+            opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
             opacity.setRange(0, 1)
             opacity.setSingleStep(0.1)
             opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(o, g))
@@ -371,7 +371,7 @@ class VtkWidget(BaseVtkWidget):
             btns['opacity'] = opacity
 
             # label
-            label = QtWidgets.QLabel(geo_name)
+            label = QtWidgets.QLabel(geo_name, self.visible_menu)
             layout.addWidget(label, i, 4)
         self.set_visual_btn_values()
 
@@ -543,7 +543,7 @@ class VtkWidget(BaseVtkWidget):
                     else:
                         data[geo][key] = QtGui.QColor(value)
 
-        self.visual_props = copy.deepcopy(DEFAULT_VISUAL_PROPS)
+        self.visual_props = deepcopy_dict(DEFAULT_VISUAL_PROPS, qobjects=True)
         self.visual_props.update(data)
         if self.mesh_actor is not None:
             self.set_mesh_actor_props()
@@ -1929,7 +1929,7 @@ class VtkWidget(BaseVtkWidget):
 
     def new_region(self, name, region):
         """create a new region"""
-        self.region_dict[name] = copy.deepcopy(region)
+        self.region_dict[name] = deepcopy_dict(region)
 
         if region['type'] == 'point':
             shape = 'sphere'
@@ -1968,7 +1968,7 @@ class VtkWidget(BaseVtkWidget):
 
     def update_region(self, name, region):
         """update a region"""
-        self.region_dict[name].update(copy.deepcopy(region))
+        self.region_dict[name].update(deepcopy_dict(region))
         self.update_region_source(name)
         self.select_facets(name)
         self.render()
@@ -1990,7 +1990,7 @@ class VtkWidget(BaseVtkWidget):
     def change_region_type(self, name, region):
         """change the type of a region"""
 
-        self.region_dict[name].update(copy.deepcopy(region))
+        self.region_dict[name].update(deepcopy_dict(region))
 
         if region['type'] == 'point':
             shape = 'sphere'

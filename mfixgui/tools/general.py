@@ -374,6 +374,9 @@ class CellColor(object):
     def __repr__(self):
         return self.text
 
+    def __deepcopy__(self, memo):
+        return CellColor(copy.deepcopy(self.color_float), copy.deepcopy(self.text))
+
     def rand(self):
         self.color.setRgbF(*random_pastel_color())
 
@@ -574,6 +577,23 @@ def safe_int(value, default=0):
     except ValueError:
         return default
 
+def deepcopy_dict(dirty_dict, qobjects=False):
+    '''deep copy a dictionary that has Qt objects in it
+    Note: python 3.6+ can't copy Qt objects like QPixmap
+    setting qobjects=True will copy the qt objects'''
+    clean_dict = {}
+    for key, value in dirty_dict.items():
+        if isinstance(value, (dict, OrderedDict)):
+            clean_dict[key] = deepcopy_dict(value, qobjects)
+        elif isinstance(value, QtGui.QPixmap):
+            if qobjects:
+                clean_dict[key] = QtGui.QPixmap(value)
+        elif isinstance(value, QtGui.QColor):
+            if qobjects:
+                clean_dict[key] = QtGui.QColor(value)
+        else:
+            clean_dict[key] = copy.deepcopy(value)
+    return clean_dict
 
 if __name__ == '__main__':
     def test_recurse_dict():
