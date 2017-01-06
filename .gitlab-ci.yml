@@ -33,4 +33,3 @@ install_job:
     - branches
   tags:
     - mfixgui
-    - mfixdev
