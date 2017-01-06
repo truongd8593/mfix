@@ -4,6 +4,7 @@ from collections import OrderedDict
 from distutils.version import LooseVersion
 import glob
 import os
+import copy
 from bisect import  bisect_left
 from xml.etree import ElementTree
 
@@ -172,6 +173,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.mfixgui = find_gui(self)
 
         self.cell_arrays = {}
+        self.node_arrays = {}
         self.point_arrays = {}
         self.frame_index = -1
 
@@ -203,22 +205,42 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.mappers = {}
         self.lookuptables = {}
 
-        self.ugrid_mapper = None
+        self.ugrid_cell_mapper = None
+        self.ugrid_node_mapper = None
         self.particle_mapper = None
 
     def init_ugrid(self):
-        '''setup the cell vtk stuff'''
-        self.enable_toolbar_geo('cells')
+        '''setup the cell/point vtk stuff'''
+        # cells
+        self.enable_toolbar_geo('cells', visible=False)
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
 
-        self.ugrid_mapper = self.mappers['cells'] = vtk.vtkDataSetMapper()
-        self.ugrid_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
-        self.ugrid_mapper.SetScalarVisibility(True)
-        self.ugrid_mapper.SetScalarModeToUseCellFieldData()
+        self.ugrid_cell_mapper = self.mappers['cells'] = vtk.vtkDataSetMapper()
+        self.ugrid_cell_mapper.SetInputConnection(self.ugrid_reader.GetOutputPort())
+        self.ugrid_cell_mapper.SetScalarVisibility(True)
+        self.ugrid_cell_mapper.SetScalarModeToUseCellFieldData()
         self.change_color_bar('cells', 'viridis')
+        self.change_visibility('cells', False)
 
         actor = self.actors['cells'] = vtk.vtkActor()
-        actor.SetMapper(self.ugrid_mapper)
+        actor.SetMapper(self.ugrid_cell_mapper)
+
+        self.vtkrenderer.AddActor(actor)
+
+        # points
+        self.enable_toolbar_geo('nodes')
+
+        self.ugrid_cell_to_points = vtk.vtkCellDataToPointData()
+        self.ugrid_cell_to_points.SetInputConnection(self.ugrid_reader.GetOutputPort())
+
+        self.ugrid_node_mapper = self.mappers['nodes'] = vtk.vtkDataSetMapper()
+        self.ugrid_node_mapper.SetInputConnection(self.ugrid_cell_to_points.GetOutputPort())
+        self.ugrid_node_mapper.SetScalarVisibility(True)
+        self.ugrid_node_mapper.SetScalarModeToUsePointFieldData()
+        self.change_color_bar('nodes', 'viridis')
+
+        actor = self.actors['nodes'] = vtk.vtkActor()
+        actor.SetMapper(self.ugrid_node_mapper)
 
         self.vtkrenderer.AddActor(actor)
 
@@ -266,11 +288,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.vtkrenderer.AddActor(actor)
 
-    def enable_toolbar_geo(self, geo):
+    def enable_toolbar_geo(self, geo, visible=True):
         for name, wid in self.visual_btns[geo].items():
             if name == 'component':
                 continue
-            if name == 'visible':
+            if visible and name == 'visible':
                 wid.setChecked(True)
             wid.setEnabled(True)
 
@@ -287,6 +309,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # --- visual representation menu ---
         layout = self.visible_menu.layout
+        layout.setContentsMargins(0, 5, 5, 5)
         self.visual_btns = {}
         for i, geo in enumerate(['Cells', 'Nodes', 'Points', 'Geometry']):
             geo_name = geo
@@ -351,7 +374,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
             # label
             label = QtWidgets.QLabel(geo_name, self.visible_menu)
-            layout.addWidget(label, i, 10)
+            if geo == 'points':
+                layout.addWidget(label, i, 10)
+            else:
+                layout.addWidget(label, i, 10, 1, 2)
 
             # more
             if geo in ['points']:
@@ -420,6 +446,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def show_visible_menu(self):
         # update comboboxes based on avaliable arrays
         for type_, array in [('cells', self.cell_arrays),
+                             ('nodes', self.node_arrays),
                              ('points', self.point_arrays)]:
             btns = self.visual_btns[type_]
             combo = btns['color_by']
@@ -502,7 +529,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
     # --- vtk functions ---
     def read_vtu(self, path):
         init = False
-        if self.ugrid_mapper is None:
+        if self.ugrid_cell_mapper is None:
             self.init_ugrid()
             init = True
 
@@ -513,20 +540,24 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # TODO: Build Once
         data = self.ugrid_reader.GetOutput()
         cell_data = data.GetCellData()
-        self.cell_arrays = {}
+        new_array_info = {}
         for i in range(cell_data.GetNumberOfArrays()):
             array = cell_data.GetArray(i)
-            self.cell_arrays[cell_data.GetArrayName(i)] = {
+            new_array_info[cell_data.GetArrayName(i)] = {
                 'i':i,
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange(),}
 
+        self.cell_arrays.update(copy.deepcopy(new_array_info))
+        self.node_arrays.update(copy.deepcopy(new_array_info))
+
         if init:
             name = cell_data.GetArrayName(0)
-            self.ugrid_mapper.SelectColorArray(name)
-            combo = self.visual_btns['cells']['color_by']
-            combo.addItems(self.cell_arrays.keys())
-            combo.setCurrentIndex(combo.findText(name))
+            for t, m in [('cells', self.ugrid_cell_mapper), ('nodes', self.ugrid_node_mapper)]:
+                m.SelectColorArray(name)
+                combo = self.visual_btns[t]['color_by']
+                combo.addItems(self.cell_arrays.keys())
+                combo.setCurrentIndex(combo.findText(name))
 
     def read_vtp(self, path):
         init = False
@@ -575,8 +606,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, array_name)
             array = self.point_arrays[array_name]
         elif geo == 'cells':
-            self.ugrid_mapper.SelectColorArray(array_name)
+            self.ugrid_cell_mapper.SelectColorArray(array_name)
             array = self.cell_arrays[array_name]
+        elif geo == 'nodes':
+            self.ugrid_node_mapper.SelectColorArray(array_name)
+            array = self.node_arrays[array_name]
         else:
             return
 
@@ -637,6 +671,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
             array = self.point_arrays[array_name]
         elif geo == 'cells':
             array = self.cell_arrays[array_name]
+        elif geo == 'nodes':
+            array = self.node_arrays[array_name]
         else:
             return
 
