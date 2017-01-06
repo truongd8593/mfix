@@ -81,6 +81,9 @@ DIM_EQS = 10
 PRECON_TYPES = ['NONE', 'LINE', 'DIAG']
 SWEEP_TYPES = ['RSRS', 'ASAS', 'ISIS', 'JSJS', 'KSKS']
 
+DES_OUTPUT_TYPES = ['PARAVIEW', 'TECPLOT']
+
+
 SPECIAL_PARAMETERS = ['min', 'max']
 for c in ['x', 'y', 'z']:
     SPECIAL_PARAMETERS.extend([c+'min', c+'max'])

@@ -1325,7 +1325,8 @@ class Project(object):
                           DRAG_TYPES, SUBGRID_TYPES, KT_TYPES,
                           RDF_TYPES, BLENDING_FUNCTIONS,
                           BC_TYPES, IS_TYPES,
-                          PRECON_TYPES, SWEEP_TYPES):
+                          PRECON_TYPES, SWEEP_TYPES,
+                          DES_OUTPUT_TYPES): # How to keep in sync with constants.py?  Need "contstants.all"
                     if v_upper in l:
                         value = v_upper
                         break

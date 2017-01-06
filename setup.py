@@ -27,7 +27,14 @@ MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
 data_files = []
+
 for root,dirs,files in walk('tutorials'):
+    dir_files = []
+    for f in files:
+        dir_files.append(path.join(root,f))
+    data_files.append((path.join('share', NAME, root), dir_files))
+
+for root,dirs,files in walk('model'):
     dir_files = []
     for f in files:
         dir_files.append(path.join(root,f))

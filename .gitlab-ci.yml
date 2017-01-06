@@ -1,5 +1,3 @@
-image: mfixgui
-
 # cache:
 #   key: "$CI_BUILD_REF_NAME"
 #   untracked: true
@@ -8,39 +6,13 @@ image: mfixgui
 
 stages:
   - build
-  - test
+  - install
 
-# build_job:
-#   stage: build
-#   script:
-#     - pip install packaging
-#     - git clean -fdx
-#     - make -C mfixgui ../mfix
-#   artifacts:
-#     paths:
-#     - mfix
-#   only:
-#     - branches
-#   tags:
-#     - docker
-#     - anaconda
-#     - python2
-
-# test_job:
-#   stage: test
-#   script:
-#     - make -C mfixgui test
-#   only:
-#     - branches
-#   tags:
-#     - docker
-#     - anaconda
-#     - python2
-
-build_job3:
+build_job:
   stage: build
   script:
-    - make -C mfixgui ../mfix
+    - env PYTHON_BIN=/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python ./configure_mfix --python
+    - make
   artifacts:
     expire_in: 1 week
     paths:
@@ -48,18 +20,14 @@ build_job3:
     - mfixsolver*
   only:
     - branches
+  tags:
+    - mfixgui
 
-test_job3:
-  stage: test
+install_job:
+  stage: install
   script:
-    - make -C mfixgui test
+    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py install --prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
   only:
     - branches
-
-test_install_job3:
-  stage: test_install
-  script:
-    - python setup.py bdist_wheel
-    - pip install dist/mfixgui-*.whl
-  only:
-    - branches
+  tags:
+    - mfixgui
