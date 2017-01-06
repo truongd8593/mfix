@@ -29,6 +29,11 @@ try:
     VTK_AVAILABLE = True
     from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, build_qicons
     LOOKUP_TABLES = build_vtk_lookup_tables()
+    GLYPHS = {
+        'sphere':   vtk.vtkSphereSource,
+        'cube':      vtk.vtkCubeSource,
+        'cylinder': vtk.vtkCylinderSource,
+        'cone':     vtk.vtkConeSource}
 except:
     vtk = None
     VTK_AVAILABLE = False
@@ -158,6 +163,36 @@ class ColorMapPopUp(QtWidgets.QDialog):
         self.ui.combobox_color_map.setCurrentIndex(index)
 
 
+class ParticleOptions(QtWidgets.QDialog):
+    applyEvent = QtCore.Signal()
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent)
+
+        self.color = None
+
+        thisdir = os.path.abspath(os.path.dirname(__file__))
+        uidir = os.path.join(thisdir, 'uifiles')
+        ui = self.ui = uic.loadUi(os.path.join(uidir, 'particle_options.ui'), self)
+
+        ui.lineedit_maximum_particles.updateValue(None, DEFAULT_MAXIMUM_POINTS)
+        ui.lineedit_maximum_particles.dtype = int
+        self.setWindowTitle('Particle Options')
+
+        btn = self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
+        btn.clicked.connect(self.emit_apply_event)
+
+    def emit_apply_event(self):
+        self.applyEvent.emit()
+
+    def get(self):
+        """return options"""
+        return {
+            'max_points': self.ui.lineedit_maximum_particles.value,
+            'mapper': self.ui.combobox_mapper.currentText(),
+            'glyph': self.ui.combobox_glyph.currentText(),
+            }
+
+
 class GraphicsVtkWidget(BaseVtkWidget):
     """vtk widget for showing results"""
     def __init__(self, parent=None):
@@ -261,9 +296,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.glyph.SetInputConnection(self.glyph_mask.GetOutputPort())
         self.glyph.SetSourceConnection(ss.GetOutputPort())
         self.glyph.SetColorModeToColorByVector()
+#        self.glyph.SetColorModeToColorByScalar()
 
         self.particle_mapper = self.mappers['points'] = vtk.vtkPolyDataMapper()
         self.particle_mapper.SetInputConnection(self.glyph.GetOutputPort())
+#        self.particle_mapper.SetScalarModeToUsePointFieldData()
         self.change_color_bar('points', 'viridis')
 
         actor = self.actors['points'] = vtk.vtkActor()
@@ -385,6 +422,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 toolbutton.setAutoRaise(True)
                 toolbutton.setIcon(get_icon('right.png'))
                 toolbutton.setEnabled(False)
+                toolbutton.clicked.connect(self.handle_particle_options)
                 layout.addWidget(toolbutton, i, 11)
                 btns['more'] = toolbutton
 
@@ -428,6 +466,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.color_dialog  = ColorMapPopUp(self)
         self.color_dialog.applyEvent.connect(self.change_color)
+
+        self.particle_option_dialog = ParticleOptions(self)
+        self.particle_option_dialog.applyEvent.connect(self.change_particle_options)
 
 
     def showEvent(self, event):
@@ -604,7 +645,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         if geo == 'points':
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, array_name)
+#            self.particle_mapper.SelectColorArray(array_name)
             array = self.point_arrays[array_name]
+#            self.glyph.SetRange(array.get('from', 0), array.get('to', 1))
         elif geo == 'cells':
             self.ugrid_cell_mapper.SelectColorArray(array_name)
             array = self.cell_arrays[array_name]
@@ -628,7 +671,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.change_color_bar(geo, array.get('color_map', 'viridis'), index)
             mapper.ScalarVisibilityOn()
 
-        is_comp = array['components'] == 3
+        is_comp = array['components'] == 3 and not geo == 'points'
         self.visual_btns[geo]['component'].setEnabled(is_comp)
 
         self.render()
@@ -732,6 +775,23 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.actors[geo].GetProperty().SetOpacity(opacity)
             self.render()
 
+
+    def handle_particle_options(self):
+        result = self.particle_option_dialog.exec_()
+        if result == QtWidgets.QDialog.Rejected:
+            return
+
+        self.change_particle_options()
+
+    def change_particle_options(self):
+        data = self.particle_option_dialog.get()
+        self.glyph_mask.SetMaximumNumberOfPoints(data.get('max_points', DEFAULT_MAXIMUM_POINTS))
+        self.set_glyph_source(data.get('glyph', 'sphere'))
+        self.render()
+
+    def set_glyph_source(self, name):
+        gs = GLYPHS[name]()
+        self.glyph.SetSourceConnection(gs.GetOutputPort())
 
 class BaseGraphicTab(QtWidgets.QWidget):
     """Base graphics plot widget, provides options to redirect to a specific
