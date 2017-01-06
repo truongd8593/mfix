@@ -21,7 +21,7 @@ build_job:
   only:
     - branches
   tags:
-    - mfixgui
+    - mfixdev
 
 install_job:
   stage: install
@@ -31,4 +31,4 @@ install_job:
   only:
     - branches
   tags:
-    - mfixgui
+    - mfixdev
