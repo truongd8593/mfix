@@ -1227,16 +1227,16 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
                 QtCore.Qt.ItemIsSelectable)
 
 # --- custom popup ---
-class CustomPopUp(QtWidgets.QWidget):
+class CustomPopUp(QtWidgets.QDialog):
     finished = QtCore.Signal(bool)
     visibilityChanged = QtCore.Signal(bool)
     def __init__(self, parent=None, widget=None):
-        QtWidgets.QWidget.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
 
         self.widget = widget
         # make it look/act like a popup
-        self.setWindowFlags(QtCore.Qt.Popup)
-        #self.setWindowFlags(QtCore.Qt.Tool|QtCore.Qt.FramelessWindowHint)
+        #self.setWindowFlags(QtCore.Qt.Popup)
+        self.setWindowFlags(QtCore.Qt.Popup|QtCore.Qt.FramelessWindowHint)
 
         # add a layout
         self.layout = QtWidgets.QGridLayout(self)
