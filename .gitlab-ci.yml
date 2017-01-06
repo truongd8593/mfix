@@ -26,7 +26,7 @@ build_job:
 install_job:
   stage: install
   script:
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/lib/python2.7/site-packages python setup.py install --prefix=/nfs/home/8/public/mfixgui
+    - env PYTHONPATH=/nfs/home/8/public/mfixgui/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py install --prefix=/nfs/home/8/public/mfixgui
   only:
     - branches
   tags:
