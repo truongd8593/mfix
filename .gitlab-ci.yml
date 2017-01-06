@@ -11,7 +11,7 @@ stages:
 build_job:
   stage: build
   script:
-    - ./configure_mfix --python
+    - env PYTHON_BIN=/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python ./configure_mfix --python
     - make
   artifacts:
     expire_in: 1 week
@@ -26,7 +26,6 @@ build_job:
 install_job:
   stage: install
   script:
-    - make -C mfixgui test
     - env PYTHONPATH=/nfs/home/8/public/mfixgui/lib/python2.7/site-packages python setup.py install --prefix=/nfs/home/8/public/mfixgui
   only:
     - branches
