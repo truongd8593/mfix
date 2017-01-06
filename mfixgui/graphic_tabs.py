@@ -279,10 +279,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # more buttons
         self.toolbutton_visible = QtWidgets.QToolButton()
+        self.toolbutton_visible.setCheckable(True)
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
         self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
         self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
-        self.toolbutton_visible.pressed.connect(self.show_visible_menu)
+        self.toolbutton_visible.clicked.connect(self.show_visible_menu)
 
         # --- visual representation menu ---
         layout = self.visible_menu.layout
@@ -399,7 +400,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.button_bar_layout.addStretch()
 
-        self.color_dialog  = ColorMapPopUp()
+        self.color_dialog  = ColorMapPopUp(self)
         self.color_dialog.applyEvent.connect(self.change_color)
 
 
@@ -678,7 +679,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def change_geo_color(self, button):
         """Change the color of the geometry actor"""
-        col = QtWidgets.QColorDialog.getColor()
+        col = QtWidgets.QColorDialog.getColor(self)
         if not col.isValid():
             return
 

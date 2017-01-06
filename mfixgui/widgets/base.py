@@ -1227,25 +1227,26 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
                 QtCore.Qt.ItemIsSelectable)
 
 # --- custom popup ---
-class CustomPopUp(QtWidgets.QDialog):
+class CustomPopUp(QtWidgets.QWidget):
     finished = QtCore.Signal(bool)
     visibilityChanged = QtCore.Signal(bool)
     def __init__(self, parent=None, widget=None):
-        QtWidgets.QDialog.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
 
         self.widget = widget
         # make it look/act like a popup
-        #self.setWindowFlags(QtCore.Qt.Popup)
-        self.setWindowFlags(QtCore.Qt.Popup|QtCore.Qt.FramelessWindowHint)
+        self.setWindowFlags(QtCore.Qt.Popup)
+        #self.setWindowFlags(QtCore.Qt.Tool|QtCore.Qt.FramelessWindowHint)
 
         # add a layout
         self.layout = QtWidgets.QGridLayout(self)
-        self.layout.setContentsMargins(5,5,5,5)
+        self.layout.setContentsMargins(5, 5, 5, 5)
         # this is really important when animating geometry
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
 
     def popup(self):
         """popup and animate"""
+        self.widget.setChecked(True)
         rect = self.widget.rect()
         bottom_left = rect.bottomLeft()
         g = self.widget.mapToGlobal(bottom_left)
@@ -1263,8 +1264,6 @@ class CustomPopUp(QtWidgets.QDialog):
         self.animation.setStartValue(start)
         self.animation.setEndValue(stop)
 
-        self.show()
-        #self.setFocus()
         self.animation.start()
 
     def showEvent(self, event):
@@ -1272,9 +1271,11 @@ class CustomPopUp(QtWidgets.QDialog):
 
     def hideEvent(self, event):
         self.visibilityChanged.emit(False)
+        self.widget.setChecked(False)
 
     def closeEvent(self, event):
         self.finished.emit(True)
+        self.widget.setChecked(False)
 
 #    def focusOutEvent(self, event):
 #        print('focus out')

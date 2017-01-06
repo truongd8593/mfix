@@ -322,11 +322,12 @@ class VtkWidget(BaseVtkWidget):
         self.init_base_toolbar()
 
         self.toolbutton_visible = QtWidgets.QToolButton()
+        self.toolbutton_visible.setCheckable(True)
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
         self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
         self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
-        self.toolbutton_visible.pressed.connect(self.visible_menu.popup)
+        self.toolbutton_visible.clicked.connect(self.visible_menu.popup)
         self.toolbutton_visible.setPopupMode(
             QtWidgets.QToolButton.InstantPopup)
 
@@ -2458,7 +2459,7 @@ class VtkWidget(BaseVtkWidget):
 
     def change_color(self, name, button):
         """given a scene actor type, change the color"""
-        col = QtWidgets.QColorDialog.getColor()
+        col = QtWidgets.QColorDialog.getColor(self)
         if not col.isValid():
             return
 
