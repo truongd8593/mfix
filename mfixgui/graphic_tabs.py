@@ -62,7 +62,10 @@ def parse_pvd_file(fname):
     '''given a pvd file, return a dict of time (float) : file_name'''
     f_dict = OrderedDict()
     if not os.path.exists(fname): return f_dict
-    tree = ElementTree.parse(fname)
+    try:
+        tree = ElementTree.parse(fname)
+    except:
+        return f_dict
     root = tree.getroot()
     for data_set in root.iter('DataSet'):
         f_dict[float(data_set.attrib['timestep'])] = data_set.attrib['file']
@@ -562,8 +565,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def look_for_files(self):
         base_name = os.path.join(self.project_dir, self.project_name)
-        self.vtu_files = parse_pvd_file(base_name + '.pvd')
-        if not self.vtu_files:
+        vtu_pvd = base_name + '.pvd'
+        if os.path.exists(vtu_pvd):
+            self.vtu_files = parse_pvd_file(base_name + '.pvd')
+        else:
             self.vtu_files = build_time_dict(os.path.join(self.project_dir, '*.vtu'))
         self.vtp_files = parse_pvd_file(base_name + '_DES.pvd')
 
