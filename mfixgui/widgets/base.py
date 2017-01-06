@@ -1264,6 +1264,7 @@ class CustomPopUp(QtWidgets.QWidget):
         self.animation.setStartValue(start)
         self.animation.setEndValue(stop)
 
+        self.show()
         self.animation.start()
 
     def showEvent(self, event):
