@@ -20,10 +20,10 @@ class DeletePopup(QtWidgets.QDialog):
 
         ui = self.ui
         enable = not force_remove
-        ui.groupbox_res.setEnabled(enable)
-        ui.groupbox_spx.setEnabled(enable)
-        ui.groupbox_vtk.setEnabled(enable)
-        ui.groupbox_other.setEnabled(enable)
+        ui.checkbox_res.setEnabled(enable)
+        ui.checkbox_spx.setEnabled(enable)
+        ui.checkbox_vtk.setEnabled(enable)
+        ui.checkbox_other.setEnabled(enable)
 
         self.sort_files(files)
         return QtWidgets.QDialog.exec_(self)
@@ -35,10 +35,10 @@ class DeletePopup(QtWidgets.QDialog):
         ui.listwidget_vtk.clear()
         ui.listwidget_other.clear()
 
-        ui.groupbox_res.setChecked(True)
-        ui.groupbox_spx.setChecked(True)
-        ui.groupbox_vtk.setChecked(True)
-        ui.groupbox_other.setChecked(True)
+        ui.checkbox_res.setChecked(True)
+        ui.checkbox_spx.setChecked(True)
+        ui.checkbox_vtk.setChecked(True)
+        ui.checkbox_other.setChecked(True)
 
         files = sorted(files)
 
@@ -68,10 +68,10 @@ class DeletePopup(QtWidgets.QDialog):
         ui = self.ui
 
         files = []
-        for gb, fs in [(ui.groupbox_res, self.restart),
-                       (ui.groupbox_spx, self.spx),
-                       (ui.groupbox_vtk, self.vtk),
-                       (ui.groupbox_other, self.other)]:
+        for gb, fs in [(ui.checkbox_res, self.restart),
+                       (ui.checkbox_spx, self.spx),
+                       (ui.checkbox_vtk, self.vtk),
+                       (ui.checkbox_other, self.other)]:
             if gb.isChecked():
                 files.extend(fs)
         return files

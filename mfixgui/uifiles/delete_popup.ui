@@ -14,32 +14,61 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="1">
-    <widget class="QGroupBox" name="groupbox_vtk">
-     <property name="title">
-      <string>VTK Files (*.vtp, *.vtu, *.pvd)</string>
+   <item row="8" column="1">
+    <widget class="QListWidget" name="listwidget_other">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
      </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QListWidget" name="listwidget_vtk">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>100</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="6" column="1">
+    <widget class="QListWidget" name="listwidget_vtk">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::No|QDialogButtonBox::Yes</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QListWidget" name="listwidget_spx">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QCheckBox" name="checkbox_res">
+     <property name="text">
+      <string>Restart FIles (*.RES)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QCheckBox" name="checkbox_spx">
+     <property name="text">
+      <string>SPx Files (*.SP?)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
@@ -53,90 +82,45 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QGroupBox" name="groupbox_res">
-     <property name="title">
-      <string>Restart FIles (*.RES)</string>
+   <item row="5" column="0" colspan="2">
+    <widget class="QCheckBox" name="checkbox_vtk">
+     <property name="text">
+      <string>VTK Files (*.vtp, *.vtu, *.pvd)</string>
      </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QListWidget" name="listwidget_restart">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>50</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::No|QDialogButtonBox::Yes</set>
+   <item row="7" column="0" colspan="2">
+    <widget class="QCheckBox" name="checkbox_other">
+     <property name="text">
+      <string>Other (*.OUT, *.pid, *.error, *.e[0-9]*, *.0[0-9]*, *.pe[0-9]*, *.po[0-9]*)</string>
      </property>
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QGroupBox" name="groupbox_spx">
-     <property name="title">
-      <string>SPx Files (*.SP?)</string>
+    <widget class="QListWidget" name="listwidget_restart">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>50</height>
+      </size>
      </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QListWidget" name="listwidget_spx">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>100</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QGroupBox" name="groupbox_other">
-     <property name="title">
-      <string>Other (*.OUT, *.pid, *.error, *.e[0-9]*, *.0[0-9]*, *.pe[0-9]*, *.po[0-9]*)</string>
+   <item row="2" column="0">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="flat">
-      <bool>true</bool>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
      </property>
-     <property name="checkable">
-      <bool>true</bool>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>10</width>
+       <height>20</height>
+      </size>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <widget class="QListWidget" name="listwidget_other">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>100</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+    </spacer>
    </item>
   </layout>
  </widget>
