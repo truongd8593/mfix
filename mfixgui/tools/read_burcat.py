@@ -65,7 +65,7 @@ def extract_coeffs(text):
     '''extract E15.0 formatted floats from line of text.'''
     # Note that the values may lack separating whitespace!
     orig_text = text
-    text = text.replace('D', 'E')
+    text = text.upper().replace('D', 'E') # could be lower case
     while text:
         # Look for fixed-format '0.'
         if text.startswith('0. ') or text == '0.':
