@@ -24,6 +24,7 @@ from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
 
 from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
+from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
 
 try:
     from PyQt5 import uic
@@ -321,7 +322,7 @@ class RunPopup(QDialog):
             self.parent.update_keyword('run_type', 'new')
             output_files = self.parent.monitor.get_outputs()
             if output_files:
-                if not self.parent.remove_output_files(output_files):
+                if not self.parent.remove_output_files(output_files, force_remove=True):
                     log.info('output files exist and run was canceled')
                     return False
         elif self.ui.use_spx_checkbox.isChecked():
@@ -329,7 +330,7 @@ class RunPopup(QDialog):
         else:
             # TODO: is it correct to remove all but *.RES ?
             spx_files = self.parent.monitor.get_outputs(['*.SP?', "*.pvd", "*.vtp"])
-            if not self.parent.remove_output_files(spx_files):
+            if not self.parent.remove_output_files(spx_files, force_remove=True):
                 log.debug('SP* files exist and run was canceled')
                 return False
             self.parent.update_keyword('run_type', 'restart_2')

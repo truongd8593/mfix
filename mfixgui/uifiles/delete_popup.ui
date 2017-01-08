@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>534</width>
-    <height>513</height>
+    <height>519</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="3" column="1">
-    <widget class="QGroupBox" name="groupbox_delete_">
+    <widget class="QGroupBox" name="groupbox_vtk">
      <property name="title">
       <string>VTK Files (*.vtp, *.vtu, *.pvd)</string>
      </property>
@@ -54,7 +54,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QGroupBox" name="groupbox_delete_res">
+    <widget class="QGroupBox" name="groupbox_res">
      <property name="title">
       <string>Restart FIles (*.RES)</string>
      </property>
@@ -84,12 +84,12 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::No|QDialogButtonBox::Yes</set>
      </property>
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QGroupBox" name="groupbox_delete_spx">
+    <widget class="QGroupBox" name="groupbox_spx">
      <property name="title">
       <string>SPx Files (*.SP?)</string>
      </property>

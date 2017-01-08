@@ -51,6 +51,7 @@ from mfixgui.widgets.species_popup import SpeciesPopup
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.parameter_dialog import ParameterDialog
+from mfixgui.widgets.delete_popup import DeletePopup
 
 from mfixgui.model_setup import ModelSetup
 from mfixgui.fluid_handler import FluidHandler
@@ -357,6 +358,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
+
+        # delete popup
+        self.delete_popup = DeletePopup(self)
 
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -793,11 +797,15 @@ class MfixGui(QtWidgets.QMainWindow,
         b.setEnabled(enabled)
 
 
-    def enable_input(self, enabled):
+    def enable_input(self, editable=True, partial=False):
         # Enable/disable all inputs (while job running, etc)
+        # enable some inouts if partial==True (paused, resumable)
         # Stop/reset buttons are left enabled
         for pane in self.ui.panes:
-            pane.setEnabled(enabled)
+            name = pane.objectName()
+            pane.setEnabled(editable or partial and name in [
+                'boundary_conditions', 'point_sources', 'internal_surfaces',
+                'numerics', 'output', 'monitors', 'run'])
 
 
     def slot_update_residuals(self):
@@ -842,15 +850,14 @@ class MfixGui(QtWidgets.QMainWindow,
         paused = self.job_manager.job and self.job_manager.job.is_paused()
         unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
-        editable = project_open and not (pending or unpaused or resumable)
 
         log.debug("UPDATE RUN OPTIONS: pending=%s paused=%s resumable=%s",
                    pending, paused, resumable)
 
         self.update_window_title() # put run state in window titlebar
 
-        self.enable_input(editable)
-        ui.run.setEnabled(project_open)
+        self.enable_input(editable=project_open and not (pending or unpaused or paused or resumable),
+                          partial=project_open and (paused or resumable))
 
         #handle buttons in order:  RESET RUN PAUSE STOP
 
@@ -861,7 +868,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
-            self.change_pane('run')
 
         elif unpaused:
             self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
@@ -870,7 +876,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(enabled=False)
             self.set_pause_button(text="Pause", enabled=True)
             self.set_stop_button(enabled=True)
-            self.change_pane('run')
 
         elif paused:
             self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
@@ -878,8 +883,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
-            # FIXME support reinit: edits can be made while paused
-            #self.change_pane('run')
 
         elif resumable:
             self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
@@ -887,7 +890,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=False)
-            self.change_pane('run')
 
         else: # Not running, ready for input
             self.status_message("Ready")
@@ -1644,7 +1646,7 @@ class MfixGui(QtWidgets.QMainWindow,
             scrollbar.setValue(scrollbar.maximum())
 
 
-    def remove_output_files(self, output_files=None, message_text=None):
+    def remove_output_files(self, output_files=None, message_text=None, force_remove=False):
         """ remove MFIX output files from current project directory
 
         output_files: List of patterns to be matched for file removal
@@ -1655,12 +1657,12 @@ class MfixGui(QtWidgets.QMainWindow,
         if not message_text:
             message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
-        ok_to_delete = self.confirm_delete_files(message_text)
+        ok_to_delete = self.delete_popup.exec_(output_files, force_remove)
 
         if not ok_to_delete:
             return False
 
-        for path in output_files:
+        for path in self.delete_popup.get_output_files():
             log.debug('Deleting file %s' % path)
             try:
                 os.remove(path)

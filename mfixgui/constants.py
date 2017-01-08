@@ -1,8 +1,6 @@
 # Constants
 from collections import OrderedDict
 
-
-
 # Solver types
 # must match combobox_solver in model.ui
 SINGLE, TFM, DEM, PIC, HYBRID = range(5)
@@ -91,3 +89,13 @@ for c in ['x', 'y', 'z']:
 PARAMETER_DICT = OrderedDict([(key, 0.0) for key in SPECIAL_PARAMETERS])
 
 MAX_RECENT_PROJECTS = 20
+
+# these are fnmatch and glob patterns to find output files
+RESTART_FILES = ['*.[Rr][Ee][Ss]']
+SPX_FILES = ['*.[Ss][Pp]?']
+VTK_FILES = ['*.[Vv][Tt][Pp]', '*.[Vv][Tt][Uu]', '*.[Pp][Vv][Dd]',
+             '*_[Ff][Rr][Aa][Mm][Ee]_[Ii][Nn][Dd][Ee][Xx].[Tt][Xx][Tt]']
+OTHER_FILES = ['*.[Oo][Uu][Tt]', '*.[Ll][Oo][Gg]', '*.[Pp][Ii][Dd]',
+               '*.[Ee][Rr][Rr][Oo][Rr]', '*.[Ee][0-9]*', '*.[Oo][0-9]*',
+               '*.[Pp][Ee][0-9]*', '*.[Pp][Oo][0-9]*',
+               '*[Ff][Ii][Xx].[Ss][Tt][Oo][Pp]',]

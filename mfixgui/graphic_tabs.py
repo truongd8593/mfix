@@ -258,12 +258,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.ugrid_cell_mapper.SetScalarVisibility(True)
         self.ugrid_cell_mapper.SetScalarModeToUseCellFieldData()
         self.change_color_bar('cells', 'viridis')
-        self.change_visibility('cells', False)
 
         actor = self.actors['cells'] = vtk.vtkActor()
         actor.SetMapper(self.ugrid_cell_mapper)
 
         self.vtkrenderer.AddActor(actor)
+        self.change_visibility('cells', False) # hide cells by default
 
         # points
         self.enable_toolbar_geo('nodes')

@@ -3,6 +3,7 @@
 import glob
 import logging
 import os
+from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
 
 log = logging.getLogger(__name__)
 
@@ -23,9 +24,7 @@ class Monitor(object):
         if project_dir is None:
             return
         if len(patterns) == 0:
-            patterns = [
-                '*.LOG', '*.OUT', '*.RES', '*.SP?', 'MFIX.STOP',
-                '*.pvd', '*.vtp', 'VTU_FRAME_INDEX.TXT', '*.pid']
+            patterns = RESTART_FILES + SPX_FILES + VTK_FILES + OTHER_FILES
         outputs = []
         for pat in patterns:
             outputs.extend(glob.glob(os.path.join(project_dir, pat)))
