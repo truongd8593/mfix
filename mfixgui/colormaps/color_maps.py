@@ -38,7 +38,9 @@ def get_color_map_dict():
     color_dict = OrderedDict()
     for f in COLOR_MAPS:
         name = os.path.basename(f).replace(COLOR_MAP_EXT, '').lower()
-        color_dict[name] = read_rgb(f)
+        rgb = read_rgb(f)
+        color_dict[name] = rgb
+        color_dict[name + '_reversed'] = list(reversed(rgb))
     return color_dict
 
 def get_color_map_pngs():
@@ -96,5 +98,10 @@ if __name__ == "__main__":
     gradient = np.vstack((gradient, gradient))
 
     for name, colors in get_color_map_dict().items():
+        # normal
         cmap = LinearSegmentedColormap.from_list(name, colors)
         plot_color_gradients(name, cmap, gradient)
+
+        # revered
+        cmap = LinearSegmentedColormap.from_list(name, list(reversed(colors)))
+        plot_color_gradients(name+'_reversed', cmap, gradient)

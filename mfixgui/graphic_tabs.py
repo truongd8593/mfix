@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
-from collections import OrderedDict
+from collections import OrderedDict, Mapping
 from distutils.version import LooseVersion
 import glob
 import os
@@ -95,6 +95,14 @@ def build_time_dict(search_str):
             f_dict[time] = os.path.basename(f)
     return f_dict
 
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, Mapping):
+            r = update(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
 
 class ColorMapPopUp(QtWidgets.QDialog):
     applyEvent = QtCore.Signal(object, object, object)
@@ -115,11 +123,14 @@ class ColorMapPopUp(QtWidgets.QDialog):
         ui.lineedit_to.dtype = float
 
         for name, icons in build_qicons().items():
-            ui.combobox_color_map.addItem(icons.get('bar', QtGui.QIcon()), name)
+            if not name.endswith('_reversed'):
+                ui.combobox_color_map.addItem(icons.get('bar', QtGui.QIcon()), name)
         self.set_color_map('viridis')
 
-        btn = self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
+        btn = ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
         btn.clicked.connect(self.emit_apply_event)
+
+        ui.toolbutton_auto_scale.clicked.connect(self.auto_scale)
 
     def emit_apply_event(self):
         self.applyEvent.emit(self.geo, self.button, self.array)
@@ -129,6 +140,7 @@ class ColorMapPopUp(QtWidgets.QDialog):
         self.color = self.array.get('color', DEFAULT_GEO_COLOR)
         self.set_color(self.color)
         self.set_color_map(self.array.get('color_map', 'viridis'))
+        self.ui.checkbox_reversed.setChecked(self.array.get('reversed', False))
 
         d_range = [0, 1]
         self.ui.lineedit_from.updateValue(None,
@@ -141,10 +153,15 @@ class ColorMapPopUp(QtWidgets.QDialog):
         self.ui.widget_color_map.setEnabled(not single_color)
 
     def get(self):
+        color_map = self.ui.combobox_color_map.currentText()
+        reverse = self.ui.checkbox_reversed.isChecked()
+        if reverse:
+            color_map += '_reversed'
         return {
             'color':        self.color,
             'single_color': self.ui.checkbox_single_color.isChecked(),
-            'color_map':    self.ui.combobox_color_map.currentText(),
+            'color_map':    color_map,
+            'reversed':     reverse,
             'from':         self.ui.lineedit_from.value,
             'to':           self.ui.lineedit_to.value,
             }
@@ -162,8 +179,16 @@ class ColorMapPopUp(QtWidgets.QDialog):
                 color.name()))
 
     def set_color_map(self, color_map):
+        color_map = color_map.replace('_reversed', '')
         index = self.ui.combobox_color_map.findText(color_map)
         self.ui.combobox_color_map.setCurrentIndex(index)
+
+    def auto_scale(self):
+        d_range = [0, 1]
+        self.ui.lineedit_from.updateValue(None,
+            self.array.get('range', d_range)[0])
+        self.ui.lineedit_to.updateValue(None,
+            self.array.get('range', d_range)[1])
 
 
 class ParticleOptions(QtWidgets.QDialog):
@@ -594,8 +619,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange(),}
 
-        self.cell_arrays.update(copy.deepcopy(new_array_info))
-        self.node_arrays.update(copy.deepcopy(new_array_info))
+        self.cell_arrays = update(self.cell_arrays, copy.deepcopy(new_array_info))
+        self.node_arrays = update(self.node_arrays, copy.deepcopy(new_array_info))
 
         if init:
             name = cell_data.GetArrayName(0)
@@ -617,13 +642,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         data = self.particle_reader.GetOutput()
         point_data = data.GetPointData()
-        self.point_arrays = {}
+        new_array_info = {}
         for i in range(point_data.GetNumberOfArrays()):
             array = point_data.GetArray(i)
-            self.point_arrays[point_data.GetArrayName(i)] = {
+            new_array_info[point_data.GetArrayName(i)] = {
                 'i':i,
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange()}
+
+        self.point_arrays = update(self.point_arrays, copy.deepcopy(new_array_info))
 
         if 'Diameter' in self.point_arrays:
             self.glyph.SetScaleModeToScaleByScalar()
