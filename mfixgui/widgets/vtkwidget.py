@@ -873,7 +873,6 @@ class VtkWidget(BaseVtkWidget):
         # reset to Identity
         transform.Identity()
         transform.PostMultiply()
-        transform.PreMultiply()
 
         # translate to center
         transform.Translate(-safe_float(geo['centerx']),
@@ -2460,7 +2459,7 @@ class VtkWidget(BaseVtkWidget):
 
     def change_color(self, name, button):
         """given a scene actor type, change the color"""
-        col = QtWidgets.QColorDialog.getColor(self)
+        col = QtWidgets.QColorDialog.getColor(parent=self)
         if not col.isValid():
             return
 

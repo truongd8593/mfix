@@ -255,6 +255,13 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # look for files
         self.look_for_files()
 
+        # dialogs
+        self.color_dialog  = ColorMapPopUp(self)
+        self.color_dialog.applyEvent.connect(self.change_color)
+
+        self.particle_option_dialog = ParticleOptions(self)
+        self.particle_option_dialog.applyEvent.connect(self.change_particle_options)
+
         self.init_toolbar()
         self.init_vtk()
         self.init_geometry()
@@ -483,21 +490,17 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.speed_menu.layout.addWidget(self.speed_slider)
         self.toolbutton_play_speed.pressed.connect(self.speed_menu.popup)
 
+        self.checkbox_snap = QtWidgets.QCheckBox('Save Snapshots', self.visible_menu)
+
         for btn in [self.toolbutton_visible, self.toolbutton_back,
                     self.toolbutton_play, self.toolbutton_forward,
-                    self.frame_spinbox, self.toolbutton_play_speed]:
+                    self.frame_spinbox, self.toolbutton_play_speed,
+                    self.checkbox_snap]:
             self.button_bar_layout.addWidget(btn)
             if isinstance(btn, QtWidgets.QToolButton):
                 btn.setAutoRaise(True)
 
         self.button_bar_layout.addStretch()
-
-        self.color_dialog  = ColorMapPopUp(self)
-        self.color_dialog.applyEvent.connect(self.change_color)
-
-        self.particle_option_dialog = ParticleOptions(self)
-        self.particle_option_dialog.applyEvent.connect(self.change_particle_options)
-
 
     def showEvent(self, event):
         # has to be called after the widget is visible
@@ -585,14 +588,17 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 if n_vtp:
                     self.read_vtp(self.vtp_files.values()[bisect_left(self.vtp_files.keys(), time)-1])
             self.render()
+
+            if self.checkbox_snap.isChecked():
+                self.screenshot(True, fname=os.path.join(self.project_dir, self.project_name+'_'+str(index).zfill(4)+'.png'))
         else:
             self.frame_spinbox.setValue(0)
 
     def look_for_files(self):
-        base_name = os.path.join(self.project_dir, self.project_name)
+        base_name = os.path.join(self.project_dir, self.project_name.upper())
         vtu_pvd = base_name + '.pvd'
         if os.path.exists(vtu_pvd):
-            self.vtu_files = parse_pvd_file(base_name + '.pvd')
+            self.vtu_files = parse_pvd_file(vtu_pvd)
         else:
             self.vtu_files = build_time_dict(os.path.join(self.project_dir, '*.vtu'))
         self.vtp_files = parse_pvd_file(base_name + '_DES.pvd')
@@ -790,7 +796,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def change_geo_color(self, button):
         """Change the color of the geometry actor"""
-        col = QtWidgets.QColorDialog.getColor(self)
+        col = QtWidgets.QColorDialog.getColor(parent=self)
         if not col.isValid():
             return
 
