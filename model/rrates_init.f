@@ -23,6 +23,7 @@
       use rxns,       only : R_sp, RoX_sc, SUM_R_s
       use rxns,       only : R_PHASE, NO_OF_RXNS, USE_RRATES, RRATE
       use stiff_chem, only : STIFF_CHEMISTRY
+      use des_rxns, only   : NO_OF_DES_RXNS
 
       implicit none
 
@@ -33,6 +34,7 @@
 ! Flag for invoking reaction rate calculations.
       RRATE = .FALSE.
       IF(NO_OF_RXNS > 0)  RRATE = .TRUE.   ! automated mass balance
+      IF(NO_OF_DES_RXNS > 0)  RRATE = .TRUE.   ! automated mass balance
       IF(USE_RRATES)      RRATE = .TRUE.   ! legacy hook
       IF(STIFF_CHEMISTRY) RRATE = .FALSE.  ! stiff chemistry solver
 
