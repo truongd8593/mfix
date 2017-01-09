@@ -10,9 +10,10 @@ thisdir = os.path.abspath(os.path.dirname(__file__))
 
 keyword_args = {}
 with open(os.path.join(thisdir, 'keyword_args.txt')) as f:
-    # Could get this from keyword doc instead of external file ...
+    # Could get this from keyword doc instead of external file,
+    # but keyword doc is incomplete, in particular VTK_ variables
     for line in f:
-        line = line.lower().strip()
+        line = line.lower().strip().split('#',1)[0]
         key, rest = line.split('(')
         args = [arg.strip() for arg in rest[:-1].split(',')]
         keyword_args[key] = args
