@@ -18,6 +18,7 @@ import time
 from collections import OrderedDict
 import json
 import traceback
+import copy
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
@@ -51,7 +52,7 @@ from mfixgui.widgets.species_popup import SpeciesPopup
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.parameter_dialog import ParameterDialog
-from mfixgui.widgets.delete_popup import DeletePopup
+from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
 
 from mfixgui.model_setup import ModelSetup
 from mfixgui.fluid_handler import FluidHandler
@@ -360,7 +361,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_interpreter()
 
         # delete popup
-        self.delete_popup = DeletePopup(self)
+        self.output_selection_popup = OutputSelectionPopup(self)
 
         # --- animation data
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -1657,12 +1658,12 @@ class MfixGui(QtWidgets.QMainWindow,
         if not message_text:
             message_text = 'Deleting output files:\n %s' % '\n'.join(output_files)
 
-        ok_to_delete = self.delete_popup.exec_(output_files, force_remove)
+        ok_to_delete = self.output_selection_popup.exec_(output_files, force_remove)
 
         if not ok_to_delete:
             return False
 
-        for path in self.delete_popup.get_output_files():
+        for path in self.output_selection_popup.get_output_files():
             log.debug('Deleting file %s' % path)
             try:
                 os.remove(path)
@@ -1750,18 +1751,15 @@ class MfixGui(QtWidgets.QMainWindow,
         except Exception as e:
             self.error('handle_stop: %s' % e)
 
-    def check_save(self):
+    def check_save(self, text="Save current project?"):
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
-                                    text="Save current project?",
+                                    text=text,
                                     buttons=['yes', 'no'])
             if response != 'yes':
                 return False
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file())
-        self.clear_unsaved_flag()
-        self.update_source_view()
+        self.save_project()
         return True
 
     def open_run_dialog(self):
@@ -1782,7 +1780,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
-        # Note, this does not do a save first.  Just copies existing files.
+        self.check_save(text='Save current project before exporting?')
         project_file = self.get_project_file()
         if not project_file:
             self.message(text="Nothing to export",
@@ -1790,24 +1788,35 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         export_file = self.get_save_filename()
+        print(export_file)
         if not export_file: # User bailed out
             return
         export_dir = os.path.dirname(export_file)
         if not self.check_writable(export_dir):
             return
 
-        files_to_copy = [project_file]
+        # new project name
+        new_project_file = os.path.splitext(os.path.basename(export_file))[0]
+        print(new_project_file)
 
-        sp_files = self.monitor.get_outputs(["*.SP?"])
-        if (sp_files):
-            resp = self.message(text="Copy .SP files?\n%s" % '\n'.join(sp_files),
-                               icon='question',
-                               buttons=['yes', 'no'],
-                               default='yes')
-            if resp=='yes':
-                files_to_copy.extend(sp_files)
+        # copy the project file
+        export_prj = copy.deepcopy(self.project)
+        export_prj.updateKeyword('run_name', new_project_file)
+        self.print_internal("Info: Exporting %s" % new_project_file)
+        export_prj.writeDatFile(os.path.join(export_dir, new_project_file+'.mfx'))
 
-        files_to_copy.extend(self.monitor.get_outputs(["*.RES", "*.STL"]))
+        # collect files to copy
+        files_to_copy = []
+        # output files *.RES, *.SP?, *.vtu, etc...
+        output_files = self.monitor.get_outputs()
+        ok_to_copy = self.output_selection_popup.exec_(output_files, heading='Copy the following files?', title='Copy files?')
+        if not ok_to_copy: # user bailed out
+            return
+        files_to_copy.extend(self.output_selection_popup.get_output_files())
+
+        # stl files
+        files_to_copy.extend(self.monitor.get_outputs(["*.[Ss][Tt][Ll]"]))
+
         #copy project files into new_project_directory
         for f in files_to_copy:
             try:
@@ -1816,7 +1825,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.message(title='File error',
                              text="Error copying file:\n%s" % e,
                              buttons=['ok'])
-
 
     def save_project(self, filename=None):
         """save project, optionally as a new project.
@@ -1871,7 +1879,7 @@ class MfixGui(QtWidgets.QMainWindow,
         project_base = os.path.basename(project_file)
         run_name = os.path.splitext(project_base)[0]
         self.update_keyword('run_name', run_name)
-        self.print_internal("Info: Saving %s" % project_file)
+        self.print_internal("Info: Saving %s\n" % project_file)
         self.project.writeDatFile(project_file)
 
         # save workflow

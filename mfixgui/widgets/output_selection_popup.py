@@ -14,9 +14,9 @@ class OutputSelectionPopup(QtWidgets.QDialog):
         uidir = os.path.join(thisdir, os.pardir, 'uifiles')
         self.ui = uic.loadUi(os.path.join(uidir, 'output_selection_popup.ui'), self)
 
-        self.setWindowTitle(' Files')
+        self.setWindowTitle('Delete Files?')
 
-    def exec_(self, files, force_remove=False, heading='Delete the following files?'):
+    def exec_(self, files, force_remove=False, heading='Delete the following files?', title='Delete Files?'):
 
         ui = self.ui
         enable = not force_remove
@@ -26,6 +26,7 @@ class OutputSelectionPopup(QtWidgets.QDialog):
         ui.checkbox_other.setEnabled(enable)
 
         ui.label_heading.setText(heading)
+        self.setWindowTitle(title)
 
         self.sort_files(files)
         return QtWidgets.QDialog.exec_(self)
