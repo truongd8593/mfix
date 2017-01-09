@@ -77,9 +77,15 @@ class Output(object):
         cb.currentIndexChanged.connect(lambda val: self.update_keyword('des_output_type', DES_OUTPUT_TYPES[val]))
         self.add_tooltip(cb, key='des_output_type')
 
-        #cb = ui.checkbox_keyword_write_vtk_files
-        #cb.clicked.connect(self.output_enable_vtk)
-        #self.add_tooltip(cb, key, value=write_vtk_files)
+        gb = ui.groupbox_write_vtk_files
+        key = 'write_vtk_files'
+        gb.clicked.connect(self.output_enable_vtk)
+        self.add_tooltip(gb, key)
+
+
+    def output_enable_vtk(self, enabled):
+        self.update_keyword('write_vtk_files', enabled)
+        self.setup_output() # enable/disable gui widgets
 
     def output_enable_spx(self, enabled):
         ui = self.ui.output
@@ -184,17 +190,19 @@ class Output(object):
         #    Enables VTK tab
         # (handled by keyword widget and post_update)
         write_vtk_files = self.project.get_value('write_vtk_files', default=False)
+        ui.groupbox_write_vtk_files.setChecked(write_vtk_files)
         ui.pushbutton_vtk.setEnabled(write_vtk_files)
 
         #Enable time-dependent VTK files
         #    Specification only if WRITE_VTK_FILES = .TRUE.
         enabled = bool(write_vtk_files)
+
         #    Sets keyword TIME_DEPENDENT_FILENAME
         key = 'time_dependent_filename'
         #    DEFAULT value .TRUE.
         default = True
         cb = ui.checkbox_keyword_time_dependent_filename
-        cb.setEnabled(enabled)
+        #cb.setEnabled(enabled)        #(handled by checkable groupbox)
         value = self.project.get_value(key)
         self.add_tooltip(cb, key, value=True if value is None else value)
         if enabled:
@@ -202,7 +210,7 @@ class Output(object):
                 value = default
                 self.update_keyword(key, value)
         else:
-            self.unset_keyword(key) #?
+            self.unset_keyword(key)
         ui.pushbutton_vtk.setEnabled(enabled)
 
         #Specify VTK Directory
@@ -211,15 +219,25 @@ class Output(object):
         #    No default (empty string)
         key = 'vtu_dir'
         enabled = bool(write_vtk_files)
-        for item in (ui.label_vtu_dir, ui.lineedit_keyword_vtu_dir):
-            item.setEnabled(enabled)
+        value = self.project.get_value(key, default='')
+        #for item in (ui.label_vtu_dir, ui.lineedit_keyword_vtu_dir):
+        #    item.setEnabled(enabled)        #(handled by checkable groupbox)
+        if enabled:
+            if value is None or value=='':
+                value = ui.lineedit_keyword_vtu_dir.value # saved value in GUI
+                if value is None:
+                    value = default
+                self.update_keyword(key, value)
+        else:
+            self.unset_keyword(key)
+        ui.pushbutton_vtk.setEnabled(enabled)
 
         #Write binary Single Precision files (SPx)
         #    No keyword association
         #    Enables SPx tab
         #    Backwards compatibility: Enabled if any SPx time values are specified
         enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
-                      for i in range(1,MAX_SP+1)) # Note, enabled in template! *** ??? JORDAN
+                      for i in range(1,MAX_SP+1)) # Note, enabled in template! *** Jordan?
         ui.checkbox_binary_spx_files.setChecked(enabled)
         ui.pushbutton_spx.setEnabled(enabled)
 
@@ -227,11 +245,6 @@ class Output(object):
         #    Not available when SPx output is enabled
         #    No keyword association.
         #    Enables NetCDF tab
-
-
-
-    def output_enable_vtk(self, val):
-        print(val)
 
 
     def setup_output_spx_tab(self):
