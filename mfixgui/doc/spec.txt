@@ -1200,11 +1200,11 @@ Select boundary type
 #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
 #  Partial Slip Wall
 
-# 
+#
 
-# 
+#
 
-# 
+#
 
 #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
@@ -1300,7 +1300,7 @@ Select species equation boundary type:
 #    Requires BC_C_X_G(#)
 #    Sets keyword BC_XW_G(#) to UNDEFINED
 
-# 
+#
 
 Convective Flux
 #    Requires BC_HW_X_G(#)
@@ -1443,7 +1443,7 @@ Select granular energy equation boundary type:
 #    Sets keyword BC_C_THETA_M (#,#) to 0.0
 #    Sets keyword BC_THETAW_M(#,#) to UNDEFINED
 
-# 
+#
 
 Specified Temperature
 #    Sets keyword BC_HW_THETA_M(#,#) to UNDEFINED
@@ -1641,7 +1641,7 @@ section in the appendix.
 #    Volume fraction may be inferred from BC_EP_G
 # BC_EP_S(#,#) = 1.0 - BC_EP_G(#)
 # Only valid for one solids phase (MMAX=1)
-# 
+#
 Define inflow properties: Mass inflow specification changes based on the BC_TYPE and
 Region orientation (e.g., XZ-Plane)
 #    For BC_TYPE='MI' and XZ-Plane region
@@ -2221,7 +2221,7 @@ Specify HoR fraction assigned to -phase-
 #  Entry for each phase referenced by the reaction
 #  DEFAULT value 0.5 for both entires
 
-# 
+#
 
 Sets reaction construct keyword fracDH(#) for each referenced phase
 
@@ -2626,7 +2626,7 @@ Enable writing turbulent dissipation
 #    DEFAULT value of .FALSE.
 Enable writing reaction rates
 # Requires nRR > 0
-# Sets keyword VTK_RRATE(#)
+# Sets keyword VTK_RRATE(#) ## requires 'reaction' index
 # DEFAULT value .FALSE.
 
 Solids Phase (tab?)
@@ -2668,7 +2668,7 @@ Scalar (tab?)
 
 Enable writing user defined scalar
 # Requires NSCALAR > 0
-# Sets keyword VTK_SCALAR(#)
+# Sets keyword VTK_SCALAR(#, #) # requires Scalar index
 # DEFAULT value .FALSE.
 
 Other (tab?)
@@ -3269,4 +3269,3 @@ a. Let I=INERT_SPECIES(M)
 b. IC_RO_S(M) = RO_S0(M) * X_S0(M,I)/IC_X_S(#,M,I)
 Note that RO_S0 is used for example and that it should not be set in the input deck file for variable
 solid density cases.
-
