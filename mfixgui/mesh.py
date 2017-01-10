@@ -270,10 +270,10 @@ class Mesh(object):
         self.mesh_tables[index].fit_to_contents()
 
     def mesh_table_changed(self, row, col, val, d, table):
-        """a table was edited, update"""
+        """a value in the table was edited, update"""
         data = table.value
         if col == 'position':
-            sort = sort_dict(data, 'position', 1)
+            sort = sort_dict(data, 'position')
             table.set_value(sort, block=False) # unblock because the table is currently in an "edit" state
             table.fit_to_contents()
             for i, val in sort.items():
@@ -357,6 +357,7 @@ class Mesh(object):
         if row >= 2:
             prev_data_loc = safe_float(data[row-1]['position'])
 
+        # find the midpoint, and slit the cells evenly
         midpoint = (safe_float(split_data['position']) - prev_data_loc)/2.0 + prev_data_loc
         cells = max(int(safe_int(split_data['cells'], 1)/2), 1)
         split_data['cells'] = cells
