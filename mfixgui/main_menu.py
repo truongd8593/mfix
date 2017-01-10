@@ -102,7 +102,7 @@ class MainMenu(object):
         self.tutorial_paths = []
         tut_path = os.path.join(mfx_dir, 'tutorials', '')
         for root, dirs, files in os.walk(tut_path):
-            if any(f.endswith('.dat') for f in files):
+            if any(f.endswith('mfix.dat') for f in files):
                 self.tutorial_paths.append(root.replace(tut_path,''))
         if self.tutorial_paths:
             loc += ['Tutorials']
@@ -111,7 +111,7 @@ class MainMenu(object):
         self.benchmark_paths = []
         bench_path = os.path.join(mfx_dir, 'benchmarks', '')
         for root, dirs, files in os.walk(bench_path):
-            if any(f.endswith('.dat') for f in files):
+            if any(f.endswith('mfix.dat') for f in files):
                 self.benchmark_paths.append(root.replace(bench_path, ''))
         if self.benchmark_paths:
             loc += ['Benchmarks']
