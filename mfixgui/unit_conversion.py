@@ -115,6 +115,7 @@ cgs_to_SI = {
   'c':              None, # UNKNOWN                : User defined constants.
   'c2c_r1':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 1 (used when QUADRIC_FORM =
   'c2c_r2':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 2 (used when QUADRIC_FORM =
+  'c2c_y1':         None, # UNKNOWN                : Cylinder-cone_cylinder Y1 (used when QUADRIC_FORM = C2C*).
   'c2c_y2':         None, # UNKNOWN                : Cylinder-cone_cylinder Y2 (used when QUADRIC_FORM = C2C*).
   'c_e':            1,    # max = 1.0              : Coefficient of restitution for particle-particle collisions.
   'c_f':            1,    # friction               : Coefficient of friction between the particles of two solids
@@ -129,15 +130,15 @@ cgs_to_SI = {
   'clip_ymin':      None, # UNKNOWN                : Lower y-limit where the quadric is defined.
   'clip_zmax':      None, # UNKNOWN                : Upper z-limit where the quadric is defined.
   'clip_zmin':      None, # UNKNOWN                : Lower z-limit where the quadric is defined.
-  'cpx':            None, # UNKNOWN                : Location of control points in x-direction.
-  'cpy':            None, # UNKNOWN                : Location of control points in y-direction.
-  'cpz':            None, # UNKNOWN                : Location of control points in z-direction.
+  'cpx':            0.01, # cm -> m                : Location of control points in x-direction.
+  'cpy':            0.01, # cm -> m                : Location of control points in y-direction.
+  'cpz':            0.01, # cm -> m                : Location of control points in z-direction.
   'd_p0':           0.01, # cm -> m                : Initial particle diameters .
   'delp_x':         0.1,  # barye -> Pa            : Fluid pressure drop across XLENGTH when a cyclic boundary
   'delp_y':         0.1,  # barye -> Pa            : Fluid pressure drop across YLENGTH when a cyclic boundary
   'delp_z':         0.1,  # barye -> Pa            : Fluid pressure drop across ZLENGTH when a cyclic boundary
   'des_diffuse_width':0.01,# cm -> m               : The length scale used to smooth dispersed phase averaged
-  'des_em':         None, # UNKNOWN                : Emissivity of solids phase M.
+  'des_em':         None, # UNKNOWN                : Emissivity of solids phase.
   'des_en_input':   1,    # factor                 : The normal restitution coefficient for inter-particle
   'des_en_wall_input':1,  # factor                 : The normal restitution coefficient for particle-wall
   'des_et_input':   1,    # max = 1.0              : Tangential restitution coefficient for inter-particle
@@ -351,6 +352,7 @@ cgs_to_SI = {
   'tz_stl':         None, # UNKNOWN                : Translation in z-direction, applied to the STL geometry.
   'ucoil_r1':       0.01, # cm -> m                : U-shaped coil Radius 1 (used when QUADRIC_FORM = UCOIL*),
   'ucoil_r2':       0.01, # cm -> m                : U-shaped coil Radius 2 (used when QUADRIC_FORM = UCOIL*),
+  'ucoil_y1':       None, # UNKNOWN                : U-shaped coil ymax (used when QUADRIC_FORM = UCOIL*),
   'ucoil_y2':       None, # UNKNOWN                : U-shaped coil ymin (used when QUADRIC_FORM = UCOIL*),
   'ur_f_gs':        1,    # s                      : The implicitness calculation of the gas-solids drag
   'ur_fac':         1,    # factor                 : Under relaxation factors.
@@ -370,9 +372,12 @@ cgs_to_SI = {
   'vdw_outer_cutoff':1,   # ratio                  : Maximum separation distance above which van der Waals forces
   'vtk_dt':         1,    # s                      : Interval (expressed in seconds of simulation time) at which
   'vtk_slice_tol':  1,    # tolerance              : Tolerance to detect particle in a VTK region.
-  'vtk_x_e':        None, # UNKNOWN                : East location of VTK region.
-  'vtk_y_n':        None, # UNKNOWN                : North location of VTK region.
-  'vtk_z_t':        None, # UNKNOWN                : West location of VTK region.
+  'vtk_x_e':        0.01, # cm -> m                : East location of VTK region.
+  'vtk_x_w':        0.01, # cm -> m                : West location of VTK region.
+  'vtk_y_n':        0.01, # cm -> m                : North location of VTK region.
+  'vtk_y_s':        0.01, # cm -> m                : South location of VTK region.
+  'vtk_z_b':        0.01, # cm -> m                : Bottom location of VTK region.
+  'vtk_z_t':        0.01, # cm -> m                : West location of VTK region.
   'vw_poisson':     1,    # ratio                  : Poisson's ratio for the wall. Required when using the
   'vw_poisson_actual':1,  # ratio                  : Poisson's ratio for the wall. Used for computing correction
   'wall_hamaker_constant':None,# UNKNOWN           : Hamaker constant used in particle-wall cohesive
