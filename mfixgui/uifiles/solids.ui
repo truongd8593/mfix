@@ -69,7 +69,7 @@ QPushButton:checked {
        <number>0</number>
       </property>
       <property name="topMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <property name="rightMargin">
        <number>0</number>
@@ -411,8 +411,8 @@ QPushButton:checked {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>585</width>
-             <height>1096</height>
+             <width>584</width>
+             <height>1077</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -511,6 +511,12 @@ QPushButton:checked {
             </item>
             <item row="2" column="0" colspan="6">
              <widget class="QGroupBox" name="groupbox_options">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="title">
                <string>Options</string>
               </property>
@@ -590,6 +596,12 @@ QPushButton:checked {
             </item>
             <item row="5" column="0" colspan="6">
              <widget class="QGroupBox" name="groupbox_baseline">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="title">
                <string>Baseline (unreacted) composition</string>
               </property>
@@ -666,6 +678,12 @@ QPushButton:checked {
             </item>
             <item row="8" column="0" colspan="6">
              <widget class="QGroupBox" name="groupbox_advanced">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="title">
                <string>Advanced</string>
               </property>
@@ -730,6 +748,12 @@ QPushButton:checked {
             </item>
             <item row="3" column="0" colspan="6">
              <widget class="QGroupBox" name="groupbox_solids_parameters">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="title">
                <string>Parameters</string>
               </property>
@@ -1025,6 +1049,12 @@ QPushButton:checked {
             </item>
             <item row="4" column="0" colspan="6">
              <widget class="QGroupBox" name="groupbox_species">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="title">
                <string>Species</string>
               </property>
@@ -1262,6 +1292,12 @@ QPushButton:checked {
        </property>
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupbox_parameters">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Parameters</string>
          </property>
@@ -1539,6 +1575,12 @@ QPushButton:checked {
        </item>
        <item row="2" column="0">
         <widget class="QGroupBox" name="groupbox_tfm_advanced">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Advanced</string>
          </property>
@@ -1762,9 +1804,9 @@ QPushButton:checked {
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>345</width>
-            <height>1314</height>
+            <y>-246</y>
+            <width>576</width>
+            <height>1191</height>
            </rect>
           </property>
           <property name="autoFillBackground">
@@ -2591,6 +2633,12 @@ background-color:white;
            </item>
            <item>
             <widget class="QGroupBox" name="groupbox_dem_advanced">
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="title">
               <string>Advanced</string>
              </property>
@@ -2973,6 +3021,12 @@ background-color:white;
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox_15">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="title">
              <string>Parameters</string>
             </property>
@@ -2981,7 +3035,7 @@ background-color:white;
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">
              <property name="leftMargin">
-              <number>0</number>
+              <number>5</number>
              </property>
              <property name="topMargin">
               <number>10</number>
@@ -3060,6 +3114,12 @@ background-color:white;
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox_16">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="title">
              <string>Coupling</string>
             </property>
@@ -3226,6 +3286,12 @@ background-color:white;
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox_17">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Solids stress model (advanced)</string>
          </property>
@@ -3358,13 +3424,13 @@ background-color:white;
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>

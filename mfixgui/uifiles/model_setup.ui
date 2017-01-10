@@ -97,6 +97,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_options">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Options</string>
      </property>
@@ -105,7 +111,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="leftMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <property name="topMargin">
        <number>10</number>
@@ -118,6 +124,12 @@
       </property>
       <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_disable_fluid_solver">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Disable Fluid Solver (Pure Granular Flow)</string>
         </property>
@@ -125,6 +137,12 @@
       </item>
       <item row="1" column="0" colspan="2">
        <widget class="CheckBox" name="checkbox_keyword_energy_eq">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Enable Energy Equations</string>
         </property>
@@ -132,6 +150,12 @@
       </item>
       <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="checkbox_enable_turbulence">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Enable Fluid Phase Turbulence</string>
         </property>
@@ -142,6 +166,12 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Turbulence model</string>
         </property>
@@ -151,6 +181,12 @@
        <widget class="ComboBox" name="combobox_turbulence_model">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <item>
          <property name="text">
@@ -176,6 +212,12 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Max turbulent viscosity</string>
           </property>
@@ -186,12 +228,24 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_mu_gmax_units">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
           </property>
           <property name="text">
            <string>Pa.s</string>
@@ -519,6 +573,12 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_advanced">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Advanced</string>
      </property>
@@ -527,7 +587,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <property name="leftMargin">
-       <number>0</number>
+       <number>5</number>
       </property>
       <property name="topMargin">
        <number>5</number>
@@ -540,6 +600,12 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_momentum_formulation">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -553,6 +619,12 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_subgrid_type">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Subgrid Model</string>
         </property>
@@ -560,6 +632,12 @@
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_filter_size_ratio">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Subgrid filter size ratio</string>
         </property>
@@ -567,6 +645,12 @@
       </item>
       <item row="3" column="0" colspan="3">
        <widget class="CheckBox" name="checkbox_keyword_subgrid_wall">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Enable subgrid wall correction</string>
         </property>
@@ -574,6 +658,12 @@
       </item>
       <item row="0" column="1" colspan="2">
        <widget class="ComboBox" name="combobox_momentum_formulation">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <item>
          <property name="text">
           <string>Model A</string>
@@ -604,10 +694,22 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="1" column="1" colspan="2">
        <widget class="ComboBox" name="combobox_subgrid_type">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <item>
          <property name="text">
           <string>None</string>
@@ -650,13 +752,13 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>

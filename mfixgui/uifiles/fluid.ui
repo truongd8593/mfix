@@ -37,6 +37,12 @@
    </property>
    <item row="1" column="0" colspan="2">
     <widget class="QGroupBox" name="groupbox_options">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Options</string>
      </property>
@@ -58,6 +64,12 @@
       </property>
       <item row="1" column="0">
        <widget class="CheckBox" name="checkbox_keyword_momentum_y_eq_args_0">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Solve V-Momentum Equation</string>
         </property>
@@ -68,6 +80,12 @@
       </item>
       <item row="2" column="0">
        <widget class="CheckBox" name="checkbox_keyword_momentum_z_eq_args_0">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Solve W-Momentum Equation</string>
         </property>
@@ -80,6 +98,12 @@
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QCheckBox" name="checkbox_enable_scalar_eq">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Enable Scalar Equations</string>
           </property>
@@ -115,6 +139,12 @@
       </item>
       <item row="3" column="0">
        <widget class="CheckBox" name="checkbox_keyword_species_eq_args_0">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Enable Species Equations</string>
         </property>
@@ -122,6 +152,12 @@
       </item>
       <item row="0" column="0">
        <widget class="CheckBox" name="checkbox_keyword_momentum_x_eq_args_0">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Solve U-Momentum Equation</string>
         </property>
@@ -135,6 +171,12 @@
    </item>
    <item row="3" column="0" colspan="2">
     <widget class="QGroupBox" name="groupbox_fluid_phase_species">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Species</string>
      </property>
@@ -183,6 +225,12 @@
          </property>
          <item>
           <widget class="QToolButton" name="toolbutton_fluid_species_add">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Add</string>
            </property>
@@ -193,6 +241,12 @@
          </item>
          <item>
           <widget class="QToolButton" name="toolbutton_fluid_species_delete">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Delete</string>
            </property>
@@ -203,6 +257,12 @@
          </item>
          <item>
           <widget class="QToolButton" name="toolbutton_fluid_species_copy">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Copy</string>
            </property>
@@ -246,6 +306,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="frameShadow">
          <enum>QFrame::Plain</enum>
@@ -389,6 +455,12 @@
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QGroupBox" name="groupbox_fluid_phase_model_parameters">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="title">
       <string>Parameters</string>
      </property>
@@ -410,6 +482,12 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_fluid_density_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Density</string>
         </property>
@@ -428,6 +506,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToContents</enum>
@@ -466,6 +550,12 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="0" column="3">
@@ -484,6 +574,12 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_fluid_viscosity_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Viscosity</string>
         </property>
@@ -502,6 +598,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToContents</enum>
@@ -540,13 +642,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="1" column="3">
        <widget class="QLabel" name="label_mu_g0_units">
         <property name="font">
          <font>
+          <weight>50</weight>
           <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="text">
@@ -556,6 +666,12 @@
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_mol_weight_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Molecular weight</string>
         </property>
@@ -577,6 +693,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToContents</enum>
@@ -610,13 +732,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="2" column="3">
        <widget class="QLabel" name="label_mw_avg_units">
         <property name="font">
          <font>
+          <weight>50</weight>
           <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="text">
@@ -626,6 +756,12 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_fluid_specific_heat_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Specific heat</string>
         </property>
@@ -647,6 +783,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToContents</enum>
@@ -685,13 +827,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="3" column="3">
        <widget class="QLabel" name="label_c_pg0_units">
         <property name="font">
          <font>
+          <weight>50</weight>
           <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="text">
@@ -701,6 +851,12 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_fluid_conductivity_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Thermal conductivity</string>
         </property>
@@ -722,6 +878,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="currentIndex">
          <number>0</number>
@@ -763,13 +925,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="4" column="3">
        <widget class="QLabel" name="label_k_g0_units">
         <property name="font">
          <font>
+          <weight>50</weight>
           <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="text">
@@ -779,6 +949,12 @@
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_fluid_diffusion_model">
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
         <property name="text">
          <string>Diffusivity</string>
         </property>
@@ -797,6 +973,12 @@
           <width>16777215</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
         </property>
         <property name="currentIndex">
          <number>0</number>
@@ -838,13 +1020,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="5" column="3">
        <widget class="QLabel" name="label_dif_g0_units">
         <property name="font">
          <font>
+          <weight>50</weight>
           <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="text">
