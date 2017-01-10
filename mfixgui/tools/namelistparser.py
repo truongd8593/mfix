@@ -1,5 +1,6 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 MFIX [Multiphase Flow with Interphase eXchanges] is a general-purpose
 computer code developed at the National Energy Technology Laboratory
@@ -13,7 +14,7 @@ files to extract documentation of the keywords.
 
 @author: Justin Weber
 """
-# Import from the future for Python 2 and 3 compatability!
+# Import from the future for Python 2 and 3 compatability
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import codecs
@@ -31,7 +32,7 @@ KEYWORDLIST_TXT = os.path.join(PACKAGE, 'keywordList.txt')
 
 def getKeywordDoc():
     """ return dict from json file if it exists, otherwise build from mfix source"""
-    # FIXME.   We have no way to ensure json file is not stale! So don't use it.
+    # XXX FIXME.   We have no good way to ensure json file is not stale! So don't use it.
     if False and os.path.exists(KEYWORDDOC_JSON):
         with open(KEYWORDDOC_JSON, 'r') as json_file:
             return json.load(json_file)
@@ -179,14 +180,11 @@ def parse(fname = None, string = None):
                  'undefined_l': 'L',
                  'zero': 'DP',
                  'one': 'DP',
-                 '-one': 'DP',
                  '.true.': 'L',
                  '.false.': 'L',
                  '.t.': 'L',
                  '.f.': 'L',
-                 'LARGE_NUMBER'.lower(): 'DP',
-                 '-LARGE_NUMBER'.lower(): 'DP',
-                 }
+                 'large_number': 'DP' }
 
     keywordDocDict = {}
     keywordDocList = []
@@ -239,6 +237,8 @@ def parse(fname = None, string = None):
         # get dtype from init_value
         dtype = None
         init_value = init_value.lower().replace(' ', '')
+        if init_value.startswith('-'):
+            init_value = init_value[1:]
         if init_value in dtypeDict:
             dtype = dtypeDict[init_value]
         elif intMatch.findall(init_value):
