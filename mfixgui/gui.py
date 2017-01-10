@@ -1825,6 +1825,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.message(title='File error',
                              text="Error copying file:\n%s" % e,
                              buttons=['ok'])
+        self.handle_main_menu_hide()
 
     def save_project(self, filename=None):
         """save project, optionally as a new project.
@@ -1915,6 +1916,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.rundir_watcher.addPath(new_dir)
         self.slot_rundir_changed()
         self.signal_update_runbuttons.emit('')
+        self.handle_main_menu_hide()
 
     def get_save_filename(self, message=None):
         """wrapper for call to getSaveFileName, override in unit tests"""
@@ -1941,6 +1943,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          default='ok')
             traceback.print_exception(*sys.exc_info())
             return
+        self.handle_main_menu_hide()
 
     def handle_export(self):
         self.export_project()
@@ -2092,6 +2095,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.mfix_gui_comments['created_date'] = creation_time
 
         self.save_project()
+        self.handle_main_menu_hide()
 
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""

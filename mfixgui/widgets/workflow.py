@@ -772,6 +772,7 @@ class WorkflowWidget(QtWidgets.QWidget):
             new_nc = new_nc[0]
 
         self.nodeChart.open(path=new_nc)
+        self.handle_main_menu_hide()
 
     def handle_export(self):
         """export a nc file"""
@@ -786,3 +787,4 @@ class WorkflowWidget(QtWidgets.QWidget):
             new_nc = new_nc[0]
 
         self.nodeChart.save(path=new_nc)
+        self.handle_main_menu_hide()

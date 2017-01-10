@@ -300,6 +300,18 @@ class MainMenu(object):
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
     def handle_main_menu_open_project(self, item):
+
+        name = str(self.ui.main_menu_loc_lw.currentItem().text()).lower()
+        if name in ['benchmarks', 'tutorials']:
+            mfx_dir = get_mfix_home()
+            text = os.path.join(mfx_dir, name, str(item.text()))
+        else:
+            text = str(item.text())
+
+        if not os.path.exists(text):
+            self.message(text="File does not exist: %s" % text)
+            return
+
         if self.unsaved_flag:
             confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
                                    buttons=['yes', 'no'],
@@ -308,12 +320,6 @@ class MainMenu(object):
                 return
             self.clear_unsaved_flag()
 
-        text = str(item.text())
-
-        name = str(self.ui.main_menu_loc_lw.currentItem().text()).lower()
-        if name in ['benchmarks', 'tutorials']:
-            mfx_dir = get_mfix_home()
-            text = os.path.join(mfx_dir, name, text)
         self.open_project(text)
 
     def handle_main_menu_browse_loc_changes(self, selected, deselected):
@@ -333,26 +339,20 @@ class MainMenu(object):
 
 
     def handle_main_menu_selection_changed(self, selected, deselected):
-        if selected:
+        if selected and selected.indexes():
             text = str(self.ui.main_menu_list.item(selected.indexes()[0].row()).text()).lower()
 
             if text == 'new':
-                self.handle_main_menu_hide()
                 self.new_project()
             elif text == 'save':
-                self.handle_main_menu_hide()
                 self.handle_save()
             elif text == 'save as':
-                self.handle_main_menu_hide()
                 self.handle_save_as()
             elif text == 'export project':
-                self.handle_main_menu_hide()
                 self.handle_export()
             elif text == 'export workflow':
-                self.handle_main_menu_hide()
                 self.ui.workflow_widget.handle_export()
             elif text == 'import workflow':
-                self.handle_main_menu_hide()
                 self.ui.workflow_widget.handle_import()
             elif text == 'close':
                 self.close()
@@ -366,7 +366,7 @@ class MainMenu(object):
 
                 if len(matches) == 1:
                     index = matches[0]
-                self.ui.main_menu_stackedwidget.setCurrentIndex(index)
+                sw.setCurrentIndex(index)
 
 
     def handle_main_menu(self):
