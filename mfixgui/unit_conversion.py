@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
-
 
 """
 Simulation Units
@@ -391,8 +389,12 @@ cgs_to_SI = {
 def main():
     import os
     import re
+    import sys
     from tools.general import SCRIPT_DIRECTORY
     from tools.namelistparser import getKeywordDoc
+
+    PY2 = sys.version_info.major == 2
+    PY3 = sys.version_info.major == 3
 
     def trim(s, maxlen=60):
         pat = re.compile(r'\[[^]]*\]') # Remove anything inside []
@@ -618,7 +620,14 @@ def main():
             new_cgs_to_SI[key] = (factor, comment)
 
     infile = open(__file__, 'r')
-    lines = [line.decode('utf-8') for line in infile]
+
+    if PY2:
+        lines = [line.decode('utf-8') for line in infile]
+        encode = lambda x: x.encode('utf-8')
+    else:
+        lines = [line for line in infile]
+        encode = lambda x: x
+
     start = lines.index('cgs_to_SI = {\n') + 1
     end = lines.index('}\n')
 
@@ -630,7 +639,7 @@ def main():
     outfile = open(__file__ + '.tmp', 'w')
 
     for line in head:
-        outfile.write(line.encode('utf-8'))
+        outfile.write(encode(line))
 
     line_by_key = {}
     for line in data:
@@ -657,10 +666,10 @@ def main():
 
     new_data.sort()
     for line in new_data:
-        outfile.write(line.encode('utf-8'))
+        outfile.write(encode(line))
 
     for line in tail:
-        outfile.write(line.encode('utf-8'))
+        outfile.write(encode(line))
 
     print("Generated %s" % (__file__ + '.tmp'))
 
