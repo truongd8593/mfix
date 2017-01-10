@@ -748,8 +748,8 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>383</width>
-                <height>455</height>
+                <width>98</width>
+                <height>40</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout_4">
@@ -1466,6 +1466,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
       </layout>
      </widget>
      <widget class="QWidget" name="page_netcdf"/>
+     <widget class="QWidget" name="page_particle"/>
     </widget>
    </item>
   </layout>

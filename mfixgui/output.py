@@ -23,6 +23,7 @@ from mfixgui.tools.general import (widget_iter,
                                    get_selected_row,
                                    get_combobox_item,
                                    set_item_noedit,
+                                   set_item_enabled,
                                    safe_float)
 
 from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
@@ -30,6 +31,8 @@ from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
 TAB_BASIC, TAB_VTK, TAB_SPX, TAB_NETCDF = range(4)
 
 MAX_SP = 11
+
+VTK_DATA_TYPES = ['C', 'P']
 
 class Output(object):
     #Output Task Pane Window:
@@ -115,15 +118,6 @@ class Output(object):
 
         ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_output_region_selection)
 
-        #Select Output type
-        # Selection is required
-        # Available selections:
-        #  Cell data
-        #    Selection always available
-        #    Set keyword VTK_DATA(#) to 'C'
-        #  Particle data
-        #    Selection only available with DEM or PIC solids
-        #    Sets keyword VTK_DATA(#) to 'P'
 
     def handle_output_region_selection(self):
         ui = self.ui.output
@@ -166,12 +160,14 @@ class Output(object):
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
+            row_height = 0
             height = header_height+scrollbar_height
         else:
+            row_height = tw.rowHeight(0)
             height =  (header_height+scrollbar_height
-                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
         ui.top_frame.setMaximumHeight(height+24)
-        ui.top_frame.setMinimumHeight(header_height+24)
+        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
         ui.top_frame.updateGeometry()
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(header_height)
@@ -182,7 +178,6 @@ class Output(object):
         # Users cannot select inapplicable regions.
         # VTK regions can be points, planes, or volumes (not STLs)
         # Regions can define multiple VTK regions.
-
         ui = self.ui.output
         rp = self.regions_popup
         rp.clear()
@@ -190,11 +185,24 @@ class Output(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         and not self.check_region_in_use(name)
                          and (shape in ('point', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
+        #Select Output type
+        # Selection is required
+        # Available selections:
+        #  Cell data
+        #    Selection always available
+        #    Set keyword VTK_DATA(#) to 'C'
+        #  Particle data
+        #    Selection only available with DEM or PIC solids
+        #    Sets keyword VTK_DATA(#) to 'P'
+        solids_models = set(self.project.get_value('solids_model', args=[i])
+                            for i in range(1, len(self.solids)+1))
+        enabled = 'DEM' in solids_models or 'PIC' in solids_models
+
+
         rp.reset_signals()
         rp.save.connect(self.output_add_regions)
         rp.cancel.connect(self.output_cancel_add)
@@ -203,8 +211,8 @@ class Output(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('VTK output')
-
+        rp.popup('VTK output') # repopulates combobox
+        set_item_enabled(get_combobox_item(rp.combobox,1), enabled)
 
     def output_delete_solids_phase(self, phase):
         pass # XXX TODO WRITEME
@@ -231,13 +239,18 @@ class Output(object):
         selections = rp.get_selection_list()
         if not selections:
             return
-        self.output_add_regions_1(selections, indices=None, autoselect=False)
-        self.setup_output_current_tab() # Update the widgets
+        output_type = VTK_DATA_TYPES[rp.combobox.currentIndex()]
+        self.output_add_regions_1(selections, output_type=output_type, indices=None, autoselect=False)
+        self.output_setup_current_tab() # Update the widgets
 
 
-    def output_add_regions_1(self, selections, indices=None, autoselect=False):
+    def output_add_regions_1(self, selections, output_type=None, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.output
+
+        if output_type is None:
+            self.error('Type not defined for VTK output %s' % '+'.join(selections))
+            return
 
         if self.output_region_dict is None:
             self.output_region_dict = self.ui.regions.get_region_dict()
@@ -270,7 +283,11 @@ class Output(object):
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
-        #self.fixup_output_table(tw)
+        name = 'Cell data' if output_type=='C' else 'Particle data' if output_type=='P' else '???'
+        item = make_item(name)
+        tw.setItem(nrows, 1, item)
+
+        #self.fixup_output_table(tw) # avoid dup. call
 
         if autoselect:
             tw.setCurrentCell(nrows, 0)
@@ -311,7 +328,6 @@ class Output(object):
         #self.fixup_output_table(tw)
         self.setup_output_vtk_tab()
         #self.update_nav_tree()
-
 
 
     def init_output_spx_tab(self):
@@ -373,7 +389,7 @@ class Output(object):
         ui.pushbutton_netcdf.setEnabled(netcdf_enabled)
 
         # TODO don't stay on disabled tab
-        self.setup_output_current_tab()
+        self.output_setup_current_tab()
 
 
     def setup_output_tab(self, tabnum):
@@ -389,7 +405,7 @@ class Output(object):
             raise ValueError(tabnum)
 
 
-    def setup_output_current_tab(self):
+    def output_setup_current_tab(self):
         self.setup_output_tab(self.output_current_tab)
 
 
@@ -614,7 +630,6 @@ class Output(object):
         gb.setEnabled(enabled)
         gb.setChecked(checked)
 
-
         #Specify VTP Directory
         #    Specification only if PRINT_DES_DATA = .TRUE.
         #    Sets keyword VTP_DIR
@@ -640,6 +655,17 @@ class Output(object):
     def setup_output_vtk_tab(self):
         ui = self.ui.output
         self.fixup_output_table(ui.tablewidget_regions)
+
+        indices = self.output_current_indices
+        if not indices:
+            return
+        V = indices[0]
+        vtk_data = self.project.get_value('vtk_data', args=[V])
+
+        if vtk_data == 'C':
+            print("SEE")
+        elif vtk_data == 'P':
+            print("PEE")
 
         #Cell data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
