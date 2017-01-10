@@ -289,7 +289,7 @@ class Numerics(object):
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(height)
         if tw == ui.tablewidget_discretization:
-            ui.groupbox_discretization.setMaximumHeight(height+40)
+            ui.groupbox_discretization.setMaximumHeight(height)
         tw.updateGeometry() #? needed?
 
 

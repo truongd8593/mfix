@@ -564,8 +564,8 @@ class BCS(object):
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
 
         if tw == ui.tablewidget_regions:
-            ui.top_frame.setMaximumHeight(height+40)
-            ui.top_frame.setMinimumHeight(header_height+40)
+            ui.top_frame.setMaximumHeight(height+24)
+            ui.top_frame.setMinimumHeight(header_height+24)
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)

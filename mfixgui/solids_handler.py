@@ -349,11 +349,11 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             height =  (header_height+scrollbar_height
                        + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
         if tw == ui.tablewidget_solids: # In a splitter
+            ui.top_frame.setMaximumHeight(height+24)
+            ui.top_frame.setMinimumHeight(header_height+24)
+            ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
-            #ui.top_frame.setMaximumHeight(height+40) # results in extra space between button and underline
-            #ui.top_frame.setMinimumHeight(header_height+40)
-            ui.top_frame.updateGeometry()
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
@@ -806,7 +806,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             self.ics_delete_solids_phase(phase)
             self.pss_delete_solids_phase(phase)
             self.iss_delete_solids_phase(phase)
-
+            self.output_delete_solids_phase(phase)
 
 
             # Fixup phase names in mfix_gui_comments
