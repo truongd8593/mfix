@@ -320,6 +320,8 @@ class BCS(object):
         # Used by both interactive and load-time add-region handlers
         if bc_type is None:
             self.error('Type not defined for boundary condition %s' % '+'.join(selections))
+            return
+
         if self.bcs_region_dict is None:
             self.bcs_region_dict = self.ui.regions.get_region_dict()
 
@@ -556,16 +558,17 @@ class BCS(object):
         # outside of this function.  We need to call this everytime window geometry changes
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
-
         if nrows==0:
+            row_height = 0
             height = header_height+scrollbar_height
         else:
+            row_height = tw.rowHeight(0)
             height =  (header_height+scrollbar_height
-                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar
 
         if tw == ui.tablewidget_regions:
             ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24)
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)

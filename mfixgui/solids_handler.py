@@ -342,18 +342,20 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # outside of this function.  We need to call this everytime window geometry changes
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
-
         if nrows==0:
+            row_height = 0
             height = header_height+scrollbar_height
         else:
+            row_height = tw.rowHeight(0)
             height =  (header_height+scrollbar_height
-                       + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
         if tw == ui.tablewidget_solids: # In a splitter
-            ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24)
-            ui.top_frame.updateGeometry()
+            # top_frame is the tab bar, not the top part of the splitter!!
+            #ui.top_frame.setMaximumHeight(height+24)
+            #ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            #ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
-            tw.setMinimumHeight(header_height)
+            tw.setMinimumHeight(header_height+row_height*min(nrows,3))
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
