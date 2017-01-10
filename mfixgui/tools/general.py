@@ -45,6 +45,10 @@ def get_mfix_home():
         return os.path.join(site.USER_BASE, 'share', 'mfix')
     elif os.path.exists(os.path.join(sys.prefix, 'share', 'mfix')):
         return os.path.join(sys.prefix, 'share', 'mfix')
+    elif os.path.exists(os.path.join('/usr', 'local', 'share', 'mfix')):
+        return os.path.join('/usr', 'local', 'share', 'mfix')
+    elif os.path.exists(os.path.join('/usr', 'share', 'mfix')):
+        return os.path.join('/usr', 'share', 'mfix')
     else:
         for p in sys.path:
             mfix_path = os.path.join(p, 'share', 'mfix')
