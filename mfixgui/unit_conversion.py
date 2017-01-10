@@ -511,6 +511,9 @@ def main():
             # Region boundaries are all meters
             elif 'coordinate' in desc_lower:
                 SI_unit = 'm'
+            # as are VTK region locations
+            elif 'location of' in desc_lower:
+                SI_unit = 'm'
             # BC velocity keys
             elif any (key.startswith(x) for x in ('bc_uw', 'bc_vw', 'bc_ww')):
                 SI_unit = 'm/s'
