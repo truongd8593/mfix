@@ -250,6 +250,7 @@ class RegionsPopup(QtWidgets.QDialog):
 
         self.boundary = boundary = ('boundary condition' in label_text)
         self.surface = surface = ('internal surface' in label_text)
+        self.vtk = vtk = ('VTK output' in label_text)
 
         # setup the combobox appropriately
         cb = ui.combobox
@@ -261,6 +262,11 @@ class RegionsPopup(QtWidgets.QDialog):
             index = BC_TYPES.index(DEFAULT_BC_TYPE) if boundary else IS_TYPES.index(DEFAULT_IS_TYPE)
             cb.setCurrentIndex(index)
             self.handle_type(index)
+            ui.frame_object_type.show()
+        elif vtk:
+            label.setText('Output type')
+            cb.clear()
+            cb.addItems(['Cell data', 'Particle data'])
             ui.frame_object_type.show()
         else:
             ui.frame_object_type.hide()
