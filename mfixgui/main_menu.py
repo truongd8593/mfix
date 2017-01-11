@@ -327,23 +327,25 @@ class MainMenu(object):
 
     def handle_main_menu_browse_loc_changes(self, selected, deselected):
         if selected:
-            text = str(self.ui.main_menu_loc_lw.item(selected.indexes()[0].row()).text()).lower()
+            self.set_file_listwidget(self.ui.main_menu_loc_lw.item(selected.indexes()[0].row()).text().lower())
 
-            self.ui.main_menu_file_lw.clear()
+    def set_file_listwidget(self, text):
 
-            if text == 'tutorials':
-                self.ui.main_menu_file_lw.addItems(self.tutorial_paths)
-            elif text == 'benchmarks':
-                self.ui.main_menu_file_lw.addItems(self.benchmark_paths)
-            elif text == 'defaults':
-                self.ui.main_menu_file_lw.addItems(self.default_paths)
-            elif text == 'recent':
-                prjs = self.settings.value('recent_projects')
-                if prjs:
-                    existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
-                    self.ui.main_menu_file_lw.addItems(existing_projects)
-            elif text == 'clear recent':
-                self.settings.setValue('recent_projects', '|'.join([]))
+        self.ui.main_menu_file_lw.clear()
+
+        if text == 'tutorials':
+            self.ui.main_menu_file_lw.addItems(self.tutorial_paths)
+        elif text == 'benchmarks':
+            self.ui.main_menu_file_lw.addItems(self.benchmark_paths)
+        elif text == 'defaults':
+            self.ui.main_menu_file_lw.addItems(self.default_paths)
+        elif text == 'recent':
+            prjs = self.settings.value('recent_projects')
+            if prjs:
+                existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
+                self.ui.main_menu_file_lw.addItems(existing_projects)
+        elif text == 'clear recent':
+            self.settings.setValue('recent_projects', '|'.join([]))
 
 
     def handle_main_menu_selection_changed(self, selected, deselected):
@@ -364,12 +366,14 @@ class MainMenu(object):
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
                 lw.addItems(['Defaults', 'Tutorials', 'Benchmarks'])
-                self.ui.main_menu_file_lw.clear()
+                lw.setCurrentRow(0)
+                self.set_file_listwidget('defaults')
             elif text == 'open':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
                 lw.addItems(['Recent', '', 'Clear recent'])
-                self.ui.main_menu_file_lw.clear()
+                lw.setCurrentRow(0)
+                self.set_file_listwidget('recent')
             elif text == 'save':
                 self.handle_save()
             elif text == 'save as':
