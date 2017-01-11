@@ -2034,9 +2034,9 @@ class MfixGui(QtWidgets.QMainWindow,
             return False
 
     def open_new_from_template(self, mfx_file):
-
-        """ This function takes the path mfx_file, saves it to a new
-        location specified by the user, and opens the new location"""
+        """Copy mfx_file to a user-specified location,
+        performing template expansion and modifying comments,
+        then open the new project"""
 
         project_file = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Create Project File',
