@@ -339,8 +339,8 @@ class MainMenu(object):
                 self.ui.main_menu_file_lw.addItems(self.default_paths)
             elif text == 'recent':
                 prjs = self.settings.value('recent_projects')
-                existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
                 if prjs:
+                    existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
                     self.ui.main_menu_file_lw.addItems(existing_projects)
             elif text == 'clear recent':
                 self.settings.setValue('recent_projects', '|'.join([]))
