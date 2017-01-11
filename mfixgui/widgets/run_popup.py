@@ -40,7 +40,7 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['mfix', 'mfix.exe']
+MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe', 'mfix', 'mfix.exe']
 
 
 class RunPopup(QDialog):
@@ -459,21 +459,11 @@ class RunPopup(QDialog):
         - default install location
         """
 
-        def default_install_location():
-            # TODO? default install location(s)
-            # ... where will the default binaries be installed?
-            #for location in default_install_dirs:
-            #    for name in ['mfix', 'mfix.exe']:
-            #        for exe in glob(os.path.join(self.project_dir, name)):
-            #            exe = os.path.abspath(exe)
-            #            self.prepend_to_exe_list(exe)
-            pass
-
         def recently_used_executables():
             recent_list = self.settings.value('recent_executables')
             if recent_list:
                 # limit recently used exes to RECENT_EXE_LIMIT
-                recent_list = recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT]
+                recent_list = [ exe for exe in recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT] if os.path.exists(exe) ]
                 for recent_exe in recent_list:
                     yield recent_exe
 
@@ -514,11 +504,11 @@ class RunPopup(QDialog):
 
         def get_saved_exe():
             last_exe = self.settings.value('mfix_exe')
-            if last_exe:
+            if last_exe and os.path.exists(last_exe):
                 yield last_exe
 
         def command_line_option():
-            if self.commandline_option_exe:
+            if self.commandline_option_exe and os.path.exists(self.commandline_option_exe):
                 yield self.commandline_option_exe
 
         exe_list_order = [
