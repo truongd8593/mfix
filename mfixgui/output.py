@@ -85,6 +85,12 @@ class Output(object):
         self.init_output_spx_tab()
         self.init_output_netcdf_tab()
 
+        # set to default (Cell)
+        ui.groupbox_particle_data.setVisible(False)
+        ui.label_particle_data_spacer.setVisible(False)
+        ui.groupbox_cell_data.setVisible(True)
+        ui.bottom_tab_frame.setVisible(True)
+
 
     def init_output_basic_tab(self):
         ui = self.ui.output
@@ -133,12 +139,14 @@ class Output(object):
         self.vtk_current_indices, self.vtk_current_regions = indices, regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
-        if not enabled:
-            # Clear
-            for widget in widget_iter(ui.detail_pane):
+        #ui.detail_pane.setEnabled(enabled)
+        ui.bottom_frame.setEnabled(enabled) # more widgets above detail_pane
+        if not enabled: # No selection, clear inputs
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
+                elif isinstance(widget, CheckBox):
+                    widget.setChecked(False)
             return
         self.setup_output_vtk_tab() # reinitialize all widgets in current tab
 
@@ -242,7 +250,7 @@ class Output(object):
         if not selections:
             return
         output_type = VTK_DATA_TYPES[rp.combobox.currentIndex()]
-        self.output_add_regions_1(selections, output_type=output_type, indices=None, autoselect=False)
+        self.output_add_regions_1(selections, output_type=output_type, indices=None, autoselect=True)
         self.output_setup_current_tab() # Update the widgets
 
 
@@ -356,7 +364,6 @@ class Output(object):
                                       indices=indices, autoselect=False)
 
 
-
     def vtk_extract_regions(self):
         if self.outputs:
             # We assume that output regions have been initialized correctly
@@ -393,7 +400,6 @@ class Output(object):
             else:
                 self.warn("vtk output %s: could not match defined region %s" %
                           (vtk.ind, extent))
-
 
 
 
@@ -730,41 +736,81 @@ class Output(object):
         ui = self.ui.output
         self.fixup_output_table(ui.tablewidget_regions)
 
+        row = get_selected_row(ui.tablewidget_regions)
+        # Autoselect if only 1 row
+        if row is None and ui.tablewidget_regions.rowCount() == 1:
+            row = 0
+            ui.tablewidget_regions.setCurrentCell(row, 0)
+        enabled = (row is not None)
+        ui.toolbutton_delete.setEnabled(enabled)
+        ui.bottom_frame.setEnabled(enabled)
+
         indices = self.vtk_current_indices
         if not indices:
+            # Clear inputs?  should have been done in handle_selection
             return
-        V = indices[0]
-        vtk_data = self.project.get_value('vtk_data', args=[V])
+
+        V0 = indices[0]
+        vtk_data = self.project.get_value('vtk_data', args=[V0])
+
+        enabled = (vtk_data=='C')
+        ui.groupbox_cell_data.setVisible(enabled)
+        ui.bottom_tab_frame.setVisible(enabled)
+        ui.groupbox_particle_data.setVisible(not enabled)
+        ui.label_particle_data_spacer.setVisible(not enabled)
 
         #Cell data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
         #for VTK input. There will need to be a way of catching the 'old' format and converting it to this
         #input style.
 
+        # Note, filebase through nzs are common to cell/particle
+
         #Specify filename base
         # Specification is required.
         # Sets keyword VTK_FILEBASE(#)
         # DEFAULT value of region name
+        key = 'vtk_filebase'
+        le = ui.lineedit_keyword_vtk_filebase_args_V
+        val = self.project.get_value(key, args=[V0])
+        if val is None: # Construct from region name
+            val = '+'.join(self.vtk_current_regions)
+            for c in ': /*?': # replace possibly troublesome characters
+                val = val.replace(c, '_')
+                for V in self.vtk_current_indices:
+                    self.update_keyword(key, val, args=[V])
+        le.updateValue(key, val)
 
         #Specify write interval
         # Specification is required
         # Sets keyword VTK_DT(#)
         # DEFAULT value of 1.0 (must write)
+        key = 'vtk_dt'
+        default = 1.0
+        le = ui.lineedit_keyword_vtk_dt_args_V
+        val = self.project.get_value(key, args=[V0])
+        if val is None:
+            val = default
+            for V in self.vtk_current_indices:
+                self.update_keyword(key, val, args=[V])
+        le.updateValue(key, val)
 
-        #Specify region x-axis slices
-        # Specification always available
-        # Sets keyword VTK_NXS(#)
-        # DEFAULT value of 0
+        for c in 'xyz':
+            #Specify region x[yz]-axis slices
+            # Specification always available
+            # Sets keyword VTK_NXS(#)
+            # DEFAULT value of 0
+            key = 'vtk_n%ss' % c
+            default = 0
+            le = getattr(ui, 'lineedit_keyword_vtk_n%ss_args_V'%c)
+            val = self.project.get_value(key, args=[V0])
+            if val is None:
+                val = default
+                for V in self.vtk_current_indices:
+                    self.update_keyword(key, val, args=[V])
+            le.updateValue(key, val)
 
-        #Specify region y-axis slices
-        # Specification always available
-        # Sets keyword VTK_NYS(#)
-        # DEFAULT value of 0
 
-        #Specify region z-axis slices
-        # Specification always available
-        # Sets keyword VTK_NZS(#)
-        # DEFAULT value of 0
 
         # Fluid Phase (tab?)
         #Enable writing gas volume fraction
@@ -777,7 +823,7 @@ class Output(object):
         # Sets keyword VTK_P_G(#)
         # DEFAULT value .FALSE.
 
-        #Enable writing solids pressure
+        #Enable writing solids pressure  # MOVE TO SOLIDS TAB
         # Requires TFM solids
         # Sets keyword VTK_P_STAR
         # DEFAULT value .FALSE.
@@ -832,10 +878,14 @@ class Output(object):
         #    Sets keyword VTK_E_TURB_G(#)
         #    DEFAULT value of .FALSE.
 
+
+        #move to separate Reactions tab?
         #Enable writing reaction rates
         # Requires nRR > 0
         # Sets keyword VTK_RRATE(#) ## requires 'reaction' index
         # DEFAULT value .FALSE.
+
+
 
         #Solids Phase (tab?)
 
@@ -879,12 +929,16 @@ class Output(object):
         # Sets keyword VTK_THETA_M(#,#)
         # DEFAULT value .FALSE.
 
+
+
         #Scalar (tab?)
 
         #Enable writing user defined scalar
         # Requires NSCALAR > 0
         # Sets keyword VTK_SCALAR(#, #) # requires Scalar index
         # DEFAULT value .FALSE.
+
+
 
         #Other (tab?)
 
@@ -909,6 +963,9 @@ class Output(object):
         #Enable writing cell index
         # Sets keyword VTK_IJK(#)
         # DEFAULT value .FALSE.
+
+
+
 
         #Particle data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
@@ -966,11 +1023,6 @@ class Output(object):
         # Sets keyword VTK_PART_USR_VAR(#,#)
         # DEFAULT value .FALSE.
 
-        #Enable writing particle rotational velocity
-        # Requires DEM or PIC solids
-        # Sets keyword VTK_ANGULAR_VEL(#)
-        # DEFAULT value .FALSE.
-
         #Enable writing particle temperature
         # Requires DEM or PIC solids and ENERGY_EQ=.TRUE.
         # Sets keyword VTK_PART_TEMP(#)
@@ -979,6 +1031,7 @@ class Output(object):
         #Enable writing particle species composition
         # Requires DEM or PIC solids and any SPECIES_EQ=.TRUE.
         # Sets keyword VTK_PART_X_S(#)
+        # NOTE, VTK_PART_X_S(#,N) where N ranges from 1 to max(mmax_s)
         # DEFAULT value .FALSE.
 
         #Enable writing particle MPI rank
@@ -1047,3 +1100,9 @@ class Output(object):
         self.vtk_current_solid = self.P = None
         ui.tablewidget_regions.clearContents()
         ui.tablewidget_regions.setRowCount(0)
+
+        # set to default (Cell)
+        ui.groupbox_particle_data.setVisible(False)
+        ui.label_particle_data_spacer.setVisible(False)
+        ui.groupbox_cell_data.setVisible(True)
+        ui.bottom_tab_frame.setVisible(True)

@@ -175,7 +175,7 @@ class ProjectManager(Project):
                 continue
 
             elif a=='V': # VTK output region
-                if b not in self.ui.vtk_current_indices:
+                if b not in self.gui.vtk_current_indices:
                     return False
 
             elif a != b:
@@ -705,7 +705,8 @@ class ProjectManager(Project):
                        'IC' : current initial condition index
                        'BC' : current initial condition index
                        'PS' : current point source index
-                       'IS' : current internal surface index """
+                       'IS' : current internal surface index
+                       'V':  VTK output region index"""
         # Species? Scalar index?
 
         if isinstance(args, int):
@@ -717,14 +718,14 @@ class ProjectManager(Project):
         d = self.registered_widgets
         for key in keys:
             key = key.lower()
-            # The BC/IC/PS panes set themselves up and do not rely on the
+            # Note 1: The BC/IC/PS panes set themselves up and do not rely on the
             # project manager for widget updates.  We still need to register
             # these widgets so that keyword updating works.
-            # Note, most widgets don't really need the callback from the
+            # Note 2: Nost widgets don't really need the callback from the
             # project manager, especially after the file is initially loaded.
             # Maybe remove project manager -> widget callbacks completely
             # and follow the IC/BC model everywhere ?
-            if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_', 'is_')):
+            if any(key.startswith(x) for x in ('ic_', 'bc_', 'ps_', 'is_', 'vtk_')):
                 continue
             if key not in d:
                 d[key] = []
