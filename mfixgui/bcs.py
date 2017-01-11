@@ -214,7 +214,7 @@ class BCS(object):
         for (name,data) in self.bcs_region_dict.items():
             shape = data.get('type', '---')
             available = (data.get('available', True)
-                         and not self.check_region_in_use(name)
+                         #and not self.check_region_in_use(name)  # allow region sharing
                          and (shape in ('STL', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
@@ -320,7 +320,6 @@ class BCS(object):
         # Used by both interactive and load-time add-region handlers
         if bc_type is None:
             self.error('Type not defined for boundary condition %s' % '+'.join(selections))
-            return
 
         if self.bcs_region_dict is None:
             self.bcs_region_dict = self.ui.regions.get_region_dict()
@@ -907,7 +906,7 @@ class BCS(object):
         ui = self.ui.boundary_conditions
 
         if ui.tablewidget_regions.rowCount() > 0:
-            # We assume that bc regions have been initialized correctly
+            # We assume that BC regions have been initialized correctly
             # from mfix_gui_comments.
             # TODO: verify that there is an BC region for each BC
             return

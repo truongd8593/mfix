@@ -83,7 +83,7 @@ class ISS(object):
             # No region can define more than one internal surface.
 
             available = (data.get('available', True)
-                         and not self.check_region_in_use(name)
+                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape=='box' or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
@@ -366,7 +366,7 @@ class ISS(object):
 
     def iss_extract_regions(self):
         if self.iss:
-            # We assume that ic regions have been initialized correctly
+            # We assume that IS regions have been initialized correctly
             # from mfix_gui_comments.
             # TODO: verify that there is an IS region for each IS
             return
@@ -421,7 +421,7 @@ class ISS(object):
         self.iss_region_dict = self.ui.regions.get_region_dict()
 
         # Mark regions which are in use (this gets reset each time we get here)
-        for (i, data) in self.iss.items(): # Should we also consider BCs/ICs?
+        for (i, data) in self.iss.items():
             region = data['region']
             if region in self.iss_region_dict:
                 self.iss_region_dict[region]['available'] = False

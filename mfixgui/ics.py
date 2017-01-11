@@ -159,7 +159,7 @@ class ICS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         and not self.check_region_in_use(name)
+                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape == 'box') or (no_k and shape=='XY-plane'))
 
             row = (name, shape, available)
@@ -786,7 +786,7 @@ class ICS(object):
 
     def ics_extract_regions(self):
         if self.ics:
-            # We assume that ic regions have been initialized correctly
+            # We assume that IC regions have been initialized correctly
             # from mfix_gui_comments.
             # TODO: verify that there is an IC region for each IC
             return

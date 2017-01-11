@@ -68,7 +68,7 @@ class PSS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         and not self.check_region_in_use(name)
+                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape in ('point', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
@@ -408,7 +408,7 @@ class PSS(object):
         self.pss_region_dict = self.ui.regions.get_region_dict()
 
         # Mark regions which are in use (this gets reset each time we get here)
-        for (i, data) in self.pss.items(): # Should we also consider BCs/ICs?
+        for (i, data) in self.pss.items():
             region = data['region']
             if region in self.pss_region_dict:
                 self.pss_region_dict[region]['available'] = False
@@ -698,7 +698,7 @@ class PSS(object):
 
     def pss_extract_regions(self):
         if self.pss:
-            # We assume that ic regions have been initialized correctly
+            # We assume that PS regions have been initialized correctly
             # from mfix_gui_comments.
             # TODO: verify that there is an PS region for each PS
             return
