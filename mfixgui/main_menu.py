@@ -301,7 +301,10 @@ class MainMenu(object):
 
     def handle_main_menu_open_project(self, item):
 
-        name = str(self.ui.main_menu_loc_lw.currentItem().text()).lower()
+        item = self.ui.main_menu_file_lw.currentItem()
+        if not item:
+            return
+        name = str(item.text()).lower()
         if name in ['benchmarks', 'tutorials']:
             mfx_dir = get_mfix_home()
             text = os.path.join(mfx_dir, name, str(item.text()))
@@ -342,8 +345,26 @@ class MainMenu(object):
         if selected and selected.indexes():
             text = str(self.ui.main_menu_list.item(selected.indexes()[0].row()).text()).lower()
 
+            sw = self.ui.main_menu_stackedwidget
+
+            lw = self.ui.main_menu_loc_lw
+            lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
+            loc = ['Recent']
+            mfx_dir = get_mfix_home()
+
+            lw.clear()
+            lw.addItems(loc)
+
             if text == 'new':
-                self.new_project()
+                sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
+                lw.clear()
+                lw.addItems(['Tutorials', 'Benchmarks'])
+                self.ui.main_menu_file_lw.clear()
+            elif text == 'open':
+                sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
+                lw.clear()
+                lw.addItems(['Recent'])
+                self.ui.main_menu_file_lw.clear()
             elif text == 'save':
                 self.handle_save()
             elif text == 'save as':
@@ -358,7 +379,6 @@ class MainMenu(object):
                 self.close()
             else:
                 index = 0
-                sw = self.ui.main_menu_stackedwidget
 
                 matches = [i
                    for i in range(sw.count())
