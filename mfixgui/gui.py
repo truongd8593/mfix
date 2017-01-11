@@ -2034,8 +2034,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
             return False
 
-    def open_new_from_template(self, mfx_file):
-        """Copy mfx_file to a user-specified location,
+    def open_new_from_template(self, template):
+        """Copy template to a user-specified location,
         performing template expansion and modifying comments,
         then open the new project"""
 
@@ -2064,7 +2064,6 @@ class MfixGui(QtWidgets.QMainWindow,
                          default='ok')
             return
         # Start from template
-        template = mfx_file
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')
         try:
@@ -2078,6 +2077,10 @@ class MfixGui(QtWidgets.QMainWindow,
                         elif '${run_name}' in line:
                             line = line.replace('${run_name}', run_name)
                         outfile.write(line)
+            geometry_stl = os.path.join(os.path.dirname(template), 'geometry.stl')
+            if os.path.exists(geometry_stl):
+                shutil.copyfile(geometry_stl, os.path.join(project_dir, 'geometry.stl'))
+
         except Exception as e:
             self.message(text="Error %s creating new project" % e,
                          buttons=['ok'],
