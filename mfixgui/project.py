@@ -611,6 +611,15 @@ class IS(CondBase):
         self.name = 'IS'
 
 
+class VTK(CondBase):
+    def __init__(self, ind):
+        CondBase.__init__(self, ind)
+        self.name = 'VTK'
+
+    def __str__(self):
+        return "VTK %s" % self.ind
+
+
 class ConditionCollection(list):
     def __init__(self, condtype=None):
         list.__init__(self)
@@ -635,6 +644,9 @@ class ConditionCollection(list):
             self.append(PS(item))
         elif self.condtype == 'is':
             self.append(IS(item))
+        elif self.condtype == 'vtk':
+            self.append(VTK(item))
+
         else:
             raise Exception("Collection Type Not Set")
 
@@ -806,36 +818,6 @@ class SolidsCollection(Collection):
         return '\n'.join(self._prettyPrintList())
 
 
-class LinearEquationSolver(Base):
-    def __init__(self, ind):
-        Base.__init__(self, ind)
-
-
-class LinearEquationSolverCollection(Collection):
-    def __init__(self):
-        Collection.__init__(self)
-
-    def new(self, ind=None):
-        ind = self.check_ind(ind)
-        self.append(LinearEquationSolver(ind))
-        return self[ind]
-
-
-class SPX(Base):
-    def __init__(self, ind):
-        Base.__init__(self, ind)
-
-
-class SPXCollection(Collection):
-    def __init__(self):
-        Collection.__init__(self)
-
-    def new(self, ind=None):
-        ind = self.check_ind(ind)
-        self.append(SPX(ind))
-        return self[ind]
-
-
 class VtkVar(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
@@ -897,18 +879,15 @@ class Project(object):
         self.pss = ConditionCollection('ps')
         self.iss = ConditionCollection('is')
 
+        # VTK output regions
+        self.vtks = ConditionCollection('vtk')
+
         # Species/solids
         self.gasSpecies = SpeciesCollection()
         self.solids = SolidsCollection()
         self.speciesEq = SpeciesEqCollection()
 
-        # LEQ
-        self.linearEq = LinearEquationSolverCollection()
-
-        # SPX
-        self.spx = SPXCollection()
-
-        # VTK_VAR
+        # VTK_VAR #deprecated
         self.vtkvar = VtkVarCollection()
 
         # variablegrid
@@ -1328,7 +1307,7 @@ class Project(object):
                           RDF_TYPES, BLENDING_FUNCTIONS,
                           BC_TYPES, IS_TYPES,
                           PRECON_TYPES, SWEEP_TYPES,
-                          DES_OUTPUT_TYPES): # How to keep in sync with constants.py?  Need "contstants.all"
+                          DES_OUTPUT_TYPES): # How to keep in sync with constants.py?  Need "constants.all"
                     if v_upper in l:
                         value = v_upper
                         break
@@ -1337,7 +1316,7 @@ class Project(object):
             # Find condition keywords and separate
             if key.startswith('ic_'):
                 cond = self.ics
-            elif key.startswith('bc_') and not key.endswith('_q'):
+            elif key.startswith('bc_') and not key.endswith('_q'): # q=quadric
                 cond = self.bcs
                 if key == 'bc_type':
                     # Normalize names NO_SLIP_WALL -> NSW, etc
@@ -1351,6 +1330,8 @@ class Project(object):
                     value = value.upper()
                     value = IS_TYPE_DICT.get(value, value)
                 cond = self.iss
+            elif key != 'vtk_var' and key.startswith('vtk_'):
+                cond = self.vtks
             else:
                 cond = None
             # Save conditions
@@ -1427,36 +1408,8 @@ class Project(object):
                 keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spec[key] = keyword
-            # Species_eq # TODO do we need this?
-            elif key in ['species_eq']:
-                if args[0] not in self.speciesEq:
-                    leq = self.speciesEq.new(args[0])
-                else:
-                    leq = self.speciesEq[args[0]]
-                keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
-                leq[key] = keyword
-            # LEQ
-            elif key in ['leq_method', 'leq_tol', 'leq_it', 'leq_sweep',
-                         'leq_pc', 'ur_fac', ]:
-                if args[0] not in self.linearEq:
-                    leq = self.linearEq.new(args[0])
-                else:
-                    leq = self.linearEq[args[0]]
-                keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
-                leq[key] = keyword
-            # SPX
-            elif key in ['spx_dt']:
-                if args[0] not in self.spx:
-                    spx = self.spx.new(args[0])
-                else:
-                    spx = self.spx[args[0]]
-                keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
-                spx[key] = keyword
-            # VTK
-            elif key in ['vtk_var']:
+            # VTK_VAR
+            elif key == 'vtk_var':
                 if args[0] not in self.vtkvar:
                     vtkvar = self.vtkvar.new(args[0])
                 else:

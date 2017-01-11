@@ -450,11 +450,6 @@ class TestParser(unittest.TestCase):
         self.assertEqual(0.4, newProject.ics[1]['ic_ep_g'])
         self.assertEqual(1.0, newProject.ics[2]['ic_ep_g'])
 
-        # Check linear EQ
-        for i in range(1, 4):
-            self.assertEqual('ISIS', newProject.linearEq[i]['leq_sweep'])
-        self.assertEqual('JSJS', newProject.linearEq[4]['leq_sweep'])
-
         # Check Grid
         for i in range(1, 5):
             self.assertEqual(10, newProject.variablegrid[i]['ncx'])
