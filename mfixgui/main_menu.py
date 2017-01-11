@@ -339,8 +339,11 @@ class MainMenu(object):
                 self.ui.main_menu_file_lw.addItems(self.default_paths)
             elif text == 'recent':
                 prjs = self.settings.value('recent_projects')
+                existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
                 if prjs:
-                    self.ui.main_menu_file_lw.addItems(prjs.split('|'))
+                    self.ui.main_menu_file_lw.addItems(existing_projects)
+            elif text == 'clear recent':
+                self.settings.setValue('recent_projects', '|'.join([]))
 
 
     def handle_main_menu_selection_changed(self, selected, deselected):
@@ -365,7 +368,7 @@ class MainMenu(object):
             elif text == 'open':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
-                lw.addItems(['Recent'])
+                lw.addItems(['Recent', '', 'Clear recent'])
                 self.ui.main_menu_file_lw.clear()
             elif text == 'save':
                 self.handle_save()
