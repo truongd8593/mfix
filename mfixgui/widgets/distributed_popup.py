@@ -53,7 +53,7 @@ class DistributionPopUp(QtWidgets.QDialog):
         packing = self.ui.combobox_distribution.currentText()
         bounds = self.get_bounds(geo)
         try:
-            spacing = float(self.ui.lineedit_number.text())
+            spacing = float(self.ui.lineedit_number.value)
         except ValueError:
             spacing = 1
         if  packing == 'random':
@@ -92,6 +92,21 @@ class DistributionPopUp(QtWidgets.QDialog):
         for i in np.arange(bounds[0], bounds[1], spacing):
             for j in np.arange(bounds[2], bounds[3], spacing):
                 for k in np.arange(bounds[4], bounds[5], spacing):
+                    points.append([ i, j, k])
+
+        self.distribute(geo, shape, points)
+
+    def gen_bcc(self,  geo, shape, spacing, bounds):
+        points = []
+        for i in np.arange(bounds[0], bounds[1], spacing):
+            for j in np.arange(bounds[2], bounds[3], spacing):
+                for k in np.arange(bounds[4], bounds[5], spacing):
+                    points.append([ i, j, k])
+
+        half_spacing = spacing/2.0
+        for i in np.arange(bounds[0]+half_spacing, bounds[1], spacing):
+            for j in np.arange(bounds[2]+half_spacing, bounds[3], spacing):
+                for k in np.arange(bounds[4]+half_spacing, bounds[5], spacing):
                     points.append([ i, j, k])
 
         self.distribute(geo, shape, points)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>264</width>
-    <height>152</height>
+    <width>366</width>
+    <height>187</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
     <number>5</number>
    </property>
    <item row="2" column="3">
-    <widget class="QLineEdit" name="lineedit_number">
+    <widget class="LineEdit" name="lineedit_number">
      <property name="text">
       <string>1</string>
      </property>
@@ -64,6 +64,11 @@
      <item>
       <property name="text">
        <string>cubic</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>body centered cubic</string>
       </property>
      </item>
     </widget>
@@ -133,6 +138,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>combobox_shape</tabstop>
   <tabstop>combobox_volume</tabstop>
