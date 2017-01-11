@@ -2033,7 +2033,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
             return False
 
-    def new_project(self):
+    def open_new_from_template(self, mfx_file):
+
+        """ This function takes the path mfx_file, saves it to a new
+        location specified by the user, and opens the new location"""
+
         project_file = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Create Project File',
             "", "MFX files (*.mfx)")
@@ -2059,7 +2063,7 @@ class MfixGui(QtWidgets.QMainWindow,
                          default='ok')
             return
         # Start from template
-        template = os.path.join(SCRIPT_DIRECTORY,  'mfix.dat.template')
+        template = mfx_file
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')
         try:
@@ -2087,7 +2091,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.project.mfix_gui_comments['created_date'] = creation_time
 
         self.save_project()
-        self.handle_main_menu_hide()
 
 
     def get_open_filename(self):

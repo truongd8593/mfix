@@ -96,27 +96,23 @@ class MainMenu(object):
         lw = self.ui.main_menu_loc_lw = QtWidgets.QListWidget()
         lw.setMaximumWidth(200)
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
-        loc = ['Recent']
         mfx_dir = get_mfix_home()
 
-        self.tutorial_paths = []
-        tut_path = os.path.join(mfx_dir, 'tutorials', '')
-        for root, dirs, files in os.walk(tut_path):
-            if any(f.endswith('mfix.dat') for f in files):
-                self.tutorial_paths.append(root.replace(tut_path,''))
-        if self.tutorial_paths:
-            loc += ['Tutorials']
-            self.tutorial_paths.sort(key=lambda y: y.lower())
+        def set_paths(dirname, ui_name):
+            path_var = []
+            top_path = os.path.join(mfx_dir, dirname, '')
+            for root, dirs, files in os.walk(top_path):
+                if any(f.endswith('mfix.dat') for f in files):
+                    path_var.append(root.replace(top_path,''))
+            if path_var:
+                path_var.sort(key=lambda y: y.lower())
+            return path_var
 
-        self.benchmark_paths = []
-        bench_path = os.path.join(mfx_dir, 'benchmarks', '')
-        for root, dirs, files in os.walk(bench_path):
-            if any(f.endswith('mfix.dat') for f in files):
-                self.benchmark_paths.append(root.replace(bench_path, ''))
-        if self.benchmark_paths:
-            loc += ['Benchmarks']
-            self.benchmark_paths.sort(key=lambda y: y.lower())
+        self.default_paths = set_paths('defaults', 'Defaults')
+        self.tutorial_paths = set_paths('tutorials', 'Tutorials')
+        self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
 
+        loc = ['Recent', 'Defaults', 'Tutorials', 'Benchmarks']
         lw.addItems(loc)
         ow_layout.addWidget(lw, 2, 0)
 
@@ -304,16 +300,6 @@ class MainMenu(object):
         item = self.ui.main_menu_file_lw.currentItem()
         if not item:
             return
-        name = str(item.text()).lower()
-        if name in ['benchmarks', 'tutorials']:
-            mfx_dir = get_mfix_home()
-            text = os.path.join(mfx_dir, name, str(item.text()))
-        else:
-            text = str(item.text())
-
-        if not os.path.exists(text):
-            self.message(text="File does not exist: %s" % text)
-            return
 
         if self.unsaved_flag:
             confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
@@ -323,7 +309,21 @@ class MainMenu(object):
                 return
             self.clear_unsaved_flag()
 
-        self.open_project(text)
+        loc_it = self.ui.main_menu_loc_lw.currentItem()
+        loc = str(loc_it.text())
+        if loc in ['Defaults', 'Benchmarks', 'Tutorials']:
+            mfx_dir = get_mfix_home()
+            text = os.path.join(mfx_dir, loc, str(item.text()), 'mfix.dat')
+            self.open_new_from_template(text)
+        else:
+            project_path = str(item.text())
+
+            if os.path.exists(project_path):
+                self.open_project(project_path)
+            else:
+                self.message(text="File does not exist: %s" % project_path)
+
+        self.handle_main_menu_hide()
 
     def handle_main_menu_browse_loc_changes(self, selected, deselected):
         if selected:
@@ -335,6 +335,8 @@ class MainMenu(object):
                 self.ui.main_menu_file_lw.addItems(self.tutorial_paths)
             elif text == 'benchmarks':
                 self.ui.main_menu_file_lw.addItems(self.benchmark_paths)
+            elif text == 'defaults':
+                self.ui.main_menu_file_lw.addItems(self.default_paths)
             elif text == 'recent':
                 prjs = self.settings.value('recent_projects')
                 if prjs:
@@ -358,7 +360,7 @@ class MainMenu(object):
             if text == 'new':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
-                lw.addItems(['Tutorials', 'Benchmarks'])
+                lw.addItems(['Defaults', 'Tutorials', 'Benchmarks'])
                 self.ui.main_menu_file_lw.clear()
             elif text == 'open':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
