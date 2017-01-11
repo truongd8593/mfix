@@ -34,7 +34,7 @@ class MainMenu(object):
         lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
 
-        names = ['Project Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Close']
+        names = ['Project Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Quit']
         icons = ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', '', 'settings', 'help', 'infooutline', 'close']
         if PYQTNODE_AVAILABLE:
             for n, i in reversed([('Export Workflow', 'open_in_new'), ('Import Workflow', 'import'),
@@ -377,7 +377,7 @@ class MainMenu(object):
                 self.ui.workflow_widget.handle_export()
             elif text == 'import workflow':
                 self.ui.workflow_widget.handle_import()
-            elif text == 'close':
+            elif text == 'quit':
                 self.close()
             else:
                 index = 0
