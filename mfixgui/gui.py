@@ -1085,8 +1085,9 @@ class MfixGui(QtWidgets.QMainWindow,
                             widget.true_value = values[1]
 
                 else:
-                    log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
-                    continue
+                    if not key.startswith('vtk_'): # XXX fixme
+                        log.error("UNKNOWN KEYWORD %s: not registering %s" % (key, widget.objectName()))
+                        continue
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, keys=[key], args=args)

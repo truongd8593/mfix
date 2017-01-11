@@ -173,6 +173,10 @@ class ProjectManager(Project):
             elif a=='IDX':
                 continue
 
+            elif a=='V': # VTK output region
+                if b not in self.ui.vtk_current_indices:
+                    return False
+
             elif a != b:
                 return False
 

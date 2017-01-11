@@ -578,12 +578,12 @@ QPushButton:checked {
           <property name="frameShadow">
            <enum>QFrame::Plain</enum>
           </property>
-          <layout class="QGridLayout" name="gridLayout_15">
+          <layout class="QGridLayout" name="gridLayout_7">
            <property name="leftMargin">
             <number>0</number>
            </property>
            <property name="topMargin">
-            <number>10</number>
+            <number>0</number>
            </property>
            <property name="rightMargin">
             <number>0</number>
@@ -592,6 +592,86 @@ QPushButton:checked {
             <number>0</number>
            </property>
            <item row="0" column="0">
+            <layout class="QGridLayout" name="gridLayout_6">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_vtk_filebase">
+               <property name="text">
+                <string>Filename base</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_filebase_args_V"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_vtk_dt">
+               <property name="text">
+                <string>Write interval</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_dt_args_V">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_vtk_dt_units">
+               <property name="text">
+                <string>s</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_vtk_nxs">
+               <property name="text">
+                <string>Number of x-axis slices</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_vtk_nys">
+               <property name="text">
+                <string>Number of y-axis slices</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_vtk_nzs">
+               <property name="text">
+                <string>Number of z-axis slices</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nxs_args_V"/>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nys_args_V"/>
+             </item>
+             <item row="4" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nzs_args_V"/>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
               <widget class="QFrame" name="tab_frame">
@@ -723,7 +803,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
              </item>
             </layout>
            </item>
-           <item row="1" column="0">
+           <item row="2" column="0">
             <widget class="QScrollArea" name="scrollarea_detail">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -748,8 +828,8 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>98</width>
-                <height>40</height>
+                <width>383</width>
+                <height>315</height>
                </rect>
               </property>
               <layout class="QGridLayout" name="gridLayout_4">
@@ -910,6 +990,8 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </widget>
            </item>
           </layout>
+          <zorder>scrollarea_detail</zorder>
+          <zorder></zorder>
          </widget>
         </widget>
        </item>
