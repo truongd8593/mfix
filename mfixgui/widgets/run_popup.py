@@ -307,12 +307,6 @@ class RunPopup(QDialog):
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
         self.gui_comments['run_location'] = self.ui.tabWidget.currentIndex()
 
-        #self.project.updateKeyword('nodesi',
-        #                            self.ui.spinbox_keyword_nodesi.value())
-        #self.project.updateKeyword('nodesj',
-        #                            self.ui.spinbox_keyword_nodesj.value())
-        #self.project.updateKeyword('nodesk',
-        #                            self.ui.spinbox_keyword_nodesk.value())
         self.save_selected_exe(self.mfix_exe)
         self.save_template()
         self.set_run_mfix_exe.emit() # possible duplication, but needed
