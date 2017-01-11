@@ -367,7 +367,6 @@ class ModelSetup(object):
             self.update_keyword('ro_g0', val)
 
 
-
     def enable_energy_eq(self, enabled):
         #    Option to enable thermal energy equations
         # This keyword should always be specified in the input deck
