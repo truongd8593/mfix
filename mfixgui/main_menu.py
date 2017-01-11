@@ -310,8 +310,8 @@ class MainMenu(object):
             self.clear_unsaved_flag()
 
         loc_it = self.ui.main_menu_loc_lw.currentItem()
-        loc = str(loc_it.text())
-        if loc in ['Defaults', 'Benchmarks', 'Tutorials']:
+        loc = str(loc_it.text()).lower()
+        if loc in ['defaults', 'benchmarks', 'tutorials']:
             mfx_dir = get_mfix_home()
             text = os.path.join(mfx_dir, loc, str(item.text()), 'mfix.dat')
             self.open_new_from_template(text)
