@@ -105,7 +105,7 @@ class PSS(object):
         selections = rp.get_selection_list()
         if not selections:
             return
-        self.pss_add_regions_1(selections, indices=None, autoselect=False)
+        self.pss_add_regions_1(selections, indices=None, autoselect=True)
         self.pss_setup_current_tab() # Update the widgets
 
 
