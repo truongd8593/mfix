@@ -2405,7 +2405,7 @@ class VtkWidget(BaseVtkWidget):
             actors += [geo['clip_actor'] for geo in self.region_dict.values()
                        if 'clip_actor' in geo and geo['visible']]
 
-        visible = self.visual_props[name]['visible'] = not toolbutton.isChecked()
+        visible = self.visual_props[name]['visible'] = toolbutton.isChecked()
         self.set_visible_btn_image(toolbutton, visible)
         if actors is not None:
             for actor in actors:
@@ -2488,6 +2488,7 @@ class VtkWidget(BaseVtkWidget):
 
     def set_visible_btn_image(self, btn, checked):
         """given a button, change the icon"""
+        print(checked)
         if not checked:
             btn.setIcon(get_icon('visibilityofftransparent.png'))
         else:

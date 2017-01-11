@@ -1788,7 +1788,6 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         export_file = self.get_save_filename()
-        print(export_file)
         if not export_file: # User bailed out
             return
         export_dir = os.path.dirname(export_file)
@@ -1797,7 +1796,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # new project name
         new_project_file = os.path.splitext(os.path.basename(export_file))[0]
-        print(new_project_file)
 
         # copy the project file
         export_prj = copy.deepcopy(self.project)
