@@ -15,9 +15,11 @@ from qtpy.QtWidgets import QPushButton, QWidget
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 UserRole = QtCore.Qt.UserRole
 
+# We don't need extended JSON here
+from json import JSONDecoder, JSONEncoder
+
 #local imports
 from mfixgui.constants import *
-from mfixgui.widgets.base import LineEdit
 from mfixgui.tools import keyword_args
 from mfixgui.tools.general import (widget_iter,
                                    get_selected_row,
@@ -64,10 +66,10 @@ class Output(object):
         self.output_current_tab = TAB_BASIC
 
         self.outputs = {} # key: index.  value: data dictionary for point source
-        self.output_current_indices = [] # List of PS indices
-        self.output_current_regions = [] # And the names of the regions which define them
+        self.vtk_current_indices = [] # List of PS indices
+        self.vtk_current_regions = [] # And the names of the regions which define them
         self.output_region_dict = None
-        self.output_current_solid = self.P = None
+        self.vtk_current_solid = self.P = None
 
         self.output_pushbuttons = (ui.pushbutton_basic,
                                    ui.pushbutton_vtk,
@@ -128,7 +130,7 @@ class Output(object):
             regions = []
         else:
             (indices, regions) = tw.item(row,0).data(UserRole)
-        self.output_current_indices, self.output_current_regions = indices, regions
+        self.vtk_current_indices, self.vtk_current_regions = indices, regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
@@ -248,10 +250,6 @@ class Output(object):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.output
 
-        if output_type is None:
-            self.error('Type not defined for VTK output %s' % '+'.join(selections))
-            return
-
         if self.output_region_dict is None:
             self.output_region_dict = self.ui.regions.get_region_dict()
 
@@ -279,12 +277,18 @@ class Output(object):
             if region_data is None: # ?
                 self.warn("no data for region %s" % region_name)
                 continue
+            self.output_set_region_keys(region_name, idx, region_data, output_type)
             self.output_region_dict[region_name]['available'] = False # Mark as in-use
         item.setData(UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
         name = 'Cell data' if output_type=='C' else 'Particle data' if output_type=='P' else '???'
         item = make_item(name)
+        if output_type == 'C':
+            item.setToolTip('Cell data (VTU file)')
+        elif output_type == 'P':
+            item.setToolTip('Particle data (VTP file)')
+
         tw.setItem(nrows, 1, item)
 
         #self.fixup_output_table(tw) # avoid dup. call
@@ -311,23 +315,86 @@ class Output(object):
         kwlist = list(self.project.keywordItems())
         for kw in kwlist:
             key, args = kw.key, kw.args
-            if key.startswith('vtk_') and args and args[0] in self.output_current_indices:
+            if key.startswith('vtk_') and args and args[0] in self.vtk_current_indices:
                 self.unset_keyword(key, args=args)
 
-        for r in self.output_current_regions:
+        for r in self.vtk_current_regions:
             if r in self.output_region_dict:
                 self.output_region_dict[r]['available'] = True
 
-        for i in self.output_current_indices:
+        for i in self.vtk_current_indices:
             del self.outputs[i]
 
-        self.output_current_regions = []
-        self.output_current_indices = []
+        self.vtk_current_regions = []
+        self.vtk_current_indices = []
 
         tw.removeRow(row)
         #self.fixup_output_table(tw)
         self.setup_output_vtk_tab()
         #self.update_nav_tree()
+
+
+    def vtks_to_str(self):
+        """convert VTK output region definitions to savable form"""
+        ui = self.ui.output
+        tw = ui.tablewidget_regions
+        data = [tw.item(i,0).data(UserRole)
+                for i in range(tw.rowCount())]
+        return JSONEncoder().encode(data)
+
+
+    def vtk_regions_from_str(self, s):
+        if not s:
+            return
+        data = JSONDecoder().decode(s)
+        for (indices, regions) in data:
+            if not indices:
+                continue # should not get empty tuple
+            # vtk_data (output type) keyword should be set already when we call this
+            output_type = self.project.get_value('vtk_data', args=[indices[0]], default='C')
+            self.output_add_regions_1(regions, output_type=output_type,
+                                      indices=indices, autoselect=False)
+
+
+
+    def vtk_extract_regions(self):
+        if self.outputs:
+            # We assume that output regions have been initialized correctly
+            # from mfix_gui_comments.
+            # TODO: verify that there is an output region for each output
+            return
+
+        if self.output_region_dict is None:
+            self.output_region_dict = self.ui.regions.get_region_dict()
+
+        # TODO: if we wanted to be fancy, we could find regions where
+        # output values matched, and merge into a new output region.  That
+        # is only needed for projects created outside the GUI (otherwise
+        # we have already stored the output regions).  Also would be noutpute
+        # to offer a way to split compound regions.
+        for vtk in self.project.vtks:
+
+            d = vtk.keyword_dict
+            extent = [d.get('vtk_'+k,None) for k in ('x_w', 'y_s', 'z_b',
+                                                    'x_e', 'y_n', 'z_t')]
+            extent = [0 if x is None else x.value for x in extent]
+            #if any (x is None for x in extent):
+            #    self.warn("vtk output %s: invalid extents %s" %
+            #               (vtk.ind, extent))
+            #    continue
+            for (region_name, data) in self.output_region_dict.items():
+                ext2 = [0 if x is None else x for x in
+                        (data.get('from',[]) + data.get('to',[]))]
+                if ext2 == extent:
+                    if data.get('available', True):
+                        self.output_add_regions_1([region_name], indices=[vtk.ind], autoselect=False)
+                        break
+
+            else:
+                self.warn("vtk output %s: could not match defined region %s" %
+                          (vtk.ind, extent))
+
+
 
 
     def init_output_spx_tab(self):
@@ -377,6 +444,13 @@ class Output(object):
         ui = self.ui.output
         # Grab a fresh copy, may have been updated
         self.output_region_dict = self.ui.regions.get_region_dict()
+
+        # Mark regions which are in use (this gets reset each time we get here)
+        for (i, data) in self.outputs.items():
+            region = data['region']
+            if region in self.output_region_dict:
+                self.output_region_dict[region]['available'] = False
+
 
         spx_enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
                           for i in range(1,MAX_SP+1))
@@ -656,16 +730,11 @@ class Output(object):
         ui = self.ui.output
         self.fixup_output_table(ui.tablewidget_regions)
 
-        indices = self.output_current_indices
+        indices = self.vtk_current_indices
         if not indices:
             return
         V = indices[0]
         vtk_data = self.project.get_value('vtk_data', args=[V])
-
-        if vtk_data == 'C':
-            print("SEE")
-        elif vtk_data == 'P':
-            print("PEE")
 
         #Cell data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
@@ -923,15 +992,58 @@ class Output(object):
         # DEFAULT value .FALSE.
 
 
+    def output_set_region_keys(self, name, idx, data, output_type=None):
+        # Update the keys which define the region the PS applies to
+        if output_type is not None:
+            self.update_keyword('vtk_data', output_type, args=[idx])
+
+        no_k = self.project.get_value('no_k')
+        for (key, val) in zip(('x_w', 'y_s', 'z_b',
+                               'x_e', 'y_n', 'z_t'),
+                              data['from']+data['to']):
+            # vtk_z_t and vtk_z_b keywords should not be added when no_k=True
+            if no_k and key in ('z_t', 'z_b'):
+                continue
+            self.update_keyword('vtk_'+key, val, args=[idx])
+
+
+    def output_check_region_in_use(self, name):
+        return any(data.get('region')==name for data in self.outputs.values())
+
+
+    def output_update_region(self, name, data):
+        for (i, output) in self.outputs.items():
+            if output.get('region') == name:
+                self.output_set_region_keys(name, i, data)
+
+
+    def output_change_region_name(self, old_name, new_name):
+        ui = self.ui.output
+        for (key, val) in self.outputs.items():
+            if val.get('region') == old_name:
+                self.outputs[key]['region'] = new_name
+                tw = ui.tablewidget_regions
+                for i in range(tw.rowCount()):
+                    data = tw.item(i,0).data(UserRole)
+                    indices, names = data
+                    if key in indices:
+                        item = tw.item(i,0)
+                        names = [new_name if n==old_name else n for n in names]
+                        item.setData(UserRole, (indices, names))
+                        item.setText('+'.join(names))
+                        break
+                break
+
+
     def reset_output(self):
         ui = self.ui.output
         # Set all output-related state back to default
         ui.pushbutton_vtk.setEnabled(False)
         self.output_change_tab(TAB_BASIC, ui.pushbutton_basic)
         self.outputs.clear()
-        self.output_current_indices = []
-        self.output_current_regions = []
+        self.vtk_current_indices = []
+        self.vtk_current_regions = []
         self.output_region_dict = None
-        self.output_current_solid = self.P = None
+        self.vtk_current_solid = self.P = None
         ui.tablewidget_regions.clearContents()
         ui.tablewidget_regions.setRowCount(0)

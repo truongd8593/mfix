@@ -526,7 +526,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
 
     def extract_regions(self, proj, proj_dir=None):
-        """ extract regions from IC, BC, PS, IS """
+        """ extract regions from IC, BC, PS, IS, VTK"""
         if self.tablewidget_regions.value:
             # We assume regions_dict has been initialized correctly
             # from mfix_gui_comments.
@@ -540,13 +540,14 @@ class RegionsWidget(QtWidgets.QWidget):
             # extract numbers
             stl_nums = [safe_int(f.split('.')[0].split('_')[-1]) for f in stl_files]
 
-        for condtype, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
-                                ('is_', proj.iss), ('ps_', proj.pss)):
+        for prefix, conds in (('ic_', proj.ics), ('bc_', proj.bcs),
+                                ('is_', proj.iss), ('ps_', proj.pss),
+                                ('vtk_', proj.vtks)):
             for cond in conds:
                 extents = []
                 extents_keys = False
                 for key in ('x_w', 'x_e', 'y_s', 'y_n', 'z_b', 'z_t'):
-                    key = condtype + key
+                    key = prefix + key
                     if key in cond:
                         extents.append(float(cond[key]))
                         extents_keys = True
@@ -560,7 +561,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 rtype = self.get_region_type(extents)
 
                 # create a name
-                name = condtype.upper() + str(cond.ind) # "BC_1"
+                name = prefix.upper() + str(cond.ind) # "BC_1"
 
                 add = False
                 # handle CG_* regions
@@ -587,8 +588,8 @@ class RegionsWidget(QtWidgets.QWidget):
                     add = True
                 elif not extents_keys:
                     self.warn('{} does not have extents defined and is not a cartesian grid, ignoring'.format(name))
-                else:
-                    self.warn('could not infer region from {}'.format(name))
+                #else: # XXX FIXME this happens when regions are shared
+                #    self.warn('could not infer region from {}'.format(name))
 
                 if add:
                     self.new_region(name, extents, rtype, defer_update=True)

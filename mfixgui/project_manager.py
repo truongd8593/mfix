@@ -180,6 +180,7 @@ class ProjectManager(Project):
                  else self.gui.bcs_current_indices if a == 'BC'
                  else self.gui.pss_current_indices if a == 'PS'
                  else self.gui.iss_current_indices if a == 'IS'
+                 else self.gui.vtk_current_indices if a == 'V'
                  else a)
                 for a in args_in]
 

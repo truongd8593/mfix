@@ -267,6 +267,9 @@ class RegionsPopup(QtWidgets.QDialog):
             label.setText('Output type')
             cb.clear()
             cb.addItems(['Cell data', 'Particle data'])
+            # slight hack to set tooltips
+            get_combobox_item(cb,0).setToolTip('Cell data (VTU file)')
+            get_combobox_item(cb,1).setToolTip('Particle data (VTP file)')
             ui.frame_object_type.show()
         else:
             ui.frame_object_type.hide()

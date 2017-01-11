@@ -466,7 +466,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # --- Register widgets ---
         self.register_keyword_widgets()
-        ##self.register_numerics()
 
         # --- Create main menu ---
         self.init_main_menu()
@@ -565,6 +564,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.reset_iss()
         self.reset_pss()
         self.reset_chemistry()
+        self.reset_output()
 
         self.saved_ro_g0 = None # hack
 
@@ -717,7 +717,8 @@ class MfixGui(QtWidgets.QMainWindow,
         for update in (self.ics_update_region,
                        self.bcs_update_region,
                        self.iss_update_region,
-                       self.pss_update_region):
+                       self.pss_update_region,
+                       self.output_update_region):
             update(name, data)
 
 
@@ -725,7 +726,8 @@ class MfixGui(QtWidgets.QMainWindow,
         return any(check(name) for check in (self.ics_check_region_in_use,
                                              self.bcs_check_region_in_use,
                                              self.pss_check_region_in_use,
-                                             self.iss_check_region_in_use))
+                                             self.iss_check_region_in_use,
+                                             self.output_check_region_in_use))
                                              # any more places region can be used?
 
 
@@ -734,6 +736,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.ics_change_region_name(name, new_name)
         self.iss_change_region_name(name, new_name)
         self.pss_change_region_name(name, new_name)
+        self.output_change_region_name(name, new_name)
         # any more places region can be used?
 
 
@@ -979,27 +982,17 @@ class MfixGui(QtWidgets.QMainWindow,
         while i <= prev_nscalar:
             self.unset_keyword("phase4scalar", i)
             # TODO implement a way to unset keys with wildcard
+            # Use "keyword_args" to delete all keys with deleted scalar index
             for IC in range(1, 1+len(self.ics)):
                 self.unset_keyword('ic_scalar', args=[IC, i])
             for BC in range(1, 1+len(self.bcs)):
                 self.unset_keyword('bc_scalar', args=[BC, i])
-
+                # there are more bc_*_scalar keywords!
             i += 1
 
         # ICs enabled/disabled depends on nscalar
         self.update_nav_tree()
 
-
-    # Move to 'numerics.py'
-    def register_numerics(self):
-        ui = self.ui
-        ui.linear_eq_table = LinearEquationTable(ui.numerics)
-        ui.numerics.gridlayout_leq.addWidget(ui.linear_eq_table)
-        self.project.register_widget(ui.linear_eq_table,
-                             ['discretize', 'leq_method', 'leq_tol',
-                              'leq_it', 'leq_sweep', 'leq_pc',
-                              'ur_fac'],
-                             args='*')
 
 
     def register_keyword_widgets(self):
@@ -1868,6 +1861,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             (self.ics_to_str(), 'ic_regions'),
                             (self.iss_to_str(), 'is_regions'),
                             (self.pss_to_str(), 'ps_regions'),
+                            (self.vtks_to_str(), 'vtk_regions'),
                             (self.chemistry_to_str(), 'chemistry')):
             if data:
                 self.project.mfix_gui_comments[key] = data
@@ -2095,6 +2089,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.save_project()
         self.handle_main_menu_hide()
 
+
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
@@ -2284,6 +2279,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.iss_regions_from_str(val)
                 elif key == 'ps_regions':
                     self.pss_regions_from_str(val)
+                elif key == 'vtk_regions':
+                    self.vtk_regions_from_str(val)
                 elif key == 'chemistry':
                     self.chemistry_from_str(val)
                 elif key == 'geometry':
@@ -2387,6 +2384,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Internal surfaces
         self.iss_extract_regions()
+
+        # VTK output regions
+        self.vtk_extract_regions()
 
         # Chemistry
         self.chemistry_extract_info()
