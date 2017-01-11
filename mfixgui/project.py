@@ -341,6 +341,8 @@ class Equation(object):
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
 
     def __cmp__(self, other): # Python2
+        if other is None:
+            return 1
         if isinstance(other, (float, int, Equation)): # Value comparison
             a = float(self)
             b = float(other)
