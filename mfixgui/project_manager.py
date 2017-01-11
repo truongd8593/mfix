@@ -33,6 +33,12 @@ from mfixgui.tools.general import (format_key_with_args, parse_key_with_args,
 from mfixgui.tools import read_burcat
 from mfixgui.unit_conversion import cgs_to_SI
 
+def convert_cm_to_m(s):
+    '''given a string, try to convert number from cm to m, else return string'''
+    try:
+        return "{:.10e}".format(float(s)/100.0)
+    except ValueError:
+        return s
 
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
@@ -268,7 +274,13 @@ class ProjectManager(Project):
                         self.convert_particle_file_units(particle_file)
                     except Exception as e:
                         warnings.warn("Error %s while converting %s" % (e, particle_file))
-
+                # convert stl file
+                stl_file = os.path.join(os.path.dirname(project_file), 'geometry.stl')
+                if os.path.exists(stl_file):
+                    try:
+                        self.convert_stl_file_units(stl_file)
+                    except Exception as e:
+                        warnings.warn("Error %s while converting %s" % (e, stl_file))
 
             elif units.lower() == 'si':
                 pass
@@ -643,6 +655,38 @@ class ProjectManager(Project):
 
                 out_file.write(out_line.strip()+'\n')
 
+    def convert_stl_file_units(self, filename):
+        '''convert an stl file in cm to m
+        stl ASCII format:
+        solid name
+        facet normal ni nj nk
+            outer loop
+                vertex v1x v1y v1z
+                vertex v2x v2y v2z
+                vertex v3x v3y v3z
+            endloop
+        endfacet
+        endsolid name
+        '''
+        basename = os.path.basename(filename)
+        cgs_file = filename + '.cgs'
+        if os.path.exists(cgs_file):
+            # If we've converted before, use the '.cgs' file as input to avoid
+            # double-converting
+            warnings.warn('%s found, not converting stl file (already converted?)' % cgs_file)
+            return
+        else:
+            warnings.warn('%s saved as %s' % (basename, basename+'.cgs')) # info?
+            os.rename(filename, cgs_file)
+
+        with open(filename, 'w') as out_file:
+            for line in open(cgs_file, 'r'):
+                leading_spaces = len(line) - len(line.lstrip(' '))
+                line = line.strip()
+                tok = line.split()
+                # convert floats
+                vals = list(map(convert_cm_to_m, tok))
+                out_file.write(' '.join([' '*leading_spaces]+vals) + '\n')
 
     def register_widget(self, widget, keys=None, args=None):
         """ Register a widget with the project manager. The widget must have a

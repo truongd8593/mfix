@@ -260,8 +260,8 @@ cgs_to_SI = {
   'norm_g':         1,    # factor                 : Factor to normalize the gas continuity equation residual.
   'norm_s':         1,    # volume fraction        : Factor to normalize the solids continuity equation residual.
   'out_dt':         1,    # s                      : Interval at which standard output (.OUT) file is updated.
-  'out_msh_value':  None, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
-  'out_stl_value':  None, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. A value
+  'out_msh_value':  1, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
+  'out_stl_value':  1, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. A value
   'p_ref':          0.1,  # barye -> Pa            : Reference pressure.
   'p_scale':        1,    # factor                 : Scale factor for pressure.
   'phi':            1,    # angle                  : Angle of internal friction (in degrees). Set this value to
@@ -317,9 +317,9 @@ cgs_to_SI = {
   'segregation_slope_coefficient':None,# UNKNOWN   : Used in calculating the initial slope of segregation: see
   'spx_dt':         1,    # s                      : Interval at which .SPX files are updated.
   'stl_small_angle':1,    # angle                  : Smallest angle accepted for valid STL triangles (in
-  't_x':            None, # UNKNOWN                : Translation in x-direction.
-  't_y':            None, # UNKNOWN                : Translation in y-direction.
-  't_z':            None, # UNKNOWN                : Translation in z-direction.
+  't_x':            0.01, # cm -> m                : Translation in x-direction.
+  't_y':            0.01, # cm -> m                : Translation in y-direction.
+  't_z':            0.01, # cm -> m                : Translation in z-direction.
   'term_buffer':    1,    # s                      : Buffer time specified to allow MFIX to write out the files
   'theta_x':        1,    # angle                  : Rotation angle with respect to x-axis (degrees).
   'theta_y':        1,    # angle                  : Rotation angle with respect to y-axis (degrees).
@@ -344,12 +344,12 @@ cgs_to_SI = {
   'torus_r1':       0.01, # cm -> m                : Torus Radius 1 (used when QUADRIC_FORM = TORUS_*), R1>R2 for
   'torus_r2':       0.01, # cm -> m                : Torus Radius 2 (used when QUADRIC_FORM = TORUS_*), R1>R2 for
   'tstop':          1,    # s                      : Simulation stop time.
-  'tx_msh':         None, # UNKNOWN                : Translation in x-direction, applied to the .msh geometry.
-  'tx_stl':         None, # UNKNOWN                : Translation in x-direction, applied to the STL geometry.
-  'ty_msh':         None, # UNKNOWN                : Translation in y-direction, applied to the .msh geometry.
-  'ty_stl':         None, # UNKNOWN                : Translation in y-direction, applied to the STL geometry.
-  'tz_msh':         None, # UNKNOWN                : Translation in z-direction, applied to the .msh geometry.
-  'tz_stl':         None, # UNKNOWN                : Translation in z-direction, applied to the STL geometry.
+  'tx_msh':         0.01, # cm -> m                : Translation in x-direction, applied to the .msh geometry.
+  'tx_stl':         0.01, # cm -> m                : Translation in x-direction, applied to the STL geometry.
+  'ty_msh':         0.01, # cm -> m                : Translation in y-direction, applied to the .msh geometry.
+  'ty_stl':         0.01, # cm -> m                : Translation in y-direction, applied to the STL geometry.
+  'tz_msh':         0.01, # cm -> m                : Translation in z-direction, applied to the .msh geometry.
+  'tz_stl':         0.01, # cm -> m                : Translation in z-direction, applied to the STL geometry.
   'ucoil_r1':       0.01, # cm -> m                : U-shaped coil Radius 1 (used when QUADRIC_FORM = UCOIL*),
   'ucoil_r2':       0.01, # cm -> m                : U-shaped coil Radius 2 (used when QUADRIC_FORM = UCOIL*),
   'ucoil_y1':       None, # UNKNOWN                : U-shaped coil ymax (used when QUADRIC_FORM = UCOIL*),
