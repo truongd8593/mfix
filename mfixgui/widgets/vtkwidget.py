@@ -507,24 +507,29 @@ class VtkWidget(BaseVtkWidget):
                     geo_data.update(geo_dict[node])
                     geo_type = geo_dict[node]['geo_type']
                     if geo_type == 'primitive':
-                        self.add_primitive(name=node, data=geo_data, loading=True)
+                        name = self.add_primitive(name=node, data=geo_data, loading=True)
                     elif geo_type == 'implicit':
-                        self.add_implicit(name=node, data=geo_data, loading=True)
+                        name = self.add_implicit(name=node, data=geo_data, loading=True)
                     elif geo_type == 'parametric':
-                        self.add_parametric(name=node, data=geo_data, loading=True)
+                        name = self.add_parametric(name=node, data=geo_data, loading=True)
                     elif geo_type == 'filter':
-                        self.add_filter(name=node, data=geo_data,
-                                        child=tree[node].pop(), loading=True)
+                        name = self.add_filter(name=node, data=geo_data,
+                                               child=tree[node].pop(), loading=True)
                     elif geo_type == 'boolean' or geo_type == 'boolean_implicit':
-                        self.boolean_operation(boolname=node, data=geo_data,
-                                               children=tree[node], loading=True)
+                        name = self.boolean_operation(boolname=node, data=geo_data,
+                                                      children=tree[node], loading=True)
                     elif geo_type == 'stl':
-                        self.add_stl(None, filename=geo_data['filename'],
-                                     name=node, data=geo_data, loading=True)
+                        name = self.add_stl(None, filename=geo_data['filename'],
+                                            name=node, data=geo_data, loading=True)
 
                     # update parameter mapping
                     for key, value in geo_data.items():
                         self.update_parameter_map(value, node, key, check_old=False)
+
+                    if not geo_data['visible']:
+                        item = self.get_tree_item(name)
+                        item.setCheckState(0, QtCore.Qt.Unchecked)
+                        self.geometrydict[name]['actor'].VisibilityOff()
                 else:
                     self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
@@ -637,12 +642,8 @@ class VtkWidget(BaseVtkWidget):
 
     def get_tree_item(self, name):
         """return the tree item with name"""
-        itr = QtWidgets.QTreeWidgetItemIterator(self.geometrytree)
-        while itr.value():
-            item = itr.value()
-            if name == item.text(0):
-                return item
-            itr += 1
+        items = self.geometrytree.findItems(name, QtCore.Qt.MatchContains|QtCore.Qt.MatchRecursive, 0)
+        return items[0]
 
     def geometry_clicked(self, item):
         """Hide/Show the clicked geometry"""
@@ -2488,7 +2489,6 @@ class VtkWidget(BaseVtkWidget):
 
     def set_visible_btn_image(self, btn, checked):
         """given a button, change the icon"""
-        print(checked)
         if not checked:
             btn.setIcon(get_icon('visibilityofftransparent.png'))
         else:
