@@ -143,13 +143,10 @@ class VtkWidget(BaseVtkWidget):
     """the vtk widget"""
     value_updated = QtCore.Signal(object, object, object)
 
-    def __init__(self, project, parent=None):
+    def __init__(self, parent=None):
         BaseVtkWidget.__init__(self, parent)
         global GUI
         GUI = parent
-
-        self.project = project
-        self.parent = parent
 
         self.ui = parent.ui
         ui = self.ui.geometry
@@ -176,9 +173,9 @@ class VtkWidget(BaseVtkWidget):
             }
 
         self.cell_spacing_widgets = [
-            self.parent.ui.mesh.lineedit_mesh_cells_size_x,
-            self.parent.ui.mesh.lineedit_mesh_cells_size_y,
-            self.parent.ui.mesh.lineedit_mesh_cells_size_z
+            self.ui.mesh.lineedit_mesh_cells_size_x,
+            self.ui.mesh.lineedit_mesh_cells_size_y,
+            self.ui.mesh.lineedit_mesh_cells_size_z
             ]
 
         # enable parameters
