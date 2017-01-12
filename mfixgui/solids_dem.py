@@ -36,6 +36,7 @@ class SolidsDEM(object):
         ui.checkbox_enable_des_diffuse_width.clicked.connect(self.enable_des_diffuse_width)
         ui.combobox_cohesion_model.activated.connect(self.set_cohesion_model)
         ui.checkbox_enable_des_usr_var_size.clicked.connect(self.enable_des_usr_var_size)
+        self.add_tooltip(ui.checkbox_enable_des_usr_var_size, key='des_usr_var_size')
         ui.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
         ui.lineedit_keyword_des_diffuse_width.setdtype('dp')
 

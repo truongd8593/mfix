@@ -65,8 +65,8 @@ class Output(object):
 
         self.output_current_tab = TAB_BASIC
 
-        self.outputs = {} # key: index.  value: data dictionary for point source
-        self.vtk_current_indices = [] # List of PS indices
+        self.outputs = {} # key: index.  value: data dictionary for VTK output region
+        self.vtk_current_indices = [] # List of VTK output indices
         self.vtk_current_regions = [] # And the names of the regions which define them
         self.output_region_dict = None
         self.vtk_current_solid = self.P = None
@@ -75,7 +75,7 @@ class Output(object):
                                    ui.pushbutton_vtk,
                                    ui.pushbutton_spx,
                                    ui.pushbutton_netcdf)
-
+        self.part_usr_var_checkboxes = []
         # connect tab buttons
         for i, btn in enumerate(self.output_pushbuttons):
             btn.pressed.connect(lambda i=i, btn=btn: self.output_change_tab(i, btn))
@@ -87,7 +87,7 @@ class Output(object):
 
         # set to default (Cell)
         ui.groupbox_particle_data.setVisible(False)
-        ui.label_particle_data_spacer.setVisible(False)
+        ui.label_particle_data_spacer.setVisible(False) # hack for layout
         ui.groupbox_cell_data.setVisible(True)
         ui.bottom_tab_frame.setVisible(True)
 
@@ -123,8 +123,8 @@ class Output(object):
         ui.toolbutton_add.clicked.connect(self.output_show_regions_popup)
         ui.toolbutton_delete.clicked.connect(self.output_delete_regions)
         ui.toolbutton_delete.setEnabled(False) # Need a selection
-
         ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_output_region_selection)
+        ui.checkbox_keyword_vtk_part_orientation_args_V.post_update = self.output_set_particle_orientation
 
 
     def handle_output_region_selection(self):
@@ -224,7 +224,9 @@ class Output(object):
         rp.popup('VTK output') # repopulates combobox
         set_item_enabled(get_combobox_item(rp.combobox,1), enabled)
 
+
     def output_delete_solids_phase(self, phase):
+        # unset keywords associated with solid phase
         pass # XXX TODO WRITEME
 
 
@@ -342,7 +344,7 @@ class Output(object):
         #self.update_nav_tree()
 
 
-    def vtks_to_str(self):
+    def vtk_regions_to_str(self):
         """convert VTK output region definitions to savable form"""
         ui = self.ui.output
         tw = ui.tablewidget_regions
@@ -400,7 +402,6 @@ class Output(object):
             else:
                 self.warn("vtk output %s: could not match defined region %s" %
                           (vtk.ind, extent))
-
 
 
     def init_output_spx_tab(self):
@@ -732,6 +733,21 @@ class Output(object):
         cb.setCurrentIndex(DES_OUTPUT_TYPES.index(val))
 
 
+    def output_default_vtk_filebase(self, region_names):
+        # Construct default value for VTK_FILEBASE,
+        # replacing possibly troublesome characters
+        val = '+'.join(region_names)
+        for c in ': /*?':
+            val = val.replace(c, '_')
+        return val
+
+
+    def output_set_particle_orientation(self):
+        o = any(self.project.get_value('vtk_part_orientation', args=[V])
+                for V in self.outputs)
+        self.update_keyword('particle_orientation', o)
+
+
     def setup_output_vtk_tab(self):
         ui = self.ui.output
         self.fixup_output_table(ui.tablewidget_regions)
@@ -757,7 +773,7 @@ class Output(object):
         ui.groupbox_cell_data.setVisible(enabled)
         ui.bottom_tab_frame.setVisible(enabled)
         ui.groupbox_particle_data.setVisible(not enabled)
-        ui.label_particle_data_spacer.setVisible(not enabled)
+        ui.label_particle_data_spacer.setVisible(not enabled) # hack
 
         #Cell data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
@@ -774,11 +790,9 @@ class Output(object):
         le = ui.lineedit_keyword_vtk_filebase_args_V
         val = self.project.get_value(key, args=[V0])
         if val is None: # Construct from region name
-            val = '+'.join(self.vtk_current_regions)
-            for c in ': /*?': # replace possibly troublesome characters
-                val = val.replace(c, '_')
-                for V in self.vtk_current_indices:
-                    self.update_keyword(key, val, args=[V])
+            val = self.output_default_vtk_filebase(self.vtk_current_regions)
+            for V in self.vtk_current_indices:
+                self.update_keyword(key, val, args=[V])
         le.updateValue(key, val)
 
         #Specify write interval
@@ -972,30 +986,8 @@ class Output(object):
         #for VTK input. There will need to be a way of catching the 'old' format and converting it to this
         #input style.
 
-        #Specify filename base
-        # Specification is required.
-        # Sets keyword VTK_FILEBASE(#)
-        # DEFAULT value of region name
-
-        #Specify write interval
-        # Specification is required
-        # Sets keyword VTK_DT(#)
-        # DEFAULT value of 1.0 (must write)
-
-        #Specify region x-axis slices
-        # Specification always available
-        # Sets keyword VTK_NXS(#)
-        # DEFAULT value of 0
-
-        #Specify region y-axis slices
-        # Specification always available
-        # Sets keyword VTK_NYS(#)
-        # DEFAULT value of 0
-
-        #Specify region z-axis slices
-        # Specification always available
-        # Sets keyword VTK_NZS(#)
-        # DEFAULT value of 0
+        # Note 1, filebase through nzs are common to cell/particle
+        # Note 2, this groupbox is disabled completely if not DEM or PIC
 
         #Enable writing particle diameter
         # Requires DEM or PIC solids
@@ -1009,29 +1001,18 @@ class Output(object):
 
         #Enable writing particle rotational velocity
         # Requires DEM or PIC solids
-        # Sets keyword VTK_ANGULAR_VEL(#)
+        # Sets keyword VTK_ANGULAR_VEL(#)  # VTK_PART_ANGULAR_VEL
         # DEFAULT value .FALSE.
 
         #Enable writing particle orientation
         # Requires DEM or PIC solids
         # Sets keyword PARTICLE_ORIENTATION = .TRUE.
-        # Sets keyword VTK_ORIENTATION(#)
-        # DEFAULT value .FALSE.
-
-        #Enable writing particle user variable
-        # Requires DEM or PIC solids and DES_USR_VAR > 0
-        # Sets keyword VTK_PART_USR_VAR(#,#)
+        # Sets keyword VTK_ORIENTATION(#)    ## VTK_PART_ORIENTATION
         # DEFAULT value .FALSE.
 
         #Enable writing particle temperature
         # Requires DEM or PIC solids and ENERGY_EQ=.TRUE.
         # Sets keyword VTK_PART_TEMP(#)
-        # DEFAULT value .FALSE.
-
-        #Enable writing particle species composition
-        # Requires DEM or PIC solids and any SPECIES_EQ=.TRUE.
-        # Sets keyword VTK_PART_X_S(#)
-        # NOTE, VTK_PART_X_S(#,N) where N ranges from 1 to max(mmax_s)
         # DEFAULT value .FALSE.
 
         #Enable writing particle MPI rank
@@ -1043,6 +1024,35 @@ class Output(object):
         # Requires DEM or PIC solids
         # Sets keyword VTK_PART_ID(#)
         # DEFAULT value .FALSE.
+
+        for key in ('vtk_part_diameter',
+                    'vtk_part_vel',
+                    'vtk_part_angular_vel',
+                    'vtk_part_orientation',
+                    'vtk_part_temp',
+                    'vtk_part_rank',
+                    'vtk_part_id'):
+            cb = getattr(ui, 'checkbox_keyword_%s_args_V' % key)
+            val = self.project.get_value(key, args=[V0], default=False)
+            cb.setChecked(val)
+
+        #enable writing particle user variable
+        # Requires DEM or PIC solids and DES_USR_VAR > 0 ## DES_USR_VAR_SIZE
+        # Sets keyword VTK_PART_USR_VAR(#,#)
+        # DEFAULT value .FALSE.
+        des_usr_var_size = self.project.get_value('des_usr_var_size', default=0)
+        while len(self.part_usr_var_checkboxes) < des_usr_var_size:
+            cb = CheckBox()
+            self.part_usr_var_checkboxes.append(cb)
+            ui.groupbox_particle_data.add(cb)
+
+
+        #Enable writing particle species composition
+        # Requires DEM or PIC solids and any SPECIES_EQ=.TRUE.
+        # Sets keyword VTK_PART_X_S(#)
+        # NOTE, VTK_PART_X_S(#,N) where N ranges from 1 to max(mmax_s)
+        # DEFAULT value .FALSE.
+
 
 
     def output_set_region_keys(self, name, idx, data, output_type=None):
@@ -1081,9 +1091,15 @@ class Output(object):
                     indices, names = data
                     if key in indices:
                         item = tw.item(i,0)
-                        names = [new_name if n==old_name else n for n in names]
-                        item.setData(UserRole, (indices, names))
-                        item.setText('+'.join(names))
+                        new_names = [new_name if n==old_name else n for n in names]
+                        item.setData(UserRole, (indices, new_names))
+                        item.setText('+'.join(new_names))
+                        # Also update vtk_filebase, if it is at the default setting
+                        vtk_filebase = self.project.get_value('vtk_filebase', args=[key])
+                        if vtk_filebase == self.output_default_vtk_filebase(names):
+                            vtk_filebase = self.output_default_vtk_filebase(new_names)
+                            for i in indices:
+                                self.update_keyword('vtk_filebase', vtk_filebase, args=[i])
                         break
                 break
 
@@ -1103,6 +1119,6 @@ class Output(object):
 
         # set to default (Cell)
         ui.groupbox_particle_data.setVisible(False)
-        ui.label_particle_data_spacer.setVisible(False)
+        ui.label_particle_data_spacer.setVisible(False) # hack
         ui.groupbox_cell_data.setVisible(True)
         ui.bottom_tab_frame.setVisible(True)

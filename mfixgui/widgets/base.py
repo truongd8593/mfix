@@ -1230,8 +1230,9 @@ class CustomPopUp(QtWidgets.QWidget):
     def __init__(self, parent=None, widget=None):
         QtWidgets.QWidget.__init__(self, parent=parent)
         self.widget = widget
-        flags = Qt.Dialog
-        flags |= Qt.FramelessWindowHint
+        flags = Qt.Popup #Dialog
+        #flags |= Qt.FramelessWindowHint
+
         #flags |= Qt.MSWindowsFixedSizeDialogHint
         #flags |= Qt.X11BypassWindowManagerHint
         self.setWindowFlags(flags)

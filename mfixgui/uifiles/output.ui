@@ -186,7 +186,7 @@ QPushButton:checked {
       </font>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_basic">
       <layout class="QGridLayout" name="gridLayout">
@@ -911,7 +911,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </layout>
            </item>
            <item row="3" column="0">
-            <widget class="QScrollArea" name="scrollarea_detail">
+            <widget class="QScrollArea" name="scrollarea_cell_data">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -1141,7 +1141,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </widget>
            </item>
           </layout>
-          <zorder>scrollarea_detail</zorder>
+          <zorder>scrollarea_cell_data</zorder>
           <zorder></zorder>
          </widget>
         </widget>

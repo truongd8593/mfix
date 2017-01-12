@@ -296,7 +296,7 @@ VTK_PARTITION(VTK)
 VTK_PART_ORIENTATION(VTK)
 VTK_PART_RANK(VTK)
 VTK_PART_TEMP(VTK)
-VTK_PART_USR_VAR(VTK, N)  # N ranges 1-3
+VTK_PART_USR_VAR(VTK, N)  # N ranges 1-3 (?)
 VTK_PART_VEL(VTK)
 VTK_PART_X_S(VTK, N) # species index not associated with any phase
 VTK_P_G(VTK)

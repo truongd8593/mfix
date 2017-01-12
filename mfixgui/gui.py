@@ -1119,7 +1119,7 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         from mfixgui.widgets.vtkwidget import VtkWidget
-        self.vtkwidget = VtkWidget(self.project, parent=self)
+        self.vtkwidget = VtkWidget(parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
         # register with project manager
