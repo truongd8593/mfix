@@ -385,7 +385,7 @@ class PSS(object):
         # anything else to do here?
 
 
-    def pss_to_str(self):
+    def ps_regions_to_str(self):
         ui = self.ui.point_sources
         tw = ui.tablewidget_regions
         data = [tw.item(i,0).data(UserRole)

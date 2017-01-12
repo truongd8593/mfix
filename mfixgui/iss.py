@@ -344,7 +344,7 @@ class ISS(object):
         # anything else to do here?
 
 
-    def iss_to_str(self):
+    def is_regions_to_str(self):
         ui = self.ui.internal_surfaces
         tw = ui.tablewidget_regions
         data = [tw.item(i,0).data(UserRole)

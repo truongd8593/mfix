@@ -743,7 +743,7 @@ class BCS(object):
         # anything else to do here?
 
 
-    def bcs_to_str(self):
+    def bc_regions_to_str(self):
         ui = self.ui.boundary_conditions
         tw = ui.tablewidget_regions
         data = [tw.item(i,0).data(UserRole) for i in range(tw.rowCount())]

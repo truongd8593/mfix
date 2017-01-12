@@ -1860,11 +1860,11 @@ class MfixGui(QtWidgets.QMainWindow,
         # save regions
         self.project.mfix_gui_comments['regions_dict'] = self.ui.regions.regions_to_str()
 
-        for (data, key) in ((self.bcs_to_str(), 'bc_regions'),
-                            (self.ics_to_str(), 'ic_regions'),
-                            (self.iss_to_str(), 'is_regions'),
-                            (self.pss_to_str(), 'ps_regions'),
-                            (self.vtks_to_str(), 'vtk_regions'),
+        for (data, key) in ((self.bc_regions_to_str(), 'bc_regions'),
+                            (self.ic_regions_to_str(), 'ic_regions'),
+                            (self.is_regions_to_str(), 'is_regions'),
+                            (self.ps_regions_to_str(), 'ps_regions'),
+                            (self.vtk_regions_to_str(), 'vtk_regions'),
                             (self.chemistry_to_str(), 'chemistry')):
             if data:
                 self.project.mfix_gui_comments[key] = data
