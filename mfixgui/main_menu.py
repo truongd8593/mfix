@@ -1,5 +1,4 @@
 import os
-import datetime
 import json
 from qtpy import QtCore, QtWidgets
 
@@ -407,7 +406,8 @@ class MainMenu(object):
             self.disable_main_menu_items(['project info', 'save', 'save as', 'export project', 'export workflow', 'import workflow'])
         else:
             self.ui.main_menu_modified_time.setText(
-                datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(prj_file)), '%Y-%m-%d %H:%M'))
+                self.project.modified_time
+                )
             self.ui.main_menu_created_time.setText(
                 self.project.mfix_gui_comments.get('created_date', 'Unknown'))
             self.ui.main_menu_project_version.setText(

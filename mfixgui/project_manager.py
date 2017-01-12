@@ -52,6 +52,7 @@ class ProjectManager(Project):
 
         self.registered_keywords = set()
         self.solver = SINGLE  # default
+        self.modified_time = ""
 
     def submit_change(self, widget, newValueDict, args=None):
         # Note, this may be a callback from Qt (in which case 'widget' is

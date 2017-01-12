@@ -7,7 +7,10 @@ __version__ = [2017, 1, 0, 'a']
 __version_str__ = '.'.join([str(i) for i in __version__])
 
 import argparse
+import copy
+import datetime
 import glob
+import json
 import logging
 import os
 import re
@@ -15,10 +18,9 @@ import shutil
 import signal
 import sys
 import time
-from collections import OrderedDict
-import json
 import traceback
-import copy
+
+from collections import OrderedDict
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
@@ -1875,6 +1877,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('run_name', run_name)
         self.print_internal("Info: Saving %s\n" % project_file)
         self.project.writeDatFile(project_file)
+        self.project.modified_time = datetime.datetime.strftime(datetime.datetime.fromtimestamp(os.path.getmtime(project_file)), '%Y-%m-%d %H:%M')
 
         # save workflow
         if self.ui.workflow_widget.PYQTNODE_AVAILABLE:
