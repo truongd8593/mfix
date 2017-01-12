@@ -7,7 +7,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import copy
 from collections import OrderedDict
 from qtpy import QtWidgets, QtCore, QtGui
-
+from qtpy.QtCore import Qt
 
 # Note - some items moved from 'Widgets' to 'Core'
 # depending on version of both qtpy and Qt.
@@ -199,12 +199,12 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self._completer = QtWidgets.QCompleter()
         self._completer.setModel(self._completer_model)
         self._completer.setWidget(self)
-        self._completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self._completer.setCaseSensitivity(Qt.CaseInsensitive)
         self._completer.activated.connect(self._insertCompletion)
-        self._keysToIgnore = [QtCore.Qt.Key_Enter,
-                              QtCore.Qt.Key_Return,
-                              QtCore.Qt.Key_Escape,
-                              QtCore.Qt.Key_Tab] # shouldn't TAB take us to next field?
+        self._keysToIgnore = [Qt.Key_Enter,
+                              Qt.Key_Return,
+                              Qt.Key_Escape,
+                              Qt.Key_Tab] # shouldn't TAB take us to next field?
 
     @classmethod
     def report_value_error(self, text):
@@ -835,7 +835,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
 
     def apply_val_to_column(self):
         row, column  = self.get_clicked_cell()
-        value = self.model().data(col=column, row=row, role=QtCore.Qt.EditRole)
+        value = self.model().data(col=column, row=row, role=Qt.EditRole)
         self.model().apply_to_column(column, value)
 
     def current_rows(self):
@@ -916,14 +916,14 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
     def setEditorData(self, widget, index):
         index.model().blockUpdate = True
-        value = index.model().data(index, QtCore.Qt.EditRole)
+        value = index.model().data(index, Qt.EditRole)
 
         if widget.dtype is None:
             widget.dtype = type(value)
         widget.updateValue(None, value)
 
     def setModelData(self, widget, model, index):
-        model.setData(index, widget.dtype(widget.value), QtCore.Qt.EditRole)
+        model.setData(index, widget.dtype(widget.value), Qt.EditRole)
         model.blockUpdate = False
 
     def updateEditorGeometry(self, editor, option, index):
@@ -952,7 +952,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
 
         if index.column() in self.column_dict and self.column_dict[index.column()]['widget'] == 'progressbar':
 
-            progress = int(index.model().data(index, QtCore.Qt.EditRole))
+            progress = int(index.model().data(index, Qt.EditRole))
 
             progressbar = QtWidgets.QStyleOptionProgressBar()
             progressbar.rect = option.rect
@@ -961,7 +961,7 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
             progressbar.progress = progress
             progressbar.text = '{}%'.format(progress)
             progressbar.textVisible = True
-            progressbar.textAlignment = QtCore.Qt.AlignCenter
+            progressbar.textAlignment = Qt.AlignCenter
 
             QtWidgets.QApplication.style().drawControl(
                 QtWidgets.QStyle.CE_ProgressBar, progressbar, painter)
@@ -1012,9 +1012,9 @@ class DictTableModel(QtCore.QAbstractTableModel):
             if not self._rows or self.update_rows:
                 self._rows = list(self.datatable.keys())
 
-    def setData(self, index=None, value=None, role=QtCore.Qt.EditRole,
+    def setData(self, index=None, value=None, role=Qt.EditRole,
                 row=0, col=0):
-        if role == QtCore.Qt.EditRole:
+        if role == Qt.EditRole:
             if index is not None:
                 row = index.row()
                 col = index.column()
@@ -1053,7 +1053,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
                 cols = max(cols, len(value))
         return cols
 
-    def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
+    def data(self, index=None, role=Qt.DisplayRole, row=0, col=0):
         if index is not None:
             row = index.row()
             col = index.column()
@@ -1068,7 +1068,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
         else:
             value = None
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             if value is None:
                 value = None
             elif isinstance(value, QtGui.QPixmap):
@@ -1076,25 +1076,25 @@ class DictTableModel(QtCore.QAbstractTableModel):
             else:
                 value = to_text_string(value)
             return value
-        elif role == QtCore.Qt.EditRole:
+        elif role == Qt.EditRole:
             return value
-        elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
+        elif role == Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
-        elif role == QtCore.Qt.DecorationRole and isinstance(value,
+        elif role == Qt.DecorationRole and isinstance(value,
                                                              QtGui.QPixmap):
             return value
         else:
             return None
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
                 if len(self._columns) > section:
                     return self._columns[section]
                 else:
                     return section
 
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == Qt.Vertical:
                 if self._rows and len(self._rows) > section:
                     return self._rows[section]
                 else:
@@ -1103,8 +1103,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             return None
 
     def flags(self, index):
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable | \
-            QtCore.Qt.ItemIsSelectable
+        return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
 
 class ArrayTableModel(QtCore.QAbstractTableModel):
@@ -1139,9 +1138,8 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
                 self._columns = list(self.datatable.columns)
                 self._rows = list(self.datatable.index)
 
-    def setData(self, index=None, value=None, role=QtCore.Qt.EditRole, col=0,
-                row=0):
-        if role == QtCore.Qt.EditRole:
+    def setData(self, index=None, value=None, role=Qt.EditRole, col=0, row=0):
+        if role == Qt.EditRole:
             if index is not None:
                 row = index.row()
                 col = index.column()
@@ -1179,7 +1177,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         else:
             return 0
 
-    def data(self, index=None, role=QtCore.Qt.DisplayRole, row=0, col=0):
+    def data(self, index=None, role=Qt.DisplayRole, row=0, col=0):
         if index is not None:
             row = index.row()
             col = index.column()
@@ -1190,31 +1188,31 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         else:
             value = self.datatable[row][col]
 
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             if value is None:
                 value = None
             else:
                 value = to_text_string(value)
             return value
-        elif role == QtCore.Qt.EditRole:
+        elif role == Qt.EditRole:
             return value
-        elif role == QtCore.Qt.BackgroundRole and hasattr(value, 'qcolor'):
+        elif role == Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
-        elif role == QtCore.Qt.DecorationRole and isinstance(value,
+        elif role == Qt.DecorationRole and isinstance(value,
                                                              QtGui.QPixmap):
             return value
         else:
             return None
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
                 if self._columns and len(self._columns) > section:
                     return self._columns[section]
                 else:
                     return section
 
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == Qt.Vertical:
                 if self._rows and len(self._rows) > section:
                     return self._rows[section]
                 else:
@@ -1223,26 +1221,26 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return None
 
     def flags(self, index):
-        return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |
-                QtCore.Qt.ItemIsSelectable)
+        return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
 # --- custom popup ---
 class CustomPopUp(QtWidgets.QWidget):
     finished = QtCore.Signal(bool)
     visibilityChanged = QtCore.Signal(bool)
     def __init__(self, parent=None, widget=None):
-        QtWidgets.QWidget.__init__(self, parent)
-
+        QtWidgets.QWidget.__init__(self, parent=parent)
         self.widget = widget
-        # make it look/act like a popup
-        self.setWindowFlags(QtCore.Qt.Popup)
-        #self.setWindowFlags(QtCore.Qt.Tool|QtCore.Qt.FramelessWindowHint)
-
+        flags = Qt.Dialog
+        flags |= Qt.FramelessWindowHint
+        #flags |= Qt.MSWindowsFixedSizeDialogHint
+        #flags |= Qt.X11BypassWindowManagerHint
+        self.setWindowFlags(flags)
         # add a layout
         self.layout = QtWidgets.QGridLayout(self)
         self.layout.setContentsMargins(5, 5, 5, 5)
         # this is really important when animating geometry
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
+
 
     def popup(self):
         """popup and animate"""
