@@ -528,7 +528,7 @@ class VtkWidget(BaseVtkWidget):
                         item.setCheckState(0, QtCore.Qt.Unchecked)
                         self.geometrydict[name]['actor'].VisibilityOff()
                 else:
-                    self.parent.message(text='Error loading geometry: Geometry does not have parameters.')
+                    GUI.message(text='Error loading geometry: Geometry does not have parameters.')
                     return
 
     def visual_props_to_str(self):
@@ -630,7 +630,7 @@ class VtkWidget(BaseVtkWidget):
         current_index = self.ui.geometry.stackedWidgetGeometryDetails.currentIndex()
 
         if self.animate:
-            self.parent.animate_stacked_widget(
+            GUI.animate_stacked_widget(
                 self.ui.geometry.stackedWidgetGeometryDetails,
                 current_index,
                 new_index,
@@ -680,7 +680,7 @@ class VtkWidget(BaseVtkWidget):
         if filename is None:
             filename = QtWidgets.QFileDialog.getOpenFileName(
                 self, 'Select an STL File',
-                self.parent.get_project_dir(),
+                GUI.get_project_dir(),
                 'STL File (*.stl)',)
 
             if isinstance(filename, (tuple, list)):
@@ -763,7 +763,7 @@ class VtkWidget(BaseVtkWidget):
             self.geometrytree.setCurrentItem(item)
 
             if not loading:
-                self.parent.set_unsaved_flag()
+                GUI.set_unsaved_flag()
 
             return name
 
@@ -989,7 +989,7 @@ class VtkWidget(BaseVtkWidget):
         self.geometrytree.setCurrentItem(item)
 
         if not loading:
-            self.parent.set_unsaved_flag()
+            GUI.set_unsaved_flag()
 
         return name
 
@@ -1190,7 +1190,7 @@ class VtkWidget(BaseVtkWidget):
         self.geometrytree.setCurrentItem(item)
 
         if not loading:
-            self.parent.set_unsaved_flag()
+            GUI.set_unsaved_flag()
 
         return name
 
@@ -1249,7 +1249,7 @@ class VtkWidget(BaseVtkWidget):
             para_object.SetN2(safe_float(geo['n2']))
 
         source.Update()
-        self.parent.set_unsaved_flag()
+        GUI.set_unsaved_flag()
         return source
 
     def add_parametric(self, paramtype=None, name=None, data=None, loading=False):
@@ -1321,7 +1321,7 @@ class VtkWidget(BaseVtkWidget):
         self.geometrytree.setCurrentItem(item)
 
         if not loading:
-            self.parent.set_unsaved_flag()
+            GUI.set_unsaved_flag()
 
         return name
 
@@ -1453,7 +1453,7 @@ class VtkWidget(BaseVtkWidget):
         self.geometrytree.setCurrentItem(toplevel)
 
         if not loading:
-            self.parent.set_unsaved_flag()
+            GUI.set_unsaved_flag()
 
         return boolname
 
@@ -1745,7 +1745,7 @@ class VtkWidget(BaseVtkWidget):
         self.geometrytree.setCurrentItem(toplevel)
 
         if not loading:
-            self.parent.set_unsaved_flag()
+            GUI.set_unsaved_flag()
 
         return name
 
@@ -2309,7 +2309,7 @@ class VtkWidget(BaseVtkWidget):
 
     def export_mesh(self, mesh, name=DEFAULT_MESH_NAME):
         """export the mesh"""
-        project_dir = self.parent.get_project_dir()
+        project_dir = GUI.get_project_dir()
         self.export_unstructured(os.path.join(project_dir, name),
                                  mesh.GetOutputPort())
 
@@ -2347,7 +2347,7 @@ class VtkWidget(BaseVtkWidget):
 
     def remove_mesh(self, name=DEFAULT_MESH_NAME):
         """remove the mesh from the vtk scene as well as the file"""
-        project_dir = self.parent.get_project_dir()
+        project_dir = GUI.get_project_dir()
         path = os.path.join(project_dir, name)
         if not os.path.exists(path):
             return
