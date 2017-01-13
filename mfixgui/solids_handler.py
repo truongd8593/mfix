@@ -1220,8 +1220,9 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         tw.clearSelection() #?
 
         # NB Must remove from solids species before calling 'delete_species_keys'
+        species_index = 1 + list(self.solids_species[phase].keys()).index(alias)
         self.solids_species[phase].pop(alias, None)
-        self.solids_delete_species_keys(phase, alias)
+        self.solids_delete_species_keys(phase, species_index)
 
         self.update_solids_species_table()
         self.update_solids_baseline_groupbox(self.solids_density_model)
@@ -1331,10 +1332,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         return False # Ok to delete phase, no refs
 
 
-    def solids_delete_species_keys(self, phase, species):
+    def solids_delete_species_keys(self, phase_index, species_index):
         """Delete all keywords associated with specified species,
         fixing up the resulting gap in sequence"""
-        prev_size = len(self.solids_species[phase]) + 1 # Size before species deleted
+        prev_size = len(self.solids_species[phase_index]) + 1 # Size before species deleted
         for key in keyword_args.keys_by_type['species']:
             indices = self.project.get_key_indices(key)
             if not indices:
@@ -1350,10 +1351,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             for args in indices:
                 args_phase = args[phase_pos]
                 args_species = args[species_pos]
-                if args_phase != phase:
+                if args_phase != phase_index:
                     continue
                 new_args = list(args)
-                if args_species > species:
+                if args_species > species_index:
                     new_args[species_pos] -= 1 #Slide along 'species_pos' axis
                 new_vals[tuple(new_args)] = self.project.get_value(key, args=args)
             for (args, val) in new_vals.items():

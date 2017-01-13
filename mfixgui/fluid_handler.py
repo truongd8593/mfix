@@ -341,10 +341,10 @@ class FluidHandler(SpeciesHandler):
             return
 
         tw.clearSelection() #?
-        index = list(self.fluid_species.keys()).index(alias)
-        self.bcs_delete_fluid_species(index)
+        species_index = 1 + list(self.fluid_species.keys()).index(alias)
+        self.bcs_delete_fluid_species(species_index) # special handling for memoized eq_type
         self.fluid_species.pop(alias, None)
-        self.fluid_delete_species_keys(alias) # Must remove fluid species first
+        self.fluid_delete_species_keys(species_index) # Must remove fluid species first (why?)
 
         self.update_fluid_species_table()
         # Sigh, we have to update the row in the popup too.
@@ -411,18 +411,14 @@ class FluidHandler(SpeciesHandler):
             if not indices:
                 continue
             arg_types = keyword_args.keyword_args[key]
-            if 'phase' not in arg_types: # fluid species
+            if 'phase' in arg_types: # solids species
                 continue
-            phase_pos = arg_types.index('phase')
             species_pos = arg_types.index('species')
 
             # Multidimensional copy-and-slide, using dict instead of list
             new_vals = {}
             for args in indices:
-                args_phase = args[phase_pos]
                 args_species = args[species_pos]
-                if args_phase != phase:
-                    continue
                 new_args = list(args)
                 if args_species > species:
                     new_args[species_pos] -= 1 #Slide along 'species_pos' axis
@@ -430,9 +426,8 @@ class FluidHandler(SpeciesHandler):
             for (args, val) in new_vals.items():
                 self.update_keyword(key, val, args=args)
             for args in indices: # Trim
-                key_phase = args[phase_pos]
                 key_species = args[species_pos]
-                if (key_phase, key_species) == (args_phase, prev_size):
+                if key_species == prev_size:
                     self.unset_keyword(key, args)
 
 
