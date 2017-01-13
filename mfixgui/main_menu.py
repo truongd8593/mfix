@@ -80,7 +80,7 @@ class MainMenu(object):
         st.addWidget(ow)
         ow_layout = QtWidgets.QGridLayout(ow)
 
-        l = QtWidgets.QLabel('Open')
+        l = self.ui.main_menu_label = QtWidgets.QLabel('Open')
         l.setStyleSheet('font-size: 24pt;background-color: white;')
         l.setSizePolicy(label_policy)
         ow_layout.addWidget(l, 0, 0, 1, -1)
@@ -367,12 +367,14 @@ class MainMenu(object):
                 lw.addItems(['Defaults', 'Tutorials', 'Benchmarks'])
                 lw.setCurrentRow(0)
                 self.set_file_listwidget('defaults')
+                self.ui.main_menu_label.setText('New')
             elif text == 'open':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
                 lw.addItems(['Recent', '', 'Clear recent'])
                 lw.setCurrentRow(0)
                 self.set_file_listwidget('recent')
+                self.ui.main_menu_label.setText('Open')
             elif text == 'save':
                 self.handle_save()
             elif text == 'save as':
