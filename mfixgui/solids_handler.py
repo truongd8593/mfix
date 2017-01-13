@@ -1367,7 +1367,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
 
 
     def solids_delete_phase_keys(self, phase):
-        """Delete all keywords associated with specified phase,
+        """Delete all keywords associated with specified phase (1-based index),
         fixing up the resulting gap in sequence"""
         prev_size = len(self.solids) + 1 # Size before row deleted
         for key in keyword_args.keys_by_type['phase']:
