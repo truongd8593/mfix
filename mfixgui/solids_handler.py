@@ -810,7 +810,6 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             self.iss_delete_solids_phase(phase)
             self.output_delete_solids_phase(phase)
 
-
             # Fixup phase names in mfix_gui_comments
             for (k,v) in list(self.project.mfix_gui_comments.items()):
                 if k.startswith('solids_phase_name('):

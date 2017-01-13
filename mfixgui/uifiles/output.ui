@@ -183,7 +183,7 @@ QPushButton:checked {
       </font>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_basic">
       <layout class="QGridLayout" name="gridLayout">
@@ -672,9 +672,9 @@ QPushButton:checked {
             </layout>
            </item>
            <item row="1" column="0">
-            <widget class="QStackedWidget" name="stackedwidget_vtk_data">
+            <widget class="QStackedWidget" name="stackedwidget_cell_particle">
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="subpage_cell">
               <layout class="QGridLayout" name="gridLayout_7">
@@ -835,8 +835,8 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>166</width>
-                    <height>63</height>
+                    <width>474</width>
+                    <height>492</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_11">
@@ -853,7 +853,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="QGroupBox" name="groupbox_cell_data">
+                    <widget class="QGroupBox" name="groupbox_cell_data_fluid">
                      <property name="font">
                       <font>
                        <weight>75</weight>
@@ -879,6 +879,27 @@ QPushButton:checked { font: bold; background-color: transparent; }
                       <property name="spacing">
                        <number>0</number>
                       </property>
+                      <item row="2" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_vel_g_args_V">
+                        <property name="text">
+                         <string>Gas velocity vector</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_v_g_args_V">
+                        <property name="text">
+                         <string>Gas velocity x-component</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_w_g_args_V">
+                        <property name="text">
+                         <string>Gas velocity z-component</string>
+                        </property>
+                       </widget>
+                      </item>
                       <item row="0" column="0">
                        <widget class="CheckBox" name="checkbox_keyword_vtk_ep_g_args_V">
                         <property name="text">
@@ -893,7 +914,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                         </property>
                        </widget>
                       </item>
-                      <item row="2" column="0">
+                      <item row="9" column="0">
                        <spacer name="spacer_cell_data">
                         <property name="orientation">
                          <enum>Qt::Vertical</enum>
@@ -905,6 +926,34 @@ QPushButton:checked { font: bold; background-color: transparent; }
                          </size>
                         </property>
                        </spacer>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_u_g_args_V">
+                        <property name="text">
+                         <string>Gas velocity y-component</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="7" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_k_turb_g_args_V">
+                        <property name="text">
+                         <string>Turbulent kinetic energy</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_t_g_args_V">
+                        <property name="text">
+                         <string>Gas temperature</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="8" column="0">
+                       <widget class="CheckBox" name="checkbox_keyword_vtk_e_turb_g_args_V">
+                        <property name="text">
+                         <string>Turbulent dissipation</string>
+                        </property>
+                       </widget>
                       </item>
                      </layout>
                     </widget>
