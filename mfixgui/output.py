@@ -140,8 +140,7 @@ class Output(object):
         self.vtk_current_indices, self.vtk_current_regions = indices, regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
-        #ui.detail_pane.setEnabled(enabled)
-        ui.bottom_frame.setEnabled(enabled) # more widgets above detail_pane
+        ui.bottom_frame.setEnabled(enabled)
         if not enabled: # No selection, clear inputs
             for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
@@ -218,7 +217,7 @@ class Output(object):
         rp.save.connect(self.output_add_regions)
         rp.cancel.connect(self.output_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -239,7 +238,7 @@ class Output(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
