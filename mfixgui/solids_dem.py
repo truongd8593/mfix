@@ -40,6 +40,9 @@ class SolidsDEM(object):
         ui.combobox_des_neighbor_search.activated.connect(self.set_des_neighbor_search)
         ui.lineedit_keyword_des_diffuse_width.setdtype('dp')
 
+        self.solids_dem_saved_solids_names = [] # keep track of when we need to rebuild per-phase gui items
+
+
     def set_gener_part_config(self, val):
         ui = self.ui.solids
         self.update_keyword('gener_part_config', val)
@@ -355,118 +358,115 @@ class SolidsDEM(object):
             item.setEnabled(enabled)
 
         key = 'e_young'
+        solids_names = list(self.solids.keys())
+        if self.solids_dem_saved_solids_names != solids_names:
 
-        # We put these back after inserting rows
-        for item in (ui.label_v_poisson,
-                     ui.lineedit_keyword_vw_poisson):
-            item.hide()
-            layout.removeWidget(item)
+            # We put these back after inserting rows
+            for item in (ui.label_v_poisson,
+                         ui.lineedit_keyword_vw_poisson):
+                item.hide()
+                layout.removeWidget(item)
 
-        # Delete all the old ones (we could do this just on solids change)
-        for idx in range(layout.count()-1, -1, -1):
-            item = layout.itemAt(idx)
-            w = item.widget()
-            if not w:
-                continue
-            name = w.objectName()
-            if '_args_' in  name:
-                   w.hide()
-                   if isinstance(w, LineEdit):
-                       self.project.unregister_widget(w)
-                   layout.removeWidget(w)
-                   w.deleteLater()
+            # Delete all the old ones
+            for idx in range(layout.count()-1, -1, -1):
+                item = layout.itemAt(idx)
+                w = item.widget()
+                if not w:
+                    continue
+                name = w.objectName()
+                if '_args_' in  name:
+                       w.hide()
+                       if isinstance(w, LineEdit):
+                           self.project.unregister_widget(w)
+                       layout.removeWidget(w)
+                       w.deleteLater()
 
-        idx = layout.indexOf(ui.lineedit_keyword_ew_young)
-        columns = 4
-        row = 1 + int(idx/columns)
-        for (p, name) in enumerate(self.solids.keys(), 1):
+            idx = layout.indexOf(ui.lineedit_keyword_ew_young)
+            columns = 4
+            row = 1 + int(idx/columns)
+            for (p, name) in enumerate(self.solids.keys(), 1):
+                row += 1
+                label = QLabel('    ' + name)
+                label.setObjectName('label_%s_args_%s' % (key,i))
+                label.args = [p]
+                self.add_tooltip(label, key)
+                layout.addWidget(label, row, 0, 1, 1)
+                label.setEnabled(enabled)
+
+                le = LineEdit()
+                le.setMaximumWidth(150) # matches ui file
+                le.key = key
+                le.args = [p]
+                le.dtype = float
+                le.setValInfo(min=0.0)
+                le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
+                self.add_tooltip(le, key)
+                layout.addWidget(le, row, 1, 1, 1)
+                le.setEnabled(enabled)
+                val = self.project.get_value(key, args=[p])
+                if val is not None:
+                    le.updateValue(key, val)
+                self.project.register_widget(le, keys=[key], args=[p])
+
+                label = QLabel('Pa')
+                label.setObjectName('label_%s_units_args_%s' % (key, p))
+                layout.addWidget(label, row, 3, 1, 1)
+                label.setEnabled(enabled)
+
+            #Specify Poisson ratio:
+            # Only available for Hertzian collision model
+            # Sets keyword V_POISSON (VW_POISSON)
             row += 1
-            label = QLabel('    ' + name)
-            label.setObjectName('label_%s_args_%s' % (key,i))
-            label.args = [p]
-            self.add_tooltip(label, key)
-            layout.addWidget(label, row, 0, 1, 1)
-            label.setEnabled(enabled)
+            layout.addWidget(ui.label_v_poisson, row, 0, 1, 1)
+            layout.addWidget(ui.lineedit_keyword_vw_poisson, row, 2, 1, 1)
+            for item in (ui.label_v_poisson, ui.lineedit_keyword_vw_poisson):
+                item.show()
+                item.setEnabled(enabled)
 
-            le = LineEdit()
-            le.setMaximumWidth(150) #?
-            le.key = key
-            le.args = [p]
-            le.dtype = float
-            le.setValInfo(min=0.0)
-            le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
-            self.add_tooltip(le, key)
-            layout.addWidget(le, row, 1, 1, 1)
-            le.setEnabled(enabled)
-            val = self.project.get_value(key, args=[p])
-            if val is not None:
-                le.updateValue(key, val)
-            self.project.register_widget(le, keys=[key], args=[p])
-
-            label = QLabel('Pa')
-            label.setObjectName('label_%s_units_args_%s' % (key, p))
-            layout.addWidget(label, row, 3, 1, 1)
-            label.setEnabled(enabled)
-
-        #Specify Poisson ratio:
-        # Only available for Hertzian collision model
-        # Sets keyword V_POISSON (VW_POISSON)
-        row += 1
-        layout.addWidget(ui.label_v_poisson, row, 0, 1, 1)
-        layout.addWidget(ui.lineedit_keyword_vw_poisson, row, 2, 1, 1)
-        for item in (ui.label_v_poisson, ui.lineedit_keyword_vw_poisson):
-            item.show()
-            item.setEnabled(enabled)
-
-        row += 1
-        key = 'v_poisson'
-
-        for (p, name) in enumerate(self.solids.keys(), 1):
             row += 1
-            label = QLabel('    ' + name)
-            label.setObjectName('label_%s_args_%s' % (key, i))
-            label.args = [p]
-            self.add_tooltip(label, key)
-            layout.addWidget(label, row, 0, 1, 1)
-            label.setEnabled(enabled)
+            key = 'v_poisson'
 
-            le = LineEdit()
-            le.setMaximumWidth(150) #?
-            le.key = key
-            le.args = [p]
-            le.dtype = float
-            le.setValInfo(min=0.0)
-            le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
-            self.add_tooltip(le, key)
-            layout.addWidget(le, row, 1, 1, 1)
-            le.setEnabled(enabled)
-            val = self.project.get_value(key, args=[p])
-            if val is not None:
-                le.updateValue(key, val)
+            for (p, name) in enumerate(self.solids.keys(), 1):
+                row += 1
+                label = QLabel('    ' + name)
+                label.setObjectName('label_%s_args_%s' % (key, i))
+                label.args = [p]
+                self.add_tooltip(label, key)
+                layout.addWidget(label, row, 0, 1, 1)
+                label.setEnabled(enabled)
 
-            self.project.register_widget(le, keys=[key], args=[p])
+                le = LineEdit()
+                le.setMaximumWidth(150) #?
+                le.key = key
+                le.args = [p]
+                le.dtype = float
+                le.setValInfo(min=0.0)
+                le.setObjectName('lineedit_keyword_%s_args_%s' % (key, p))
+                self.add_tooltip(le, key)
+                layout.addWidget(le, row, 1, 1, 1)
+                le.setEnabled(enabled)
+                val = self.project.get_value(key, args=[p])
+                if val is not None:
+                    le.updateValue(key, val)
+
+                self.project.register_widget(le, keys=[key], args=[p])
 
         #Specify normal restitution coefficient
         # Specification always required
         # Sets keyword DES_EN_INPUT (DES_EN_WALL_INPUT)
         # Input given as an upper triangular matrix
-        mmax = self.project.get_value('mmax', default=len(self.solids)) #?
+        mmax = self.project.get_value('mmax', default=len(self.solids))
         tw = ui.tablewidget_des_en_input
-        # Table size changed
-        def make_item(str):
-            item = QTableWidgetItem(str)
-            set_item_noedit(item)
-            set_item_enabled(item, False)
-            return item
+        if (self.solids_dem_saved_solids_names != solids_names
+            or tw.rowCount() != mmax+1
+            or tw.columnCount() != mmax):
 
-        header_labels = (item.text() if item else None
-                         for item in
-                         (tw.horizontalHeaderItem(i)
-                          for i in range(tw.columnCount())))
+            def make_item(str):
+                item = QTableWidgetItem(str)
+                set_item_noedit(item)
+                set_item_enabled(item, False)
+                return item
 
-        if (tw.rowCount() != mmax+1
-            or tw.columnCount() != mmax
-            or header_labels != self.solids.keys()):
             # Clear out old lineedit widgets
             for row in range(tw.rowCount()):
                 for col in range(tw.columnCount()):
@@ -549,15 +549,9 @@ class SolidsDEM(object):
             tw.setColumnCount(0)
 
         if enabled:
-            # Table size changed
-            header_labels = (item.text() if item else None
-                             for item in
-                             (tw.horizontalHeaderItem(i)
-                              for i in range(tw.columnCount())))
-
-            if (tw.rowCount() != mmax+1
-                or tw.columnCount() != mmax
-                or header_labels != self.solids.keys()):
+            if (self.solids_dem_saved_solids_names != solids_names
+                or tw.rowCount() != mmax+1
+                or tw.columnCount() != mmax):
 
                 # Clear out old lineedit widgets
                 for row in range(tw.rowCount()):
@@ -570,8 +564,7 @@ class SolidsDEM(object):
                 # Make a new batch
                 tw.setRowCount(mmax+1) # extra row for "Wall"
                 tw.setColumnCount(mmax)
-                names = list(self.solids.keys())
-                tw.setHorizontalHeaderLabels(names)
+                tw.setHorizontalHeaderLabels(solids_names)
                 tw.setVerticalHeaderLabels(names + ['Wall'])
 
                 arg = 1
@@ -716,4 +709,6 @@ class SolidsDEM(object):
                      ui.lineedit_keyword_flpc):
             item.setEnabled(enabled)
 
+        # Remember the names of solids phases, to track changes
+        self.solids_dem_saved_solids_names = solids_names
         # Fin!

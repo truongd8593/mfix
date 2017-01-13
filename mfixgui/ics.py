@@ -78,6 +78,7 @@ class ICS(object):
         widget.dtype = float
         widget.value_updated.connect(self.handle_ic_p_star)
 
+        self.ics_saved_solids_names = []
 
     def handle_ic_p_star(self, widget, data, args):
         if not self.ics_current_indices:
@@ -525,32 +526,34 @@ class ICS(object):
         b.setFont(font)
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
-        # (Could do this only on solid name change)
-        n_cols = ui.tab_layout.columnCount()
-        # Clear out the old ones
-        for i in range(n_cols-1, 0, -1):
-            item = ui.tab_layout.itemAtPosition(0, i)
-            if not item:
-                continue
-            widget = item.widget()
-            if not widget:
-                continue
-            if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar):
-                continue
-            ui.tab_layout.removeWidget(widget)
-            widget.setParent(None)
-            widget.deleteLater()
-        # And make new ones
-        for (i, solid_name) in enumerate(self.solids.keys(),1):
-            b = QPushButton(text=solid_name)
-            w = b.fontMetrics().boundingRect(solid_name).width() + 20
-            b.setMaximumWidth(w)
-            b.setFlat(True)
-            font = b.font()
-            font.setBold(self.ics_current_tab==SOLIDS_TAB and i==self.ics_current_solid)
-            b.setFont(font)
-            b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
-            ui.tab_layout.addWidget(b, 0, i)
+        solids_names = list(self.solids.keys())
+        if self.ics_saved_solids_names != solids_names:
+            # Clear out the old ones
+            n_cols = ui.tab_layout.columnCount()
+            for i in range(n_cols-1, 0, -1):
+                item = ui.tab_layout.itemAtPosition(0, i)
+                if not item:
+                    continue
+                widget = item.widget()
+                if not widget:
+                    continue
+                if widget in (ui.pushbutton_fluid, ui.pushbutton_scalar):
+                    continue
+                ui.tab_layout.removeWidget(widget)
+                widget.setParent(None)
+                widget.deleteLater()
+            # And make new ones
+            for (i, solid_name) in enumerate(solids_names, 1):
+                b = QPushButton(text=solid_name)
+                w = b.fontMetrics().boundingRect(solid_name).width() + 20
+                b.setMaximumWidth(w)
+                b.setFlat(True)
+                font = b.font()
+                font.setBold(self.ics_current_tab==SOLIDS_TAB and i==self.ics_current_solid)
+                b.setFont(font)
+                b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
+                ui.tab_layout.addWidget(b, 0, i)
+
         # Don't stay on disabled tab TODO
         # if self.ics_current_tab == 1 and ...
 
@@ -563,9 +566,10 @@ class ICS(object):
         nscalar = self.project.get_value('nscalar', default=0)
         enabled = (nscalar > 0)
         b.setEnabled(enabled)
-        if len(self.solids) > 0:
+        if len(self.solids) != len(self.ics_saved_solids_names):
             ui.tab_layout.removeWidget(b)
             ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
+
         # Don't stay on a disabled tab TODO
         # if self.ics_current_tab == 2 and nscalar == 0:
         #
@@ -585,7 +589,7 @@ class ICS(object):
         btn_layout.addItem(btn_layout.takeAt(
             btn_layout.indexOf(line)), 1, line_to)
 
-
+        self.ics_saved_solids_names = solids_names
 
     def ics_setup_current_tab(self):
         if self.ics_current_tab == FLUID_TAB:
