@@ -122,8 +122,8 @@ class ProjectManager(Project):
                 traceback.print_exception(*sys.exc_info())
                 raise ValueError(msg)
 
-
-        if updatedValue is None or updatedValue=='':
+        if (updatedValue is None or updatedValue==''
+            or (key.startswith('vtk_') and updatedValue is False)): # Don't save default "False" value for vtk_ keywords
             self.gui.unset_keyword(key, args) # prints msg in window.
         else:
             val_str = to_text_string(updatedValue) # Just used for log message
