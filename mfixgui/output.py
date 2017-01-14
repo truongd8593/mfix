@@ -835,9 +835,19 @@ class Output(object):
         if not indices:
             # Clear inputs?  should have been done in handle_selection
             return
+        self.setup_output_vtk_cell_subpage_fluid_tab()
+
+
+    def setup_output_vtk_cell_subpage_fluid_tab(self):
+        # Fluid Phase (tab?)
+        ui = self.ui.output
+        indices = self.vtk_current_indices
+        if not indices:
+            return
+
         V0 = indices[0]
 
-        # Fluid Phase (tab?)
+
         #Enable writing gas volume fraction
         # Selection always available
         # Sets keyword VTK_EP_G(#)
@@ -921,8 +931,6 @@ class Output(object):
                 for V in self.vtk_current_indices:
                     self.unset_keyword(key, args=[V])
 
-
-
         # Dynamically created GUI items - need to remove and re-add spacer
         layout = ui.groupbox_cell_data_fluid.layout()
         spacer = None
@@ -974,17 +982,17 @@ class Output(object):
             cb.setChecked(bool(val))
 
 
-
-        # Note - moved to separate Reactions tab
+    def setup_output_vtk_cell_subpage_reactions_tab():
         #Enable writing reaction rates
         # Requires nRR > 0
         # Sets keyword VTK_RRATE(#) ## requires 'reaction' index
         # DEFAULT value .FALSE.
+        ui = self.ui.output
 
 
-
+    def setup_output_vtk_cell_subpage_solids_tab(self):
         #Solids Phase (tab?)
-
+        ui = self.ui.output
         #Enable writing solids velocity vector
         # Requires TMF solids
         # Sets keyword VTK_VEL_S(#,#)
@@ -1026,16 +1034,19 @@ class Output(object):
         # DEFAULT value .FALSE.
 
 
-
+    def setup_output_vtk_cell_subpage_scalar_tab(self):
         #Scalar (tab?)
-
+        ui = self.ui.output
         #Enable writing user defined scalar
         # Requires NSCALAR > 0
         # Sets keyword VTK_SCALAR(#, #) # requires Scalar index
         # DEFAULT value .FALSE.
 
 
+
+    def setup_output_vtk_cell_subpage_scalar_tab(self):
         #Other (tab?)
+        ui - self.ui.output
 
         #Enable writing vorticity
         # Requires fluid solver (RO_G0 /= 0.0)
@@ -1058,7 +1069,6 @@ class Output(object):
         #Enable writing cell index
         # Sets keyword VTK_IJK(#)
         # DEFAULT value .FALSE.
-
 
 
 
