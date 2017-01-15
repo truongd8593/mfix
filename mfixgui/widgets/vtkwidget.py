@@ -5,6 +5,7 @@ well as a simple geometry creation tool and region selection.
 from __future__ import print_function, absolute_import, unicode_literals, division
 import os
 import copy
+import shutil
 import logging
 from functools import partial
 import numpy as np
@@ -694,6 +695,20 @@ class VtkWidget(BaseVtkWidget):
             filename = str(filename)
 
         if filename:
+            # need to handle geometry.stl because the gui will over-write it
+            if os.path.basename(filename) == 'geometry.stl':
+                old_geometry = filename+'.original'
+                # if geometry.stl.original doesn't exists, copy geometry.stl to preserve it.
+                if not os.path.exists(old_geometry):
+                    shutil.copy(filename, filename+'.original')
+
+                    if data is not None:
+                        # the original stl file could have been deleted
+                        GUI.error('geometry.stl.original is missing, please make sure the stl file is transformed correctly')
+
+                # use the original version
+                filename = old_geometry
+
             # purge solids
             if is_stl_ascii(filename):
                 filename = purge_multi_solids(filename)
@@ -709,6 +724,19 @@ class VtkWidget(BaseVtkWidget):
 
             geo_data = self.geometrydict.get(name)
             geo_data['filename'] = filename
+
+            # look for stl keywords, apply and remove from .mfx
+            found = False
+            for k, keyword in [('translationx', 'tx_stl'), ('translationy', 'ty_stl'), ('translationz', 'tz_stl'),
+                               ('scale', 'scale_stl')]:
+                if keyword in GUI.project.keyword_dict:
+                    found = True
+                    if keyword=='scale_stl':
+                        geo_data['units'] = 'custom'
+                    geo_data[k] = GUI.project.get_value(keyword, default= 1.0 if k=='scale' else 0.0)
+                    GUI.unset_keyword(keyword)
+            if found:
+                GUI.set_unsaved_flag()
 
             # reader
             reader = vtk.vtkSTLReader()
@@ -942,6 +970,7 @@ class VtkWidget(BaseVtkWidget):
         if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
             self.geometrydict[name]['type'] = primtype
+            GUI.set_unsaved_flag()
         else:
             self.geometrydict[name] = data
         geo = self.geometrydict.get(name)
@@ -1120,6 +1149,7 @@ class VtkWidget(BaseVtkWidget):
         if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_IMPLICIT_PARAMS)
             self.geometrydict[name]['type'] = implicittype
+            GUI.set_unsaved_flag()
         else:
             self.geometrydict[name] = data
         geo = self.geometrydict.get(name)
@@ -1273,6 +1303,7 @@ class VtkWidget(BaseVtkWidget):
         if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_PARAMETRIC_PARAMS)
             self.geometrydict[name]['type'] = paramtype
+            GUI.set_unsaved_flag()
         else:
             self.geometrydict[name] = data
         geo = self.geometrydict.get(name)
@@ -1351,6 +1382,7 @@ class VtkWidget(BaseVtkWidget):
         else:
             bool_data = self.geometrydict[boolname] = copy.deepcopy(DEFAULT_BOOLEAN_PARAMS)
             bool_data['type'] = booltype
+            GUI.set_unsaved_flag()
 
         implicit = all(['implicit' in self.geometrydict.get(select.text(0)).get('geo_type') for select in current_selection])
 
@@ -1507,6 +1539,7 @@ class VtkWidget(BaseVtkWidget):
             else:
                 self.selected_geometry_changed()
 
+        GUI.set_unsaved_flag()
         self.render()
 
     def handle_copy_geometry(self):
@@ -1547,6 +1580,8 @@ class VtkWidget(BaseVtkWidget):
         # update parameter mapping
         for key, value in data.items():
             self.update_parameter_map(value, name, key, check_old=False)
+
+        GUI.set_unsaved_flag()
         return name
 
     def update_filter(self, name):
@@ -1673,6 +1708,7 @@ class VtkWidget(BaseVtkWidget):
         if data is None:
             self.geometrydict[name] = copy.deepcopy(DEFAULT_FILTER_PARAMS)
             self.geometrydict[name]['type'] = filtertype
+            GUI.set_unsaved_flag()
         else:
             self.geometrydict[name] = data
 
