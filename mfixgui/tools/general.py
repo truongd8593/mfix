@@ -384,7 +384,7 @@ class CellColor(object):
         return self.text
 
     def __deepcopy__(self, memo):
-        return CellColor(copy.deepcopy(self.color_float), copy.deepcopy(self.text))
+        return CellColor(copy.deepcopy(self.color_hex), copy.deepcopy(self.text))
 
     def rand(self):
         self.color.setRgbF(*random_pastel_color())
