@@ -694,6 +694,11 @@ class VtkWidget(BaseVtkWidget):
 
             filename = str(filename)
 
+        # check to make sure the file exsits
+        if not os.path.exists(filename):
+            GUI.warn('Could not find {}, please check geometry'.format(filename))
+            return
+
         if filename:
             # need to handle geometry.stl because the gui will over-write it
             if os.path.basename(filename) == 'geometry.stl':
@@ -704,7 +709,7 @@ class VtkWidget(BaseVtkWidget):
 
                     if data is not None:
                         # the original stl file could have been deleted
-                        GUI.error('geometry.stl.original is missing, please make sure the stl file is transformed correctly')
+                        GUI.warn('geometry.stl.original is missing, please make sure the stl file is transformed correctly')
 
                 # use the original version
                 filename = old_geometry
