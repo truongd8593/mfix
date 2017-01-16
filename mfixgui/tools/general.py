@@ -590,7 +590,9 @@ def deepcopy_dict(dirty_dict, qobjects=False):
     '''deep copy a dictionary that has Qt objects in it
     Note: python 3.6+ can't copy Qt objects like QPixmap
     setting qobjects=True will copy the qt objects'''
-    clean_dict = {}
+
+    clean_dict = OrderedDict() if isinstance(dirty_dict, OrderedDict) else {}
+
     for key, value in dirty_dict.items():
         if isinstance(value, (dict, OrderedDict)):
             clean_dict[key] = deepcopy_dict(value, qobjects)
