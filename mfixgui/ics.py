@@ -309,6 +309,8 @@ class ICS(object):
                     widget.setText('')
             return
         self.ics_setup_current_tab() # reinitialize all widgets in current tab
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
 
     def fixup_ics_table(self, tw, stretch_column=0):
@@ -419,6 +421,8 @@ class ICS(object):
             line = ui.tab_underline,
             to_btn = ui.tab_layout.itemAtPosition(0, index),
             btn_layout = ui.tab_layout)
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
 
     def ics_check_region_in_use(self, name):

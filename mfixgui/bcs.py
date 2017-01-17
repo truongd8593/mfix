@@ -527,6 +527,9 @@ class BCS(object):
         if not setup_done:
             self.bcs_setup_current_tab() # reinitialize all widgets in current tab
 
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
+
 
     def bcs_find_valid_tab(self): # Don't stay on a disabled tab
         if not self.fluid_solver_disabled:
@@ -653,7 +656,8 @@ class BCS(object):
             line = ui.tab_underline,
             to_btn = ui.tab_layout.itemAtPosition(0, index),
             btn_layout = ui.tab_layout)
-
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
     def bcs_check_region_in_use(self, name):
         # Should we allow any change of region type?  eg. xy plane -> xz plane?
@@ -879,7 +883,6 @@ class BCS(object):
                 setup_done = True
 
         self.bcs_saved_solids_names = solids_names
-
         self.P = self.bcs_current_solid
 
         if not setup_done:

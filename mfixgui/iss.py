@@ -220,8 +220,6 @@ class ISS(object):
                 self.iss_current_solid = None
 
 
-
-
     def handle_iss_region_selection(self):
         ui = self.ui.internal_surfaces
         table = ui.tablewidget_regions
@@ -242,6 +240,8 @@ class ISS(object):
                     widget.setText('')
             return
         self.setup_iss() # reinitialize all widgets in current tab
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
 
     def fixup_iss_table(self, tw, stretch_column=0):

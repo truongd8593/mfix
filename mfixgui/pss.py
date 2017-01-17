@@ -217,6 +217,8 @@ class PSS(object):
                     widget.setText('')
             return
         self.pss_setup_current_tab() # reinitialize all widgets in current tab
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
 
     def fixup_pss_table(self, tw, stretch_column=0):
@@ -331,6 +333,8 @@ class PSS(object):
             line = ui.tab_underline,
             to_btn = ui.tab_layout.itemAtPosition(0, index),
             btn_layout = ui.tab_layout)
+        # Scroll to top
+        ui.scrollarea_detail.ensureVisible(0, 0)
 
 
     def pss_check_region_in_use(self, name):
