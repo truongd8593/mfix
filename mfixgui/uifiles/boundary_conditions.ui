@@ -344,9 +344,6 @@
            <height>0</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QWidget#detail_pane {background-color: white}</string>
-         </property>
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
