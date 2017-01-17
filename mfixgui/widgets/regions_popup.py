@@ -39,6 +39,9 @@ class RegionsPopup(QtWidgets.QDialog):
         cb = self.ui.combobox
         selections = get_selected_rows(tw)
 
+        buttonbox = self.ui.buttonbox
+        buttonbox.button(buttonbox.Ok).setEnabled(bool(selections))
+
         region_types = [tw.item(x,1).text() for x in selections]
         types_match = len(set(region_types)) < 2
 
@@ -246,7 +249,11 @@ class RegionsPopup(QtWidgets.QDialog):
         ui = self.ui
         tw = ui.table
         text = "Select region(s) for %s" % label_text
+
         self.ui.label_top.setText(text)
+
+        buttonbox = self.ui.buttonbox
+        buttonbox.button(buttonbox.Ok).setEnabled(False)
 
         self.boundary = boundary = ('boundary condition' in label_text)
         self.surface = surface = ('internal surface' in label_text)
