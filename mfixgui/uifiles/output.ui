@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>476</width>
-    <height>834</height>
+    <width>329</width>
+    <height>869</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -199,18 +199,45 @@ QPushButton:checked {
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item row="10" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_res_dt">
+         <property name="text">
+          <string>Restart/checkpoint write interval</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="LineEdit" name="lineedit_keyword_res_dt"/>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_res_dt_units">
+         <property name="text">
+          <string>s</string>
          </property>
-        </spacer>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>15</number>
+         </property>
+         <property name="leftMargin">
+          <number>12</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_res_backups">
+           <property name="text">
+            <string>Restart backup count</string>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="LineEdit" name="lineedit_keyword_res_backups"/>
+         </item>
+        </layout>
        </item>
        <item row="3" column="0">
         <spacer name="verticalSpacer_4">
@@ -228,56 +255,7 @@ QPushButton:checked {
          </property>
         </spacer>
        </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="label_res_dt">
-         <property name="text">
-          <string>Restart/checkpoint write interval</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="LineEdit" name="lineedit_keyword_res_dt"/>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_res_dt_units">
-         <property name="text">
-          <string>s</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="LineEdit" name="lineedit_keyword_res_backup_dt"/>
-       </item>
-       <item row="8" column="0">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>10</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="7" column="0" colspan="4">
-        <widget class="CheckBox" name="checkbox_netcdf_files">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>not yet available</string>
-         </property>
-         <property name="text">
-          <string>Write NetCDF output files</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" colspan="4">
+       <item row="5" column="0" colspan="2">
         <widget class="CheckBox" name="checkbox_binary_spx_files">
          <property name="enabled">
           <bool>true</bool>
@@ -296,14 +274,65 @@ QPushButton:checked {
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QLabel" name="label_res_backup_dt">
+       <item row="6" column="0">
+        <widget class="CheckBox" name="checkbox_netcdf_files">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>not yet available</string>
+         </property>
          <property name="text">
-          <string>    Restart backup interval</string>
+          <string>Write NetCDF output files</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="4">
+       <item row="7" column="0">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_nrr">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>ReactionRates output array size</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="8" column="1" colspan="2">
+        <widget class="LineEdit" name="lineedit_keyword_nrr"/>
+       </item>
+       <item row="4" column="0" colspan="3">
         <widget class="QGroupBox" name="groupbox_write_vtk_files">
          <property name="title">
           <string>Write VTK output files (VTU/VTP)</string>
@@ -347,55 +376,41 @@ QPushButton:checked {
          </layout>
         </widget>
        </item>
-       <item row="2" column="3">
-        <widget class="QLabel" name="label_res_backup_dt_units">
-         <property name="text">
-          <string>s</string>
+       <item row="2" column="0" colspan="3">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="leftMargin">
+          <number>12</number>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_res_backups">
-         <property name="text">
-          <string>    Restart backup count</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2" colspan="2">
-        <widget class="LineEdit" name="lineedit_keyword_res_backups"/>
-       </item>
-       <item row="9" column="0" colspan="2">
-        <widget class="QLabel" name="label_nrr">
-         <property name="font">
-          <font>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>ReactionRates output array size</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="2" colspan="2">
-        <widget class="LineEdit" name="lineedit_keyword_nrr"/>
+         <item>
+          <widget class="QLabel" name="label_res_backup_dt">
+           <property name="text">
+            <string>Restart backup interval</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="LineEdit" name="lineedit_keyword_res_backup_dt"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_res_backup_dt_units">
+           <property name="text">
+            <string>s</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
       <zorder>label_res_dt</zorder>
       <zorder>lineedit_keyword_res_dt</zorder>
       <zorder>label_res_dt_units</zorder>
-      <zorder>lineedit_keyword_res_backups</zorder>
-      <zorder>label_res_backup_dt_units</zorder>
       <zorder>checkbox_binary_spx_files</zorder>
       <zorder>checkbox_netcdf_files</zorder>
-      <zorder>lineedit_keyword_res_backup_dt</zorder>
       <zorder>label_nrr</zorder>
       <zorder>lineedit_keyword_nrr</zorder>
       <zorder>verticalSpacer_3</zorder>
       <zorder>verticalSpacer_4</zorder>
       <zorder>verticalSpacer</zorder>
-      <zorder>label_res_backups</zorder>
-      <zorder>label_res_backup_dt</zorder>
       <zorder>groupbox_write_vtk_files</zorder>
      </widget>
      <widget class="QWidget" name="page_vtk">
@@ -589,7 +604,7 @@ QPushButton:checked {
             <number>0</number>
            </property>
            <item row="0" column="0">
-            <layout class="QGridLayout" name="gridLayout_6">
+            <layout class="QGridLayout" name="gridlayout_celldata_common">
              <property name="leftMargin">
               <number>5</number>
              </property>
@@ -600,7 +615,7 @@ QPushButton:checked {
               <number>5</number>
              </property>
              <property name="bottomMargin">
-              <number>10</number>
+              <number>5</number>
              </property>
              <property name="spacing">
               <number>6</number>
@@ -612,7 +627,7 @@ QPushButton:checked {
                </property>
               </widget>
              </item>
-             <item row="0" column="1" colspan="2">
+             <item row="0" column="1" colspan="3">
               <widget class="LineEdit" name="lineedit_keyword_vtk_filebase_args_V"/>
              </item>
              <item row="1" column="0">
@@ -623,14 +638,7 @@ QPushButton:checked {
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="LineEdit" name="lineedit_keyword_vtk_dt_args_V">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
+              <widget class="LineEdit" name="lineedit_keyword_vtk_dt_args_V"/>
              </item>
              <item row="1" column="2">
               <widget class="QLabel" name="label_vtk_dt_units">
@@ -646,6 +654,9 @@ QPushButton:checked {
                </property>
               </widget>
              </item>
+             <item row="2" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nxs_args_V"/>
+             </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_vtk_nys">
                <property name="text">
@@ -653,18 +664,15 @@ QPushButton:checked {
                </property>
               </widget>
              </item>
+             <item row="3" column="1" colspan="2">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nys_args_V"/>
+             </item>
              <item row="4" column="0">
               <widget class="QLabel" name="label_vtk_nzs">
                <property name="text">
                 <string>Number of z-axis slices</string>
                </property>
               </widget>
-             </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="LineEdit" name="lineedit_keyword_vtk_nxs_args_V"/>
-             </item>
-             <item row="3" column="1" colspan="2">
-              <widget class="LineEdit" name="lineedit_keyword_vtk_nys_args_V"/>
              </item>
              <item row="4" column="1" colspan="2">
               <widget class="LineEdit" name="lineedit_keyword_vtk_nzs_args_V"/>
@@ -682,7 +690,7 @@ QPushButton:checked {
                 <number>0</number>
                </property>
                <property name="topMargin">
-                <number>5</number>
+                <number>0</number>
                </property>
                <property name="rightMargin">
                 <number>0</number>
@@ -690,8 +698,17 @@ QPushButton:checked {
                <property name="bottomMargin">
                 <number>0</number>
                </property>
-               <item row="0" column="0">
-                <layout class="QHBoxLayout" name="bottom_tab_layout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item row="3" column="0">
+                <layout class="QHBoxLayout" name="bottom_hbox_layout">
+                 <property name="topMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>5</number>
+                 </property>
                  <item>
                   <widget class="QFrame" name="bottom_tab_frame">
                    <property name="styleSheet">
@@ -706,7 +723,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <property name="frameShadow">
                     <enum>QFrame::Plain</enum>
                    </property>
-                   <layout class="QGridLayout" name="tab_layout">
+                   <layout class="QGridLayout" name="bottom_tab_layout">
                     <property name="leftMargin">
                      <number>0</number>
                     </property>
@@ -717,13 +734,13 @@ QPushButton:checked { font: bold; background-color: transparent; }
                      <number>0</number>
                     </property>
                     <property name="bottomMargin">
-                     <number>5</number>
+                     <number>0</number>
                     </property>
                     <property name="spacing">
                      <number>0</number>
                     </property>
                     <item row="1" column="0">
-                     <widget class="Line" name="tab_underline">
+                     <widget class="Line" name="line_subtab">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                         <horstretch>0</horstretch>
@@ -832,7 +849,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                  </item>
                 </layout>
                </item>
-               <item row="1" column="0">
+               <item row="4" column="0">
                 <widget class="QScrollArea" name="scrollarea_cell">
                  <property name="styleSheet">
                   <string notr="true">QWidget#scrollarea_cell_contents{background-color:white}</string>
@@ -845,13 +862,13 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>474</width>
-                    <height>492</height>
+                    <width>327</width>
+                    <height>522</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_11">
                    <property name="leftMargin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <property name="topMargin">
                     <number>0</number>
@@ -862,115 +879,339 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <property name="bottomMargin">
                     <number>0</number>
                    </property>
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
                    <item row="0" column="0">
-                    <widget class="QGroupBox" name="groupbox_cell_data_fluid">
+                    <widget class="QStackedWidget" name="stackedwidget_cell_data">
                      <property name="font">
                       <font>
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="title">
-                      <string>Select cell data to write</string>
-                     </property>
-                     <layout class="QGridLayout" name="gridLayout_8">
-                      <property name="leftMargin">
-                       <number>5</number>
-                      </property>
-                      <property name="topMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="rightMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="bottomMargin">
-                       <number>0</number>
-                      </property>
-                      <property name="spacing">
-                       <number>0</number>
-                      </property>
-                      <item row="2" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_vel_g_args_V">
-                        <property name="text">
-                         <string>Gas velocity vector</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="3" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_v_g_args_V">
-                        <property name="text">
-                         <string>Gas velocity x-component</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="5" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_w_g_args_V">
-                        <property name="text">
-                         <string>Gas velocity z-component</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="0" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_ep_g_args_V">
-                        <property name="text">
-                         <string>Gas volume fraction</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="1" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_p_g_args_V">
-                        <property name="text">
-                         <string>Gas pressure</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="9" column="0">
-                       <spacer name="spacer_cell_data">
-                        <property name="orientation">
-                         <enum>Qt::Vertical</enum>
-                        </property>
-                        <property name="sizeHint" stdset="0">
-                         <size>
-                          <width>20</width>
-                          <height>40</height>
-                         </size>
-                        </property>
-                       </spacer>
-                      </item>
-                      <item row="4" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_u_g_args_V">
-                        <property name="text">
-                         <string>Gas velocity y-component</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="7" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_k_turb_g_args_V">
-                        <property name="text">
-                         <string>Turbulent kinetic energy</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="6" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_t_g_args_V">
-                        <property name="text">
-                         <string>Gas temperature</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="8" column="0">
-                       <widget class="CheckBox" name="checkbox_keyword_vtk_e_turb_g_args_V">
-                        <property name="text">
-                         <string>Turbulent dissipation</string>
-                        </property>
-                       </widget>
-                      </item>
-                     </layout>
+                     <widget class="QWidget" name="subpage_celldata_fluid">
+                      <layout class="QGridLayout" name="gridLayout_8">
+                       <property name="leftMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <item row="1" column="0">
+                        <spacer name="spacer_cell_data">
+                         <property name="orientation">
+                          <enum>Qt::Vertical</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>20</width>
+                           <height>40</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                       <item row="0" column="0">
+                        <widget class="QGroupBox" name="groupbox_cell_data_fluid">
+                         <property name="font">
+                          <font>
+                           <weight>50</weight>
+                           <bold>false</bold>
+                          </font>
+                         </property>
+                         <property name="title">
+                          <string/>
+                         </property>
+                         <property name="checkable">
+                          <bool>false</bool>
+                         </property>
+                         <layout class="QGridLayout" name="gridLayout_14">
+                          <property name="leftMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <item row="1" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_ep_g_args_V">
+                            <property name="text">
+                             <string>Gas volume fraction</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_p_g_args_V">
+                            <property name="text">
+                             <string>Gas pressure</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_vel_g_args_V">
+                            <property name="text">
+                             <string>Gas velocity vector</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_v_g_args_V">
+                            <property name="text">
+                             <string>Gas velocity x-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="5" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_u_g_args_V">
+                            <property name="text">
+                             <string>Gas velocity y-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_w_g_args_V">
+                            <property name="text">
+                             <string>Gas velocity z-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_t_g_args_V">
+                            <property name="text">
+                             <string>Gas temperature</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="8" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_k_turb_g_args_V">
+                            <property name="text">
+                             <string>Turbulent kinetic energy</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="9" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_e_turb_g_args_V">
+                            <property name="text">
+                             <string>Turbulent dissipation</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <spacer name="verticalSpacer_5">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeType">
+                             <enum>QSizePolicy::Fixed</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>0</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_celldata_dummy_solids_L">
+                      <layout class="QGridLayout" name="gridLayout_15">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_dummy_solids_L">
+                         <property name="styleSheet">
+                          <string notr="true">background-color:white</string>
+                         </property>
+                         <property name="text">
+                          <string>LEFT</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_celldata_solids">
+                      <layout class="QGridLayout" name="gridLayout_17">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label">
+                         <property name="text">
+                          <string>solid</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_dummy_solids_R">
+                      <layout class="QGridLayout" name="gridLayout_16">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_dummy_solids_R">
+                         <property name="text">
+                          <string>RIGHT</string>
+                         </property>
+                         <property name="margin">
+                          <number>0</number>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_scalar">
+                      <layout class="QGridLayout" name="gridLayout_18">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_2">
+                         <property name="text">
+                          <string>scalar</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_celldata_reactions">
+                      <layout class="QGridLayout" name="gridLayout_19">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_3">
+                         <property name="text">
+                          <string>reactions</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                     <widget class="QWidget" name="subpage_celldata_other">
+                      <layout class="QGridLayout" name="gridLayout_20">
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QLabel" name="label_4">
+                         <property name="text">
+                          <string>other</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
                     </widget>
                    </item>
                   </layout>
                  </widget>
                 </widget>
+               </item>
+               <item row="0" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>5</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_cell_data">
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Select cell data to write</string>
+                   </property>
+                   <property name="margin">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -988,6 +1229,9 @@ QPushButton:checked { font: bold; background-color: transparent; }
                <property name="bottomMargin">
                 <number>0</number>
                </property>
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <item row="0" column="0">
                 <widget class="QScrollArea" name="scrollarea_particle">
                  <property name="styleSheet">
@@ -1001,8 +1245,8 @@ QPushButton:checked { font: bold; background-color: transparent; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>469</width>
-                    <height>535</height>
+                    <width>322</width>
+                    <height>575</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_13">
@@ -1029,6 +1273,9 @@ QPushButton:checked { font: bold; background-color: transparent; }
                      <property name="title">
                       <string>Select particle data to write</string>
                      </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
                      <layout class="QGridLayout" name="gridLayout_10">
                       <property name="leftMargin">
                        <number>5</number>
@@ -1040,7 +1287,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                        <number>0</number>
                       </property>
                       <property name="bottomMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="spacing">
                        <number>0</number>
@@ -1189,6 +1436,35 @@ QPushButton:checked { font: bold; background-color: transparent; }
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item row="5" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_6">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_spx_dt_args_7">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Mass fractions</string>
+            </property>
+           </widget>
+          </item>
           <item row="9" column="0">
            <widget class="QLabel" name="label_spx_dt_args_10">
             <property name="font">
@@ -1204,6 +1480,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="9" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_10">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1302,6 +1584,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="1" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1351,6 +1639,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="0" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_1">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1361,6 +1655,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="8" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_7">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1382,26 +1682,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_11">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_6">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="2">
            <widget class="QLabel" name="label_spx_dt_units_args_6">
             <property name="font">
@@ -1415,21 +1695,14 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_spx_dt_args_7">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Mass fractions</string>
-            </property>
-           </widget>
-          </item>
           <item row="6" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_9">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1479,6 +1752,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="2" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_3">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1515,6 +1794,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
           </item>
           <item row="3" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_4">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <weight>50</weight>
@@ -1536,6 +1821,22 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
+          <item row="4" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_5">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_spx_dt_args_5">
             <property name="font">
@@ -1546,16 +1847,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
             <property name="text">
              <string>Solids bulk density</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_5">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
             </property>
            </widget>
           </item>
@@ -1585,6 +1876,16 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
+          <item row="10" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_11">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -1598,6 +1899,9 @@ QPushButton:checked { font: bold; background-color: transparent; }
          </property>
          <property name="title">
           <string>Write ASCII particle data</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
          <property name="checkable">
           <bool>true</bool>

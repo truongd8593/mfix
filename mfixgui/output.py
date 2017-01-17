@@ -30,8 +30,12 @@ from mfixgui.tools.general import (widget_iter,
 
 from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
 
-TAB_BASIC, TAB_VTK, TAB_SPX, TAB_NETCDF = range(4)
+#Top tabset
+BASIC_TAB, VTK_TAB, SPX_TAB, NETCDF_TAB = range(4)
 SUBPAGE_CELL, SUBPAGE_PARTICLE = (0, 1)
+#Bottom subpage tabset, for VTK cell data
+(FLUID_TAB, SOLIDS_TAB_DUMMY_L, SOLIDS_TAB, SOLIDS_TAB_DUMMY_R,
+ SCALAR_TAB, REACTIONS_TAB, OTHER_TAB) = range(7) # bottom tabset
 
 MAX_SP = 11
 
@@ -64,23 +68,17 @@ class Output(object):
     def init_output(self):
         ui = self.ui.output
 
-        self.output_current_tab = TAB_BASIC
-
+        self.output_current_tab = BASIC_TAB
         self.outputs = {} # key: index.  value: data dictionary for VTK output region
         self.vtk_current_indices = [] # List of VTK output indices
         self.vtk_current_regions = [] # And the names of the regions which define them
-        self.output_region_dict = None
         self.vtk_current_solid = self.P = None
-
+        self.output_region_dict = None
+        # connect tab buttons
         self.output_pushbuttons = (ui.pushbutton_basic,
                                    ui.pushbutton_vtk,
                                    ui.pushbutton_spx,
                                    ui.pushbutton_netcdf)
-        # Dynamically created items
-        self.vtk_part_usr_var_checkboxes = []
-        self.vtk_part_x_s_checkboxes = []
-        self.vtk_x_g_checkboxes = []
-        # connect tab buttons
         for (i, btn) in enumerate(self.output_pushbuttons):
             btn.pressed.connect(lambda i=i, btn=btn: self.output_change_tab(i, btn))
 
@@ -110,8 +108,33 @@ class Output(object):
 
 
     def init_output_vtk_tab(self):
-        ui = self.ui.output
         #VTK (tab)
+        ui = self.ui.output
+        # Dynamically created items
+        self.vtk_part_usr_var_checkboxes = []
+        self.vtk_part_x_s_checkboxes = []
+        self.vtk_x_g_checkboxes = []
+
+        # Set up subtabs
+        self.output_pushbuttons_bottom = (ui.pushbutton_fluid,
+                                          #ui.pushbutton_solid,
+                                          ui.pushbutton_scalar,
+                                          ui.pushbutton_reactions,
+                                          ui.pushbutton_other)
+
+        self.output_current_subtab = FLUID_TAB # #  If fluid is disabled, we will switch
+        self.vtk_current_solid = self.P = None
+        ui.pushbutton_fluid.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(FLUID_TAB,None))
+        ui.pushbutton_scalar.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(SCALAR_TAB,None))
+        ui.pushbutton_reactions.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(REACTIONS_TAB,None))
+        ui.pushbutton_other.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(OTHER_TAB,None))
+
+        # Trim width of "Fluid" and "Scalar" buttons, like we do for
+        # dynamically-created "Solid #" buttons
+        for b in self.output_pushbuttons_bottom:
+            w = b.fontMetrics().boundingRect(b.text()).width() + 20
+            b.setMaximumWidth(w)
+
         #Icons and table similar to IC/BC/PS/IS for adding VTK regions. This section requires
         #WRITE_VTK_FILES = .TRUE.
         #Icons to add/remove/duplicate regions are given at the top
@@ -126,7 +149,76 @@ class Output(object):
 
         ui.stackedwidget_cell_particle.setCurrentIndex(SUBPAGE_CELL)
         self.output_saved_fluid_species_names = []
+        # no per-subpage init, yet
+        # Show cell data groupboxes without a title (title is separate
+        # label_cell_data, displayed outside tab set)
 
+        height = ui.checkbox_keyword_vtk_ep_g_args_V.sizeHint().height()
+        ui.subpage_celldata_fluid.setStyleSheet(
+            'QGroupBox:title {subcontrol-position: bottom;}' # Note, title is empty
+            #' QGroupBox {margin-top: -2ex; padding-top: 2.5ex}' # fix gap where title would be
+            # This is slightly questionable -  where do these numbers come from?
+            ' QGroupBox {margin-top: %spx; padding-top: %spx }' % (2-height, height)
+        )
+
+
+    def output_vtk_cell_data_change_subtab(self, subtab, solid):
+        ui = self.ui.output
+
+        index = (0 if subtab==FLUID_TAB
+                 else len(self.solids)+1 if subtab==SCALAR_TAB
+                 else len(self.solids)+2 if subtab==REACTIONS_TAB
+                 else len(self.solids)+3 if subtab==OTHER_TAB
+                 else solid)
+
+        for i in range(ui.bottom_tab_layout.columnCount()):
+            item = ui.bottom_tab_layout.itemAtPosition(0, i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                continue
+            font = widget.font()
+            font.setBold(i==index)
+            widget.setFont(font)
+
+        current_index = ui.stackedwidget_cell_data.currentIndex()
+        # If we're switching from solid m to solid n, we need some
+        # special handling, because both tabs are really the same
+        # widget.  We make a picture of the current tab, display that
+        # in a dummy pane, then slide back to the solids tab
+        if subtab == current_index == SOLIDS_TAB:
+            if solid == self.vtk_current_solid:
+                return # nothing to do
+
+            if solid > self.vtk_current_solid:
+                dummy_label = ui.label_dummy_solids_L
+                dummy_tab = SOLIDS_TAB_DUMMY_L
+            else:
+                dummy_label = ui.label_dummy_solids_R
+                dummy_tab = SOLIDS_TAB_DUMMY_R
+
+            pixmap = QPixmap(ui.page_solids.size())
+            pixmap.fill() #fill bg with white
+            ui.page_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
+            dummy_label.setPixmap(pixmap)
+            ui.stackedwidget_cell_data.setCurrentIndex(dummy_tab)
+
+        self.output_current_subtab = subtab
+        self.vtk_current_solid = self.P = solid if subtab==SOLIDS_TAB else None
+        #self.output_setup_current_subtab()
+
+        # change stackedwidget contents
+        self.animate_stacked_widget(
+            ui.stackedwidget_cell_data,
+            ui.stackedwidget_cell_data.currentIndex(),
+            subtab,
+            direction='horizontal',
+            line = ui.line_subtab,
+            to_btn = ui.bottom_tab_layout.itemAtPosition(0, index),
+            btn_layout = ui.bottom_tab_layout)
+        # Scroll to top
+        ui.scrollarea_cell.ensureVisible(0, 0)
 
 
     def handle_output_region_selection(self):
@@ -474,13 +566,13 @@ class Output(object):
 
 
     def setup_output_tab(self, tabnum):
-        if tabnum == TAB_BASIC:
+        if tabnum == BASIC_TAB:
             self.setup_output_basic_tab()
-        elif tabnum == TAB_VTK:
+        elif tabnum == VTK_TAB:
             self.setup_output_vtk_tab()
-        elif tabnum == TAB_SPX:
+        elif tabnum == SPX_TAB:
             self.setup_output_spx_tab()
-        elif tabnum == TAB_NETCDF:
+        elif tabnum == NETCDF_TAB:
             self.setup_output_netcdf_tab()
         else:
             raise ValueError(tabnum)
@@ -815,8 +907,10 @@ class Output(object):
 
         if vtk_data == 'C':
             self.setup_output_vtk_cell_subpage()
+            ui.scrollarea_cell.ensureVisible(0, 0)
         elif vtk_data == 'P':
             self.setup_output_vtk_particle_subpage()
+            ui.scrollarea_particle.ensureVisible(0, 0)
         else:
             self.error("Unknown vtk_data %s" % vtk_data)
             setCurrentIndex(SUBPAGE_CELL) #default
@@ -846,7 +940,6 @@ class Output(object):
             return
 
         V0 = indices[0]
-
 
         #Enable writing gas volume fraction
         # Selection always available
@@ -952,6 +1045,7 @@ class Output(object):
         key = 'vtk_x_g'
         fluid_species_names = list(self.fluid_species.keys())
         if self.output_saved_fluid_species_names != fluid_species_names:
+            self.output_saved_fluid_species_names = fluid_species_names
             n_fluid_species = len(fluid_species_names)
             if len(self.vtk_x_g_checkboxes) > n_fluid_species:
                 for (i, cb) in enumerate(self.vtk_x_g_checkboxes[n_fluid_species:], 1+n_fluid_species):
@@ -1290,7 +1384,7 @@ class Output(object):
         ui = self.ui.output
         # Set all output-related state back to default
         ui.pushbutton_vtk.setEnabled(False)
-        self.output_change_tab(TAB_BASIC, ui.pushbutton_basic)
+        self.output_change_tab(BASIC_TAB, ui.pushbutton_basic)
         self.outputs.clear()
         self.vtk_current_indices = []
         self.vtk_current_regions = []
