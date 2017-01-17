@@ -53,15 +53,15 @@ class Chemistry(object):
         ui.toolbutton_delete_reactant.clicked.connect(self.chemistry_delete_reactant)
         ui.toolbutton_add_product.clicked.connect(self.chemistry_add_product)
         ui.toolbutton_delete_product.clicked.connect(self.chemistry_delete_product)
-        ui.toolbutton_apply.clicked.connect(self.chemistry_apply_changes)
-        ui.toolbutton_revert.clicked.connect(self.chemistry_revert_changes)
+        ui.toolbutton_ok.clicked.connect(self.chemistry_apply_changes)
+        ui.toolbutton_cancel.clicked.connect(self.chemistry_revert_changes)
 
         ui.toolbutton_delete_reaction.setEnabled(False) # Need a selection
         ui.toolbutton_delete_reactant.setEnabled(False)
         ui.toolbutton_delete_product.setEnabled(False)
 
-        ui.toolbutton_apply.setEnabled(False)
-        ui.toolbutton_revert.setEnabled(False)
+        ui.toolbutton_ok.setEnabled(False)
+        ui.toolbutton_cancel.setEnabled(False)
 
         # Tablewidgets
         ui.tablewidget_reactions.itemSelectionChanged.connect(self.chemistry_handle_selection)
@@ -286,11 +286,9 @@ class Chemistry(object):
         else:
             self.current_reaction_name = None
             self.working_reaction = None
-
         self.reaction_edited = False
         self.chemistry_update_detail_pane()
-
-
+        ui.scrollarea_detail.ensureVisible(0, 0)
     def chemistry_update_detail_pane(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_reactions
@@ -778,8 +776,8 @@ class Chemistry(object):
             ui.label_status.setText('') #"Reaction unmodified")
         else:
             ui.label_status.setText(message)
-        ui.toolbutton_apply.setEnabled(self.reaction_edited and balanced)
-        ui.toolbutton_revert.setEnabled(self.reaction_edited)
+        ui.toolbutton_ok.setEnabled(self.reaction_edited and balanced)
+        ui.toolbutton_cancel.setEnabled(self.reaction_edited)
         ui.toolbutton_add_reaction.setEnabled(not self.reaction_edited)
         ui.toolbutton_delete_reaction.setEnabled(get_selected_row(tw) is not None)
         tw.setEnabled(not self.reaction_edited)
@@ -1094,7 +1092,7 @@ class Chemistry(object):
         ui.toolbutton_add_reaction.setEnabled(True)
         ui.toolbutton_delete_reaction.setEnabled(False)
 
-        for tb in (ui.toolbutton_apply, ui.toolbutton_revert):
+        for tb in (ui.toolbutton_ok, ui.toolbutton_cancel):
             tb.setEnabled(False)
 
 

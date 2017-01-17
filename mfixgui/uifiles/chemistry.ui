@@ -749,16 +749,16 @@
        <item row="1" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QToolButton" name="toolbutton_apply">
+          <widget class="QToolButton" name="toolbutton_ok">
            <property name="text">
-            <string>Apply changes</string>
+            <string>OK</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolbutton_revert">
+          <widget class="QToolButton" name="toolbutton_cancel">
            <property name="text">
-            <string>Revert</string>
+            <string>Cancel</string>
            </property>
           </widget>
          </item>
