@@ -702,12 +702,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushbutton_cancel">
+      <widget class="QPushButton" name="pushbutton_ok">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Cancel</string>
+        <string>OK</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>
@@ -715,12 +715,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushbutton_save">
+      <widget class="QPushButton" name="pushbutton_cancel">
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Save</string>
+        <string>Cancel</string>
        </property>
        <property name="autoDefault">
         <bool>false</bool>

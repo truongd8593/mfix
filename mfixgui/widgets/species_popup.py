@@ -296,7 +296,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             species_data['density'] = None # ? where do we get this?
         self.defined_species[alias] = species_data
         self.add_defined_species_row(alias, select=True)
-        self.set_save_button(True)
+        self.set_ok_button(True) # FIXME, don't do this until something has changed
 
 
     def update_defined_species(self):
@@ -373,7 +373,7 @@ class SpeciesPopup(QtWidgets.QDialog):
             self.user_species_names.remove(current_species)
         self.current_species = None
         self.clear_species_panel()
-        self.set_save_button(True)
+        self.set_ok_button(True)
         self.ui.combobox_phase.setEnabled(False)
 
     def handle_new(self):
@@ -425,8 +425,8 @@ class SpeciesPopup(QtWidgets.QDialog):
         self.current_species = val
         self.defined_species = defined_species
 
-    def set_save_button(self, state, msg=''):
-        self.ui.pushbutton_save.setEnabled(state)
+    def set_ok_button(self, state, msg=''):
+        self.ui.pushbutton_ok.setEnabled(state)
         self.ui.label_status.setText(msg)
 
     def handle_combobox_phase(self, index):
@@ -499,7 +499,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         ui.combobox_phase.currentIndexChanged.connect(self.handle_combobox_phase)
         #http://stackoverflow.com/questions/15845487/how-do-i-prevent-the-enter-key-from-closing-my-qdialog-qt-4-8-1
         # Do not use buttonbox.  https://mfix.netl.doe.gov/gitlab/develop/mfix/issues/101
-        buttons = (ui.pushbutton_save, ui.pushbutton_cancel)
+        buttons = (ui.pushbutton_ok, ui.pushbutton_cancel)
         buttons[0].clicked.connect(lambda: (self.save.emit(), self.close()))
         buttons[1].clicked.connect(lambda: (self.cancel.emit(), self.close()))
 
@@ -512,34 +512,34 @@ class SpeciesPopup(QtWidgets.QDialog):
 
             def validate(self, text, pos):
                 if text=="":
-                    self.parent.set_save_button(False)
+                    self.parent.set_ok_button(False)
                     return (QValidator.Intermediate, text, pos)
                 if text[0].isdigit() or text[0]=='_' or not all(c.isalnum() or c=='_' for c in text):
                     return (QValidator.Invalid, text, pos)
                 current_species = self.parent.current_species
                 if current_species not in self.parent.defined_species: # Why would this happen?
-                    self.parent.set_save_button(False)
+                    self.parent.set_ok_button(False)
                     return (QValidator.Invalid, text, pos)
                 current_alias = self.parent.defined_species[current_species].get('alias')
                 if current_alias is None:
-                    self.parent.set_save_button(False)
+                    self.parent.set_ok_button(False)
                     return (QValidator.Invalid, text, pos)
                 for (k,v) in self.parent.defined_species.items():
                     v_alias = v.get('alias','')
                     if v_alias.lower() == current_alias.lower(): # Skip selected item
                         continue
                     if v_alias.lower() == text.lower():
-                        self.parent.set_save_button(False, 'Alias must be unique')
+                        self.parent.set_ok_button(False, 'Alias must be unique')
                         return (QValidator.Intermediate, text, pos)
                 tlower = text.lower()
                 if tlower in self.parent.extra_aliases:
-                    self.parent.set_save_button(False, 'Alias must be unique')
+                    self.parent.set_ok_button(False, 'Alias must be unique')
                     return (QValidator.Intermediate, text, pos)
                 if tlower in self.parent.mfix_keywords:
-                    self.parent.set_save_button(False, '%s is an MFIX keyword'%text)
+                    self.parent.set_ok_button(False, '%s is an MFIX keyword'%text)
                     return (QValidator.Intermediate, text, pos)
-                self.parent.set_save_button(True)
-                return (QValidator.Acceptable, text, pos)
+                self.parent.set_ok_button(True)
+                return (QValidator.Okable, text, pos)
 
         lineedit = ui.lineedit_alias
         lineedit.setValidator(AliasValidator(parent=self))
@@ -567,7 +567,7 @@ class SpeciesPopup(QtWidgets.QDialog):
         for i in (0, 1):
             resize_column(tw, i, hv.Stretch)
 
-        self.set_save_button(False) # nothing to Save
+        self.set_ok_button(False) # nothing to accept
         self.clear_species_panel()
 
 
