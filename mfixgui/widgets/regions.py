@@ -70,10 +70,6 @@ class RegionsWidget(QtWidgets.QWidget):
             ext.dtype = float
             ext.help_text = 'Physical coordinates describing the bounds of the region.'
 
-        self.combobox_regions_type.addItems([
-            'point', 'XY-plane', 'XZ-plane', 'YZ-plane', 'box', 'STL', ])
-
-        self.combobox_regions_type.help_text = 'The type of region.'
         self.lineedit_regions_name.help_text = 'Name of the region. Used througout the gui to reference the region'
         self.combobox_stl_shape.help_text = 'Shape to be used to select facets.'
         self.checkbox_slice_facets.help_text = 'Slice facets if the facet is on the selection boundary.'
@@ -104,9 +100,9 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.new_selection.connect(self.update_region_parameters)
         tablewidget.clicked.connect(self.cell_clicked)
         tablewidget.default_value = OrderedDict()
-        tablewidget.value_changed.connect(self.table_value_changed)
         self.inhibit_toggle = True
 
+        self.groupbox_region_parameters.setEnabled(False)
         for widget in widget_iter(self.groupbox_region_parameters):
             if hasattr(widget, 'value_updated'):
                 widget.value_updated.connect(self.region_value_changed)
@@ -121,9 +117,6 @@ class RegionsWidget(QtWidgets.QWidget):
                     widget.dtype = float
                 elif 'name' in name:
                     widget.key = 'name'
-                    widget.dtype = str
-                elif 'type' in name:
-                    widget.key = 'type'
                     widget.dtype = str
                 elif 'stl_shape' in name:
                     widget.key = 'stl_shape'
@@ -140,16 +133,13 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
-
     def reset_regions(self):
         self.tablewidget_regions.value.clear()
         self.parameter_key_map = {}
 
-
     def get_visibility_image(self, visible=True):
         return get_pixmap('visibility.png' if visible else 'visibilityofftransparent.png',
                           16, 16)
-
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -166,7 +156,6 @@ class RegionsWidget(QtWidgets.QWidget):
             data[name]['visible'] = self.get_visibility_image(vis)
 
             self.tablewidget_regions.set_value(data)
-
 
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
@@ -197,7 +186,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
-
 
     def delete_region(self):
         'remove the currently selected region'
@@ -231,7 +219,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
 
-
     def copy_region(self):
         'copy the currently selected region'
         rows = self.tablewidget_regions.current_rows()
@@ -256,7 +243,6 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
-
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -284,16 +270,28 @@ class RegionsWidget(QtWidgets.QWidget):
                 *data['color'].color_int))
 
         self.lineedit_regions_name.updateValue(None, name)
-        self.combobox_regions_type.updateValue(None, data['type'])
 
-        # Don't change type of in-use region
-        #self.combobox_regions_type.setEnabled(not self.check_region_in_use(name))
-        # TODO (Should we just disable deletion and renaming too, rather than
-        #  intercept and warn?)
+        # Disable widgets for regions that are in use
+        used_by = 'Not used.'
+        in_use = self.check_region_in_use(name)
+        if in_use:
+            # TODO: tell where it is used
+            used_by = 'In use'
+            self.enable_disable_widgets(name)
+        else:
+            self.enable_disable_widgets(name, enable_all=True)
+        self.toolbutton_region_delete.setEnabled(not in_use)
+        self.lineedit_regions_name.setEnabled(not in_use)
+        self.label_used_by.setText(used_by)
 
+        # type
+        self.label_region_type.setText(data.get('type', 'box'))
+
+        # from
         for widget, value in zip(self.extent_lineedits[::2], data['from']):
             widget.updateValue(None, value)
 
+        # to
         for widget, value in zip(self.extent_lineedits[1::2], data['to']):
             widget.updateValue(None, value)
 
@@ -306,7 +304,6 @@ class RegionsWidget(QtWidgets.QWidget):
                                   self.lineedit_filter_z],
                                  data['filter']):
             widget.updateValue(None, value)
-
 
     def region_value_changed(self, widget, value, args, name=None,
                              update_param=True):
@@ -321,24 +318,17 @@ class RegionsWidget(QtWidgets.QWidget):
         key = list(value.keys())[0]
         row_data = data[name]
 
-        if self.check_region_in_use(name):
-            if key == 'type':
-                # Should we just disable the widgets for in-use regions?
-                self.parent.message(text="Region %s is in use, cannot change type" % name)
-                widget.setCurrentText(row_data.get('type'))
-                return
-
-            elif key == 'name':
-                new_name = value.get('name')
-                if new_name:
-                    self.parent.change_region_name(name, new_name)
-                else:
-                    self.parent.error('invalid value %s' % value)
-                    return
-
         self.parent.set_unsaved_flag()
 
-        if 'to' in key or 'from' in key:
+        if key == 'name':
+            new_name = value.get('name')
+            if new_name:
+                self.parent.change_region_name(name, new_name)
+            else:
+                self.parent.error('invalid value %s' % value)
+                return
+
+        elif 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
             val = list(value.values())[0]
@@ -353,19 +343,28 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.update_parameter_map(value[key], name, key)
 
             # update data dict
-            data[name][item[0]][index] = val
+            row_data[item[0]][index] = val
+
+            in_use = self.check_region_in_use(name)
+            # Infer shape from extents
+            if not in_use:
+                old_shape = row_data.get('type', 'box')
+                shape = row_data['type'] = self.get_region_type([row_data['from'],row_data['to']])
+                self.label_region_type.setText(shape)
+                if old_shape != shape:
+                    self.vtkwidget.change_region_type(name, row_data)
 
             # check for and update point and plane extents
             shape = data[name]['type']
-            if shape in ('plane', 'point') and item[1] not in shape.lower():
+            if in_use and any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
                 self.update_parameter_map(val, name, 'to_'+str(item[1]))
-                data[name]['to'][index] = val
+                row_data['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
 
             # propagate values
             for update in (self.vtkwidget.update_region,
                            self.parent.update_region):
-                update(name, data[name])
+                update(name, row_data)
 
         elif 'name' in key and name != list(value.values())[0]:
             new_name = get_unique_string(list(value.values())[0], list(data.keys()))
@@ -376,7 +375,7 @@ class RegionsWidget(QtWidgets.QWidget):
             # TODO FIXME fit table to contents
 
             # update parameter map
-            self.update_parameter_name(name, new_name, data[new_name])
+            self.update_parameter_name(name, new_name, row_data)
 
         elif 'type' in key:
             shape = list(value.values())[0]
@@ -390,36 +389,36 @@ class RegionsWidget(QtWidgets.QWidget):
                 index = [d not in shape for d in 'xyz'].index(True)
                 f_value = data[name]['from'][index]
                 self.update_parameter_map(f_value, name, 'to_'+'xyz'[index])
-                data[name]['to'][index] = f_value
+                row_data['to'][index] = f_value
                 self.extent_lineedits[index*2+1].updateValue(None, f_value)
             # check for point, update extents
             elif shape == 'point':
                 for index in (0,1,2):
-                    f_value = data[name]['from'][index]
-                    data[name]['to'][index] = f_value
+                    f_value = row_data['from'][index]
+                    row_data['to'][index] = f_value
                     self.update_parameter_map(f_value, name, 'to_'+'xyz'[index])
                     self.extent_lineedits[index*2+1].updateValue(None, f_value)
 
         elif 'stl_shape' in key:
-            data[name]['stl_shape'] = list(value.values())[0]
-            self.vtkwidget.update_region(name, data[name])
+            row_data['stl_shape'] = list(value.values())[0]
+            self.vtkwidget.update_region(name, row_data)
 
         elif 'slice' in key:
-            data[name]['slice'] = list(value.values())[0]
-            self.vtkwidget.update_region(name, data[name])
+            row_data['slice'] = list(value.values())[0]
+            self.vtkwidget.update_region(name, row_data)
 
         elif 'filter' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
-            data[name][item[0]][index] = list(value.values())[0]
-            self.vtkwidget.update_region(name, data[name])
+            row_data[item[0]][index] = list(value.values())[0]
+            self.vtkwidget.update_region(name, row_data)
 
             if update_param:
                 self.update_parameter_map(value[key], name, key)
 
         elif 'deviation_angle' in key:
-            data[name]['deviation_angle'] = list(value.values())[0]
-            self.vtkwidget.update_region(name, data[name])
+            row_data['deviation_angle'] = list(value.values())[0]
+            self.vtkwidget.update_region(name, row_data)
 
             if update_param:
                 self.update_parameter_map(value[key], name, key)
@@ -429,35 +428,22 @@ class RegionsWidget(QtWidgets.QWidget):
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
 
-
-    def table_value_changed(self, name, key, value):
-        # When is this called?
+    def enable_disable_widgets(self, name, enable_all=False):
         data = self.tablewidget_regions.value
-        if key == 'type':
-            self.vtkwidget.change_region_type(name, data[name])
-        elif key == 'color':
-            self.vtkwidget.change_region_color(name, data[name]['color'])
-        self.parent.set_unsaved_flag()
-
-
-    def enable_disable_widgets(self, name):
-        data = self.tablewidget_regions.value
-        # enable stl widgets
-        self.groupbox_stl.setEnabled(data[name]['type'] == 'STL')
 
         enable_list = [True]*6
-        if data[name]['type'] == 'point':
-            enable_list[1::2] = [False]*3
-        elif data[name]['type'] == 'XY-plane':
-            enable_list[5] = False
-        elif data[name]['type'] == 'XZ-plane':
-            enable_list[3] = False
-        elif data[name]['type'] == 'YZ-plane':
-            enable_list[1] = False
+        if not enable_all:
+            if data[name]['type'] == 'point':
+                enable_list[1::2] = [False]*3
+            elif data[name]['type'] == 'XY-plane':
+                enable_list[5] = False
+            elif data[name]['type'] == 'XZ-plane':
+                enable_list[3] = False
+            elif data[name]['type'] == 'YZ-plane':
+                enable_list[1] = False
 
         for widget, enable in zip(self.extent_lineedits, enable_list):
             widget.setEnabled(enable)
-
 
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
@@ -476,10 +462,8 @@ class RegionsWidget(QtWidgets.QWidget):
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
-
     def check_region_in_use(self, name):
         return self.parent.check_region_in_use(name)
-
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
@@ -489,7 +473,6 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in data['order']:
             data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
         return ExtendedJSON.dumps(data)
-
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
@@ -523,7 +506,6 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
-
 
     def extract_regions(self, proj, proj_dir=None):
         """ extract regions from IC, BC, PS, IS, VTK"""
@@ -580,8 +562,6 @@ class RegionsWidget(QtWidgets.QWidget):
                             extents = self.vtkwidget.get_stl_extents(stl_files[stl_nums.index(cond.ind)])
                             # reformat extents
                             extents = [extents[::2], extents[1::2]]
-
-
 
                 # if extents are not already used by a region, add it
                 elif not self.check_extents_in_regions(extents) and extents_keys:
