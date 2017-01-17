@@ -316,11 +316,11 @@ class VtkWidget(BaseVtkWidget):
         self.ui.mesh.pushbutton_remove_mesh.clicked.connect(self.remove_mesh)
 
 
-    def __toggle_visible_menu(self, enable):
-        if enable:
-            self.visible_menu.popup()
-        else:
+    def __toggle_visible_menu(self):
+        if self.visible_menu.isVisible():
             self.visible_menu.close()
+        else:
+            self.visible_menu.popup()
 
 
     def __add_tool_buttons(self):
@@ -328,11 +328,11 @@ class VtkWidget(BaseVtkWidget):
         self.init_base_toolbar()
 
         self.toolbutton_visible = QtWidgets.QToolButton(self)
-        self.toolbutton_visible.setCheckable(True)
+        ##self.toolbutton_visible.setCheckable(True)
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
-        self.visible_menu = CustomPopUp(parent=self, widget=self.toolbutton_visible)
-        self.toolbutton_visible.clicked.connect(self.__toggle_visible_menu)
+        self.visible_menu = CustomPopUp(parent=self, button=self.toolbutton_visible)
+        self.toolbutton_visible.pressed.connect(self.__toggle_visible_menu)
 
         # --- visual representation menu ---
         layout = self.visible_menu.layout

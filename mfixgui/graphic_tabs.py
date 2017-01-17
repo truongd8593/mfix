@@ -373,11 +373,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # more buttons
         self.toolbutton_visible = QtWidgets.QToolButton()
-        self.toolbutton_visible.setCheckable(True)
+        ##self.toolbutton_visible.setCheckable(True)
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
         self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
         self.visible_menu.finished.connect(lambda ignore: self.toolbutton_visible.setDown(False))
-        self.toolbutton_visible.clicked.connect(self.show_visible_menu)
+        self.toolbutton_visible.pressed.connect(self.toggle_visible_menu)
 
         # --- visual representation menu ---
         layout = self.visible_menu.layout
@@ -514,6 +514,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # clean up timer
         self.play_timer.stop()
+
+
+    def toggle_visible_menu(self):
+        if self.visible_menu.isVisible():
+            self.visible_menu.hide()
+        else:
+            self.visible_menu.popup()
+
+
 
     def show_visible_menu(self):
         # update comboboxes based on avaliable arrays
