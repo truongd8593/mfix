@@ -303,14 +303,17 @@ class BCS(object):
         if not selections:
             return
         bc_type = BC_TYPES[rp.combobox.currentIndex()]
+
+        # Check if region is STL.
         if self.bcs_region_dict is None:
             self.bcs_region_dict = self.ui.regions.get_region_dict()
-        shape = self.bcs_region_dict.get(selections[0]).get('type', '')
+        # Note, there may be no entry in region_dict (eg cyclic boundary)
+        shape = self.bcs_region_dict.get(selections[0], {}).get('type', '')
         if shape == 'STL':
             bc_type = 'CG_' + bc_type
         if bc_type == 'CG_PI': # Shouldn't happen!
-                self.error("Invalid bc_type %s" % bc_type)
-                return
+            self.error("Invalid bc_type %s" % bc_type)
+            return
 
         self.bcs_add_regions_1(selections, bc_type=bc_type, indices=None, autoselect=True)
         self.bcs_setup_current_tab() # Update the widgets
@@ -504,7 +507,6 @@ class BCS(object):
                 ui.pushbutton_scalar.setToolTip("No scalar equations defined")
             else:
                 ui.pushbutton_scalar.setToolTip(None)
-
 
             for i in range(1, ui.tab_layout.columnCount()-2): # Skip 'fluid', 'scalar' and 'cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
