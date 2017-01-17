@@ -1227,15 +1227,20 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
 class CustomPopUp(QtWidgets.QWidget):
     finished = QtCore.Signal(bool)
     visibilityChanged = QtCore.Signal(bool)
-    def __init__(self, parent=None, widget=None):
-        QtWidgets.QWidget.__init__(self, parent=parent)
-        self.widget = widget
-        flags = Qt.Popup #Dialog
-        #flags |= Qt.FramelessWindowHint
 
+    def __init__(self, parent=None, button=None):
+
+
+        QtWidgets.QWidget.__init__(self, parent=parent)
+
+        self.setFocusPolicy(Qt.ClickFocus)
+        self.button = button
+        flags = Qt.Dialog
+        flags |= Qt.FramelessWindowHint
         #flags |= Qt.MSWindowsFixedSizeDialogHint
         #flags |= Qt.X11BypassWindowManagerHint
         self.setWindowFlags(flags)
+
         # add a layout
         self.layout = QtWidgets.QGridLayout(self)
         self.layout.setContentsMargins(5, 5, 5, 5)
@@ -1245,10 +1250,10 @@ class CustomPopUp(QtWidgets.QWidget):
 
     def popup(self):
         """popup and animate"""
-        self.widget.setChecked(True)
-        rect = self.widget.rect()
+        self.button.setDown(True)
+        rect = self.button.rect()
         bottom_left = rect.bottomLeft()
-        g = self.widget.mapToGlobal(bottom_left)
+        g = self.button.mapToGlobal(bottom_left)
         x, y = g.x(), g.y()
         size = self.sizeHint()
         width = rect.width()
@@ -1271,11 +1276,11 @@ class CustomPopUp(QtWidgets.QWidget):
 
     def hideEvent(self, event):
         self.visibilityChanged.emit(False)
-        self.widget.setChecked(False)
+        self.button.setChecked(False)
 
     def closeEvent(self, event):
         self.finished.emit(True)
-        self.widget.setChecked(False)
+        self.button.setDown(False)
 
 #    def focusOutEvent(self, event):
 #        print('focus out')
