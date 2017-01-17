@@ -467,6 +467,12 @@ QPushButton:checked {
           </property>
           <item row="0" column="0">
            <widget class="QTableWidget" name="tablewidget_discretization">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::NoSelection</enum>
             </property>
