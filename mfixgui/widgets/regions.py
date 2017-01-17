@@ -357,7 +357,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
             # check for and update point and plane extents
             shape = data[name]['type']
-            if shape in ('plane', 'point') and item[1] not in shape.lower():
+            if any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
                 self.update_parameter_map(val, name, 'to_'+str(item[1]))
                 data[name]['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
