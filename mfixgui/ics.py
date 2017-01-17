@@ -578,6 +578,8 @@ class ICS(object):
         # if self.ics_current_tab == 2 and nscalar == 0:
         #
         self.P = self.ics_current_solid
+        self.ics_saved_solids_names = solids_names
+
         self.ics_setup_current_tab()
 
         # make sure underline is in the right place, as # of solids may
@@ -593,7 +595,6 @@ class ICS(object):
         btn_layout.addItem(btn_layout.takeAt(
             btn_layout.indexOf(line)), 1, line_to)
 
-        self.ics_saved_solids_names = solids_names
 
     def ics_setup_current_tab(self):
         if self.ics_current_tab == FLUID_TAB:
