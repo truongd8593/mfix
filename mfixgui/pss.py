@@ -427,7 +427,6 @@ class PSS(object):
         ui.toolbutton_delete.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
 
-
         #Tabs group point source parameters for phases. Tabs are unavailable if no input
         #is required from the user.
         #    Fluid tab - Unavailable if the fluid phase was disabled.
@@ -441,46 +440,53 @@ class PSS(object):
         font.setBold(self.pss_current_tab == 0)
         b.setFont(font)
 
-        #    Each solid phase will have its own tab. The tab name should be the name of the solid
-        n_cols = ui.tab_layout.columnCount()
-        # Clear out the old ones
-        for i in range(n_cols-1, 0, -1):
-            item = ui.tab_layout.itemAtPosition(0, i)
-            if not item:
-                continue
-            widget = item.widget()
-            if not widget:
-                continue
-            if widget == ui.pushbutton_fluid:
-                continue
-            ui.tab_layout.removeWidget(widget)
-            widget.setParent(None)
-            widget.deleteLater()
-        # And make new ones
-        change_tab = False
+        # Each solid phase will have its own tab. The tab name should be the name of the solid
+        solids_names = list(self.solids.keys())
+        if self.pss_saved_solids_names != solids_names:
+            # Clear out the old ones
+            n_cols = ui.tab_layout.columnCount()
+            for i in range(n_cols-1, 0, -1):
+                item = ui.tab_layout.itemAtPosition(0, i)
+                if not item:
+                    continue
+                widget = item.widget()
+                if not widget:
+                    continue
+                if widget == ui.pushbutton_fluid:
+                    continue
+                ui.tab_layout.removeWidget(widget)
+                widget.setParent(None)
+                widget.deleteLater()
+            # And make new ones
+            for (i, solid_name) in enumerate(self.solids.keys(),1):
+                model = self.project.get_value('solids_model', args=[i])
+                #At this time, only TFM solids can be defined with point sources.
+                #At some point in the future, this could be extended to PIC solids, but never DEM.
+                b = QPushButton(text=solid_name)
+                w = b.fontMetrics().boundingRect(solid_name).width() + 20
+                b.setMaximumWidth(w)
+                b.setFlat(True)
+                font = b.font()
+                font.setBold(self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid)
+                b.setFont(font)
+                ui.tab_layout.addWidget(b, 0, i)
+                b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
+
         for (i, solid_name) in enumerate(self.solids.keys(),1):
             model = self.project.get_value('solids_model', args=[i])
             #At this time, only TFM solids can be defined with point sources.
             #At some point in the future, this could be extended to PIC solids, but never DEM.
-            b = QPushButton(text=solid_name)
-            w = b.fontMetrics().boundingRect(solid_name).width() + 20
-            b.setMaximumWidth(w)
-            b.setFlat(True)
-            font = b.font()
-            font.setBold(self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid)
-            b.setFont(font)
-            ui.tab_layout.addWidget(b, 0, i)
+            b = ui.tab_layout.itemAtPosition(0, i).widget()
             if model == 'TFM':
-                b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
+                b.setEnabled(True)
                 b.setToolTip(None)
             else:
                 b.setEnabled(False)
                 b.setToolTip("Only TFM solids can be defined as point sources""")
-                if (self.pss_current_tab==SOLIDS_TAB and i==self.pss_current_solid):
-                    change_tab = True
 
         # Don't stay on disabled tab TODO
         # if self.pss_current_tab == 1 and ...
+        change_tab = False
         if change_tab:
             pass
 
