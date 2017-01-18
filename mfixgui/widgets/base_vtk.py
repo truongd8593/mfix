@@ -7,7 +7,7 @@ import traceback
 import logging
 LOG = logging.getLogger(__name__)
 
-from qtpy import QtCore, QtGui, QtWidgets, PYQT5
+from qtpy import QtCore, QtWidgets, PYQT5
 
 # VTK imports
 VTK_AVAILABLE = True

@@ -357,7 +357,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_chemistry()
         self.init_numerics()
         self.init_output()
-        self.init_graphic_tabs()
+        self.init_graphic_tabs(loadvtk)
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
