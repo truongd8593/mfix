@@ -1095,7 +1095,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def init_vtk_widget(self, load_vtk=True):
         #initialize the vtk widget
         disable_vtk = False
-        if not 'MFIX_NO_VTK' in os.environ and load_vtk: # Avoid importing vtkwidget if MFIX_NO_VTK set
+        if load_vtk and 'MFIX_NO_VTK' not in os.environ: # Avoid importing vtkwidget if MFIX_NO_VTK set
             from mfixgui.widgets.vtkwidget import VTK_AVAILABLE
             disable_vtk = not VTK_AVAILABLE
         else: # env var set
