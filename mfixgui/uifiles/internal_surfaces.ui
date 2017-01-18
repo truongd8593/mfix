@@ -312,6 +312,12 @@
              </item>
              <item>
               <widget class="QGroupBox" name="groupbox_solids_velocities">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="title">
                 <string>Velocities through surface</string>
                </property>

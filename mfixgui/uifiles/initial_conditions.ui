@@ -521,6 +521,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
                </item>
                <item>
                 <widget class="QGroupBox" name="groupbox_fluid_composition">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="title">
                   <string>Composition</string>
                  </property>
@@ -550,6 +556,12 @@ QPushButton:checked { font: bold; background-color: transparent; }
                       <width>16777215</width>
                       <height>35</height>
                      </size>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <weight>50</weight>
+                      <bold>false</bold>
+                     </font>
                     </property>
                     <property name="selectionMode">
                      <enum>QAbstractItemView::NoSelection</enum>

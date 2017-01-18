@@ -290,6 +290,12 @@
                <height>16777215</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="text">
               <string>Enable stiff chemistry solver</string>
              </property>
@@ -337,6 +343,12 @@
                <width>16777215</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
              </property>
              <property name="title">
               <string>Reactants</string>
@@ -443,6 +455,12 @@
                   <height>100</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::NoSelection</enum>
                 </property>
@@ -491,6 +509,12 @@
                <width>16777215</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
              </property>
              <property name="title">
               <string>Products</string>
@@ -591,6 +615,12 @@
                   <height>100</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::NoSelection</enum>
                 </property>
@@ -633,6 +663,12 @@
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
              </property>
              <property name="title">
               <string>Specify heat of reaction</string>
@@ -683,6 +719,12 @@
                <widget class="QLabel" name="label_dh">
                 <property name="enabled">
                  <bool>true</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Heat of reaction</string>
