@@ -2106,7 +2106,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
-        self.open_project(project_file)
+        self.open_project(project_file, run_name)
 
         # add some info
         self.project.mfix_gui_comments['author'] = creator
@@ -2198,7 +2198,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.settings.setValue('recent_projects', '|'.join(new_rec_prjs))
 
 
-    def open_project(self, project_path, interactive=True):
+    def open_project(self, project_path, runname=None, interactive=True):
         """Open MFiX Project"""
         # Too much going on in this method, maybe split some of this out
 
@@ -2254,10 +2254,43 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         default_runname = os.path.splitext(os.path.basename(project_file))[0]
-        runname = self.get_runname(default=default_runname)
+        if runname:
+            self.update_keyword('run_name', runname)
+        else:
+            runname = self.get_runname(default=default_runname)
+
+        runname_mfx = runname + '.mfx'
         runname_pid = self.get_pid_name(True)
 
         self.update_keyword('run_name', runname)
+
+        if interactive and not project_path.endswith(runname_mfx):
+            ok_to_write =  self.confirm_rename(project_file, runname_mfx)
+            if ok_to_write:
+                renamed_project_file = os.path.join(project_dir, runname_mfx)
+                if os.path.exists(renamed_project_file):
+                    ok_to_write = self.confirm_clobber(renamed_project_file)
+            if not ok_to_write:
+                self.print_internal("Rename canceled at user request")
+                return
+
+            project_file = renamed_project_file
+            try:
+                self.print_internal("Info: Saving %s" % project_file)
+                self.project.writeDatFile(project_file) #XX
+                #self.print_internal(save_msg, color='blue')
+                self.clear_unsaved_flag()
+            except Exception as e:
+                msg = 'Failed to save %s: %s: %s' % (os.path.basename(project_file),
+                                                     e.__class__.__name__, e)
+                self.print_internal("Error: %s" % msg, color='red')
+                self.message(title='Error',
+                             icon='error',
+                             text=msg,
+                             buttons=['ok'],
+                             default='ok')
+                traceback.print_exception(*sys.exc_info())
+                return
 
         self.do_open(project_file, runname_pid)
 
