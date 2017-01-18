@@ -2681,7 +2681,7 @@ def main():
         # autoload last project
         last_prj = project_file = gui.get_project_file()
 
-    if project_file and not args.noload:
+    if project_file and not args.noload and os.path.exists(project_file):
         gui.open_project(project_file, interactive=(not args.quit))
         # change mode and navigation if loaded last project
         if last_prj == project_file:
