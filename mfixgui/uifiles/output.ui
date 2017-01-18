@@ -604,7 +604,7 @@ QPushButton:checked {
             <number>0</number>
            </property>
            <item row="0" column="0">
-            <layout class="QGridLayout" name="gridlayout_celldata_common">
+            <layout class="QGridLayout" name="gridlayout_cell_common">
              <property name="leftMargin">
               <number>5</number>
              </property>
@@ -640,22 +640,12 @@ QPushButton:checked {
              <item row="1" column="1">
               <widget class="LineEdit" name="lineedit_keyword_vtk_dt_args_V"/>
              </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="label_vtk_dt_units">
-               <property name="text">
-                <string>s</string>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_vtk_nxs">
                <property name="text">
                 <string>Number of x-axis slices</string>
                </property>
               </widget>
-             </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="LineEdit" name="lineedit_keyword_vtk_nxs_args_V"/>
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_vtk_nys">
@@ -664,9 +654,6 @@ QPushButton:checked {
                </property>
               </widget>
              </item>
-             <item row="3" column="1" colspan="2">
-              <widget class="LineEdit" name="lineedit_keyword_vtk_nys_args_V"/>
-             </item>
              <item row="4" column="0">
               <widget class="QLabel" name="label_vtk_nzs">
                <property name="text">
@@ -674,8 +661,21 @@ QPushButton:checked {
                </property>
               </widget>
              </item>
-             <item row="4" column="1" colspan="2">
+             <item row="2" column="1" colspan="3">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nxs_args_V"/>
+             </item>
+             <item row="3" column="1" colspan="3">
+              <widget class="LineEdit" name="lineedit_keyword_vtk_nys_args_V"/>
+             </item>
+             <item row="4" column="1" colspan="3">
               <widget class="LineEdit" name="lineedit_keyword_vtk_nzs_args_V"/>
+             </item>
+             <item row="1" column="2" colspan="2">
+              <widget class="QLabel" name="label_vtk_dt_units">
+               <property name="text">
+                <string>s</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -863,7 +863,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                     <x>0</x>
                     <y>0</y>
                     <width>327</width>
-                    <height>395</height>
+                    <height>522</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_11">
@@ -883,14 +883,14 @@ QPushButton:checked { font: bold; background-color: transparent; }
                     <number>0</number>
                    </property>
                    <item row="0" column="0">
-                    <widget class="QStackedWidget" name="stackedwidget_cell_data">
+                    <widget class="QStackedWidget" name="stackedwidget_cell">
                      <property name="font">
                       <font>
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
                      </property>
-                     <widget class="QWidget" name="subpage_celldata_fluid">
+                     <widget class="QWidget" name="subpage_cell_fluid">
                       <layout class="QGridLayout" name="gridLayout_8">
                        <property name="leftMargin">
                         <number>5</number>
@@ -899,7 +899,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                         <number>0</number>
                        </property>
                        <property name="rightMargin">
-                        <number>0</number>
+                        <number>5</number>
                        </property>
                        <property name="bottomMargin">
                         <number>0</number>
@@ -908,7 +908,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                         <number>0</number>
                        </property>
                        <item row="0" column="0">
-                        <widget class="QGroupBox" name="groupbox_cell_data_fluid">
+                        <widget class="QGroupBox" name="groupbox_cell_fluid">
                          <property name="font">
                           <font>
                            <weight>50</weight>
@@ -940,49 +940,49 @@ QPushButton:checked { font: bold; background-color: transparent; }
                           <item row="0" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_ep_g_args_V">
                             <property name="text">
-                             <string>Gas volume fraction</string>
+                             <string>Volume fraction</string>
                             </property>
                            </widget>
                           </item>
                           <item row="1" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_p_g_args_V">
                             <property name="text">
-                             <string>Gas pressure</string>
+                             <string>Pressure</string>
                             </property>
                            </widget>
                           </item>
                           <item row="2" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_vel_g_args_V">
                             <property name="text">
-                             <string>Gas velocity vector</string>
+                             <string>Velocity vector</string>
                             </property>
                            </widget>
                           </item>
                           <item row="3" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_v_g_args_V">
                             <property name="text">
-                             <string>Gas velocity x-component</string>
+                             <string>Velocity x-component</string>
                             </property>
                            </widget>
                           </item>
                           <item row="4" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_u_g_args_V">
                             <property name="text">
-                             <string>Gas velocity y-component</string>
+                             <string>Velocity y-component</string>
                             </property>
                            </widget>
                           </item>
                           <item row="5" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_w_g_args_V">
                             <property name="text">
-                             <string>Gas velocity z-component</string>
+                             <string>Velocity z-component</string>
                             </property>
                            </widget>
                           </item>
                           <item row="6" column="0">
                            <widget class="CheckBox" name="checkbox_keyword_vtk_t_g_args_V">
                             <property name="text">
-                             <string>Gas temperature</string>
+                             <string>Temperature</string>
                             </property>
                            </widget>
                           </item>
@@ -1018,7 +1018,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="subpage_celldata_dummy_solids_L">
+                     <widget class="QWidget" name="subpage_cell_dummy_solids_L">
                       <layout class="QGridLayout" name="gridLayout_15">
                        <property name="leftMargin">
                         <number>0</number>
@@ -1044,25 +1044,111 @@ QPushButton:checked { font: bold; background-color: transparent; }
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="subpage_celldata_solids">
+                     <widget class="QWidget" name="subpage_cell_solids">
                       <layout class="QGridLayout" name="gridLayout_17">
                        <property name="leftMargin">
-                        <number>0</number>
+                        <number>5</number>
                        </property>
                        <property name="topMargin">
                         <number>0</number>
                        </property>
                        <property name="rightMargin">
-                        <number>0</number>
+                        <number>5</number>
                        </property>
                        <property name="bottomMargin">
                         <number>0</number>
                        </property>
                        <item row="0" column="0">
-                        <widget class="QLabel" name="label">
-                         <property name="text">
-                          <string>solid</string>
+                        <widget class="QGroupBox" name="groupbox_cell_solids">
+                         <property name="title">
+                          <string/>
                          </property>
+                         <layout class="QGridLayout" name="gridLayout_6">
+                          <property name="leftMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <item row="5" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_rop_s_args_V_P">
+                            <property name="text">
+                             <string>Bulk density</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_t_s_args_V_P">
+                            <property name="text">
+                             <string>Temperature</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_p_star_args_V">
+                            <property name="text">
+                             <string>Solids pressure (all phases)</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_vel_s_args_V_P">
+                            <property name="text">
+                             <string>Velocity vector</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="8" column="0">
+                           <spacer name="verticalSpacer_5">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_u_s_args_V_P">
+                            <property name="text">
+                             <string>Velocity x-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_v_s_args_V_P">
+                            <property name="text">
+                             <string>Velocity y-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_w_s_args_V_P">
+                            <property name="text">
+                             <string>Velocity z-component</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="7" column="0">
+                           <widget class="CheckBox" name="checkbox_keyword_vtk_theta_m_args_V_P">
+                            <property name="text">
+                             <string>Granular temperature</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
                        </item>
                       </layout>
@@ -1116,7 +1202,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="subpage_celldata_reactions">
+                     <widget class="QWidget" name="subpage_cell_reactions">
                       <layout class="QGridLayout" name="gridLayout_19">
                        <property name="leftMargin">
                         <number>0</number>
@@ -1139,7 +1225,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="subpage_celldata_other">
+                     <widget class="QWidget" name="subpage_cell_other">
                       <layout class="QGridLayout" name="gridLayout_20">
                        <property name="leftMargin">
                         <number>0</number>
@@ -1180,7 +1266,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
                   <number>1</number>
                  </property>
                  <item>
-                  <widget class="QLabel" name="label_cell_data">
+                  <widget class="QLabel" name="label_cell">
                    <property name="font">
                     <font>
                      <weight>75</weight>

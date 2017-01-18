@@ -45,26 +45,6 @@ VTK_DATA_TYPES = ['C', 'P']
 class Output(object):
     #Output Task Pane Window:
     #The output input is split into tabs.
-    # Output sub-pane navigation
-
-    def output_change_tab(self, tabnum, to_btn):
-        ui = self.ui.output
-        self.output_current_tab = tabnum
-        self.animate_stacked_widget(
-            ui.stackedwidget_output,
-            ui.stackedwidget_output.currentIndex(),
-            tabnum,
-            direction='horizontal',
-            line=ui.line_output,
-            to_btn=to_btn,
-            btn_layout=ui.gridlayout_tab_btns)
-        self.setup_output_tab(tabnum)
-        for btn in self.output_pushbuttons:
-            btn.setChecked(btn==to_btn)
-            font = btn.font()
-            font.setBold(btn==to_btn)
-            btn.setFont(font)
-
 
     def init_output(self):
         ui = self.ui.output
@@ -87,6 +67,26 @@ class Output(object):
         self.init_output_vtk_tab()
         self.init_output_spx_tab()
         self.init_output_netcdf_tab()
+
+
+    # Output sub-pane navigation
+    def output_change_tab(self, tabnum, to_btn):
+        ui = self.ui.output
+        self.output_current_tab = tabnum
+        self.animate_stacked_widget(
+            ui.stackedwidget_output,
+            ui.stackedwidget_output.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=ui.line_output,
+            to_btn=to_btn,
+            btn_layout=ui.gridlayout_tab_btns)
+        self.setup_output_tab(tabnum)
+        for btn in self.output_pushbuttons:
+            btn.setChecked(btn==to_btn)
+            font = btn.font()
+            font.setBold(btn==to_btn)
+            btn.setFont(font)
 
 
     def init_output_basic_tab(self):
@@ -155,11 +155,11 @@ class Output(object):
         ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
         # no per-subpage init, yet
         # Show cell data groupboxes without a title (title is separate
-        # label_cell_data, displayed outside tab set)
+        # label_cell, displayed outside tab set)
 
         # Show groupbox without title  (title is empty string)
         height = ui.checkbox_keyword_vtk_ep_g_args_V.sizeHint().height()
-        ui.subpage_celldata_fluid.setStyleSheet(
+        ui.subpage_cell.setStyleSheet(
             # Fix gap where title would be, with negative padding.
             # This is somewhat questionable (i.e. a total hack)
             'QGroupBox {margin-top: %spx; padding-top: %spx }' % (2-height, height)
@@ -186,7 +186,7 @@ class Output(object):
             font.setBold(i==index)
             widget.setFont(font)
 
-        current_index = ui.stackedwidget_cell_data.currentIndex()
+        current_index = ui.stackedwidget_cell.currentIndex()
         # If we're switching from solid m to solid n, we need some
         # special handling, because both tabs are really the same
         # widget.  We make a picture of the current tab, display that
@@ -202,11 +202,11 @@ class Output(object):
                 dummy_label = ui.label_dummy_solids_R
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
-            pixmap = QPixmap(ui.subpage_celldata_solids.size())
+            pixmap = QPixmap(ui.subpage_cell_solids.size())
             pixmap.fill() #fill bg with white
-            ui.subpage_celldata_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
+            ui.subpage_cell_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
             dummy_label.setPixmap(pixmap)
-            ui.stackedwidget_cell_data.setCurrentIndex(dummy_tab)
+            ui.stackedwidget_cell.setCurrentIndex(dummy_tab)
 
         self.output_current_subtab = subtab
         self.vtk_current_solid = self.P = solid if subtab==SOLIDS_TAB else None
@@ -214,8 +214,8 @@ class Output(object):
 
         # change stackedwidget contents
         self.animate_stacked_widget(
-            ui.stackedwidget_cell_data,
-            ui.stackedwidget_cell_data.currentIndex(),
+            ui.stackedwidget_cell,
+            ui.stackedwidget_cell.currentIndex(),
             subtab,
             direction='horizontal',
             line = ui.line_subtab,
@@ -439,6 +439,7 @@ class Output(object):
         #self.fixup_output_table(tw)
         self.setup_output_vtk_tab()
         #self.update_nav_tree()
+        pass
 
 
     def vtk_regions_to_str(self):
@@ -698,7 +699,7 @@ class Output(object):
         #    Not available when SPx output is enabled
         #    No keyword association.
         #    Enables NetCDF tab
-
+        pass
 
 
     def setup_output_spx_tab(self):
@@ -923,7 +924,6 @@ class Output(object):
             ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
 
 
-
     def setup_output_vtk_cell(self):
         #Cell data sub-pane
 
@@ -936,7 +936,7 @@ class Output(object):
         if self.output_saved_solids_names != solids_names:
             # Clear out the old ones
             n_cols = ui.bottom_tab_layout.columnCount()
-            print("N_COLS", n_cols)
+
             for i in range(n_cols-1, 0, -1):
                 item = ui.bottom_tab_layout.itemAtPosition(0, i)
                 if not item:
@@ -946,14 +946,12 @@ class Output(object):
                     continue
                 if widget in self.output_pushbuttons_bottom:
                     continue
-                print("GOODBYE", widget.text())
                 ui.bottom_tab_layout.removeWidget(widget)
                 widget.setParent(None)
                 widget.deleteLater()
             # And make new ones
             for (i, solid_name) in enumerate(solids_names, 1):
                 b = QPushButton(text=solid_name)
-                print("ADD BUTTON", solid_name, i)
                 w = b.fontMetrics().boundingRect(solid_name).width() + 20
                 b.setMaximumWidth(w)
                 b.setFlat(True)
@@ -962,6 +960,7 @@ class Output(object):
                 b.setFont(font)
                 b.pressed.connect(lambda i=i: self.output_change_subtab(SOLIDS_TAB, i))
                 ui.bottom_tab_layout.addWidget(b, 0, i)
+
 
         # Move the 'Scalar' and other buttons to the right of all solids, if needed
         if len(self.solids) != len(self.output_saved_solids_names):
@@ -987,7 +986,6 @@ class Output(object):
         enabled = (nrr > 0)
         b.setEnabled(enabled)
 
-
         b = ui.pushbutton_other
         font = b.font()
         font.setBold(self.output_current_subtab==SCALAR_TAB)
@@ -996,6 +994,17 @@ class Output(object):
         b.setEnabled(enabled)
 
         self.output_saved_solids_names = solids_names
+
+        for (i, solid_name) in enumerate(self.solids.keys(),1):
+            model = self.project.get_value('solids_model', args=[i])
+            # All vtk solids keywords require TFM solids, so disable tab completely if not applicabl
+            b = ui.bottom_tab_layout.itemAtPosition(0, i).widget()
+            if model == 'TFM':
+                b.setEnabled(True)
+                b.setToolTip(None)
+            else:
+                b.setEnabled(False)
+                b.setToolTip("VTK output only supported for TFM solids""")
 
         # make sure underline is in the right place, as # of solids may
         # have changed (lifted from animate_stacked_widget, which we
@@ -1022,13 +1031,22 @@ class Output(object):
 
 
     def setup_output_current_subtab(self):
-        if self.output_current_subtab == FLUID_TAB:
-            self.setup_output_vtk_cell_fluid_tab()
-        else:
-            print("OUTPUT_CURRENT_SUBTAB", self.output_current_subtab)
+        self.setup_output_subtab(self.output_current_subtab,
+                                 self.vtk_current_solid)
 
 
-    def setup_output_vtk_cell_fluid_tab(self):
+    def setup_output_subtab(self, subtab, solid):
+        if subtab==FLUID_TAB:
+            self.setup_output_fluid_subtab()
+        elif subtab==SOLIDS_TAB:
+            self.setup_output_solids_subtab(solid)
+        elif subtab==SCALAR_TAB:
+            self.setup_output_scalar_subtab()
+        elif subtab==REACTIONS_TAB:
+            self.setup_output_reactions_subtab()
+
+
+    def setup_output_fluid_subtab(self):
         # Fluid Phase (tab?)
         ui = self.ui.output
         indices = self.vtk_current_indices
@@ -1045,11 +1063,6 @@ class Output(object):
         #Enable writing gas pressure
         # Requires fluid solver (RO_G0 /= 0.0)
         # Sets keyword VTK_P_G(#)
-        # DEFAULT value .FALSE.
-
-        #Enable writing solids pressure  # MOVE TO SOLIDS TAB
-        # Requires TFM solids
-        # Sets keyword VTK_P_STAR
         # DEFAULT value .FALSE.
 
         #Enable writing gas velocity vector
@@ -1121,7 +1134,7 @@ class Output(object):
                     self.unset_keyword(key, args=[V])
 
         # Dynamically created GUI items - need to remove and re-add spacer
-        layout = ui.groupbox_cell_data_fluid.layout()
+        layout = ui.groupbox_cell_fluid.layout()
         spacer = None
         spacer_moved = False
         # find spacer, can't do this by name for some reason
@@ -1175,69 +1188,118 @@ class Output(object):
             layout.addItem(spacer)
 
 
-    def setup_output_vtk_cell_reactions_tab():
+    def setup_output_reactions_subtab(self):
         #Enable writing reaction rates
         # Requires nRR > 0
         # Sets keyword VTK_RRATE(#) ## requires 'reaction' index
         # DEFAULT value .FALSE.
         ui = self.ui.output
+        nrr = self.project.get_value('nrr', default=0)
 
 
-    def setup_output_vtk_cell_solids_tab(self):
+    def setup_output_solids_subtab(self, P):
         #Solids Phase (tab?)
         ui = self.ui.output
+        self.vtk_current_solid = self.P = P
+        if P is None: # Nothing to do (?)
+            return
+        if not self.vtk_current_indices: # No region selected
+            # Clear inputs?
+            return
+        indices = self.vtk_current_indices
+        V0 = indices[0]
+
+        #Enable writing solids pressure  (moved from fluid to solids tab)
+        # Requires TFM solids
+        # Sets keyword VTK_P_STAR
+        # DEFAULT value .FALSE.
+        key = 'vtk_p_star'
+        default = False
+        cb = ui.checkbox_keyword_vtk_p_star_args_V
+        val = self.project.get_value(key, default, args=[V0])
+        cb.setChecked(bool(val))
+
         #Enable writing solids velocity vector
-        # Requires TMF solids
+        # Requires TFM solids
         # Sets keyword VTK_VEL_S(#,#)
         # DEFAULT value .FALSE.
 
         #Enable writing solids velocity x-component
-        # Requires TMF solids
+        # Requires TFM solids
         # Sets keyword VTK_U_S(#,#)
         # DEFAULT value .FALSE.
 
         #Enable writing solids velocity y-component
-        # Requires TMF solids
+        # Requires TFM solids
         # Sets keyword VTK_V_S(#,#)
         # DEFAULT value .FALSE.
 
         #Enable writing solids velocity z-component
-        # Requires TMF solids
+        # Requires TFM solids
         # Sets keyword VTK_W_S(#,#)
         # DEFAULT value .FALSE.
 
         #Enable writing solids bulk density
-        # Requires TMF solids
+        # Requires TFM solids
         # Sets keyword VTK_ROP_S(#,#)
         # DEFAULT value .FALSE.
 
+
+        for key in ('vtk_vel_s', 'vtk_u_s', 'vtk_v_s', 'vtk_w_s',
+                    'vtk_rop_s', 'vtk_t_s', 'vtk_theta_m'):
+            cb = getattr(ui, 'checkbox_keyword_%s_args_V_P'%key)
+            val = self.project.get_value(key, default=False, args=[V0,P])
+            cb.setChecked(bool(val))
+
         #Enable writing solids temperature
         # Requires TFM solids and ENERGY_EQ = .TRUE.
-        # Sets keyword VTK_S_G(#,#)
+        # Sets keyword VTK_S_G(#,#)  # VTK_T_S
         # DEFAULT value .FALSE.
-
-        #Enable writing solids phase M, species N
-        # Requires TFM solids and SPECIES_EQ(#) = .TRUE.
-        # Sets keyword VTK_X_S(#,M,N)
-        # DEFAULT value .FALSE.
+        key = 'vtk_t_s'
+        cb =   ui.checkbox_keyword_vtk_t_s_args_V_P
+        energy_eq = self.project.get_value('energy_eq', default=True)
+        enabled = bool(energy_eq)
+        cb.setEnabled(enabled)
+        if not enabled:
+            cb.setChecked(False)
+            for V in self.vtk_current_indices:
+                self.unset_keyword(key, args=[V,P])
 
         #Enable writing solids phase granular temperature
         # Requires TFM solids and KT_TYPE /= “ALGEBRAIC”
         # Sets keyword VTK_THETA_M(#,#)
         # DEFAULT value .FALSE.
+        key = 'vtk_theta_m'
+        cb = ui.checkbox_keyword_vtk_theta_m_args_V_P
+        kt_type = self.project.get_value('kt_type', default='ALGEBRAIC')
+        enabled = (kt_type != 'ALGEBRAIC')
+        cb.setEnabled(enabled)
+        if not enabled:
+            cb.setChecked(False)
+            for V in self.vtk_current_indices:
+                self.unset_keyword(key, args=[V,P])
 
 
-    def setup_output_vtk_cell_scalar_tab(self):
+
+
+        #Enable writing solids phase M, species N
+        # Requires TFM solids and SPECIES_EQ(#) = .TRUE.
+        # Sets keyword VTK_X_S(#,M,N)
+        # DEFAULT value .FALSE.
+        pass
+
+
+    def setup_output_scalar_subtab(self):
         #Scalar (tab?)
         ui = self.ui.output
         #Enable writing user defined scalar
         # Requires NSCALAR > 0
         # Sets keyword VTK_SCALAR(#, #) # requires Scalar index
         # DEFAULT value .FALSE.
+        nscalar = self.project.get_value('nscalar', default=0)
 
 
-
-    def setup_output_vtk_cell_scalar_tab(self):
+    def setup_output_other_subtab(self):
         #Other (tab?)
         ui - self.ui.output
 
@@ -1262,7 +1324,7 @@ class Output(object):
         #Enable writing cell index
         # Sets keyword VTK_IJK(#)
         # DEFAULT value .FALSE.
-
+        pass
 
 
     def setup_output_vtk_particle(self):
@@ -1492,4 +1554,4 @@ class Output(object):
         ui.stackedwidget_output.setCurrentIndex(BASIC_TAB)
         ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
         self.output_current_subtab = FLUID_TAB
-        ui.stackedwidget_cell_data.setCurrentIndex(FLUID_TAB)
+        ui.stackedwidget_cell.setCurrentIndex(FLUID_TAB)
