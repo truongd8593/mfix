@@ -7,7 +7,6 @@ AC_CONFIG_AUX_DIR([../build-aux])
 
 m4_include([ax_check_compile_flag.m4])
 m4_include([ax_python.m4])
-m4_include([ax_python_devel.m4])
 m4_include([ax_prog_fc_mpi.m4])
 m4_include([netcdf.m4])
 m4_include([netcdff.m4])
@@ -70,7 +69,6 @@ AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
 if test "$python" = "true"; then
 
 AX_PYTHON()
-AX_PYTHON_DEVEL()
 
 AC_CHECK_PROGS(PYUIC,pyuic pyuic4 pyuic5,pyuic)
 
