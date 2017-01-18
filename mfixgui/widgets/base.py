@@ -26,7 +26,6 @@ try:
 except ImportError:
     from qtpy.QtCore import QItemSelectionModel
 
-
 from mfixgui.tools.general import get_selected_row
 
 import logging
@@ -1223,18 +1222,18 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
+
 # --- custom popup ---
 class CustomPopUp(QtWidgets.QWidget):
     finished = QtCore.Signal(bool)
     visibilityChanged = QtCore.Signal(bool)
 
     def __init__(self, parent=None, button=None):
-
-
         QtWidgets.QWidget.__init__(self, parent=parent)
 
         self.setFocusPolicy(Qt.ClickFocus)
         self.button = button
+
         flags = Qt.Dialog
         flags |= Qt.FramelessWindowHint
         #flags |= Qt.MSWindowsFixedSizeDialogHint
@@ -1247,6 +1246,8 @@ class CustomPopUp(QtWidgets.QWidget):
         # this is really important when animating geometry
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
 
+        # add an event filter to find ActivationChange
+        self.installEventFilter(self)
 
     def popup(self):
         """popup and animate"""
@@ -1276,15 +1277,17 @@ class CustomPopUp(QtWidgets.QWidget):
 
     def hideEvent(self, event):
         self.visibilityChanged.emit(False)
-        self.button.setChecked(False)
+        self.button.setDown(False)
 
     def closeEvent(self, event):
         self.finished.emit(True)
         self.button.setDown(False)
 
-#    def focusOutEvent(self, event):
-#        print('focus out')
-#        self.close()
+    def eventFilter(self, obj, event):
+        # look for WindowDeactivate event
+        if event.type() == QtCore.QEvent.WindowDeactivate:
+            self.close()
+        return False
 
 BASE_WIDGETS = {
     'lineedit': LineEdit,
