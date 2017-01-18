@@ -28,6 +28,7 @@ class ISS(object):
         self.iss_current_indices = [] # List of IS indices
         self.iss_current_regions = [] # And the names of the regions which define them
         self.iss_region_dict = None
+        self.iss_saved_solids_names = []
 
         #The top of the task pane is where users define/select IS regions
         #Icons to add/remove/duplicate internal surfaces are given at the top
@@ -436,37 +437,40 @@ class ISS(object):
         ui.toolbutton_delete.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
 
+        solids_names = list(self.solids.keys())
         # There should be a line for each solids phase. Use the user provided solids name.
         if not self.solids:
             ui.groupbox_solids_velocities.hide()
         else:
-            # Clear out the old ones
-            for w in widget_iter(ui.groupbox_solids_velocities):
-                if not isinstance(w, (LineEdit, QLabel)):
-                    continue
-                self.project.unregister_widget(w)
-                w.setParent(None)
-                w.deleteLater()
+            if self.iss_saved_solids_names != solids_names:
+                # Clear out the old ones
+                for w in widget_iter(ui.groupbox_solids_velocities):
+                    if not isinstance(w, (LineEdit, QLabel)):
+                        continue
+                    self.project.unregister_widget(w)
+                    w.setParent(None)
+                    w.deleteLater()
 
-            layout = ui.groupbox_solids_velocities.layout()
-            row = 0
-            key = 'is_vel_s'
-            for phase, solid_name in enumerate(self.solids.keys(), 1):
-                label = QLabel(solid_name)
-                self.add_tooltip(label, key)
-                layout.addWidget(label, row, 0)
-                le = LineEdit()
-                le.key = key
-                le.args = ['IS', phase]
-                le.dtype = float
-                self.project.register_widget(le, key, le.args)
-                self.add_tooltip(le, key)
-                layout.addWidget(le, row, 1)
-                units_label = QLabel('m/s')
-                layout.addWidget(units_label , row, 2)
-                row += 1
+                layout = ui.groupbox_solids_velocities.layout()
+                row = 0
+                key = 'is_vel_s'
+                for phase, solid_name in enumerate(self.solids.keys(), 1):
+                    label = QLabel(solid_name)
+                    self.add_tooltip(label, key)
+                    layout.addWidget(label, row, 0)
+                    le = LineEdit()
+                    le.key = key
+                    le.args = ['IS', phase]
+                    le.dtype = float
+                    self.project.register_widget(le, key, le.args)
+                    self.add_tooltip(le, key)
+                    layout.addWidget(le, row, 1)
+                    units_label = QLabel('m/s')
+                    layout.addWidget(units_label , row, 2)
+                    row += 1
             ui.groupbox_solids_velocities.show()
 
+        self.iss_saved_solids_names = solids_names
         self.iss_setup_current_tab()
 
 

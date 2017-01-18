@@ -539,7 +539,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                     self.parent.set_ok_button(False, '%s is an MFIX keyword'%text)
                     return (QValidator.Intermediate, text, pos)
                 self.parent.set_ok_button(True)
-                return (QValidator.Okable, text, pos)
+                return (QValidator.Acceptable, text, pos)
 
         lineedit = ui.lineedit_alias
         lineedit.setValidator(AliasValidator(parent=self))

@@ -50,6 +50,7 @@ class BCS(object):
         self.bcs_current_indices = [] # List of BC indices
         self.bcs_current_regions = [] # And the names of the regions which define them
         self.bcs_region_dict = None
+        self.bcs_saved_solids_names = [] # track changes in solids phase names
         self.bcs_fluid_species_boxes = OrderedDict() # In the 'wall' tab each species needs a groupbox
 
         # The top of the task pane is where users define/select BC regions
@@ -108,7 +109,6 @@ class BCS(object):
             widget = getattr(ui, 'lineedit_solids_tangential_velocity_'+suffix)
             widget.value_updated.connect(self.project.submit_change)
 
-
         # Inflow/outflow pane has some special inputs
         for phase_type in 'fluid', 'solids': # type
             for flow_direction in 'inflow', 'outflow': #direction
@@ -158,7 +158,7 @@ class BCS(object):
         le.dtype = float
         le.value_updated.connect(self.project.submit_change)
 
-        self.bcs_saved_solids_names = [] # track changes in solids phase names
+
 
     def bcs_set_volume_fraction_limit(self):
         # Set bc_ep_g from bc_ep_s, like we do for ICs

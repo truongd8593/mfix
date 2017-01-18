@@ -35,7 +35,7 @@ class PSS(object):
         self.pss_current_indices = [] # List of PS indices
         self.pss_current_regions = [] # And the names of the regions which define them
         self.pss_region_dict = None
-
+        self.pss_saved_solids_names = []
         #The top of the task pane is where users define/select PS regions
         #Icons to add/remove/duplicate boundary conditions are given at the top
         #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select

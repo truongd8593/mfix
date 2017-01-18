@@ -34,6 +34,7 @@ class ICS(object):
         self.ics_current_indices = [] # List of IC indices
         self.ics_current_regions = [] # And the names of the regions which define them
         self.ics_region_dict = None
+        self.ics_saved_solids_names = []
 
         # The top of the task pane is where users define/select IC regions
         # (see handle_ics_region_selection)
@@ -78,7 +79,8 @@ class ICS(object):
         widget.dtype = float
         widget.value_updated.connect(self.handle_ic_p_star)
 
-        self.ics_saved_solids_names = []
+
+
 
     def handle_ic_p_star(self, widget, data, args):
         if not self.ics_current_indices:
