@@ -188,16 +188,8 @@ F2PY_FILES = \
 	mfixsolvermodule.o \
 	fortranobject.o
 
-$(F2PY_FILES):
-	$(PYTHON_BIN) -c 'import os; \
-	import numpy; \
-	from numpy.f2py import f2py2e; \
-	r=f2py2e.run_main(["--lower", "-m", "mfixsolver"] + "$(pymfix_src)".split(" ")); \
-	m=r["mfixsolver"]; \
-	h=os.path.dirname(m["h"][0]); \
-	h2=numpy.get_include(); \
-	cs=m["csrc"]; \
-	[os.system("$(CC) -g -O2 -fPIC $(PYTHON_CPPFLAGS) -I%s -I%s -c %s -o %s" % (h,h2,c,os.path.basename(c).replace(".c",".o"))) for c in cs]'
+$(F2PY_FILES): $(LIBMFIX).md5
+	$(PYTHON_BIN) -c 'import os; import numpy; from numpy.f2py import f2py2e;  r=f2py2e.run_main(["--lower", "-m", "mfixsolver"] + "$(pymfix_src)".split(" ")); m=r["mfixsolver"]; h=os.path.dirname(m["h"][0]); cs=m["csrc"]; [os.system("$(CC) -g -O2 -fPIC $(PYTHON_CPPFLAGS) -I%s -I%s -c -o %s %s" % (h,numpy.get_include(),os.path.basename(c).replace(".c",".o"),c)) for c in cs]'
 
 endif
 
