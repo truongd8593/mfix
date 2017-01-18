@@ -459,9 +459,6 @@ class PSS(object):
                 widget.deleteLater()
             # And make new ones
             for (i, solid_name) in enumerate(self.solids.keys(),1):
-                model = self.project.get_value('solids_model', args=[i])
-                #At this time, only TFM solids can be defined with point sources.
-                #At some point in the future, this could be extended to PIC solids, but never DEM.
                 b = QPushButton(text=solid_name)
                 w = b.fontMetrics().boundingRect(solid_name).width() + 20
                 b.setMaximumWidth(w)
