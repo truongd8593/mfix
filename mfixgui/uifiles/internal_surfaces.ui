@@ -233,19 +233,19 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>345</width>
-            <height>323</height>
+            <width>347</width>
+            <height>327</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="leftMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="topMargin">
             <number>0</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>5</number>
            </property>
            <property name="bottomMargin">
             <number>0</number>
@@ -262,7 +262,7 @@
                </property>
                <layout class="QGridLayout" name="gridLayout_3">
                 <property name="leftMargin">
-                 <number>5</number>
+                 <number>0</number>
                 </property>
                 <property name="topMargin">
                  <number>5</number>
