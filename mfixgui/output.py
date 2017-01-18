@@ -32,7 +32,8 @@ from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
 
 #Top tabset
 BASIC_TAB, VTK_TAB, SPX_TAB, NETCDF_TAB = range(4)
-SUBPAGE_CELL, SUBPAGE_PARTICLE = (0, 1)
+PAGE_CELL, PAGE_PARTICLE = (0, 1)
+
 #Bottom subpage tabset, for VTK cell data
 (FLUID_TAB, SOLIDS_TAB_DUMMY_L, SOLIDS_TAB, SOLIDS_TAB_DUMMY_R,
  SCALAR_TAB, REACTIONS_TAB, OTHER_TAB) = range(7) # bottom tabset
@@ -110,6 +111,10 @@ class Output(object):
     def init_output_vtk_tab(self):
         #VTK (tab)
         ui = self.ui.output
+
+        self.output_saved_fluid_species_names = []
+        self.output_saved_solids_names = []
+
         # Dynamically created items
         self.vtk_part_usr_var_checkboxes = []
         self.vtk_part_x_s_checkboxes = []
@@ -124,10 +129,10 @@ class Output(object):
 
         self.output_current_subtab = FLUID_TAB # #  If fluid is disabled, we will switch
         self.vtk_current_solid = self.P = None
-        ui.pushbutton_fluid.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(FLUID_TAB,None))
-        ui.pushbutton_scalar.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(SCALAR_TAB,None))
-        ui.pushbutton_reactions.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(REACTIONS_TAB,None))
-        ui.pushbutton_other.pressed.connect(lambda: self.output_vtk_cell_data_change_subtab(OTHER_TAB,None))
+        ui.pushbutton_fluid.pressed.connect(lambda: self.output_change_subtab(FLUID_TAB,None))
+        ui.pushbutton_scalar.pressed.connect(lambda: self.output_change_subtab(SCALAR_TAB,None))
+        ui.pushbutton_reactions.pressed.connect(lambda: self.output_change_subtab(REACTIONS_TAB,None))
+        ui.pushbutton_other.pressed.connect(lambda: self.output_change_subtab(OTHER_TAB,None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -147,22 +152,21 @@ class Output(object):
         ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_output_region_selection)
         ui.checkbox_keyword_vtk_part_orientation_args_V.post_update = self.output_set_particle_orientation
 
-        ui.stackedwidget_cell_particle.setCurrentIndex(SUBPAGE_CELL)
-        self.output_saved_fluid_species_names = []
+        ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
         # no per-subpage init, yet
         # Show cell data groupboxes without a title (title is separate
         # label_cell_data, displayed outside tab set)
 
+        # Show groupbox without title  (title is empty string)
         height = ui.checkbox_keyword_vtk_ep_g_args_V.sizeHint().height()
         ui.subpage_celldata_fluid.setStyleSheet(
-            'QGroupBox:title {subcontrol-position: bottom;}' # Note, title is empty
-            #' QGroupBox {margin-top: -2ex; padding-top: 2.5ex}' # fix gap where title would be
-            # This is slightly questionable -  where do these numbers come from?
-            ' QGroupBox {margin-top: %spx; padding-top: %spx }' % (2-height, height)
+            # Fix gap where title would be, with negative padding.
+            # This is somewhat questionable (i.e. a total hack)
+            'QGroupBox {margin-top: %spx; padding-top: %spx }' % (2-height, height)
         )
 
 
-    def output_vtk_cell_data_change_subtab(self, subtab, solid):
+    def output_change_subtab(self, subtab, solid):
         ui = self.ui.output
 
         index = (0 if subtab==FLUID_TAB
@@ -198,15 +202,15 @@ class Output(object):
                 dummy_label = ui.label_dummy_solids_R
                 dummy_tab = SOLIDS_TAB_DUMMY_R
 
-            pixmap = QPixmap(ui.page_solids.size())
+            pixmap = QPixmap(ui.subpage_celldata_solids.size())
             pixmap.fill() #fill bg with white
-            ui.page_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
+            ui.subpage_celldata_solids.render(pixmap, flags=QWidget.DrawChildren) # avoid rendering bg
             dummy_label.setPixmap(pixmap)
             ui.stackedwidget_cell_data.setCurrentIndex(dummy_tab)
 
         self.output_current_subtab = subtab
         self.vtk_current_solid = self.P = solid if subtab==SOLIDS_TAB else None
-        #self.output_setup_current_subtab()
+        self.setup_output_current_subtab()
 
         # change stackedwidget contents
         self.animate_stacked_widget(
@@ -234,6 +238,7 @@ class Output(object):
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
         ui.bottom_frame.setEnabled(enabled)
+        ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
         if not enabled: # No selection, clear inputs
             for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
@@ -855,7 +860,7 @@ class Output(object):
 
         indices = self.vtk_current_indices
         if not indices:
-            # Clear inputs?  should have been done in handle_selection
+            ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
             return
 
         V0 = indices[0]
@@ -906,16 +911,20 @@ class Output(object):
             le.updateValue(key, val)
 
         if vtk_data == 'C':
-            self.setup_output_vtk_cell_subpage()
+            self.setup_output_vtk_cell()
+            ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
             ui.scrollarea_cell.ensureVisible(0, 0)
         elif vtk_data == 'P':
-            self.setup_output_vtk_particle_subpage()
+            self.setup_output_vtk_particle()
+            ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_PARTICLE)
             ui.scrollarea_particle.ensureVisible(0, 0)
         else:
             self.error("Unknown vtk_data %s" % vtk_data)
-            setCurrentIndex(SUBPAGE_CELL) #default
+            ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
 
-    def setup_output_vtk_cell_subpage(self):
+
+
+    def setup_output_vtk_cell(self):
         #Cell data sub-pane
 
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
@@ -923,16 +932,103 @@ class Output(object):
         #input style.
 
         ui = self.ui.output
-        ui.stackedwidget_cell_particle.setCurrentIndex(SUBPAGE_CELL)
+        solids_names = list(self.solids.keys())
+        if self.output_saved_solids_names != solids_names:
+            # Clear out the old ones
+            n_cols = ui.bottom_tab_layout.columnCount()
+            print("N_COLS", n_cols)
+            for i in range(n_cols-1, 0, -1):
+                item = ui.bottom_tab_layout.itemAtPosition(0, i)
+                if not item:
+                    continue
+                widget = item.widget()
+                if not widget:
+                    continue
+                if widget in self.output_pushbuttons_bottom:
+                    continue
+                print("GOODBYE", widget.text())
+                ui.bottom_tab_layout.removeWidget(widget)
+                widget.setParent(None)
+                widget.deleteLater()
+            # And make new ones
+            for (i, solid_name) in enumerate(solids_names, 1):
+                b = QPushButton(text=solid_name)
+                print("ADD BUTTON", solid_name, i)
+                w = b.fontMetrics().boundingRect(solid_name).width() + 20
+                b.setMaximumWidth(w)
+                b.setFlat(True)
+                font = b.font()
+                font.setBold(self.output_current_subtab==SOLIDS_TAB and i==self.vtk_current_solid)
+                b.setFont(font)
+                b.pressed.connect(lambda i=i: self.output_change_subtab(SOLIDS_TAB, i))
+                ui.bottom_tab_layout.addWidget(b, 0, i)
+
+        # Move the 'Scalar' and other buttons to the right of all solids, if needed
+        if len(self.solids) != len(self.output_saved_solids_names):
+            for (i,b) in enumerate(self.output_pushbuttons_bottom):
+                if b == ui.pushbutton_fluid:
+                    continue
+                ui.bottom_tab_layout.removeWidget(b)
+                ui.bottom_tab_layout.addWidget(b, 0, i+len(self.solids))
+
+        b = ui.pushbutton_scalar
+        font = b.font()
+        font.setBold(self.output_current_subtab==SCALAR_TAB)
+        b.setFont(font)
+        nscalar = self.project.get_value('nscalar', default=0)
+        enabled = (nscalar > 0)
+        b.setEnabled(enabled)
+
+        b = ui.pushbutton_reactions
+        font = b.font()
+        font.setBold(self.output_current_subtab==REACTIONS_TAB)
+        b.setFont(font)
+        nrr = self.project.get_value('nrr', default=0)
+        enabled = (nrr > 0)
+        b.setEnabled(enabled)
+
+
+        b = ui.pushbutton_other
+        font = b.font()
+        font.setBold(self.output_current_subtab==SCALAR_TAB)
+        b.setFont(font)
+        enabled = True
+        b.setEnabled(enabled)
+
+        self.output_saved_solids_names = solids_names
+
+        # make sure underline is in the right place, as # of solids may
+        # have changed (lifted from animate_stacked_widget, which we
+        # don't want to call here)
+        tab = self.output_current_subtab
+        line_to = (0 if tab==FLUID_TAB
+                   else len(self.solids)+1 if tab==SCALAR_TAB
+                   else len(self.solids)+2 if tab==REACTIONS_TAB
+                   else len(self.solids)+3 if tab==OTHER_TAB
+                   else self.vtk_current_solid)
+        line = ui.line_subtab
+        btn_layout = ui.bottom_tab_layout
+        btn_layout.addItem(btn_layout.takeAt(
+            btn_layout.indexOf(line)), 1, line_to)
+
+        # Don't stay on disabled tab TODO
 
         indices = self.vtk_current_indices
         if not indices:
             # Clear inputs?  should have been done in handle_selection
             return
-        self.setup_output_vtk_cell_subpage_fluid_tab()
+
+        self.setup_output_current_subtab()
 
 
-    def setup_output_vtk_cell_subpage_fluid_tab(self):
+    def setup_output_current_subtab(self):
+        if self.output_current_subtab == FLUID_TAB:
+            self.setup_output_vtk_cell_fluid_tab()
+        else:
+            print("OUTPUT_CURRENT_SUBTAB", self.output_current_subtab)
+
+
+    def setup_output_vtk_cell_fluid_tab(self):
         # Fluid Phase (tab?)
         ui = self.ui.output
         indices = self.vtk_current_indices
@@ -1075,8 +1171,11 @@ class Output(object):
             cb.setText('%s mass fraction' % fluid_species_names[i-1])
             cb.setChecked(bool(val))
 
+        if spacer_moved:
+            layout.addItem(spacer)
 
-    def setup_output_vtk_cell_subpage_reactions_tab():
+
+    def setup_output_vtk_cell_reactions_tab():
         #Enable writing reaction rates
         # Requires nRR > 0
         # Sets keyword VTK_RRATE(#) ## requires 'reaction' index
@@ -1084,7 +1183,7 @@ class Output(object):
         ui = self.ui.output
 
 
-    def setup_output_vtk_cell_subpage_solids_tab(self):
+    def setup_output_vtk_cell_solids_tab(self):
         #Solids Phase (tab?)
         ui = self.ui.output
         #Enable writing solids velocity vector
@@ -1128,7 +1227,7 @@ class Output(object):
         # DEFAULT value .FALSE.
 
 
-    def setup_output_vtk_cell_subpage_scalar_tab(self):
+    def setup_output_vtk_cell_scalar_tab(self):
         #Scalar (tab?)
         ui = self.ui.output
         #Enable writing user defined scalar
@@ -1138,7 +1237,7 @@ class Output(object):
 
 
 
-    def setup_output_vtk_cell_subpage_scalar_tab(self):
+    def setup_output_vtk_cell_scalar_tab(self):
         #Other (tab?)
         ui - self.ui.output
 
@@ -1166,7 +1265,7 @@ class Output(object):
 
 
 
-    def setup_output_vtk_particle_subpage(self):
+    def setup_output_vtk_particle(self):
         #Particle data sub-pane
         #There is a need for some hand waving here. Many mfix.dat files may use a different specification
         #for VTK input. There will need to be a way of catching the 'old' format and converting it to this
@@ -1175,7 +1274,7 @@ class Output(object):
         # Note 1, filebase through nzs are common to cell/particle
         # Note 2, this groupbox is disabled completely if not DEM or PIC
         ui = self.ui.output
-        ui.stackedwidget_cell_particle.setCurrentIndex(SUBPAGE_PARTICLE)
+        ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_PARTICLE)
 
         indices = self.vtk_current_indices
         if not indices:
@@ -1286,7 +1385,6 @@ class Output(object):
             val = self.project.get_value(key, args=[V0,i], default=False)
             cb.setChecked(bool(val))
 
-
         #Enable writing particle species composition
         # Requires DEM or PIC solids and any SPECIES_EQ=.TRUE.
         # Sets keyword VTK_PART_X_S(#)
@@ -1327,8 +1425,6 @@ class Output(object):
 
         if spacer_moved:
             layout.addItem(spacer)
-
-
 
 
     def output_set_region_keys(self, name, idx, data, output_type=None):
@@ -1392,4 +1488,8 @@ class Output(object):
         self.vtk_current_solid = self.P = None
         ui.tablewidget_regions.clearContents()
         ui.tablewidget_regions.setRowCount(0)
-        ui.stackedwidget_cell_particle.setCurrentIndex(SUBPAGE_CELL)
+        self.output_current_tab = BASIC_TAB
+        ui.stackedwidget_output.setCurrentIndex(BASIC_TAB)
+        ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
+        self.output_current_subtab = FLUID_TAB
+        ui.stackedwidget_cell_data.setCurrentIndex(FLUID_TAB)
