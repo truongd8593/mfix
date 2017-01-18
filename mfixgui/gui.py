@@ -1898,6 +1898,13 @@ class MfixGui(QtWidgets.QMainWindow,
         if not self.check_writable(new_dir):
             return
 
+        ok_to_write = self.check_writable(new_dir)
+        if not ok_to_write:
+            return
+
+        if os.path.exists(new_file) and not self.confirm_clobber(new_file):
+            return
+
         old_dir = self.get_project_dir()
 
         # Force run name to file name.  Is this a good idea?
@@ -2042,9 +2049,27 @@ class MfixGui(QtWidgets.QMainWindow,
         performing template expansion and modifying comments,
         then open the new project"""
 
+        runname = ''
+        try:
+            with open(template) as infile:
+                for line in infile.readlines():
+                    match = re.match("\s*run_name\s*=\s*'(?P<run_name>\w*)'", line, flags=re.IGNORECASE)
+                    if match:
+                        runname = match.group('run_name')
+
+        except Exception as e:
+            self.message(text="Error %s in project template %s:  %s" % (template,e),
+                         buttons=['ok'],
+                         default=['ok'])
+            self.set_no_project()
+            return
+
+        if not runname:
+            log.warn('RUN_NAME missing from project template: %s' % template)
+
         project_file = QtWidgets.QFileDialog.getSaveFileName(
-            self, 'Create Project File',
-            "", "MFX files (*.mfx)")
+            self, caption='Create Project File',
+            directory=runname, filter="MFX files (*.mfx)")
 
         if PYQT5:
             project_file = project_file[0]
@@ -2062,9 +2087,6 @@ class MfixGui(QtWidgets.QMainWindow,
         project_dir = os.path.dirname(project_file)
         run_name = os.path.splitext(basename)[0]
         if not self.check_writable(project_dir):
-            self.message(text='Unable to write to %s' % project_dir,
-                         buttons=['ok'],
-                         default='ok')
             return
         # Start from template
         creator = get_username()
@@ -2240,8 +2262,21 @@ class MfixGui(QtWidgets.QMainWindow,
 
         default_runname = os.path.splitext(os.path.basename(project_file))[0]
         runname = self.get_runname(default=default_runname)
-        runname_mfx = runname + '.mfx'
         runname_pid = self.get_pid_name(True)
+
+        self.update_keyword('run_name', runname)
+
+        self.do_open(project_file, runname_pid)
+
+
+    def do_open(self, project_file, runname_pid):
+        """do_open performs the details of opening the project. It has a direct
+        control-flow path, with no return statements, meaning that the project
+        open cannot be canceled beyond this point.
+
+        """
+
+        project_dir = os.path.dirname(project_file)
 
         if runname_pid:
             # previously started job may be running, try to reconnect
@@ -2408,35 +2443,6 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.ui.workflow_widget.clear()
                 self.ui.workflow_widget.load(workflow_file)
             self.ui.workflow_widget.look_for_projects(basename)
-
-
-        if interactive and not project_path.endswith(runname_mfx):
-            ok_to_write =  self.confirm_rename(project_file, runname_mfx)
-            if ok_to_write:
-                renamed_project_file = os.path.join(project_dir, runname_mfx)
-                if os.path.exists(renamed_project_file):
-                    ok_to_write = self.confirm_clobber(renamed_project_file)
-            if not ok_to_write:
-                self.print_internal("Rename canceled at user request")
-                return
-
-            project_file = renamed_project_file
-            try:
-                self.print_internal("Info: Saving %s" % project_file)
-                self.project.writeDatFile(project_file) #XX
-                #self.print_internal(save_msg, color='blue')
-                self.clear_unsaved_flag()
-            except Exception as e:
-                msg = 'Failed to save %s: %s: %s' % (os.path.basename(project_file),
-                                                     e.__class__.__name__, e)
-                self.print_internal("Error: %s" % msg, color='red')
-                self.message(title='Error',
-                             icon='error',
-                             text=msg,
-                             buttons=['ok'],
-                             default='ok')
-                traceback.print_exception(*sys.exc_info())
-                return
 
         self.set_project_file(project_file)
 
