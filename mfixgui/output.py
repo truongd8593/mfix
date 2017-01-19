@@ -114,11 +114,10 @@ class Output(object):
 
         self.output_saved_fluid_species_names = []
         self.output_saved_solids_names = []
+        self.output_saved_solids_species_names = []
 
         # Dynamically created items
-        self.vtk_part_usr_var_checkboxes = []
-        self.vtk_part_x_s_checkboxes = []
-        self.vtk_x_g_checkboxes = []
+        self.output_checkboxes = {}
 
         # Set up subtabs
         self.output_pushbuttons_bottom = (ui.pushbutton_fluid,
@@ -153,7 +152,9 @@ class Output(object):
         ui.checkbox_keyword_vtk_part_orientation_args_V.post_update = self.output_set_particle_orientation
 
         ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
-        # no per-subpage init, yet
+        # no per-subpage init, yet, so there's some per-page init here
+        ui.checkbox_keyword_vtk_vorticity_args_V.post_update = self.set_vtk_lambda_2
+
         # Show cell data groupboxes without a title (title is separate
         # label_cell, displayed outside tab set)
 
@@ -165,10 +166,8 @@ class Output(object):
             'QGroupBox {margin-top: %spx; padding-top: %spx }' % (2-height, height)
         )
 
-
     def output_change_subtab(self, subtab, solid):
         ui = self.ui.output
-
         index = (0 if subtab==FLUID_TAB
                  else len(self.solids)+1 if subtab==SCALAR_TAB
                  else len(self.solids)+2 if subtab==REACTIONS_TAB
@@ -195,7 +194,7 @@ class Output(object):
             if solid == self.vtk_current_solid:
                 return # nothing to do
 
-            if solid > self.vtk_current_solid:
+            if solid > (self.vtk_current_solid or 0):
                 dummy_label = ui.label_dummy_solids_L
                 dummy_tab = SOLIDS_TAB_DUMMY_L
             else:
@@ -862,6 +861,8 @@ class Output(object):
         indices = self.vtk_current_indices
         if not indices:
             ui.stackedwidget_cell_particle.setCurrentIndex(PAGE_CELL)
+            #Construct the GUI, even though disabled (species checkboxes)
+            self.setup_output_current_subtab()
             return
 
         V0 = indices[0]
@@ -1044,16 +1045,33 @@ class Output(object):
             self.setup_output_scalar_subtab()
         elif subtab==REACTIONS_TAB:
             self.setup_output_reactions_subtab()
+        elif subtab==OTHER_TAB:
+            self.setup_output_other_subtab()
+        else:
+            raise ValueError(subtab)
 
 
     def setup_output_fluid_subtab(self):
         # Fluid Phase (tab?)
         ui = self.ui.output
-        indices = self.vtk_current_indices
-        if not indices:
-            return
+        # Dynamically created GUI items - need to remove and re-add spacer
+        layout = ui.groupbox_cell_fluid.layout()
+        spacer = None
+        spacer_moved = False
+        # find spacer, can't do this by name for some reason
+        for i in range(layout.count()-1, -1, -1):
+            item = layout.itemAt(i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                spacer = item
+                break
 
-        V0 = indices[0]
+        indices = self.vtk_current_indices
+        V0 = indices[0] if indices else None
+        # NB normally we bail out if indices is None but we want to construct
+        #  the fluid species checkboxes (for visual apperarance sake)
 
         #Enable writing gas volume fraction
         # Selection always available
@@ -1109,7 +1127,7 @@ class Output(object):
                     'vtk_k_turb_g',
                     'vtk_e_turb_g'):
             cb = getattr(ui, 'checkbox_keyword_%s_args_V' % key)
-            val = self.project.get_value(key, args=[V0], default=False)
+            val = False if V0 is None else self.project.get_value(key, args=[V0], default=False)
             cb.setChecked(val)
 
         # disable temp if energy_eq disabled
@@ -1133,8 +1151,63 @@ class Output(object):
                 for V in self.vtk_current_indices:
                     self.unset_keyword(key, args=[V])
 
+        #Enable writing gas species N (an entry for each defined species)
+        # Requires defined gas phase species
+        # Sets keyword VTK_X_G(#,N)
+        # DEFAULT value .FALSE.
+        key = 'vtk_x_g'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
+        fluid_species_names = list(self.fluid_species.keys())
+        if self.output_saved_fluid_species_names != fluid_species_names:
+            self.output_saved_fluid_species_names = fluid_species_names
+            n_fluid_species = len(fluid_species_names)
+            if len(cbs) > n_fluid_species:
+                for (i, cb) in enumerate(cbs[n_fluid_species:], 1+n_fluid_species):
+                    for V in self.vtk_current_indices:
+                        self.unset_keyword(key, args=[V, i])
+                    layout.removeWidget(cb)
+                    cb.setParent(None)
+                    cb.deleteLater()
+                self.output_checkboxes[key] = cbs = cbs[:n_fluid_species]
+            # If adding widgets, remove spacer first (will re-add it at end)
+            if len(cbs) != n_fluid_species:
+                if not spacer_moved:
+                    layout.removeItem(spacer)
+                    spacer_moved = True
+            while len(cbs) < n_fluid_species:
+                n = 1+len(cbs)
+                cb = CheckBox('%s mass fraction' % fluid_species_names[n-1])
+                cb.key = key
+                cb.args = ['V', n]
+                cb.value_updated.connect(self.project.submit_change)
+                cbs.append(cb)
+                self.add_tooltip(cb, key=cb.key)
+                layout.addWidget(cb)
+
+        if spacer_moved:
+            layout.addItem(spacer)
+
+        # Set checkboxes to correct state
+        species_eq = self.project.get_value('species_eq', default=True, args=[0])
+        enabled = bool(species_eq)
+        for (i, cb) in enumerate(cbs, 1):
+            cb.setEnabled(enabled)
+            if enabled:
+                val = False if V0 is None else self.project.get_value(key, args=[V0,i], default=False)
+                cb.setChecked(bool(val))
+            else:
+                cb.setChecked(False)
+                for V in self.vtk_current_indices:
+                    self.unset_keyword(key, args=[V, i])
+
+
+    def setup_output_reactions_subtab(self):
+        ui = self.ui.output
+        V0 = self.vtk_current_indices[0] if self.vtk_current_indices else None
         # Dynamically created GUI items - need to remove and re-add spacer
-        layout = ui.groupbox_cell_fluid.layout()
+        layout = ui.groupbox_cell_reactions.layout()
         spacer = None
         spacer_moved = False
         # find spacer, can't do this by name for some reason
@@ -1146,55 +1219,47 @@ class Output(object):
             if not widget:
                 spacer = item
                 break
-
-        #Enable writing gas species N (an entry for each defined species)
-        # Requires defined gas phase species
-        # Sets keyword VTK_X_G(#,N)
-        # DEFAULT value .FALSE.
-        key = 'vtk_x_g'
-        fluid_species_names = list(self.fluid_species.keys())
-        if self.output_saved_fluid_species_names != fluid_species_names:
-            self.output_saved_fluid_species_names = fluid_species_names
-            n_fluid_species = len(fluid_species_names)
-            if len(self.vtk_x_g_checkboxes) > n_fluid_species:
-                for (i, cb) in enumerate(self.vtk_x_g_checkboxes[n_fluid_species:], 1+n_fluid_species):
-                    layout.removeWidget(cb)
-                    for V in self.vtk_current_indices:
-                        self.unset_keyword(key, args=[V, i])
-                cb.deleteLater()
-                self.vtk_x_g_checkboxes = self.vtk_x_g_checkboxes[:n_fluid_species]
-            # If adding widgets, remove spacer first (will re-add it at end)
-            if len(self.vtk_x_g_checkboxes) != n_fluid_species:
-                if not spacer_moved:
-                    layout.removeItem(spacer)
-                    spacer_moved = True
-            while len(self.vtk_x_g_checkboxes) < n_fluid_species:
-                n = 1+len(self.vtk_x_g_checkboxes)
-                cb = CheckBox('%s mass fraction' % fluid_species_names[n-1])
-                cb.key = key
-                cb.args = ['V', n]
-                cb.value_updated.connect(self.project.submit_change)
-                self.vtk_x_g_checkboxes.append(cb)
-                self.add_tooltip(cb, key=cb.key)
-                layout.addWidget(cb)
-
-        # Set checkboxes to correct state
-        for (i, cb) in enumerate(self.vtk_x_g_checkboxes, 1):
-            val = self.project.get_value(key, args=[V0,i], default=False)
-            cb.setText('%s mass fraction' % fluid_species_names[i-1])
-            cb.setChecked(bool(val))
-
-        if spacer_moved:
-            layout.addItem(spacer)
-
-
-    def setup_output_reactions_subtab(self):
         #Enable writing reaction rates
         # Requires nRR > 0
         # Sets keyword VTK_RRATE(#) ## requires 'reaction' index
         # DEFAULT value .FALSE.
-        ui = self.ui.output
+
+        key = 'vtk_rrate'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
         nrr = self.project.get_value('nrr', default=0)
+        # Remove extra widgets if number decreased
+        if len(cbs) > nrr:
+            for (i, cb) in enumerate(cbs[nrr:], 1+nrr):
+                for V in self.vtk_current_indices:
+                    self.unset_keyword(key, args=[V, i])
+                layout.removeWidget(cb)
+                cb.setParent(None)
+                cb.deleteLater()
+            self.output_checkboxes[key] = cbs = cbs[:nrr]
+        # If adding widgets, remove spacer first (will re-add it at end)
+        if len(cbs) != nrr:
+            if not spacer_moved:
+                layout.removeItem(spacer)
+                spacer_moved = True
+        while len(cbs) < nrr:
+            n = 1+len(cbs)
+            cb = CheckBox("Reaction rate %s" % n) # Use reaction name ?
+            cb.key = key
+            cb.args = ['V', n]
+            cb.value_updated.connect(self.project.submit_change)
+            cbs.append(cb)
+            self.add_tooltip(cb, key=cb.key)
+            layout.addWidget(cb)
+
+        if spacer_moved:
+            layout.addItem(spacer)
+
+        # Set checkboxes to correct state
+        for (i, cb) in enumerate(cbs, 1):
+            val = self.project.get_value(key, args=[V0,i], default=False)
+            cb.setChecked(bool(val))
 
 
     def setup_output_solids_subtab(self, P):
@@ -1224,32 +1289,15 @@ class Output(object):
         # Sets keyword VTK_VEL_S(#,#)
         # DEFAULT value .FALSE.
 
-        #Enable writing solids velocity x-component
+        #Enable writing solids velocity x/y/z-component
         # Requires TFM solids
-        # Sets keyword VTK_U_S(#,#)
-        # DEFAULT value .FALSE.
-
-        #Enable writing solids velocity y-component
-        # Requires TFM solids
-        # Sets keyword VTK_V_S(#,#)
-        # DEFAULT value .FALSE.
-
-        #Enable writing solids velocity z-component
-        # Requires TFM solids
-        # Sets keyword VTK_W_S(#,#)
+        # Sets keyword VTK_U/V/W_S(#,#)
         # DEFAULT value .FALSE.
 
         #Enable writing solids bulk density
         # Requires TFM solids
         # Sets keyword VTK_ROP_S(#,#)
         # DEFAULT value .FALSE.
-
-
-        for key in ('vtk_vel_s', 'vtk_u_s', 'vtk_v_s', 'vtk_w_s',
-                    'vtk_rop_s', 'vtk_t_s', 'vtk_theta_m'):
-            cb = getattr(ui, 'checkbox_keyword_%s_args_V_P'%key)
-            val = self.project.get_value(key, default=False, args=[V0,P])
-            cb.setChecked(bool(val))
 
         #Enable writing solids temperature
         # Requires TFM solids and ENERGY_EQ = .TRUE.
@@ -1279,35 +1327,165 @@ class Output(object):
             for V in self.vtk_current_indices:
                 self.unset_keyword(key, args=[V,P])
 
+        for key in ('vtk_vel_s', 'vtk_u_s', 'vtk_v_s', 'vtk_w_s',
+                    'vtk_rop_s', 'vtk_t_s', 'vtk_theta_m'):
+            cb = getattr(ui, 'checkbox_keyword_%s_args_V_P'%key)
+            val = self.project.get_value(key, default=False, args=[V0,P])
+            cb.setChecked(bool(val))
 
-
+        # Dynamically created GUI items - need to remove and re-add spacer
+        layout = ui.groupbox_cell_solids.layout()
+        spacer = None
+        spacer_moved = False
+        # find spacer, can't do this by name for some reason
+        for i in range(layout.count()-1, -1, -1):
+            item = layout.itemAt(i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                spacer = item
+                break
 
         #Enable writing solids phase M, species N
         # Requires TFM solids and SPECIES_EQ(#) = .TRUE.
         # Sets keyword VTK_X_S(#,M,N)
         # DEFAULT value .FALSE.
-        pass
+        key = 'vtk_x_s'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
+        solids_species_names = list(self.solids_species.get(P,{}).keys())
+        if self.output_saved_solids_species_names != solids_species_names:
+            self.output_saved_solids_species_names = solids_species_names
+            n_solids_species = len(solids_species_names)
+            if len(cbs) > n_solids_species:
+                for (i, cb) in enumerate(cbs[n_solids_species:], 1+n_solids_species):
+                    for V in self.vtk_current_indices:
+                        self.unset_keyword(key, args=[V, P, i])
+                    layout.removeWidget(cb)
+                    cb.setParent(None)
+                    cb.deleteLater()
+                self.output_checkboxes[key] = cbs = cbs[:n_solids_species]
+            # If adding widgets, remove spacer first (will re-add it at end)
+            if len(cbs) != n_solids_species:
+                if not spacer_moved:
+                    layout.removeItem(spacer)
+                    spacer_moved = True
+            while len(cbs) < n_solids_species:
+                n = 1+len(cbs)
+                cb = CheckBox('%s mass fraction' % solids_species_names[n-1])
+                cb.key = key
+                cb.args = ['V', 'P', n]
+                cb.value_updated.connect(self.project.submit_change)
+                cbs.append(cb)
+                self.add_tooltip(cb, key=cb.key)
+                layout.addWidget(cb)
+
+        if spacer_moved:
+            layout.addItem(spacer)
+
+        # Set checkboxes to correct state
+        species_eq = self.project.get_value('species_eq', default=True, args=[P])
+        enable = bool(species_eq)
+        for (i, cb) in enumerate(cbs, 1):
+            cb.setEnabled(enable)
+            if enable:
+                val = self.project.get_value(key, args=[V0,P,i], default=False)
+                cb.setChecked(bool(val))
+            else:
+                cb.setChecked(False)
+                for V in self.vtk_current_indices:
+                    self.unset_keyword(key, args=[V,P,i])
+
 
 
     def setup_output_scalar_subtab(self):
         #Scalar (tab?)
+        # Note, this is nearly identical to output_reactions_tab
         ui = self.ui.output
+        V0 = self.vtk_current_indices[0] if self.vtk_current_indices else None
+        # Dynamically created GUI items - need to remove and re-add spacer
+        layout = ui.groupbox_cell_scalar.layout()
+        spacer = None
+        spacer_moved = False
+        # find spacer, can't do this by name for some reason
+        for i in range(layout.count()-1, -1, -1):
+            item = layout.itemAt(i)
+            if not item:
+                continue
+            widget = item.widget()
+            if not widget:
+                spacer = item
+                break
+
         #Enable writing user defined scalar
         # Requires NSCALAR > 0
         # Sets keyword VTK_SCALAR(#, #) # requires Scalar index
         # DEFAULT value .FALSE.
+        key = 'vtk_scalar'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
         nscalar = self.project.get_value('nscalar', default=0)
+        # Remove extra widgets if number decreased
+        if len(cbs) > nscalar:
+            for (i, cb) in enumerate(cbs[nscalar:], 1+nscalar):
+                for V in self.vtk_current_indices:
+                    self.unset_keyword(key, args=[V, i])
+                layout.removeWidget(cb)
+                cb.setParent(None)
+                cb.deleteLater()
+            self.output_checkboxes[key] = cbs = cbs[:nscalar]
+        # If adding widgets, remove spacer first (will re-add it at end)
+        if len(cbs) != nscalar:
+            if not spacer_moved:
+                layout.removeItem(spacer)
+                spacer_moved = True
+        while len(cbs) < nscalar:
+            n = 1+len(cbs)
+            cb = CheckBox("Scalar %s" % n)
+            cb.key = key
+            cb.args = ['V', n]
+            cb.value_updated.connect(self.project.submit_change)
+            cbs.append(cb)
+            self.add_tooltip(cb, key=cb.key)
+            layout.addWidget(cb)
+
+        if spacer_moved:
+            layout.addItem(spacer)
+
+        # Set checkboxes to correct state
+        for (i, cb) in enumerate(cbs, 1):
+            val = False if V0 is None else self.project.get_value(key, args=[V0,i], default=False)
+            cb.setChecked(bool(val))
 
 
     def setup_output_other_subtab(self):
         #Other (tab?)
-        ui - self.ui.output
+        ui = self.ui.output
+
+        if not self.vtk_current_indices:
+            return
+        V0 = self.vtk_current_indices[0]
 
         #Enable writing vorticity
         # Requires fluid solver (RO_G0 /= 0.0)
         # Sets keyword VTK_VORTICITY (#)
         # Sets keyword VTK_LAMBDA_2(#)
         # DEFAULT value .FALSE.
+        keys = ['vtk_vorticity', 'vtk_lambda_2']
+        cb = ui.checkbox_keyword_vtk_vorticity_args_V
+        enabled = not self.fluid_solver_disabled
+        cb.setEnabled(enabled)
+        if not enabled:
+            cb.setChecked(False)
+            for V in self.vtk_current_indices:
+                for k in keys:
+                    self.unset_keyword(k, args=[V])
+        else:
+            val = self.project.get_value(keys[0], default=False, args=[V0])
+            cb.setChecked(bool(val))
 
         #Enable writing partition
         # Sets keyword VTK_PARTITION(#)
@@ -1324,7 +1502,21 @@ class Output(object):
         #Enable writing cell index
         # Sets keyword VTK_IJK(#)
         # DEFAULT value .FALSE.
-        pass
+        for key in ('vtk_partition', 'vtk_bc_id',
+                    'vtk_dwall', 'vtk_ijk'):
+            cb = getattr(ui, 'checkbox_keyword_%s_args_V'%key)
+            val = self.project.get_value(key, default=False, args=[V0])
+            cb.setChecked(bool(val))
+
+
+    def set_vtk_lambda_2(self):
+        #vtk_lambda_2 follows setting of vtk_vorticity
+        if not self.vtk_current_indices:
+            return
+        V0 = self.vtk_current_indices[0]
+        val = self.project.get_value('vtk_vorticity', args=[V0])
+        for V in self.vtk_current_indices:
+            self.update_keyword('vtk_lambda_2', val, args=[V])
 
 
     def setup_output_vtk_particle(self):
@@ -1419,31 +1611,35 @@ class Output(object):
         # Sets keyword VTK_PART_USR_VAR(#,#)
         # DEFAULT value .FALSE.
         key = 'vtk_part_usr_var'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
         des_usr_var_size = self.project.get_value('des_usr_var_size', default=0)
         # Remove extra widgets if number decreased
-        if len(self.vtk_part_usr_var_checkboxes) > des_usr_var_size:
-            for (i, cb) in enumerate(self.vtk_part_usr_var_checkboxes[des_usr_var_size:], 1+des_usr_var_size):
-                layout.removeWidget(cb)
+        if len(cbs) > des_usr_var_size:
+            for (i, cb) in enumerate(cbs[des_usr_var_size:], 1+des_usr_var_size):
                 for V in self.vtk_current_indices:
                     self.unset_keyword(key, args=[V, i])
+                layout.removeWidget(cb)
+                cb.setParent(None)
                 cb.deleteLater()
-            self.vtk_part_usr_var_checkboxes = self.vtk_part_usr_var_checkboxes[:des_usr_var_size]
+            self.output_checkboxes[key] = cbs = cbs[:des_usr_var_size]
         # If adding widgets, remove spacer first (will re-add it at end)
-        if len(self.vtk_part_usr_var_checkboxes) != des_usr_var_size:
+        if len(cbs) != des_usr_var_size:
             if not spacer_moved:
                 layout.removeItem(spacer)
                 spacer_moved = True
-        while len(self.vtk_part_usr_var_checkboxes) < des_usr_var_size:
-            n = 1+len(self.vtk_part_usr_var_checkboxes)
+        while len(cbs) < des_usr_var_size:
+            n = 1+len(cbs)
             cb = CheckBox("DES user scalar %s" % n)
             cb.key = key
             cb.args = ['V', n]
             cb.value_updated.connect(self.project.submit_change)
-            self.vtk_part_usr_var_checkboxes.append(cb)
+            cbs.append(cb)
             self.add_tooltip(cb, key=cb.key)
             layout.addWidget(cb)
         # Set checkboxes to correct state
-        for (i, cb) in enumerate(self.vtk_part_usr_var_checkboxes, 1):
+        for (i, cb) in enumerate(cbs, 1):
             val = self.project.get_value(key, args=[V0,i], default=False)
             cb.setChecked(bool(val))
 
@@ -1453,35 +1649,39 @@ class Output(object):
         # NOTE, VTK_PART_X_S(#,N) where N ranges from 1 to max(mmax_s)  # nmax_s
         # DEFAULT value .FALSE.
         key = 'vtk_part_x_s'
+        if key not in self.output_checkboxes:
+            self.output_checkboxes[key] = []
+        cbs = self.output_checkboxes[key]
         enabled = any(self.project.get_value('species_eq', args=[P])
                       for P in range(1, len(self.solids)+1))
         max_n = 0 if not enabled else max(self.project.get_value('nmax_s', args=[N], default=0)
                                           for N in range(1, len(self.solids)+1))
         # Remove extra widgets if number decreased
-        if len(self.vtk_part_x_s_checkboxes) > max_n:
-            for (i, cb) in enumerate(self.vtk_part_x_s_checkboxes[max_n:], 1+max_n):
+        if len(cbs) > max_n:
+            for (i, cb) in enumerate(cbs[max_n:], 1+max_n):
                 for V in self.vtk_current_indices:
                     self.unset_keyword(key, args=[V, i])
                 layout.removeWidget(cb)
+                cb.setParent(None)
                 cb.deleteLater()
-            self.vtk_part_x_s_checkboxes = self.vtk_part_x_s_checkboxes[:max_n]
+            self.output_checkboxes[key] = cbs = cbs[:max_n]
         # If adding widgets, remove spacer first (will re-add it at end)
-        if len(self.vtk_part_x_s_checkboxes) != max_n:
+        if len(cbs) != max_n:
             if not spacer_moved:
                 layout.removeItem(spacer)
                 spacer_moved = True
-        while len(self.vtk_part_x_s_checkboxes) < max_n:
-            n = 1+len(self.vtk_part_x_s_checkboxes)
+        while len(cbs) < max_n:
+            n = 1+len(cbs)
             cb = CheckBox("Species %s mass fraction" % n)
             cb.key = key
             cb.args = ['V', n]
             cb.value_updated.connect(self.project.submit_change)
-            self.vtk_part_x_s_checkboxes.append(cb)
+            cbs.append(cb)
             self.add_tooltip(cb, key=cb.key)
             layout.addWidget(cb)
 
         # Set checkboxes to correct state
-        for (i, cb) in enumerate(self.vtk_part_x_s_checkboxes, 1):
+        for (i, cb) in enumerate(cbs, 1):
             val = self.project.get_value(key, args=[V0,i], default=False)
             cb.setChecked(bool(val))
 
