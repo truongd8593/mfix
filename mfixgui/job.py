@@ -330,8 +330,6 @@ class JobManager(QObject):
             self.job.sig_api_error.connect(self.increment_api_error_count)
             self.job.sig_api_success.connect(self.reset_api_error_count)
             # TODO? handle with signal so this can be managed in gui
-            self.parent.ui.tabWidgetGraphics.setCurrentWidget(
-              self.parent.ui.plot)
         else:
             log.debug("pidfile is not available, can't start new job")
 

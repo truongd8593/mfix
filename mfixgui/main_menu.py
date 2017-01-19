@@ -197,6 +197,8 @@ class MainMenu(object):
         iw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
         # --- build settings ---
+        spacer = QtWidgets.QSpacerItem(10, 10, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum,)
+
         sw = self.ui.main_menu_settings_widget = QtWidgets.QWidget()
         sw.setObjectName('settings')
         sw.setStyleSheet('QWidget#settings{background-color: white;}')
@@ -223,12 +225,14 @@ class MainMenu(object):
         sc.currentIndexChanged.connect(lambda: self.change_app_style(sc.currentText()))
         sw_layout.addWidget(sc, 2, 1)
 
+        sw_layout.addItem(spacer, 3, 0)
+
         # animation settings
         gb = QtWidgets.QGroupBox()
         gb.setCheckable(True)
         gb.setChecked(self.settings.value('animate', True))
         gb.setTitle('Enable Animations')
-        sw_layout.addWidget(gb, 3, 0, 1, 2)
+        sw_layout.addWidget(gb, 4, 0, 1, 2)
         gb_layout = QtWidgets.QGridLayout(gb)
 
         al = QtWidgets.QLabel('Animation Speed')
@@ -242,6 +246,15 @@ class MainMenu(object):
 
         au = QtWidgets.QLabel('milli seconds')
         gb_layout.addWidget(au, 0, 2)
+
+        sw_layout.addItem(spacer, 5, 0)
+
+        # developer mode
+        cb = QtWidgets.QCheckBox()
+        cb.setText('Enable developer tools.')
+        cb.setChecked(bool(self.settings.value('developer_mode', True)))
+        cb.stateChanged.connect(self.enable_developer_mode)
+        sw_layout.addWidget(cb, 6, 0)
 
         sw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
@@ -468,7 +481,6 @@ class MainMenu(object):
         self.main_menu.hide()
 
     def disable_main_menu_items(self, items, except_items=[]):
-
         for r in range(self.ui.main_menu_list.count()):
             i = self.ui.main_menu_list.item(r)
             text = str(i.text()).lower()
@@ -479,3 +491,15 @@ class MainMenu(object):
     def change_app_style(self, style):
         self.app.setStyle(style)
         self.settings.setValue('app_style', style)
+
+    def enable_developer_mode(self, enable):
+
+        self.change_mode('modeler')
+        self.ui.pushButtonDeveloper.setVisible(enable)
+        self.ui.pushButtonInterpreter.setVisible(enable)
+        if enable:
+            self.ui.tabWidgetGraphics.addTab(self.ui.api_response, 'api response')
+        else:
+            self.ui.tabWidgetGraphics.removeTab(self.ui.tabWidgetGraphics.indexOf(self.ui.api_response))
+
+        self.settings.setValue('developer_mode', enable)
