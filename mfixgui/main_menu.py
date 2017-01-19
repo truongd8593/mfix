@@ -368,6 +368,7 @@ class MainMenu(object):
                 lw.setCurrentRow(0)
                 self.set_file_listwidget('defaults')
                 self.ui.main_menu_label.setText('New')
+                self.ui.main_menu_browse.setVisible(False)
             elif text == 'open':
                 sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
                 lw.clear()
@@ -375,6 +376,7 @@ class MainMenu(object):
                 lw.setCurrentRow(0)
                 self.set_file_listwidget('recent')
                 self.ui.main_menu_label.setText('Open')
+                self.ui.main_menu_browse.setVisible(True)
             elif text == 'save':
                 self.handle_save()
             elif text == 'save as':
