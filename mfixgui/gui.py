@@ -2231,6 +2231,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # --- read the mfix.dat or *.mfx file
 
+        self.reset() # resets gui, keywords, file system watchers, etc
+
         basename, pathname = os.path.split(project_file)
 
         self.print_internal("Loading %s from %s" % (pathname, basename), color='blue')
@@ -2302,9 +2304,6 @@ class MfixGui(QtWidgets.QMainWindow,
             # previously started job may be running, try to reconnect
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
-
-        self.reset() # resets gui, keywords, file system watchers, etc
-        # (may not be needed on initial load)
 
         self.open_succeeded = False  # set to true on success
         self.vtkwidget.defer_render = True # defer rendering vtk until load finished
