@@ -57,9 +57,9 @@
 ! In some instances wx1,ex2, etc have been used and in others
 ! xlength,zero, etc are used. the code should be modified for
 ! consistency throughout
-      EX2 = XLENGTH;    WX1 = ZERO  ! East/West
-      TY2 = YLENGTH;    BY1 = ZERO  ! North/South
-      NZ2 = ZLENGTH;    SZ1 = ZERO  ! Top/Bottom
+      EX2 = X_MAX;    WX1 = X_MIN ! East/West
+      TY2 = Y_MAX;    BY1 = Y_MIN ! North/South
+      NZ2 = Z_MAX;    SZ1 = Z_MIN ! Top/Bottom
 
 ! Initialize arrays.
       XE(:) = ZERO
@@ -69,18 +69,18 @@
 ! Each loop starts at 2 and goes to max+2 (i.e., imin1=2, imax2=imax+2)
 ! However, the indices range to include ghost cells (0-imax2) to avoid
 ! multiple if statements in particles_in_cell
-      XE(IMIN2-1) = ZERO-DX(IMIN2)
+      XE(IMIN2-1) = X_MIN-DX(IMIN2)
       DO I = IMIN2, IMAX2
          XE(I) = XE(I-1) + DX(I)
       ENDDO
 
-      YN(JMIN2-1) = ZERO-DY(JMIN2)
+      YN(JMIN2-1) = Y_MIN-DY(JMIN2)
       DO J  = JMIN2, JMAX2
          YN(J) = YN(J-1) + DY(J)
       ENDDO
 
       IF(DIMN.EQ.3) THEN
-         ZT(KMIN2-1) = ZERO-DZ(KMIN2)
+         ZT(KMIN2-1) = Z_MIN-DZ(KMIN2)
          DO K = KMIN2, KMAX2
             ZT(K) = ZT(K-1) + DZ(K)
          ENDDO

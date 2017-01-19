@@ -36,7 +36,7 @@
       USE physprop, only: c_ps0, k_s0, c_ps, k_s, dif_s0, dif_s
       USE physprop, only: cv
 
-      USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
+      USE constant, only: ep_s_max, m_max
       use constant, only: ep_star
 
       USE run, only: RUN_TYPE
@@ -58,6 +58,8 @@
       USE compar, only: ijkstart3, ijkend3
       use functions, only: wall_at, fluid_at
 
+      use usr_prop, only: usr_ros
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -65,6 +67,9 @@
 ! indices
       INTEGER :: IJK, M, I, J
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
+! local variable indicating that some variable density model is being used
+! either a user defined function or mfix built in variable density model.
+      LOGICAL :: SolveAnyRos
 !-----------------------------------------------
 
 ! First, initialize certain transport coefficients, physical
@@ -86,7 +91,7 @@
 
 ! For variable density: RO_S will be set to the baseline density for
 ! new runs but was already read-in from read_res1 for restart runs.
-      IF (RUN_TYPE == 'NEW') RO_S = ZERO 
+      IF (RUN_TYPE == 'NEW') RO_S = ZERO
 
       D_P = zero     ! this is done in init_fvars
       MU_s = ZERO
@@ -177,16 +182,20 @@
 
       ENDDO
 
+! initialize
+      SolveAnyRos = .FALSE.
 ! ensure ro_s(ijk,m) is assigned to ro_s0(m) or ro_s(np) so that the
 ! function ep_s works for discrete phases. might be able to move this
 ! to set_ic_dem and set_ic_mppic. also required d_p(ijk,m) for hybrid
 ! use.  note check_solids_common_all ensures d_p0 is set for all
 ! solids defined also either ro_s0 must be set or ro_s0
       DO M = 1, MMAX+DES_MMAX
+
+         SolveAnyROs = (SOLVE_ROS(M) .OR. USR_ROS(M))
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100
-               IF (RO_S0(M) /= UNDEFINED.AND..NOT.SOLVE_ROs(M)) RO_S(IJK,M) = RO_S0(M)
+               IF (RO_S0(M) /= UNDEFINED.AND..NOT.SolveAnyROs) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0(M) /= UNDEFINED) C_PS(IJK,M) = C_PS0(M)
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
             ENDIF
@@ -241,12 +250,6 @@
 
          IF (.NOT.CALL_DQMOM) THEN
 
-! refer to Syam's dissertation
-            IF (SMAX == 2) THEN
-               ep_s_max_ratio(1,2) = ep_s_max(1)/ &
-                  (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2))
-            ENDIF
-
 ! initialize local variables
             DO I = 1, SMAX
                DP_TMP(I) = D_P0(I)
@@ -256,29 +259,23 @@
 ! Rearrange the indices from coarsest particles to finest to be
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
-            DO I = 1, SMAX
-               DO J = I, SMAX
+            DO I = 1, SMAX-1
+               DO J = I+1, SMAX
                   IF(DP_TMP(I) < DP_TMP(J)) THEN
                      old_value = DP_TMP(I)
                      DP_TMP(I) = DP_TMP(J)
                      DP_TMP(J) = old_value
+                     old_value = m_max(i)
+                     m_max(i) = m_max(j)
+                     m_max(j) = old_value
                   ENDIF
                ENDDO
             ENDDO
 
-            DO I = 1, SMAX
-               DO J = 1, SMAX
-                  IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
-                     M_MAX(I) = J
-                  ENDIF
-               ENDDO
-            ENDDO
          ENDIF    ! if .not. call_dqmom
       ELSE   ! if .not. Yu-standish or Fedors-Landel
-         EP_S_MAX(:) = ZERO
-         EP_S_MAX_RATIO(:,:) = ZERO
-         D_P_RATIO(:,:) = ZERO
-         M_MAX(:) = 0
+         EP_S_MAX(:) = ONE-EP_STAR
+         M_MAX(:) = 1
       ENDIF
 
       RETURN

@@ -922,7 +922,7 @@ MODULE CG_INIT_NAMELIST
 !    Interval (expressed in seconds of simulation time) at which VTK
 !    files are written.
 !  </description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_DT     = UNDEFINED
 !</keyword>
 
@@ -933,11 +933,8 @@ MODULE CG_INIT_NAMELIST
       VTK_DBG_FILE = .FALSE.
 !</keyword>
 
-
-
 !<keyword category="Output Control" required="false">
 !  <description>List of variables written in the VTK files.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !  <valid value="1" note="Void fraction (EP_g)"/>
 !  <valid value="2" note="Gas pressure, solids pressure (P_g, P_star)"/>
 !  <valid value="3" note="Gas velocity (U_g, V_g, W_g)"/>
@@ -957,209 +954,59 @@ MODULE CG_INIT_NAMELIST
 !  <valid value="104" note="DEM Neighboring facets"/>
 !  <valid value="999" note="Cell IJK index"/>
 !  <valid value="1000" note="Cut face normal vector"/>
+!  <arg index="1" id="IDX" min="1" max="20"/>
       VTK_VAR(1) = UNDEFINED_I
 !</keyword>
       VTK_VAR(2:20) = UNDEFINED_I
 
 !<keyword category="Output Control" required="false">
-!  <description>Write void fraction in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_EP_g = .FALSE.
-!</keyword>
-
-
-!<keyword category="Output Control" required="false">
-!  <description>Write gas pressure in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_P_g = .FALSE.
+!  <description>X coordinate of the VTK region west face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_X_W = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write solids pressure in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_P_star = .FALSE.
+!  <description>X coordinate of the VTK region east face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_X_E = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write gas velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_VEL_g = .FALSE.
+!  <description>Y coordinate of the VTK region south face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Y_S = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write x-component of gas velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_U_g = .FALSE.
+!  <description>Y coordinate of the VTK region north face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Y_N = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write y-component of gas velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_V_g = .FALSE.
+!  <description>Z coordinate of the VTK region bottom face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Z_B = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write z-component of gas velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_W_g = .FALSE.
+!  <description>Z coordinate of the VTK region top face.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Z_T = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write solids velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_VEL_S = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write x-component of solids velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_U_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write y-component of solids velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_V_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write z-component of solids velocity vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_W_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write solids bulk density in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_ROP_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write gas temperature in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_T_g = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write solids temperature in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_T_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write gas phase species in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_X_g = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write solids phase species in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_X_s = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write granular temperature in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_Theta_m = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write scalar in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_Scalar =.FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write reaction rates in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_RRate = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write turbulent kinetic energy in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_K_Turb_G = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write turbulent dissipation rate in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_E_Turb_G = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write vorticity magnitude in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_VORTICITY = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write lambda_2 in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_LAMBDA_2  = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write void grid partition in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_PARTITION = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write boundary condition ID in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_BC_ID = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write wall distance in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_DWALL = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write STL facet count for DES in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_FACET_COUNT_DES = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write neighboring facets in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_NB_FACET_DES = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write cell IJK index in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_IJK = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write cut face normal vector in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_NORMAL = .FALSE.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Write debug variable in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_DEBUG = .FALSE.
+!  <description>VTK region output file name base.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_FILEBASE(2:) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Output Control" required="false">
 !  <description>Type of data to write in the VTK file.</description>
 !  <valid value="C" note="Cell data (VTU file)."/>
 !  <valid value="P" note="Particle data (VTP file)."/>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_DATA = 'C'
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Tolerance to detect particle in a VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_SLICE_TOL = ZERO
 !</keyword>
 
 !<keyword category="Output Control" required="false">
@@ -1170,116 +1017,334 @@ MODULE CG_INIT_NAMELIST
 !    the VTK region."/>
 !  <valid value="I" note="Select particles that are inside or
 !    intersect the edges of the VTK region."/>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_SELECT_MODE = 'C'
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle radius in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_PART_DIAMETER= .FALSE.
+!  <description>
+!    Specifies the number of subdivisions in the x-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NXS = 0
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Specifies the number of subdivisions in the y-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NYS = 0
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Specifies the number of subdivisions in the z-axial direction
+!    to decompose a VTK region. Leave undefined to export the full
+!    region. (Slice a volume into planes; cut a plane into lines;
+!    or break a line into points.)
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NZS = 0
 !</keyword>
 
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle velocity in VTK file.</description>
+!  <description>Tolerance to detect particle in a VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_SLICE_TOL = ZERO
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write the void fraction in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_EP_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write the gas pressure in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_P_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write the solids pressure in VTK region.</description>
+      VTK_P_star = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write the gas velocity vector in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_VEL_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Write x-component of gas velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_U_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Write y-component of gas velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_V_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Write z-component of gas velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_W_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write solids velocity vector in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_VEL_S = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!     Write x-component of solids velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_U_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Write y-component of solids velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_V_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Write z-component of solids velocity vector in VTK region.
+!  </description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_W_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write solids bulk density in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_ROP_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write gas temperature in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_T_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write solids temperature in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_T_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write gas phase species in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_X_g = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write solids phase species in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_X_s = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write granular temperature in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Theta_m = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write scalar in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_Scalar =.FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write reaction rates in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_RRate = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write turbulent kinetic energy in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_K_Turb_G = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write turbulent dissipation rate in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_E_Turb_G = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write vorticity magnitude in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_VORTICITY = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write lambda_2 in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_LAMBDA_2  = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write void grid partition in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_PARTITION = .FALSE.
+!</keyword>
+
+      VTK_DOMAIN_DECOMPOSITION = .FALSE.
+
+!<keyword category="Output Control" required="false">
+!  <description>Write boundary condition ID in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_BC_ID = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write wall distance in VTK region.</description>
+      VTK_DWALL = .FALSE.
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write STL facet count for DES in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_FACET_COUNT_DES = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write neighboring facets in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NB_FACET_DES = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write cell IJK index in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_IJK = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write cut face normal vector in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_NORMAL = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write debug variable in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+!  <arg index="2" id="IDX" min="1" max="15"/>
+      VTK_DEBUG = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle diameter in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
+      VTK_PART_DIAMETER= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle velocity in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_VEL= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle angular velocity in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle angular velocity in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_ANGULAR_VEL= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle angular velocity in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle angular velocity in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_ORIENTATION= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle user-defined variable in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle user-defined variable in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_USR_VAR= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle temperature in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle temperature in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_TEMP= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle species mass fraction in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle species mass fraction in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_X_s= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle cohesion in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <description>Write particle cohesion in VTK region.</description>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_PART_COHESION= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write particle rank in VTK file.</description>
+!  <description>Write particle rank in VTK region.</description>
       VTK_PART_RANK = .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Write cut-cell data only in VTK file.</description>
+!  <description>Write particle ID in VTK region.</description>
+      VTK_PART_ID = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Option to save or not save particules belonging to solids phases in VTK region.</description>
+      VTK_PART_PHASE = .TRUE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write cut-cell data only in VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       VTK_CUTCELL_ONLY= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Starting Index appended to VTU files</description>
+!  <description>Starting Index appended to VTU regions</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="VTK" min="1" max="DIMENSION_VTK"/>
       FRAME = -1
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Directory where vtk files are stored (default is run directory)</description>
+!  <description>Directory where VTK files are stored. By default,
+!   VTK files are written in the run directory.
+!  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       VTU_DIR = '.'
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>West location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_X_W = -UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>East location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_X_E = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>South location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Y_S = -UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>North location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Y_N = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Bottom location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Z_B = -UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>West location of VTK region.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Z_T = UNDEFINED
 !</keyword>
 
 

@@ -81,6 +81,7 @@
       use geometry, only: NO_I, XLENGTH
       use geometry, only: NO_J, YLENGTH
       use geometry, only: NO_K, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -134,7 +135,7 @@
 
          IF(PS_X_W(PSV)==UNDEFINED .AND. PS_I_W(PSV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               PS_X_W(PSV) = ZERO
+               PS_X_W(PSV) = X_MIN
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_X_w and PS_I_w '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -142,7 +143,7 @@
          ENDIF
          IF(PS_X_E(PSV)==UNDEFINED .AND. PS_I_E(PSV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               PS_X_E(PSV) = XLENGTH
+               PS_X_E(PSV) = X_MAX
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_X_e and PS_I_e '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -150,7 +151,7 @@
          ENDIF
          IF(PS_Y_S(PSV)==UNDEFINED .AND. PS_J_S(PSV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               PS_Y_S(PSV) = ZERO
+               PS_Y_S(PSV) = Y_MIN
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Y_s and PS_J_s '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -158,7 +159,7 @@
          ENDIF
          IF(PS_Y_N(PSV)==UNDEFINED .AND. PS_J_N(PSV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               PS_Y_N(PSV) = YLENGTH
+               PS_Y_N(PSV) = Y_MAX
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Y_n and PS_J_n '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -166,7 +167,7 @@
          ENDIF
          IF(PS_Z_B(PSV)==UNDEFINED .AND. PS_K_B(PSV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               PS_Z_B(PSV) = ZERO
+               PS_Z_B(PSV) = Z_MIN
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Z_b and PS_K_b '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -174,7 +175,7 @@
          ENDIF
          IF(PS_Z_T(PSV)==UNDEFINED .AND. PS_K_T(PSV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               PS_Z_T(PSV) = ZLENGTH
+               PS_Z_T(PSV) = Z_MAX
             ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Z_t and PS_K_t '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

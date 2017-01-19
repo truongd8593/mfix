@@ -137,7 +137,7 @@
 
          IF (IS_X_W(ISV)==UNDEFINED .AND. IS_I_W(ISV)==UNDEFINED_I) THEN
             IF (NO_I) THEN
-               IS_X_W(ISV) = ZERO
+               IS_X_W(ISV) = X_MIN
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_X_w and IS_I_w '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -146,7 +146,7 @@
 
          IF(IS_X_E(ISV)==UNDEFINED .AND. IS_I_E(ISV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               IS_X_E(ISV) = XLENGTH
+               IS_X_E(ISV) = X_MAX
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_X_e and IS_I_e '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -154,7 +154,7 @@
          ENDIF
          IF(IS_Y_S(ISV)==UNDEFINED .AND. IS_J_S(ISV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               IS_Y_S(ISV) = ZERO
+               IS_Y_S(ISV) = Y_MIN
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Y_s and IS_J_s '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -162,7 +162,7 @@
          ENDIF
          IF(IS_Y_N(ISV)==UNDEFINED .AND. IS_J_N(ISV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               IS_Y_N(ISV) = YLENGTH
+               IS_Y_N(ISV) = Y_MAX
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Y_n and IS_J_n '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -170,7 +170,7 @@
          ENDIF
          IF(IS_Z_B(ISV)==UNDEFINED .AND. IS_K_B(ISV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               IS_Z_B(ISV) = ZERO
+               IS_Z_B(ISV) = Z_MIN
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Z_b and IS_K_b '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -178,7 +178,7 @@
          ENDIF
          IF(IS_Z_T(ISV)==UNDEFINED .AND. IS_K_T(ISV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               IS_Z_T(ISV) = ZLENGTH
+               IS_Z_T(ISV) = Z_MAX
             ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Z_t and IS_K_t '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

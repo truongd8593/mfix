@@ -72,10 +72,11 @@
           IF (NMAX(M) > 0) THEN
             X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M))
           ENDIF
-
-          RO_S(:,M) = RO_SO(:,M)
         ENDIF
-      END DO
+! species_eq do not have to be solved to involve varying density
+! (could be user defined function)
+        RO_S(:,M) = RO_SO(:,M)
+      ENDDO
 
 ! Recalculate all coefficients
       CALL CALC_COEFF_ALL(MFIX_DAT, 0, IER)

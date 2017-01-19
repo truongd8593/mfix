@@ -49,12 +49,12 @@
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
 
-      mins(1) = 0
-      mins(2) = 0
-      mins(3) = 0
-      maxs(1) = XLENGTH
-      maxs(2) = YLENGTH
-      maxs(3) = ZLENGTH
+      mins(1) = X_MIN
+      mins(2) = Y_MIN
+      mins(3) = Z_MIN
+      maxs(1) = X_MAX
+      maxs(2) = Y_MAX
+      maxs(3) = Z_MAX
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces

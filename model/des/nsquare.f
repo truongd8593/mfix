@@ -17,6 +17,7 @@
       use discretelement
       use functions
       use geometry, only: DO_K, xlength, ylength, zlength
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
       use param1, only: zero
 
       IMPLICIT NONE
@@ -67,19 +68,19 @@
                KK = 1
 
                IF(DES_PERIODIC_WALLS_X) THEN
-                  IF (DES_POS_NEW(L,1) + R_LM > XLENGTH) THEN
+                  IF (DES_POS_NEW(L,1) + R_LM > X_MAX) THEN
                      II = 2
                      XPOS(II) = DES_POS_NEW(LL,1) + XLENGTH
-                  ELSEIF (DES_POS_NEW(L,1) - R_LM < ZERO) THEN
+                  ELSEIF (DES_POS_NEW(L,1) - R_LM < X_MIN) THEN
                      II = 2
                      XPOS(II) = DES_POS_NEW(LL,1) - XLENGTH
                   ENDIF
                ENDIF
                IF(DES_PERIODIC_WALLS_Y) THEN
-                  IF (DES_POS_NEW(L,2) + R_LM > YLENGTH) THEN
+                  IF (DES_POS_NEW(L,2) + R_LM > Y_MAX) THEN
                      JJ = 2
                      YPOS(JJ) = DES_POS_NEW(LL,2) + YLENGTH
-                  ELSEIF (DES_POS_NEW(L,2) - R_LM < YLENGTH) THEN
+                  ELSEIF (DES_POS_NEW(L,2) - R_LM < Y_MIN) THEN
                      JJ = 2
                      YPOS(JJ) = DES_POS_NEW(LL,2) - YLENGTH
                   ENDIF
@@ -87,10 +88,10 @@
                IF(DO_K) THEN
                   ZPOS(:) = DES_POS_NEW(LL,3)
                   IF(DES_PERIODIC_WALLS_Z) THEN
-                     IF (DES_POS_NEW(L,3) + R_LM > ZLENGTH) THEN
+                     IF (DES_POS_NEW(L,3) + R_LM > Z_MAX) THEN
                         KK = 2
                         ZPOS(KK) = DES_POS_NEW(LL,3) + ZLENGTH
-                     ELSEIF (DES_POS_NEW(L,3) - R_LM < ZERO) THEN
+                     ELSEIF (DES_POS_NEW(L,3) - R_LM < Z_MIN) THEN
                         KK = 2
                         ZPOS(KK) = DES_POS_NEW(LL,3) - ZLENGTH
                      ENDIF

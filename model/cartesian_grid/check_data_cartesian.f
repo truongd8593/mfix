@@ -1902,13 +1902,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPX(1) and above, and CPX(0) is automatically set to zero.
+!          CPX(1) and above, and CPX(0) is automatically set to X_MIN.
 
       DO NN = MAX_CP,1,-1
          CPX(nn) = CPX(NN-1)
       ENDDO
 
-      CPX(0) = ZERO
+      CPX(0) = X_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -1920,9 +1920,9 @@ MODULE CHECK_DATA_CG
       IF(NX>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN X-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN X-DIRECTION = ',NX
-         IF(CPX(NX)/=XLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO XLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' XLENGTH = ',XLENGTH
+         IF(CPX(NX)/=X_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO X_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' X_MAX = ',X_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPX(NX)
             call mfix_exit(myPE)
          ENDIF
@@ -2094,13 +2094,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPY(1) and above, and CPY(0) is automatically set to zero.
+!          CPY(1) and above, and CPY(0) is automatically set to Y_MIN.
 
       DO NN = MAX_CP,1,-1
          CPY(nn) = CPY(NN-1)
       ENDDO
 
-      CPY(0) = ZERO
+      CPY(0) = Y_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -2112,9 +2112,9 @@ MODULE CHECK_DATA_CG
       IF(NY>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN Y-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN Y-DIRECTION = ',NY
-         IF(CPY(NY)/=YLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO YLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' YLENGTH = ',YLENGTH
+         IF(CPY(NY)/=Y_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO Y_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' Y_MAX = ',Y_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPY(NY)
             call mfix_exit(myPE)
          ENDIF
@@ -2288,13 +2288,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPZ(1) and above, and CPZ(0) is automatically set to zero.
+!          CPZ(1) and above, and CPZ(0) is automatically set to Z_MIN.
 
       DO NN = MAX_CP,1,-1
          CPZ(nn) = CPZ(NN-1)
       ENDDO
 
-      CPZ(0) = ZERO
+      CPZ(0) = Z_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -2306,9 +2306,9 @@ MODULE CHECK_DATA_CG
       IF(NZ>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN Z-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN Z-DIRECTION = ',NZ
-         IF(CPZ(NZ)/=ZLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO ZLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' ZLENGTH = ',ZLENGTH
+         IF(CPZ(NZ)/=Z_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO Z_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' Z_MAX = ',Z_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPZ(NZ)
             call mfix_exit(myPE)
          ENDIF

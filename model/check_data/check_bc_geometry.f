@@ -23,6 +23,7 @@
       use geometry, only: NO_I, XLENGTH
       use geometry, only: NO_J, YLENGTH
       use geometry, only: NO_K, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 ! Flag: Reinitializing field conditions.
       use run, only: REINITIALIZING
 
@@ -103,7 +104,7 @@
 
          IF(BC_X_W(BCV)==UNDEFINED .AND. BC_I_W(BCV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               BC_X_W(BCV) = ZERO
+               BC_X_W(BCV) = X_MIN
             ELSE
                WRITE(ERR_MSG,1101) BCV, 'BC_X_w and BC_I_w'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -112,7 +113,7 @@
 
          IF(BC_X_E(BCV)==UNDEFINED .AND. BC_I_E(BCV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               BC_X_E(BCV) = XLENGTH
+               BC_X_E(BCV) = X_MAX
             ELSE
                WRITE(ERR_MSG, 1101) BCV, 'BC_X_e and BC_I_e'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -121,7 +122,7 @@
 
          IF(BC_Y_S(BCV)==UNDEFINED .AND. BC_J_S(BCV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               BC_Y_S(BCV) = ZERO
+               BC_Y_S(BCV) = Y_MIN
             ELSE
                WRITE(ERR_MSG, 1101) BCV, 'BC_Y_s and BC_J_s'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -130,7 +131,7 @@
 
          IF(BC_Y_N(BCV)==UNDEFINED .AND. BC_J_N(BCV)==UNDEFINED_I) THEN
             IF(NO_J) THEN
-               BC_Y_N(BCV) = YLENGTH
+               BC_Y_N(BCV) = Y_MAX
             ELSE
                WRITE(ERR_MSG, 1101) BCV, 'BC_Y_n and BC_J_n'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -139,7 +140,7 @@
 
          IF(BC_Z_B(BCV)==UNDEFINED .AND. BC_K_B(BCV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               BC_Z_B(BCV) = ZERO
+               BC_Z_B(BCV) = Z_MIN
             ELSE
                WRITE(ERR_MSG, 1101) BCV, 'BC_Z_b and BC_K_b'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -148,7 +149,7 @@
 
          IF(BC_Z_T(BCV)==UNDEFINED .AND. BC_K_T(BCV)==UNDEFINED_I) THEN
             IF(NO_K) THEN
-               BC_Z_T(BCV) = ZLENGTH
+               BC_Z_T(BCV) = Z_MAX
             ELSE
                WRITE(ERR_MSG, 1101) BCV, 'BC_Z_t and BC_K_t'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -209,6 +210,7 @@
       use geometry, only: NO_I, XLENGTH, DX, IMAX, IMAX2, XMIN
       use geometry, only: NO_J, YLENGTH, DY, JMAX, JMAX2
       use geometry, only: NO_K, ZLENGTH, DZ, KMAX, KMAX2
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 ! Flag: Reinitializing field conditions.
       use run, only: REINITIALIZING
 ! Function to compare two values
@@ -252,15 +254,15 @@
             I_W = 1
             I_E = 1
          ELSE
-            CALL CALC_CELL (XMIN, BC_X_W(BCV), DX, IMAX, I_W)
+            CALL CALC_CELL (X_MIN, BC_X_W(BCV), DX, IMAX, I_W)
             I_W = I_W + 1
-            CALL CALC_CELL (XMIN, BC_X_E(BCV), DX, IMAX, I_E)
+            CALL CALC_CELL (X_MIN, BC_X_E(BCV), DX, IMAX, I_E)
 ! BC along zy plane, checking if far west or far east of domain
             IF(BC_X_W(BCV) == BC_X_E(BCV)) THEN
-               IF(COMPARE(BC_X_W(BCV),XMIN)) THEN
+               IF(COMPARE(BC_X_W(BCV),X_MIN)) THEN
                   I_W = 1
                   I_E = 1
-               ELSEIF(COMPARE(BC_X_W(BCV),XMIN+XLENGTH)) THEN
+               ELSEIF(COMPARE(BC_X_W(BCV),X_MIN+XLENGTH)) THEN
                   I_W = IMAX2
                   I_E = IMAX2
                ENDIF
@@ -285,15 +287,15 @@
             J_S = 1
             J_N = 1
          ELSE
-            CALL CALC_CELL (ZERO, BC_Y_S(BCV), DY, JMAX, J_S)
+            CALL CALC_CELL (Y_MIN, BC_Y_S(BCV), DY, JMAX, J_S)
             J_S = J_S + 1
-            CALL CALC_CELL (ZERO, BC_Y_N(BCV), DY, JMAX, J_N)
+            CALL CALC_CELL (Y_MIN, BC_Y_N(BCV), DY, JMAX, J_N)
 ! BC along xz plane, checking if far south or far north of domain
             IF(BC_Y_S(BCV) == BC_Y_N(BCV)) THEN
-               IF(COMPARE(BC_Y_S(BCV),ZERO)) THEN
+               IF(COMPARE(BC_Y_S(BCV),Y_MIN)) THEN
                   J_S = 1
                   J_N = 1
-               ELSE IF (COMPARE(BC_Y_S(BCV),YLENGTH)) THEN
+               ELSE IF (COMPARE(BC_Y_S(BCV),Y_MIN+YLENGTH)) THEN
                   J_S = JMAX2
                   J_N = JMAX2
                ENDIF
@@ -316,15 +318,15 @@
             K_B = 1
             K_T = 1
          ELSE
-            CALL CALC_CELL (ZERO, BC_Z_B(BCV), DZ, KMAX, K_B)
+            CALL CALC_CELL (Z_MIN, BC_Z_B(BCV), DZ, KMAX, K_B)
             K_B = K_B + 1
-            CALL CALC_CELL (ZERO, BC_Z_T(BCV), DZ, KMAX, K_T)
+            CALL CALC_CELL (Z_MIN, BC_Z_T(BCV), DZ, KMAX, K_T)
 ! BC along xy plane, checking if far bottom or far top of domain
             IF(BC_Z_B(BCV) == BC_Z_T(BCV)) THEN
-               IF(COMPARE(BC_Z_B(BCV),ZERO)) THEN
+               IF(COMPARE(BC_Z_B(BCV),Z_MIN)) THEN
                   K_B = 1
                   K_T = 1
-               ELSEIF(COMPARE(BC_Z_B(BCV),ZLENGTH)) THEN
+               ELSEIF(COMPARE(BC_Z_B(BCV),Z_MIN+ZLENGTH)) THEN
                   K_B = KMAX2
                   K_T = KMAX2
                ENDIF
@@ -395,6 +397,7 @@
       use geometry, only: NO_I, DX, IMAX, IMAX2, XMIN
       use geometry, only: NO_J, DY, JMAX, JMAX2
       use geometry, only: NO_K, DZ, KMAX, KMAX2
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 ! Flag: Reinitializing field conditions.
       use run, only: REINITIALIZING
 
@@ -438,8 +441,8 @@
       Z_CONSTANT = .TRUE.
 
       IF (BC_X_W(BCV)/=UNDEFINED .AND. BC_X_E(BCV)/=UNDEFINED) THEN
-         CALL CALC_CELL (XMIN, BC_X_W(BCV), DX, IMAX, I_W)
-         CALL CALC_CELL (XMIN, BC_X_E(BCV), DX, IMAX, I_E)
+         CALL CALC_CELL (X_MIN, BC_X_W(BCV), DX, IMAX, I_W)
+         CALL CALC_CELL (X_MIN, BC_X_E(BCV), DX, IMAX, I_E)
          IF (BC_X_W(BCV) /= BC_X_E(BCV)) THEN
             X_CONSTANT = .FALSE.
             I_W = I_W + 1
@@ -452,9 +455,9 @@
          BC_I_E(BCV) = I_E
       ELSE
          IF(BC_I_W(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (XMIN,DX,BC_I_W(BCV),BC_X_W(BCV))
+            CALL CALC_LOC (X_MIN,DX,BC_I_W(BCV),BC_X_W(BCV))
          IF(BC_I_E(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (XMIN,DX,BC_I_E(BCV),BC_X_E(BCV))
+            CALL CALC_LOC (X_MIN,DX,BC_I_E(BCV),BC_X_E(BCV))
          IF(BC_X_W(BCV) /= BC_X_E(BCV)) X_CONSTANT = .FALSE.
       ENDIF
 
@@ -465,8 +468,8 @@
       ENDIF
 
       IF (BC_Y_S(BCV)/=UNDEFINED .AND. BC_Y_N(BCV)/=UNDEFINED) THEN
-         CALL CALC_CELL (ZERO, BC_Y_S(BCV), DY, JMAX, J_S)
-         CALL CALC_CELL (ZERO, BC_Y_N(BCV), DY, JMAX, J_N)
+         CALL CALC_CELL (Y_MIN, BC_Y_S(BCV), DY, JMAX, J_S)
+         CALL CALC_CELL (Y_MIN, BC_Y_N(BCV), DY, JMAX, J_N)
          IF(BC_Y_S(BCV) /= BC_Y_N(BCV)) THEN
             Y_CONSTANT = .FALSE.
             J_S = J_S + 1
@@ -479,9 +482,9 @@
          BC_J_N(BCV) = J_N
       ELSE
          IF(BC_J_S(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (ZERO,DY,BC_J_S(BCV),BC_Y_S(BCV))
+            CALL CALC_LOC (Y_MIN,DY,BC_J_S(BCV),BC_Y_S(BCV))
          IF(BC_J_N(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (ZERO,DY,BC_J_N(BCV),BC_Y_N(BCV))
+            CALL CALC_LOC (Y_MIN,DY,BC_J_N(BCV),BC_Y_N(BCV))
          IF (BC_Y_S(BCV) /= BC_Y_N(BCV)) Y_CONSTANT = .FALSE.
       ENDIF
 
@@ -492,8 +495,8 @@
       ENDIF
 
       IF(BC_Z_B(BCV)/=UNDEFINED .AND. BC_Z_T(BCV)/=UNDEFINED) THEN
-         CALL CALC_CELL (ZERO, BC_Z_B(BCV), DZ, KMAX, K_B)
-         CALL CALC_CELL (ZERO, BC_Z_T(BCV), DZ, KMAX, K_T)
+         CALL CALC_CELL (Z_MIN, BC_Z_B(BCV), DZ, KMAX, K_B)
+         CALL CALC_CELL (Z_MIN, BC_Z_T(BCV), DZ, KMAX, K_T)
          IF(BC_Z_B(BCV) /= BC_Z_T(BCV)) THEN
             Z_CONSTANT = .FALSE.
             K_B = K_B + 1
@@ -506,9 +509,9 @@
          BC_K_T(BCV) = K_T
       ELSE
          IF(BC_K_B(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (ZERO,DZ,BC_K_B(BCV),BC_Z_B(BCV))
+            CALL CALC_LOC (Z_MIN,DZ,BC_K_B(BCV),BC_Z_B(BCV))
          IF(BC_K_T(BCV) /= UNDEFINED_I) &
-            CALL CALC_LOC (ZERO,DZ,BC_K_T(BCV),BC_Z_T(BCV))
+            CALL CALC_LOC (Z_MIN,DZ,BC_K_T(BCV),BC_Z_T(BCV))
          IF(BC_Z_B(BCV) /= BC_Z_T(BCV)) Z_CONSTANT = .FALSE.
       ENDIF
 

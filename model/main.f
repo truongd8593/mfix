@@ -11,9 +11,8 @@
 
       use exit, only: mfix_exit
 
-!-----------------------------------------------
 ! Module variables
-!-----------------------------------------------
+!---------------------------------------------------------------------
 ! Final value of CPU time.
       DOUBLE PRECISION :: CPU1
 ! time used for computations.
@@ -34,9 +33,15 @@
 
       CONTAINS
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INITIALIZE(MFIX_DAT)
 !f2py threadsafe
 
+! Modules
+!---------------------------------------------------------------------
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier
 #endif
@@ -90,21 +95,20 @@
 
      INTEGER :: LL, MM
 
-     !--------------------------  ARRAY ALLOCATION -----------------------!
-
-     ! Allocate array storage.
-     CALL ALLOCATE_ARRAYS
+! ARRAY ALLOCATION
+!---------------------------------------------------------------------
+! Allocate array storage.
      CALL ALLOCATE_ARRAYS
      IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
      IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
-     ! Initialize arrays.
+! Initialize arrays.
      CALL INIT_FVARS
      IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
 
-     !======================================================================
-     ! Data initialization for Dashboard
-     !======================================================================
+
+! Data initialization for Dashboard
+!---------------------------------------------------------------------
      INIT_TIME = TIME
      SMMIN =  LARGE_NUMBER
      SMMAX = -LARGE_NUMBER
@@ -117,7 +121,7 @@
 
      N_DASHBOARD = 0
 
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
       WALL0 = WALL_TIME()
@@ -266,9 +270,6 @@
 ! Check the field variable data and report errors.
       IF(.NOT.CARTESIAN_GRID)  CALL CHECK_DATA_20
 
-!=======================================================================
-! JFD: START MODIFICATION FOR RE-INDEXING CELLS
-!=======================================================================
       IF(CARTESIAN_GRID.AND.RE_INDEXING) THEN
 
          IF(myPE == PE_IO) THEN
@@ -296,9 +297,6 @@
             call write_netcdf(0,0,time)
          ENDIF
       ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR RE-INDEXING CELLS
-!=======================================================================
 
 ! Setup VTK data for regular (no cut cells) grid
       IF(.NOT.CARTESIAN_GRID.AND.WRITE_VTK_FILES) CALL SETUP_VTK_NO_CUTCELL
@@ -314,7 +312,7 @@
 ! Set the inital properties of each particle.
       IF(DEM_SOLIDS) CALL SET_IC_DEM
 
-! AEOLUS: debug prints
+! debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then
          !write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
          call debug_write_layout()
@@ -332,8 +330,7 @@
 
 ! Find the solution of the equations from TIME to TSTOP at
 ! intervals of DT
-
-!-----------------------------------------------
+!---------------------------------------------------------------------
 
       NCHECK  = NSTEP
       DNCHECK = 1
@@ -400,9 +397,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_DATA(MFIX_DAT)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------
 
       USE compar, only: adjust_partition, mype, nodesi, nodesj, nodesk, pe_io
       USE debug, only: good_config
@@ -473,7 +469,16 @@
 
     END SUBROUTINE GET_DATA
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: CHECK_DATA                                              C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CHECK_DATA(MFIX_DAT)
+
+! Modules
+!---------------------------------------------------------------------
 !f2py threadsafe
          USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
          USE constant, only: set_constants
@@ -492,13 +497,15 @@
          USE stl_preproc_des, only: DES_STL_PREPROCESSING
          IMPLICIT NONE
 
-         CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+! Dummy arguments
+!---------------------------------------------------------------------
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
-         !-----------------------------------------------
-         ! Local variables
-         !-----------------------------------------------
-         ! shift DX, DY and DZ values
-         LOGICAL, PARAMETER :: SHIFT = .TRUE.
+! Local variables
+!---------------------------------------------------------------------
+! shift DX, DY and DZ values
+      LOGICAL, PARAMETER :: SHIFT = .TRUE.
+!---------------------------------------------------------------------
 
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.
@@ -522,7 +529,6 @@
 
       CALL CHECK_RUN_CONTROL; IF(REINIT_ERROR()) RETURN
       CALL CHECK_NUMERICS; IF(REINIT_ERROR()) RETURN
-      CALL CHECK_OUTPUT_CONTROL; IF(REINIT_ERROR()) RETURN
 
       CALL CHECK_GAS_PHASE(MFIX_DAT); IF(REINIT_ERROR()) RETURN
       CALL CHECK_SOLIDS_PHASES(MFIX_DAT); IF(REINIT_ERROR()) RETURN
@@ -544,11 +550,12 @@
       CALL CHECK_CHEMICAL_RXNS(MFIX_DAT); IF(REINIT_ERROR()) RETURN
       CALL CHECK_ODEPACK_STIFF_CHEM; IF(REINIT_ERROR()) RETURN
 
+! Output control - Must be called after geometry check      
+      CALL CHECK_OUTPUT_CONTROL; IF(REINIT_ERROR()) RETURN
 
 
-!----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
-
-
+! DOMAIN SPECIFIC CHECKS
+!--------------------------------------------------------------------!
 ! This call needs to occur before any of the IC/BC checks.
       CALL SET_ICBC_FLAG; IF(REINIT_ERROR()) RETURN
 
@@ -580,6 +587,11 @@
 
       END SUBROUTINE CHECK_DATA
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: FINALIZE                                                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE FINALIZE
 !f2py threadsafe
 
@@ -629,20 +641,17 @@
          call parallel_fin
       ENDIF
 
-
       CALL FINL_ERR_MSG
-
       END SUBROUTINE FINALIZE
 
 
-
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !                                                                      !
-   !  SUBROUTINE: DO_MPI_BCAST                                            !
-   !                                                                      !
-   !  Purpose: Used by pymfix for broadcasting commands.                  !
-   !                                                                      !
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: DO_MPI_BCAST                                            !
+!                                                                      !
+!  Purpose: Used by pymfix for broadcasting commands.                  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
    function do_mpi_bcast(str)
 #ifdef MPI
       use mpi
@@ -670,6 +679,9 @@
 
    end function do_mpi_bcast
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
    subroutine do_write_dbg_vtu_and_vtp_files
       implicit none
       call write_dbg_vtu_and_vtp_files
@@ -696,14 +708,14 @@
       call mfix_exit(mype)
    end subroutine do_abort
 
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !  Subroutine: ADD_COMMAND_LINE_KEYWORD                                !
-   !  Author: M.Meredith                                 Date: 03-FEB-16  !
-   !                                                                      !
-   !  Purpose: Save command line arguments in CMD_LINE_ARGS array.        !
-   !           Used by both mfix.f and pymfix.                            !
-   !                                                                      !
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: ADD_COMMAND_LINE_KEYWORD                                !
+!  Author: M.Meredith                                 Date: 03-FEB-16  !
+!                                                                      !
+!  Purpose: Save command line arguments in CMD_LINE_ARGS array.        !
+!           Used by both mfix.f and pymfix.                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
    SUBROUTINE ADD_COMMAND_LINE_KEYWORD(ARG)
       implicit none
       CHARACTER(LEN=80), INTENT(IN) :: ARG
@@ -720,13 +732,13 @@
 
    END SUBROUTINE ADD_COMMAND_LINE_KEYWORD
 
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !  Subroutine: PRINT_FLAGS                                             !
-   !  Author: M.Meredith                                 Date: 27-APR-16  !
-   !                                                                      !
-   !  Purpose: Print the configure flags MFIX was built with.             !
-   !                                                                      !
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: PRINT_FLAGS                                             !
+!  Author: M.Meredith                                 Date: 27-APR-16  !
+!                                                                      !
+!  Purpose: Print the configure flags MFIX was built with.             !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
    SUBROUTINE PRINT_FLAGS
       implicit none
 

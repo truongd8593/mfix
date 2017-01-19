@@ -101,7 +101,7 @@
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
-        XG_E(1) = ZERO
+        XG_E(1) = X_MIN
         DO I = IMIN1, IMAX2
            XG_E(I) = XG_E(I-1) + DX(I)
         END DO
@@ -109,7 +109,7 @@
 
 !     Location of V-momentum cells for original (uncut grid)
       IF (DO_J) THEN
-        YG_N(1) = ZERO
+        YG_N(1) = Y_MIN
         DO J = JMIN1, JMAX2
            YG_N(J) = YG_N(J-1) + DY(J)
         END DO
@@ -117,7 +117,7 @@
 
 !     Location of W-momentum cells for original (uncut grid)
       IF (DO_K) THEN
-        ZG_T(1) = ZERO
+        ZG_T(1) = Z_MIN
         DO K = KMIN1, KMAX2
            ZG_T(K) = ZG_T(K-1) + DZ(K)
         END DO
@@ -132,186 +132,190 @@
 
       IF(MODE==0) CALL OPEN_PVD_FILE
 
-      CALL CLEAN_GEOMETRY
+      IF(.NOT.VTK_DOMAIN_DECOMPOSITION(VTK_REGION)) THEN
+         
+         CALL CLEAN_GEOMETRY
 
-      DO PASS=WRITE_HEADER,WRITE_DATA
-
-
-         CALL WRITE_GEOMETRY_IN_VTU_BIN(PASS)
-
-         IF(VTK_EP_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('EP_G',EP_G,PASS)
-
-         IF(VTK_P_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('P_G',P_G,PASS)
-
-         IF(VTK_P_star(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('P_S',P_S,PASS)
-
-         IF(VTK_VEL_g(VTK_REGION)) &
-            CALL WRITE_VECTOR_IN_VTU_BIN('Gas_Velocity',U_G,V_G,W_G,PASS)
-
-         IF(VTK_U_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('U_G',U_G,PASS)
-
-         IF(VTK_V_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('V_G',V_G,PASS)
-
-         IF(VTK_W_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('W_G',W_G,PASS)
-
-         DO M = 1,MMAX
-            IF(VTK_VEL_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_VECTOR_IN_VTU_BIN('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M),PASS)
-            ENDIF
-            IF(VTK_U_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_SCALAR_IN_VTU_BIN('U_s_'//ADJUSTL(SUBM),U_S(:,M),PASS)
-            ENDIF
-            IF(VTK_V_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_SCALAR_IN_VTU_BIN('V_s_'//ADJUSTL(SUBM),V_S(:,M),PASS)
-            ENDIF
-            IF(VTK_W_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_SCALAR_IN_VTU_BIN('W_s_'//ADJUSTL(SUBM),W_S(:,M),PASS)
-            ENDIF
-         END DO
-
-         DO M = 1,MMAX
-            IF(VTK_ROP_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_SCALAR_IN_VTU_BIN('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M),PASS)
-            ENDIF
-         END DO
-
-         IF(VTK_T_g(VTK_REGION)) &
-            CALL WRITE_SCALAR_IN_VTU_BIN('Gas_temperature',T_g,PASS)
-
-         DO M = 1,MMAX
-            IF(VTK_T_s(VTK_REGION,M)) THEN
-               WRITE(SUBM,*)M
-               CALL WRITE_SCALAR_IN_VTU_BIN('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M),PASS)
-            ENDIF
-         END DO
+         DO PASS=WRITE_HEADER,WRITE_DATA
 
 
-         SPECIES_COUNTER = 0
-         DO NN = 1,NMAX(0)
-            IF(VTK_X_g(VTK_REGION,NN)) THEN
-               WRITE(SUBN,*)NN
-               IF(USE_RRATES) THEN
-                  SPECIES_COUNTER = SPECIES_COUNTER + 1
-                  VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
-                  LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
-               ELSE
-                  VAR_NAME = ADJUSTL(SPECIES_ALIAS_g(NN))
-                  LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_g(NN)))
+            CALL WRITE_GEOMETRY_IN_VTU_BIN(PASS)
+
+            IF(VTK_EP_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('EP_G',EP_G,PASS)
+
+            IF(VTK_P_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('P_G',P_G,PASS)
+
+            IF(VTK_P_star(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('P_S',P_S,PASS)
+
+            IF(VTK_VEL_g(VTK_REGION)) &
+               CALL WRITE_VECTOR_IN_VTU_BIN('Gas_Velocity',U_G,V_G,W_G,PASS)
+
+            IF(VTK_U_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('U_G',U_G,PASS)
+
+            IF(VTK_V_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('V_G',V_G,PASS)
+
+            IF(VTK_W_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('W_G',W_G,PASS)
+
+            DO M = 1,MMAX
+               IF(VTK_VEL_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_VECTOR_IN_VTU_BIN('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M),PASS)
                ENDIF
-               VAR_NAME = VAR_NAME(1:LT)//'_Gas_mass_fractions_'//ADJUSTL(SUBN)
-               CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,NN),PASS)
-            ENDIF
-         END DO
+               IF(VTK_U_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU_BIN('U_s_'//ADJUSTL(SUBM),U_S(:,M),PASS)
+               ENDIF
+               IF(VTK_V_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU_BIN('V_s_'//ADJUSTL(SUBM),V_S(:,M),PASS)
+               ENDIF
+               IF(VTK_W_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU_BIN('W_s_'//ADJUSTL(SUBM),W_S(:,M),PASS)
+               ENDIF
+            END DO
 
-        DO M = 1, MMAX
-           WRITE(SUBM,*)M
-           DO NN = 1,NMAX(M)
-              IF(VTK_X_s(VTK_REGION,M,NN)) THEN
-                 WRITE(SUBN,*)NN
-                 IF(USE_RRATES) THEN
-                    SPECIES_COUNTER = SPECIES_COUNTER + 1
-                    VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
-                    LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
-                 ELSE
-                    VAR_NAME = ADJUSTL(SPECIES_ALIAS_s(M,NN))
-                    LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_s(M,NN)))
+            DO M = 1,MMAX
+               IF(VTK_ROP_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU_BIN('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M),PASS)
+               ENDIF
+            END DO
+
+            IF(VTK_T_g(VTK_REGION)) &
+               CALL WRITE_SCALAR_IN_VTU_BIN('Gas_temperature',T_g,PASS)
+
+            DO M = 1,MMAX
+               IF(VTK_T_s(VTK_REGION,M)) THEN
+                  WRITE(SUBM,*)M
+                  CALL WRITE_SCALAR_IN_VTU_BIN('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M),PASS)
+               ENDIF
+            END DO
+
+
+            SPECIES_COUNTER = 0
+            DO NN = 1,NMAX(0)
+               IF(VTK_X_g(VTK_REGION,NN)) THEN
+                  WRITE(SUBN,*)NN
+                  IF(USE_RRATES) THEN
+                     SPECIES_COUNTER = SPECIES_COUNTER + 1
+                     VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                     LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                  ELSE
+                     VAR_NAME = ADJUSTL(SPECIES_ALIAS_g(NN))
+                     LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_g(NN)))
+                  ENDIF
+                  VAR_NAME = VAR_NAME(1:LT)//'_Gas_mass_fractions_'//ADJUSTL(SUBN)
+                  CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,NN),PASS)
+               ENDIF
+            END DO
+
+           DO M = 1, MMAX
+              WRITE(SUBM,*)M
+              DO NN = 1,NMAX(M)
+                 IF(VTK_X_s(VTK_REGION,M,NN)) THEN
+                    WRITE(SUBN,*)NN
+                    IF(USE_RRATES) THEN
+                       SPECIES_COUNTER = SPECIES_COUNTER + 1
+                       VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                       LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                    ELSE
+                       VAR_NAME = ADJUSTL(SPECIES_ALIAS_s(M,NN))
+                       LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_s(M,NN)))
+                    ENDIF
+                    VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
+                    CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,NN),PASS)
                  ENDIF
-                 VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
-                 CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,NN),PASS)
+              END DO
+           END DO
+
+           DO M = 1,MMAX
+              IF(VTK_Theta_m(VTK_REGION,M)) THEN
+                 WRITE(SUBM,*)M
+                 CALL WRITE_SCALAR_IN_VTU_BIN('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M),PASS)
               ENDIF
            END DO
-        END DO
 
-        DO M = 1,MMAX
-           IF(VTK_Theta_m(VTK_REGION,M)) THEN
-              WRITE(SUBM,*)M
-              CALL WRITE_SCALAR_IN_VTU_BIN('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M),PASS)
-           ENDIF
-        END DO
+           DO NN = 1,NSCALAR
+              IF(VTK_Scalar(VTK_REGION,NN)) THEN
+                 WRITE(SUBN,*)NN
+                 VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
+                 CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,Scalar(:,NN),PASS)
+              ENDIF
+           END DO
 
-        DO NN = 1,NSCALAR
-           IF(VTK_Scalar(VTK_REGION,NN)) THEN
-              WRITE(SUBN,*)NN
-              VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
-              CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,Scalar(:,NN),PASS)
-           ENDIF
-        END DO
+           DO R = 1,nRR
+              IF(VTK_RRate(VTK_REGION,R)) THEN
+                 WRITE(SUBR,*)R
+                 VAR_NAME = 'RRates_'//ADJUSTL(SUBR)
+                 CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,ReactionRates(:, R),PASS)
+              ENDIF
+          END DO
 
-        DO R = 1,nRR
-           IF(VTK_RRate(VTK_REGION,R)) THEN
-              WRITE(SUBR,*)R
-              VAR_NAME = 'RRates_'//ADJUSTL(SUBR)
-              CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,ReactionRates(:, R),PASS)
-           ENDIF
-       END DO
-
-       IF(K_EPSILON) THEN
-          IF(VTK_K_Turb_G(VTK_REGION)) &
-             CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)
-          IF(VTK_E_Turb_G(VTK_REGION)) &
-             CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)
-       ENDIF
-
-
-       IF(VTK_VORTICITY(VTK_REGION).OR.VTK_LAMBDA_2(VTK_REGION)) THEN
-          CALL CALC_VORTICITY
-       ENDIF
-
-       IF(VTK_VORTICITY(VTK_REGION)) &
-          CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)
-       IF(VTK_LAMBDA_2(VTK_REGION)) &
-          CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)
-
-
-       IF(VTK_PARTITION(VTK_REGION)) &
-          CALL WRITE_SCALAR_IN_VTU_BIN('PARTITION',PARTITION,PASS)
-
-
-       IF(VTK_BC_ID(VTK_REGION)) THEN
-          Allocate(DP_BC_ID(DIMENSION_3))
-          DP_BC_ID = DBLE(BC_ID)
-          CALL WRITE_SCALAR_IN_VTU_BIN('BC_ID',DP_BC_ID,PASS)
-          DeAllocate(DP_BC_ID)
-       ENDIF
-
-
-       IF(VTK_DWALL(VTK_REGION)) &
-          CALL WRITE_SCALAR_IN_VTU_BIN('DISTANCE_TO_WALL',DWALL,PASS)
-
-       IF(VTK_IJK(VTK_REGION)) THEN
-         Allocate(IJK_ARRAY(DIMENSION_3))
-         DO IJK = IJKSTART3, IJKEND3
-            IJK_ARRAY(IJK) = DBLE(IJK)
-         ENDDO
-         CALL WRITE_SCALAR_IN_VTU_BIN('IJK',IJK_ARRAY,PASS)
-         DeAllocate(IJK_ARRAY)
-      ENDIF
-
-       IF(VTK_IJK(VTK_REGION)) &
-          CALL WRITE_VECTOR_IN_VTU_BIN('Scalar normal',NORMAL_S(:,1),NORMAL_S(:,2),NORMAL_S(:,3),PASS)
-
-       DO NN=1,15
-          IF(VTK_DEBUG(VTK_REGION,NN)) THEN
-             WRITE(SUBN,*)NN
-             VAR_NAME = 'DEBUG_'//ADJUSTL(SUBN)
-             CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,DEBUG_CG(:,NN),PASS)
+          IF(K_EPSILON) THEN
+             IF(VTK_K_Turb_G(VTK_REGION)) &
+                CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)
+             IF(VTK_E_Turb_G(VTK_REGION)) &
+                CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)
           ENDIF
-       ENDDO
+
+
+          IF(VTK_VORTICITY(VTK_REGION).OR.VTK_LAMBDA_2(VTK_REGION)) THEN
+             CALL CALC_VORTICITY
+          ENDIF
+
+          IF(VTK_VORTICITY(VTK_REGION)) &
+             CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)
+          IF(VTK_LAMBDA_2(VTK_REGION)) &
+             CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)
+
+
+          IF(VTK_PARTITION(VTK_REGION)) &
+             CALL WRITE_SCALAR_IN_VTU_BIN('PARTITION',PARTITION,PASS)
+
+
+          IF(VTK_BC_ID(VTK_REGION)) THEN
+             Allocate(DP_BC_ID(DIMENSION_3))
+             DP_BC_ID = DBLE(BC_ID)
+             CALL WRITE_SCALAR_IN_VTU_BIN('BC_ID',DP_BC_ID,PASS)
+             DeAllocate(DP_BC_ID)
+          ENDIF
+
+
+          IF(VTK_DWALL(VTK_REGION)) &
+             CALL WRITE_SCALAR_IN_VTU_BIN('DISTANCE_TO_WALL',DWALL,PASS)
+
+          IF(VTK_IJK(VTK_REGION)) THEN
+            Allocate(IJK_ARRAY(DIMENSION_3))
+            DO IJK = IJKSTART3, IJKEND3
+               IJK_ARRAY(IJK) = DBLE(IJK)
+            ENDDO
+            CALL WRITE_SCALAR_IN_VTU_BIN('IJK',IJK_ARRAY,PASS)
+            DeAllocate(IJK_ARRAY)
+         ENDIF
+
+          IF(VTK_IJK(VTK_REGION)) &
+             CALL WRITE_VECTOR_IN_VTU_BIN('Scalar normal',NORMAL_S(:,1),NORMAL_S(:,2),NORMAL_S(:,3),PASS)
+
+          DO NN=1,15
+             IF(VTK_DEBUG(VTK_REGION,NN)) THEN
+                WRITE(SUBN,*)NN
+                VAR_NAME = 'DEBUG_'//ADJUSTL(SUBN)
+                CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,DEBUG_CG(:,NN),PASS)
+             ENDIF
+          ENDDO
 
 
 
-      ENDDO ! PASS LOOP, EITHER HEADER OR DATA
+         ENDDO ! PASS LOOP, EITHER HEADER OR DATA
+         
+      ENDIF
 
 
       CALL CLOSE_VTU_FILE_BIN(MODE)
@@ -373,11 +377,36 @@
       USE toleranc
       USE vtk
 
+      use compar, only: myPE, PE_IO, NODESI,NODESJ,NODESK
+      USE param1, only: zero
+      USE geometry, only: XLENGTH,YLENGTH,ZLENGTH
+
+      use compar, only: iend3_all
+      use compar, only: jend3_all
+      use compar, only: kend3_all
+      use geometry, only: imin1, jmin1, kmin1
+      use discretelement, only: XE, YN, ZT
+
+
+      use discretelement
+
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT,BUFF1,BUFF2,L
       INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
                         ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
+
+      INTEGER :: I,J,K
+      DOUBLE PRECISION, DIMENSION(0:NODESI) :: LIST_OF_X_LINES_DES
+      DOUBLE PRECISION, DIMENSION(0:NODESJ) :: LIST_OF_Y_LINES_DES
+      DOUBLE PRECISION, DIMENSION(0:NODESK) :: LIST_OF_Z_LINES_DES
+      DOUBLE PRECISION :: X1,X2,Y1,Y2,Z1,Z2
+
+      INTEGER :: LAST_CHAR
+
+      INTEGER, DIMENSION(0:NODESI-1) :: iend_all_vtk
+      INTEGER, DIMENSION(0:NODESJ-1) :: jend_all_vtk
+      INTEGER, DIMENSION(0:NODESK-1) :: kend_all_vtk
 
 #ifdef MPI
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
@@ -489,6 +518,90 @@
          WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
       ENDIF
+
+      IF(VTK_DOMAIN_DECOMPOSITION(VTK_REGION).AND.MyPE==PE_IO) THEN
+
+
+      iend_all_vtk = iend3_all(0:NODESI-1)-2
+      jend_all_vtk = jend3_all(0:NODESI*NODESJ-1:NODESI)-2
+      kend_all_vtk = kend3_all(0:NODESI*NODESJ*NODESK-1:NODESJ*NODESI)-2
+
+      LIST_OF_X_LINES_DES(0) = ZERO
+      DO I = 1,NODESI
+         LIST_OF_X_LINES_DES(I) =  xe(iend_all_vtk(i-1))
+      ENDDO
+      X1 = LIST_OF_X_LINES_DES(0)
+      X2 = LIST_OF_X_LINES_DES(NODESI)
+
+
+      LIST_OF_Y_LINES_DES(0) = ZERO
+      DO J = 1,NODESJ
+         LIST_OF_Y_LINES_DES(J) = yn(jend_all_vtk(j-1))
+      ENDDO
+      Y1 = LIST_OF_Y_LINES_DES(0)
+      Y2 = LIST_OF_Y_LINES_DES(NODESJ)
+
+
+      LIST_OF_Z_LINES_DES(0) = ZERO
+      DO K = 1,NODESK
+         LIST_OF_Z_LINES_DES(K) = zt(kend_all_vtk(k-1))
+      ENDDO
+      Z1 = LIST_OF_Z_LINES_DES(0)
+      Z2 = LIST_OF_Z_LINES_DES(NODESK)
+
+! Change extension to .vtr (rectilinear mesh)      
+      LAST_CHAR = LEN(TRIM(VTU_FILENAME))
+      VTU_FILENAME(LAST_CHAR:LAST_CHAR) = 'r'
+
+      OPEN(UNIT=VTU_UNIT,FILE=VTU_FILENAME,status='unknown')
+
+      WRITE(VTU_UNIT,'(A)') '<?xml version="1.0"?>'
+      WRITE(VTU_UNIT,'(A)') '<VTKFile type="RectilinearGrid" &
+         &version="0.1" byte_order="LittleEndian">'
+
+      WRITE(VTU_UNIT,'(A,6I6,A)') '<RectilinearGrid &
+         &WholeExtent="',0,NODESI,0,NODESJ,0,NODESK,'">'
+
+      WRITE(VTU_UNIT,'(A,6I6,A)') '<Piece Extent="',0,&
+         NODESI,0,NODESJ,0,NODESK,'">' 
+      WRITE(VTU_UNIT,'(A)') '<Coordinates>'
+
+
+      WRITE(VTU_UNIT,'(A,F14.8,A,F14.8,A)') '<DataArray &
+         &type="Float32" format="ascii" &
+         &RangeMin="',X1,'" RangeMax="',X2,'">'
+      WRITE(VTU_UNIT,'(10F14.8)') LIST_OF_X_LINES_DES
+      WRITE(VTU_UNIT,'(A)') '</DataArray>'
+
+
+      WRITE(VTU_UNIT,'(A,F14.8,A,F14.8,A)') '<DataArray &
+         &type="Float32" format="ascii" &
+         &RangeMin="',Y1,'" RangeMax="',Y2,'">'
+      WRITE(VTU_UNIT,'(10F14.8)') LIST_OF_Y_LINES_DES
+      WRITE(VTU_UNIT,'(A)') '</DataArray>'
+
+
+      WRITE(VTU_UNIT,'(A,F14.8,A,F14.8,A)') '<DataArray &
+         &type="Float32" format="ascii" &
+         &RangeMin="',Z1,'" RangeMax="',Z2,'">'
+      WRITE(VTU_UNIT,'(10F14.8)') LIST_OF_Z_LINES_DES
+
+      WRITE(VTU_UNIT,'(A)') '</DataArray>'
+      WRITE(VTU_UNIT,'(A)') '</Coordinates>'
+      WRITE(VTU_UNIT,'(A)') '</Piece>'
+      WRITE(VTU_UNIT,'(A)') '</RectilinearGrid>'
+      WRITE(VTU_UNIT,'(A)') '</VTKFile>'
+
+      CLOSE(VTU_UNIT)
+
+
+
+
+
+
+      ENDIF
+
+
 ! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
 ! this is a simple ASCII file
 
@@ -3100,6 +3213,12 @@
       DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
 
+
+      IF(VTK_DOMAIN_DECOMPOSITION(VTK_REGION)) THEN
+         NUMBER_OF_VTK_CELLS = 0
+         RETURN
+      ENDIF
+
 ! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
       XW = VTK_X_W(VTK_REGION)
@@ -3112,40 +3231,40 @@
       NYS = VTK_NYS(VTK_REGION)
       NZS = VTK_NZS(VTK_REGION)
 
-      CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
+      CALL CALC_CELL (X_MIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
       I_W = I_W !+ 1
-      CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
+      CALL CALC_CELL (X_MIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
 
 
-      CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
+      CALL CALC_CELL (Y_MIN, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
       J_S = J_S !+ 1
-      CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
+      CALL CALC_CELL (Y_MIN, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
 
       IF (NO_K) THEN
          K_B = 1
          K_T = 1
       ELSE
-         CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
+         CALL CALC_CELL (Z_MIN, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
          K_B = K_B !+ 1
-         CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
+         CALL CALC_CELL (Z_MIN, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
       ENDIF
 
 ! get slice(s) location
       DO NS = 1,NXS
          XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
-         CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_TMP)
+         CALL CALC_CELL (X_MIN, XSLICE, DX, IMAX, I_TMP)
          I_SLICE(NS) = MAX(MIN(I_TMP,IMAX1),IMIN1)
       ENDDO
 
       DO NS = 1,NYS
          YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
-         CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_TMP)
+         CALL CALC_CELL (Y_MIN, YSLICE, DY, JMAX, J_TMP)
          J_SLICE(NS) = MAX(MIN(J_TMP,JMAX1),JMIN1)
       ENDDO
 
       DO NS = 1,NZS
          ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
-         CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_TMP)
+         CALL CALC_CELL (Z_MIN, ZSLICE, DZ, KMAX, K_TMP)
          K_SLICE(NS) = MAX(MIN(K_TMP,KMAX1),KMIN1)
       ENDDO
 

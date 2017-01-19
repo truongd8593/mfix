@@ -80,7 +80,7 @@ MODULE output_man
       bWRITE_NETCDF_FILES = .FALSE.
 
       DO LC=1, N_SPX
-         IF(CHECK_TIME(SPX_TIME(LC))) THEN
+         IF(CHECK_TIME(SPX_TIME(LC)).AND.SPX_DT(LC)<=TSTOP) THEN
             SPX_TIME(LC) = NEXT_TIME(SPX_DT(LC))
 
             CALL WRITE_SPX1(LC, 0)
@@ -113,31 +113,6 @@ MODULE output_man
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
 
-      IF(DLB) THEN
-         IF(CHECK_TIME(DLB_TIME)) THEN
-            DLB_TIME = NEXT_TIME(DLB_DT)
-            CALL DISPLAY_PARTICLE_LOAD
-         ENDIF
-      ENDIF
-      DLB = .FALSE.
-
-      CALL FLUSH_NOTIFY_USER
-
-! Write vtk file, if needed
-! Only regular (not debug) files are written (second argument is zero)
-      IF(WRITE_VTK_FILES) THEN
-         DO LC = 1, DIMENSION_VTK
-            IF(CHECK_TIME(VTK_TIME(LC))) THEN
-               VTK_TIME(LC) = NEXT_TIME(VTK_DT(LC))
-               CALL WRITE_VTU_FILE(LC,0)
-               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,0)
-            ENDIF
-         ENDDO
-      ENDIF
-
-! Write NetCDF files.
-      IF(bWRITE_NETCDF_FILES) CALL WRITE_NETCDF(0,0,TIME)
-
 ! Write restart file, if needed
       IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
 
@@ -156,6 +131,33 @@ MODULE output_man
          ENDIF
 
       ENDIF
+
+      CALL FLUSH_NOTIFY_USER
+
+      IF(DLB) THEN
+         IF(CHECK_TIME(DLB_TIME)) THEN
+            DLB_TIME = NEXT_TIME(DLB_DT)
+            CALL DISPLAY_PARTICLE_LOAD
+         ENDIF
+      ENDIF
+      DLB = .FALSE.
+
+
+! Write vtk file, if needed
+! Only regular (not debug) files are written (second argument is zero)
+      IF(WRITE_VTK_FILES) THEN
+         DO LC = 1, DIMENSION_VTK
+            IF(CHECK_TIME(VTK_TIME(LC))) THEN
+               VTK_TIME(LC) = NEXT_TIME(VTK_DT(LC))
+               CALL WRITE_VTU_FILE(LC,0)
+               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,0)
+            ENDIF
+         ENDDO
+      ENDIF
+
+! Write NetCDF files.
+      IF(bWRITE_NETCDF_FILES) CALL WRITE_NETCDF(0,0,TIME)
+
 
 ! Add the amount of time needed for all IO operations to total.
       CPU_IO = CPU_IO + (WALL_TIME() - WALL_START)

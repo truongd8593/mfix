@@ -242,7 +242,7 @@
 !---------------------------------------------------------------------//
       use bc, only: bc_ep_g, bc_p_g
       use bc, only: bc_rop_s, bc_ep_s, bc_x_s
-      use bc, only: bc_massflow_g
+      use bc, only: bc_massflow_g, bc_massflow_s
       use eos, only: eoss
       use param, only: dim_m
       use param1, only: undefined, one, zero
@@ -250,6 +250,7 @@
       use physprop, only: inert_species, x_s0
       use run, only: solve_ros
       use toleranc, only: compare
+      use usr_prop, only: usr_ros, usr_rog
       use error_manager
       IMPLICIT NONE
 
@@ -268,6 +269,9 @@
       DOUBLE PRECISION :: BC_ROs(DIM_M)
 ! Index of inert species
       INTEGER :: INERT
+! count of number of phases skipped from boundary volume fraction
+! checks due to a user variable density model
+      INTEGER :: lskip
 
 !---------------------------------------------------------------------//
 
@@ -277,6 +281,18 @@
       IF(BC_EP_G(BCV) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('BC_EP_g',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      IF(USR_ROG) THEN
+         IF(BC_MASSFLOW_G(BCV) /= UNDEFINED .AND.                   &
+            BC_MASSFLOW_G(BCV) /= ZERO) THEN
+            WRITE(ERR_MSG, 1098) trim(iVar('BC_MASSFLOW_G',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+ 1098 FORMAT('Error 1098: ',A,' must be zero or unspecified when',/, &
+         'invoking a user specified density function via USR_ROg.',&
+         'The conversion',/,'to volumetric flow rate is not readily',&
+         'possible.',/,'Please correct the mfix.dat file.')
       ENDIF
 
 ! Verify compressible boundary condition variables.
@@ -323,7 +339,23 @@
 
 ! Initialize the sum of the total volume fraction.
       SUM_EP = BC_EP_G(BCV)
+! at this time if usr defined ros invoked will skip basic check on volume 
+! fraction in bc; potential to use ro_s0 as 'initialization'
+      lskip = 0
+
       DO M = 1, M_TOT
+
+         IF(USR_ROS(M)) THEN
+            IF(BC_MASSFLOW_s(BCV,M) /= UNDEFINED .AND. &
+               BC_MASSFLOW_s(BCV,M) /= ZERO) THEN
+               WRITE(ERR_MSG, 1099) trim(iVar('BC_MASSFLOW_S',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+ 1099 FORMAT('Error 1099: ',A,' must be zero or unspecified when',/, &
+         'invoking a user specified density function via USR_ROs.', &
+         'The conversion',/,'to volumetric flow rate is not readily ',&
+         'possible.',/,'Please correct the mfix.dat file.')
+         ENDIF
 
 ! If this phase is not present, clear out EPs and ROPs for the BC and
 ! cycle the solids loop. No need to continue checks.
@@ -334,13 +366,26 @@
          ENDIF
 
 ! Set the solids density for the BC region.
-         IF(.NOT.SOLVE_ROs(M)) THEN
-            BC_ROs(M) = RO_s0(M)
-         ELSE
+         IF(SOLVE_ROs(M)) THEN
 ! presence of non-zero inert species is checked by bc_inflow
             INERT = INERT_SPECIES(M)
             BC_ROs(M) = EOSS(RO_s0(M), X_s0(M,INERT),&
                BC_X_S(BCV,M,INERT))
+         ELSEIF (USR_ROs(M)) THEN
+! there is no easy way to check for consistency in the volume fractions
+! at the boundary when allowing for an arbitrary user defined function
+! for 'solids' density. this is because the field variables have not 
+! assigned according to their ic/bc values yet and therefore one can
+! not readily invoke the user calculation. so this check will be skipped
+! when using usr_ros.
+! skip the remaining checks regardless of potential bc_ep_s setting as
+! ro_s in the boundary is not defined; alternatively we could require
+! that the user specify ro_s0 as a mechanism to 'initialize' the boundary
+! region....
+            lskip = lskip + 1
+            CYCLE
+         ELSE 
+            BC_ROs(M) = RO_s0(M)
          ENDIF
 
 ! If both input parameters are defined. Make sure they are equivalent.
@@ -370,9 +415,11 @@
       ENDDO
 
 ! Verify that the volume fractions sum to one.
-      IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(ERR_MSG,1215) BCV, trim(iVal(SUM_EP))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      IF(lskip == 0) THEN
+         IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
+            WRITE(ERR_MSG,1215) BCV, trim(iVal(SUM_EP))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
       ENDIF
  1215 FORMAT('Error 1215: Illegal boundary condition region: ',I3,'. ',&
          'Sum of volume',/'fractions does NOT equal ONE. (SUM = ',A,   &

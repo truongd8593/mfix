@@ -28,11 +28,6 @@
 ! Packed bed (close packed) void fraction
       DOUBLE PRECISION :: EP_star
 
-! parameters used in the correlation to calculate the local maximum
-! solids volume fraction for a polydisperse powder: ep_s_max_ratio,
-! d_p_ratio and ep_s_max, m_max
-      DOUBLE PRECISION :: ep_s_max_ratio(DIM_M, DIM_M), &
-                          d_p_ratio(DIM_M, DIM_M)
 ! maximum packing volume fraction for indicate particulate phase
 ! its value will default to 1-ep_star
       DOUBLE PRECISION :: ep_s_max(DIM_M)

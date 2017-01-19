@@ -28,6 +28,7 @@
       USE scalars
       USE sendrecv
       use turb, only: k_epsilon
+      use usr_prop, only: usr_ros
       IMPLICIT NONE
 
 ! Local variables
@@ -126,7 +127,7 @@
       DO LC = 1, MMAX
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
-         IF(ANY(SOLVE_ROs)) &
+         IF(ANY(SOLVE_ROs).OR.ANY(USR_ROS)) &
             CALL readScatterRes(RO_S(:,LC), array2, array1, 0, NEXT_REC)
 
          IF (VERSION_NUMBER >= 1.15) THEN
@@ -625,6 +626,7 @@
       USE scalars
       USE sendrecv
       use turb, only: k_epsilon
+      use usr_prop, only: usr_ros
       IMPLICIT NONE
 
 ! Local variables
@@ -692,7 +694,7 @@
 
                   ROP_S(IJK,1:MMAX) = ROP_S(IJKNB,1:MMAX)
 
-                  IF(ANY(SOLVE_ROs)) RO_S(IJK,1:MMAX) = RO_S(IJKNB,1:MMAX)
+                  IF(ANY(SOLVE_ROs).OR.ANY(USR_ROS)) RO_S(IJK,1:MMAX) = RO_S(IJKNB,1:MMAX)
 
 
                   THETA_M(IJK,1:MMAX) = THETA_M(IJKNB,1:MMAX)

@@ -855,6 +855,16 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the x-direction.</description>
+      X_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the x-direction.</description>
+      X_MAX = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>(Do not use.)</description>
 !  <valid value=".FALSE. note="y-direction is considered."/>
 !  <valid value=".TRUE." note="y-direction is not considered."/>
@@ -883,6 +893,16 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the y-direction.</description>
+      Y_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the y-direction.</description>
+      Y_MAX = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Flag to disable the third dimension (i.e., 2D simulation).
 !      o Z axis in Cartesian coordinate system
@@ -906,6 +926,16 @@
 !  </description>
 !  <arg index="1" id="Cell" min="0" max="DIM_K"/>
       DZ(:DIM_K) = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the z-direction.</description>
+      Z_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the z-direction.</description>
+      Z_MAX = UNDEFINED
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">

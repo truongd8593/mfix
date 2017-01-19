@@ -57,7 +57,7 @@
 ! Find which solids phase the particle belongs to
       M = PIJK(L,5)
 
-! west wall; in 3D on yz plane (x=wx1->0)
+! west wall; in 3D on yz plane (x=wx1->x_min)
       IF(IW.EQ.1) THEN
          WALL_POS(1) = WX1 - DES_R
          WALL_POS(2) = DES_POS_NEW(L,2)
@@ -71,7 +71,7 @@
          WALL_NORMAL(1,2) = ZERO
          WALL_NORMAL(1,3) = ZERO
 
-! east wall; in 3D on yz plane (x=ex2->xlength)
+! east wall; in 3D on yz plane (x=ex2->x_max)
       ELSEIF(IW.EQ.2) THEN
          WALL_POS(1) = EX2 + DES_R
          WALL_POS(2) = DES_POS_NEW(L,2)
@@ -85,7 +85,7 @@
          WALL_NORMAL(2,2) = ZERO
          WALL_NORMAL(2,3) = ZERO
 
-! bottom wall; in 3D on xz plane (y=by1->0)
+! bottom wall; in 3D on xz plane (y=by1->y_min)
       ELSEIF(IW.EQ.3) THEN
          WALL_POS(1) = DES_POS_NEW(L,1)
          WALL_POS(2) = BY1 - DES_R
@@ -99,7 +99,7 @@
          WALL_NORMAL(3,2) = -ONE
          WALL_NORMAL(3,3) = ZERO
 
-! top wall; in 3D on xz plane (y=ty2->ylength)
+! top wall; in 3D on xz plane (y=ty2->y_max)
       ELSEIF(IW.EQ.4) THEN
          WALL_POS(1) = DES_POS_NEW(L,1)
          WALL_POS(2) = TY2 + DES_R
@@ -113,7 +113,7 @@
          WALL_NORMAL(4,2) = ONE
          WALL_NORMAL(4,3) = ZERO
 
-! south wall; in 3D on xy plane (z=sz1->0)
+! south wall; in 3D on xy plane (z=sz1->z_min)
       ELSEIF(IW.EQ.5) THEN
          WALL_POS(1) = DES_POS_NEW(L,1)
          WALL_POS(2) = DES_POS_NEW(L,2)
@@ -127,7 +127,7 @@
          WALL_NORMAL(5,2) = ZERO
          WALL_NORMAL(5,3) = -ONE
 
-! north wall; in 3D on xy plane (z=nz2->zlength)
+! north wall; in 3D on xy plane (z=nz2->z_max)
       ELSEIF(IW.EQ.6) THEN
          WALL_POS(1) = DES_POS_NEW(L,1)
          WALL_POS(2) = DES_POS_NEW(L,2)

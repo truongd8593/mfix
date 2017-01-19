@@ -72,6 +72,11 @@
 ! Particle phase for data binning.
          M = PIJK(NP,5)
 
+         IF(FILTER_SIZE==0) THEN
+            IJK = PIJK(NP,4)
+            SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOL_WT
+         ENDIF
+
          DO LC=1,FILTER_SIZE
             IJK = FILTER_CELL(LC,NP)
 ! Particle volume times the weight for this cell.

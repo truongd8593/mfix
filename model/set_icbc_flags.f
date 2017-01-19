@@ -180,7 +180,7 @@
 
       ELSE
 ! If no erros, sync up the ghost cell layers.
-         CALL SEND_RECV(ICBC_FLAG,2)
+         CALL SEND_RECV(ICBC_FLAG,1)
       ENDIF
 
 ! Clean up and return.
@@ -258,7 +258,7 @@
       ENDDO IC_LP
 
 ! Update the ICBC flag on ghost cells.
-      CALL SEND_RECV(ICBC_FLAG, 2)
+      CALL SEND_RECV(ICBC_FLAG, 1)
 
 
 ! Clean up and return.
@@ -336,7 +336,7 @@
          ENDIF
       ENDDO
 
-      CALL SEND_RECV(ICBC_FLAG,2)
+      CALL SEND_RECV(ICBC_FLAG,1)
 
       CALL FINL_ERR_MSG
 
@@ -508,7 +508,7 @@
       ENDDO ! BC Loop
 
 ! Sync the ICBC flag across ghost layers
-      CALL SEND_RECV(ICBC_FLAG,2)
+      CALL SEND_RECV(ICBC_FLAG,1)
 
       CALL FINL_ERR_MSG
 

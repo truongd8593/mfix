@@ -579,10 +579,12 @@
 ! Solids phase density caMulation
       use eos, ONLY: EOSS0
 
+! Flag to indicate user function for density
+      use usr_prop, only: usr_ros
+
 ! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
-
 
       implicit none
 
@@ -595,7 +597,9 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: M, N
-
+! local variable indicating that some variable density model is being used
+! either a user defined function or mfix built in variable density model.
+      LOGICAL :: SolveAnyRos
 
 !......................................................................!
 
@@ -605,6 +609,7 @@
 
 ! Initialize the flag for variable solids density.
       SOLVE_ROs = .FALSE.
+      SolveAnyRos = .FALSE.
 
 ! Check each solids phase.
       DO M = 1, MMAX_LL
@@ -617,9 +622,9 @@
             IF(X_S0(M,N) /= UNDEFINED) SOLVE_ROs(M) = .TRUE.
          ENDDO
 
-
+         SolveAnyROs = (SOLVE_ROS(M) .OR. USR_ROS(M))
 ! Verify that one -and only one- solids density model is in use.
-         IF(RO_S0(M) == UNDEFINED .AND. .NOT.SOLVE_ROs(M)) THEN
+         IF(RO_S0(M) == UNDEFINED .AND. .NOT.SolveAnyROs) THEN
             WRITE(ERR_MSG, 1100) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
@@ -627,15 +632,15 @@
          I2,'.',/'Please correct the mfix.dat file.')
 
 ! Check if the constant solids phase density is physical.
-         ELSEIF(RO_S0(M) /= UNDEFINED .AND. SOLVE_ROs(M)) THEN
+         ELSEIF(RO_S0(M) /= UNDEFINED .AND. SolveAnyROs) THEN
             WRITE(ERR_MSG, 1101) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1101 FORMAT('Error 1101: Conflicting solids density input specified ',&
          'for solids',/'phase ',I2,'. Constant solids density ',       &
          'specified (RO_s0) along with one',/'or more of the variable',&
-         ' solids density parameters:',/'RO_Xs0, X_s0, INERT_SPECIES.',&
-         /'Please correct the mfix.dat file.')
+         ' solids density parameters:',/'RO_Xs0, X_s0, INERT_SPECIES,',&
+         ' or USR_ROS.',/'Please correct the mfix.dat file.')
 
          ENDIF
 

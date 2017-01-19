@@ -124,10 +124,6 @@
 !    A.B. Yu and N. Standish. Powder Tech, 52 (1987) 233-241           C
 !    R.F. Fedors and R.F. Landel. Powder Tech, 23 (1979) 225-231       C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       DOUBLE PRECISION FUNCTION CALC_ep_star(IJK)
@@ -135,18 +131,13 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE constant
-      USE toleranc
-      USE compar
-      USE run
-      USE fun_avg
-      USE functions
+      USE param1, only: zero, one
+      USE fldvar, only: d_p, ep_s
+      USE physprop, only: smax
+      USE constant, only: ep_star
+      use constant, only: ep_s_max, m_max
+      USE toleranc, only: dil_ep_s
+      USE run, only: call_dqmom, fedors_landel, yu_standish
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -159,205 +150,187 @@
 ! Indices
       INTEGER :: I, J
 
-!      DOUBLE PRECISION :: xbar
-
 ! start sof modifications (02-May-05)
 ! maximum packing for the mixture
-       DOUBLE PRECISION :: P_IT(MMAX)
+       DOUBLE PRECISION :: P_IT(sMAX)
 ! true maximum packing for the mixture
        DOUBLE PRECISION :: EPs_max_local
-! maximum packing fraction for a binary mixture
-       DOUBLE PRECISION :: P_IJ(MMAX, MMAX)
-! particle diameter ratio
-       DOUBLE PRECISION :: R_IJ(MMAX, MMAX)
-! fractional solids volume corresponding to P_IJ
-       DOUBLE PRECISION :: X_IJ(MMAX, MMAX)
-! fractional solids volume in a mixture
-! this is Xj in eq. 22 of Yu-Standish
-       DOUBLE PRECISION :: COMP_X_I(MMAX), SUM_LOCAL
+! maximum packing fraction for indicated binary mixture
+       DOUBLE PRECISION :: P_IJ(sMAX, sMAX)
+! particle diameter ratio (small/large)
+       DOUBLE PRECISION :: R_IJ(sMAX, sMAX)
+! maximum fractional solids volume corresponding to P_IJ
+       DOUBLE PRECISION :: X_IJ(sMAX, sMAX)
+! fractional solids volume fraction (i.e. solids volume fraction of
+! phase i normalized by total solids volume). this is Xi in eq. 22 
+! of Yu-Standish
+       DOUBLE PRECISION :: X_I(sMAX)
 ! local aliases for particle diameter, solids volume fraction and the
-! maximum solids volume fraction which are used to rearrange solids
-! phases from coarsest to finest
-       DOUBLE PRECISION :: DP_TMP(MMAX), EPs_TMP(MMAX), &
-                           EPs_max_TMP(MMAX), old_value
+! maximum solids volume fraction wherein the data has been sorted in
+! order of coarest to finest solids phase
+       DOUBLE PRECISION :: DP_sort(sMAX), EPs_sort(sMAX), &
+                           EPs_max_sort(sMAX)
+       DOUBLE PRECISION :: old_value
+! local total solids volume fraction
+       DOUBLE PRECISION :: sum_eps
+! variable for intermediate calculation
+       DOUBLE PRECISION :: sum_local
 !-----------------------------------------------
-
 
       IF (CALL_DQMOM) THEN
 ! sort particles to start from coarsest to finest particles
 ! assigning values to local aliases
+         sum_eps = zero
          DO I = 1, SMAX
-            DP_TMP(I) = D_P(IJK,I)
-            EPs_TMP(I) = EP_s(IJK,I)
-            EPs_max_TMP(I) = ep_s_max(I)
+            DP_sort(I) = D_P(IJK,I)
+            EPs_sort(I) = EP_s(IJK,I)
+            EPs_max_sort(I) = ep_s_max(I)
+            sum_eps = sum_eps + ep_s(ijk,i)
          ENDDO
+
 ! sorting particles from coarse to fine
-         DO I = 1, SMAX
-            DO J = I , SMAX
+         DO I = 1, SMAX-1
+            DO J = I+1, SMAX
 ! check if phase J is larger than phase I
-               IF(DP_TMP(I) < DP_TMP(J)) THEN
+               IF(DP_sort(I) < DP_sort(J)) THEN
 ! temporarily store phase i diameter
-                  old_value = DP_TMP(I)
+                  old_value = DP_sort(I)
 ! overwrite phase i diameter with smaller phase j diameter
-                  DP_TMP(I) = DP_TMP(J)
+                  DP_sort(I) = DP_sort(J)
 ! overwrite phase j diameter with stoired phase i diameter
-                  DP_TMP(J) = old_value
+                  DP_sort(J) = old_value
 
-                  old_value = EPs_TMP(I)
-                  EPs_TMP(I) = EPs_TMP(J)
-                  EPs_TMP(J) = old_value
+                  old_value = EPs_sort(I)
+                  EPs_sort(I) = EPs_sort(J)
+                  EPs_sort(J) = old_value
 
-                  old_value = EPs_max_TMP(I)
-                  EPs_max_TMP(I) = EPs_max_TMP(J)
-                  EPs_max_TMP(J) = old_value
+                  old_value = EPs_max_sort(I)
+                  EPs_max_sort(I) = EPs_max_sort(J)
+                  EPs_max_sort(J) = old_value
                ENDIF
             ENDDO
          ENDDO
 
       ELSE  ! not dqmom
 
-! assigning values to local aliases
+! m_max stores the sorted indices so now we assign values to local 
+! aliases based on sorted index (largest to smallest)
+         sum_eps = zero
          DO I = 1, SMAX
-            DP_TMP(I) = D_P(IJK,M_MAX(I))
-            EPs_TMP(I) = EP_s(IJK,M_MAX(I))
-            EPs_max_TMP(I) = ep_s_max(M_MAX(I))
+            DP_sort(I) = D_P(IJK,M_MAX(I))
+            EPs_sort(I) = EP_s(IJK,M_MAX(I))
+            EPs_max_sort(I) = ep_s_max(M_MAX(I))
+            sum_eps = sum_eps + ep_s(ijk,i) 
          ENDDO
       ENDIF   ! end if/else (call_dqmom)
 
-
-! this is the way the algorithm was written by Yu and Standish (sof).
-! compute equations 25 in Yu-Standish
-! (this is also needed by Fedors_Landel)
-      DO I = 1, SMAX
-         SUM_LOCAL = ZERO
-         DO J = 1, SMAX
-            IF(I .GE. J) THEN
-               R_IJ(I,J) = DP_TMP(I)/DP_TMP(J)
-            ELSE
-               R_IJ(I,J) = DP_TMP(J)/DP_TMP(I)
-            ENDIF
-            SUM_LOCAL = SUM_LOCAL + EPs_TMP(J)
+! Define quantities needed later
+! initialize
+      R_IJ(:,:) = ONE
+      DO I = 1, SMAX-1
+         DO J = I+1, SMAX
+! equation 25 in Yu-Standish; particle diameter ratio (matrix)
+! the ratio is defined such that we always divide the smaller particle
+! diameter by the larger. here we use the fact that the particles have
+! been sorted from largest to smallest diameter
+! note r_ij=1 for i=j and r_ij=r_ji
+            R_IJ(I,J) = DP_sort(J)/DP_sort(I)
+            R_IJ(J,I) = R_IJ(I,J)
          ENDDO   ! end do (j=1,smax)
-
-         IF(SUM_LOCAL > DIL_EP_s) THEN
-! fractional solids volume see eq. 20
-            COMP_X_I(I) = EPs_TMP(I)/SUM_LOCAL
-         ELSE
-! return first phase ep_s_max in case very dilute
-            CALC_EP_star = ONE - EPs_max_TMP(1)
-            RETURN
-         ENDIF
       ENDDO   ! end do (i=1,smax)
+
+! equation 20 in Yu-Standish; the fractional solids volume (solids
+! volume fraction normalized by total solids volume)
+! note calculations will still proceed appropriately if defined zero
+      X_I(:) = ZERO
+      IF (SUM_EPS > DIL_EP_S) THEN
+         DO I=1,SMAX
+            X_I(I) = EPs_sort(I)/sum_eps
+         ENDDO
+      ENDIF
 
 ! Begin YU_STANDISH section
 ! ---------------------------------------------------------------->>>
       IF(YU_STANDISH) THEN
-! compute equation 23-24 in Yu-Standish
+! initialize quantities
+         X_IJ(:,:) = ONE
          DO I = 1, SMAX
             DO J = 1, SMAX
                IF(R_IJ(I,J) .LE. 0.741d0) THEN
-                  IF(J .LT. I) THEN
-                     X_IJ(I,J) = (ONE - R_IJ(I,J)*R_IJ(I,J))/&
-                                 (2.0d0 -  EPs_max_TMP(I))
-                  ELSE
-                     X_IJ(I,J) = ONE - (ONE - R_IJ(I,J)*R_IJ(I,J))/&
-                                 (2.0d0 -  EPs_max_TMP(I))
-                 ENDIF
-                 P_IJ(I, J) = EPs_max_TMP(I) + EPs_max_TMP(I)*&
-                    (ONE-EPs_max_TMP(I)) * (ONE - 2.35d0*R_IJ(I,J) + &
-                    1.35d0*R_IJ(I,J)*R_IJ(I,J) )
+! equation 23; maximum packing fraction for binary mixture comprised
+! of phase i and j
+! note pij=pji and pii=pi
+                  P_IJ(I,J) = EPs_max_sort(I) + EPs_max_sort(I)*&
+                     (ONE-EPs_max_sort(I)) * (ONE-2.35d0*R_IJ(I,J)+&
+                     1.35d0*R_IJ(I,J)*R_IJ(I,J) )
                ELSE
-                  P_IJ(I, J) = EPs_max_TMP(I)
+                  P_IJ(I,J) = EPs_max_sort(I)
+               ENDIF
+
+! equation 24; fractional solids volume for binary mixture comprised
+! of phase i and j
+! note xij!=xji and xii=xjj=1
+               IF(J .LT. I) THEN
+                  X_IJ(I,J) = (ONE - R_IJ(I,J)*R_IJ(I,J))/&
+                              (2.0d0 - EPs_max_sort(I))
+               ELSE
+                  X_IJ(I,J) = ONE - (ONE - R_IJ(I,J)*R_IJ(I,J))/&
+                                    (2.0d0 - EPs_max_sort(I))
                ENDIF
             ENDDO   ! end do (j=1,smax)
          ENDDO   ! end do (i=1,smax)
 
-! Compute equation 22
-         EPs_max_local = ONE
+         eps_max_local = one 
          DO I = 1, SMAX
             SUM_LOCAL = ZERO
+            DO J = 1,SMAX
+               IF (I == J) CYCLE  ! do nothing
+! equation 22 denominator
+! note if x_i = 0 then sum_local will remain unchanged. also in cases
+! where r_ij=1 and i!=j (i.e., different phases but equal size)
+! x_ij will evaluate to zero when j < i.
+               IF (X_IJ(I,J) > ZERO) SUM_LOCAL = SUM_LOCAL + &
+                  (ONE - EPs_max_sort(I)/P_IJ(I,J))*X_I(J)/X_IJ(I,J)
+            ENDDO
 
-            IF(I .GE. 2) THEN
-               DO J = 1, (I-1)
-                  IF(P_IJ(I,J) == EPs_max_TMP(I)) THEN
-                     SUM_LOCAL = SUM_LOCAL
-                  ELSE
-                     SUM_LOCAL = SUM_LOCAL + (ONE - EPs_max_TMP(I)/&
-                        P_IJ(I,J))*COMP_X_I(J)/X_IJ(I,J)
-                  ENDIF
-               ENDDO
-            ENDIF
-
-            IF((I+1) .LE. SMAX) THEN
-               DO J = (I+1), SMAX
-                  IF( P_IJ(I, J) == EPs_max_TMP(I) ) THEN
-                     SUM_LOCAL = SUM_LOCAL
-                  ELSE
-                     SUM_LOCAL = SUM_LOCAL + (ONE - EPs_max_TMP(I)/&
-                        P_IJ(I, J))*COMP_X_I(J)/X_IJ(I, J)
-                  ENDIF
-               ENDDO
-            ENDIF
-
-            IF (SUM_LOCAL .NE. ZERO) THEN
-               P_IT(I) = EPs_max_TMP(I)/(ONE - SUM_LOCAL)
+! equation 22
+            IF (SUM_LOCAL < ONE) THEN
+               P_IT(I) = EPs_max_sort(I)/(ONE - SUM_LOCAL)
             ELSE
-! do nothing if particles have same diameter
-               P_IT(I) = ONE
+               P_IT(I) = eps_max_sort(i)  ! limiter
             ENDIF
 
-            EPs_max_local = MIN(P_IT(I), EPs_max_local)
+! packing fraction of the mixture is the smallest of P_IT:
+            EPs_max_local = MIN(P_IT(I), eps_max_local)
          ENDDO   ! end do (i=1,smax)
 
-! for the case of all phases having same diameter
-
-         IF (EPs_max_local == ONE) EPs_max_local = EPs_max_TMP(1)
          CALC_EP_star = ONE - EPs_max_local
 ! end YU_STANDISH section
 ! ----------------------------------------------------------------<<<
 
-! Part implemented by Dinesh for binary mixture, uncomment to use (Sof)
-
-!       if ((EP_s(IJK,1)+EP_s(IJK,2)) .NE. ZERO) THEN
-!          xbar = EP_s(IJK,1)/(EP_s(IJK,1)+EP_s(IJK,2))
-
-!          if (xbar .LE. ep_s_max_ratio(1,2)) THEN
-!             CALC_EP_star =MAX(0.36d0, (ONE-(((ep_s_max(1)-ep_s_max(2))+&
-!              (ONE-d_p_ratio(1,2))*(ONE-ep_s_max(1))*ep_s_max(2))*(ep_s_max(1)+&
-!              (ONE-ep_s_max(1)) *ep_s_max(2))*xbar/ep_s_max(1)+ep_s_max(2))))
-!          else
-!             CALC_EP_star =MAX(0.36d0, (ONE-((ONE -d_p_ratio(1,2))*(ep_s_max(1)&
-!              +(ONE-ep_s_max(1))*ep_s_max(2))*(ONE -xbar) +ep_s_max(1))))
-!          end if
-!       else
-!          CALC_EP_star = ONE - MIN(ep_s_max(1), ep_s_max(2)) !corrected by sof
-!       end if
-
-! Use the code (below) instead of the above commented code because the
-! phases were not rearranged and I didn't want to modify it (sof)
-! If you don't understand what's going on, contact me: sof@fluent.com
-
-! In the case of binary mixture (Fedors-Landel empirical correlation)
+! Begin FEDORS_LANDEL empirical correlation (for binary mixtures)
 ! ---------------------------------------------------------------->>>
       ELSEIF(FEDORS_LANDEL) THEN
 
-         IF(COMP_X_I(1) .LE. (EPs_max_TMP(1)/(EPs_max_TMP(1)+ &
-                             (ONE - EPs_max_TMP(1))*EPs_max_TMP(2))) ) THEN
+! equation 9
+         IF(X_I(1) .LE. (EPs_max_sort(1)/ &
+           (EPs_max_sort(1)+ (ONE-EPs_max_sort(1))*EPs_max_sort(2))) ) THEN
 
-            CALC_EP_star = (EPs_max_TMP(1) - EPs_max_TMP(2) + &
-               (1 - sqrt(R_IJ(2,1))) * (ONE - EPs_max_TMP(1)) * &
-               EPs_max_TMP(2) )*&
-               (EPs_max_TMP(1) + (ONE - EPs_max_TMP(1)) * &
-               EPs_max_TMP(2)) * COMP_X_I(1)/EPs_max_TMP(1) + &
-               EPs_max_TMP(2)
+            EPS_max_local = (EPs_max_sort(1)-EPs_max_sort(2) + &
+               (ONE-sqrt(R_IJ(2,1)))*(ONE-EPs_max_sort(1))*&
+               EPs_max_sort(2)) * &
+               (EPs_max_sort(1) + (ONE-EPs_max_sort(1))*&
+               EPs_max_sort(2))*X_I(1)/EPs_max_sort(1) + &
+               EPs_max_sort(2)
+! equation 10
          ELSE
-            CALC_EP_star = (ONE-sqrt(R_IJ(2,1))) * (EPs_max_TMP(1)+&
-               (ONE-EPs_max_TMP(1)) * EPs_max_TMP(2)) * &
-               (ONE - COMP_X_I(1)) + EPs_max_TMP(1)
+            EPs_max_local = (ONE-sqrt(R_IJ(2,1)))*(EPs_max_sort(1) + &
+               (ONE-EPs_max_sort(1))*EPs_max_sort(2))*X_I(2) + &
+               EPs_max_sort(1)
          ENDIF
 ! this is gas volume fraction at packing
-         CALC_EP_star = ONE - CALC_EP_star
-       ENDIF ! for Yu_Standish and Fedors_Landel correlations
+         CALC_EP_star = ONE - EPs_max_local
+      ENDIF ! for Yu_Standish and Fedors_Landel correlations
 ! end FEDORS_LANDEL correlation
 ! ----------------------------------------------------------------<<<
 

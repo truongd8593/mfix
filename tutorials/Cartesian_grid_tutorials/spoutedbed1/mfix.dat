@@ -124,6 +124,8 @@
 
 ! Grid in x-direction
 
+  XLENGTH = 5.10
+  
   DX(0)   =  1.5720E-001
   DX(1)   =  1.4987E-001
   DX(2)   =  1.4288E-001
@@ -185,6 +187,8 @@
 
 
 ! Grid in y-direction
+  YLENGTH = 19.80
+  
   DY(0)   =   0.11389    
   DY(1)   =   0.11230    
   DY(2)   =   0.11073    
