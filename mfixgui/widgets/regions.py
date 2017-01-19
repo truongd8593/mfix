@@ -5,15 +5,14 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 import os
 import glob
-import copy
 from collections import OrderedDict
-from qtpy import QtWidgets, QtGui, QtCore
+from qtpy import QtWidgets
 
 from qtpy import uic
 
 # local imports
 from mfixgui.tools.general import (get_unique_string, widget_iter, CellColor,
-                                   get_pixmap, deepcopy_dict)
+                                   get_pixmap, deepcopy_dict, get_icon)
 
 from mfixgui.project import Equation, ExtendedJSON
 
@@ -140,16 +139,22 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
+        # default region buttons
+        for btn, region in [(self.toolbutton_region_a, 'all'),
+                            (self.toolbutton_region_l, 'left'), (self.toolbutton_region_r, 'right'),
+                            (self.toolbutton_region_t, 'top'), (self.toolbutton_region_b, 'bottom'),
+                            (self.toolbutton_region_f, 'front'), (self.toolbutton_region_back, 'back')]:
+            btn.clicked.connect(lambda ignore, r=region: self.new_default_region(r))
+            btn.setIcon(get_icon(region + '_region.png'))
+            btn.setToolTip(region)
 
     def reset_regions(self):
         self.tablewidget_regions.value.clear()
         self.parameter_key_map = {}
 
-
     def get_visibility_image(self, visible=True):
         return get_pixmap('visibility.png' if visible else 'visibilityofftransparent.png',
                           16, 16)
-
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -167,6 +172,27 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
+    def new_default_region(self, region):
+
+        f = ['xmin', 'ymin', 'zmin']
+        t = ['xmax', 'ymax', 'zmax']
+
+        if region == 'left':
+            t[0] = 'xmin'
+        elif region == 'right':
+            f[0] = 'xmax'
+        elif region == 'top':
+            f[1] = 'ymax'
+        elif region == 'bottom':
+            t[1] = 'ymin'
+        elif region == 'front':
+            f[2] = 'zmax'
+        elif region == 'back':
+            t[2] = 'zmin'
+
+        # convert strings to equations
+        extents = [[Equation(e) for e in f], [Equation(e) for e in t]]
+        self.new_region(region, extents, self.get_region_type(extents))
 
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
@@ -180,7 +206,7 @@ class RegionsWidget(QtWidgets.QWidget):
         data = self.tablewidget_regions.value
         name = get_unique_string(name, list(data.keys()))
 
-        reg_dat = data[name] = deepcopy_dict(DEFAULT_REGION_DATA, qobjects=True)
+        reg_dat = deepcopy_dict(DEFAULT_REGION_DATA, qobjects=True)
         if rtype is not None and extents is not None:
             reg_dat['type'] = rtype
             reg_dat['from'] = extents[0]
@@ -188,7 +214,11 @@ class RegionsWidget(QtWidgets.QWidget):
         reg_dat['visible'] = self.get_visibility_image(True)
         reg_dat['color'].rand()
 
-        self.vtkwidget.new_region(name, data[name])
+        # update parameters before the new region is added to the dictionary
+        self.update_parameter_name(None, name, reg_dat)
+
+        data[name] = reg_dat
+        self.vtkwidget.new_region(name, reg_dat)
         self.tablewidget_regions.set_value(data)
         if defer_update:
             return
@@ -197,7 +227,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
-
 
     def delete_region(self):
         'remove the currently selected region'
@@ -231,7 +260,6 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
 
-
     def copy_region(self):
         'copy the currently selected region'
         rows = self.tablewidget_regions.current_rows()
@@ -256,7 +284,6 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
-
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -304,9 +331,8 @@ class RegionsWidget(QtWidgets.QWidget):
         for widget, value in zip([self.lineedit_filter_x,
                                   self.lineedit_filter_y,
                                   self.lineedit_filter_z],
-                                 data['filter']):
+                                  data['filter']):
             widget.updateValue(None, value)
-
 
     def region_value_changed(self, widget, value, args, name=None,
                              update_param=True):
@@ -429,7 +455,6 @@ class RegionsWidget(QtWidgets.QWidget):
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
 
-
     def table_value_changed(self, name, key, value):
         # When is this called?
         data = self.tablewidget_regions.value
@@ -438,7 +463,6 @@ class RegionsWidget(QtWidgets.QWidget):
         elif key == 'color':
             self.vtkwidget.change_region_color(name, data[name]['color'])
         self.parent.set_unsaved_flag()
-
 
     def enable_disable_widgets(self, name):
         data = self.tablewidget_regions.value
@@ -458,7 +482,6 @@ class RegionsWidget(QtWidgets.QWidget):
         for widget, enable in zip(self.extent_lineedits, enable_list):
             widget.setEnabled(enable)
 
-
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
 
@@ -476,10 +499,8 @@ class RegionsWidget(QtWidgets.QWidget):
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
-
     def check_region_in_use(self, name):
         return self.parent.check_region_in_use(name)
-
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
@@ -489,7 +510,6 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in data['order']:
             data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
         return ExtendedJSON.dumps(data)
-
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
@@ -512,18 +532,13 @@ class RegionsWidget(QtWidgets.QWidget):
                 region_data['color'] = CellColor(region_data['color'])
 
             #build parameter map
-            for key, value in region_data.items():
-                if isinstance(value, list):
-                    for v, k in zip(value, ['x', 'y', 'z']):
-                        self.update_parameter_map(v, region, '_'.join([key,k]))
-                else:
-                    self.update_parameter_map(value, region, key)
+            self.update_parameter_name(None, region, region_data)
 
+            # add to vtk widget
             self.vtkwidget.new_region(region, region_data)
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
-
 
     def extract_regions(self, proj, proj_dir=None):
         """ extract regions from IC, BC, PS, IS, VTK"""
@@ -580,8 +595,6 @@ class RegionsWidget(QtWidgets.QWidget):
                             extents = self.vtkwidget.get_stl_extents(stl_files[stl_nums.index(cond.ind)])
                             # reformat extents
                             extents = [extents[::2], extents[1::2]]
-
-
 
                 # if extents are not already used by a region, add it
                 elif not self.check_extents_in_regions(extents) and extents_keys:

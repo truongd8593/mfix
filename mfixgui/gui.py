@@ -2470,7 +2470,7 @@ class MfixGui(QtWidgets.QMainWindow,
             if os.path.exists(workflow_file):
                 self.ui.workflow_widget.clear()
                 self.ui.workflow_widget.load(workflow_file)
-            self.ui.workflow_widget.look_for_projects(basename)
+            self.ui.workflow_widget.look_for_projects(project_dir)
 
         self.set_project_file(project_file)
 
