@@ -2295,9 +2295,7 @@ class MfixGui(QtWidgets.QMainWindow,
         """do_open performs the details of opening the project. It has a direct
         control-flow path, with no return statements, meaning that the project
         open cannot be canceled beyond this point.
-
         """
-
         project_dir = os.path.dirname(project_file)
 
         if runname_pid:

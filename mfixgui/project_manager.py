@@ -594,8 +594,8 @@ class ProjectManager(Project):
             n_errs = len(errlist) + len(ws)
             if n_errs:
                 self.gui.print_internal("Warning: %s loading %s" %
-                                           (plural(n_errs, "error") , project_file),
-                                           color='red')
+                                        (plural(n_errs, "error") , project_file),
+                                        color='red')
             else:
                 self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
 
