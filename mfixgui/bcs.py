@@ -630,7 +630,7 @@ class BCS(object):
             if solid == self.bcs_current_solid:
                 return # nothing to do
 
-            if solid > self.bcs_current_solid:
+            if solid > (self.bcs_current_solid or 0):
                 dummy_label = ui.label_dummy_solids_L
                 dummy_tab = SOLIDS_TAB_DUMMY_L
             else:

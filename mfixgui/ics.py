@@ -397,7 +397,7 @@ class ICS(object):
             if solid == self.ics_current_solid:
                 return # Really nothing to do
 
-            if solid > self.ics_current_solid:
+            if solid > (self.ics_current_solid or 0):
                 dummy_label = ui.label_dummy_solids_L
                 dummy_tab = SOLIDS_TAB_DUMMY_L
             else:
