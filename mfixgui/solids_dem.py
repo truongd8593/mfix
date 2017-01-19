@@ -379,6 +379,7 @@ class SolidsDEM(object):
                        if isinstance(w, LineEdit):
                            self.project.unregister_widget(w)
                        layout.removeWidget(w)
+                       w.setParent(None)
                        w.deleteLater()
 
             idx = layout.indexOf(ui.lineedit_keyword_ew_young)
