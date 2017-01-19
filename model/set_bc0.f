@@ -9,12 +9,12 @@
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SET_BC0
+SUBROUTINE SET_BC0
 
 ! Modules
 !--------------------------------------------------------------------//
-      use bc, only: ijk_p_g
-      use bc
+      use bc, only: ijk_p_g, bc_defined, bc_type_enum, free_slip_wall, no_slip_wall, par_slip_wall
+      use bc, only: p_outflow, mass_outflow, outflow, mass_inflow, p_inflow
       use fldvar, only: x_g, t_g, p_g
       use mms, only: calculate_mms, calculate_mms_source, use_mms
 
@@ -216,10 +216,11 @@
 
       use param1, only: undefined, zero
       use physprop, only: smax, mmax, nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale_pressure
       use toleranc, only: tmin
+      use turb, only: k_epsilon
 
       use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
@@ -372,9 +373,10 @@
 
       use param1, only: zero
       use physprop, only: smax, mmax, nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale_pressure
+      use turb, only: k_epsilon
 
       use indices, only: im1, jm1, km1
       use functions, only: is_on_mype_plus2layers, bound_funijk
@@ -468,6 +470,8 @@
             DO M = 1, SMAX
                ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + &
                   BC_ROP_S(BCV,M)
+! this will cause issue if any variable density model is used as ro_s
+! will not yet be defined
                nM = BC_ROP_S(BCV,M)*6d0/ &
                   (PI*D_p(IJK,M)**3*RO_S(IJK,M))
                nTOT = nTOT + nM
@@ -680,8 +684,9 @@
       use fldvar, only: k_turb_g, e_turb_g
       use physprop, only: smax, mmax
       use physprop, only: nmax
-      use run, only: k_epsilon, kt_type_enum, ghd_2007
+      use run, only: kt_type_enum, ghd_2007
       use scalars, only: nscalar
+      use turb, only: k_epsilon
 
       use indices, only: im1, ip1, jm1, jp1, km1, kp1
       use functions, only: is_on_mype_plus2layers, bound_funijk
@@ -802,7 +807,7 @@
       INTEGER :: l2, u2
       INTEGER :: l1, u1
 
-      LOGICAL, parameter :: setDBG = .FALSE.
+      LOGICAL, parameter :: setDBG = .TRUE.
       LOGICAL :: dFlag
       INTEGER :: iErr
 

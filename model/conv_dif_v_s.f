@@ -63,7 +63,7 @@
                 ENDIF
              ENDIF
 
-             CALL DIF_V_IS (MU_S(1,M), A_M, M, IER)
+             CALL DIF_V_IS (MU_S(1,M), A_M, M)
           ENDIF
         ENDIF
       ENDDO
@@ -847,7 +847,6 @@
 ! array3 (locally ww) - the z directional velocity
       DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
       CALL GET_VCELL_SVTERMS(U, V, WW,M)

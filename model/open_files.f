@@ -87,7 +87,7 @@
                CALL FLUSH_ERR_MSG
                GO TO 100
             ELSEIF(IER(myPE) /= 0) THEN
-               CER=''; WRITE(CER,*)
+               CER=''; WRITE(CER,*)IER(myPE)
                WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
                CALL FLUSH_ERR_MSG
                GO TO 100
@@ -244,7 +244,7 @@
 ! Globally collect flags.
       CALL GLOBAL_ALL_SUM(IER)
 ! Report errors.
-      IF(sum(IER_l) /= 0) ERROR_OPENING = .TRUE.
+      IF(sum(IER_l) /= 0.AND..NOT.ADJUST_PARTITION) ERROR_OPENING = .TRUE.
 
       RETURN
       END FUNCTION ERROR_OPENING
@@ -268,6 +268,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE OPEN_PE_LOG(IER)
 
+      use, intrinsic :: iso_fortran_env, only: output_unit
+
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! File unit for LOG files.
@@ -282,6 +284,8 @@
       use funits, only: DMP_LOG
 ! Flag: The log had to be opened.
       use funits, only: LOG_WAS_CLOSED
+
+      use error_manager, only: IS_PYMFIX
 
       IMPLICIT NONE
 
@@ -334,8 +338,12 @@
 ! Open the .LOG file. From here forward, all routines should store
 ! error messages (at a minimum) in the .LOG file.
       NB = len_trim(LOGFILE)+1
+      IF (IS_PYMFIX) THEN
+         unit_log = output_unit
+      ELSE
       CALL OPEN_FILE(LOGFILE, NB, UNIT_LOG, '.LOG', FILE_NAME,         &
          'APPEND', 'SEQUENTIAL', 'FORMATTED', 132,  IER)
+      ENDIF
 
       RETURN
       END SUBROUTINE OPEN_PE_LOG

@@ -19,25 +19,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE energy
+      USE fldvar
+      USE functions
+      USE geometry
+      USE ic
+      USE indices
+      USE mms, only : calculate_mms, mms_p_g, mms_ep_g, mms_rop_s, &
+           allocate_mms_vars  !! FLAGMMS
       USE param
       USE param1
-      USE geometry
-      USE constant
       USE physprop
-      USE ic
-      USE fldvar
-      USE visc_g
-      USE indices
-      USE scales
-      USE energy
-      USE scalars
-      USE compar
       USE run
+      USE scalars
+      USE scales
       USE sendrecv
       USE solids_pressure
-      USE functions
-      USE mms, only : calculate_mms, mms_p_g, mms_ep_g, mms_rop_s, &
-                      allocate_mms_vars  !! FLAGMMS
+      USE turb, ONLY: k_epsilon, l_scale
+      USE visc_g
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -223,9 +224,9 @@
       ENDDO   ! over dimension_ic
 
 !! FLAGMMS: begin
-!! Pressure initialized as exact MMS values  
-      call allocate_mms_vars !! FLAGMMS    
-      CALL CALCULATE_MMS 
+!! Pressure initialized as exact MMS values
+      call allocate_mms_vars !! FLAGMMS
+      CALL CALCULATE_MMS
       DO IJK = IJKSTART3, IJKEND3
         P_G(IJK) = MMS_P_G(IJK)
         EP_G(IJK) = MMS_EP_G(IJK)

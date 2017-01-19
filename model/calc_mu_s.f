@@ -31,7 +31,7 @@
       IF (USR_MUS(M)) THEN
          CALL CALC_USR_PROP(Solids_Viscosity,lm=M)
       ELSEIF (MU_S0(M) == UNDEFINED) THEN
-! this is a necessary check as one may have mu_s0 defined but still 
+! this is a necessary check as one may have mu_s0 defined but still
 ! need to call this routine (for set_epmus)
          CALL CALC_DEFAULT_MUs(M)
       ENDIF
@@ -133,8 +133,6 @@
 ! runtime flag indicates whether the solids phase becomes close-packed
 ! at ep_star
       USE physprop, only: close_packed
-! number of solids phases
-      USE physprop, only: mmax
       USE physprop, only: blend_function
 
 ! runtime flag to use qmomk
@@ -160,9 +158,9 @@
 ! runtime flag for blending stress (only with schaeffer)
       USE run, only: blending_stress
 ! solids transport coefficients
-      USE visc_s, only: mu_s, epmu_s, mu_s_c, mu_s_v
+      USE visc_s, only: mu_s, mu_s_c, mu_s_v
       USE visc_s, only: mu_s_p, mu_s_f
-      USE visc_s, only: lambda_s, eplambda_s, lambda_s_c, lambda_s_v
+      USE visc_s, only: lambda_s, lambda_s_c, lambda_s_v
       USE visc_s, only: lambda_s_p, lambda_s_f
       IMPLICIT NONE
 
@@ -623,7 +621,7 @@
 
       USE toleranc, only: dil_ep_s
 
-      USE turb, only: tau_1
+      USE turb, only: tau_1, turb_c_mu
 
       USE visc_s, only: lambda_s_v, mu_s_v, mu_b_v
       USE visc_s, only: ep_star_array
@@ -636,11 +634,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-
-! Local parameters
-!---------------------------------------------------------------------//
-! constant in simonin model
-      DOUBLE PRECISION, PARAMETER :: C_mu = 9.0D-02
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -655,7 +648,10 @@
       DOUBLE PRECISION :: SUM_EpsGo
 ! single particle drag coefficient/ep_s
       DOUBLE PRECISION :: dga_sl
+! constant in ahmadi model
+      DOUBLE PRECISION :: C_mu
 !---------------------------------------------------------------------//
+      c_mu = turb_c_mu
 
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
@@ -780,7 +776,7 @@
 
       USE toleranc, only: dil_ep_s
 
-      USE turb, only: tau_1, tau_12, k_12
+      USE turb, only: tau_1, tau_12, k_12, turb_c_mu
 
       USE visc_s, only: lambda_s_v, mu_s_v, mu_b_v
 
@@ -792,11 +788,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-
-! Local parameters
-!---------------------------------------------------------------------//
-! constant in simonin model
-      DOUBLE PRECISION, PARAMETER :: C_mu = 9.0D-02
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -815,7 +806,10 @@
       DOUBLE PRECISION :: dga_sl
 ! relative velocity between gas and solids
       DOUBLE PRECISION :: rvel_l
+! constant in simonin model
+      DOUBLE PRECISION :: C_mu
 !---------------------------------------------------------------------//
+      c_mu = turb_c_mu
 
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
@@ -2593,9 +2587,7 @@
 !---------------------------------------------------------------------//
       USE compar, only: ijkstart3, ijkend3
       USE constant, only: v_ex
-      USE cutcell, only: cut_cell_at
       USE functions, only: fluid_at
-      USE geometry, only: cylindrical
       USE physprop, only: smax
       USE param1, only: zero, one, half
       USE run, only: kt_type_enum
@@ -2624,8 +2616,6 @@
       DOUBLE PRECISION :: D_sM(3,3), D_sl(3,3)
 ! velocity gradient for mth and lth solids phases
       DOUBLE PRECISION :: DelV_sM(3,3), DelV_sL(3,3)
-! shear related reciprocal time scale
-      DOUBLE PRECISION :: SRT
 !---------------------------------------------------------------------//
 
       IF (SHEAR) THEN

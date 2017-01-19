@@ -149,7 +149,7 @@
          ck = bk
          if(fa*fs < 0) then
             bk = s
-            fb = fs 
+            fb = fs
          else
             ak = s
             fa = fs

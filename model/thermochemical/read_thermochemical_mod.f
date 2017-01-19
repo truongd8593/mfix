@@ -47,10 +47,10 @@ CONTAINS
 
       INQUIRE(FILE=TRIM(THERM),EXIST=LocalCopy)
       IF(LocalCopy)Then
-        OPEN(CONVERT='BIG_ENDIAN',UNIT=funit,FILE=TRIM(THERM))
+        OPEN(UNIT=funit,FILE=TRIM(THERM))
       ELSE
         FILENAME = './BURCAT.THR'
-        OPEN(CONVERT='BIG_ENDIAN',UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
+        OPEN(UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
       ENDIF
 
  !      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)

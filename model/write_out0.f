@@ -36,6 +36,7 @@
       USE scales
       USE sendrecv
       USE toleranc
+      use turb, only: k_epsilon
       USE ur_facs
 
       IMPLICIT NONE
@@ -51,8 +52,6 @@
       INTEGER :: L, M, NN
 
       INTEGER :: MMAX_TOT
-      DOUBLE PRECISION :: TMP_DP
-
 
       DOUBLE PRECISION, DIMENSION(6) :: LOC
 
@@ -178,7 +177,7 @@
       IF (C_F /= UNDEFINED) WRITE (UNIT_OUT, 1152) C_F
       IF (PHI /= UNDEFINED) WRITE (UNIT_OUT, 1153) PHI
       IF (PHI_W /= UNDEFINED) WRITE (UNIT_OUT, 1154) PHI_W
-      WRITE (UNIT_OUT, 1155) L_SCALE0, MU_GMAX
+      !WRITE (UNIT_OUT, 1155) 0.0, MU_GMAX
       IF (V_EX /= ZERO) WRITE (UNIT_OUT, 1156) V_EX
       WRITE (UNIT_OUT, 1157) P_REF, P_SCALE, GRAVITY
       WRITE (UNIT_OUT, 1158)
@@ -715,7 +714,7 @@
  1152 FORMAT(7X,'Coefficient of friction (C_f) = ',G12.5)
  1153 FORMAT(7X,'Angle of internal friction (Phi) = ',G12.5)
  1154 FORMAT(7X,'Angle of wall_particle friction (Phi_w) = ',G12.5)
- 1155 FORMAT(7X,'Default turbulence length scale (L_scale0) = ',G12.5,/7X,&
+ 1155 FORMAT(7X,'Default turbulence length scale (L_scale) = ',G12.5,/7X,&
          'Maximum turbulent viscosity (MU_gmax) = ',G12.5)
  1156 FORMAT(7X,'Excluded volume for B-M stress term (V_ex) = ',G12.5)
  1157 FORMAT(7X,'Reference pressure (P_ref) = ',G12.5,/7X,&
@@ -1077,5 +1076,3 @@
          'the characters will be over-written in the above order',/1X,A1)
          RETURN
          END SUBROUTINE WRITE_FLAGS
-
-

@@ -1,3 +1,5 @@
+#include "version.inc"
+
       MODULE FUNITS
 
 ! Whether this processor should write the log file in DMP mode.
@@ -18,7 +20,7 @@
       INTEGER, PARAMETER :: UNIT_OUT = 52
 
 ! RUN_NAME.LOG file unit number. (DEFAULT/Serial 53)
-      INTEGER, PARAMETER :: UNIT_LOG = 53
+      INTEGER :: UNIT_LOG = 53
 
 ! Temporary (scratch) file unit number
       INTEGER, PARAMETER :: UNIT_TMP = 54
@@ -39,7 +41,7 @@
 !                                                                      !
 !  Purpose: Finds an open i/o unit number; Usage:                      !
 !   integer myunit                                                     !
-!   open(convert='big_endian',unit=newunit(myunit),file='filename')    !
+!   open(unit=newunit(myunit),file='filename')                         !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       INTEGER FUNCTION newunit(unit)
@@ -96,11 +98,11 @@
       IF(IOS == 0 )THEN
          close(tUNIT)
          WRITE(CMD,"('rm ',A,'/tmp')")adjustl(trim(pDIR))
-         CALL SYSTEM(trim(CMD))
+         CALL EXECUTE_COMMAND_LINE(trim(CMD))
       ELSE
          write(*,"('Creating directory ',A)") PDIR
          WRITE(CMD,"('mkdir ',A)")pDIR
-         CALL SYSTEM(trim(CMD))
+         CALL EXECUTE_COMMAND_LINE(trim(CMD))
       ENDIF
 
       RETURN

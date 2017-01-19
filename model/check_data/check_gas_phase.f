@@ -7,7 +7,7 @@
 !          J.Musser                                   Date: 01-FEB-14  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_GAS_PHASE
+      SUBROUTINE CHECK_GAS_PHASE(MFIX_DAT)
 
 
 ! Global Variables:
@@ -39,9 +39,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       IMPLICIT NONE
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -55,7 +55,7 @@
 
 
 ! CHECK MU_g0
-      IF (MU_G0 <= ZERO) THEN
+      IF (MU_G0 < ZERO) THEN
          WRITE(ERR_MSG,1001) 'MU_G0', iVal(MU_G0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -82,7 +82,7 @@
       IF(USE_RRATES)THEN
          CALL CHECK_GAS_SPECIES_LEGACY
       ELSE
-         CALL CHECK_GAS_SPECIES
+         CALL CHECK_GAS_SPECIES(MFIX_DAT)
       ENDIF
 
 ! Currently MMS uses constant properties. These are in place simply
@@ -168,7 +168,7 @@
 !                                                                      !
 ! Author: J. Musser                                  Date: 07-FEB-14   !
 !----------------------------------------------------------------------!
-      SUBROUTINE CHECK_GAS_SPECIES
+      SUBROUTINE CHECK_GAS_SPECIES(MFIX_DAT)
 
 
 ! Global Variables:
@@ -203,14 +203,13 @@
       USE param1, only: UNDEFINED, UNDEFINED_I, UNDEFINED_C
       USE param1, only: ZERO
 
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -332,7 +331,7 @@
                ENDIF
                3001 FORMAT(/2x,'>',I3,': Species: ',A)
 ! Read the database.
-               CALL READ_DATABASE(0, N, SPECIES_g(N), MW_g(N))
+               CALL READ_DATABASE(MFIX_DAT, 0, N, SPECIES_g(N), MW_g(N))
 ! Flag variable to stating that the database was read.
                rDatabase(0,N) = .TRUE.
             ENDIF
@@ -466,4 +465,3 @@
          'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
 
       END SUBROUTINE CHECK_GAS_SPECIES_LEGACY
-

@@ -494,7 +494,7 @@
           end if ! end of if(tec_output_block)
 
 ! write tecplot data (point format) for the temperature profile at y=H/2:
-! - numerical solution for t_g          
+! - numerical solution for t_g
 ! - exact solution for t_g
 ! - error for t_g
 

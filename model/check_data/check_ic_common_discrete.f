@@ -22,6 +22,7 @@
       USE discretelement, only: DES_MMAX
 ! direction wise spans of the domain and grid spacing in each direction
       Use geometry, only: xlength, ylength, zlength
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 ! Flag indicating that the IC region is defined.
       USE ic, only: IC_DEFINED
 ! IC Region gas volume fraction.
@@ -43,7 +44,7 @@
       use error_manager
       implicit none
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
       INTEGER :: ICV, ICV2, M, IDIM
       INTEGER :: COUNT_IC, COUNT_IC_WITH_SOLS
@@ -87,12 +88,12 @@
          ICV = FIRST_DEF_IC
          FIRST_IC_OK = .FALSE.
          IF(IC_EP_G(ICV).EQ.ONE &
-           .AND.IC_X_W(ICV).LE.ZERO.AND.IC_X_E(ICV).GE.XLENGTH         &
-           .AND.IC_Y_S(ICV).LE.ZERO.AND.IC_Y_N(ICV).GE.YLENGTH)        &
+           .AND.IC_X_W(ICV).LE.X_MIN.AND.IC_X_E(ICV).GE.X_MAX         &
+           .AND.IC_Y_S(ICV).LE.Y_MIN.AND.IC_Y_N(ICV).GE.Y_MAX)        &
             FIRST_IC_OK = .TRUE.
 
-         IF (FIRST_IC_OK .AND. IC_Z_B(ICV) <= ZERO .AND. &
-            IC_Z_T(ICV) >= ZLENGTH) FIRST_IC_OK = .TRUE.
+         IF (FIRST_IC_OK .AND. IC_Z_B(ICV) <= Z_MIN .AND. &
+            IC_Z_T(ICV) >= Z_MAX) FIRST_IC_OK = .TRUE.
 
          IF(.NOT.FIRST_IC_OK) THEN
             WRITE(ERR_MSG, 1003)

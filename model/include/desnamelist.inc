@@ -23,8 +23,8 @@
 
 ! Actual material properties for particles/wall.  Used for computing
 ! conduction correction terms to account for artificial softening
-  	EW_YOUNG_ACTUAL, E_YOUNG_ACTUAL, V_POISSON_ACTUAL, &
-	VW_POISSON_ACTUAL, &
+    EW_YOUNG_ACTUAL, E_YOUNG_ACTUAL, V_POISSON_ACTUAL, &
+  VW_POISSON_ACTUAL, &
 
 ! Lees Edwards BC (for DEM only)
         DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
@@ -58,4 +58,7 @@
          PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, PIC_REPORT_MIN_EPG, &
 
 ! Flag to turn on/off optimizing the list of facets at each des grid cell
-         MINIMIZE_DES_FACET_LIST
+         MINIMIZE_DES_FACET_LIST, &
+
+! Time interval at which particle dynamic load balance is called, Eulerian Grid Weight 
+         DLB_DT,DLB_EGW

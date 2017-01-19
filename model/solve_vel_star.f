@@ -280,7 +280,7 @@
             IJK_RESID(RESID_U,0))
          CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
-!         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         call write_ab_m(a_m, b_m, ijkmax2, 0)
 !         write(*,*) &
 !            resid(resid_u, 0), max_resid(resid_u, 0), &
 !            ijk_resid(resid_u, 0)
@@ -301,7 +301,7 @@
 !                  write(*,*) &
 !                     resid(resid_u, m), max_resid(resid_u, m), &
 !                     ijk_resid(resid_u, m)
-!                  call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!                  call write_ab_m(a_m, b_m, ijkmax2, m)
                ENDIF   ! end if (momentum_x_eq(m))
             ENDIF ! end if check for GHD Theory
          ENDDO   ! end do (m=1,mmax)
@@ -326,7 +326,7 @@
 !                     a_m(1, -3, M), 1, DO_K,ier)
                   CALL ADJUST_LEQ (RESID(RESID_U,M), LEQ_IT(3),&
                      LEQ_METHOD(3), LEQI, LEQM)
-                  CALL SOLVE_LIN_EQ ('U_s', 3, U_S_tmp(1,M), A_M, &
+                  CALL SOLVE_LIN_EQ ('U_s', 3, U_S_tmp(:,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(3), LEQ_TOL(3),&
                      LEQ_PC(3), IER)
 !                  call out_array(u_s(1,m), 'u_s')
@@ -373,14 +373,14 @@
 
 ! convection-diffusion terms
       CALL CONV_DIF_V_G (A_M, B_M, IER)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
       IF(DO_SOLIDS) CALL CONV_DIF_V_S (A_M, B_M, IER)
 
 ! source terms
       CALL SOURCE_V_G (A_M, B_M)
       IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M)
       IF(CALL_USR_SOURCE(4)) CALL CALC_USR_SOURCE(GAS_V_MOM, A_M, B_M)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
       IF(DO_SOLIDS) THEN
          CALL SOURCE_V_S (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M)
@@ -415,9 +415,9 @@
 
 ! handle special case where center coefficient is zero
       CALL ADJUST_A_V_G (A_M, B_M)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
       IF(DO_SOLIDS) CALL ADJUST_A_V_S (A_M, B_M)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
 
 ! modification to matrix equation for DEM drag terms
       IF(DES_CONTINUUM_COUPLED) THEN
@@ -438,7 +438,7 @@
             IJK_RESID(RESID_V,0))
          CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
-!         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         call write_ab_m(a_m, b_m, ijkmax2, 0)
 !         write(*,*) &
 !            resid(resid_v, 0), max_resid(resid_v, 0), &
 !            ijk_resid(resid_v, 0)
@@ -458,7 +458,7 @@
 !                  write(*,*) &
 !                     resid(resid_v, m), max_resid(resid_v, m),
 !                     ijk_resid(resid_v, m)
-!                  call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!                  call write_ab_m(a_m, b_m, ijkmax2, m)
                ENDIF   ! end if (momentum_y_eq(m))
             ENDIF ! end if check for GHD Theory
          ENDDO   ! end do (m=1,mmax)
@@ -483,7 +483,7 @@
 !                     a_m(1, -3, M), 1, DO_K, ier)
                   CALL ADJUST_LEQ (RESID(RESID_V,M), LEQ_IT(4), &
                      LEQ_METHOD(4), LEQI, LEQM)
-                  CALL SOLVE_LIN_EQ ('V_s', 4, V_S_tmp(1,M), A_M, &
+                  CALL SOLVE_LIN_EQ ('V_s', 4, V_S_tmp(:,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(4), LEQ_TOL(4), &
                      LEQ_PC(4), IER)
 !                  call out_array(v_s(1,m), 'v_s')
@@ -537,13 +537,13 @@
          CALL SOURCE_W_G (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M)
          IF(CALL_USR_SOURCE(5)) CALL CALC_USR_SOURCE(GAS_W_MOM, A_M, B_M)
-!         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!         call write_ab_m(a_m, b_m, ijkmax2, 0)
          IF(DO_SOLIDS) THEN
             CALL SOURCE_W_S (A_M, B_M)
             IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M)
             IF(CALL_USR_SOURCE(5)) CALL CALC_USR_SOURCE(SOLIDS_W_MOM, A_M, B_M)
          ENDIF
-!        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!        call write_ab_m(a_m, b_m, ijkmax2, 0)
 
 ! evaluate local variable vxf_gs and vxf_ss
          CALL VF_GS_Z (VXF_GS)
@@ -615,7 +615,7 @@
 !                     write(*,*) &
 !                        resid(resid_w, m), max_resid(resid_w, m), &
 !                        ijk_resid(resid_w, m)
-!                     call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!                     call write_ab_m(a_m, b_m, ijkmax2, m)
                   ENDIF   ! end if (momentum_z_eq(m))
                ENDIF ! end if check for GHD Theory
             ENDDO   ! end do (m=1,mmax)
@@ -640,7 +640,7 @@
 !                        a_m(1, -3, M), 1, DO_K, ier)
                      CALL ADJUST_LEQ (RESID(RESID_W,M), LEQ_IT(5), &
                         LEQ_METHOD(5), LEQI, LEQM)
-                     CALL SOLVE_LIN_EQ ('W_s', 5, W_S_tmp(1,M), &
+                     CALL SOLVE_LIN_EQ ('W_s', 5, W_S_tmp(:,M), &
                         A_M, B_M, M, LEQI, LEQM, LEQ_SWEEP(5), &
                         LEQ_TOL(5), LEQ_PC(5), IER)
 !                     call out_array(w_s(1,m), 'w_s')

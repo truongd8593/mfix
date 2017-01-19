@@ -12,14 +12,15 @@ PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT) *.so
-MODDIR=$(top_builddir)/model
+MODDIR=$(top_builddir)/../model
 
 # Current directory takes precedence over model/include/ and model/
-AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
-AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
+INCS = $(FC_MODINC)$(top_srcdir)/../model/include \
+       $(FC_MODINC)$(MODDIR)
+AM_FCFLAGS = $(INCS)
 AM_LDFLAGS =
 
-src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
+src_overrides := $(filter-out model/% post_mfix/%, $(sort $(wildcard *.f) $(wildcard **/*.f)))
 obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
@@ -42,18 +43,14 @@ mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
-build:
-	rm -f $@
-	$(LN_S) $(top_builddir) $@
-
-.PHONY: TAGS test $(LIBMFIX)
+.PHONY: TAGS test $(LIBMFIX) .build
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) $(notdir $@)
+	$(MAKE) -C $(top_builddir) mfix
 
 $(LIBMFIX).md5: $(LIBMFIX)
-	@md5sum $< | cmp -s $@ -; if test $$? -ne 0; then md5sum $< > $@; fi
+	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
@@ -61,42 +58,44 @@ clean-local:
 # mfix.f needs to be built under $(builddir)
 $(builddir)/.build/mfix.f:  $(LIBMFIX).md5
 	@mkdir -p .build
-	cp $(top_srcdir)/model/mfix.f $@
+	cp $(top_srcdir)/../model/mfix.f $@
 
 $(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX).md5
 $(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX).md5
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
-$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/../model/read_namelist.f
 	@mkdir -p .build
 	$(PPFCCOMPILE) -c -o $@ $<
 
 # read_database needs rebuilt to use the correct path to BURCAT.THR
-$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/../model/read_database.f
 	@mkdir -p .build
-	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/../model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
-	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
+	RUN_DIR=. $(top_srcdir)/../config/rxn_preproc.sh
 
-#########################################################################
-#
-#  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
-#
-#      Include /dev/null so GREP doesn't hang if $^ is empty
-#
-#########################################################################
+################################################################
+#                                                              #
+#  Use script "fdep" to find dependencies among source files.  #
+#  Ignoring the following modules:                             #
+#  - omp_lib (OpenMP)                                          #
+#  - netcdf                                                    #
+#      Include /dev/null so GREP doesn't hang if $^ is empty   #
+################################################################
+DEP_IGN := -i omp_lib -i netcdf -i mpi
 
 .f.d:
+	$(top_builddir)/fdep $(DEP_IGN) $(INCS) -m $(MODDIR) -o $(@D) $^
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/update-usrdeps $@
 	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
 	    echo "$${main_mod}: ${LIBMFIX}" >> $@; \
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
+CLEANS := clean distclean mostlyclean
 @make_ifnotclean@
 $(eval -include $(src_overrides:%.f=%.d) )
 @make_endif@
@@ -112,8 +111,39 @@ DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 
 postmfix$(EXEEXT): $(LIBMFIX).md5
 	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
+	-rm -f $@
 	$(LN_S) $(top_builddir)/$@ $@
+
+################################################################
+#                                                              #
+#           MFIX GUI                                           #
+#                                                              #
+################################################################
+
+if PYTHON
+ui_files = \
+	$(top_srcdir)/../gui/uifiles/general.ui \
+	$(top_srcdir)/../gui/uifiles/geometry.ui \
+	$(top_srcdir)/../gui/uifiles/gui.ui \
+	$(top_srcdir)/../gui/uifiles/mesh.ui \
+	$(top_srcdir)/../gui/uifiles/model_setup.ui \
+	$(top_srcdir)/../gui/uifiles/monitors.ui \
+	$(top_srcdir)/../gui/uifiles/numerics.ui \
+	$(top_srcdir)/../gui/uifiles/output.ui \
+	$(top_srcdir)/../gui/uifiles/post_processing.ui \
+	$(top_srcdir)/../gui/uifiles/regions.ui \
+	$(top_srcdir)/../gui/uifiles/run.ui \
+	$(top_srcdir)/../gui/uifiles/species_popup.ui \
+	$(top_srcdir)/../gui/uifiles/vtk.ui
+
+.ui.py:
+	$(PYUIC) -o $@ $^
+
+ui_py = $(ui_files:%.ui=%.py)
+
+ui: $(ui_py)
+
+endif
 
 ################################################################
 #                                                              #
@@ -122,27 +152,33 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 ################################################################
 
 if PYTHON
+
+AM_FCFLAGS += $(patsubst %,-Xlinker -rpath=%, $(subst :, ,$(LD_LIBRARY_PATH)))
+
 pymfix_src = \
-	$(top_srcdir)/model/param_mod.f \
-	$(top_srcdir)/model/param1_mod.f \
-	$(top_srcdir)/model/dmp_modules/compar_mod.f \
-	$(top_srcdir)/model/fldvar_mod.f \
-	$(top_srcdir)/model/des/discretelement_mod.f \
-	$(top_srcdir)/model/iterate.f \
-	$(top_srcdir)/model/residual_mod.f \
-	$(top_srcdir)/model/time_step.f \
-	$(top_srcdir)/model/main.f \
-	$(top_srcdir)/model/run_mod.f
+	$(top_srcdir)/../model/param_mod.f \
+	$(top_srcdir)/../model/param1_mod.f \
+	$(top_srcdir)/../model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/../model/dmp_modules/debug_mod.f \
+	$(top_srcdir)/../model/dmp_modules/parallel_mpi_mod.f \
+	$(top_srcdir)/../model/fldvar_mod.f \
+	$(top_srcdir)/../model/des/discretelement_mod.f \
+	$(top_srcdir)/../model/des/des_time_march.f \
+	$(top_srcdir)/../model/iterate.f \
+	$(top_srcdir)/../model/residual_mod.f \
+	$(top_srcdir)/../model/time_step.f \
+	$(top_srcdir)/../model/main.f \
+	$(top_srcdir)/../model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
-pymfix: mfix.so
-	rm -f $@
-	$(LN_S) $(top_srcdir)/pymfix/$@ $@
+mfix$(EXEEXT): mfix.so
+	-rm -f $@
+	$(LN_S) $(top_srcdir)/../gui/pymfix $@
 
 mfix.so: $(LIBMFIX).md5
 mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
-	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+	$(F2PY) -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp $(FC_DEFINE)PYMFIX" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 endif
 
 ################################################################
@@ -166,10 +202,10 @@ AM_LDFLAGS += $(FC_DEFINE)MPI
 F2PY_FLAGS += $(FC_DEFINE)MPI
 
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
-	MPIRANKS=$(MPIRANKS) ${top_srcdir}/build-aux/runtests.sh
+	MPICMD="$(MPICMD)" ${top_srcdir}/runtests.sh
 else
 test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
-	${top_srcdir}/build-aux/runtests.sh
+	${top_srcdir}/runtests.sh
 endif
 
 ################################################################
@@ -199,6 +235,28 @@ endif
 if MKL
 AM_FCFLAGS += -mkl
 AM_LDFLAGS += -mkl
+endif
+
+################################################################
+#                                                              #
+#      Convert unformatted output to bigendian (for Paraview)  #
+#                                                              #
+################################################################
+
+if GNU
+AM_FCFLAGS += -fconvert=big-endian
+endif
+
+if INTEL
+AM_FCFLAGS += -convert big_endian
+endif
+
+if PGI
+AM_FCFLAGS += -byteswapio
+endif
+
+if IBM
+AM_FCFLAGS += -qufmt=be
 endif
 
 ################################################################

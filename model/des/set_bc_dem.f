@@ -54,9 +54,6 @@
       IF(DEM_BCMI > 0) CALL SET_BC_DEM_MI
       IF(DEM_BCMO > 0) CALL SET_BC_DEM_MO
 
-! Set the flag that one or more DEM MI/MO exists.
-      DEM_MIO = (DEM_BCMI /= 0 .OR. DEM_BCMO /= 0)
-
       CALL FINL_ERR_MSG
 
       RETURN

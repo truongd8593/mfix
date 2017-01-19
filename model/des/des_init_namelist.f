@@ -419,7 +419,7 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Normal spring constant [dyne/cm in CGS] for inter-particle collisions.
+!    Normal spring constant [N/m in SI] for inter-particle collisions.
 !    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN = UNDEFINED
@@ -435,13 +435,13 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_FAC = 2.d0/7.d0
+      KT_FAC = 0.28571428571429
 !</keyword>
 
 
 !<keyword category="Discrete Element Model" required="false" dem=.true.>
 !  <description>
-!    Normal spring constant [dyne/cm in CGS] for particle-wall collisions.
+!    Normal spring constant [N/m in SI] for particle-wall collisions.
 !    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN_W = UNDEFINED
@@ -457,7 +457,7 @@
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
-      KT_W_FAC = 2.d0/7.d0
+      KT_W_FAC = 0.28571428571429
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false" dem="true"
@@ -562,7 +562,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Youngs modulus for the wall [barye in CGS]. Required when using the
+!    Youngs modulus for the wall [Pa in SI]. Required when using the
 !    Hertzian spring-dashpot model.
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
@@ -581,7 +581,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Youngs modulus for the particle [barye in CGS]. Required when using
+!    Youngs modulus for the particle [Pa in SI]. Required when using
 !    the Hertzian spring-dashpot model.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
@@ -715,7 +715,7 @@
 !    the fluid lens that surrounds a particle. This parameter is used
 !    in the particle-fluid-particle conduction model.
 !  </description>
-      FLPC = 1.0d0/5.0d0
+      FLPC = 0.2d0
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false">
@@ -726,7 +726,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Actual Youngs modulus for the particle [barye in CGS]. Used for
+!    Actual Youngs modulus for the particle [Pa in SI]. Used for
 !    computing correction terms for DEM conduction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
@@ -735,7 +735,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Actual Youngs modulus for the walls [barye in CGS]. Used for
+!    Actual Youngs modulus for the walls [Pa in SI]. Used for
 !    computing correction terms for DEM conduction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
@@ -886,6 +886,11 @@
       CFL_PIC = 0.1
 !</keyword>
 
+! Time interval at which particle load is displayed (sec)
+      DLB_DT = UNDEFINED
+
+! Eulerian Grid Weight
+      DLB_EGW = 0
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !                            UNSUPPORTED KEYWORDS                      !
@@ -923,5 +928,7 @@
 ! not a well supported feature and not generic either. So removing
 ! from namelists
       DES_CALC_BEDHEIGHT = .FALSE.
+
+
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

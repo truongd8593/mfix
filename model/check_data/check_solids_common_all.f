@@ -16,8 +16,7 @@
 !  Author: J.Musser                                  Date: 03-FEB-14   !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_SOLIDS_COMMON_ALL
-
+      SUBROUTINE CHECK_SOLIDS_COMMON_ALL(MFIX_DAT)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -25,7 +24,7 @@
 ! Flag: Use legacy rrates implementation.
       use rxns, only: USE_RRATES
 ! Number of continuum solids phases.
-      use physprop, only: SMAX, MMAX
+      use physprop, only: SMAX
 ! Number of discrete (DEM/MPPIC) solids.
       use discretelement, only: DES_MMAX
 ! User specified: Constant solids specific heat.
@@ -49,9 +48,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -120,7 +119,7 @@
       IF(USE_RRATES)THEN
          CALL CHECK_SOLIDS_SPECIES_LEGACY(MMAX_L)
       ELSE
-         CALL CHECK_SOLIDS_SPECIES(MMAX_L)
+         CALL CHECK_SOLIDS_SPECIES(MFIX_DAT, MMAX_L)
       ENDIF
 
 ! Currently MMS uses constant properties. These are in place simply
@@ -149,8 +148,6 @@
 ! Check solids drag model selection.
       CALL CHECK_SOLIDS_DRAG
 
-! Checks required for the subgrid drag models.
-      CALL CHECK_SUBGRID_MODEL
 
 ! Check the solids density input parameters.
       CALL CHECK_SOLIDS_DENSITY(MMAX_L)
@@ -170,6 +167,7 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_COMMON_ALL
+
 
 
 !----------------------------------------------------------------------!
@@ -248,177 +246,13 @@
 
       END SUBROUTINE CHECK_SOLIDS_DRAG
 
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: CHECK_SUBGRID_MODEL                                     !
-!  Purpose: Check the subgrid drag model interactions.                 !
-!                                                                      !
-!  Author: J.Musser                                   Date: 31-JAN-14  !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_SUBGRID_MODEL
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! Flag: Specify friction model (Schaeffer model/Princeton model)
-      USE run, only: FRICTION
-! Flag: Solve granular energy eq
-      USE run, only: GRANULAR_ENERGY
-! Flag: Solve K-Epsilon Eq.
-      USE run, only: K_EPSILON
-! Flag: Impose a mean shear on flow field.
-      USE run, only: SHEAR
-! Flag: Invoke Schaeffer and KT-Theory blending
-      USE run, only: BLENDING_STRESS
-! User specifed drag model
-      USE run, only: DRAG_TYPE
-! Ratio of filter size to computational cell size
-      USE run, only: FILTER_SIZE_RATIO
-! User specifed subgrid model: IGCI or MILIOLI
-      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM
-      USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
-! Flag: Include wall effect term
-      USE run, only: SUBGRID_WALL
-! Specularity coefficient for particle-wall collisions
-      use constant, only: PHIP
-! Flag: Use cartesian grid model
-      USE cutcell, only : CARTESIAN_GRID
-! Flag: Use discrete element solids model
-      use discretelement, only: DISCRETE_ELEMENT
-! Flag: Use MP-PIC solids model
-      use mfix_pic, only: MPPIC
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      USE param1, only: ZERO, UNDEFINED_C
-
-
-! Global Module procedures:
-!---------------------------------------------------------------------//
-      USE error_manager
-
-      IMPLICIT NONE
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! NONE
-
-! If the models are not being used, return.
-      IF(SUBGRID_TYPE == UNDEFINED_C .AND. .NOT.SUBGRID_WALL) RETURN
-
-
-! Initialize the error manager.
-      CALL INIT_ERR_MSG("CHECK_SUBGRID_MODEL")
-
-
-      IF(SUBGRID_TYPE == UNDEFINED_C .AND. SUBGRID_WALL) THEN
-         WRITE(ERR_MSG,2011)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 2011 FORMAT('Error 2011: Invalid input. SUBGRID_WALL cannot be used ',&
-          'without',/'specifying a SUBGRID_TYPE.',/'Please correct ',  &
-          'the mfix.dat file.')
-
-
-      SELECT CASE(trim(adjustl(SUBGRID_TYPE)))
-
-      CASE ('IGCI'); SUBGRID_TYPE_ENUM = IGCI
-      CASE ('MILIOLI'); SUBGRID_TYPE_ENUM = MILIOLI
-      CASE DEFAULT
-         SUBGRID_TYPE_ENUM = UNDEFINED_SUBGRID_TYPE
-      END SELECT
-
-      IF(SUBGRID_TYPE_ENUM .ne. IGCI .AND. SUBGRID_TYPE_ENUM .ne. MILIOLI) THEN
-         WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-      IF(DRAG_TYPE /= 'WEN_YU')THEN
-         WRITE(ERR_MSG, 2012)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 2012 FORMAT('Error 2012: Invalid input. WEN_YU is the only DRAG_TYPE',&
-          ' available',/'when using the SUBGRID model.',/'Please ',    &
-          'correct the mfix.dat file.')
-
-      IF(DISCRETE_ELEMENT .OR. MPPIC) THEN
-         WRITE(ERR_MSG, 2013)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 2013 FORMAT('Error 2013: Invalid input. The SUBGRID model is not ',    &
-          'available',/'with discrete solids phases.',/'Please ',      &
-          'correct the mfix.dat file.')
-
-! Impose the subgrid limitations.
-      IF(FILTER_SIZE_RATIO <= ZERO) THEN
-         WRITE(ERR_MSG, 1002)'FILTER_SIZE_RATIO', FILTER_SIZE_RATIO
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(GRANULAR_ENERGY) THEN
-         WRITE(ERR_MSG, 2010) 'GRANULAR_ENERGY', 'FALSE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(K_EPSILON) THEN
-         WRITE(ERR_MSG, 2010) 'K_EPSILON', 'FALSE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(BLENDING_STRESS) THEN
-         WRITE(ERR_MSG, 2010) 'BLENDING_STRESS', 'FALSE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(FRICTION) THEN
-         WRITE(ERR_MSG, 2010) 'FRICTION', 'FALSE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(SHEAR) THEN
-         WRITE(ERR_MSG, 2010) 'SHEAR', 'FALSE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ELSEIF(PHIP /= ZERO) THEN
-         WRITE(ERR_MSG, 2010) 'PHIP', 'ZERO'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ENDIF
-
-      IF(SUBGRID_WALL .AND. .NOT.CARTESIAN_GRID) THEN
-         WRITE(ERR_MSG, 2010) 'CARTESIAN_GRID', 'TRUE'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 2010 FORMAT('Error 2010: Invalid input. ',A,' must be ',A,/'when ',    &
-         'using the SUBGRID model.'/,'Please correct the mfix.dat',    &
-         ' file.')
-
-      CALL FINL_ERR_MSG
-
-      RETURN
-
-
- 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
-         'Please correct the mfix.dat file.')
-
- 1002 FORMAT('Error 1002: Illegal or unknown input: ',A,' = ',G14.4,/  &
-         'Please correct the mfix.dat file.')
-
- 1003 FORMAT('Error 1003: Illegal or unknown input: ',A,' = ',I4,/     &
-         'Please correct the mfix.dat file.')
-
-      END SUBROUTINE CHECK_SUBGRID_MODEL
-
-
-
 !----------------------------------------------------------------------!
 ! Subroutine: CHECK_SOLIDS_SPECIES                                     !
 ! Purpose: Check solids species input.                                 !
 !                                                                      !
 ! Author: J. Musser                                  Date: 07-FEB-14   !
 !----------------------------------------------------------------------!
-      SUBROUTINE CHECK_SOLIDS_SPECIES(MMAX_LL)
-
+      SUBROUTINE CHECK_SOLIDS_SPECIES(MFIX_DAT, MMAX_LL)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -450,12 +284,13 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
-
 
 ! Subroutine Arguments:
 !---------------------------------------------------------------------//
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Total number of solids phases
       INTEGER, intent(in) :: MMAX_LL
 
@@ -475,9 +310,7 @@
 ! Loop counters.
       INTEGER :: M, N
 
-
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_SPECIES")
@@ -565,7 +398,7 @@
                   ENDIF
                   3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
-                  CALL READ_DATABASE(M, N, SPECIES_s(M,N), MW_S(M,N))
+                  CALL READ_DATABASE(MFIX_DAT, M, N, SPECIES_s(M,N), MW_S(M,N))
 ! Flag variable to stating that the database was read.
                   rDatabase(M,N) = .TRUE.
                ENDIF
@@ -697,12 +530,6 @@
 
       RETURN
 
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-         'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
-
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.',&
          'Please correct the mfix.dat file.')
 
@@ -752,10 +579,12 @@
 ! Solids phase density caMulation
       use eos, ONLY: EOSS0
 
+! Flag to indicate user function for density
+      use usr_prop, only: usr_ros
+
 ! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
-
 
       implicit none
 
@@ -768,7 +597,9 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: M, N
-
+! local variable indicating that some variable density model is being used
+! either a user defined function or mfix built in variable density model.
+      LOGICAL :: SolveAnyRos
 
 !......................................................................!
 
@@ -778,6 +609,7 @@
 
 ! Initialize the flag for variable solids density.
       SOLVE_ROs = .FALSE.
+      SolveAnyRos = .FALSE.
 
 ! Check each solids phase.
       DO M = 1, MMAX_LL
@@ -790,9 +622,9 @@
             IF(X_S0(M,N) /= UNDEFINED) SOLVE_ROs(M) = .TRUE.
          ENDDO
 
-
+         SolveAnyROs = (SOLVE_ROS(M) .OR. USR_ROS(M))
 ! Verify that one -and only one- solids density model is in use.
-         IF(RO_S0(M) == UNDEFINED .AND. .NOT.SOLVE_ROs(M)) THEN
+         IF(RO_S0(M) == UNDEFINED .AND. .NOT.SolveAnyROs) THEN
             WRITE(ERR_MSG, 1100) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
@@ -800,15 +632,15 @@
          I2,'.',/'Please correct the mfix.dat file.')
 
 ! Check if the constant solids phase density is physical.
-         ELSEIF(RO_S0(M) /= UNDEFINED .AND. SOLVE_ROs(M)) THEN
+         ELSEIF(RO_S0(M) /= UNDEFINED .AND. SolveAnyROs) THEN
             WRITE(ERR_MSG, 1101) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1101 FORMAT('Error 1101: Conflicting solids density input specified ',&
          'for solids',/'phase ',I2,'. Constant solids density ',       &
          'specified (RO_s0) along with one',/'or more of the variable',&
-         ' solids density parameters:',/'RO_Xs0, X_s0, INERT_SPECIES.',&
-         /'Please correct the mfix.dat file.')
+         ' solids density parameters:',/'RO_Xs0, X_s0, INERT_SPECIES,',&
+         ' or USR_ROS.',/'Please correct the mfix.dat file.')
 
          ENDIF
 

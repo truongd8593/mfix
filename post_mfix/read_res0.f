@@ -42,14 +42,16 @@
       USE scales
       USE stiff_chem
       USE toleranc
+      use turb, only: k_epsilon
       USE ur_facs
+      use visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! loop counters
-      INTEGER    LC, L , N, M
+      INTEGER    LC, L , N
 ! Pointer to the next record
       INTEGER    NEXT_RECA
 ! file version id
@@ -72,16 +74,14 @@
 ! declare global scratch arrays:
 ! declare integer Global SCRatch array
       INTEGER, ALLOCATABLE, DIMENSION(:) :: IGTEMP1, iGTEMP2
-! declare real*4 Global SCRatch array
-      REAL, ALLOCATABLE, DIMENSION(:) :: rGTEMP
-! declare real*8 Global SCRatch array
-      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: dGTEMP
 ! declaring following arrays to pack scalar variables when
 ! BCASTing to reduce the number of BCAST calls:
 ! packing array for integers
       INTEGER, ALLOCATABLE, DIMENSION(:) :: INTPACK
 ! packing array for doubles
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: DBLPACK
+! Local dummy variable replacing the original global.
+      DOUBLE PRECISION :: L_SCALE0
 !-----------------------------------------------
 
       doingPost = .false.
@@ -97,8 +97,6 @@
 
       IF (VERSION_NUMBER > 1.8) THEN
          WRITE (*, *) ' Update Subroutine read_res0'
-         CALL SLUMBER
-!         STOP
          call exitMPI(myPE)  ! Abort all PEs, not only the current one
       ENDIF
     endif
@@ -1131,4 +1129,3 @@
       call exitMPI(myPE)
 
       END SUBROUTINE READ_RES0
-

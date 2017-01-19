@@ -73,22 +73,20 @@
         ENDIF
       ENDIF
 
- 1100 FORMAT('Error 1100: The grid specification must start with D',   &
-         A1,'(0)',/'Please correct the mfix.dat file.')
-
 ! 1) MAKE SURE AT LEAST TWO OF NA, ALENGTH, DA ARE SPECIFIED
       N_SPECIFIED = 0
       IF (NA /= UNDEFINED_I) N_SPECIFIED = N_SPECIFIED + 1
       IF (ALENGTH /= UNDEFINED) N_SPECIFIED = N_SPECIFIED + 1
       IF (DA(1) /= UNDEFINED) N_SPECIFIED = N_SPECIFIED + 1
       IF (N_SPECIFIED < 2) THEN
+         print*,ALENGTH,DA,NA
          WRITE(ERR_MSG, 1101) AXIS, AXIS, AXIS, AXIS_INDEX
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
  1101 FORMAT('Error 1101: Insufficient grid information for ',A1,'-',   &
          'axis. You must',/'specify at least two of the following: ',  &
-         A1,'LENGTH, D',A1,', and ',A1,'MAX','Please correct the ',    &
+         A1,'LENGTH, D',A1,', and ',A1,'MAX.',/'Please correct the ',    &
          'mfix.dat file.')
 
 
@@ -215,3 +213,112 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_AXIS
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_MFIX_DOMAIN                                       !
+!  Author: Jeff Dietiker                          Date: 30-SEPT-2016   !
+!                                                                      !
+!  Purpose: check MFIX domain data for one direction                   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_MFIX_DOMAIN(A_MIN, A_MAX, ALENGTH, AXIS)
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param
+      USE param1
+!      USE funits
+
+      use error_manager
+      use toleranc
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! axis min (X_MIN,Y_MIN,Z_MIN)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_MIN
+! axis min (X_MAX,Y_MAX,Z_MAX)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_MAX
+! axis length (XLENGTH,YLENGTH,ZLENGTH)
+      DOUBLE PRECISION, INTENT(INOUT) :: ALENGTH
+! axis checked ('X','Y','Z')
+      CHARACTER, INTENT(IN) :: AXIS
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+
+
+      CALL INIT_ERR_MSG("CHECK_MFIX_DOMAIN")
+
+! First, if both A_MIN and A_MAX are defined, make sure A_MAX>A_MIN
+      IF( A_MIN /= UNDEFINED .AND. A_MAX /= UNDEFINED) THEN
+         IF(A_MIN>=A_MAX) THEN
+            WRITE(ERR_MSG, 1106) AXIS, AXIS, AXIS
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+1106        FORMAT('Error 1106: Incorrect domain size information in ',A1,'-'   , &
+            'direction.',/'The upper bound must be larger than the lower bound.'   , &
+            /'Currently, ',A1,'_MIN >= ',A1,'_MAX. Please correct the '        , &
+            'mfix.dat file.')
+         ENDIF
+      ENDIF
+! Legacy case 
+! If A_MIN and A_MAX are not defined and ALENGTH is defined
+! then set A_MIN to ZERO and A_MAX to ALENGHT
+      IF( ALENGTH /= UNDEFINED .AND. A_MIN == UNDEFINED .AND. A_MAX == UNDEFINED) THEN
+         A_MIN = ZERO
+         A_MAX = ALENGTH
+
+! If A_MIN and ALENGTH are defined and A_MAX is not defined
+! then set A_MAX to A_MIN + ALENGTH
+      ELSEIF( ALENGTH /= UNDEFINED .AND. A_MIN /= UNDEFINED .AND. A_MAX == UNDEFINED) THEN
+         A_MAX = A_MIN + ALENGTH
+
+! If A_MAX and ALENGTH are defined and A_MIN is not defined
+! then set A_MIN to A_MAX - ALENGTH
+      ELSEIF( ALENGTH /= UNDEFINED .AND. A_MIN == UNDEFINED .AND. A_MAX /= UNDEFINED) THEN
+         A_MIN = A_MAX - ALENGTH
+
+! If A_MAX and A_MIN are defined and ALENGTH is not defined
+! then set ALENGTH = A_MAX - A_MIN
+      ELSEIF( ALENGTH == UNDEFINED .AND. A_MIN /= UNDEFINED .AND. A_MAX /= UNDEFINED) THEN
+         ALENGTH = A_MAX - A_MIN
+
+! If A_MIN and A_MAX and ALENGHT are defined, make sure they are consistent
+      ELSEIF( ALENGTH /= UNDEFINED .AND. A_MIN /= UNDEFINED .AND. A_MAX /= UNDEFINED) THEN
+         IF(.NOT.COMPARE(A_MAX-A_MIN,ALENGTH)) THEN
+            WRITE(ERR_MSG, 1107) AXIS, AXIS, AXIS, AXIS
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+1107        FORMAT('Error 1107: Incorrect domain size information in ',A1,'-',   &
+            'direction.',/A1,'LENGTH, ',A1,'_MIN, and ',A1,'_MAX are not consistent.', &
+            /'Please correct the mfix.dat file.')
+         ENDIF
+
+! Otherwise, flag as error and quit 
+      ELSE
+         WRITE(ERR_MSG, 1108) AXIS,AXIS,AXIS,AXIS,AXIS,A_MIN,AXIS,A_MAX,AXIS,ALENGTH
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+1108     FORMAT('Error 1108: Insufficient domain size information in ',A1,'-',   &
+         'direction. You must',/'specify at least two of the following: ',  &
+         A1,'LENGTH, ',A1,'_MIN, and ',A1,'_MAX.', &
+         /'Currently, ',A1,'_MIN   = ',F14.8, &
+         /'           ',A1,'_MAX   = ',F14.8, &
+         /'           ',A1,'LENGTH = ',F14.8, & 
+         /'Please correct the mfix.dat file.')
+      ENDIF
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+      END SUBROUTINE CHECK_MFIX_DOMAIN

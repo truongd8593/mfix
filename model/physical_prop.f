@@ -17,7 +17,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE PHYSICAL_PROP(IER, LEVEL)
+      SUBROUTINE PHYSICAL_PROP(MFIX_DAT, IER, LEVEL)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -36,6 +36,8 @@
 ! Global error Flag.
       INTEGER, intent(inout) :: IER
       INTEGER, intent(in) :: LEVEL
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -56,7 +58,7 @@
 ! Calculate density only. This is invoked several times within iterate,
 ! making it the most frequently called.
       if(LEVEL == 0) then
-         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg(MFIX_DAT)
            DO M=1,SMAX
               if(DENSITY(M)) CALL PHYSICAL_PROP_ROs(M)
            ENDDO
@@ -75,7 +77,7 @@
 ! the initialization (before starting the time march) and at the start
 ! of each step step thereafter.
       elseif(LEVEL == 2) then
-         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg(MFIX_DAT)
          if(SP_HEAT(0)) CALL PHYSICAL_PROP_CPg
          DO M=1,SMAX
             if(DENSITY(M)) CALL PHYSICAL_PROP_ROs(M)
@@ -120,7 +122,7 @@
 !  Author: J. Musser                                  Date: 28-JUN-13  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE PHYSICAL_PROP_ROg
+      SUBROUTINE PHYSICAL_PROP_ROg(MFIX_DAT)
 
 ! Global variables:
 !---------------------------------------------------------------------//
@@ -154,6 +156,9 @@
       USE usr_prop, only: gas_density
       IMPLICIT NONE
 
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Average molecular weight
@@ -166,7 +171,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) call read_database0(IER)
+      IF(.NOT.database_read) call read_database0(mfix_dat)
 
 ! User-defined function
       IF(USR_ROg) THEN
@@ -184,13 +189,13 @@
             MW = SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
             MW = ONE/MAX(MW,OMW_MAX)
             MW_MIX_G(IJK) = MW
-! Calculate the fluid density and bulk density
-            RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
-            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
          ELSE
-            RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
-            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+            MW = MW_AVG
          ENDIF
+
+! Calculate the fluid density and bulk density
+         RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
+         ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
 
          IF(RO_G(IJK) < ZERO .or. mfix_isnan(RO_G(IJK))) THEN
             Err_l(myPE) = 100
@@ -218,7 +223,7 @@
 ! Equation of State - Solid
       use eos, only: EOSS
 ! Solid phase species mass fractions.
-      use fldvar, only: X_s, ROP_s, RO_s
+      use fldvar, only: X_s, ROP_s, RO_s, ep_s
 ! Solid phase density (variable).
       use fldvar, only: ROP_s, RO_s
 
@@ -260,6 +265,8 @@
       LOGICAL :: wHeader
 ! Minimum bulk density
       DOUBLE PRECISION :: minROPs
+! Local variable to store current volume fraction
+      DOUBLE PRECISION :: EPS_tmp
 !......................................................................!
 
 ! User defined function
@@ -279,6 +286,7 @@
 ! Calculate the solids denisty over all cells.
          IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) cycle IJK_LP
+            eps_tmp = ep_s(ijk,M)
             IF(ROP_s(IJK,M) > minROPs) THEN
                RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   X_s(IJK,M,IIS))
@@ -287,6 +295,8 @@
                RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   DIL_INERT_X_VSD(M))
             ENDIF
+! update rop_s based on new density
+            ROP_S(IJK,M) = eps_tmp*RO_S(IJK,M)
 
 ! Report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
@@ -352,7 +362,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_gas_phase but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0(IER)
+      IF(.NOT.database_read) CALL read_database0(MFIX_DAT)
 
 ! User defined function
       IF(USR_CPg) THEN
@@ -456,7 +466,7 @@
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_solids_common_all but this call remains to prevent an accident.
-      IF(.NOT.database_read) CALL read_database0(IER)
+      IF(.NOT.database_read) CALL read_database0(MFIX_DAT)
 
 ! User defined function
       IF(USR_CPs(M)) THEN
@@ -608,10 +618,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)),  &
-            status='old', position='append', convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -709,10 +718,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -770,12 +778,9 @@
       use cutcell, only: xg_e, yg_n, zg_t
 ! Gas phase species mass fractions.
       use fldvar, only: T_g, X_g, EP_g
-! Gas phase density (variable).
-      use fldvar, only: RO_g
-!
       use indices, only: i_of, j_of, k_of
 
-      use physprop, only: MW_g, C_pg, nmax
+      use physprop, only: C_pg, nmax
 ! Simulation time
       use run, only: TIME
       IMPLICIT NONE
@@ -796,7 +801,6 @@
       CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
-      CHARACTER(LEN=7) :: X_gN
 !......................................................................!
 
       lFile = '';
@@ -808,10 +812,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -871,12 +874,9 @@
       use cutcell, only: xg_e, yg_n, zg_t
 ! Solid phase species mass fractions.
       use fldvar, only: T_s, X_s, EP_S
-! Solid phase density (variable).
-      use fldvar, only: RO_s
-!
       use indices, only: i_of, j_of, k_of
 
-      use physprop, only: MW_s, C_ps, nmax
+      use physprop, only: C_ps, nmax
 ! Simulation time
       use run, only: TIME
       IMPLICIT NONE
@@ -897,7 +897,6 @@
       CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
-      CHARACTER(LEN=7) :: X_sN
 !......................................................................!
 
       lFile = '';
@@ -909,10 +908,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)), &
-            status='old', position='append',convert='big_endian')
+            status='old', position='append')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new',&
-              convert='big_endian')
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
       endif
 
       if(fHeader) then
@@ -953,4 +951,3 @@
  1001 FORMAT( 4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
 
       END SUBROUTINE CPsErr_LOG
-

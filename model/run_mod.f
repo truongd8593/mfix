@@ -39,7 +39,7 @@
       INTEGER :: ITER_RESTART
 
 ! version.release of software
-      CHARACTER(LEN=10) :: ID_VERSION
+      CHARACTER(LEN=10) :: ID_VERSION = '2016-1'
 
 ! Start-time of the run.
       DOUBLE PRECISION :: TIME
@@ -93,9 +93,6 @@
 ! phase number where added mass is applied.
       INTEGER :: M_AM
 
-! If .TRUE. solve K_Epsilon turbulence eq.
-      LOGICAL :: K_Epsilon
-
 ! If .TRUE. solve energy equations
       LOGICAL :: ENERGY_EQ
 
@@ -109,7 +106,7 @@
       LOGICAL :: CN_ON
 
 ! If .TRUE. solve granular energy equations
-      LOGICAL :: GRANULAR_ENERGY
+      LOGICAL :: GRANULAR_ENERGY = .FALSE.
 
 ! If .TRUE. solve species balance equations
       LOGICAL :: SPECIES_EQ(0:DIM_M)
@@ -145,19 +142,20 @@
 ! If .TRUE. use Ahmadi model (k_epsilon must also be true)
       LOGICAL :: AHMADI
 
+      CHARACTER(len=64) :: FRICTION_MODEL
+! If .TRUE. use Scheffer frictional stress (default set to .TRUE.)
+      LOGICAL :: SCHAEFFER
 ! If .TRUE. calculate frictional stress terms
       LOGICAL :: FRICTION
 ! Form of friction model:
 !             If 0: use S:S
 !             If 1: use the form of Savage to compute S:S
 !             If 2: use combination of both for frictional stress terms
-      INTEGER :: SAVAGE
+      INTEGER, PARAMETER :: SAVAGE = 2
 
-! If .TRUE. use Scheffer frictional stress (default set to .TRUE.)
-      LOGICAL :: SCHAEFFER
 
 ! If .TRUE. use blending frictional/kinetic stresses
-! (default set to .FALSE. do not blend)
+      CHARACTER(len=64) :: BLENDING_FUNCTION
       LOGICAL :: BLENDING_STRESS
       LOGICAL :: TANH_BLEND ! default set to true
       LOGICAL :: SIGM_BLEND ! default set to false
@@ -266,6 +264,9 @@
 
       ! CPU time unit.
       CHARACTER(LEN=4) :: TUNIT
+
+! only set to TRUE when running in pymfix
+      LOGICAL :: INTERACTIVE = .FALSE.
 
       CONTAINS
 

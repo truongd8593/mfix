@@ -1,3 +1,5 @@
+#include "version.inc"
+
 MODULE output_man
    CONTAINS
 !----------------------------------------------------------------------!
@@ -15,7 +17,7 @@ MODULE output_man
 !---------------------------------------------------------------------//
 
       use compar, only: myPE, PE_IO
-      use discretelement, only: DISCRETE_ELEMENT
+      use discretelement, only: DISCRETE_ELEMENT,DLB_DT
       use machine, only: wall_time
       use output, only: DISK, DISK_TOT
       use output, only: OUT_TIME, OUT_DT
@@ -23,6 +25,7 @@ MODULE output_man
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
       use output, only: USR_TIME, USR_DT
+      use output, only: DLB,DLB_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use qmom_kinetic_equation, only: QMOMK
@@ -32,6 +35,7 @@ MODULE output_man
       use vtk, only: DIMENSION_VTK
       use vtk, only: WRITE_VTK_FILES
       use vtp, only: write_vtp_file
+      use param1, only: UNDEFINED
 
       IMPLICIT NONE
 
@@ -71,31 +75,12 @@ MODULE output_man
          CALL BACKUP_RES
       ENDIF
 
-! Write restart file, if needed
-      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
-
-         RES_TIME = NEXT_TIME(RES_DT)
-         CALL WRITE_RES1
-         CALL NOTIFY_USER('.RES;')
-
-         IF(DISCRETE_ELEMENT) THEN
-            CALL WRITE_RES0_DES
-            CALL NOTIFY_USER('DES.RES;')
-         ENDIF
-
-         IF(QMOMK) THEN
-            CALL QMOMK_WRITE_RESTART
-            CALL NOTIFY_USER('QMOMK.RES;')
-         ENDIF
-
-      ENDIF
-
 ! Write SPx files, if needed
       IDX = 0
       bWRITE_NETCDF_FILES = .FALSE.
 
       DO LC=1, N_SPX
-         IF(CHECK_TIME(SPX_TIME(LC))) THEN
+         IF(CHECK_TIME(SPX_TIME(LC)).AND.SPX_DT(LC)<=TSTOP) THEN
             SPX_TIME(LC) = NEXT_TIME(SPX_DT(LC))
 
             CALL WRITE_SPX1(LC, 0)
@@ -108,7 +93,6 @@ MODULE output_man
          ENDIF
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
-
 
 ! Write standard output, if needed
       IF(CHECK_TIME(OUT_TIME)) THEN
@@ -129,7 +113,35 @@ MODULE output_man
       ENDDO
       IF(IDX /=0) CALL FLUSH_LIST
 
+! Write restart file, if needed
+      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
+
+         RES_TIME = NEXT_TIME(RES_DT)
+         CALL WRITE_RES1
+         CALL NOTIFY_USER('.RES;')
+
+         IF(DISCRETE_ELEMENT) THEN
+            CALL WRITE_RES0_DES
+            CALL NOTIFY_USER('DES.RES;')
+         ENDIF
+
+         IF(QMOMK) THEN
+            CALL QMOMK_WRITE_RESTART
+            CALL NOTIFY_USER('QMOMK.RES;')
+         ENDIF
+
+      ENDIF
+
       CALL FLUSH_NOTIFY_USER
+
+      IF(DLB) THEN
+         IF(CHECK_TIME(DLB_TIME)) THEN
+            DLB_TIME = NEXT_TIME(DLB_DT)
+            CALL DISPLAY_PARTICLE_LOAD
+         ENDIF
+      ENDIF
+      DLB = .FALSE.
+
 
 ! Write vtk file, if needed
 ! Only regular (not debug) files are written (second argument is zero)
@@ -146,6 +158,7 @@ MODULE output_man
 ! Write NetCDF files.
       IF(bWRITE_NETCDF_FILES) CALL WRITE_NETCDF(0,0,TIME)
 
+
 ! Add the amount of time needed for all IO operations to total.
       CPU_IO = CPU_IO + (WALL_TIME() - WALL_START)
 
@@ -157,13 +170,17 @@ MODULE output_man
 !                                                                      !
 !----------------------------------------------------------------------!
       LOGICAL FUNCTION CHECK_TIME(lTIME)
+      USE RUN, ONLY: INTERACTIVE
+
+      IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
       IF(STEADY_STATE) THEN
          CHECK_TIME = FINISHED
       ELSE
-         CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
+         CHECK_TIME = (TIME+0.1d0*DT>=TSTOP .AND. .NOT.INTERACTIVE  ) &
+                  .OR. TIME+0.1d0*DT>=lTIME
       ENDIF
 
       RETURN
@@ -294,6 +311,8 @@ MODULE output_man
             WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(TNITs))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
          ENDIF
+
+
  1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'Remaining DEM NITs: ',A)
 
          WALL_NOW = WALL_TIME()
@@ -346,12 +365,12 @@ MODULE output_man
       use output, only: USR_TIME, USR_DT
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
       use output, only: RES_BACKUPS
+      use output, only: DLB_TIME
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use param1, only: UNDEFINED
       use param1, only: ZERO
       use physprop, only: MMAX, NMAX
-      use run, only: K_EPSILON
       use run, only: RUN_TYPE
       use run, only: TIME, DT, STEADY_STATE
       use rxns, only: nRR
@@ -359,6 +378,7 @@ MODULE output_man
       use time_cpu, only: CPU_IO
       use time_cpu, only: TIME_START
       use time_cpu, only: WALL_START
+      use turb, only: K_EPSILON
       use vtk, only:    VTK_TIME, VTK_DT
       use vtk, only: DIMENSION_VTK
       use vtk, only: DIMENSION_VTK
@@ -368,6 +388,8 @@ MODULE output_man
       use param1, only:  UNDEFINED_I
 
       use funits, only: CREATE_DIR
+      use discretelement, only: DLB_DT
+      use compar, only:ADJUST_PARTITION
 
       IMPLICIT NONE
 
@@ -430,6 +452,14 @@ MODULE output_man
             ENDIF
          ENDIF
       ENDDO
+
+! Initialize VTK_TIME
+      IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
+         DLB_TIME = TIME
+      ELSE
+         DLB_TIME = (INT((TIME + 0.1d0*DT)/DLB_DT)+1)*DLB_DT
+         ADJUST_PARTITION = .FALSE.
+      ENDIF
 
 ! Initialize VTK_TIME
 
@@ -520,7 +550,7 @@ MODULE output_man
       INQUIRE(FILE=trim(pFN0),EXIST=EXISTS)
       IF(EXISTS) THEN
          CMD=''; WRITE(CMD,1000)trim(ACT), trim(pFN0),trim(pFN1)
-         CALL SYSTEM(trim(CMD))
+         CALL EXECUTE_COMMAND_LINE(trim(CMD))
       ENDIF
 
  1000 FORMAT(A,1x,A,1X,A)
@@ -574,4 +604,793 @@ MODULE output_man
       END SUBROUTINE SET_FNAME
 
       END SUBROUTINE BACKUP_RES
+
+
+!----------------------------------------------------------------------!
+! Subroutine: DISPLAY_PARTICLE_LOAD                                    !
+! Purpose: Display the particle load balance (based on particle count) !
+!----------------------------------------------------------------------!
+      SUBROUTINE DISPLAY_PARTICLE_LOAD
+
+      use discretelement
+      use error_manager
+      use functions
+      use machine
+      use mpi_utility
+      use run, only: TIME
+      use sendrecv
+      use compar, only:MyPE,ADJUST_PARTITION
+      use usr
+      USE param1, only: UNDEFINED
+
+      implicit none
+      INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
+      INTEGER :: NP=0  ! Number of particles
+      INTEGER, DIMENSION(:), ALLOCATABLE :: NP_ALL
+      INTEGER :: MIN_NP, MIN_NPP, MAX_NP, MAX_NPP, IDEAL_NP
+      DOUBLE PRECISION :: MIN_LOAD, MAX_LOAD
+
+
+
+      IF(NumPEs==1) RETURN  ! Nothing to do in serial
+
+      IF(DLB_DT==UNDEFINED) RETURN ! Nothing to do if DLB_DT is not defined
+
+      CALL PARTICLES_IN_CELL
+
+      ALLOCATE( NP_ALL(0:NumPEs-1))
+! Get load statistics based on particle count, excluding ghost particles
+      NP = PIP - IGHOST_CNT
+      CALL ALLGATHER_1I (NP,NP_ALL,IERR)
+      CALL GLOBAL_ALL_SUM(NP)
+      MIN_NP   = MINVAL(NP_ALL)
+      MIN_NPP  = MINLOC(NP_ALL,1)-1
+      MAX_NP   = MAXVAL(NP_ALL)
+      MAX_NPP  = MAXLOC(NP_ALL,1)-1
+      IDEAL_NP = INT(NP/NumPEs)
+      IF(IDEAL_NP<1) RETURN    ! Nothing to do if the number of particles is less than NumPes
+      MIN_LOAD = dble(MIN_NP)/dble(IDEAL_NP)
+      MAX_LOAD = dble(MAX_NP)/dble(IDEAL_NP)
+      CURRENT_MAX_LOAD = MAX_LOAD
+      WRITE(ERR_MSG, 1000) trim(iVAL(NP)), &
+                           trim(iVal(MIN_NP)), trim(iVal(MIN_NPP)), &
+                           trim(iVal(MAX_NP)), trim(iVal(MAX_NPP)), &
+                           trim(ival(IDEAL_NP))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      WRITE(ERR_MSG, 1100) TIME,MIN_LOAD,MAX_LOAD
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      IF(MyPE==0) THEN
+         ACTIVE_PEs = 0
+         DO L = 0,NumPEs - 1
+            IF(NP_ALL(L)>0) ACTIVE_PEs = ACTIVE_PEs + 1
+         ENDDO
+         INACTIVE_PEs = NumPEs - ACTIVE_PEs
+         WRITE(ERR_MSG, 1200) trim(iVal(ACTIVE_PEs)), trim(iVal(INACTIVE_PEs)), trim(iVal(NumPes))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      ENDIF
+
+! Repeat above, including ghost particles
+      NP = PIP
+      CALL ALLGATHER_1I (NP,NP_ALL,IERR)
+      CALL GLOBAL_ALL_SUM(NP)
+      MIN_NP   = MINVAL(NP_ALL)
+      MIN_NPP  = MINLOC(NP_ALL,1)-1
+      MAX_NP   = MAXVAL(NP_ALL)
+      MAX_NPP  = MAXLOC(NP_ALL,1)-1
+      IDEAL_NP = INT(NP/NumPEs)
+      IF(IDEAL_NP<1) RETURN    ! Nothing to do if the number of particles is less than NumPes
+      MIN_LOAD = dble(MIN_NP)/dble(IDEAL_NP)
+      MAX_LOAD = dble(MAX_NP)/dble(IDEAL_NP)
+      CURRENT_MAX_LOAD = MAX_LOAD
+      WRITE(ERR_MSG, 2000) trim(iVAL(NP)), &
+                           trim(iVal(MIN_NP)), trim(iVal(MIN_NPP)), &
+                           trim(iVal(MAX_NP)), trim(iVal(MAX_NPP)), &
+                           trim(ival(IDEAL_NP))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      WRITE(ERR_MSG, 2100) TIME,MIN_LOAD,MAX_LOAD
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      IF(MyPE==0) THEN
+         ACTIVE_PEs = 0
+         DO L = 0,NumPEs - 1
+            IF(NP_ALL(L)>0) ACTIVE_PEs = ACTIVE_PEs + 1
+         ENDDO
+         INACTIVE_PEs = NumPEs - ACTIVE_PEs
+         WRITE(ERR_MSG, 2200) trim(iVal(ACTIVE_PEs)), trim(iVal(INACTIVE_PEs)), trim(iVal(NumPes))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      ENDIF
+
+      DEALLOCATE( NP_ALL)
+      CALL REPORT_BEST_DES_IJK_SIZE
+
+1000 FORMAT(/'Particle count: Total: ', A,1x,', Min: ',A,1x,'(PE=',A,')', &
+              'Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
+1100 FORMAT('Particle load at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
+1200 FORMAT('Number of active/inactive PEs = ', A,1x,'/ ',A,1x,'of ',A//)
+
+2000 FORMAT(/'Particle count (with ghost): Total: ', A,1x,', Min: ',A,1x,'(PE=',A,')', &
+              'Max: ',A,1x,'(PE=',A,'), Ideal: ',A)
+2100 FORMAT('Particle load (with ghost) at Time = ', G12.5,1x,', Min: ',G10.3,1x,', Max: ',G10.3)
+2200 FORMAT('Number of active/inactive PEs (with ghost) = ', A,1x,'/ ',A,1x,'of ',A//)
+      RETURN
+      END SUBROUTINE DISPLAY_PARTICLE_LOAD
+
+
+
+!----------------------------------------------------------------------!
+! Subroutine: REPORT_BEST_DES_IJK_SIZE                                 !
+! Purpose: Reports best des grid decomposition based on particle
+! distribution in the domain
+!----------------------------------------------------------------------!
+      SUBROUTINE REPORT_BEST_DES_IJK_SIZE
+
+      use discretelement
+      use error_manager
+      use functions
+      use machine
+      use mpi_utility
+      use run, only: TIME
+      use sendrecv
+      use desgrid
+      use gridmap
+      use mpi_init_des
+      use usr
+      use param1, only: UNDEFINED, ZERO
+      use compar, only:ADJUST_PARTITION,ISIZE_ALL,JSIZE_ALL,KSIZE_ALL
+
+      implicit none
+      INTEGER :: IERR,L,ACTIVE_PEs,INACTIVE_PEs
+      INTEGER :: NP=0  ! Number of particles
+      INTEGER, DIMENSION(:), ALLOCATABLE :: NP_ALL
+      INTEGER :: Factor=0  ! Number of particles
+      INTEGER :: MIN_NP, MIN_NPP, MAX_NP, MAX_NPP, IDEAL_NP
+      DOUBLE PRECISION :: MIN_LOAD, MAX_LOAD
+
+      INTEGER,DIMENSION(IMIN2:IMAX2) :: NP_I
+      INTEGER,DIMENSION(JMIN2:JMAX2) :: NP_J
+      INTEGER,DIMENSION(KMIN2:KMAX2) :: NP_K
+
+      INTEGER :: I,J,K,IJK,IPROC,JPROC,KPROC
+
+      INTEGER :: ilistsize,jlistsize,klistsize             ! size of list of cells
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_I      ! Number of Useful Cells at I for all processors
+                                                           ! (I will repeat if decomposing in J or K direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_I     ! List of I for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_I   ! Number of Useful Cells at Global I
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_J      ! Number of Useful Cells at J for all processors
+                                                           ! (J will repeat if decomposing in I or K direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_J     ! List of J for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_J   ! Number of Useful Cells at Global J
+
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NP_K      ! Number of Useful Cells at K for all processors
+                                                           ! (K will repeat if decomposing in I or J direction)
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_K     ! List of K for all processors
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NP_K   ! Number of Useful Cells at Global K
+
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET
+
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+
+      INTEGER, DIMENSION(0:NumPEs-1) :: BEST_I_SIZE,BEST_J_SIZE,BEST_K_SIZE
+      INTEGER, DIMENSION(0:NumPEs-1) :: TEST_I_SIZE,TEST_J_SIZE,TEST_K_SIZE
+      INTEGER, DIMENSION(0:NumPEs-1) :: EG_BEST_I_SIZE,EG_BEST_J_SIZE,EG_BEST_K_SIZE
+
+      DOUBLE PRECISION :: LIP_I,LIP_J,LIP_K,LIP_IJK, BEST_LIP_IJK
+      INTEGER :: P,BEST_PARTITION
+
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_isize_tmp
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_jsize_tmp
+      INTEGER, ALLOCATABLE, dimension(:) :: dg_ksize_tmp
+
+      INTEGER :: dg_istart1_tmp,dg_iend1_tmp
+      INTEGER :: dg_jstart1_tmp,dg_jend1_tmp
+      INTEGER :: dg_kstart1_tmp,dg_kend1_tmp
+
+      DOUBLE PRECISION :: XG_E(IMIN2:IMAX2)
+      DOUBLE PRECISION :: YG_N(JMIN2:JMAX2)
+      DOUBLE PRECISION :: ZG_T(KMIN2:KMAX2)
+
+      DOUBLE PRECISION :: BEST_DG_XE(1:1000) ! NEED BETTER UPPER BOUND
+      DOUBLE PRECISION :: BEST_DG_YN(1:1000)
+      DOUBLE PRECISION :: BEST_DG_ZT(1:1000)
+
+      INTEGER :: DG_I,DG_J,DG_K,I_TO_MATCH,J_TO_MATCH,K_TO_MATCH,SAVED_I,SAVED_J,SAVED_K
+      DOUBLE PRECISION :: X_TO_MATCH,Y_TO_MATCH,Z_TO_MATCH,DMAX,DTEST
+      INTEGER :: NUMBER_OF_PARTITIONS_TO_TEST
+      LOGICAL :: SUGGEST_ONLY_PARTITION = .FALSE.
+      LOGICAL :: PARTITION_CHANGED
+      LOGICAL :: INCLUDE_GHOST_PARTICLES = .TRUE.
+
+      INTEGER :: iDLB_EGW
+
+
+! Local Parameters:
+!---------------------------------------------------------------------//
+! The minimum number of computational cell layers required.
+! Must be the same as defined in check_data/check_dmp_prereqs.f
+      INTEGER, PARAMETER :: DMP_MIN = 1
+      LOGICAL :: VALID_DMP
+
+      INCLUDE 'usrnlst.inc'
+
+      IF(NumPEs==1) RETURN  ! Nothing to do in serial
+
+      iDLB_EGW = INT(DLB_EGW)
+
+! GET A LIST OF NUMBER OF PARTICLES ALONG EACH I-PLANE
+
+      DO I = ISTART1, IEND1
+         NP_I(I) = 0
+         DO J = JSTART1, JEND1
+            DO K = KSTART1, KEND1
+               IJK = FUNIJK(I,J,K)
+               NP_I(I) = NP_I(I) + PINC(IJK)
+               IF(INCLUDE_GHOST_PARTICLES) NP_I(I) = NP_I(I) + GPINC(IJK)
+               NP_I(I) = NP_I(I) + iDLB_EGW
+            ENDDO
+         ENDDO
+      ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+      CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)
+
+      IF (myPE == 0) THEN
+         I_OFFSET = 0
+      ELSE
+         I_OFFSET = 0
+         DO iproc=0,myPE-1
+            I_OFFSET = I_OFFSET + rcount(iproc)
+         ENDDO
+      ENDIF
+
+      CALL allgather_1i (I_OFFSET,disp,IERR)
+
+      ilistsize=SUM(rcount)
+
+      allocate( ALL_LIST_I(ilistsize))
+      allocate( GLOBAL_NP_I(IMIN1:ilistsize+1))
+      allocate( ALL_NP_I(ilistsize))
+
+! Gather list of I and NP, each processor has its own list
+      call gatherv_1i( (/(I,I=ISTART1,IEND1)/), IEND1-ISTART1+1, ALL_LIST_I(:), rcount, disp, PE_IO, ierr )
+      call gatherv_1i( NP_I(ISTART1:IEND1), IEND1-ISTART1+1, ALL_NP_I(:), rcount, disp, PE_IO, ierr )
+
+! Get the glocal NP for each unique value of I
+      IF (myPE == 0) THEN
+         GLOBAL_NP_I = 0
+         DO I=1,ilistsize
+            GLOBAL_NP_I(ALL_LIST_I(I)) = GLOBAL_NP_I(ALL_LIST_I(I)) + ALL_NP_I(I)
+         ENDDO
+
+      ENDIF
+
+
+
+! GET A LIST OF NUMBER OF PARTICLES ALONG EACH J-PLANE
+
+      DO J = JSTART1, JEND1
+         NP_J(J) = 0
+         DO I = ISTART1, IEND1
+            DO K = KSTART1, KEND1
+               IJK = FUNIJK(I,J,K)
+               NP_J(J) = NP_J(J) + PINC(IJK)
+               IF(INCLUDE_GHOST_PARTICLES) NP_J(J) = NP_J(J) + GPINC(IJK)
+               NP_J(J) = NP_J(J) + iDLB_EGW
+            ENDDO
+         ENDDO
+      ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+      CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)
+
+      IF (myPE == 0) THEN
+         J_OFFSET = 0
+      ELSE
+         J_OFFSET = 0
+         DO jproc=0,myPE-1
+            J_OFFSET = J_OFFSET + rcount(jproc)
+         ENDDO
+      ENDIF
+
+      CALL allgather_1i (J_OFFSET,disp,IERR)
+
+      jlistsize=SUM(rcount)
+
+      allocate( ALL_LIST_J(jlistsize))
+      allocate( GLOBAL_NP_J(JMIN1:jlistsize+1))
+      allocate( ALL_NP_J(jlistsize))
+
+! Gather list of J and NP, each processor has its own list
+      call gatherv_1i( (/(J,J=JSTART1,JEND1)/), JEND1-JSTART1+1, ALL_LIST_J(:), rcount, disp, PE_IO, ierr )
+      call gatherv_1i( NP_J(JSTART1:JEND1), JEND1-JSTART1+1, ALL_NP_J(:), rcount, disp, PE_IO, ierr )
+
+! Get the glocal NP for each unique value of J
+      IF (myPE == 0) THEN
+         GLOBAL_NP_J = 0
+         DO J=1,jlistsize
+            GLOBAL_NP_J(ALL_LIST_J(J)) = GLOBAL_NP_J(ALL_LIST_J(J)) + ALL_NP_J(J)
+         ENDDO
+
+      ENDIF
+
+      ! Deallocate( ALL_LIST_J)
+      ! Deallocate( GLOBAL_NP_J)
+      ! Deallocate( ALL_NP_J)
+
+
+
+! GET A LIST OF NUMBER OF PARTICLES ALONG EACH K-PLANE
+
+      DO K = KSTART1, KEND1
+         NP_K(K) = 0
+         DO J = JSTART1, JEND1
+            DO I = ISTART1, IEND1
+               IJK = FUNIJK(I,J,K)
+               NP_K(K) = NP_K(K) + PINC(IJK)
+               IF(INCLUDE_GHOST_PARTICLES) NP_K(K) = NP_K(K) + GPINC(IJK)
+               NP_K(K) = NP_K(K) + iDLB_EGW
+            ENDDO
+         ENDDO
+      ENDDO
+
+! Gather NP onto the head node
+! rcount is the size for each processor
+! disp is the cumulative sum for each processor
+
+      CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)
+
+      IF (myPE == 0) THEN
+         K_OFFSET = 0
+      ELSE
+         K_OFFSET = 0
+         DO Kproc=0,myPE-1
+            K_OFFSET = K_OFFSET + rcount(Kproc)
+         ENDDO
+      ENDIF
+
+      CALL allgather_1i (K_OFFSET,disp,IERR)
+
+      Klistsize=SUM(rcount)
+
+      allocate( ALL_LIST_K(Klistsize))
+      allocate( GLOBAL_NP_K(KMIN1:Klistsize+1))
+      allocate( ALL_NP_K(Klistsize))
+
+! Gather list of K and NP, each processor has its own list
+      call gatherv_1i( (/(K,K=KSTART1,KEND1)/), KEND1-KSTART1+1, ALL_LIST_K(:), rcount, disp, PE_IO, ierr )
+      call gatherv_1i( NP_K(KSTART1:KEND1), KEND1-KSTART1+1, ALL_NP_K(:), rcount, disp, PE_IO, ierr )
+
+! Get the glocal NP for each unique value of K
+      IF (myPE == 0) THEN
+         GLOBAL_NP_K = 0
+         DO K=1,Klistsize
+            GLOBAL_NP_K(ALL_LIST_K(K)) = GLOBAL_NP_K(ALL_LIST_K(K)) + ALL_NP_K(K)
+         ENDDO
+
+      ENDIF
+
+      ! Deallocate( GLOBAL_NP_K)
+      ! Deallocate( ALL_LIST_K)
+      ! Deallocate( ALL_NP_K)
+
+
+!      RETURN
+
+#ifdef MPI
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif
+
+      IF (myPE == 0) THEN
+! Get number of valid partitions to test.
+! Will quit the first time  NODESI x NODESJ x NODESK is not equal to NUmPEs
+
+         NUMBER_OF_PARTITIONS_TO_TEST = 0
+         DO P = 1,100  ! NEED BETTER UPPER BOUND
+            IF(DLB_NODESI(P)*DLB_NODESJ(P)*DLB_NODESK(P)==NumPEs) THEN
+               NUMBER_OF_PARTITIONS_TO_TEST = P
+            ELSE
+               EXIT
+            ENDIF
+         ENDDO
+
+! Need to test at least the current partition layout
+         IF(NUMBER_OF_PARTITIONS_TO_TEST ==0) THEN
+            NUMBER_OF_PARTITIONS_TO_TEST = 1
+            DLB_NODESI(1) = NODESI
+            DLB_NODESJ(1) = NODESJ
+            DLB_NODESK(1) = NODESK
+         ENDIF
+
+
+         BEST_LIP_IJK = UNDEFINED
+
+         DO P =1,NUMBER_OF_PARTITIONS_TO_TEST
+
+! I-DIRECTION
+            IF(DLB_NODESI(P)>1) THEN
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESI(P),IMIN1,IMAX1,GLOBAL_NP_I,TEST_I_SIZE,LIP_I)
+
+            ELSE
+
+               TEST_I_SIZE(0) = IMAX !isize_all(0)
+               LIP_I = ZERO
+
+            ENDIF
+
+
+   ! J-DIRECTION
+            IF(DLB_NODESJ(P)>1) THEN
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESJ(P),JMIN1,JMAX1,GLOBAL_NP_J,TEST_J_SIZE,LIP_J)
+
+            ELSE
+
+               TEST_J_SIZE(0) = JMAX !JSIZE_ALL(0)
+               LIP_J = ZERO
+
+            ENDIF
+
+
+   ! K-DIRECTION
+            IF(DLB_NODESK(P)>1) THEN
+
+               CALL MINIMIZE_DES_LOAD_IMBALANCE(DLB_NODESK(P),KMIN1,KMAX1,GLOBAL_NP_K,TEST_K_SIZE,LIP_K)
+
+            ELSE
+
+               TEST_K_SIZE(0) = KMAX !KSIZE_ALL(0)
+               LIP_K = ZERO
+
+            ENDIF
+
+
+! Pick the best partition sizes in each direction
+
+            LIP_IJK = LIP_I + LIP_J + LIP_K
+
+            IF(LIP_IJK < BEST_LIP_IJK) THEN
+
+              BEST_I_SIZE(0:DLB_NODESI(P)-1) = TEST_I_SIZE(0:DLB_NODESI(P)-1)
+              BEST_J_SIZE(0:DLB_NODESJ(P)-1) = TEST_J_SIZE(0:DLB_NODESJ(P)-1)
+              BEST_K_SIZE(0:DLB_NODESK(P)-1) = TEST_K_SIZE(0:DLB_NODESK(P)-1)
+
+              BEST_DG_XE(1:SIZE(DG_XE)) = DG_XE(:)
+              BEST_DG_YN(1:SIZE(DG_YN)) = DG_YN(:)
+              IF(DO_K) BEST_DG_ZT(1:SIZE(DG_ZT)) = DG_ZT(:)
+
+              BEST_PARTITION = P
+              BEST_LIP_IJK = LIP_IJK
+
+            ENDIF
+
+         ENDDO ! PARTITION TO TEST
+
+
+      Deallocate( ALL_LIST_I)
+      Deallocate( GLOBAL_NP_I)
+      Deallocate( ALL_NP_I)
+
+      Deallocate( ALL_LIST_J)
+      Deallocate( GLOBAL_NP_J)
+      Deallocate( ALL_NP_J)
+
+      Deallocate( ALL_LIST_K)
+      Deallocate( GLOBAL_NP_K)
+      Deallocate( ALL_NP_K)
+
+
+          ADJUST_PARTITION = .TRUE.
+
+! We do not need to do a restart when the partition did not change
+         PARTITION_CHANGED = .FALSE.
+         IF(NODESI/=DLB_NODESI(BEST_PARTITION)) THEN
+            PARTITION_CHANGED = .TRUE.
+         ELSE
+            DO IPROC = 0,NODESI-1
+               IF(ISIZE_ALL(IPROC)/=BEST_I_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+            ENDDO
+         ENDIF
+
+         IF(NODESJ/=DLB_NODESJ(BEST_PARTITION)) THEN
+            PARTITION_CHANGED = .TRUE.
+         ELSE
+            DO IPROC = 0,NODESJ-1
+               IF(JSIZE_ALL(IPROC)/=BEST_J_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+            ENDDO
+         ENDIF
+
+         IF(DO_K) THEN
+            IF(NODESK/=DLB_NODESK(BEST_PARTITION)) THEN
+               PARTITION_CHANGED = .TRUE.
+            ELSE
+               DO IPROC = 0,NODESK-1
+                  IF(KSIZE_ALL(IPROC)/=BEST_K_SIZE(IPROC)) PARTITION_CHANGED = .TRUE.
+               ENDDO
+            ENDIF
+         ENDIF
+
+
+         IF(.NOT.PARTITION_CHANGED) THEN
+            ADJUST_PARTITION = .FALSE.
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) ' PARTITION DID NOT CHANGE.'
+            WRITE (*, 1000) '================================================='
+         ENDIF
+
+
+! Now save the new partition to gridmap.dat before restarting
+         IF(ADJUST_PARTITION) THEN
+! JFD: Comment line above and uncomment next two lines to
+!      temporarily disabling DLB for debuging purposes.
+!         ADJUST_PARTITION = .TRUE.
+!         IF(.FALSE.) THEN
+            OPEN(UNIT=777, FILE='gridmap.dat')
+            WRITE (777, 1005) DLB_NODESI(BEST_PARTITION), &
+                              DLB_NODESJ(BEST_PARTITION), &
+                              DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(777,1060) IPROC,BEST_K_SIZE(IPROC)
+            ENDDO
+            CLOSE(777)
+
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'GRID PARTITION SAVED IN FILE: gridmap.dat'
+            WRITE (*, 1000) 'MFIX WILL DO AN INTERNAL RESTART_1 NOW.'
+            WRITE (*, 1000) '================================================='
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION), &
+                        DLB_NODESJ(BEST_PARTITION), &
+                        DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_K_SIZE(IPROC)
+            ENDDO
+            WRITE (*, 1000) '================================================='
+         ELSEIF(PARTITION_CHANGED) THEN
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'INVALID GRID PARTITION '
+            WRITE (*, 1000) '================================================='
+            WRITE (*,*) DLB_NODESI(BEST_PARTITION), &
+                        DLB_NODESJ(BEST_PARTITION), &
+                        DLB_NODESK(BEST_PARTITION), '     ! NODESI, NODESJ, NODESK'
+            DO IPROC = 0,DLB_NODESI(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_I_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESJ(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_J_SIZE(IPROC)
+            ENDDO
+            DO IPROC = 0,DLB_NODESK(BEST_PARTITION)-1
+                  WRITE(*,*) IPROC,BEST_K_SIZE(IPROC)
+            ENDDO
+            WRITE (*, 1000) '================================================='
+         ENDIF
+
+      ENDIF ! MyPE==0
+
+      CALL BCAST(ADJUST_PARTITION)
+
+1000  FORMAT(1x,A)
+1005  FORMAT(1x,I10,I10,I10,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+1030  FORMAT(1X,A,2(F10.1))
+1040  FORMAT(F10.1)
+1050  FORMAT(1X,3(A))
+1060  FORMAT(1x,I10,I10)
+
+      RETURN
+
+      END SUBROUTINE REPORT_BEST_DES_IJK_SIZE
+
+      SUBROUTINE MINIMIZE_DES_LOAD_IMBALANCE(NODESL,LMIN1,LMAX1,NP_L,BEST_L_SIZE,BEST_LIP)
+
+      use discretelement
+      use error_manager
+      use functions
+      use machine
+      use mpi_utility
+      use run, only: TIME
+      use sendrecv
+      use desgrid
+
+
+
+      IMPLICIT NONE
+
+      INTEGER :: LMIN1,LMAX1,L,lsize,lremain
+      INTEGER :: NODE,IPROC,DMP_MIN
+      INTEGER :: NODESL     ! COULD BE NODESI, NODESJ, OR NODESK
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NP_L
+      INTEGER, DIMENSION(0:NODESL-1) :: NP_L_PER_NODE
+      INTEGER :: NN, NAMAX   ! Number of adjustments, max number of adjustments
+      INTEGER :: NOIMPROVEMENT
+      INTEGER :: NOIMPMAX=10 ! Exit adjustment loop after this number of iterations where no improvement is achieved
+
+      INTEGER, DIMENSION(0:NODESL-1) :: NPPP, BEST_NPPP
+
+      INTEGER ::IPROC_OF_MAX,IPROC_OF_MIN
+
+      DOUBLE PRECISION :: LIP, BEST_LIP
+
+      INTEGER, DIMENSION(0:NODESL-1) :: L_SIZE, BEST_L_SIZE, NEW_L_SIZE
+
+
+! Initialize the size with uniform (plus remainder) distribution
+      lsize = (lmax1-lmin1+1)/nodesl
+      BEST_L_SIZE(0:nodesl-1) = lsize
+      lremain = (lmax1-lmin1+1) - nodesl*lsize
+      IF (lremain.ge.1) BEST_L_SIZE( 0:(lremain-1) ) = lsize + 1
+
+      CALL GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,BEST_L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+      BEST_LIP = LIP
+      NEW_L_SIZE = BEST_L_SIZE
+      BEST_NPPP   = NPPP
+
+      NOIMPROVEMENT=0
+
+! At each iteration, the processor that has the maximum number
+! of particles is reduced in size (by one cell),
+! and the processor that has the minimum number of particles
+! is increased in size (by one cell).
+! This is rpeated at most NAMAX times until no improvement is found.
+
+      DMP_MIN = 1
+
+      NAMAX = 2000
+
+      DO NN = 1,NAMAX
+
+1050     FORMAT(A,13(I4),A,2(I4))
+
+         NEW_L_SIZE(IPROC_OF_MAX) = NEW_L_SIZE(IPROC_OF_MAX) - 1
+         NEW_L_SIZE(IPROC_OF_MIN) = NEW_L_SIZE(IPROC_OF_MIN) + 1
+
+         CALL GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,NEW_L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+
+         IF(LIP<BEST_LIP) THEN
+            BEST_LIP    = LIP
+            BEST_L_SIZE = NEW_L_SIZE
+            BEST_NPPP   = NPPP
+            NOIMPROVEMENT=0
+         ELSE
+            NOIMPROVEMENT = NOIMPROVEMENT + 1
+         ENDIF
+
+         IF(NOIMPROVEMENT==1000) THEN
+!            WRITE (*, 1000) 'OPTIMIZED LOAD BALANCE REACHED.'
+            EXIT
+         ENDIF
+
+      ENDDO
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+
+
+
+      END SUBROUTINE MINIMIZE_DES_LOAD_IMBALANCE
+
+      SUBROUTINE GET_LIP_DES(NODESL,NP_L,LMIN1,LMAX1,L_SIZE,NPPP,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE gridmap
+      USE param
+      USE param1
+      USE constant
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar
+      USE mpi_utility
+      USE bc
+      USE DISCRETELEMENT
+      USE desgrid
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: NODESL,L,LMIN1,LMAX1,TOTAL_NP,TOTAL_NUC_WITH_GHOST,IPROC_OF_MAX,IPROC_OF_MIN
+
+      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NPPP,MAXVAL_NPPP,IDEAL_NPPP
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NP_L
+
+      INTEGER :: IPROC
+
+      INTEGER, DIMENSION(0:NODESL-1) :: NPPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
+
+      DOUBLE PRECISION :: LIP
+
+      INTEGER :: DMP_MIN = 1
+
+!-----------------------------------------------
+
+      LCOUNT1 = LMAX1 - LMIN1 + 1
+      LCOUNT2 = SUM(L_SIZE(0:NODESL-1))
+
+      IF(LCOUNT1/=LCOUNT2) THEN
+         WRITE(*,*)' ERROR: SUM OF CELLS DO NOT MATCH:',LCOUNT1,LCOUNT2
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+      L1(0) = LMIN1
+      L2(0) = L1(0) + L_SIZE(0) - 1
+
+      DO IPROC = 1,NODESL-1
+         L1(IPROC) = L2(IPROC-1) + 1
+         L2(IPROC) = L1(IPROC) + L_SIZE(IPROC) - 1
+      ENDDO
+
+      TOTAL_NP = 0
+      DO IPROC = 0,NODESL-1
+         NPPP(IPROC) = SUM(NP_L(L1(IPROC):L2(IPROC)))
+         TOTAL_NP = TOTAL_NP + NPPP(IPROC)
+      ENDDO
+
+      IDEAL_NPPP = TOTAL_NP / NODESL
+
+      MAXVAL_NPPP = MAXVAL(NPPP)
+      MINVAL_NPPP = MINVAL(NPPP)
+
+      LIP = DBLE(MAXVAL_NPPP-IDEAL_NPPP)/DBLE(IDEAL_NPPP)*100.0D0
+
+      IPROC_OF_MAX = MAXLOC(NPPP,1)-1
+      IPROC_OF_MIN = MINLOC(NPPP,1)-1
+
+      IF(L_SIZE(IPROC_OF_MAX)<=DMP_MIN) THEN ! Need to find the next processor to be reduced in size
+         MAXVAL_NPPP = 0
+         DO IPROC = 0,NODESL-1
+            IF(IPROC==IPROC_OF_MIN) CYCLE
+            IF(IPROC==IPROC_OF_MAX) CYCLE
+            IF(L_SIZE(IPROC)<=DMP_MIN) CYCLE
+            IF(NPPP(IPROC)>MAXVAL_NPPP) THEN
+               MAXVAL_NPPP = NPPP(IPROC)
+               IPROC_OF_MAX = IPROC
+            ENDIF
+         ENDDO
+      ENDIF
+1050     FORMAT(A,12(I8),A,2(I4))
+
+      RETURN
+      END SUBROUTINE GET_LIP_DES
 END MODULE output_man

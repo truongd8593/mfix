@@ -18,30 +18,23 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param
-      USE param1
-      USE parallel
-      USE physprop
-      USE drag
-      USE run
-      USE output
-      USE geometry
-      USE fldvar
-      USE visc_g
-      USE visc_s
-      USE trace
-      USE indices
       USE constant
-      Use vshear
-      USE turb
-      USE toleranc
       USE compar
-      USE TAU_G
-      USE sendrecv
-
       USE cutcell
+      USE drag, only: f_gs
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      USE turb
+      USE visc_g
+      USE visc_s
 
       IMPLICIT NONE
 
@@ -99,14 +92,15 @@
 ! rate of strain tensor
       DOUBLE PRECISION :: D_g(3,3)
 
-!  Production of Turb. Due to shear, Turb Visc, and Constants.
-!  See Wilcox PP. 89
-      DOUBLE PRECISION Tauij_gDUi_gODxj, C_MU, Sigma_k, Sigma_E, Kappa
-      DOUBLE PRECISION Pos_Tauij_gDUi_gODxj, Neg_Tauij_gDUi_gODxj
-      DOUBLE PRECISION Ceps_1, Ceps_2, C_Eps_3, Check_Log
-      DOUBLE PRECISION Pos_PI_kq_2, Neg_PI_kq_2
-! Modif. for Sof Local Var.
-      INTEGER :: P,Q
+! Production of turb. due to shear, turb visc and consants:
+! See Wilcox PP. 89
+      DOUBLE PRECISION :: Sigma_k, Sigma_E
+      DOUBLE PRECISION :: C_MU, Kappa
+      DOUBLE PRECISION :: Ceps_1, Ceps_2, C_Eps_3
+      DOUBLE PRECISION :: Tauij_gDUi_gODxj
+      DOUBLE PRECISION :: Pos_Tauij_gDUi_gODxj, Neg_Tauij_gDUi_gODxj
+      DOUBLE PRECISION :: Check_Log
+      DOUBLE PRECISION :: Pos_PI_kq_2, Neg_PI_kq_2
 !---------------------------------------------------------------------//
 
       IF( .NOT. K_Epsilon) RETURN
@@ -118,9 +112,8 @@
 ! Add constants. Most of these constants have the same names and values
 ! as the ones defined in Wilcox book (turbulence modeling for CFD).
 ! Some are necessary only for Simonin turbulence model
-
-      C_MU = 9.0D-02
-      Kappa = 0.42D+0
+      C_MU = turb_c_mu
+      Kappa = turb_kappa
       Sigma_k = 1.0D0
       Sigma_E = 1.3D0
       Ceps_1 = 1.44D0 !should be 1.6 for axisymmetric cases with no Pope Correction.

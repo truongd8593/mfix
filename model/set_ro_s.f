@@ -36,6 +36,7 @@
 ! Function for evaluating solids density.
       use eos, only: EOSS
 
+      use usr_prop, only: usr_ros
 ! Modules needed to support function.inc
       use compar
       use geometry
@@ -81,6 +82,11 @@
                   RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS),            &
                      DIL_INERT_X_VSD(M))
                ENDIF
+            ENDDO
+         ELSEIF (USR_ROs(M)) THEN
+            DO IJK=IJKSTART3,IJKEND3
+               IF (WALL_AT(IJK)) CYCLE
+               CALL USR_PROP_ROS(IJK,M)
             ENDDO
          ELSE
 ! Constant solids density.
@@ -165,9 +171,9 @@
          ENDIF
          inquire(file=trim(lFName),exist=lExists)
          IF(lExists) THEN
-            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='replace')
+            OPEN(unit=lUnit,file=trim(lFName),status='replace')
          ELSE
-            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='new')
+            OPEN(unit=lUnit,file=trim(lFName),status='new')
          ENDIF
       ENDIF
 

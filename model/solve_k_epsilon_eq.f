@@ -33,9 +33,10 @@
       use residual, only: resid, max_resid, ijk_resid
       use residual, only: num_resid, den_resid
       use residual, only: resid_ke
-      use run, only: discretize, k_epsilon, added_mass, odt
+      use run, only: discretize, added_mass, odt
       use rxns, only: sum_r_g
       use toleranc, only: zero_ep_s
+      use turb, only: k_epsilon
       use turb, only: dif_k_turb_g, k_turb_g_c, k_turb_g_p
       use turb, only: dif_e_turb_g, e_turb_g_c, e_turb_g_p
       use ur_facs, only: ur_fac
@@ -161,7 +162,7 @@
       CALL UNDER_RELAX_S (K_Turb_G, A_M, B_M, M, UR_FAC(9))
 
 !      call check_ab_m(a_m, b_m, m, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, m)
 !      write(*,*) res1, mres1, ires1
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                       DO_K, ier)
@@ -243,7 +244,7 @@
       CALL UNDER_RELAX_S (E_Turb_G, A_M, B_M, M, UR_FAC(9))
 
 !      call check_ab_m(a_m, b_m, m, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, m)
 !      write(*,*) res1, mres1, ires1
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                       DO_K, ier)
@@ -285,7 +286,7 @@
 !---------------------------------------------------------------------//
       use compar, only: ijkstart3, ijkend3
       use cutcell, only: cut_cell_at, delh_scalar
-      use fldvar, only: k_turb_G, e_turb_g
+      use fldvar, only: k_turb_G
       use functions, only: fluid_at, wall_at
       use functions, only: im_of, jm_of, km_of
       use functions, only: ip_of, jp_of, kp_of

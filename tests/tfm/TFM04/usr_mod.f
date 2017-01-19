@@ -33,14 +33,14 @@
         logical                               :: error_summary = .true.
 
 ! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh  
+! used to find the node locations in the mesh
         double precision, allocatable         :: xtr(:)
         double precision, allocatable         :: ytr(:)
-        double precision, allocatable         :: ztr(:)     
+        double precision, allocatable         :: ztr(:)
 
-! exact solution variables  
+! exact solution variables
         double precision, allocatable         :: p_g_ex(:)
         double precision, allocatable         :: u_g_ex(:)
-        double precision, allocatable         :: v_g_ex(:)    
-        
+        double precision, allocatable         :: v_g_ex(:)
+
       END MODULE usr

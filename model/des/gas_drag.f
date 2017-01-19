@@ -33,8 +33,8 @@
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
       use indices, only: I_OF, J_OF, K_OF
-! Flag: Fluid exists at indexed cell
-      use functions, only: FLUID_AT
+! Flag: Flow at East face of fluid cell
+      use functions, only: FLOW_AT_E
 ! IJK of cell to east.
       use functions, only: EAST_OF
 ! IJK function for I,J,K that includes mapped indices.
@@ -84,32 +84,33 @@
 !!$omp private(IJK, I, J, K, IJMK, IJKM, IJMKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
 
-            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            IF(FLOW_AT_E(IJK)) THEN
 
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
 
-            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
-            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
-            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
+               IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+               IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+               IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
-            IJMK = FUNIJK_MAP_C(I, J-1, K)
+               IJMK = FUNIJK_MAP_C(I, J-1, K)
 
-            tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IJMK))
-            tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,1) + DRAG_BM(IJMK,1))
+               tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IJMK))
+               tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,1) + DRAG_BM(IJMK,1))
 
-            IF(DO_K) THEN
-               IJKM = FUNIJK_MAP_C(I, J, K-1)
-               IJMKM = FUNIJK_MAP_C(I, J-1, K-1)
-               tmp_A = tmp_A - AVG_FACTOR*                             &
-                  (DRAG_AM(IJKM) + DRAG_AM(IJMKM))
-               tmp_B = tmp_B - AVG_FACTOR*                             &
-                  (DRAG_BM(IJKM,1) + DRAG_BM(IJMKM,1))
+               IF(DO_K) THEN
+                  IJKM = FUNIJK_MAP_C(I, J, K-1)
+                  IJMKM = FUNIJK_MAP_C(I, J-1, K-1)
+                  tmp_A = tmp_A - AVG_FACTOR*                          &
+                     (DRAG_AM(IJKM) + DRAG_AM(IJMKM))
+                  tmp_B = tmp_B - AVG_FACTOR*                          &
+                     (DRAG_BM(IJKM,1) + DRAG_BM(IJMKM,1))
+               ENDIF
+
+               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_U(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_U(IJK)
             ENDIF
-
-            A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_U(IJK)
-            B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_U(IJK)
 
          ENDDO
 !!$omp end parallel do
@@ -120,7 +121,7 @@
 !$omp private(IJK, I, IJKE, tmp_A, tmp_B) &
 !$omp shared(IJKSTART3,IJKEND3,I_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_U)
          DO IJK = IJKSTART3, IJKEND3
-            IF(FLUID_AT(IJK)) THEN
+            IF(FLOW_AT_E(IJK)) THEN
                I = I_OF(IJK)
                IJKE = EAST_OF(IJK)
 
@@ -172,8 +173,8 @@
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
       use indices, only: I_OF, J_OF, K_OF
-! Flag: Fluid exists at indexed cell
-      use functions, only: FLUID_AT
+! Flag: Flow at North face of cell
+      use functions, only: FLOW_AT_N
 ! IJK of cell to north.
       use functions, only: NORTH_OF
 ! IJK function for I,J,K that includes mapped indices.
@@ -221,35 +222,36 @@
 !!$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)    &
 !!$omp private(IJK, I, J, K, IMJK, IJKM, IMJKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
-            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            IF(FLOW_AT_N(IJK)) THEN
 
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
 
-            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
-            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
-            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
+               IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+               IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+               IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
-            IMJK = FUNIJK_MAP_C(I-1,J,K)
+               IMJK = FUNIJK_MAP_C(I-1,J,K)
 
-            tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK))
-            tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,2) + DRAG_BM(IMJK,2))
+               tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK))
+               tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,2) + DRAG_BM(IMJK,2))
 
-            IF(DO_K) THEN
+               IF(DO_K) THEN
 
-               IJKM = FUNIJK_MAP_C(I,J,K-1)
-               IMJKM = FUNIJK_MAP_C(I-1,J,K-1)
+                  IJKM = FUNIJK_MAP_C(I,J,K-1)
+                  IMJKM = FUNIJK_MAP_C(I-1,J,K-1)
 
-               tmp_A = tmp_A - AVG_FACTOR*                             &
-                  (DRAG_AM(IJKM) + DRAG_AM(IMJKM))
-               tmp_B = tmp_B - AVG_FACTOR*                             &
-                  (DRAG_BM(IJKM,2) + DRAG_BM(IMJKM,2))
+                  tmp_A = tmp_A - AVG_FACTOR*                          &
+                     (DRAG_AM(IJKM) + DRAG_AM(IMJKM))
+                  tmp_B = tmp_B - AVG_FACTOR*                          &
+                     (DRAG_BM(IJKM,2) + DRAG_BM(IMJKM,2))
+               ENDIF
+
+               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_V(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_V(IJK)
+
             ENDIF
-
-            A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_V(IJK)
-            B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_V(IJK)
-
          ENDDO
 !!$omp end parallel do
 
@@ -259,7 +261,7 @@
 !$omp private(IJK, J, IJKN, tmp_a, tmp_B) &
 !$omp shared(IJKSTART3, IJKEND3, J_OF, F_GDS, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)
          DO IJK = IJKSTART3, IJKEND3
-            IF(FLUID_AT(IJK)) THEN
+            IF(FLOW_AT_N(IJK)) THEN
                J = J_OF(IJK)
                IJKN = NORTH_OF(IJK)
 
@@ -308,8 +310,8 @@
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
       use indices, only: I_OF, J_OF, K_OF
-! Flag: Fluid exists at indexed cell
-      use functions, only: FLUID_AT
+! Flag: Flow at top face of fluid cell
+      use functions, only: FLOW_AT_T
 ! IJK of cell to top.
       use functions, only: TOP_OF
 ! IJK function for I,J,K that includes mapped indices.
@@ -357,29 +359,30 @@
 !!$omp    K_OF, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)          &
 !!$omp private(IJK, I, J, K, IMJK, IJMK, IMJMK, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
-            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            IF(FLOW_AT_T(IJK)) THEN
 
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
 
-            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
-            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
-            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
+               IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+               IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+               IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
-            IMJK = FUNIJK_MAP_C(I-1,J,K)
-            IJMK = FUNIJK_MAP_C(I,J-1,K)
-            IMJMK = FUNIJK_MAP_C(I-1,J-1,K)
+               IMJK = FUNIJK_MAP_C(I-1,J,K)
+               IJMK = FUNIJK_MAP_C(I,J-1,K)
+               IMJMK = FUNIJK_MAP_C(I-1,J-1,K)
 
-            tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK) +        &
-               DRAG_AM(IJMK) + DRAG_AM(IMJMK))
+               tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK) +     &
+                  DRAG_AM(IJMK) + DRAG_AM(IMJMK))
 
-            tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,3) + DRAG_BM(IMJK,3) +    &
-               DRAG_BM(IJMK,3) + DRAG_BM(IMJMK,3))
+               tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,3) + DRAG_BM(IMJK,3) + &
+                  DRAG_BM(IJMK,3) + DRAG_BM(IMJMK,3))
 
-            A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_W(IJK)
-            B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_W(IJK)
+               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A*VOL_W(IJK)
+               B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_W(IJK)
 
+            ENDIF
          ENDDO
 !!$omp end parallel do
 
@@ -389,7 +392,7 @@
 !$omp private(IJK, K, IJKT, tmp_A, tmp_B) &
 !$omp shared(IJKSTART3,IJKEND3,K_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_W)
          DO IJK = IJKSTART3, IJKEND3
-            IF(FLUID_AT(IJK)) THEN
+            IF(FLOW_AT_T(IJK)) THEN
                K = K_OF(IJK)
                IJKT = TOP_OF(IJK)
 

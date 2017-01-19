@@ -37,17 +37,8 @@
   MOMENTUM_Y_EQ  =  .TRUE.   .TRUE.
   MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
 
-! Solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?  [.FALSE.]
-  GRANULAR_ENERGY = .T.
-
 ! the kinetic theory model used to describe the solids phase(s)
   KT_TYPE = 'AHMADI'
-
-! legacy keyword to invoke ahmadi or simonin models
-! (cannot be invoked simultaneously)
-#  AHMADI = .T.
-#  SIMONIN = .F.
 
 ! the gas-solid drag model.  ['SYAM_OBRIEN']
 ! note drag will not be used for this granular flow case
@@ -118,10 +109,9 @@
 ! setting the pressure and temperature in IC and BC regions
   MW_avg = 29.0     ! average molecular weight of air (g/g-mol)
 
-! use k-e turbulence model for single phase flow with standard wall
-! functions?  [.FALSE.]. 
-! (Must be set to true when using Ahmadi or Simonin models)
-  K_EPSILON = .TRUE. 
+! K-e  model for single phase flow with standard wall functions
+! (Required  when using Ahmadi or Simonin models)
+  TURBULENCE_MODEL = 'K_EPSILON'
   Mu_gmax = 1.E+03   ! max. value of the turbulent viscosity of the fluid
      
 

@@ -11,6 +11,7 @@
 
       PUBLIC :: INIT_DES_COLLECT_gDATA, DES_COLLECT_gDATA
       PUBLIC :: DES_SETNODEINDICES, DES_EXCHANGENODE
+      PUBLIC :: deallocate_des_nodes_pointers
 
       interface DES_COLLECT_gDATA
         module procedure DES_COLLECT_gDATA_db1
@@ -110,6 +111,13 @@
          (ljproc_end-ljproc_start+1)*(lkproc_end-lkproc_start+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(itoproc)) DEALLOCATE(itoproc)
+      IF(ALLOCATED(iprocsumindx)) DEALLOCATE(iprocsumindx)
+      IF(ALLOCATED(istartsend)) DEALLOCATE(istartsend)
+      IF(ALLOCATED(istartrecv)) DEALLOCATE(istartrecv)
+      IF(ALLOCATED(isendreqnode)) DEALLOCATE(isendreqnode)
+      IF(ALLOCATED(irecvreqnode)) DEALLOCATE(irecvreqnode)
+
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
       allocate (istartsend(itotalneigh+1))
@@ -207,6 +215,9 @@
       itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
+      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
+
       allocate(isendnodes(itotalindx))
       allocate(dsendnodebuf(itotalindx))
 
@@ -330,6 +341,9 @@
          istartrecv(lproc)=sum(iprocsumindx(1:lproc-1))+1
       end do
       itotalindx=istartrecv(itotalneigh+1)-1
+
+      IF(ALLOCATED(irecvnodes)) DEALLOCATE(irecvnodes)
+      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
 
       allocate(irecvnodes(itotalindx))
       allocate(drecvnodebuf(itotalindx))
@@ -481,7 +495,7 @@
 
       implicit none
 
-! dummy arguments 
+! dummy arguments
 !-----------------------------------------------
       double precision, intent(inout) :: pvar(:,:)
       integer :: lc
@@ -563,6 +577,12 @@
          (ljproc_end-ljproc_start+1)*(lkproc_end-lkproc_start+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(itoproc)) DEALLOCATE(itoproc)
+      IF(ALLOCATED(iprocsumindx)) DEALLOCATE(iprocsumindx)
+      IF(ALLOCATED(istartsend)) DEALLOCATE(istartsend)
+      IF(ALLOCATED(irecvreqnode)) DEALLOCATE(irecvreqnode)
+      IF(ALLOCATED(isendreqnode)) DEALLOCATE(isendreqnode)
+
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
       allocate (istartsend(itotalneigh+1))
@@ -623,6 +643,9 @@
       itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
+      IF(ALLOCATED(isendnodes)) DEALLOCATE(isendnodes)
+      IF(ALLOCATED(dsendnodebuf)) DEALLOCATE(dsendnodebuf)
+      IF(ALLOCATED(drecvnodebuf)) DEALLOCATE(drecvnodebuf)
       allocate (isendnodes(itotalindx))
       allocate (dsendnodebuf(itotalindx))
       allocate (drecvnodebuf(itotalindx))
@@ -773,7 +796,7 @@
 
 ! pradeep remove print the flags
       write(filename,'("dbg_nodesr",I4.4,".dat")') mype
-      open(44,file=filename,convert='big_endian')
+      open(44,file=filename)
       do lcount = 1,itotalneigh
          lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
          write(44,"(2/,72('*'))")
@@ -806,11 +829,26 @@
 
       close (44)
 
- 1100 FORMAT(2x,'Send Proc ',I2,'   -->   Recv Proc' I2)
+ 1100 FORMAT(2x,'Send Proc ',I2,'   -->   Recv Proc', I2)
  1000 FORMAT(3x,A,': (',I3,',',I3,',',I3,') :: ',I7)
 
       end subroutine des_dbgnodesr
 
+
+      subroutine deallocate_des_nodes_pointers()
+
+      IMPLICIT NONE
+      INTEGER :: IERR
+
+      DEALLOCATE(isendnodes,STAT=IERR)
+      DEALLOCATE(irecvnodes,STAT=IERR)
+      DEALLOCATE(dsendnodebuf,STAT=IERR)
+      DEALLOCATE(drecvnodebuf,STAT=IERR)
+      DEALLOCATE(isendreqnode,STAT=IERR)
+      DEALLOCATE(irecvreqnode,STAT=IERR)
+
+      RETURN
+
+      end subroutine deallocate_des_nodes_pointers
+
       end module
-
-

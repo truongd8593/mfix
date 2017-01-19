@@ -363,7 +363,7 @@
       use physprop, only: smax, mmax
       use physprop, only: ro_g0, mw_mix_g
       use eos, only: EOSG
-
+      use usr_prop, only: usr_rog
 ! Global parameters
 !---------------------------------------------------------------------//
       use param1, only: undefined
@@ -385,8 +385,11 @@
       MW_MIX_G(IJK) = MW_MIX_G(FIJK)
 
 ! T_g (bc_phi), P_g (above depending on bc), and MW_MIX_G (above) have
-! now been defined at IJK
-      IF (RO_G0 == UNDEFINED) RO_G(IJK) = &
+! now been defined at IJK.
+! For the case of usr_rog it should not be necessary to 'redefine/update'
+! ro_g in the outflow cell as it was already calculated. Actually unclear
+! why this is necessary at all for any case!
+      IF (RO_G0 == UNDEFINED .AND. .NOT.USR_ROG) RO_G(IJK) = &
          EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK))
 
       IF (SMAX >0) THEN
@@ -608,7 +611,7 @@
 ! needed because of ghd theory
       use fldvar, only: rop_s, ro_s, d_p
       use run, only: kt_type_enum, ghd_2007
-      use run, only: k_epsilon
+      use turb, only: k_epsilon
       use physprop, only: nmax, smax, mmax
       use scalars, only: nscalar, phase4scalar
 

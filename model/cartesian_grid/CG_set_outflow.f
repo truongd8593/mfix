@@ -1,39 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_OUTFLOW(BCV, I1, I2, J1, J2, K1, K2)               C
+!  Subroutine: CG_SET_OUTFLOW                                          C
 !  Purpose: Set specified pressure outflow bc for a specified range of C
 !           cells                                                      C
 !                                                                      C
-!  Author: M. Syamlal                                 Date: 21-JAN-92  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                                                                      C
-!  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: MMAX                                          C
-!                                                                      C
-!  Variables modified: I, J, K, RO_g, ROP_g,                           C
-!                      EP_g, C
-!                      T_g, T_s,  M, ROP_s, U_g, U_s, V_g, V_s,  C
-!                      W_g, W_s,
-!                                                                      C
-!  Local variables: IJK, LFLUID                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE CG_SET_OUTFLOW
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE bc
-      USE compar        !//d
+      USE compar
       USE cutcell
       USE eos, ONLY: EOSG
       USE fldvar
@@ -46,51 +27,42 @@
       USE quadric
       USE run
       USE scalars
+      use turb, only: k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      indices
-      INTEGER          I, J, K, M, NN
-!
-!                      Local index for boundary cell
-      INTEGER          IJK
-!
-!                      Boundary condition number
-      INTEGER          BCV
-!
-!                      Locall index for a fluid cell near the boundary cell
-      INTEGER          LFLUID
 
-      INTEGER          IJKW,IJKWW,IJKS,IJKSS,IJKB
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: I, J, K, M, NN
+! Local index for boundary cell
+      INTEGER :: IJK
+! Boundary condition number
+      INTEGER :: BCV
+! Locall index for a fluid cell near the boundary cell
+      INTEGER :: LFLUID
+
+      INTEGER :: IJKW,IJKWW,IJKS,IJKSS,IJKB
 
       INTEGER :: BCT1,BCT2,BCT3,BCT4
 
       LOGICAL :: TEST1,TEST2
-!-----------------------------------------------
-!
+!---------------------------------------------------------------------//
+
 !      print*,'top of cg_set_outflow'
       DO IJK = IJKSTART3, IJKEND3
       IF(INTERIOR_CELL_AT(IJK)) THEN
-
 
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
 
-!//SP Check if current i,j,k resides on this PE
+! Check if current i,j,k resides on this PE
          IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 !        IJK = FUNIJK(I,J,K)
-!
+
 ! Fluid cell at West
-!
 !      print*,'west'
           BCV = BC_U_ID(IJK)
-
 
           IF(BCV>0)THEN
 
@@ -315,8 +287,6 @@
 !            CYCLE
 
          ENDIF
-
-
 
 
 !

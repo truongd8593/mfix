@@ -37,7 +37,7 @@
 !  Purpose: Initialize logical flags.                                  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE INIT_COEFF(IER)
+      SUBROUTINE INIT_COEFF(MFIX_DAT, IER)
 
 ! Global Variables:
 !-----------------------------------------------------------------------
@@ -54,8 +54,6 @@
       use run, only: ENERGY_EQ
 ! Run-time flag for to solve species equations.
       use run, only: SPECIES_EQ
-! Flag to recalculate gas viscosity.
-      use visc_g, only: RECALC_VISC_G
 ! Run-time flag for invoking discrete element model
       use discretelement, only: DISCRETE_ELEMENT
 ! Run-time flag for gas/DEM coupling
@@ -74,15 +72,13 @@
       use physprop, only: DIF_G0, DIF_S0
 ! Specified number of solids phases.
       use physprop, only: MMAX
-! Specified constant viscosity.
-      use physprop, only: MU_g0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
 ! MMS flag
       use mms, only: USE_MMS
 ! user defined flags
       use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
-      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
+      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_difs
       use usr_prop, only: usr_gama, usr_fgs, usr_fss
       implicit none
 
@@ -91,6 +87,8 @@
 ! Error flag.
       INTEGER, intent(inout) :: IER
 
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables.
 !-----------------------------------------------------------------------
@@ -138,7 +136,7 @@
 ! (mu_g0 /= undefined) to incorporate ishii form of governing equations
 ! wherein the viscosity is multiplied by the phase volume fraction.
 ! Alternatively, we could invoke calc_mu_g only if energy, k_epsilon,
-! l_scale0 /= 0, or ishii (use recalc_visc_g)
+! mixing_length, or ishii (use recalc_visc_g)
       VISC(0) = .TRUE.
 
 ! Specific heat and thermal conductivity.
@@ -211,17 +209,17 @@
 
 ! Invoke calc_coeff.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) THEN
-         CALL CALC_COEFF(IER, 2)
+         CALL CALC_COEFF(MFIX_DAT, IER, 2)
 
 ! If gas viscosity is undefined and the flag for calculating gas
 ! viscosity is turned off: Turn it on and make the call to calc_coeff.
 ! Once viscosity values have been calculated (i.e., an initial value
 ! is calculated), turn the flag off again so it isn't recalculated.
 !         IF(MU_g0 == UNDEFINED .AND. .NOT.VISC(0)) THEN
-!            VISC(0) = .TRUE.; CALL CALC_COEFF(IER, 2)
+!            VISC(0) = .TRUE.; CALL CALC_COEFF(MFIX_DAT, IER, 2)
 !            VISC(0) = .FALSE.
 !         ELSE
-!            CALL CALC_COEFF(IER, 2)
+!            CALL CALC_COEFF(MFIX_DAT, IER, 2)
 !         ENDIF
       ENDIF
 

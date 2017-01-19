@@ -1,0 +1,55 @@
+image: mfixgui
+
+# cache:
+#   key: "$CI_BUILD_REF_NAME"
+#   untracked: true
+#   paths:
+#     - build/
+
+stages:
+  - build
+  - test
+
+# build_job:
+#   stage: build
+#   script:
+#     - pip install packaging
+#     - git clean -fdx
+#     - make -C gui ../mfix
+#   artifacts:
+#     paths:
+#     - mfix
+#   only:
+#     - branches
+#   tags:
+#     - docker
+#     - anaconda
+#     - python2
+
+# test_job:
+#   stage: test
+#   script:
+#     - make -C gui test
+#   only:
+#     - branches
+#   tags:
+#     - docker
+#     - anaconda
+#     - python2
+
+build_job3:
+  stage: build
+  script:
+    - make -C gui ../mfix
+  artifacts:
+    paths:
+    - mfix*
+  only:
+    - branches
+
+test_job3:
+  stage: test
+  script:
+    - make -C gui test
+  only:
+    - branches

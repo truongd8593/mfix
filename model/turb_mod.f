@@ -1,6 +1,19 @@
 
       MODULE turb
 
+      CHARACTER(len=64) :: TURBULENCE_MODEL
+
+! If .TRUE. solve K_Epsilon turbulence eq.
+      LOGICAL :: K_Epsilon
+
+! Characteristic length for turbulence
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  L_scale
+
+! Constant in turbulent viscosity
+      DOUBLE PRECISION, PARAMETER :: Turb_C_MU = 0.09D0
+! von Karman constant
+      DOUBLE PRECISION, PARAMETER :: Turb_Kappa = 0.42d0
+
 ! Source term for K & Epsilon eq is linearized as
 !    Source = K_Turb_G_c - K_Turb_G_p * K_Turb_G
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_Turb_G_c

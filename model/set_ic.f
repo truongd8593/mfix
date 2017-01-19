@@ -6,33 +6,31 @@
 !  Purpose: This module sets all the initial conditions.               !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE SET_IC
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
+      USE compar
+      USE constant
+      USE energy
+      USE fldvar
+      USE functions
+      USE geometry
+      USE ic
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE constant
       USE physprop
-      USE ic
-      USE fldvar
-      USE visc_g
-      USE indices
-      USE scales
-      USE energy
-      USE scalars
-      USE compar
       USE run
+      USE scalars
+      USE scales
       USE sendrecv
       USE solids_pressure
-      USE functions
+      use turb, only: l_scale, k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: I, J, K, IJK, M
 ! Local index for initial condition
@@ -63,7 +61,7 @@
       DOUBLE PRECISION :: WSX (DIMENSION_M)
 ! number density for GHD theory
       DOUBLE PRECISION :: nM, nTOT
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 !  Set the initial conditions.
       DO L = 1, DIMENSION_IC

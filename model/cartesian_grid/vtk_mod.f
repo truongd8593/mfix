@@ -242,6 +242,10 @@ use param, only: DIMENSION_N_S
 ! VTK Particle selection: 'C': center, 'P': entire particle, 'I': particle intersect
       CHARACTER(LEN=1) :: VTK_SELECT_MODE(DIMENSION_VTK)
 
+! Particle phase
+
+      LOGICAL :: VTK_PART_PHASE(DIMENSION_VTK, DIM_M)
+
 ! Particle radius
       LOGICAL :: VTK_PART_DIAMETER(DIMENSION_VTK)
 
@@ -265,6 +269,15 @@ use param, only: DIMENSION_N_S
 
 ! Particle cohesion
       LOGICAL :: VTK_PART_COHESION(DIMENSION_VTK)
+
+! Particle rank
+      LOGICAL :: VTK_PART_RANK(DIMENSION_VTK)
+
+! Particle ID
+      LOGICAL :: VTK_PART_ID(DIMENSION_VTK)
+
+! Domain decomposition
+      LOGICAL :: VTK_DOMAIN_DECOMPOSITION(DIMENSION_VTK)
 
       END MODULE vtk
 

@@ -26,7 +26,7 @@
       endif
 
 ! Store the initial particle velocity.
-      u0 = des_vel_new(1,1) 
+      u0 = des_vel_new(1,1)
 
 ! Calculate the time at which slipping ends.
       tsA = (-2.0d0*u0)/(7.0d0*MEW_W*grav(2))

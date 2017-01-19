@@ -6,10 +6,10 @@ misc_libs=
 
 echo "Intel Fortran Compiler on Apple MacOS"
 
-# MUST RUN Environment Setup prior to compilation	
+# MUST RUN Environment Setup prior to compilation
 # source /opt/intel/composerxe/bin/compilervars.csh intel64
 # for Intel MKL library
-# source /opt/intel/composerxe-2011.0.085/mkl/bin/mklvars.csh intel64	  
+# source /opt/intel/composerxe-2011.0.085/mkl/bin/mklvars.csh intel64
 
 MODULE_CODE=0
 

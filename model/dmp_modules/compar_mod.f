@@ -15,7 +15,7 @@
 ! Modules
 !-----------------------------------------------
 #ifdef MPI
-        USE mpi ! ignore-depcomp
+        USE mpi
 #endif
 !-----------------------------------------------
 
@@ -35,6 +35,10 @@
 ! For 1-D decomposition, nodesk = nproc for a 3d problem and
 ! nodesi = nproc for a 2D problem.
       integer :: nodesi, nodesj, nodesk
+
+! For dynamic load balance, a list of partition layout can be supplied.
+! If so, each layout will be tested to find the best partition size.
+      INTEGER, DIMENSION(100) :: DLB_NODESI,DLB_NODESJ,DLB_NODESK
 
 ! root represents the 'root' processor. For now it is defaulted to
 ! zero
@@ -163,6 +167,9 @@
 !       Flag to exit gridmap_init after domain size is assigned
         LOGICAL :: SHORT_GRIDMAP_INIT = .FALSE.
 
+!       Flag to restart internally with a new partition
+!       This provides a mechanism to do a dynamic load balance
+        LOGICAL :: ADJUST_PARTITION = .FALSE.
 
       END MODULE compar
 

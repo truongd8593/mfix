@@ -9,6 +9,7 @@
 
       use, intrinsic :: ISO_C_BINDING
       use exit, only: mfix_exit
+      use debug, only: is_pymfix, good_config
 
       implicit none
 
@@ -52,6 +53,8 @@
 !......................................................................!
       SUBROUTINE INIT_ERROR_MANAGER
 
+      use, intrinsic :: iso_fortran_env, only: output_unit
+
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Name given to current run.
@@ -76,6 +79,9 @@
 ! Global Routine Access:
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
+
+! Dynamic load balance
+      use compar, only:ADJUST_PARTITION
 
       implicit none
 
@@ -137,14 +143,18 @@
 ! error messages (at a minimum) in the .LOG file.
       IF(DMP_LOG) THEN
          NB = len_trim(LOGFILE)+1
+         IF (IS_PYMFIX) THEN
+            unit_log = output_unit
+         ELSE
          CALL OPEN_FILE(LOGFILE, NB, UNIT_LOG, '.LOG', FILE_NAME,      &
             'APPEND', 'SEQUENTIAL', 'FORMATTED', 132,  IER(myPE))
+         ENDIF
       ENDIF
 
 ! Verify that the .LOG file was successfully opened. Otherwise, flag the
-! error and abort.
+! error and abort. Currently skipped when adjusting partition.
       CALL GLOBAL_ALL_SUM(IER)
-      IF(sum(IER) /= 0) THEN
+      IF(sum(IER) /= 0.AND..NOT.ADJUST_PARTITION) THEN
          IF(myPE == PE_IO) WRITE(*,1001) trim(FILE_NAME)
          CALL MFIX_EXIT(myPE)
       ENDIF
@@ -466,7 +476,7 @@
 
 ! Abort the run if specified.
       IF(A_FLAG) THEN
-         IF(REINITIALIZING)THEN
+         IF(IS_PYMFIX)THEN
             IER_EM = 1
          ELSE
             IF(D_FLAG) WRITE(*,3000) myPE
@@ -643,6 +653,7 @@
 
       CALL GLOBAL_ALL_SUM(IER_EM)
       REINIT_ERROR = (IER_EM /= 0)
+      GOOD_CONFIG = .NOT.REINIT_ERROR
       IER_EM = 0
       RETURN
       END FUNCTION REINIT_ERROR

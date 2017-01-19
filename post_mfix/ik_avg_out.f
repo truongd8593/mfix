@@ -42,7 +42,7 @@
 !
 !     local variables
 !
-      REAL    AVG_OUT
+      DOUBLE PRECISION    AVG_OUT
 !
       IF (VAR_INDEXN.EQ.01) THEN
          CALL IK_AVG(EP_G,VOL,AVG_OUT,LOC_YN)

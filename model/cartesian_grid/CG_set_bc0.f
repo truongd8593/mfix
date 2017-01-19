@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CG_SET_BC0                                             C
+!  Subroutine: CG_SET_BC0                                              C
 !  Purpose: This module does the initial setting of boundary           C
 !           conditions for cut cells only                              C
 !                                                                      C
@@ -8,26 +8,12 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: BC_DEFINED, BC_TYPE, BC_DT_0, TIME, BC_Jet_g0,C
-!                        BC_K_b, BC_K_t, BC_J_s, BC_J_n, BC_I_w,       C
-!                        BC_I_e, BC_PLANE, BC_EP_g, BC_P_g, BC_T_g,    C
-!                        BC_T_s,  BC_U_g, BC_V_g, BC_W_g,              C
-!                        MMAX, BC_ROP_s, BC_U_s, BC_V_s, BC_W_s        C
-!  Variables modified: BC_TIME, BC_V_g, I, J, K, IJK, EP_g, P_g, T_g,  C
-!                      T_s, U_g, V_g, W_g, ROP_s, U_s, V_s, W_s,       C
-!                      M                                               C
-!                                                                      C
-!  Local variables: L, IJK1, IJK2, IJK3                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE CG_SET_BC0
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
       USE bc
       USE compar
       USE cutcell
@@ -47,34 +33,24 @@
       USE scales
       USE sendrecv
       USE toleranc
-
+      use turb, only: k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
 
-!
-!                      Local index for boundary condition
-      INTEGER          L
-!
-!                      indices
-      INTEGER          IJK, M, NN ,IJKW,IJKS,IJKB
-!
-!----------------------------------------------
+! Local Variables
+!---------------------------------------------------------------------//
+! Local index for boundary condition
+      INTEGER :: L
+! indices
+      INTEGER :: IJK, M, NN ,IJKW,IJKS,IJKB
 
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1
       LOGICAL :: GLOBAL_CORNER
+!--------------------------------------------------------------------//
 
-!
-!  Define global corners as acceptable default walls
-!  These cells should never be used
-!
+      IF(RO_G0==ZERO) RETURN  ! Nothing to do for granular flow
+
+! Define global corners as acceptable default walls
+! These cells should never be used
 
       IF(.NOT.RE_INDEXING.AND.NumPEs==1) THEN
 
@@ -99,11 +75,10 @@
          L = BC_ID(IJK)
 
          IF(L>0) THEN
-            IF(BC_TYPE_ENUM(L)==CG_PO) THEN
 
+            IF(BC_TYPE_ENUM(L)==CG_PO) THEN
                P_STAR(IJK) = ZERO
                P_G(IJK) = SCALE_PRESSURE(BC_P_G(L))
-   !
                IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L)
                IF (BC_T_G(L) /= UNDEFINED) then
                   T_G(IJK) = BC_T_G(L)
@@ -141,9 +116,7 @@
                END DO
 
             ELSEIF(BC_TYPE_ENUM(L)==CG_MI) THEN
-
                P_STAR(IJK) = ZERO
-   !
                EP_G(IJK) = BC_EP_G(L)
                P_G(IJK) = SCALE_PRESSURE(BC_P_G(L))
                T_G(IJK) = BC_T_G(L)
@@ -177,14 +150,11 @@
                ELSE
                   U_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)
                ENDIF
-
-
                IF(BC_V_g(L)/=UNDEFINED) THEN
                   V_G(IJK) =  BC_V_g(L)
                ELSE
                   V_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)
                ENDIF
-
                IF(BC_W_g(L)/=UNDEFINED) THEN
                   W_G(IJK) =  BC_W_g(L)
                ELSE
@@ -202,7 +172,6 @@
                      U_G(IJKW) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)
                   ENDIF
                ENDIF
-
                IF(FLUID_AT(IJKS)) THEN
                   IF(BC_V_g(L)/=UNDEFINED) THEN
                      V_G(IJKS) =  BC_V_g(L)
@@ -210,7 +179,6 @@
                      V_G(IJKS) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)
                   ENDIF
                ENDIF
-
                IF(FLUID_AT(IJKB)) THEN
                   IF(BC_W_g(L)/=UNDEFINED) THEN
                      W_G(IJKB) =  BC_W_g(L)
@@ -219,9 +187,7 @@
                   ENDIF
                ENDIF
 
-   !
                M = 1
-
                DO M=1,MMAX
 
                   IF(BC_U_s(L,M)/=UNDEFINED) THEN
@@ -229,13 +195,11 @@
                   ELSE
                      U_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)
                   ENDIF
-
                   IF(BC_V_S(L,M)/=UNDEFINED) THEN
                      V_S(IJK,M) =  BC_V_S(L,M)
                   ELSE
                      V_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)
                   ENDIF
-
                   IF(BC_W_S(L,M)/=UNDEFINED) THEN
                      W_S(IJK,M) =  BC_W_S(L,M)
                   ELSE
@@ -253,7 +217,6 @@
                         U_S(IJKW,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)
                      ENDIF
                   ENDIF
-
                   IF(FLUID_AT(IJKS)) THEN
                      IF(BC_V_S(L,M)/=UNDEFINED) THEN
                         V_S(IJKS,M) =  BC_V_S(L,M)
@@ -261,7 +224,6 @@
                         V_S(IJKS,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)
                      ENDIF
                   ENDIF
-
                   IF(FLUID_AT(IJKB)) THEN
                      IF(BC_W_S(L,M)/=UNDEFINED) THEN
                         W_S(IJKB,M) =  BC_W_S(L,M)
@@ -334,8 +296,3 @@
 
       RETURN
       END SUBROUTINE CG_SET_BC0
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 020 New local variables for parallelization: FLAG_G , FLUID_AT_G
-!// 360 Check if i,j,k resides on current processor

@@ -217,7 +217,7 @@ MODULE RXN_COM
 
 ! Check the local run directory.
          CASE(1); FILENAME = 'species.inc'
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
+            OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
             IF(IOS /= 0) CYCLE SRC_LP
             IF(.NOT.REINITIALIZING)THEN
                WRITE(ERR_MSG, 1000)'species.inc'
@@ -591,12 +591,14 @@ MODULE RXN_COM
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE checkThermoReqs(RxN, S_g, S_s, rDB, MWg, MWs, Cpg0, Cps0)
+      SUBROUTINE checkThermoReqs(MFIX_DAT, RxN, S_g, S_s, rDB, MWg, MWs, Cpg0, Cps0)
 
       use error_manager
       use toleranc
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Data structure for storing reaction data.
       TYPE(REACTION_BLOCK), POINTER, INTENT(INOUT) :: RxN
@@ -690,7 +692,7 @@ MODULE RXN_COM
                WRITE(ERR_MSG, 3001) N, trim(S_g(N))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read the database.
-               CALL READ_DATABASE(0, N, S_g(N), MWg(N))
+               CALL READ_DATABASE(MFIX_DAT, 0, N, S_g(N), MWg(N))
 ! Flag variable to stating that the database was read.
                rDB(0,N) = .TRUE.
             ENDIF
@@ -707,7 +709,7 @@ MODULE RXN_COM
 ! Update the log files.
                WRITE(ERR_MSG, 3001) N, trim(S_s(M,N))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-               CALL READ_DATABASE(M,N,S_s(M,N),MWs(M,N))
+               CALL READ_DATABASE(MFIX_DAT,M,N,S_s(M,N),MWs(M,N))
 ! Flag variable to stating that the database was read.
                rDB(M,N) = .TRUE.
             ENDIF

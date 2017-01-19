@@ -14,7 +14,7 @@
 ! Time-step intervalue between updating the .LOG file.
       use output, only: NLOG
 ! Flag: Use the K-Epsilon model
-      use run, only: K_EPSILON
+      use turb, only: K_EPSILON
 ! Number of arrays to store in SPA
       use rxns, only: nRR
 ! VTK
@@ -33,6 +33,8 @@
       use param1, only: UNDEFINED, UNDEFINED_I, ZERO, LARGE_NUMBER
 ! Number of SPx files.
       USE param1, only: N_SPX
+! Geometry bounds
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -83,11 +85,7 @@
 
 ! Verify the remaining SPx files.
          ELSE
-            IF(SPX_DT(LC) == UNDEFINED) THEN
-               WRITE(ERR_MSG,1000) iVar('SPX_DT',LC)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-            ELSEIF(SPX_DT(LC) <= ZERO) THEN
+            IF(SPX_DT(LC) <= ZERO) THEN
                WRITE(ERR_MSG,1001) iVar('SPX_DT',LC), SPX_DT(LC)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -107,7 +105,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2000 FORMAT('Error 2000: Invalid value for FRAME = ',A'. Acceptable ',&
+ 2000 FORMAT('Error 2000: Invalid value for FRAME = ',A, '. Acceptable ',&
          'values',/'are integers >= -1. Please correct mfix.dat and',/ &
          'try again.')
 
@@ -116,7 +114,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2001 FORMAT('Error 2001: Invalid value for VTK_DT = ',A'. Acceptable',&
+ 2001 FORMAT('Error 2001: Invalid value for VTK_DT = ',A, '. Acceptable',&
          ' values',/'are positive numbers (e.g., 0.1).  Please ',      &
          'correct mfix.dat and',/'try again.')
 
@@ -130,6 +128,8 @@
          IF (VTK_Z_B(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
          IF (VTK_Z_T(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
 
+         IF (VTK_DOMAIN_DECOMPOSITION(L)) VTK_DEFINED(L) = .TRUE.
+
          IF(.NOT.VTK_DEFINED(L)) CYCLE
          N_VTK_REGIONS =  N_VTK_REGIONS + 1
       ENDDO   ! end loop over (l = 1,dimension_vtk)
@@ -138,12 +138,12 @@
 ! If this is not the case, define the entire domain as default region
       IF(WRITE_VTK_FILES.AND.N_VTK_REGIONS==0) THEN
          VTK_DEFINED(1) = .TRUE.
-         VTK_X_W(1) = ZERO
-         VTK_X_E(1) = XLENGTH
-         VTK_Y_S(1) = ZERO
-         VTK_Y_N(1) = YLENGTH
-         VTK_Z_B(1) = ZERO
-         VTK_Z_T(1) = ZLENGTH
+         VTK_X_W(1) = X_MIN
+         VTK_X_E(1) = X_MAX
+         VTK_Y_S(1) = Y_MIN
+         VTK_Y_N(1) = Y_MAX
+         VTK_Z_B(1) = Z_MIN
+         VTK_Z_T(1) = Z_MAX
          VTK_FILEBASE(1) = RUN_NAME
       ENDIF
 

@@ -12,7 +12,8 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  RUN_TYPE = 'NEW'
+!  RUN_TYPE = 'NEW'
+  RUN_TYPE = 'RESTART_2'
 
   UNITS = 'SI'
 

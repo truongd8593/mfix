@@ -34,7 +34,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: ITERATE                                                 !
+!  Subroutine: ITERATE_INIT                                            !
 !  Author: M. Syamlal                                 Date: 12-APR-96  !
 !                                                                      !
 !  Purpose: This module controls the iterations for solving equations  !
@@ -48,7 +48,8 @@
       USE leqsol, only: leq_adjust
       USE output, only: full_log
       USE param1, only: one, small_number, undefined, zero
-      USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit, steady_state
+      USE run, only: dt, dt_prev, run_type, time, tstop, nstep
+      USE run, only: nsteprst, cn_on, get_tunit, steady_state
       USE time_cpu
       USE toleranc, only: norm_g, norm_s
 
@@ -134,30 +135,36 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: ITERATE                                                 !
+!  Subroutine: DO_ITERATION                                            !
 !  Author: M. Syamlal                                 Date: 12-APR-96  !
 !                                                                      !
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DO_ITERATION
+      SUBROUTINE DO_ITERATION(MFIX_DAT)
 
       USE cont, only: solve_continuity
-         USE cutcell, only: cartesian_grid
-         USE discretelement, only: discrete_element, des_continuum_hybrid
-         USE fldvar, only: ep_g, ro_g, rop_g, rop_s, p_star
-         USE geometry, only: cyclic, cylindrical
-         USE leqsol, only: leq_adjust
-         USE mms, only: USE_MMS
-         USE param1, only: small_number, zero, undefined, undefined_i
-         USE physprop, only: mmax, ro_g0, smax
-         USE pscor, only: k_cp, mcp
-         USE qmom_kinetic_equation, only: qmomk
-         USE residual, only: resid_p, resid
-         USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end, friction, ghd_2007, granular_energy, k_epsilon, kt_type_enum, phip_out_iter, energy_eq, dt, ier, steady_state
-         USE scalars, only: nscalar
+      USE cutcell, only: cartesian_grid
+      USE discretelement, only: discrete_element, des_continuum_hybrid
+      USE fldvar, only: ep_g, ro_g, rop_g, rop_s, p_star
+      USE geometry, only: cyclic, cylindrical
+      USE leqsol, only: leq_adjust
+      USE mms, only: USE_MMS
+      USE param1, only: small_number, zero, undefined, undefined_i
+      USE physprop, only: mmax, ro_g0, smax
+      USE pscor, only: k_cp, mcp
+      USE qmom_kinetic_equation, only: qmomk
+      USE residual, only: resid_p, resid
+      use run, only: call_usr
+      use run, only: ghd_2007, granular_energy, kt_type_enum
+      use run, only: friction
+      use run, only: phip_out_iter, energy_eq, ier, steady_state
+      USE scalars, only: nscalar
+      use turb, only: k_epsilon
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER :: M
 
@@ -183,7 +190,7 @@
       IF (CALL_USR) CALL USR2
 
 ! Calculate coefficients, excluding density and reactions.
-      CALL CALC_COEFF(IER, 1)
+      CALL CALC_COEFF(MFIX_DAT, IER, 1)
       IF (IER_MANAGER()) return
 
 ! Diffusion coefficient and source terms for user-defined scalars
@@ -203,7 +210,7 @@
       IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
 
 ! Calculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
+      CALL PHYSICAL_PROP(MFIX_DAT, IER, 0)
       IF (IER_MANAGER()) return
 
 ! Calculate chemical reactions.
@@ -275,7 +282,7 @@
       ENDIF
 
 ! Recalculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
+      CALL PHYSICAL_PROP(MFIX_DAT, IER, 0)
       IF (IER_MANAGER()) return
 
 ! Update wall velocities:
@@ -338,8 +345,14 @@
 
       contains
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: END_ITERATION                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE END_ITERATION
-         IMPLICIT NONE
+      IMPLICIT NONE
 
          ! Determine course of simulation: converge, non-converge, diverge?
          IF (MUSTIT == 0) THEN
@@ -352,6 +365,7 @@
          ENDIF
 
       END SUBROUTINE END_ITERATION
+
 
 !----------------------------------------------------------------------!
 ! Function: IER_Manager                                                !
@@ -813,7 +827,7 @@
 !  Purpose: Automatically adjust time step.                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION ADJUSTDT()
+      LOGICAL FUNCTION ADJUSTDT(MFIX_DAT)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -845,6 +859,8 @@
       IMPLICIT NONE
 
 ! Dummy Arguments:
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -950,7 +966,7 @@
             WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G12.5,' :-)')") DT
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-            CALL RESET_NEW
+            CALL RESET_NEW(MFIX_DAT)
 
 ! Iterate again with new dt
             ADJUSTDT = .TRUE.

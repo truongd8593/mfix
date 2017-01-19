@@ -15,8 +15,8 @@
       use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
       use bc, only: bc_scalar, bc_hw_scalar, bc_c_scalar, bc_scalarw
       use compar, only: ijkstart3, ijkend3
-      use fldvar, only: rop_g, rop_go, ep_g, u_g, v_g, w_g
-      use fldvar, only: rop_s, rop_so, ep_s, u_s, v_s, w_s
+      use fldvar, only: rop_go, ep_g, u_g, v_g, w_g
+      use fldvar, only: rop_so, ep_s, u_s, v_s, w_s
       use fldvar, only: scalar, scalaro
       use functions, only: fluid_at, zmax
       use geometry, only: vol, ijkmax2
@@ -139,7 +139,7 @@
             CALL UNDER_RELAX_S (Scalar(1,NN), A_M, B_M, M, UR_FAC(9))
 
 !           call check_ab_m(a_m, b_m, m, .false., ier)
-!           call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!           call write_ab_m(a_m, b_m, ijkmax2, m)
 !           write(*,*) res1, mres1, ires1
 !           call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                            DO_K, ier)
@@ -208,7 +208,7 @@
             CALL UNDER_RELAX_S (Scalar(1,NN), A_M, B_M, M, UR_FAC(9))
 
 !            call check_ab_m(a_m, b_m, m, .false., ier)
-!            call write_ab_m(a_m, b_m, ijkmax2, m, ier)
+!            call write_ab_m(a_m, b_m, ijkmax2, m)
 !            write(*,*) res1, mres1, ires1
 !            call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !                             DO_K, ier)

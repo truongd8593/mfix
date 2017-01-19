@@ -56,7 +56,7 @@
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF
 !
-      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN',convert='big_endian')
+      OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
 !
       DO IJK = 1,IJKMAX2
          TAVG(IJK,1) = ZERO

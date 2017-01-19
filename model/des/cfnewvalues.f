@@ -23,7 +23,6 @@
 !-----------------------------------------------
       USE constant
       USE des_bc
-      USE derived_types, only: multisap, boxhandle
       USE discretelement
       USE fldvar
       USE mfix_pic
@@ -34,7 +33,6 @@
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
-      use multi_sweep_and_prune, only: aabb_t, multisap_sort, multisap_update
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -43,8 +41,6 @@
       INTEGER :: L
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
-
-      type(aabb_t) aabb
 
 !-----------------------------------------------
 
@@ -65,7 +61,7 @@
 !!$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !!$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
-!!$omp       particle_orientation,orientation,boxhandle,multisap,particle_state) &
+!!$omp       particle_orientation,orientation,particle_state) &
 !!$omp private(l,rot_angle,omega_mag,omega_unit,aabb)
 
 ! If a particle is classified as new, then forces are ignored.
@@ -186,16 +182,6 @@
 !!$omp end sections
       ENDIF
 
-#ifdef do_sap
-!!$omp single
-         DO L = 1, MAX_PIP
-            aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)
-            aabb%maxendpoint(:) = DES_POS_NEW(L,:)+DES_RADIUS(L)
-            call multisap_update(multisap,aabb,boxhandle(L))
-         ENDDO
-!!$omp end single
-#endif
-
 ! Update particle orientation - Always first order
 ! When omega is non-zero, compute the rotation angle, and apply the
 ! Rodrigues' rotation formula
@@ -233,18 +219,7 @@
 
 !!$omp end parallel
 
-#ifdef do_sap
-            call multisap_sort(multisap)
-#endif
-
       FIRST_PASS = .FALSE.
-
- 1002 FORMAT(/1X,70('*')//&
-         ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
-         ' during a',/10X, 'single solids time step, which is ',&
-         ' greater than',/10X,'its radius: ', ES17.9)
- 1003 FORMAT(1X,70('*')/)
 
       RETURN
 

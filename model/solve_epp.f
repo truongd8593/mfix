@@ -23,7 +23,6 @@
       use residual, only: resid, max_resid, ijk_resid
       use residual, only: num_resid, den_resid
       use residual, only: resid_p
-      use run, only: momentum_x_eq, momentum_y_eq
       use usr_src, only: call_usr_source, calc_usr_source
       use usr_src, only: solids_correction
       IMPLICIT NONE
@@ -102,7 +101,7 @@
                            A_M, B_M, lB_MMAX=B_MMAX, lM=M)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
 !      call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1, &
 !         DO_K, ier)
 

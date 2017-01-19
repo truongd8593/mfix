@@ -5,7 +5,7 @@
 
 ! If .TRUE. call user-defined physical properties
       LOGICAL :: USR_ROG
-      LOGICAL :: USR_CPG 
+      LOGICAL :: USR_CPG
       LOGICAL :: USR_ROS(DIM_M)
       LOGICAL :: USR_CPS(DIM_M)
 
@@ -28,7 +28,7 @@
          ENUMERATOR :: Gas_SpecificHeat, Solids_SpecificHeat
          ENUMERATOR :: Gas_Viscosity, Solids_Viscosity
          ENUMERATOR :: Gas_Conductivity, Solids_Conductivity
-         ENUMERATOR :: Gas_Diffusivity, Solids_Diffusivity 
+         ENUMERATOR :: Gas_Diffusivity, Solids_Diffusivity
          ENUMERATOR :: GasSolids_Drag, SolidsSolids_Drag
          ENUMERATOR :: GasSolids_HeatTransfer
          ENUMERATOR :: BLANK
@@ -39,7 +39,7 @@
       CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_USR_PROP                                           C 
+!  Subroutine: CALC_USR_PROP                                           C
 !  Purpose: Driver routine to calculate user defined physical,         C
 !  transport, exchange terms that appear in the governing equations.   C
 !                                                                      C
@@ -57,8 +57,8 @@
       use physprop, only: nmax
       use physprop, only: k_g, dif_g, c_pg, mu_g
       use physprop, only: k_s, dif_s, c_ps
-      use fldvar, only: ro_g, rop_g, ep_g
-      use fldvar, only: ro_s, p_s
+      use fldvar, only: ro_g, rop_g, ep_g, ep_s
+      use fldvar, only: ro_s, rop_s
       use visc_g, only: mu_gt, lambda_gt
       use visc_s, only: mu_s, lambda_s
       use utilities, only: mfix_isnan
@@ -78,10 +78,10 @@
 !     Gama (gas-solids heat transfere coefficient)
       INTEGER, INTENT(IN) :: lprop
 
-! Phase index 
+! Phase index
       INTEGER, OPTIONAL, INTENT(IN) :: lM
 
-! Phase index 
+! Phase index
       INTEGER, OPTIONAL, INTENT(IN) :: lL
 
 ! Error index
@@ -99,7 +99,8 @@
       INTEGER :: M, L, N
 ! Flag to write log header
       LOGICAL :: wHeader
-
+! store volume fractoin
+      DOUBLE PRECISION :: eps_tmp
 !-----------------------------------------------
 
 ! set local values for phase index
@@ -115,17 +116,16 @@
       ELSE
          L = lL
       ENDIF
-         
+
       N = UNDEFINED_I
 
       SELECT CASE(lProp)
-      
+
 ! Gas physical properties: density
       CASE(Gas_Density)
          wHeader = .TRUE.
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-!            CALL USR_PROPERTIES(lprop, IJK, 0, N)
             CALL USR_PROP_ROG(IJK)
             ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
 ! report errors
@@ -140,7 +140,6 @@
       CASE(Gas_SpecificHeat)
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-!            CALL USR_PROPERTIES(lprop, IJK, 0, N)
             CALL USR_PROP_CPG(IJK)
 ! report errors.
             IF(C_PG(IJK) <= ZERO) THEN
@@ -153,7 +152,6 @@
       CASE(Gas_Viscosity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-!               CALL USR_PROPERTIES(lprop, IJK, 0, N)
                CALL USR_PROP_MUG(IJK)
                MU_GT(IJK) = MU_G(IJK)
                LAMBDA_GT(IJK) = -2./3.*MU_GT(IJK)
@@ -168,7 +166,6 @@
       CASE(Gas_Conductivity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-!               CALL USR_PROPERTIES(lprop, IJK, 0, N)
                CALL USR_PROP_KG(IJK)
             ELSE ! probably unnecessary
                K_G(IJK) = ZERO
@@ -180,34 +177,32 @@
          DO N=1,NMAX(0)
             DO IJK=IJKSTART3,IJKEND3
                IF (FLUID_AT(IJK)) THEN
-!                  CALL USR_PROPERTIES(lprop, IJK, 0, N)
                   CALL USR_PROP_DIFG(IJK,N)
                ELSE ! probably unnecessary
                   DIF_G(IJK,N) = ZERO
                ENDIF
             ENDDO
          ENDDO
- 
+
 ! Solids physical properties: density
       CASE(Solids_Density)
          wHeader = .TRUE.
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-!            CALL USR_PROPERTIES(lprop, IJK, M, N)
+            eps_tmp = ep_s(ijk,M)
             CALL USR_PROP_ROS(IJK,M)
+            rop_s(ijk,M) = eps_tmp*ro_s(ijk,M)
 ! report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
                lErr(myPE) = 101
                IF(REPORT_NEG_DENSITY) CALL ROsErr_LOG(IJK, M, wHeader)
             ENDIF
-
          ENDDO
 
 ! Solids physical properties: specific heat
       CASE(Solids_SpecificHeat)
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-!            CALL USR_PROPERTIES(lprop, IJK, M, N)
             CALL USR_PROP_CPS(IJK,M)
 ! report errors.
             IF(C_PS(IJK,M) <= ZERO) THEN
@@ -220,7 +215,6 @@
       CASE(Solids_Viscosity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-!               CALL USR_PROPERTIES(lprop, IJK, M, N)
                CALL USR_PROP_MUS(IJK,M)
             ELSE ! probably unnecessary
                MU_S(IJK,M) = ZERO
@@ -232,7 +226,6 @@
       CASE(Solids_Conductivity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-!               CALL USR_PROPERTIES(lprop, IJK, M, N)
                CALL USR_PROP_KS(IJK,M)
             ELSE ! probably unnecessary
                K_S(IJK,M) = ZERO
@@ -244,7 +237,6 @@
          DO N=1,NMAX(M)
             DO IJK=IJKSTART3,IJKEND3
                IF (FLUID_AT(IJK)) THEN
-!                  CALL USR_PROPERTIES(lprop, IJK, M, N)
                   CALL USR_PROP_DIFS(IJK,M,N)
                ELSE ! probably unnecessary
                   DIF_S(IJK,M,N) = ZERO
@@ -256,7 +248,6 @@
       CASE(GasSolids_HeatTransfer)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-!               CALL USR_PROPERTIES(lprop, IJK, M, N)
                CALL USR_PROP_GAMA(IJK,M)
             ENDIF
          ENDDO
@@ -275,7 +266,6 @@
       CASE(SolidsSolids_Drag)
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-!            CALL USR_PROPERTIES(lprop, IJK, M, L)
             CALL USR_PROP_FSS(IJK,L,M)
          ENDDO
 
@@ -288,10 +278,9 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
  1001 FORMAT('Error 1101: Unknown Property= ', A)
          CALL FINL_ERR_MSG
-      END SELECT   ! end selection of user property 
- 
+      END SELECT   ! end selection of user property
+
       RETURN
       END SUBROUTINE CALC_USR_PROP
 
       end module usr_prop
-

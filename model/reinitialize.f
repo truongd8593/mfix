@@ -9,7 +9,7 @@ MODULE REINIT
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REINITIALIZE(filename)
+      SUBROUTINE REINITIALIZE(filename, IER)
 
       use run, only: REINITIALIZING
 
@@ -19,7 +19,7 @@ MODULE REINIT
 
       CHARACTER(LEN=*), intent(in) :: filename
 
-      INTEGER :: IER
+      INTEGER, INTENT(OUT) :: IER
 
       IER = 0
       REINITIALIZING = .TRUE.
@@ -30,21 +30,9 @@ MODULE REINIT
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(2, filename)
 
-      CALL REINITIALIZE0(IER)
+      CALL REINITIALIZE0(filename, IER)
 
       REINITIALIZING = .FALSE.
-
-      IF(IER /=0) THEN
-         WRITE(ERR_MSG, 2000)
-      ELSE
-         WRITE(ERR_MSG, 2100)
-      ENDIF
-
- 2000 FORMAT(2/70('*'),/'Reinitialization failed!',/'Correct all ',    &
-         'reported errors and reinitialize again.',/70('*'))
-
- 2100 FORMAT(2/,70('*'),/'Successfully reinitialized!'/70('*'))
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
       END SUBROUTINE REINITIALIZE
@@ -58,7 +46,7 @@ MODULE REINIT
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REINITIALIZE0(pIER)
+      SUBROUTINE REINITIALIZE0(MFIX_DAT, pIER)
 
       USE cutcell, only: CARTESIAN_GRID
       use coeff, only: INIT_COEFF
@@ -66,6 +54,9 @@ MODULE REINIT
       use error_manager
 
       IMPLICIT NONE
+
+! Path to input file
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER, INTENT(OUT) :: pIER
       INTEGER :: IER
@@ -82,10 +73,10 @@ MODULE REINIT
       CALL CHECK_OUTPUT_CONTROL()
       IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_GAS_PHASE
+      CALL CHECK_GAS_PHASE(MFIX_DAT)
       IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_SOLIDS_PHASES
+      CALL CHECK_SOLIDS_PHASES(MFIX_DAT)
       IF(REINIT_ERROR()) RETURN
 
       CALL CHECK_INITIAL_CONDITIONS
@@ -96,7 +87,7 @@ MODULE REINIT
       IF(REINIT_ERROR()) RETURN
       CALL CHECK_POINT_SOURCES
 
-      CALL CHECK_CHEMICAL_RXNS
+      CALL CHECK_CHEMICAL_RXNS(MFIX_DAT)
       IF(REINIT_ERROR()) RETURN
       CALL CHECK_ODEPACK_STIFF_CHEM
       IF(REINIT_ERROR()) RETURN
@@ -104,11 +95,6 @@ MODULE REINIT
 ! Convert (mass, volume) flows to velocities.
       CALL SET_BC_FLOW
       IF(REINIT_ERROR()) RETURN
-
-! This is all that happens in SET_L_SCALE so it needs moved, maybe
-! this should go in int_fluid_var.?
-!     CALL SET_L_SCALE
-!      L_SCALE(:) = L_SCALE0
 
 ! Set constant physical properties
       CALL SET_CONSTPROP
@@ -152,11 +138,11 @@ MODULE REINIT
       CALL PARSE_RESID_STRING ()
       IF(REINIT_ERROR()) RETURN
 
-      CALL RRATES_INIT(IER)
+      CALL RRATES_INIT
       IF(REINIT_ERROR()) RETURN
 
 ! Calculate all the coefficients once before entering the time loop
-      CALL INIT_COEFF(IER)
+      CALL INIT_COEFF(MFIX_DAT, IER)
       IF(REINIT_ERROR()) RETURN
 
 ! After reinitialization, the field vars should pass these checks too

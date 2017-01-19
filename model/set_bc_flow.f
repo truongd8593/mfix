@@ -23,13 +23,14 @@
 ! Flag: BC dimensions or Type is specified
       use bc, only: BC_DEFINED
 ! Use specified BC type
-      use bc
+      use bc, only: bc_type_enum, mass_inflow, mass_outflow
 ! User specifed BC solids bulk density
       use bc, only: BC_ROP_s
 ! Solids volume fraction at BC
       use bc, only: BC_EP_s
       use bc, only: BC_EP_g
 
+      use cutcell, only: cartesian_grid
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Parameter constants
@@ -55,6 +56,8 @@
       INTEGER :: MMAX_TOT
 ! Flag to skip checks on indexed solid phase.
       LOGICAL :: SKIP(1:DIM_M)
+! Logical on whether to perform a velocity check
+      LOGICAL :: CHECK_VEL
 !......................................................................!
 
 
@@ -63,6 +66,9 @@
 
 ! Total number of solids.
       MMAX_TOT = SMAX + DES_MMAX
+
+      CHECK_VEL = .TRUE.
+      IF (CARTESIAN_GRID) CHECK_VEL = .FALSE.
 
 ! Loop over each defined BC and check the user data.
       DO BCV = 1, DIMENSION_BC
@@ -78,11 +84,11 @@
          SELECT CASE (BC_TYPE_ENUM(BCV))
 
          CASE (MASS_INFLOW)
-            CALL FLOW_TO_VEL_NEW(.TRUE., MMAX_TOT, SKIP, BCV)
+            CALL FLOW_TO_VEL(CHECK_VEL, MMAX_TOT, SKIP, BCV)
             CALL CHECK_BC_VEL_INFLOW(MMAX_TOT, SKIP, BCV)
 
          CASE (MASS_OUTFLOW)
-            CALL FLOW_TO_VEL_NEW(.TRUE., MMAX_TOT, SKIP, BCV)
+            CALL FLOW_TO_VEL(CHECK_VEL, MMAX_TOT, SKIP, BCV)
             CALL CHECK_BC_VEL_OUTFLOW(MMAX_TOT, SKIP, BCV)
          END SELECT
       ENDDO

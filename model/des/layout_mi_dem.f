@@ -78,7 +78,6 @@
 
       use des_bc, only: DEM_MI
 
-      use stl, only: N_FACETS_DES
       use stl, only: STL_START, DEFAULT_STL
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
@@ -87,6 +86,7 @@
       use geometry, only: IMAX, JMAX, KMAX
       use geometry, only: DX, DY, DZ
       use geometry, only: XMIN, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use funits, only: DMP_LOG
 
@@ -183,7 +183,7 @@
 
 ! Set the value of the boundary condtion offset value used in the
 ! placement of new particles.
-      CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
+      CALL CALC_CELL_INTERSECT(Y_MIN, BC_Y_s(BCV), DY, JMAX, J)
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'N')
       DEM_MI(BCV_I)%OFFSET = BC_Y_s(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = J + int(SHIFT)
@@ -204,7 +204,7 @@
       DO LC=1,WMAX
          MESH_P(LC) = MESH_P(0) + dble(LC-1)*WINDOW
          SHIFT = MESH_P(LC) + HALF*WINDOW
-         CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, MESH_W(LC))
+         CALL CALC_CELL_INTERSECT(X_MIN, SHIFT, DX, IMAX, MESH_W(LC))
          IF(dFlag)WRITE(*,8006) LC, 'W', MESH_W(LC), 'P', MESH_P(LC)
       ENDDO
 
@@ -216,7 +216,7 @@
          DO LC=1,HMAX
             MESH_Q(LC) = MESH_Q(0) + dble(LC-1)*WINDOW
             SHIFT = MESH_Q(LC) + HALF*WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, MESH_H(LC))
+            CALL CALC_CELL_INTERSECT(Z_MIN, SHIFT, DZ, KMAX, MESH_H(LC))
             IF(dFlag)WRITE(*,8006) LC, 'H', MESH_H(LC), 'Q', MESH_Q(LC)
          ENDDO
       ELSE
@@ -225,7 +225,7 @@
       ENDIF
 
 ! Get the Jth index of the fluid cell
-      CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
+      CALL CALC_CELL_INTERSECT(Y_MIN, BC_Y_s(BCV), DY, JMAX, J)
 
 
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
@@ -241,29 +241,29 @@
 
          IF(DO_K) THEN
 
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+            CALL CALC_CELL_INTERSECT(X_MIN, MESH_P(W), DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(Z_MIN, MESH_Q(H), DZ, KMAX, K)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(X_MIN, SHIFT, DX, IMAX, I)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_Q(H)+WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+            CALL CALC_CELL_INTERSECT(Z_MIN, SHIFT, DZ, KMAX, K)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(X_MIN, MESH_P(W), DX, IMAX, I)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
          ELSE
 
             K = MESH_H(1)
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(X_MIN, MESH_P(W), DX, IMAX, I)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(X_MIN, SHIFT, DX, IMAX, I)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
          ENDIF
 
@@ -492,7 +492,6 @@
       use des_bc, only: DEM_MI
 
       use stl, only: STL_START, DEFAULT_STL
-      use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
 
@@ -500,6 +499,7 @@
       use geometry, only: IMAX, JMAX, KMAX
       use geometry, only: DX, DY, DZ
       use geometry, only: XMIN, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use funits, only: DMP_LOG
 
@@ -563,8 +563,6 @@
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
-! Separating axis test dummy variable
-      INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
       LOGICAL :: OVERLAP
 ! Local debug flag.
@@ -597,7 +595,7 @@
 
 ! Set the value of the boundary condtion offset value used in the
 ! placement of new particles.
-      CALL CALC_CELL_INTERSECT(XMIN, BC_X_w(BCV), DX, IMAX, I)
+      CALL CALC_CELL_INTERSECT(X_MIN, BC_X_w(BCV), DX, IMAX, I)
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'E')
       DEM_MI(BCV_I)%OFFSET = BC_X_w(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = I + int(SHIFT)
@@ -618,7 +616,7 @@
       DO LC=1,WMAX
          MESH_P(LC) = MESH_P(0) + dble(LC-1)*WINDOW
          SHIFT = MESH_P(LC) + HALF*WINDOW
-         CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, MESH_W(LC))
+         CALL CALC_CELL_INTERSECT(Y_MIN, SHIFT, DY, JMAX, MESH_W(LC))
          IF(dFlag)WRITE(*,8006) LC, 'W', MESH_W(LC), 'P', MESH_P(LC)
       ENDDO
 
@@ -630,7 +628,7 @@
          DO LC=1,HMAX
             MESH_Q(LC) = MESH_Q(0) + dble(LC-1)*WINDOW
             SHIFT = MESH_Q(LC) + HALF*WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, MESH_H(LC))
+            CALL CALC_CELL_INTERSECT(Z_MIN, SHIFT, DZ, KMAX, MESH_H(LC))
             IF(dFlag)WRITE(*,8006) LC, 'H', MESH_H(LC), 'Q', MESH_Q(LC)
          ENDDO
       ELSE
@@ -639,7 +637,7 @@
       ENDIF
 
 ! Get the Jth index of the fluid cell
-      CALL CALC_CELL_INTERSECT(XMIN, BC_X_w(BCV), DX, IMAX, I)
+      CALL CALC_CELL_INTERSECT(X_MIN, BC_X_w(BCV), DX, IMAX, I)
 
 
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
@@ -655,29 +653,29 @@
 
          IF(DO_K) THEN
 
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+            CALL CALC_CELL_INTERSECT(Y_MIN, MESH_P(W), DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(Z_MIN, MESH_Q(H), DZ, KMAX, K)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(Y_MIN, SHIFT, DY, JMAX, J)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_Q(H)+WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+            CALL CALC_CELL_INTERSECT(Z_MIN, SHIFT, DZ, KMAX, K)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(Y_MIN, MESH_P(W), DY, JMAX, J)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
          ELSE
 
             K = MESH_H(1)
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(Y_MIN, MESH_P(W), DY, JMAX, J)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
             SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(Y_MIN, SHIFT, DY, JMAX, J)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
          ENDIF
 
@@ -912,13 +910,13 @@
       use des_bc, only: DEM_MI
 
       use stl, only: STL_START, DEFAULT_STL
-      use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
       use compar, only: myPE
       use geometry, only: IMAX, JMAX, KMAX
       use geometry, only: DX, DY, DZ
       use geometry, only: XMIN
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use funits, only: DMP_LOG
 
@@ -982,8 +980,6 @@
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
-! Separating axis test dummy variable
-      INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
       LOGICAL :: OVERLAP
 ! Local Debug flag.
@@ -1018,7 +1014,7 @@
 
 ! Set the value of the boundary condtion offset value used in the
 ! placement of new particles.
-      CALL CALC_CELL_INTERSECT(ZERO, BC_Z_b(BCV), DZ, KMAX, K)
+      CALL CALC_CELL_INTERSECT(Z_MIN, BC_Z_b(BCV), DZ, KMAX, K)
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'T')
       DEM_MI(BCV_I)%OFFSET = BC_Z_b(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = K + int(SHIFT)
@@ -1039,7 +1035,7 @@
       DO LC=1,WMAX
          MESH_P(LC) = MESH_P(0) + dble(LC-1)*WINDOW
          SHIFT = MESH_P(LC) + HALF*WINDOW
-         CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, MESH_W(LC))
+         CALL CALC_CELL_INTERSECT(X_MIN, SHIFT, DX, IMAX, MESH_W(LC))
          IF(dFlag)WRITE(*,8006) LC, 'W', MESH_W(LC), 'P', MESH_P(LC)
       ENDDO
 
@@ -1050,12 +1046,12 @@
       DO LC=1,HMAX
          MESH_Q(LC) = MESH_Q(0) + dble(LC-1)*WINDOW
          SHIFT = MESH_Q(LC) + HALF*WINDOW
-         CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, MESH_H(LC))
+         CALL CALC_CELL_INTERSECT(Y_MIN, SHIFT, DY, JMAX, MESH_H(LC))
          IF(dFlag)WRITE(*,8006) LC, 'H', MESH_H(LC), 'Q', MESH_Q(LC)
       ENDDO
 
 ! Get the Jth index of the fluid cell
-      CALL CALC_CELL_INTERSECT(ZERO, BC_Z_b(BCV), DZ, KMAX, K)
+      CALL CALC_CELL_INTERSECT(Z_MIN, BC_Z_b(BCV), DZ, KMAX, K)
 
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
@@ -1068,19 +1064,19 @@
 
          IF(.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
 
-         CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-         CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DY, JMAX, J)
+         CALL CALC_CELL_INTERSECT(X_MIN, MESH_P(W), DX, IMAX, I)
+         CALL CALC_CELL_INTERSECT(Y_MIN, MESH_Q(H), DY, JMAX, J)
          IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
          SHIFT = MESH_P(W)+WINDOW
-         CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+         CALL CALC_CELL_INTERSECT(X_MIN, SHIFT, DX, IMAX, I)
          IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
          SHIFT = MESH_Q(H)+WINDOW
-         CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+         CALL CALC_CELL_INTERSECT(Y_MIN, SHIFT, DY, JMAX, J)
          IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-         CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+         CALL CALC_CELL_INTERSECT(X_MIN, MESH_P(W), DX, IMAX, I)
          IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
          FULL_MAP(W,H) = myPE+1

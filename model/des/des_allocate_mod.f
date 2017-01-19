@@ -27,14 +27,14 @@ CONTAINS
       USE compar
       USE constant
       USE cutcell
-      USE derived_types, only: boxhandle, pic
+      USE derived_types, only: pic
       USE des_bc
       USE des_rxns
       USE des_thermo
       USE discretelement
       USE functions
 
-      USE des_thermo_cond, only: DES_Qw_cond 
+      USE des_thermo_cond, only: DES_Qw_cond
 
       USE funits
       USE geometry
@@ -154,9 +154,6 @@ CONTAINS
       Allocate(  NEIGHBORS_OLD (MAX_PIP) )
       Allocate(  PFT_NEIGHBOR (3,MAX_PIP) )
       Allocate(  PFT_NEIGHBOR_OLD (3,MAX_PIP) )
-#ifdef do_sap
-      Allocate(  boxhandle(MAX_PIP) )
-#endif
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -167,6 +164,9 @@ CONTAINS
 
 ! Particles in a computational fluid cell (for volume fraction)
       Allocate(  PINC (DIMENSION_3) )
+
+! Ghost Particles in a computational fluid cell (for volume fraction)
+      Allocate(  GPINC (DIMENSION_3) )
 
 ! For each particle track its i,j,k location on computational fluid grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
@@ -507,10 +507,8 @@ CONTAINS
 
         USE des_rxns
         USE des_thermo
-        USE derived_types, only: boxhandle
         USE discretelement
         USE mfix_pic
-        USE multi_sweep_and_prune, ONLY: boxhandle_grow
         USE particle_filter
         USE resize
         USE run
@@ -520,8 +518,8 @@ CONTAINS
         integer, intent(in) :: new_max_pip
         integer :: old_size, new_size
 
-        IF (new_max_pip .le. size(des_radius)) RETURN
         max_pip = max(max_pip, new_max_pip)
+        IF (new_max_pip .le. size(des_radius)) RETURN
 
         old_size = size(des_radius)
 
@@ -531,9 +529,6 @@ CONTAINS
            new_size = 2*new_size
         ENDDO
 
-#ifdef do_sap
-        call boxhandle_grow(boxhandle,new_size)
-#endif
         call real_grow(des_radius,new_size)
         call real_grow(RO_Sol,new_size)
         call real_grow(PVOL,new_size)

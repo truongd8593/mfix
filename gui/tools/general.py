@@ -1,5 +1,5 @@
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 try:
     # Python 3
@@ -11,26 +11,99 @@ import re
 import os
 import sys
 import locale
+import logging
+import shlex
+import copy
+import random
+import operator
+from collections import OrderedDict
 
+log = logging.getLogger(__name__)
+
+SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+
+# TODO: factor out util funcs which don't require Qt
 # import qt
-from qtpy import QtGui
+from qtpy import QtGui, QtWidgets, QtCore
 
-SCRIPT_DIRECTORY = './'
-PY2 = sys.version[0] == '2'
-PY3 = sys.version[0] == '3'
+PY2 = sys.version_info.major == 2
+PY3 = sys.version_info.major == 3
 
 
-def set_script_directory(script):
-    global SCRIPT_DIRECTORY
-    SCRIPT_DIRECTORY = script
+# Helper functions
+def get_mfix_home():
+    """return the top level directory"""
+    return os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+
+def format_key_with_args(key, args=None):
+    if args is not None and args != []:
+        if isinstance(args, int):
+            args = [args]
+        return "%s(%s)" % (key, ','.join(str(a) for a in args))
+    else:
+        return str(key)
+
+
+def parse_key_with_args(string):
+    # inverse of format_key_with_args
+    if string.endswith(')'):
+        key, args = string[:-1].split('(')
+        args = [int(arg) for arg in args.split(',')]
+    else:
+        key = string
+        args = []
+    return key, args
+
+
+def plural(n, word):
+    fmt = "%d %s" if n == 1 else "%d %ss"
+    return fmt % (n, word)
+
+
+def set_item_noedit(item):
+    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+
+
+def set_item_enabled(item, enabled):
+    """Enable/disable items which do not have a setEnabled method, like menu items"""
+    flags = item.flags()
+    if enabled:
+        flags |= QtCore.Qt.ItemIsEnabled
+    else:
+        flags &= ~QtCore.Qt.ItemIsEnabled
+    item.setFlags(flags)
+
+
+def item_enabled(item):
+    flags = item.flags()
+    return bool(flags & QtCore.Qt.ItemIsEnabled)
+
+
+def get_combobox_item(combobox, n):
+    """Return the n'th menu item from a combobox"""
+    model = combobox.model()
+    return model.item(n, 0)
+
+
+def get_selected_row(table):
+    """get index of selected row from a QTableWidget"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedIndexes())
+    return None if not rows else rows.pop()
+
+
+def get_selected_rows(table):
+    """get index of selected row from a QTableWidget"""
+    # note, currentRow can return  >0 even when there is no selection
+    rows = set(i.row() for i in table.selectedIndexes())
+    return sorted(list(rows))
 
 
 def num_to_time(time, unit='s', outunit='time'):
-    '''
-    Function to convert time with a unit to another unit.
-    '''
+    """Convert time with a unit to another unit."""
     unit = unit.lower()
-
     time = float(time)
 
     # convert time to seconds
@@ -68,22 +141,24 @@ def num_to_time(time, unit='s', outunit='time'):
 
 
 def get_image_path(name):
-    " get path to images "
+    """"get path to images"""
     path = os.path.join(SCRIPT_DIRECTORY, 'icons', name)
-
     if os.name == 'nt':
         path = path.replace('\\', '//')
-
     return path
 
 
-def make_callback(func, *args, **kwargs):
-    '''
-    Helper function to make sure lambda functions are cached and not lost.
-    '''
-    return lambda: func(*args, **kwargs)
+pixmap_cache = {}
+def get_pixmap(name, width, height):
+    pixmap = pixmap_cache.get((name, width, height))
+    if pixmap is None:
+        pixmap = QtGui.QPixmap(get_image_path(name)).scaled(
+            width, height, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pixmap_cache[(name, width, height)] = pixmap
+    return pixmap
 
 
+icon_cache = {}
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
     default: default image name or icon
@@ -91,6 +166,11 @@ def get_icon(name, default=None, resample=False):
     (16, 24, 32, 48, 96, 128, 256). This is recommended for QMainWindow icons
     created from SVG images on non-Windows platforms due to a Qt bug (see
     http://code.google.com/p/spyderlib/issues/detail?id=1314)."""
+
+    icon = icon_cache.get((name,default,resample))
+    if icon:
+        return icon
+
     if default is None:
         icon = QtGui.QIcon(get_image_path(name))
     elif isinstance(default, QtGui.QIcon):
@@ -102,26 +182,27 @@ def get_icon(name, default=None, resample=False):
         icon0 = QtGui.QIcon()
         for size in (16, 24, 32, 48, 96, 128, 256, 512):
             icon0.addPixmap(icon.pixmap(size, size))
-        return icon0
+        icon_cache[(name, default, resample)] = icon0
+        ret = icon0
     else:
-        return icon
+        ret= icon
+    icon_cache[(name, default, resample)] = ret
+    return ret
 
 
 def get_unique_string(base, listofstrings):
-    " uniquify a string "
+    "uniquify a string"
     if base in listofstrings:
         # look for number at end
-        nums = re.findall('[\d]+', base)
+        nums = re.findall('[\d]+$', base)
         if nums:
             number = int(nums[-1]) + 1
             base = base.replace(nums[-1], '')
         else:
             number = 1
-
-        base = get_unique_string(''.join([base, str(number)]), listofstrings)
+        base = get_unique_string(base + str(number), listofstrings)
 
     return base
-
 
 def widget_iter(widget):
     for child in widget.children():
@@ -130,57 +211,22 @@ def widget_iter(widget):
                 yield child2
         yield child
 
-
-def get_from_dict(data_dict, map_list):
-    return reduce(lambda d, k: d[k], map_list, data_dict)
-
-
-def set_in_dict(data_dict, map_list, value):
-    get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
-def recurse_dict(d, keys=()):
-    '''
-    Recursively loop through a dictionary of dictionaries.
-
-    Parameters
-    ----------
-    d (dict):
-        a dictionary to loop over
-
-    Returns
-    -------
-    (keys (tuple), value):
-        a tuple of keys (tuple) and the value.
-    '''
-    if type(d) == dict:
-        for k in d:
-            for rv in recurse_dict(d[k], keys + (k, )):
-                yield rv
+#http://stackoverflow.com/questions/14218992/shlex-split-still-not-supporting-unicode
+#see also notes at https://pypi.python.org/pypi/ushlex/
+def safe_shlex_split(string):
+    """shlex.split is not unicode-safe"""
+    if PY2:
+        return [s.decode('utf-8') for s in shlex.split(string.encode('utf-8'))]
     else:
-        yield (keys, d)
+        return shlex.split(string)
 
-
-def recurse_dict_empty(d, keys=()):
-    '''
-    Recursively loop through a dictionary of dictionaries.
-
-    Parameters
-    ----------
-    d (dict):
-        a dictionary to loop over
-
-    Returns
-    -------
-    (keys (tuple), value):
-        a tuple of keys (tuple) and the value.
-    '''
-    if type(d) == dict and d:
-        for k in d:
-            for rv in recurse_dict_empty(d[k], keys + (k, )):
-                yield rv
-    else:
-        yield (keys, d)
+# Debugging hooks
+def debug_trace():
+    """Set a tracepoint in the Python debugger that works with Qt"""
+    from qtpy.QtCore import pyqtRemoveInputHook
+    from pdb import set_trace
+    pyqtRemoveInputHook()
+    set_trace()
 
 
 # These functions were extracted from spyder's p3compat.py code.
@@ -267,17 +313,178 @@ FS_ENCODING = getfilesystemencoding()
 
 
 def to_unicode_from_fs(string):
-    """
-    Return a unicode version of string decoded using the file system encoding.
-    """
+    """Return a unicode version of string decoded using the file system encoding."""
     if not is_string(string):  # string is a QString
         string = to_text_string(string.toUtf8(), 'utf-8')
     else:
         if is_binary_string(string):
             try:
-                unic = string.decode(FS_ENCODING)
-            except (UnicodeError, TypeError):
-                pass
-            else:
-                return unic
+                return string.decode(encoding=FS_ENCODING, errors='replace')
+            except (UnicodeDecodeError, TypeError) as e:
+                log.warn("%s: %s" % (e, string))
+
     return string
+
+def to_fs_from_unicode(string):
+    return string.encode(encoding=FS_ENCODING, errors='replace')
+
+def random_pastel_color():
+    return [(random.randint(0, 128) + 100)/255.0 for i in range(3)]
+
+class CellColor(object):
+    """
+    A class to store color information and return '' if str or print is called
+    on it. This is used to store colors in cells of a table.
+    """
+    def __init__(self, color=[1, 0, 0], text=''):
+
+        self.color = color
+        self.text = text
+
+    @property
+    def color_int(self):
+        return [255*c for c in self.color]
+
+    @property
+    def color_float(self):
+        return self.color
+
+    @property
+    def qcolor(self):
+        return QtGui.QColor(*self.color_int)
+
+    def __repr__(self):
+        return self.text
+
+    def rand(self):
+        self.color = random_pastel_color()
+
+
+def insert_append_action(menu, action, insert=None):
+    if insert:
+        menu.insertAction(insert, action)
+    else:
+        menu.addAction(action)
+
+
+def insert_append_separator(menu, insert=None):
+    if insert:
+        menu.insertSeparator(insert)
+    else:
+        menu.addSeparator()
+
+def topological_sort(dependency_dict):
+    '''
+    Sort the dependency tree.
+    Inspired by: http://code.activestate.com/recipes/578272-topological-sort/
+    '''
+
+    data = copy.deepcopy(dependency_dict)
+
+    # Ignore self dependencies.
+    for k, v in data.items():
+        v.discard(k)
+    # Find all items that don't depend on anything.
+    extra_items_in_deps = reduce(set.union, data.itervalues()) - set(data.iterkeys())
+    # Add empty dependences where needed
+    data.update({item: set() for item in extra_items_in_deps})
+    while True:
+        ordered = set(item for item, dep in data.iteritems() if not dep)
+        if not ordered:
+            break
+        yield ordered
+        data = {item: (dep - ordered)
+                for item, dep in data.iteritems()
+                if item not in ordered}
+    assert not data, "Cyclic dependencies exist among these items:\n%s" % '\n'.join(repr(x) for x in data.iteritems())
+
+def drop_row_column_triangular(a, n, r):
+    # Inputs:
+    #  a :  upper-triangular n by n matrix represented as a list (n)(n+1)/2
+    #  n :  size of input
+    #  r :  index of row/column to drop, 1-based
+    # Return:
+    #  list representing matrix "a" with row/column "r" removed
+    ret = []
+    i = j = 1
+    for x in a:
+        if i != r and j != r:
+            ret.append(x)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    return ret
+
+def append_row_column_triangular(a, n, fill_value = None):
+    # Append a row and column to an upper-triangular rank-n matrix
+    ret = []
+    i = j = 1
+    for x in a:
+        ret.append(x)
+        if j == n:
+            ret.append(fill_value)
+        j += 1
+        if j > n:
+            i += 1
+            j = i
+    ret.append(fill_value)
+    return ret
+
+def sort_dict(dict_, key, start=0):
+    """given an dict of dicts and a key, sort the outside dict based on the
+    value of one of the the internal dict's keys and return the sorted
+    OrderedDict"""
+    return OrderedDict(
+        [(k, dict_[old_k])
+         for k, (old_k, v) in enumerate(sorted([(k, v[key])
+         for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
+
+if __name__ == '__main__':
+    def test_recurse_dict():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
+
+    test_recurse_dict()
+
+    def test_recurse_dict_empty():
+        d = {1: {2:3,
+                 3: {},
+                 4: {5:6},
+                 5: {6:{}, 7:8}},
+             2: {}}
+
+        l = list(recurse_dict_empty(d))
+        l.sort()
+        assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
+
+
+    test_recurse_dict_empty()
+
+    def test_drop_add_triangular():
+        a = [ 1, 2, 3, 4,
+                 5, 6, 7,
+                    8, 9,
+                       10]
+        b = drop_row_column_triangular(a, 4, 2)
+        assert b == [1, 3, 4,
+                        8, 9,
+                           10]
+
+        c = drop_row_column_triangular(b, 3, 3)
+        assert c == [1, 3,
+                        8]
+
+        d = append_row_column_triangular(c, 2, 999)
+        assert d == [1, 3, 999,
+                        8, 999,
+                           999]
+
+    test_drop_add_triangular()

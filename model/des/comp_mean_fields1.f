@@ -41,12 +41,8 @@
       DOUBLE PRECISION :: OoSOLVOL
 ! PVOL times statistical weight, and times filter weight
       DOUBLE PRECISION :: VOL_WT, VOLxWEIGHT
-! Loop bound for filter
-      INTEGER :: LP_BND
-
 
 !-----------------------------------------------
-
 
       SOLVOLINC(:,:) = ZERO
 
@@ -54,7 +50,7 @@
       mUB = DES_MMAX+MMAX
 
       IF(MPPIC) THEN
-! initialize only information related to the discrete 'phases' of these 
+! initialize only information related to the discrete 'phases' of these
 ! continuous variables
          U_S(:,mLB:mUB) = ZERO
          V_S(:,mLB:mUB) = ZERO
@@ -64,7 +60,7 @@
 ! Calculate the gas phase forces acting on each particle.
 !$omp parallel default(none) &
 !$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT) &
-!$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC, &
+!$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, MPPIC, &
 !$omp       FILTER_WEIGHT, SOLVOLINC, U_S, V_S, W_S, DO_K, &
 !$omp       FILTER_CELL, FILTER_SIZE, DES_VEL_NEW)
 !$omp do
@@ -75,6 +71,11 @@
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)
 ! Particle phase for data binning.
          M = PIJK(NP,5)
+
+         IF(FILTER_SIZE==0) THEN
+            IJK = PIJK(NP,4)
+            SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOL_WT
+         ENDIF
 
          DO LC=1,FILTER_SIZE
             IJK = FILTER_CELL(LC,NP)

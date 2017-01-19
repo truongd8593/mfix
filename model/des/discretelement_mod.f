@@ -247,7 +247,7 @@
       INTEGER NWALLS
 
 ! Position of domain boundaries generally given as
-!   (0, xlength, 0, ylength, 0, zlength)
+!   (x_min, x_max, y_min, y_max, z_min, z_max)
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
 
 ! X, Y, Z position of cell faces of computational fluid grid
@@ -388,6 +388,9 @@
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
+
+! Store the number of ghost particles in a computational fluid cell
+      INTEGER, DIMENSION(:), ALLOCATABLE :: GPINC  ! (DIMENSION_3)
 
 ! For each particle track its i, j, k & ijk location on the fluid grid
 ! and solids phase no.:
@@ -546,6 +549,13 @@
 ! variable to clean the ghost cells
       logical,dimension(:),allocatable :: ighost_updated
       integer :: max_isize
+
+! Particle load
+      DOUBLE PRECISION :: PREVIOUS_MAX_LOAD = 0.0, CURRENT_MAX_LOAD
+! Interval at which particle dynamic load balance is called.
+      DOUBLE PRECISION :: DLB_DT
+! Eulerian grid weight
+      DOUBLE PRECISION :: DLB_EGW
 
       CONTAINS
 

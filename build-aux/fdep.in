@@ -30,6 +30,7 @@ our %opts = (
 		     },
 	'ignore'  => ['dflib',
 		      'iso_c_binding',
+		      'iso_fortran_env',
 		     ],
 	'include' => [],
 	'recursive' => 0,
@@ -83,7 +84,7 @@ sub parse_args
 			splice(@{$opts{include}}, $i, 1);
 		}
 	}
-	
+
 	# Make sure we have a module directory
 	if (not defined $opts{moddir}) {
 		$opts{moddir} = '.';

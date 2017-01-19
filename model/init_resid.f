@@ -46,6 +46,13 @@
 !
 !-----------------------------------------------
 !
+! JFD : Why not set the entire RESID ARRAY to ZERO?
+!       The initialization below doesn't work anymore
+!       for DEM (need to use DES_MMAX)
+
+      RESID(:,:) = ZERO
+      RETURN
+
       L = 1
       IF (NRESID > 0) THEN
          M = 0

@@ -26,12 +26,7 @@
 ! Logical indicating to write additional data about the particle for
 ! debugging purposes.
 
-! Local Variables
-!---------------------------------------------------------------------//
-! Index of particle
-      INTEGER :: NP
 !......................................................................!
-
 
 ! Specific heat
 !-----------------------------------------------------------------------

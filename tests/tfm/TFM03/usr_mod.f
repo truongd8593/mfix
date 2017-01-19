@@ -32,9 +32,9 @@
         logical                               :: uv_profile = .true.
 
 ! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh  
+! used to find the node locations in the mesh
         double precision, allocatable         :: xtr(:)
         double precision, allocatable         :: ytr(:)
-        double precision, allocatable         :: ztr(:)     
+        double precision, allocatable         :: ztr(:)
 
       END MODULE usr

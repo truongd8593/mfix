@@ -26,8 +26,6 @@
   MOMENTUM_X_eq(0) = .false.
   momentum_y_eq(0) = .true.
 
-  GRANULAR_ENERGY = .TRUE.
-  
   KT_TYPE = 'IA_NONEP'   ! using IA polydisperse kinetic theory
   
   RDF_TYPE = 'LEBOWITZ'  ! this is default radial distribution function
@@ -71,9 +69,8 @@
   
   DRAG_TYPE             = 'WEN_YU' 
   
-!  FRICTION = .T.
-!  SAVAGE = 2
-   SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
+  FRICTION_MODEL = 'NONE'
+
 
   MMAX = 2
   RO_s0        = 2*2.4d0

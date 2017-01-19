@@ -6,7 +6,7 @@
 !  Purpose: Check chemical reactions specifications                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_CHEMICAL_RXNS
+      SUBROUTINE CHECK_CHEMICAL_RXNS(MFIX_DAT)
 
 ! User defined reaction names from reaction blocks @(RXNS)
       use parse, only: RXN_NAME, DES_RXN_NAME
@@ -42,6 +42,8 @@
 
       IMPLICIT NONE
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Error flag
       INTEGER :: IER
 
@@ -76,12 +78,12 @@
 
 
       IF(NO_OF_RXNS > 0) THEN
-         CALL CHECK_CHEMICAL_RXNS_COMMON(NO_OF_RXNS, RXN_NAME,         &
+         CALL CHECK_CHEMICAL_RXNS_COMMON(MFIX_DAT, NO_OF_RXNS, RXN_NAME,         &
             RXN_CHEM_EQ, usrDH, usrfDH, REACTION)
       ENDIF
 
       IF(NO_OF_DES_RXNS > 0) THEN
-         CALL CHECK_CHEMICAL_RXNS_COMMON(NO_OF_DES_RXNS, DES_RXN_NAME, &
+         CALL CHECK_CHEMICAL_RXNS_COMMON(MFIX_DAT, NO_OF_DES_RXNS, DES_RXN_NAME, &
             DES_RXN_CHEM_EQ, DES_usrDH, DES_usrfDH, DES_REACTION)
       ENDIF
 
@@ -99,7 +101,7 @@
 !  Purpose: Check chemical reactions specifications                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_CHEMICAL_RXNS_COMMON(COUNT, NAME, CHEM_EQ, DH,  &
+      SUBROUTINE CHECK_CHEMICAL_RXNS_COMMON(MFIX_DAT, COUNT, NAME, CHEM_EQ, DH,  &
          fDH, RXN_ARRAY)
 
 ! Runtime flags for solving energy and species equations.
@@ -115,18 +117,17 @@
 
       use param, only: DIM_M, DIMENSION_RXN
 
-
       use parse, only: setReaction
       use rxn_com, only: checkThermoReqs
       use rxn_com, only: checkMassBalance
       use rxn_com, only: calcInterphaseTxfr
       use rxn_com, only: WRITE_RXN_SUMMARY
 
-
-
       use error_manager
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
       INTEGER, INTENT(IN) :: COUNT
 
@@ -233,7 +234,7 @@
 
 ! Verify that the necessary information for each species in the reaction
 ! was defined.
-         CALL checkThermoReqs(This, SPECIES_g, SPECIES_s, rDatabase,   &
+         CALL checkThermoReqs(MFIX_DAT, This, SPECIES_g, SPECIES_s, rDatabase,   &
             MW_G, MW_S, C_PG0, C_PS0)
 
 
@@ -271,4 +272,3 @@
 
 
       END SUBROUTINE CHECK_CHEMICAL_RXNS
-

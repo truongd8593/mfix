@@ -91,7 +91,7 @@
 
 
 
-      OPEN(CONVERT='BIG_ENDIAN',UNIT     =  111           , &
+      OPEN(UNIT     =  111           , &
            FILE     = 'DASHBOARD.TXT', &
            FORM     = 'FORMATTED'    , &
            ACCESS   = 'SEQUENTIAL'   , &
@@ -99,7 +99,7 @@
            ACTION   = 'WRITE')
 
 
-!      OPEN(CONVERT='BIG_ENDIAN',UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
+!      OPEN(UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
       WRITE(111,30) '  _____________________________________________________________________________ '
       WRITE(111,30) ' |                                                                             |'
       WRITE(111,30) ' |                                MFIX DASHBOARD                               |'
@@ -238,6 +238,3 @@
 
       RETURN
       END SUBROUTINE WRITE_SIMPLE_PROGRESS_BAR
-
-
-

@@ -95,7 +95,7 @@
 
          IF (DO_OLD) CALL CFUPDATEOLD
 
-         CALL INTEGRATE_TIME_PIC 
+         CALL INTEGRATE_TIME_PIC
 
 !         CALL WRITE_PARTICLE(6010)
 
@@ -199,7 +199,7 @@
  3000 FORMAT('<?xml version="1.0"?>')
 
       WRITE(555, 3001)
- 3001 FORMAT('<VTKFile type="PolyData" ' &
+ 3001 FORMAT('<VTKFile type="PolyData" ', &
          'version="0.1" byte_order="LittleEndian">')
 
       WRITE(555,"('<PolyData>')")
@@ -251,4 +251,3 @@
 
       RETURN
       END SUBROUTINE WRITE_PARTICLE
-

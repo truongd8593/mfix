@@ -548,7 +548,7 @@
       integer(kind=4) lmin !.......... minimal value of lag to compute (input)
       integer(kind=4) lmax !.......... maximal value of lag to compute (input)
       integer(kind=4) lstp !.......................... lag incrementer (input)
-      integer(kind=4) lag(1:*) !...... time lags matching tsgn values (output)
+      real(kind=8) lag(1:*) !......... time lags matching tsgn values (output)
       real(kind=8) tsgn(1:*) !........... asymmetry for all intervals (output)
       real(kind=8) sum !............................. lagged-difference summer
       integer(kind=4) j,k,l !........................................ counters
@@ -585,4 +585,3 @@
 
       return
       end
-

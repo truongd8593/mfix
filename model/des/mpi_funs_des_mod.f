@@ -39,7 +39,7 @@
 !----------------------------------------------------------------------!
       subroutine des_par_exchange()
 
-      use discretelement, only: DO_NSEARCH, DES_PERIODIC_WALLS
+      use discretelement, only: DES_PERIODIC_WALLS
 
       use mfix_pic, only: MPPIC
       use desmpi, only: iEXCHFLAG
@@ -232,7 +232,7 @@
             100.0d0+100.0d0*dble(iMAXBUF-pbuf)/dble(pbuf)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
- 1000 FORMAT(/'Resizeing DES MPI buffers: ',F7.1,' MB  (+',F5.1'%)')
+ 1000 FORMAT(/'Resizeing DES MPI buffers: ',F7.1,' MB  (+',F5.1, '%)')
 
       endif
 
@@ -364,7 +364,7 @@
 
          IF(DES_INTERP_ON) THEN
             IF(ENERGY_EQ) CALL DES_COLLECT_gDATA(CONV_SC)
-            IF(ANY_SPECIES_EQ) THEN 
+            IF(ANY_SPECIES_EQ) THEN
                CALL DES_COLLECT_gDATA(DES_R_gp)
                CALL DES_COLLECT_gDATA(DES_R_gc)
                CALL DES_COLLECT_gDATA(DES_R_PHASE)
@@ -374,12 +374,12 @@
          ENDIF
 
          IF(ENERGY_EQ) CALL SEND_RECV(CONV_SC, 2)
-         IF(ANY_SPECIES_EQ) THEN 
-            CALL SEND_RECV(DES_R_gp, 2) 
-            CALL SEND_RECV(DES_R_gc, 2) 
-            CALL SEND_RECV(DES_R_PHASE, 2) 
-            CALL SEND_RECV(DES_HOR_g, 2) 
-            CALL SEND_RECV(DES_SUM_R_g, 2) 
+         IF(ANY_SPECIES_EQ) THEN
+            CALL SEND_RECV(DES_R_gp, 2)
+            CALL SEND_RECV(DES_R_gc, 2)
+            CALL SEND_RECV(DES_R_PHASE, 2)
+            CALL SEND_RECV(DES_HOR_g, 2)
+            CALL SEND_RECV(DES_SUM_R_g, 2)
          ENDIF
       ENDIF
 

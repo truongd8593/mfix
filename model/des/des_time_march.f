@@ -1,15 +1,5 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!     Subroutine: DES_TIME_MARCH                                       !
-!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
-!                                                                      !
-!     Purpose: Main DEM driver routine                                 !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_TIME_MARCH
-
-! Modules
-!---------------------------------------------------------------------//
+! -*- f90 -*-
+MODULE DES_TIME_MARCH
       use calc_collision_wall, only: calc_dem_thermo_with_wall_stl
       use des_bc, only: DEM_BCMI, DEM_BCMO
       use des_thermo, only: CALC_RADT_DES
@@ -21,6 +11,7 @@
       use mpi_funs_des, only: DESMPI_SEND_RECV_FIELD_VARS
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
+      use output, only: DLB,DLB_TIME
       use output_man, only: OUTPUT_MANAGER
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
@@ -28,17 +19,11 @@
       use run, only: NSTEP
       use run, only: TIME, TSTOP, DT
       use sendrecv
-      IMPLICIT NONE
 
-! Local variables
 !---------------------------------------------------------------------//
 ! Total number of particles
       INTEGER, SAVE :: NP=0
 
-      !type(sap_t) :: sap
-
-! time step loop counter index
-      INTEGER :: NN,ii,nnn
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
 ! Temporary variables when des_continuum_coupled is T to track
@@ -47,7 +32,25 @@
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
 
+      LOGICAL :: EXIT_LOOP
+
 !......................................................................!
+
+   CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!     Subroutine: DES_TIME_INIT                                        !
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
+!                                                                      !
+!     Purpose: Main DEM driver routine                                 !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DES_TIME_INIT
+!f2py threadsafe
+         IMPLICIT NONE
+
+         EXIT_LOOP = .FALSE.
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
@@ -98,16 +101,35 @@
       ENDIF
 
       IF(any(CALC_RADT_DES)) CALL CALC_avgTs
+   END SUBROUTINE DES_TIME_INIT
 
 
-! Main DEM time loop
-!----------------------------------------------------------------->>>
-      DO NN = 1, FACTOR
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!     Subroutine: DES_TIME_STEP                                        !
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
+!                                                                      !
+!     Purpose: Main DEM driver routine                                 !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DES_TIME_STEP(NN)
+!f2py threadsafe
+         use compar, only: ADJUST_PARTITION
+
+! Modules
+!---------------------------------------------------------------------//
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: NN
+      logical :: flark
+      flark = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
 
          IF(DES_CONTINUUM_COUPLED) THEN
 ! If the current time in the discrete loop exceeds the current time in
 ! the continuum simulation, exit the discrete loop
-            IF(S_TIME.GE.(TIME+DT)) EXIT
+            IF(S_TIME.GE.(TIME+DT)) THEN
+               EXIT_LOOP = .TRUE.
+               RETURN
+            ENDIF
 ! If next time step in the discrete loop will exceed the current time
 ! in the continuum simulation, modify the discrete time step so final
 ! time will match
@@ -131,50 +153,17 @@
 
          IF(CALL_USR) CALL USR1_DES
 
-         ! sap = multisap%saps(0)
-         ! ! CHECK SORT
-         ! do ii=2, sap%x_endpoints_len
-         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
-         !       print *,"****************************************************************************************"
-         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
-         !       print *,"****************************************************************************************"
-         !       stop __LINE__
-         !    endif
-         ! enddo
-
-         ! do nnn=0, size(multisap%saps)-1
-         !    !print *,"nnn = ",nnn
-         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-         ! enddo
-
 ! Update position and velocities
          CALL CFNEWVALUES
-
-         ! do nnn=0, size(multisap%saps)-1
-         !    !print *,"nnn = ",nnn
-         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-         ! enddo
-
-         ! sap = multisap%saps(0)
-         ! ! CHECK SORT
-         ! do ii=2, sap%x_endpoints_len
-         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
-         !       print *,"****************************************************************************************"
-         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
-         !       print *,"****************************************************************************************"
-         !       stop __LINE__
-         !    endif
-         ! enddo
-
 
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
 
-! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
-
+         if (DO_NSEARCH .neqv. flark) THEN
+            print *,"buh "
+            stop 123
+            ENDIF
 ! Add/Remove particles to the system via flow BCs.
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
          IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM(DO_NSEARCH)
@@ -210,15 +199,30 @@
             TIME = S_TIME
             NSTEP = NSTEP + 1
 ! Call the output manager to write RES and SPx data.
+            DLB = .TRUE.
             CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
          ENDIF  ! end if (.not.des_continuum_coupled)
 
          IF(CALL_USR) CALL USR2_DES
 
-      ENDDO ! end do NN = 1, FACTOR
+         IF(ADJUST_PARTITION) THEN
+            EXIT_LOOP = .TRUE.
+            RETURN
+         ENDIF
 
-! END DEM time loop
-!-----------------------------------------------------------------<<<
+   END SUBROUTINE DES_TIME_STEP
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!     Subroutine: DES_TIME_END                                         !
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
+!                                                                      !
+!     Purpose: Main DEM driver routine                                 !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DES_TIME_END
+!f2py threadsafe
+         IMPLICIT NONE
 
       IF(CALL_USR) CALL USR3_DES
 
@@ -238,4 +242,5 @@
  9000 FORMAT('    NITs/SEC = ',A)
 
       RETURN
-      END SUBROUTINE DES_TIME_MARCH
+      END SUBROUTINE DES_TIME_END
+   END MODULE DES_TIME_MARCH

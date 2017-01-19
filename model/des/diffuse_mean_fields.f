@@ -59,6 +59,8 @@
          WALL_START = WALL_TIME()
       ENDIF
 
+      ALLOCATE(DIF(DIMENSION_3))
+
 ! Populate the diffusion coefficients
       CALL CALC_DIF_DES(DIF, setDBG, IER)
 
@@ -90,6 +92,8 @@
          WRITE(ERR_MSG, 9001) WALL_TIME() - WALL_START
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
       ENDIF
+
+      DEALLOCATE(DIF)
 
  9001 FORMAT(5x,'Wall Time: ',g11.4)
 

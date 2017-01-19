@@ -80,9 +80,7 @@
 
   solids_model(1)   = 'tfm'
 
-  Granular_energy   = .F.
-  Friction          = .F.   ! no Princeton solid stress model
-  Schaeffer         = .F.   ! no Schaeffer frictional stress formulation
+  Friction_MODEL = 'NONE'  ! No frictional stress model
 
   ro_s0(1)          = 2.0
   d_p0(1)           = 1.0e-5  ! particle diameter: should not affect 

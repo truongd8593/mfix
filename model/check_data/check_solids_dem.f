@@ -70,7 +70,7 @@
 
       DOUBLE PRECISION :: MASS_L, MASS_M, MASS_EFF
       DOUBLE PRECISION :: R_EFF, E_EFF
-      
+
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_ENERGY")
 
@@ -121,7 +121,7 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
-      
+
       IF(ANY_CONDUCTION)THEN
          IF(EW_YOUNG_ACTUAL == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"('Actual EYoungs (wall)')")
@@ -159,13 +159,13 @@
             E_EFF = E_YOUNG_ACTUAL(M)*E_YOUNG_ACTUAL(L) /  &
             &  (E_YOUNG_ACTUAL(M)*(1.d0 - V_POISSON_ACTUAL(L)**2) + &
             &   E_YOUNG_ACTUAL(L)*(1.d0 - V_POISSON_ACTUAL(M)**2))
- 
+
 
 ! Calculate the spring properties and store in symmetric matrix format.
             HERT_KN_ACTUAL(M,L)=(4.d0/3.d0)*SQRT(R_EFF)*E_EFF
 
 ! Compute baseline for Hertzian collision time
-            TAU_C_BASE_ACTUAL(M,L)=3.21D0*(MASS_Eff/HERT_KN_ACTUAL(M,L))**0.4 
+            TAU_C_BASE_ACTUAL(M,L)=3.21D0*(MASS_Eff/HERT_KN_ACTUAL(M,L))**0.4
             ! Can compute actual collision time via:
             !    TAU_C_ACTUAL = TAU_C_BASE_ACTUAL * (1/ImpactVel)^0.2
 
@@ -184,9 +184,9 @@
          E_EFF = E_YOUNG_ACTUAL(M)*EW_YOUNG_ACTUAL /  &
          &  (E_YOUNG_ACTUAL(M)*(1.d0 - VW_POISSON_ACTUAL**2) + &
          &   EW_YOUNG_ACTUAL*(1.d0 - V_POISSON_ACTUAL(M)**2))
-         
+
          HERT_KWN_ACTUAL(M) = (4.d0/3.d0)*SQRT(R_EFF)*E_EFF
-         TAUW_C_BASE_ACTUAL(M) = 3.21D0 * (MASS_Eff/HERT_KWN_ACTUAL(M))**0.4 
+         TAUW_C_BASE_ACTUAL(M) = 3.21D0 * (MASS_Eff/HERT_KWN_ACTUAL(M))**0.4
 
          IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
             TAUW_C_BASE_SIM(M)=3.21D0*(MASS_Eff/HERT_KWN(M))**0.4

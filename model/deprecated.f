@@ -72,9 +72,11 @@
       LOGICAL :: DISCRETE_ELEMENT, MPPIC, DES_CONTINUUM_HYBRID
 
       DOUBLE PRECISION :: PARTICLES_FACTOR, DES_RES_DT, DES_SPX_DT
-      INTEGER :: MAX_PIS, MAX_FACETS_PER_CELL_DES
+      INTEGER :: MAX_PIS, MAX_FACETS_PER_CELL_DES, SAVAGE
       LOGICAL :: USE_STL_DES, DES_CONTINUUM_COUPLED, &
-         DES_CONVERT_BOX_TO_FACETS
+         DES_CONVERT_BOX_TO_FACETS, GRANULAR_ENERGY, FRICTION, SCHAEFFER
+      LOGICAL :: BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, AHMADI, &
+         SIMONIN
 
 
 ! 2014-1 Deprecated list:
@@ -113,21 +115,37 @@
       NAMELIST / DEP_2016_1 / MAX_FACETS_PER_CELL_DES,                 &
           DES_CONVERT_BOX_TO_FACETS
 
-! 2014-1 Release Deprecated keywords.
-      STRING=''; STRING = '&DEP_2014_1 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
-      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2014-1')
+! 2016-1 Deprecated list:
+!-----------------------------------------------------------------------
+      NAMELIST / DEP_2016_2 / GRANULAR_ENERGY, FRICTION, SCHAEFFER,    &
+         SAVAGE, BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, AHMADI,      &
+         SIMONIN
 
+
+! 2016-2 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2016_2 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2016_2,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-2')
+
+! 2016-1 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2016_1 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2016_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2016-1')
+
+! 2015-2 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2015_2 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2015_2,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-2')
 
 ! 2015-1 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2015_1 '//trim(adjustl(INPUT))//'/'
       READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
       IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-1')
 
-! 2015-2 Release Deprecated keywords.
-      STRING=''; STRING = '&DEP_2015_2 '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEP_2015_1,IOSTAT=IOS)
-      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2015-2')
+! 2014-1 Release Deprecated keywords.
+      STRING=''; STRING = '&DEP_2014_1 '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEP_2014_1,IOSTAT=IOS)
+      IF(IOS == 0) CALL DEPRECATED(LINE_NO, INPUT, '2014-1')
 
 ! Everything else...  This should be the last call in this routine.
       CALL UNKNOWN_KEYWORD(LINE_NO, INPUT)
@@ -145,6 +163,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEPRECATED(LINE_NO, INPUT, RELEASE)
 
+         use debug, only: is_pymfix
+
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT
       CHARACTER(len=*), INTENT(IN) :: RELEASE
@@ -152,7 +172,11 @@
       IF(myPE == 0) &
          WRITE(*,1000) trim(iVAL(LINE_NO)), RELEASE, trim(INPUT)
 
-      CALL MFIX_EXIT(myPE)
+      IF(IS_PYMFIX)THEN
+        IER_EM = 1
+      ELSE
+        CALL MFIX_EXIT(myPE)
+      ENDIF
 
  1000 FORMAT(//1X,70('*')/' From DEPRECATED',/' Error 1000:',          &
          ' A keyword pair on line ',A,' of the mfix.dat file was',/    &
@@ -173,18 +197,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE UNKNOWN_KEYWORD(LINE_NO, INPUT)
 
+      use debug, only: is_pymfix
+
       INTEGER, INTENT(IN) :: LINE_NO
       CHARACTER(len=*), INTENT(IN) :: INPUT
 
       IF(myPE == 0) WRITE(*,2000) trim(iVAL(LINE_NO)), trim(INPUT)
 
-      CALL MFIX_EXIT(myPE)
+      IF(IS_PYMFIX)THEN
+         IER_EM = 1
+      ELSE
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
  2000 FORMAT(//1X,70('*')/' From: UNKNOWN_KEYWORD',/' Error 2000: ',   &
          'Unable to process line ',A,' of the mfix.dat file.',2/3x,    &
          A,2/1x,'Possible causes are',/3x,'* Incorrect or illegal ',   &
          'keyword format',/3x,'* Unknown or mistyped name',/3x,'* ',   &
-         'The mensioned item is too small (array overflow).', 2/1x,    &
+         'The dimensioned item is too small (array overflow).',2/1x,   &
          'Please see the user documentation and update the mfix.dat ', &
          'file. ',/1X,70('*')//)
 

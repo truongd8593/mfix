@@ -19,7 +19,7 @@
       use discretelement, only: PIJK
 ! The number and list of particles in each fluid cell IJK.
       use derived_types, only: PIC
-      use discretelement, only: PINC
+      use discretelement, only: PINC,GPINC
 ! The East/North/Top face location of a given I/J/K index.
       use discretelement, only: XE, YN, ZT
 ! Flag for 2D simulations.
@@ -36,7 +36,6 @@
       USE geometry, only: KMIN2, KMAX2
 ! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-      use param, only: DIMENSION_3
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
@@ -45,6 +44,7 @@
 
       use discretelement, only: DES_POS_NEW
       use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      USE discretelement, ONLY: PARTICLE_STATE, NONEXISTENT
 
       IMPLICIT NONE
 
@@ -62,6 +62,7 @@
 
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
+      GPINC(:) = 0
 
 !      allocate(PARTICLE_COUNT(DIMENSION_3))
 ! Use an incremental approach to determine the new particle location.
@@ -147,9 +148,21 @@
          PIJK(L,3) = K
          PIJK(L,4) = IJK
 
+         IF(IJK<IJKSTART3.OR.IJK>IJKEND3) THEN
+            PARTICLE_STATE(L)=NONEXISTENT
+            CYCLE
+         ENDIF
 ! Increment the number of particles in cell IJK
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. &
-            .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
+            .NOT.IS_EXITING_GHOST(L)) THEN
+
+            PINC(IJK) = PINC(IJK) + 1
+
+         ELSE
+
+            GPINC(IJK) = GPINC(IJK) + 1
+
+         ENDIF
 
       ENDDO
 !!$omp end parallel

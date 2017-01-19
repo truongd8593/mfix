@@ -935,8 +935,8 @@ MODULE CHECK_DATA_CG
             WRITE(*,*)' From check_data_cartesian: RE_INDEXING is turned on.'
             WRITE(*,*)' The preconditionner will be turned off for all equations'
             WRITE(*,*)' regardless of the mfix.dat setting.'
-            LEQ_PC = 'NONE'
          ENDIF
+         LEQ_PC = 'NONE'
       ENDIF
 
       RETURN
@@ -980,6 +980,7 @@ MODULE CHECK_DATA_CG
       USE run
       USE scalars
       USE toleranc
+      use turb, only: k_epsilon
       USE vtk
       use error_manager
 
@@ -996,6 +997,8 @@ MODULE CHECK_DATA_CG
 !======================================================================
 ! Boundary conditions
 !======================================================================
+
+      IF(RO_G0==ZERO) RETURN  ! Nothing to do for granular flow
 
       CALL INIT_ERR_MSG("CHECK_BC_FLAGS")
 
@@ -1379,6 +1382,8 @@ MODULE CHECK_DATA_CG
 
       ENDDO
 
+      CALL FINL_ERR_MSG
+
       RETURN
 
 
@@ -1392,34 +1397,14 @@ MODULE CHECK_DATA_CG
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
          ') not specified',/1X,70('*')/)
- 1001 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: Illegal BC_TYPE for BC # = ',I2,/'   BC_TYPE = ',A,/&
-         '  Valid BC_TYPE are: ')
- 1002 FORMAT(5X,A16)
- 1003 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') value is unphysical',/1X,70('*')/)
  1004 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
          ') not specified',/1X,70('*')/)
- 1005 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ') value is unphysical',/1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_P_g( ',I2,&
          ') = ',G12.5,/&
          ' Pressure should be greater than zero for compressible flow',/1X,70(&
          '*')/)
- 1050 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,' should be ',A,' zero.',/1X,70('*')/)
- 1060 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_g(',I2,',',I2&
-         ,') not specified',/1X,70('*')/)
- 1065 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/)
  1100 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
          ') not specified',/1X,70('*')/)
- 1103 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') value is unphysical',/1X,70('*')/)
- 1104 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') not specified',/1X,70('*')/)
- 1105 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') value is unphysical',/1X,70('*')/)
  1110 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_s(',I2,',',I2&
          ,',',I2,') not specified',/1X,70('*')/)
  1120 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
@@ -1427,26 +1412,6 @@ MODULE CHECK_DATA_CG
          '*')/)
  1125 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
          ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/)
- 1150 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/)
- 1160 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: Boundary condition no', &
-         I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/)
- 1200 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') specified',' for an undefined BC location',/1X,70('*')/)
- 1300 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined BC location',/1X,70('*')/)
- 1400 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K')
- 1410 FORMAT(I5,3X,I5,3X,I5)
- 1420 FORMAT(/1X,70('*')/)
-
- 1500 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K')
-
 
       END SUBROUTINE CHECK_BC_FLAGS
 
@@ -1937,13 +1902,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPX(1) and above, and CPX(0) is automatically set to zero.
+!          CPX(1) and above, and CPX(0) is automatically set to X_MIN.
 
       DO NN = MAX_CP,1,-1
          CPX(nn) = CPX(NN-1)
       ENDDO
 
-      CPX(0) = ZERO
+      CPX(0) = X_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -1955,9 +1920,9 @@ MODULE CHECK_DATA_CG
       IF(NX>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN X-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN X-DIRECTION = ',NX
-         IF(CPX(NX)/=XLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO XLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' XLENGTH = ',XLENGTH
+         IF(CPX(NX)/=X_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO X_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' X_MAX = ',X_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPX(NX)
             call mfix_exit(myPE)
          ENDIF
@@ -2129,13 +2094,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPY(1) and above, and CPY(0) is automatically set to zero.
+!          CPY(1) and above, and CPY(0) is automatically set to Y_MIN.
 
       DO NN = MAX_CP,1,-1
          CPY(nn) = CPY(NN-1)
       ENDDO
 
-      CPY(0) = ZERO
+      CPY(0) = Y_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -2147,9 +2112,9 @@ MODULE CHECK_DATA_CG
       IF(NY>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN Y-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN Y-DIRECTION = ',NY
-         IF(CPY(NY)/=YLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO YLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' YLENGTH = ',YLENGTH
+         IF(CPY(NY)/=Y_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO Y_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' Y_MAX = ',Y_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPY(NY)
             call mfix_exit(myPE)
          ENDIF
@@ -2323,13 +2288,13 @@ MODULE CHECK_DATA_CG
 
 ! Step 1.  Input verification
 !      1.1 Shift control points arrays such that the user only needs to enter
-!          CPZ(1) and above, and CPZ(0) is automatically set to zero.
+!          CPZ(1) and above, and CPZ(0) is automatically set to Z_MIN.
 
       DO NN = MAX_CP,1,-1
          CPZ(nn) = CPZ(NN-1)
       ENDDO
 
-      CPZ(0) = ZERO
+      CPZ(0) = Z_MIN
 
 !      1.2. Last control point must match domain length.
 
@@ -2341,9 +2306,9 @@ MODULE CHECK_DATA_CG
       IF(NZ>0) THEN
          IF(MyPE==0)  WRITE(*,*)' INFO: DEFINING GRID SPACING IN Z-DIRECTION... '
          IF(MyPE==0)  WRITE(*,*)' INFO: NUMBER OF CONTROL POINTS IN Z-DIRECTION = ',NZ
-         IF(CPZ(NZ)/=ZLENGTH) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO ZLENGTH.'
-            IF(MyPE==0)  WRITE(*,*)' ZLENGTH = ',ZLENGTH
+         IF(CPZ(NZ)/=Z_MAX) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: LAST CONTROL POINT MUST BE EQUAL TO Z_MAX.'
+            IF(MyPE==0)  WRITE(*,*)' Z_MAX = ',Z_MAX
             IF(MyPE==0)  WRITE(*,*)' LAST CONTROL POINT = ',CPZ(NZ)
             call mfix_exit(myPE)
          ENDIF
@@ -2962,7 +2927,7 @@ MODULE CHECK_DATA_CG
 !         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
 !         IF(PRESENT) THEN
 !          WRITE(*,*)'Reading gridmap from grimap.dat...'
-!            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 !            DO IPROC = 0,NumPEs-1
 !                  READ(777,*) jsize_all(IPROC)
 !            ENDDO
@@ -3260,8 +3225,6 @@ MODULE CHECK_DATA_CG
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
 1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 
 
       RETURN
@@ -3477,9 +3440,9 @@ MODULE CHECK_DATA_CG
 !      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
       IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
 
-      IF(.not.allocated(ISIZE_ALL)) allocate( ISIZE_ALL(0:NODESI-1))
-      IF(.not.allocated(JSIZE_ALL)) allocate( JSIZE_ALL(0:NODESJ-1))
-      IF(.not.allocated(KSIZE_ALL)) allocate( KSIZE_ALL(0:NODESK-1))
+      IF(allocated(ISIZE_ALL)) deallocate(ISIZE_ALL); allocate( ISIZE_ALL(0:NODESI-1))
+      IF(allocated(JSIZE_ALL)) deallocate(JSIZE_ALL); allocate( JSIZE_ALL(0:NODESJ-1))
+      IF(allocated(KSIZE_ALL)) deallocate(KSIZE_ALL); allocate( KSIZE_ALL(0:NODESK-1))
 
       ISIZE_ALL(0:NODESI-1) = imax1-imin1+1  ! Assign default sizes in I, J and K-direction
       JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1
@@ -3872,7 +3835,7 @@ MODULE CHECK_DATA_CG
          ENDIF                  ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
 
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
+         OPEN(UNIT=777, FILE='suggested_gridmap.dat')
          WRITE (777, 1005) NODESI,NODESJ,NODESK, '     ! NODESI, NODESJ, NODESK'
          DO IPROC = 0,NODESI-1
                WRITE(777,1060) IPROC,Isize_all(IPROC)
@@ -3912,9 +3875,6 @@ MODULE CHECK_DATA_CG
 1005  FORMAT(1x,I10,I10,I10,A)
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
-1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 1060  FORMAT(1x,I10,I10)
 
       RETURN
@@ -4204,8 +4164,6 @@ MODULE CHECK_DATA_CG
 !      ENDDO
 
 1000  FORMAT(1x,A)
-1010  FORMAT(1x,A,I10,I10)
-1020  FORMAT(1X,I8,2(I12),F12.2)
 
       RETURN
       END SUBROUTINE MINIMIZE_LOAD_IMBALANCE
@@ -4583,7 +4541,7 @@ MODULE CHECK_DATA_CG
             ENDIF
 
 
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
+            OPEN(UNIT=777, FILE='suggested_gridmap.dat')
             WRITE (777, 1000) 'J-SIZE DISTRIBUTION'
             WRITE (777, 1010) 'NUMBER OF PROCESSORS = ',NumPEs
             WRITE (777, 1000) '================================================='
@@ -4676,8 +4634,6 @@ MODULE CHECK_DATA_CG
 1010  FORMAT(1x,A,I10,I10)
 1020  FORMAT(1X,I8,2(I12),F12.2)
 1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 1060  FORMAT(1x,I8,I12)
 
       RETURN
@@ -4967,8 +4923,6 @@ MODULE CHECK_DATA_CG
 !      ENDDO
 
 1000  FORMAT(1x,A)
-1010  FORMAT(1x,A,I10,I10)
-1020  FORMAT(1X,I8,2(I12),F12.2)
 
       RETURN
       END SUBROUTINE MINIMIZE_LOAD_IMBALANCE0

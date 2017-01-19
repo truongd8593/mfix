@@ -496,7 +496,7 @@
           vgyz*Sin(avgyz*Pi*yt*zt))
       case(5)
       !us!
-        mms_function = zero 
+        mms_function = zero
       case(6)
       !vs!
         mms_function = zero
@@ -667,7 +667,7 @@
           xt**2*(-(awgy**3*Pi**3*wgy*Cos(awgy*Pi*yt)) - awgxy**3*Pi**3*wgxy*xt**3*Cos(awgxy*Pi*xt*yt) - awgyz**3*Pi**3*wgyz*zt**3*Cos(awgyz*Pi*yt*zt) - &
              avgyz*Pi*(-(avgyz**2*Pi**2*vgyz*yt*zt**2*Cos(avgyz*Pi*yt*zt)) - 2*avgyz*Pi*vgyz*zt*Sin(avgyz*Pi*yt*zt))) + &
           xt**2*(avgyz**3*Pi**3*vgyz*yt**3*Cos(avgyz*Pi*yt*zt) - avgz**3*Pi**3*vgz*Sin(avgz*Pi*zt) - avgzx**3*Pi**3*vgzx*xt**3*Sin(avgzx*Pi*xt*zt) + &
-             awgyz*Pi*wgyz*(-(awgyz**2*Pi**2*yt**2*zt*Cos(awgyz*Pi*yt*zt)) - 2*awgyz*Pi*yt*Sin(awgyz*Pi*yt*zt)))) 
+             awgyz*Pi*wgyz*(-(awgyz**2*Pi**2*yt**2*zt*Cos(awgyz*Pi*yt*zt)) - 2*awgyz*Pi*yt*Sin(awgyz*Pi*yt*zt))))
       case(3)
       !vgsrc!
         mms_source = apgyz*pgyz*Pi*zt*Cos(apgyz*Pi*yt*zt) - apgy*pgy*Pi*Sin(apgy*Pi*yt) - apgxy*pgxy*Pi*xt*Sin(apgxy*Pi*xt*yt) - &
@@ -798,7 +798,7 @@
         mms_source = zero
       case(9)
       !tssrc!
-        mms_source = zero 
+        mms_source = zero
       case(10)
       !ropgsrc!
         mms_source = zero

@@ -18,22 +18,25 @@
 !  referenced species (lName) is obtained.                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)
+      SUBROUTINE READ_DATABASE(MFIX_DAT, lM, lN, lName, lMW)
 
+      USE compar
+      USE constant
+      USE des_rxns
+      USE discretelement
+      USE error_manager
+      USE funits
       USE param
       USE param1
       USE physprop
-      USE constant
-      USE compar
-      USE rxns
-      USE funits
-      USE discretelement
-      USE des_rxns
       USE read_thermochemical, only: read_therm, calc_ICpoR, THERM
-      use run, only: REINITIALIZING
-      use error_manager
+      USE run, only: REINITIALIZING
+      USE rxns
 
       IMPLICIT NONE
+
+! project filename
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Phase and species indices
       INTEGER, INTENT(IN) :: lM, lN
@@ -86,13 +89,13 @@
          FILE = FILE + 1
 ! Check for thermochemical data in the mfix.dat file.
          IF(FILE == 1) THEN
-           OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
+           OPEN(UNIT=FUNIT, FILE=MFIX_DAT, STATUS='OLD', IOSTAT= IOS)
            IF(IOS /= 0) CYCLE DB_LP
-           DB=''; WRITE(DB,1000) 'mfix.dat'
+           DB=''; WRITE(DB,1000) MFIX_DAT
 ! Read thermochemical data from the BURCAT.THR database in the local
 ! run directory.
          ELSEIF(FILE == 2) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
+            OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) TRIM(THERM)
           ELSE
@@ -194,7 +197,7 @@
 !  Author: J. Musser                                  Date: 02-Oct-12  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE0()
+      SUBROUTINE READ_DATABASE0(MFIX_DAT)
 
       USE compar
       USE constant
@@ -208,6 +211,8 @@
       USE rxns
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
 
 ! Loop indices for mass phase and species
       INTEGER M, NN
@@ -235,7 +240,7 @@
              CALL MFIX_EXIT(mypE)
           ENDIF
 ! Read the database.
-         CALL READ_DATABASE(0, NN, SPECIES_NAME(Nsp), MW_g(NN))
+         CALL READ_DATABASE(MFIX_DAT, 0, NN, SPECIES_NAME(Nsp), MW_g(NN))
        ENDDO
 
 ! Read species data for the continuum solids phases.
@@ -252,7 +257,7 @@
                   IF(DMP_LOG) WRITE(UNIT_LOG,1011)'continuum', M, NN
                    CALL MFIX_EXIT(mypE)
                 ENDIF
-               CALL READ_DATABASE(M, NN, SPECIES_NAME(Nsp), MW_s(M,NN))
+               CALL READ_DATABASE(MFIX_DAT, M, NN, SPECIES_NAME(Nsp), MW_s(M,NN))
              ENDDO   ! N=1, NMAX(M)
           ENDDO   ! M=1, MMAX
       ENDIF

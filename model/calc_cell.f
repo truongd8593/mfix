@@ -125,6 +125,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_CELL_INTERSECT(RMIN, LOC, D_DIR, N_DIR, CELL)
 
+! Function to compare two values
+      use toleranc, only: COMPARE
+
       IMPLICIT NONE
 
 ! Passed Arguments:
@@ -150,15 +153,24 @@
 
      CELL = -1
 
-      CELL_START = RMIN
+     CELL_START = RMIN
+
       DO LC=2, N_DIR+1
          CELL_END = CELL_START + D_DIR(LC)
+
          IF(CELL_START <= LOC .AND. LOC <= CELL_END) THEN
             CELL = LC
             RETURN
          ENDIF
          CELL_START=CELL_END
       ENDDO
+
+! Logical catches for floating point issues on domain edges
+     if(loc < rmin ) then
+        cell = 2
+     elseif(loc > cell_end) then
+        cell = n_dir+1
+     endif
 
       RETURN
       END SUBROUTINE CALC_CELL_INTERSECT

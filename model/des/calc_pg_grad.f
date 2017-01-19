@@ -25,7 +25,7 @@
       use geometry, only: DO_K
 ! Loop bounds for fluid grid
       USE compar, only: IJKSTART3, IJKEND3
-! Flags for cyclic BC with pressure drop 
+! Flags for cyclic BC with pressure drop
       use geometry, only: CYCLIC_X_PD, CYCLIC_Y_PD, CYCLIC_Z_PD
 ! Specified pressure drop
       use bc, only: DELP_X, DELP_Y, DELP_Z

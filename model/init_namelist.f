@@ -49,12 +49,15 @@
       USE scales
       USE stiff_chem
       USE toleranc
+      use turb, only: TURBULENCE_MODEL
       USE ur_facs
       use usr_src, only: call_usr_source
 ! user defined flags
       use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
       use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
       use usr_prop, only: usr_gama, usr_fgs, usr_fss
+
+      use visc_g, only: mu_gmax
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -247,41 +250,23 @@
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
-!<keyword category="Run Control" required="false" tfm="true">
-!  <description>Granular energy formulation selection.</description>
-!  <valid value=".FALSE."
-!    note="Use algebraic granular energy equation formulation."/>
-!  <valid value=".TRUE."
-!    note="Use granular energy transport equation (PDE) formulation."/>
-      GRANULAR_ENERGY = .FALSE.
-!</keyword>
-
 !<keyword category="Run Control" required="false">
 !  <description>
-!    The K-Epsilon turbulence model (for single-phase flow).
+!    Gas phase turbulence mode. ["NONE"]
+!  </description>
+!  <dependent keyword="MU_GMAX" value="DEFINED"/>
+!  <valid value="NONE."  note="No turbulencemodel"/>
+!  <valid value="MIXING_LENGTH"  note="Turbulent length scale must
+!    be specified for the full domain using keyword IC_L_SCALE."/>
+!  <valid value="K_EPSILON"  note="K-epsilon turbulence model (for
+!    single-phase flow) using standard wall functions.
 !    o Numerical parameters (like under-relaxation) are the same as the
 !      ones for SCALAR (index = 9).
 !    o All walls must be defined (NSW, FSW or PSW) in order to use
 !      standard wall functions. If a user does not specify a wall type,
 !      the simulation will not contain the typical turbulent profile in
-!      wall-bounded flows.
-!  </description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="L_SCALE0" value="DEFINED"/>
-!  <valid value=".TRUE."  note="Enable the K-epsilon turbulence model
-!    (for single-phase flow) using standard wall functions."/>
-!  <valid value=".FALSE." note="Do not use K-epsilon turbulence model"/>
-      K_EPSILON = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Value of turbulent length initialized. This may be overwritten
-!    in specific regions with the keyword IC_L_SCALE.
-!</description>
-!  <dependent keyword="MU_GMAX" value="DEFINED"/>
-!  <conflict keyword="K_EPSILON" value=".TRUE."/>
-      L_SCALE0 = ZERO
+!      wall-bounded flows."/>
+      TURBULENCE_MODEL = "NONE"
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -447,7 +432,7 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>Gravitational acceleration. [980.7 in CGS]</description>
+!  <description>Gravitational acceleration. [9.807 m/s^2 in SI]</description>
       GRAVITY = UNDEFINED
 !</keyword>
 
@@ -873,6 +858,16 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the x-direction.</description>
+      X_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the x-direction.</description>
+      X_MAX = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>(Do not use.)</description>
 !  <valid value=".FALSE. note="y-direction is considered."/>
 !  <valid value=".TRUE." note="y-direction is not considered."/>
@@ -901,6 +896,16 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the y-direction.</description>
+      Y_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the y-direction.</description>
+      Y_MAX = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Flag to disable the third dimension (i.e., 2D simulation).
 !      o Z axis in Cartesian coordinate system
@@ -924,6 +929,16 @@
 !  </description>
 !  <arg index="1" id="Cell" min="0" max="DIM_K"/>
       DZ(:DIM_K) = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor lower bound in the z-direction.</description>
+      Z_MIN = UNDEFINED
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>Reactor upper bound in the z-direction.</description>
+      Z_MAX = UNDEFINED
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
@@ -1096,7 +1111,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas density [g/cm^3 in CGS]. An equation of
+!    Specified constant gas density [kg/m^3 in SI]. An equation of
 !    state -the ideal gas law by default- is used to calculate the gas
 !    density if this parameter is undefined. The value may be set to
 !    zero to make the drag zero and to simulate granular flow in a
@@ -1108,35 +1123,35 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas viscosity [g/(cm.s) in CGS].
+!    Specified constant gas viscosity [kg/(m.s) in SI].
 !  </description>
       MU_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas conductivity [cal/(s.cm.K) in CGS].
+!    Specified constant gas conductivity [J/(s.m.K) in SI].
 !  </description>
       K_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas specific heat [cal/(g.s.K) in CGS].
+!    Specified constant gas specific heat [J/(kg.s.K) in SI].
 !  </description>
       C_PG0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas diffusivity [(cm^2/s) in CGS].
+!    Specified constant gas diffusivity [(m^2/s) in SI].
 !  </description>
       DIF_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Average molecular weight of gas [(g/mol) in CGS]. Used in
+!    Average molecular weight of gas [(kg/kmol) in SI]. Used in
 !    calculating the gas density for non-reacting flows when the gas
 !    composition is not defined.
 !  </description>
@@ -1145,7 +1160,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Molecular weight of gas species [(g/mol) in GCS].
+!    Molecular weight of gas species [(kg/kmol) in SI].
 !  </description>
 !  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       MW_G(:DIM_N_G) = UNDEFINED
@@ -1201,7 +1216,7 @@
 !<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
 !  <description>
-!    Initial particle diameters [cm in CGS].
+!    Initial particle diameters [m in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
@@ -1210,7 +1225,7 @@
 !<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
 !  <description>
-!    Specified constant solids density [g/cm^3 in CGS]. Reacting flows
+!    Specified constant solids density [kg/m^3 in SI]. Reacting flows
 !    may use variable solids density by leaving this parameter
 !    undefined and specifying X_S0 and RO_XS0 as well as the index
 !    of the inert species.
@@ -1235,7 +1250,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids species density [g/cm^3 in CGS].
+!    Specified constant solids species density [kg/m^3 in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1293,7 +1308,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids conductivity [cal/(s.cm.K) in CGS].
+!    Specified constant solids conductivity [J/(s.m.K) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       K_S0(:DIM_M) = UNDEFINED
@@ -1301,7 +1316,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Specified constant solids specific heat [cal/(g.s.K) in CGS].
+!    Specified constant solids specific heat [J/(kg.s.K) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
@@ -1310,7 +1325,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Molecular weight of solids phase species [(g/mol) in CGS].
+!    Molecular weight of solids phase species [(kg/kmol) in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1352,10 +1367,10 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids phase stress model [LUN_1984]. This is only needed when
-!    solving the granular energy PDE (GRANULAR_ENERGY = .TRUE.).
+!    Solids phase stress model [Algebraic].
 !  </description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="ALGEBRAIC"
+!    note="Granular energy algegraic formulation."/>
 !  <valid value="AHMADI"
 !    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
 !  <valid value="GD_99"
@@ -1370,75 +1385,29 @@
 !    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
 !  <valid value="SIMONIN"
 !    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = "LUN_1984"
+      KT_TYPE = "ALGEBRAIC"
 !</keyword>
-
-! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI"
-      AHMADI = .FALSE.
-
-! Retired keyword for specifying Simonin KT Theory.
-! Use: KT_TYPE = "SIMONIN"
-      SIMONIN = .FALSE.
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids stress model selection.
+!    Solids stress firction model selection.
 !  </description>
-!  <valid value=".FALSE." note="Do not use the Princeton solids stress model."/>
-!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-      FRICTION = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    For a term appearing in the frictional stress model
-!    invoked with FRICTION keyword.
-!  </description>
-!  <valid value="0" note="Use S:S in the frictional stress model."/>
-!  <valid value="1" note="Use an alternate form suggested by Savage."/>
-!  <valid value="2" note="An appropriate combination of above."/>
-!  <dependent keyword="friction" value=".TRUE."/>
-      SAVAGE = 1
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    Schaeffer frictional stress tensor formulation. </description>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model."/>
-!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
-      SCHAEFFER = .TRUE.
+!  <valid value="NONE" note="Only solids pressure"/>
+!  <valid value="SCHAEFFER" note="Schaeffer friction model"/>
+!  <valid value="SRIVASTAVA"  note="Srivastava friction model"/>
+      FRICTION_MODEL = 'SCHAEFFER'
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Blend the Schaeffer stresses with the stresses resulting from
-!    algebraic kinetic theory around the value of EP_STAR.
+!    algebraic kinetic theory around the value of EP_STAR. [NONE]
 !  </description>
-      BLENDING_STRESS = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="ture">
-!  <description>
-!    Hyperbolic tangent function for blending frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
-      TANH_BLEND = .TRUE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>
-!    A scaled and truncated sigmoidal function for blending
-!    frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
-      SIGM_BLEND = .FALSE.
+!  <valid value="NONE" note="No blending"/>
+!  <valid value="TANH_BLEND" note="Hyperbolc tangent function"/>
+!  <valid value="SIGM_BLEND" note="Scaled sigmodial function"/>
+!  <dependent keyword="FRICTION_MODEL" value="SCHAEFFER"/>
+      BLENDING_FUNCTION = "NONE"
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
@@ -1639,7 +1608,7 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Specified constant solids diffusivity [(cm^2)/s in CGS].
+!    Specified constant solids diffusivity [(m^2)/s in SI].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       DIF_S0(:DIM_M) = UNDEFINED
@@ -1841,14 +1810,12 @@
 !    rdtn2.inc to change the source term.
 !  </description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_GAMA_RG(LC) = ZERO
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Gas phase radiation temperature in the IC region.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_RG(LC) = UNDEFINED
 !</keyword>
 
@@ -3456,6 +3423,11 @@
 !  <description>Number of grid blocks in z-direction.</description>
       NODESK = UNDEFINED_I
 !</keyword>
+
+! Dynamic load balance list of partitions to test
+      DLB_NODESI(:) = 0
+      DLB_NODESJ(:) = 0
+      DLB_NODESK(:) = 0
 
 !<keyword category="Parallelization Control" required="false">
 !  <description>Print out additional statistics for parallel runs</description>

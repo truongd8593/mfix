@@ -90,7 +90,8 @@
 
 ! NEW files should not be in the run directory.
       IF(FILE_EXISTS .AND. (OPEN_STAT == 'NEW')) THEN
-         IER = 100; RETURN
+         IER = 100
+         IF(.NOT.ADJUST_PARTITION) RETURN
 ! OLD files must be in the run directory.
       ELSEIF(.NOT. FILE_EXISTS .AND. OPEN_STAT .EQ. 'OLD') THEN
          IER = 101; RETURN
@@ -98,19 +99,19 @@
 
 ! Open direct access files.
       IF (OPEN_ACCESS == 'DIRECT') THEN
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
+         OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
             RECL=IRECL, ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
       ELSE
 ! No matter the status passed to the routine, the file is created as
 ! NEW if it doesn't exist in the run directory.
          IF(.NOT.FILE_EXISTS) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='NEW',       &
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='NEW',       &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
          ELSEIF(OPEN_STAT == 'REPLACE') THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,   &
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,   &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
          ELSEIF(OPEN_STAT == 'APPEND' .OR. OPEN_STAT == 'UNKNOWN') THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, POSITION='APPEND',  &
                IOSTAT=IER)
          ELSE

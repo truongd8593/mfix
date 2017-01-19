@@ -11,13 +11,8 @@ MODULE DERIVED_TYPES
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-  USE multi_sweep_and_prune, only: multisap_t, boxhandlelist_t
   IMPLICIT NONE
 !-----------------------------------------------
-  ! the global multisap
-  type(multisap_t) multisap
-
-  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
@@ -79,13 +74,14 @@ MODULE DERIVED_TYPES
   CHARACTER(64) :: KT_TYPE
   INTEGER :: KT_TYPE_ENUM
   ENUM, BIND(C)
-     ENUMERATOR :: LUN_1984=0
-     ENUMERATOR :: SIMONIN_1996=1
-     ENUMERATOR :: AHMADI_1995=2
-     ENUMERATOR :: GD_1999=3
-     ENUMERATOR :: GTSH_2012=4
-     ENUMERATOR :: IA_2005=5
-     ENUMERATOR :: GHD_2007=6
+     ENUMERATOR :: ALGEBRAIC=0
+     ENUMERATOR :: LUN_1984=1
+     ENUMERATOR :: SIMONIN_1996=2
+     ENUMERATOR :: AHMADI_1995=3
+     ENUMERATOR :: GD_1999=4
+     ENUMERATOR :: GTSH_2012=5
+     ENUMERATOR :: IA_2005=6
+     ENUMERATOR :: GHD_2007=7
   END ENUM
 
   ! Radial distribution function options (see g_0 for details)
@@ -100,6 +96,17 @@ MODULE DERIVED_TYPES
      ENUMERATOR :: MANSOORI=2
      ENUMERATOR :: MODIFIED_MANSOORI=3
      ENUMERATOR :: CARNAHAN_STARLING=4
+  END ENUM
+
+
+! filtered/subgrid corrections to the drag coefficient & granular
+! stress terms including granular viscosity and solids pressure
+! current options are 'igci' and 'milioli'
+  INTEGER :: TURBULENCE_MODEL_ENUM
+  ENUM, BIND(C)
+     ENUMERATOR :: NO_TURBULENCE_ENUM=0
+     ENUMERATOR :: MIXING_LENGTH_ENUM=1
+     ENUMERATOR :: K_EPSILON_ENUM=2
   END ENUM
 
  END MODULE DERIVED_TYPES

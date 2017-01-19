@@ -35,7 +35,7 @@
       IMPLICIT NONE
 !
 !              Passed value of IJK index
-      INTEGER  L, IJK
+      INTEGER  L
 !
       DOUBLE PRECISION MW
 !

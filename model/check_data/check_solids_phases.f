@@ -6,7 +6,7 @@
 !  Author: J.Musser                                   Date: 16-Jan-14  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_SOLIDS_PHASES
+      SUBROUTINE CHECK_SOLIDS_PHASES(MFIX_DAT)
 
 
 ! Global Variables:
@@ -24,6 +24,8 @@
 
       implicit none
 
+      CHARACTER(LEN=80), INTENT(IN) :: MFIX_DAT
+
 ! Local Variables:
 !---------------------------------------------------------------------//
 
@@ -36,7 +38,7 @@
       CALL CHECK_SOLIDS_MODEL_LIMITATIONS
 
 ! Checks common to all solids models.
-      CALL CHECK_SOLIDS_COMMON_ALL
+      CALL CHECK_SOLIDS_COMMON_ALL(MFIX_DAT)
 
 ! Checks common to discrete solids phases (DEM, MPPIC).
       IF(DEM_SOLIDS .OR. PIC_SOLIDS) &
@@ -126,9 +128,9 @@
 !         WRITE(ERR_MSG, 2002)
 !         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
-         ' available',/' for DEM only. Please correct the mfix.dat',   &
-         ' file.')
+ ! 2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
+ !         ' available',/' for DEM only. Please correct the mfix.dat',   &
+ !         ' file.')
       ENDIF
 
 

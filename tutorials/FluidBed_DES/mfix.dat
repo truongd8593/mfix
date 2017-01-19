@@ -46,7 +46,7 @@
 
 
 #_______________________________________________________________________
-# GEOMETRY SECTION 
+# GEOMETRY SECTION
 
   COORDINATES = 'CARTESIAN'
 
@@ -69,7 +69,7 @@
 !---------------------------------------------------------------------//
   MMAX = 1
 
-  PARTICLES = 2400             ! Number of partiles.
+  PARTICLES = 2400             ! Number of particles.
 
 ! Particle-particle:
   KN =   1.0d6                 ! Normal collision spring constant
@@ -106,7 +106,7 @@
   IC_Y_n(1)   =   90.0
 
   IC_EP_g(1)  =    1.0
- 
+
   IC_U_g(1)   =    0.0
   IC_V_g(1)   =  280.0
 
@@ -146,7 +146,7 @@
 
 
 #_______________________________________________________________________
-# OUTPUT CONROL SECTION
+# OUTPUT CONTROL SECTION
 
   RES_DT = 0.1      ! interval write restart (.RES) file
 
@@ -173,7 +173,7 @@
 
 ! Save particle data over a small rectangular region
   VTK_FILEBASE(1)    = 'PARTICLE_C'
-  VTK_SELECT_MODE(1) = 'C'          ! pick particles which centers are inside region 
+  VTK_SELECT_MODE(1) = 'C'          ! pick particles which centers are inside region
   VTK_DT(1)          = 0.01
   VTK_DATA(1)        = 'P'          ! Write particle data (vtp files)
   VTK_X_w(1)         = 5.0

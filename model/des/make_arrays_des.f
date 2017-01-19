@@ -18,14 +18,12 @@
       USE error_manager
       USE functions
       USE funits
-      use fldvar, only: ro_s
       USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE geometry
       use mfix_pic, only:  MPPIC
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       USE mpi_utility
       USE param1
-      use physprop, only: mmax, ro_s0
       USE run
       USE stl
       USE stl_functions_des
@@ -38,8 +36,6 @@
       INTEGER :: I, J, K, L, IJK
       INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
       INTEGER :: lcurpar, lpip_all(0:numpes-1), lglobal_id
-      INTEGER :: CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
-      INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
 ! MPPIC related quantities
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")

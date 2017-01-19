@@ -311,7 +311,7 @@
       INTEGER, INTENT(IN) :: IJK
 ! U_g at the east (i+1/2, j, k) and west face (i-1/2, j, k)
       DOUBLE PRECISION, INTENT(OUT) :: UgE, UgW
-! U_g at the north (i, j+1/2, k) and south face (i, j-1/2, k) 
+! U_g at the north (i, j+1/2, k) and south face (i, j-1/2, k)
       DOUBLE PRECISION, INTENT(OUT) :: UgN, UgS
 ! U_g at the top (i, j, k+1/2) and bottom face (i, j, k-1/2)
       DOUBLE PRECISION, INTENT(OUT) :: UgT, UgB

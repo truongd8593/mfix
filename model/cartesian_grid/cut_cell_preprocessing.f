@@ -36,11 +36,28 @@ MODULE CUT_CELL_PREPROC
       USE sendrecv
       USE toleranc
       USE vtk
+      use physprop, only: RO_G0
+      use discretelement, only: GENER_PART_CONFIG
+      use des_bc, only: DEM_MIO
+      use error_manager
 
       IMPLICIT NONE
 
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CUT CELL PRE-PROCESSING")
+
+      IF(RO_G0==ZERO.AND..NOT.DEM_MIO) THEN  ! Nothing to do for granular flow and no IC/MIO for DEM
+         IF((RUN_TYPE=='NEW'.AND..NOT.GENER_PART_CONFIG).OR.RUN_TYPE(1:3)=='RES') THEN
+            WRITE(ERR_MSG,1000)
+            CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+            CALL FINL_ERR_MSG
+            RETURN
+         ENDIF
+
+      ENDIF
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -92,7 +109,7 @@ MODULE CUT_CELL_PREPROC
 
       CALL CG_GET_BC_AREA
 
-      CALL FLOW_TO_VEL(.FALSE.)
+      CALL SET_BC_FLOW
 
       CALL CG_FLOW_TO_VEL
 
@@ -136,11 +153,14 @@ MODULE CUT_CELL_PREPROC
 
          ENDIF
       ENDIF
+      CALL FINL_ERR_MSG
 
       RETURN
 
 10    FORMAT(1X,A)
 20    FORMAT(1X,A,F8.2,A)
+1000  FORMAT('Info: THIS IS A DEM GRANULAR FLOW SIMULATION.'/   &
+             '      SKIPPING CARTESIAN GRID PRE-PROCESSING.'/)
 
       END SUBROUTINE CUT_CELL_PREPROCESSING
 
@@ -319,11 +339,6 @@ MODULE CUT_CELL_PREPROC
             END DO
          ENDIF
       END DO
-
-100         FORMAT(1X,A,I8)
-110         FORMAT(1X,A,A)
-120         FORMAT(1X,A,F14.8,/)
-130         FORMAT(1X,A,I8,F14.8,/)
 
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
@@ -734,32 +749,6 @@ MODULE CUT_CELL_PREPROC
 !         ENDIF
 !      ENDDO
 
-100         FORMAT(1X,A,I8)
-110         FORMAT(1X,A,A)
-120         FORMAT(1X,A,F14.8,/)
-130         FORMAT(1X,A,I8,F14.8,/)
-
-
- 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Computed volumetric flow is not equal to specified value',/,&
-         ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
-
-
- 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
-         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
-
-
- 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Computed volumetric flow is not equal to specified value',/,&
-         ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
-
- 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
-         I1,' = 0.',/1X,70('*')/)
- 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
       RETURN
 
       END SUBROUTINE CONVERT_CG_MI_TO_PS_PE
@@ -2008,7 +1997,7 @@ MODULE CUT_CELL_PREPROC
       IMPLICIT NONE
 
       IF(MyPE == PE_IO)  THEN
-         OPEN(CONVERT='BIG_ENDIAN',UNIT = UNIT_CUT_CELL_LOG, FILE = 'CUT_CELL.LOG')
+         OPEN(UNIT = UNIT_CUT_CELL_LOG, FILE = 'CUT_CELL.LOG')
       ENDIF
 
       RETURN
@@ -2168,7 +2157,7 @@ MODULE CUT_CELL_PREPROC
          I1 = IEND3
          I2 = ISTART3
 
-         IF(X2>=ZERO-DX(ISTART3).AND.X1<=XLENGTH+DX(IEND3)) THEN
+         IF(X2>=X_MIN-DX(ISTART3).AND.X1<=X_MAX+DX(IEND3)) THEN
             DO I = ISTART3, IEND3
                IP = I+1
                IF(XG_E(I)+X_OFFSET*DX(IP)>=X1-TOL_STL) THEN
@@ -2190,7 +2179,7 @@ MODULE CUT_CELL_PREPROC
          J1 = JEND3
          J2 = JSTART3
 
-         IF(Y2>=ZERO-DY(JSTART3).AND.Y1<=YLENGTH+DY(JEND3)) THEN
+         IF(Y2>=Y_MIN-DY(JSTART3).AND.Y1<=Y_MAX+DY(JEND3)) THEN
             DO J = JSTART3, JEND3
                JP = J+1
                IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1-TOL_STL) THEN
@@ -2211,7 +2200,7 @@ MODULE CUT_CELL_PREPROC
          K1 = KEND3
          K2 = KSTART3
 
-         IF(Z2>=ZERO-DZ(KSTART3).AND.Z1<=ZLENGTH+DZ(KEND3)) THEN
+         IF(Z2>=Z_MIN-DZ(KSTART3).AND.Z1<=Z_MAX+DZ(KEND3)) THEN
             DO K = KSTART3, KEND3
                KP=K+1
 

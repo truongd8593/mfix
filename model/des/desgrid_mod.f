@@ -14,13 +14,16 @@
 
 ! variables related to global block structure
 !---------------------------------------------------------------------//
-      integer  :: dg_imin1, dg_imax1, &
+      integer  :: dg_imin , dg_imax , &
+                  dg_imin1, dg_imax1, &
                   dg_imin2, dg_imax2
 
-      integer  :: dg_jmin1, dg_jmax1, &
+      integer  :: dg_jmin , dg_jmax , &
+                  dg_jmin1, dg_jmax1, &
                   dg_jmin2, dg_jmax2
 
-      integer  :: dg_kmin1, dg_kmax1, &
+      integer  :: dg_kmin , dg_kmax , &
+                  dg_kmin1, dg_kmax1, &
                   dg_kmin2, dg_kmax2
 
 ! variables contain information of local indices of all processors
@@ -62,6 +65,9 @@
       double precision :: dg_xstart, dg_xend, dg_dxinv
       double precision :: dg_ystart, dg_yend, dg_dyinv
       double precision :: dg_zstart, dg_zend, dg_dzinv
+
+      double precision, dimension(:), allocatable :: dg_xe,dg_yn,dg_zt
+      double precision, dimension(:), allocatable :: dg_dx_all,dg_dy_all,dg_dz_all
 
 ! Variables related to cyclic boundary  used in desgrid_functions
       integer,dimension(:,:),allocatable :: dg_cycoffset, icycoffset
@@ -431,6 +437,7 @@
       use discretelement, only: XE, YN, ZT
       use constant
       use desmpi_wrapper
+      USE param1, only: zero
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -452,13 +459,37 @@
 !-----------------------------------------------
       double precision :: ltempdx,ltempdy,ltempdz
       integer :: lijkproc,liproc,ljproc,lkproc
-      integer :: lijk
+      integer :: lijk,i,j,k,li,lj,lk
 !......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("DESGRID_INIT")
 
 ! set indices for all processors
+
+      if(allocated(dg_istart1_all)) deallocate(dg_istart1_all)
+      if(allocated(dg_iend1_all)) deallocate(dg_iend1_all)
+      if(allocated(dg_istart2_all)) deallocate(dg_istart2_all)
+      if(allocated(dg_iend2_all)) deallocate(dg_iend2_all)
+      if(allocated(dg_isize_all)) deallocate(dg_isize_all)
+
+      if(allocated(dg_jstart1_all)) deallocate(dg_jstart1_all)
+      if(allocated(dg_jend1_all)) deallocate(dg_jend1_all)
+      if(allocated(dg_jstart2_all)) deallocate(dg_jstart2_all)
+      if(allocated(dg_jend2_all)) deallocate(dg_jend2_all)
+      if(allocated(dg_jsize_all)) deallocate(dg_jsize_all)
+
+      if(allocated(dg_kstart1_all)) deallocate(dg_kstart1_all)
+      if(allocated(dg_kend1_all)) deallocate(dg_kend1_all)
+      if(allocated(dg_kstart2_all)) deallocate(dg_kstart2_all)
+      if(allocated(dg_kend2_all)) deallocate(dg_kend2_all)
+      if(allocated(dg_ksize_all)) deallocate(dg_ksize_all)
+
+      if(allocated(dg_dx_all)) deallocate(dg_dx_all)
+      if(allocated(dg_dy_all)) deallocate(dg_dy_all)
+      if(allocated(dg_dz_all)) deallocate(dg_dz_all)
+
+
      allocate (dg_istart1_all(0:numpes-1), dg_iend1_all(0:numpes-1))
      allocate (dg_istart2_all(0:numpes-1), dg_iend2_all(0:numpes-1))
      allocate (dg_isize_all(0:nodesi-1))
@@ -471,6 +502,9 @@
      allocate (dg_kstart2_all(0:numpes-1), dg_kend2_all(0:numpes-1))
      allocate (dg_ksize_all(0:nodesk-1))
 
+     allocate (dg_dx_all(0:nodesi-1))
+     allocate (dg_dy_all(0:nodesj-1))
+     allocate (dg_dz_all(0:nodesk-1))
 
       dg_istart1_all=0; dg_iend1_all=0
       dg_istart2_all=0; dg_iend2_all=0
@@ -496,8 +530,13 @@
          do ljproc=0,nodesj-1
             do liproc=0,nodesi-1
                dg_isize_all(liproc) = NINT((xe(iend1_all(lijkproc))-xe(istart1_all(lijkproc)-1))/ltempdx)
+               dg_dx_all(liproc)    = (xe(iend1_all(lijkproc))-xe(istart1_all(lijkproc)-1))/dg_isize_all(liproc)
                dg_jsize_all(ljproc) = NINT((yn(jend1_all(lijkproc))-yn(jstart1_all(lijkproc)-1))/ltempdy)
-               if(do_k) dg_ksize_all(lkproc) = NINT((zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz)
+               dg_dy_all(ljproc)    = (yn(jend1_all(lijkproc))-yn(jstart1_all(lijkproc)-1))/dg_jsize_all(ljproc)
+               if(do_k) then
+                  dg_ksize_all(lkproc) = NINT((zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz)
+                  dg_dz_all(lkproc)    = (zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/dg_ksize_all(lkproc)
+               endif
                dg_istart1_all(lijkproc) = sum(dg_isize_all(0:liproc-1)) + 2
                dg_jstart1_all(lijkproc) = sum(dg_jsize_all(0:ljproc-1)) + 2
                dg_kstart1_all(lijkproc) = sum(dg_ksize_all(0:lkproc-1)) + 2
@@ -522,12 +561,16 @@
       end if
 
 ! set indices for global block
+      dg_imin  = 1
       dg_imin2 = 1
       dg_imin1 = 2
+      dg_imax  = sum(dg_isize_all(0:nodesi-1))
       dg_imax1 = dg_imin1+sum(dg_isize_all(0:nodesi-1))-1
       dg_imax2 = dg_imax1+1
+      dg_jmin  = 1
       dg_jmin2 = 1
       dg_jmin1 = 2
+      dg_jmax  = sum(dg_jsize_all(0:nodesj-1))
       dg_jmax1 = dg_jmin1+sum(dg_jsize_all(0:nodesj-1))-1
       dg_jmax2 = dg_jmax1+1
       if (no_k) then
@@ -536,17 +579,81 @@
          dg_kmax1 = 1
          dg_kmax2 = 1
       else
+         dg_kmin  = 1
          dg_kmin2 = 1
          dg_kmin1 = 2
+         dg_kmax  = sum(dg_ksize_all(0:nodesk-1))
          dg_kmax1 = dg_kmin1+sum(dg_ksize_all(0:nodesk-1))-1
          dg_kmax2 = dg_kmax1+1
       end if
+
+      IF(dg_imax/=DESGRIDSEARCH_IMAX) THEN
+         WRITE(ERR_MSG,1005) 'X','DESGRIDSEARCH_IMAX',DESGRIDSEARCH_IMAX,dg_imax
+         DESGRIDSEARCH_IMAX = dg_imax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+      IF(dg_jmax/=DESGRIDSEARCH_JMAX) THEN
+         WRITE(ERR_MSG,1005) 'Y','DESGRIDSEARCH_JMAX',DESGRIDSEARCH_JMAX,dg_jmax
+         DESGRIDSEARCH_JMAX = dg_jmax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+      IF(DO_K.AND.dg_kmax/=DESGRIDSEARCH_KMAX) THEN
+         WRITE(ERR_MSG,1005) 'Z','DESGRIDSEARCH_KMAX',DESGRIDSEARCH_KMAX,dg_kmax
+         DESGRIDSEARCH_KMAX = dg_kmax
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+      ENDIF
+
+
+      IF(ALLOCATED(DG_XE)) DEALLOCATE(DG_XE)
+      ALLOCATE(DG_XE(dg_imin2:dg_imax2))
+      DG_XE(dg_imin2) = ZERO
+      i = dg_imin2
+      do liproc=0,nodesi-1
+         do li = 1,DG_ISIZE_ALL(liproc)
+            i = i + 1
+            DG_XE(i) = DG_XE(i-1) + DG_DX_ALL(liproc)
+         enddo
+      enddo
+
+
+      IF(ALLOCATED(DG_YN)) DEALLOCATE(DG_YN)
+      ALLOCATE(DG_YN(dg_jmin2:dg_jmax2))
+      DG_YN(dg_jmin2) = ZERO
+      j = dg_jmin2
+      do ljproc=0,nodesj-1
+         do lj = 1,DG_JSIZE_ALL(ljproc)
+            j = j + 1
+            DG_YN(j) = DG_YN(j-1) + DG_DY_ALL(ljproc)
+         enddo
+      enddo
+
+      IF(DO_K) THEN
+         IF(ALLOCATED(DG_ZT)) DEALLOCATE(DG_ZT)
+         ALLOCATE(DG_ZT(dg_kmin2:dg_kmax2))
+         DG_ZT(dg_kmin2) = ZERO
+         k = dg_kmin2
+         do lkproc=0,nodesk-1
+            do lk = 1,DG_KSIZE_ALL(lkproc)
+               k = k + 1
+               DG_ZT(k) = DG_ZT(k-1) + DG_DZ_ALL(lkproc)
+            enddo
+         enddo
+      ENDIF
+
+ 1005 FORMAT('Info: DES GRID SIZE WAS ADJUSTED IN ',A,' DIRECTION.'/   &
+             '      ORIGINAL SIZE (',A,') =',I6/                                &
+             '      NEW SIZE                           =',I6)
+
 
 ! set offset indices for periodic boundaries
       lijkproc = mype
       liproc = iofproc(lijkproc)
       ljproc = jofproc(lijkproc)
       lkproc = kofproc(lijkproc)
+      if(allocated(dg_cycoffset)) deallocate(dg_cycoffset)
+      if(allocated(icycoffset)) deallocate(icycoffset)
       allocate(dg_cycoffset(2*dimn,3),icycoffset(2*dimn,3))
       dg_cycoffset(:,:) = 0; icycoffset(:,:) = 0
       if (des_periodic_walls_x) then
@@ -611,6 +718,10 @@
       if(dg_kend   .eq. dg_kmax1) dg_kend   = dg_kmax2
 
 ! set constants required for dg_funijk dg_funijk_gl for all processors
+      if(allocated(dg_c1_all)) deallocate(dg_c1_all)
+      if(allocated(dg_c2_all)) deallocate(dg_c2_all)
+      if(allocated(dg_c3_all)) deallocate(dg_c3_all)
+
       allocate(dg_c1_all(0:numpes-1),dg_c2_all(0:numpes-1),dg_c3_all(0:numpes-1))
 
       dg_c1_all=0;dg_c2_all=0;dg_c3_all=0
@@ -687,6 +798,15 @@
       end if
 
 ! allocate the desgridsearch related variables
+      if(allocated(dg_pic)) then
+         do lijk = 1,size(dg_pic)
+            if(associated(dg_pic(lijk)%p)) then
+               deallocate(dg_pic(lijk)%p)
+               nullify(dg_pic(lijk)%p)
+            endif
+         end do
+         deallocate(dg_pic)
+      endif   
       allocate(dg_pic(dg_ijksize2))
       dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2
@@ -902,7 +1022,8 @@
             endif
 !$  endif
 
-         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
+            if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) &
+                 .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
          ljc = dg_jof_lo(lijk)
@@ -1062,7 +1183,7 @@
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype
-      open(44,file=filename,convert='big_endian')
+      open(44,file=filename)
       do lproc = 0,numpes-1
          write(44,*) "Information for Proc =", lproc
          liproc= iofproc(lproc)

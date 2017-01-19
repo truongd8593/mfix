@@ -88,7 +88,7 @@
                            A_M, B_M, lB_MMAX=B_MMAX, lM=0)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0)
 
 
 ! Find average residual, maximum residual and location
@@ -141,7 +141,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax)
 
-! Modules 
+! Modules
 !-----------------------------------------------
       use compar, only: dead_cell_at
       use geometry, only: vol

@@ -74,17 +74,17 @@
             A_M(IJK,0,M) = -ONE
             IF (B_M(IJK,M) < ZERO) THEN
                IJKN = NORTH_OF(IJK)
-               IF (ROP_G(IJKN)*AXZ(IJK) > SMALL_NUMBER) THEN
+               IF (ROP_G(IJKN)*AXZ_V(IJK) > SMALL_NUMBER) THEN
                   B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_G(IJKN)*AVG_Y_N(ONE,ZERO)&
-                     *AXZ(IJK))))
+                     *AXZ_V(IJK))))
                ELSE
                   B_M(IJK,M) = ZERO
                ENDIF
             ELSE IF (B_M(IJK,M) > ZERO) THEN
                IJMK = JM_OF(IJK)
-               IF (ROP_G(IJK)*AXZ(IJK) > SMALL_NUMBER) THEN
+               IF (ROP_G(IJK)*AXZ_V(IJK) > SMALL_NUMBER) THEN
                   B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_G(IJK)*AVG_Y_N(ZERO,ONE)*&
-                     AXZ(IJK)))
+                     AXZ_V(IJK)))
                ELSE
                   B_M(IJK,M) = ZERO
                ENDIF

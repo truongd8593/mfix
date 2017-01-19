@@ -400,7 +400,7 @@
       USE fldvar
       USE visc_g
       USE rxns
-      USE run, only: k_epsilon
+      USE turb, only: k_epsilon
       USE toleranc
       USE geometry
       USE indices

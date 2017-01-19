@@ -73,7 +73,7 @@
 !---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, IJK, IMJK, IJMK, IJKM
-! Cell center value of U_g, Vg, and Wg 
+! Cell center value of U_g, Vg, and Wg
       DOUBLE PRECISION :: UGC, VGC, WGC
 ! Cell center value of U_sm, V_sm, W_sm
       DOUBLE PRECISION :: USCM, VSCM, WSCM
@@ -88,7 +88,7 @@
 ! a factor
       DOUBLE PRECISION :: FAC
 ! index for storing interphase mass transfer coefficients in the upper
-! triangle of the matrix. 
+! triangle of the matrix.
       INTEGER :: LM
 !---------------------------------------------------------------------//
 

@@ -689,7 +689,7 @@
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', &
-           status='unknown',CONVERT='BIG_ENDIAN')
+           status='unknown')
       IF(DIMN.eq.2) then
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
               ' "EP_s " ', ' "pU_S" ', ' "pV_S" ',' "dU_s" ',&
@@ -724,7 +724,8 @@
                   WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))') XE(I-1)+DX(I),&
                      YN(J-1)+DY(J), ZCOR, 1.D0-EP_G(IJK), &
                      PIC_U_S(IJK,MMAX+1), PIC_V_S(IJK,MMAX+1), PIC_W_S(IJK,MMAX+1),&
-                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1), W_S(IJK,MMAX+1)!, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
+                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1), W_S(IJK,MMAX+1)
+                     !, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
                ENDIF
             ENDDO
          ENDDO
@@ -736,7 +737,7 @@
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') &
          TRIM(RUN_NAME)//'_PS_FORCE_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted',&
-           status='unknown',CONVERT='BIG_ENDIAN')
+           status='unknown')
 
       IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',&
            ' "DELPX" ', '"DELPY"', '"DELPZ" ',&

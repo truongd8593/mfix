@@ -34,15 +34,11 @@
   ENERGY_EQ 		= .FALSE.			!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 		!do not solve species eq
   
-! Adding Gran_Temp for Comparison with Previous Runs
-  GRANULAR_ENERGY	= .TRUE. ! granular energy pde will be solved when using ahmadi
-                                 ! or Simonin models
+  KT_TYPE="SIMONIN"
+  FRICTION_MODEL = 'SCHAEFFER'
 
-K_EPSILON = .T.           ! Now must be set to true with Ahmadi/Simonin models
+  TURBULENCE_MODEL = 'K_EPSILON'
 JENKINS = .T.             ! 
-AHMADI = .F.              ! Will not be allowed to turn on both ahmadi and simonin.
-SIMONIN = .T.
-FRICTION = .F.
 
 !
 ! Physical and Numerical Parameters

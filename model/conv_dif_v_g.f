@@ -47,7 +47,7 @@
          ENDIF
       ENDIF
 
-      CALL DIF_V_IS(EPMU_GT, A_M, 0, IER)
+      CALL DIF_V_IS(EPMU_GT, A_M, 0)
 
       RETURN
       END SUBROUTINE CONV_DIF_V_G
@@ -843,7 +843,6 @@
 ! array3 (locally ww) - the z directional velocity
       DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
       CALL GET_VCELL_GVTERMS(U, V, WW)

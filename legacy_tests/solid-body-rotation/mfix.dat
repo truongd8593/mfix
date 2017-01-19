@@ -30,7 +30,6 @@
   
   ENERGY_EQ  = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
-  GRANULAR_ENERGY = .FALSE.
 
   MOMENTUM_X_EQ =  .FALSE.             .FALSE.    
   MOMENTUM_Y_EQ =  .FALSE.             .FALSE.

@@ -41,8 +41,8 @@
       USE physprop
       USE run, only: syam_obrien, gidaspow, gidaspow_pcf, gidaspow_blend, gidaspow_blend_pcf
       USE run, only: wen_yu, wen_yu_pcf, koch_hill, koch_hill_pcf, bvk, user_drag, hys
-      USE run, only: drag_type, drag_type_enum, ghd_2007, igci, kt_type_enum
-      USE run, only: milioli, model_b, subgrid_type_enum, undefined_subgrid_type
+      USE run, only: drag_type, drag_type_enum, ghd_2007, igci, kt_type_enum, milioli, model_b
+      USE run, only: subgrid_type_enum, undefined_subgrid_type
       USE sendrecv
       USE ur_facs
       IMPLICIT NONE
@@ -78,7 +78,7 @@
 ! current value of F_gs (i.e., without underrelaxation)
       DOUBLE PRECISION F_gstmp
 ! indices of solids phases (continuous, discrete)
-      INTEGER :: CM, DM, L
+      INTEGER :: L
 ! temporary shift of total number of solids phases to account for both
 ! discrete and continuous solids phases used for the hybrid mdoel
       INTEGER :: MAXM

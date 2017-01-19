@@ -110,7 +110,7 @@
       IF(bDIST_IO) THEN
 
          WRITE(lFNAME,'(A,I4.4,A)') BASE//'_DES_',myPE,'.RES'
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME,        &
+         OPEN(UNIT=RDES_UNIT, FILE=lFNAME,        &
             FORM='UNFORMATTED', STATUS='UNKNOWN', ACCESS='DIRECT',     &
             RECL=OPEN_N1)
 
@@ -135,7 +135,7 @@
 
          IF(myPE == PE_IO) THEN
             WRITE(lFNAME,'(A,A)') BASE//'_DES.RES'
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME,     &
+            OPEN(UNIT=RDES_UNIT, FILE=lFNAME,     &
                FORM='UNFORMATTED', STATUS='UNKNOWN', ACCESS='DIRECT',  &
                RECL=OPEN_N1)
 
@@ -144,10 +144,12 @@
             READ(RDES_UNIT, REC=1) lVERSION
             READ(RDES_UNIT, REC=2) pIN_COUNT
 !           READ(RDES_UNIT, REC=3) -NOTHING-
+            iGHOST_CNT = 0 ! Needs to be initialized here since it is not read in REC=3
             READ(RDES_UNIT, REC=4) cIN_COUNT
 
          ELSE
             pIN_COUNT = 10
+            iGHOST_CNT = 0
          ENDIF
 
          IER = 0
@@ -444,7 +446,7 @@
          CALL FLUSH_ERR_MSG(HEADER=.FALSE.,ABORT=.TRUE.)
       ENDIF
 
- 1100 FORMAT('Error 1100: Maximum number of particles exceeded.',2/    &
+ 1100 FORMAT('Error 1100: Maximum number of particles exceeded.',2/,   &
          5x,'Process',5x,'Maximum',7x,'Count')
 
 
@@ -567,6 +569,7 @@
 
       CALL DES_RESTART_GHOST
 
+      if(allocated(iPAR_COL)) deallocate(iPAR_COL)
       allocate(iPAR_COL(2, cIN_COUNT))
       iPAR_COL = 0
 
@@ -807,6 +810,7 @@
       MAX_ID = maxval(IGLOBAL_ID(1:PIP))
       CALL GLOBAL_ALL_MAX(MAX_ID)
 
+      if(allocated(iLOCAL_ID)) deallocate(iLOCAL_ID)
       allocate(iLOCAL_ID(MAX_ID), STAT=lSTAT)
       CALL GLOBAL_ALL_SUM(lSTAT)
 

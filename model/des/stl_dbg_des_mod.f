@@ -44,7 +44,7 @@
       OPEN(1001, file=TRIM(FN))
 
       DO IJK=DG_IJKSTART2, DG_IJKEND2
-         TOTAL_FACETS = FACETS_AT_DG(IJK)%COUNT  
+         TOTAL_FACETS = FACETS_AT_DG(IJK)%COUNT
          IF(TOTAL_FACETS < 1) CYCLE
          WRITE(1001,2000) IJK, TOTAL_FACETS
          DO LC=1, TOTAL_FACETS
@@ -70,8 +70,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE STL_DBG_WRITE_FACETS(STL_TYPE)
 
-! Number of facets 
-      use stl, only: N_FACETS, N_FACETS_DES
+! Number of facets
+      use stl, only: N_FACETS_DES
 ! Facet Vertices and normal
       use stl, only: VERTEX, NORM_FACE
 ! Processor rank and rank of IO
@@ -103,19 +103,19 @@
 
       SELECT CASE(STL_TYPE)
       CASE(BASE_STL)
-         lSTART = STL_START(BASE_STL) 
+         lSTART = STL_START(BASE_STL)
          lEND=STL_END(BASE_STL)
          FNAME='BASE_FACETS.stl'
       CASE(BCWALLS_STL)
-         lSTART = STL_START(BCWALLS_STL) 
+         lSTART = STL_START(BCWALLS_STL)
          lEND=STL_END(BCWALLS_STL)
          FNAME='BCWALLS_FACETS.stl'
       CASE(IMPRMBL_STL)
-         lSTART = STL_START(IMPRMBL_STL) 
+         lSTART = STL_START(IMPRMBL_STL)
          lEND=STL_END(IMPRMBL_STL)
          FNAME='IMPRMBL_FACETS.stl'
       CASE(DEFAULT_STL)
-         lSTART = STL_START(DEFAULT_STL) 
+         lSTART = STL_START(DEFAULT_STL)
          lEND=STL_END(DEFAULT_STL)
          FNAME='DEFAULT_FACETS.stl'
       CASE(ALL_STL)
@@ -209,19 +209,19 @@
       IF(present(STL_TYPE)) THEN
          SELECT CASE(STL_TYPE)
          CASE(BASE_STL)
-            lSTART = STL_START(BASE_STL) 
+            lSTART = STL_START(BASE_STL)
             lEND=STL_END(BASE_STL)
             FID='BASE'
          CASE(BCWALLS_STL)
-            LSTART = STL_START(BCWALLS_STL) 
+            LSTART = STL_START(BCWALLS_STL)
             LEND=STL_END(BCWALLS_STL)
             FID='BCWALLS'
          CASE(IMPRMBL_STL)
-            LSTART = STL_START(IMPRMBL_STL) 
+            LSTART = STL_START(IMPRMBL_STL)
             LEND=STL_END(IMPRMBL_STL)
             FID='IMPRMBL'
          CASE(DEFAULT_STL)
-            LSTART = STL_START(DEFAULT_STL) 
+            LSTART = STL_START(DEFAULT_STL)
             LEND=STL_END(DEFAULT_STL)
             FID='DEFAULT'
          CASE(ALL_STL)
@@ -317,25 +317,24 @@
       INTEGER :: ID, FACET, lCOUNT
       INTEGER :: lSTART, lEND
 
-      LOGICAL :: EXISTS
       CHARACTER(LEN=8) :: IDX, FID
 
       IF(present(STL_TYPE)) THEN
          SELECT CASE(STL_TYPE)
          CASE(BASE_STL)
-            lSTART = STL_START(BASE_STL) 
+            lSTART = STL_START(BASE_STL)
             lEND=STL_END(BASE_STL)
             FID='base'
          CASE(BCWALLS_STL)
-            lSTART = STL_START(BCWALLS_STL) 
+            lSTART = STL_START(BCWALLS_STL)
             lEND=STL_END(BCWALLS_STL)
             FID='bcwalls'
          CASE(IMPRMBL_STL)
-            lSTART = STL_START(IMPRMBL_STL) 
+            lSTART = STL_START(IMPRMBL_STL)
             lEND=STL_END(IMPRMBL_STL)
             FID='imprmbl'
          CASE(DEFAULT_STL)
-            lSTART = STL_START(DEFAULT_STL) 
+            lSTART = STL_START(DEFAULT_STL)
             lEND=STL_END(DEFAULT_STL)
             FID='default'
          CASE(ALL_STL)
@@ -366,7 +365,7 @@
       DO FACET=1, FACETS_AT_DG(DG)%COUNT
 
          ID = FACETS_AT_DG(DG)%ID(FACET)
-         IF(ID < lSTART .OR. ID > lEND) CYCLE 
+         IF(ID < lSTART .OR. ID > lEND) CYCLE
 
          write(555,*) '   facet normal ', NORM_FACE(:,ID)
          write(555,*) '      outer loop'
@@ -400,7 +399,6 @@
 !-----------------------------------------------
       integer, intent(in) :: this
 
-      logical :: EXISTS
       character(len=4) :: IDX
       character(len=4) :: IPE
 
@@ -424,5 +422,3 @@
       END SUBROUTINE write_this_stl
 
       END MODULE STL_DBG_DES
-
-

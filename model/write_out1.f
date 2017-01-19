@@ -1,91 +1,68 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: WRITE_OUT1                                             C
+!  Subroutine: WRITE_OUT1                                              C
 !  Purpose: write out the field variables to standard output           C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 03-DEC-91  C
 !  Reviewer: W. Rogers, M. Syamlal, S. Venkatesan     Date: 31-JAN-92  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: TIME, P_g, EP_g, RO_g, ROP_g, MMAX, ROP_s     C
-!                        T_g, T_s, U_g, V_g, W_g, U_s, V_s, W_s C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: LC, N                                              C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE WRITE_OUT1
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE fldvar
       USE run
-      USE scalars
-      USE funits
       USE rxns
-      USE compar             !//d
-      USE mpi_utility        !//d
+      USE scalars
+      use turb, only: k_epsilon
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: LC, NN
-!-----------------------------------------------
-!
-      double precision, allocatable :: array1(:)    !//d
-!
 
+! Local variables
+!---------------------------------------------------------------------//
+      INTEGER :: LC, NN
+      double precision, allocatable :: array1(:)    !//d
+!---------------------------------------------------------------------//
 
       if (myPE == PE_IO) then
          allocate (array1(ijkmax3))     !//d
       else
          allocate (array1(1))           !//d
       end if
-!
-!             form feed character = CHAR(12)
-!
+
+! form feed character = CHAR(12)
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1000) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (P_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'P_g')
-!
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1050) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (P_star,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'P_star')
-!
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1100) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (EP_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'EP_g')
-!
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1200) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (RO_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'RO_g')
-!
+
       DO LC = 1, MMAX
          if (myPE == PE_IO) WRITE (UNIT_OUT, 1400) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
@@ -93,7 +70,8 @@
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'ROP_s')
          if (LC == 2) then
-            if (myPE == PE_IO) WRITE (UNIT_OUT, *) 'solid phase ', LC, 'at t= ', TIME
+            if (myPE == PE_IO) WRITE (UNIT_OUT, *) 'solid phase ',&
+               LC, 'at t= ', TIME
             call gather (RO_S(:,LC),array1,root)
             if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'RO_S')
             call gather (ERR_ARRAY(:,LC),array1,root)
@@ -105,7 +83,7 @@
       call gather (T_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'T_g')
-!
+
       DO LC = 1, MMAX
          if (myPE == PE_IO) WRITE (UNIT_OUT, 1600) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
@@ -122,7 +100,7 @@
             if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'X_g')
          END DO
       ENDIF
-!
+
       DO LC = 1, MMAX
          IF (SPECIES_EQ(LC)) THEN
             DO NN = 1, NMAX(LC)
@@ -138,42 +116,42 @@
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (U_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!//SP - Changed U_G to array1
+! Changed U_G to array1
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'U_g')
-!
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1900) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (V_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!//SP - Changed V_G to array1
+! Changed V_G to array1
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'V_g')
-!
+
       if (myPE == PE_IO) WRITE (UNIT_OUT, 2000) CHAR(12), TIME
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       call gather (W_g,array1,root)    !//
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-!//SP - Changed W_G to array1
+! Changed W_G to array1
       if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'W_g')
-!
+
       DO LC = 1, MMAX
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2100) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (U_s(:,LC),array1,root)    !//
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'U_s')
-!
+
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2200) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (V_s(:,LC),array1,root)    !//
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'V_s')
-!
+
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2300) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          call gather (W_s(:,LC),array1,root)    !//
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'W_s')
-!
+
 !         IF(GRANULAR_ENERGY)THEN
          if (myPE == PE_IO) WRITE (UNIT_OUT, 2400) CHAR(12), LC, TIME
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
@@ -216,7 +194,6 @@
 
       deallocate(array1)  !//
 
-!
 !             form feed character = CHAR(12)
       if (myPE == PE_IO) WRITE (UNIT_OUT, '(/1X,1A1)') CHAR(12)
       IF (CALL_USR) CALL USR_WRITE_OUT1

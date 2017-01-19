@@ -11,12 +11,10 @@ Please visit: https://mfix.netl.doe.gov/
 This python file contains a function to parse the MFiX init_namelist
 files to extract documentation of the keywords.
 
-Last update: 12/19/2013
-
 @author: Justin Weber
 """
 # Import from the future for Python 2 and 3 compatability!
-from __future__ import print_function, absolute_import, unicode_literals
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 import re, os, glob
 import json
@@ -33,7 +31,7 @@ def buildKeywordDoc(mfixSourcePath):
     mfixKeywordDict = {'keywordlist':[], 'categories':[]}
 
     searchPathList = []
-    for root, dir, file in os.walk(searchPath):
+    for root, directory, filename in os.walk(searchPath):
         searchPathList += findNamePath(os.path.join(searchPath,root))
 
     sortedPathListTemp = searchPathList
@@ -67,8 +65,20 @@ def buildKeywordDoc(mfixSourcePath):
         mfixKeywordDict.update(parsedNameList)
         mfixKeywordDict['keywordlist'] = keywordlist+parsedNameList['keywordlist']
         mfixKeywordDict['categories'] = catlist+parsedNameList['categories']
+    cgs_re = re.compile(r' *\[.*CGS.*\] *', flags=re.IGNORECASE)
+    def redact(v):
+        if not isinstance(v, dict): # 'categories' and 'keywordlist'
+            return v
+        d = v.get('description')
+        if d:
+            d = cgs_re.sub('', d)
+            d = d.replace("Youngs", "Young's")
+            d = d.replace("Poissons", "Poisson's")
+            d = d.replace("Poisson ratio", "Poisson's ratio")
+            v['description'] = d
+        return v
 
-    return dict((k.lower(), v) for k, v in mfixKeywordDict.items())
+    return dict((k.lower(),redact(v)) for k, v in mfixKeywordDict.items())
 
 def findNamePath(path):
     pattern = os.path.join(path, insensitiveGlobPattern('*namelist*.f'))
@@ -81,12 +91,14 @@ def insensitiveGlobPattern(pattern):
     return ''.join(map(either,pattern))
 
 def cleanString(string):
+    string = string.strip()
     if string:
         strings = string.split('!')
         strings = [s.strip() for s in strings]
-        return ' '.join(strings).strip()
-    else:
-        return 'NA'
+        return ' '.join(strings)
+
+    return string
+
 
 def parse(fname = None, string = None):
     '''
@@ -263,10 +275,17 @@ def parse(fname = None, string = None):
             valids.append(keyvalueMatch.findall(match))
 
         # find ranges and range attritbutes: min="" max=""
+        def try_float(kv):
+            k,v = kv
+            try:
+                return k, float(v)
+            except ValueError:
+                return k, v
+
         validrange = None
         for match in rangeMatch.findall(keywordBlock):
-            validrange = keyvalueMatch.findall(match)
-
+            validrange = map(try_float, keyvalueMatch.findall(match))
+            break
 
         # keyword list (to preserve order)
         keywordDocList.append(keyword.lower())
@@ -277,11 +296,11 @@ def parse(fname = None, string = None):
                                    'dtype': dtype,
                                    'description': cleanString(description[0]),
                                    'category': 'other',
-                                   'required': 'false',
-                                   'tfm': 'false',
-                                   'dem': 'false',
-                                   'pic': 'false',
-                                   'legacy': 'false',
+                                   'required': False,
+                                   'tfm': False,
+                                   'dem': False,
+                                   'pic': False,
+                                   'legacy': False,
                                    'args': OrderedDict(),
                                    'dependents': OrderedDict(),
                                    'conflicts': OrderedDict(),
@@ -289,8 +308,13 @@ def parse(fname = None, string = None):
                                    'validrange': OrderedDict(),
                                    }
 
+        def tryBool(s):
+            return True if s=='true' else False if s=='false' else s
+
         for keywordAtt in keywordAtts:
-            keywordDocDict[keyword][keywordAtt[0].strip().lower()] = cleanString(keywordAtt[-1]).lower()
+            key = keywordAtt[0].strip().lower()
+            val = keywordAtt[-1].lower()
+            keywordDocDict[keyword][key] = tryBool(cleanString(val))
 
         keywordDocCat.add(keywordDocDict[keyword]['category'])
 

@@ -164,6 +164,9 @@
       ENDIF
 !        NUMBER_OF_NODES = 0
 
+
+      NUMBER_OF_NEW_POINTS = 0
+
       DO IJK = IJKSTART3, IJKEND3
 
           IF(POTENTIAL_CUT_CELL_AT(IJK))  THEN
@@ -467,6 +470,10 @@
 
          ENDIF
       ENDDO
+
+     IF(ALLOCATED(SCALAR_NODE_XYZ)) DEALLOCATE(SCALAR_NODE_XYZ)
+     IF(ALLOCATED(Ovol_around_node)) DEALLOCATE(Ovol_around_node)
+     IF(ALLOCATED(SCALAR_NODE_ATWALL)) DEALLOCATE(SCALAR_NODE_ATWALL)
 
       ALLOCATE(SCALAR_NODE_XYZ(DIMENSION_3 + NUMBER_OF_NEW_POINTS,3))
       ALLOCATE(Ovol_around_node(DIMENSION_3 + NUMBER_OF_NEW_POINTS))
@@ -1454,7 +1461,8 @@
       USE functions, ONLY: funijk
       USE functions, ONLY: WEST_OF, EAST_OF, SOUTH_OF, NORTH_OF, BOTTOM_OF, TOP_OF
       USE functions, ONLY: IM_OF, IP_OF, JM_OF, JP_OF, KM_OF, KP_OF
-      USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, flag, do_k, flag_e, flag_n, flag_t
+      USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, flag, flag_e, flag_n, flag_t
+      USE geometry, ONLY: axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, do_k
 
       USE bc
       USE sendrecv

@@ -364,7 +364,7 @@
          DES_X_s(lNP,1:NMAX(lM)) = BC_X_s(lBCV,lM,1:NMAX(lM))
 
 ! Calculate time dependent physical properties
-      CALL DES_PHYSICAL_PROP(lNP, .FALSE.)
+      CALL DES_PHYSICAL_PROP
 
 
       RETURN

@@ -21,7 +21,7 @@
 ! Solids phase identifier
       use run, only: SOLIDS_MODEL
 ! Number of DEM inlet/outlet BCs detected.
-      use des_bc, only: DEM_BCMI, DEM_BCMO
+      use des_bc, only: DEM_MIO, DEM_BCMI, DEM_BCMO
 !
       use des_bc, only: DEM_BCMI_MAP
       use des_bc, only: DEM_BCMO_MAP
@@ -50,7 +50,6 @@
 ! loop/variable indices
       INTEGER :: BCV, M
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_BC_DEM")
@@ -107,6 +106,9 @@
          END SELECT
 
       ENDDO
+
+! Set the flag that one or more DEM MI/MO exists.
+      DEM_MIO = (DEM_BCMI /= 0 .OR. DEM_BCMO /= 0)
 
       CALL FINL_ERR_MSG
 

@@ -95,11 +95,11 @@
       use desgrid, only: DG_IEND2, DG_ISTART2
       use desgrid, only: DG_JEND2, DG_JSTART2
       use desgrid, only: DG_KEND2, DG_KSTART2
-      use desgrid, only: dg_dxinv, dg_dyinv, dg_dzinv
 
       use stl, only: FACETS_AT_DG
 
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
       use stl, only: N_FACETS_DES
       use stl, only: VERTEX
 
@@ -113,14 +113,12 @@
       IMPLICIT NONE
 
 ! DES Grid cell index.
-      INTEGER :: IJK, IJK2
+      INTEGER :: IJK
 ! Loop counters:
       INTEGER :: I1, I2, II  ! X-axis
       INTEGER :: J1, J2, JJ  ! Y-axis
       INTEGER :: K1, K2, KK  ! Z-axis
       INTEGER :: NN          ! STLs
-! Generic accumulator
-      INTEGER :: COUNT_FAC
 
 ! Maximum and minimum extents of the indexed STL
       DOUBLE PRECISION:: X1,Y1,Z1
@@ -143,14 +141,14 @@
 
          I1 = DG_IEND2
          I2 = DG_ISTART2
-         IF(X2>=-TOL_STL .AND. X1<=XLENGTH+TOL_STL) THEN
+         IF(X2>=X_MIN-TOL_STL .AND. X1<=X_MAX+TOL_STL) THEN
             I1 = max(iofpos(X1)-1, dg_istart2)
             I2 = min(iofpos(X2)+1, dg_iend2)
          ENDIF
 
          J1 = DG_JEND2
          J2 = DG_JSTART2
-         IF(Y2>=-TOL_STL .AND. Y1<=YLENGTH+TOL_STL) THEN
+         IF(Y2>=Y_MIN-TOL_STL .AND. Y1<=Y_MAX+TOL_STL) THEN
             J1 = max(jofpos(Y1)-1, dg_jstart2)
             J2 = min(jofpos(Y2)+1, dg_jend2)
          ENDIF
@@ -158,7 +156,7 @@
          K1 = DG_KEND2
          K2 = DG_KSTART2
          IF(DO_K) THEN
-            IF(Z2>=-TOL_STL .AND. Z1<=ZLENGTH+TOL_STL) THEN
+            IF(Z2>=Z_MIN-TOL_STL .AND. Z1<=Z_MAX+TOL_STL) THEN
                K1 = max(kofpos(Z1)-1, dg_kstart2)
                K2 = min(kofpos(Z2)+1, dg_kend2)
             ENDIF
@@ -224,8 +222,6 @@
       DOUBLE PRECISION :: lDX, lDY, lDZ
 ! Buffer to ensure all particle-STL collisions are captured.
       DOUBLE PRECISION :: BUFFER
-! Legacy variable - should be removed
-      INTEGER ::  CURRENT_COUNT
 
       BUFFER = 1.1d0*MAX_RADIUS
 
@@ -275,11 +271,13 @@
       INTEGER, ALLOCATABLE :: int_tmp(:)
       DOUBLE PRECISION, ALLOCATABLE :: real_tmp(:)
 
-      INTEGER :: lSIZE, II
+      INTEGER :: lSIZE, II,FC
       DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
 
 
-      IF(FACETS_AT_DG(IJK)%COUNT > 0) THEN
+      FC = FACETS_AT_DG(IJK)%COUNT 
+      IF(FC > 0) THEN
+!      IF(FACETS_AT_DG(IJK)%COUNT > 0) THEN
 
          DO II=1, FACETS_AT_DG(IJK)%COUNT
             IF(FACET_ID == FACETS_AT_DG(IJK)%ID(II)) RETURN
@@ -308,14 +306,23 @@
 
       ELSE
          FACETS_AT_DG(IJK)%COUNT = 1
-         IF(.not.allocated(FACETS_AT_DG(IJK)%ID)) &
-            allocate(FACETS_AT_DG(IJK)%ID(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%DIR)) &
-            allocate(FACETS_AT_DG(IJK)%DIR(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%MIN)) &
-            allocate(FACETS_AT_DG(IJK)%MIN(4))
-         IF(.not.allocated(FACETS_AT_DG(IJK)%MAX)) &
-            allocate(FACETS_AT_DG(IJK)%MAX(4))
+         IF(allocated(FACETS_AT_DG(IJK)%ID)) deallocate(FACETS_AT_DG(IJK)%ID)
+         allocate(FACETS_AT_DG(IJK)%ID(4))
+         IF(allocated(FACETS_AT_DG(IJK)%DIR)) deallocate(FACETS_AT_DG(IJK)%DIR)
+         allocate(FACETS_AT_DG(IJK)%DIR(4))
+         IF(allocated(FACETS_AT_DG(IJK)%MIN)) deallocate(FACETS_AT_DG(IJK)%MIN)
+         allocate(FACETS_AT_DG(IJK)%MIN(4))
+         IF(allocated(FACETS_AT_DG(IJK)%MAX)) deallocate(FACETS_AT_DG(IJK)%MAX)
+         allocate(FACETS_AT_DG(IJK)%MAX(4))
+
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%ID)) &
+         !    allocate(FACETS_AT_DG(IJK)%ID(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%DIR)) &
+         !    allocate(FACETS_AT_DG(IJK)%DIR(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%MIN)) &
+         !    allocate(FACETS_AT_DG(IJK)%MIN(4))
+         ! IF(.not.allocated(FACETS_AT_DG(IJK)%MAX)) &
+         !    allocate(FACETS_AT_DG(IJK)%MAX(4))
       ENDIF
 
       FACETS_AT_DG(IJK)%ID(FACETS_AT_DG(IJK)%COUNT) = FACET_ID
@@ -350,6 +357,7 @@
       Subroutine CONVERT_BC_WALLS_TO_STL
 
       use geometry, only: ZLENGTH, DO_K
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use bc, only: BC_DEFINED, BC_TYPE_ENUM, FREE_SLIP_WALL, NO_SLIP_WALL, PAR_SLIP_WALL
       use bc, only: BC_I_w, BC_I_e
@@ -385,7 +393,7 @@
             IF(DO_K) THEN
                lZb = ZT(BC_K_b(BCV)-1); lZt = ZT(BC_K_t(BCV))
             ELSE
-               lZb = ZERO; lZt = ZLENGTH
+               lZb = Z_MIN ;lZt = Z_MAX
             ENDIF
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
          ENDIF
@@ -408,6 +416,7 @@
       SUBROUTINE CONVERT_IMPERMEABLE_IS_TO_STL
 
       use geometry, only: DO_K, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
 
       use is, only: IS_DEFINED, IS_TYPE
       use is, only: IS_I_w, IS_I_e
@@ -442,7 +451,7 @@
             IF(DO_K) THEN
                lZb = ZT(IS_K_b(ISV)-1); lZt = ZT(IS_K_t(ISV))
             ELSE
-               lZb = ZERO; lZt = ZLENGTH
+               lZb = Z_MIN ;lZt = Z_MAX
             ENDIF
 
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
@@ -475,6 +484,7 @@
 
       USE geometry, only: DO_K
       USE geometry, only: XLENGTH, YLENGTH, ZLENGTH
+      use geometry, only: X_MIN, X_MAX, Y_MIN, Y_MAX, Z_MIN, Z_MAX
       use stl, only: VERTEX, NORM_FACE
       use stl, only: N_FACETS_DES
       use stl, only: STL_START, STL_END, DEFAULT_STL
@@ -492,48 +502,48 @@
 ! West Face
       IF(.NOT.DES_PERIODIC_WALLS_X)THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
 
 ! East Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/XLENGTH, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/XLENGTH, 2*YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/XLENGTH, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MAX, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX, Y_MAX+YLENGTH, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MAX, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/-ONE, ZERO, ZERO/)
       ENDIF
 
 ! South Face
       IF(.NOT.DES_PERIODIC_WALLS_Y)THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, ZERO, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
 
 ! North Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, YLENGTH, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, YLENGTH, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, YLENGTH, 2*ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MAX, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MAX, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX, Z_MAX+ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
       ENDIF
 
 ! Bottom Face
       IF(.NOT.DES_PERIODIC_WALLS_Z .AND. DO_K) THEN
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZERO/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZERO/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZERO/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MIN/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MIN/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MIN/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
 
 ! Top Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(1,:,N_FACETS_DES) = (/ZERO, ZERO, ZLENGTH/)
-         VERTEX(2,:,N_FACETS_DES) = (/2*XLENGTH, ZERO, ZLENGTH/)
-         VERTEX(3,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZLENGTH/)
+         VERTEX(1,:,N_FACETS_DES) = (/X_MIN, Y_MIN, Z_MAX/)
+         VERTEX(2,:,N_FACETS_DES) = (/X_MAX+XLENGTH, Y_MIN, Z_MAX/)
+         VERTEX(3,:,N_FACETS_DES) = (/X_MIN, Y_MAX+YLENGTH, Z_MAX/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
       ENDIF
 
@@ -610,7 +620,7 @@
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(1,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
       ENDIF
 
@@ -625,7 +635,7 @@
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
-         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
       ENDIF
 
@@ -645,15 +655,15 @@
 
 ! Top Face
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-         VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-         VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
 
          N_FACETS_DES = N_FACETS_DES+1
-         VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
-         VERTEX(2,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
-         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
       ENDIF
 
