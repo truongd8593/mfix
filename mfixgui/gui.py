@@ -2207,9 +2207,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         #self.change_pane('model setup')
 
-        self.open_succeeded = False  # set to true on success
-        self.vtkwidget.defer_render = True # defer rendering vtk until load finished
-
         # see also project_manager.load_project_file
 
         # Make sure path is absolute
@@ -2233,9 +2230,6 @@ class MfixGui(QtWidgets.QMainWindow,
             return
 
         # --- read the mfix.dat or *.mfx file
-
-        self.reset() # resets gui, keywords, file system watchers, etc
-        # (may not be needed on initial load)
 
         basename, pathname = os.path.split(project_file)
 
@@ -2272,6 +2266,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     ok_to_write = self.confirm_clobber(renamed_project_file)
             if not ok_to_write:
                 self.print_internal("Rename canceled at user request")
+                gui.set_no_project()
+                gui.handle_main_menu()
                 return
 
             project_file = renamed_project_file
@@ -2308,6 +2304,12 @@ class MfixGui(QtWidgets.QMainWindow,
             # previously started job may be running, try to reconnect
             log.debug('attempting to connect to running job %s' % runname_pid)
             self.job_manager.try_to_connect(runname_pid)
+
+        self.reset() # resets gui, keywords, file system watchers, etc
+        # (may not be needed on initial load)
+
+        self.open_succeeded = False  # set to true on success
+        self.vtkwidget.defer_render = True # defer rendering vtk until load finished
 
         self.setup_current_pane() # update vals in any open tabs
         self.update_source_view()
