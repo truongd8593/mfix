@@ -176,23 +176,29 @@ class RegionsWidget(QtWidgets.QWidget):
 
         f = ['xmin', 'ymin', 'zmin']
         t = ['xmax', 'ymax', 'zmax']
-
+        typ = 'box'
         if region == 'left':
             t[0] = 'xmin'
+            typ = 'YZ-plane'
         elif region == 'right':
             f[0] = 'xmax'
+            typ = 'YZ-plane'
         elif region == 'top':
             f[1] = 'ymax'
+            typ = 'XZ-plane'
         elif region == 'bottom':
             t[1] = 'ymin'
+            typ = 'XZ-plane'
         elif region == 'front':
             f[2] = 'zmax'
+            typ = 'XY-plane'
         elif region == 'back':
             t[2] = 'zmin'
+            typ = 'XY-plane'
 
         # convert strings to equations
         extents = [[Equation(e) for e in f], [Equation(e) for e in t]]
-        self.new_region(region, extents, self.get_region_type(extents))
+        self.new_region(region, extents, typ)
 
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""

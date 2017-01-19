@@ -89,15 +89,6 @@
   IC_V_g(1) = 0.0
   IC_W_g(1) = 0.0
 
-#!MFIX-GUI SECTION
-#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": "#ffffff",
-#!MFIX-GUI   "to": [{"eq": "xmax", "__type__": "equation", "type":
-#!MFIX-GUI   "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"},
-#!MFIX-GUI   {"eq": "zmax", "__type__": "equation", "type": "float"}], "from":
-#!MFIX-GUI   [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq":
-#!MFIX-GUI   "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin",
-#!MFIX-GUI   "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
-
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
 
@@ -112,3 +103,12 @@
 # DMP SETUP
 
   CHK_BATCHQ_END = .T.
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI regions_dict = {"regions": {"Background IC": {"color": "#ffffff",
+#!MFIX-GUI   "to": [{"eq": "xmax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "ymax", "__type__": "equation", "type": "float"},
+#!MFIX-GUI   {"eq": "zmax", "__type__": "equation", "type": "float"}], "from":
+#!MFIX-GUI   [{"eq": "xmin", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "ymin", "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}]}}, "order": ["Background IC"]}
