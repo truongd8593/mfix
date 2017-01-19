@@ -694,14 +694,14 @@ def parse_command_line_arguments():
     parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
                         type=check_port,
                         help='specify a port number to use')
-    parser.add_argument('-s', '--start', action='store_false',
-                        help='do not wait for api connection to run')
+    parser.add_argument('-w', '--wait', action='store_false',
+                        help='wait for api connection to run')
     parser.add_argument('-v', '--version', action='version', version=__version_str__)
 
     args = parser.parse_args()
 
     passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
-    return args.file.ljust(80), args.start, args.port, passed_kwargs
+    return args.file.ljust(80), not args.wait, args.port, passed_kwargs
 
 if __name__ == '__main__':
     main()
