@@ -1305,7 +1305,8 @@ class Output(object):
                 cbs.append(cb)
                 self.add_tooltip(cb, key=cb.key)
                 layout.addWidget(cb)
-
+            for (cb, name) in zip(cbs, fluid_species_names):
+                cb.setText(name)
         if spacer_moved:
             layout.addItem(spacer)
 
@@ -1501,6 +1502,8 @@ class Output(object):
                 cbs.append(cb)
                 self.add_tooltip(cb, key=cb.key)
                 layout.addWidget(cb)
+            for (cb, name) in zip(cbs, solids_species_names):
+                cb.setText(name)
 
         if spacer_moved:
             layout.addItem(spacer)
