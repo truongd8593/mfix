@@ -12,6 +12,9 @@ from glob import glob
 from os import makedirs, path, walk
 from shutil import copyfile
 
+import subprocess
+import sys
+
 from setuptools import setup, Extension
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
@@ -45,8 +48,8 @@ class MfixBuildExt(build_ext):
         ''' Copies the already-compiled pyd
         '''
         # if platform.system() == 'Windows':
-        # subprocess.call(["./configure", "--python"])
-        # subprocess.call(["make"])
+        subprocess.call(["./configure_mfix", "PYTHON_BIN=%s" % sys.executable, "--python"])
+        subprocess.call(["make"])
 
         # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
         # ./configure_mfix --python --host=x86_64-w64-mingw32

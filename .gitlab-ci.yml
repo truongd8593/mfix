@@ -8,10 +8,15 @@ stages:
   - build
   - install
 
+variables:
+  ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
+  PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 build_job:
   stage: build
   script:
-    - env PYTHON_BIN=/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python ./configure_mfix --python
+    - env PYTHON_BIN=${ANACONDA_BIN}/python ./configure_mfix --python
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel -d ${PYPATH}
+    - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d ${PYPATH}
     - make
   artifacts:
     expire_in: 1 week
@@ -26,10 +31,8 @@ build_job:
 install_job:
   stage: install
   script:
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
-    - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/pip uninstall --yes mfixgui
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/pip install /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/*cp27*.whl --prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install ${PYPATH}/*cp27*.whl --prefix=${PYPATH}
   only:
     - branches
   tags:
