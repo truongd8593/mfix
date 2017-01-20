@@ -266,7 +266,7 @@
             <x>0</x>
             <y>0</y>
             <width>573</width>
-            <height>572</height>
+            <height>574</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -292,8 +292,8 @@
              </property>
              <property name="font">
               <font>
-               <weight>75</weight>
-               <bold>true</bold>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text">
@@ -791,6 +791,26 @@
        <item row="1" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_status">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QToolButton" name="toolbutton_ok">
            <property name="text">
             <string>OK</string>
@@ -801,13 +821,6 @@
           <widget class="QToolButton" name="toolbutton_cancel">
            <property name="text">
             <string>Cancel</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_status">
-           <property name="text">
-            <string/>
            </property>
           </widget>
          </item>
