@@ -770,12 +770,15 @@ class Chemistry(object):
         # Update the apply/revert/delete buttons
         ui = self.ui.chemistry
         tw = ui.tablewidget_reactions
+        label = ui.label_status
         balanced, message = self.chemistry_check_reaction_balance()
         if not self.reaction_edited:
-            ui.label_status.setText('') #"Reaction unmodified")
+            label.setText('') #"Reaction unmodified")
         else:
-            ui.label_status.setText(message)
-        ui.toolbutton_ok.setEnabled(self.reaction_edited and balanced)
+            label.setText(message)
+        ok = self.reaction_edited and balanced
+        label.setStyleSheet("color: %s" % ("green" if ok else "red"))
+        ui.toolbutton_ok.setEnabled(ok)
         ui.toolbutton_cancel.setEnabled(self.reaction_edited)
         ui.toolbutton_add_reaction.setEnabled(not self.reaction_edited)
         ui.toolbutton_delete_reaction.setEnabled(get_selected_row(tw) is not None)
