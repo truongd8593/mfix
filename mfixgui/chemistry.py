@@ -289,6 +289,8 @@ class Chemistry(object):
         self.reaction_edited = False
         self.chemistry_update_detail_pane()
         ui.scrollarea_detail.ensureVisible(0, 0)
+
+
     def chemistry_update_detail_pane(self):
         ui = self.ui.chemistry
         tw = ui.tablewidget_reactions
