@@ -26,7 +26,9 @@ build_job:
 install_job:
   stage: install
   script:
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py install --prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
+    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
+    - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
+    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/pip setup.py install /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/*py2*.whl --prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
   only:
     - branches
   tags:
