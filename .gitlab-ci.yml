@@ -28,7 +28,7 @@ install_job:
   script:
     - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
     - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
-    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/pip install /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/*cp27*.whl --install-option="--prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
+    - env PYTHONPATH=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/lib/python2.7/site-packages /nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin/pip install /nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME/*cp27*.whl --prefix=/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME
   only:
     - branches
   tags:
