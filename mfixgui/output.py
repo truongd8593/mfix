@@ -1059,7 +1059,6 @@ class Output(object):
         if self.output_saved_solids_names != solids_names:
             # Clear out the old ones
             n_cols = ui.bottom_tab_layout.columnCount()
-
             for i in range(n_cols-1, 0, -1):
                 item = ui.bottom_tab_layout.itemAtPosition(0, i)
                 if not item:
@@ -1083,7 +1082,6 @@ class Output(object):
                 b.setFont(font)
                 b.pressed.connect(lambda i=i: self.output_change_subtab(SOLIDS_TAB, i))
                 ui.bottom_tab_layout.addWidget(b, 0, i)
-
 
         # Move the 'Scalar' and other buttons to the right of all solids, if needed
         if len(self.solids) != len(self.output_saved_solids_names):
