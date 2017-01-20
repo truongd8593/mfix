@@ -3,6 +3,7 @@ import json
 from qtpy import QtCore, QtWidgets
 
 from mfixgui.tools.general import get_icon, get_mfix_home, get_separator, get_pixmap
+from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 class MainMenu(object):
@@ -288,7 +289,7 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
-        vl = QtWidgets.QLabel('MFIX GUI version: {}'.format(self.get_version()))
+        vl = QtWidgets.QLabel('MFIX GUI version: {}'.format(__version__))
         vl.setStyleSheet('background-color: white;')
         aw_layout.addWidget(vl, 2, 0, 1, -1)
 

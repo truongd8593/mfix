@@ -16,6 +16,8 @@ from setuptools import setup, Extension
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
+exec(open('mfixgui/version.py').read())
+
 HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
@@ -66,7 +68,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='17.0a0',
+    version=__version__,
 
     description='A GUI for the MFiX computational fluid dynamics solver',
     long_description=LONG_DESCRIPTION,

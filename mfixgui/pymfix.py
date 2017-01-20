@@ -3,7 +3,7 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
-__version_str__ = "2017.1" #TODO link to mfix version
+from .version import __version__
 
 import argparse
 import copy
@@ -696,7 +696,7 @@ def parse_command_line_arguments():
                         help='specify a port number to use')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=__version_str__)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 

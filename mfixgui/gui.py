@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-"""MFIX GUI"""
-__version__ = [2017, 1, 0, 'a']
-__version_str__ = '.'.join([str(i) for i in __version__])
+from .version import __version__
 
 import argparse
 import copy
@@ -913,11 +911,8 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFIX-GUI version %s" % self.get_version(),
+        self.print_internal("MFIX-GUI version %s" % __version__,
                             color='blue')
-
-    def get_version(self):
-        return __version_str__
 
     def resizeEvent(self, event):
         '''over-ride of qt resize event'''
@@ -1843,7 +1838,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = self.get_version()
+        self.project.mfix_gui_comments['gui_version'] = __version__
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2619,7 +2614,7 @@ def main():
                         help="Use default geometry, don't restore previous state.")
     parser.add_argument('-d', '--developer', action='store_true',
                         help="Enable developer mode.")
-    parser.add_argument('-v', '--version', action='version', version=__version_str__)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
 
     # parse the args
     args = parser.parse_args()

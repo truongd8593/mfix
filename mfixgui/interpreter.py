@@ -4,6 +4,8 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 
 from code import InteractiveConsole
 
+from .version import __version__
+
 # TODO:  colorize stderr, syntax highlighting, auto-complete, readline, clear window, search
 
 class Interpreter(object):
@@ -32,7 +34,7 @@ class Interpreter(object):
         self.stderr = Output(err=True)
         self.interpreter = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
-        banner += 'MFIX-GUI version %s' % self.get_version() + '\n'
+        banner += 'MFIX-GUI version %s' % __version__ + '\n'
         te.insertPlainText(banner)
 
     def setup_interpreter(self):
