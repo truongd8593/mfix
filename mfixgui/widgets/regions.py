@@ -272,17 +272,14 @@ class RegionsWidget(QtWidgets.QWidget):
         self.lineedit_regions_name.updateValue(None, name)
 
         # Disable widgets for regions that are in use
-        used_by = 'Not used.'
         in_use = self.check_region_in_use(name)
         if in_use:
-            # TODO: tell where it is used
-            used_by = 'In use'
             self.enable_disable_widgets(name)
         else:
             self.enable_disable_widgets(name, enable_all=True)
         self.toolbutton_region_delete.setEnabled(not in_use)
         self.lineedit_regions_name.setEnabled(not in_use)
-        self.label_used_by.setText(used_by)
+        self.label_used_by.setText(', '.join(in_use))
 
         # type
         self.label_region_type.setText(data.get('type', 'box'))

@@ -526,8 +526,13 @@ QHeaderView::section:vertical{
           </item>
           <item row="1" column="1" colspan="3">
            <widget class="QLabel" name="label_used_by">
+            <property name="styleSheet">
+             <string notr="true">QLabel{
+color: red;
+}</string>
+            </property>
             <property name="text">
-             <string>TextLabel</string>
+             <string/>
             </property>
            </widget>
           </item>
