@@ -238,7 +238,7 @@ class ProjectManager(Project):
         """
 
         n_errs = 0
-        errlist = []
+        excs = []
         with warnings.catch_warnings(record=True) as ws:
             self.parsemfixdat(fname=project_file)
             # Check for some invalid conditions
@@ -586,23 +586,29 @@ class ProjectManager(Project):
                 try:
                     self.submit_change(None, {kw.key: kw.value}, args=kw.args)
                 except ValueError as e:
-                    errlist.append(e)
+                    excs.append(e)
 
             # report any errors
-            for w in errlist + ws:
-                if hasattr(w, 'message'):
-                    message = w.message
-                else:
-                    message = str(w)
-                self.gui.print_internal("Warning: %s" % message, color='red')
-            n_errs = len(errlist) + len(ws)
-            if n_errs:
+            for (prefix, errlist) in (('Error', excs), ('Warning', ws)):
+                for e in errlist:
+                    if hasattr(e, 'message'):
+                        message = e.message
+                    else:
+                        message = str(e)
+                    self.gui.print_internal("%s: %s" % (prefix, message),
+                                            color='red') # Different color for err/warn?
+
+            if excs:
+                msg = plural(len(excs), 'error')
                 self.gui.print_internal("Warning: %s loading %s" %
-                                        (plural(n_errs, "error") , project_file),
+                                        msg , project_file,
                                         color='red')
             else:
-                self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
-
+                if ws:
+                    msg = plural(len(ws), 'warning')
+                    self.gui.print_internal("Loaded %s with %s" % (os.path.basename(project_file), msg), color='red')
+                else:
+                    self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
 
     def convert_particle_file_units(self, filename):
         basename = os.path.basename(filename)
