@@ -846,17 +846,19 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                         self.update_keyword(key, val, args=i)
                     for i in range(len(new_vals)+1,  len(vals)+1):
                         self.unset_keyword(key, args=i)
-            for key in ('des_et_wall_input', 'des_en_wall_input'):
-                prev_size = n+1
-                vals = [self.project.get_value(key, args=i)
-                        for i in range(1, 1+prev_size)]
-                if any(v is not None for v in vals):
-                    new_vals = vals[:]
-                    del new_vals[phase-1] # 1-based
-                    for (i, val) in enumerate(new_vals, 1):
-                        self.update_keyword(key, val, args=i)
-                    for i in range(len(new_vals)+1,  len(vals)+1):
-                        self.unset_keyword(key, args=i)
+
+            # Should be handled by delete_phase_keys
+            # for key in ('des_et_wall_input', 'des_en_wall_input'):
+            #     prev_size = n+1
+            #     vals = [self.project.get_value(key, args=i)
+            #             for i in range(1, 1+prev_size)]
+            #     if any(v is not None for v in vals):
+            #         new_vals = vals[:]
+            #         del new_vals[phase-1] # 1-based
+            #         for (i, val) in enumerate(new_vals, 1):
+            #             self.update_keyword(key, val, args=i)
+            #         for i in range(len(new_vals)+1,  len(vals)+1):
+            #             self.unset_keyword(key, args=i)
 
             self.update_solids_table()
 
