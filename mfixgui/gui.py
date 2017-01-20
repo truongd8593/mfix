@@ -2590,29 +2590,30 @@ def main():
     # build the arg parser
     av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
     parser = argparse.ArgumentParser(description='MFIX GUI')
-    parser.add_argument('project', action='store', nargs='?', default=None,
+    ARG = parser.add_argument
+    ARG('project', action='store', nargs='?', default=None,
                         help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
-    parser.add_argument('-e', '--exe',  metavar='EXE', action='store', default=None,
+    ARG('-e', '--exe',  metavar='EXE', action='store', default=None,
                         help='specify MFIX executable (full path)')
-    parser.add_argument('-l', '--log', metavar='LOG', action='store', default='WARN',
+    ARG('-l', '--log', metavar='LOG', action='store', default='WARN',
                         choices=['error', 'warning', 'info', 'debug'],
                         help='set logging level (error, warning, info, debug)')
-    parser.add_argument('-s', '--style', metavar='STYLE', action='store', default=None,
+    ARG('-s', '--style', metavar='STYLE', action='store', default=None,
                         choices=av_styles,
                         help='specify app style (windowsvista, fusion, cleanlooks,...)')
-    parser.add_argument('-n', '--noload', action='store_true',
+    ARG('-n', '--noload', action='store_true',
                         help='do not autoload previous project')
-    parser.add_argument('-w', '--noworkflow', action='store_false',
+    ARG('-w', '--noworkflow', action='store_false',
                         help='do not load the workflow environment')
-    parser.add_argument('-k', '--novtk', action='store_false',
+    ARG('-k', '--novtk', action='store_false',
                          help='do not load vtk')
-    parser.add_argument('-q', '--quit', action='store_true',
+    ARG('-q', '--quit', action='store_true',
                         help='quit after opening file (for testing)')
-    parser.add_argument('-g', '--default_geo', action='store_true',
+    ARG('-g', '--default_geo', action='store_true',
                         help="Use default geometry, don't restore previous state.")
-    parser.add_argument('-d', '--developer', action='store_true',
+    ARG('-d', '--developer', action='store_true',
                         help="Enable developer mode.")
-    parser.add_argument('-v', '--version', action='version', version=__version__)
+    ARG('-v', '--version', action='version', version=__version__)
 
     # parse the args
     args = parser.parse_args()
