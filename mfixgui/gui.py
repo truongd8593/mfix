@@ -2482,6 +2482,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #    self.save_project()- let the user do this
 
         self.save_recent_projects()
+        self.clear_unsaved_flag()
 
 
     def add_tooltip(self, widget, key, description=None, value=None):
