@@ -2553,7 +2553,7 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             msg = '<b>%s</b>: %s</br>' % (key, description)
         widget.setToolTip(msg)
-        widget.help_text = msg # Can we get more info here, so help_text is not just repeating tooltip?
+        widget.help_text = msg # TODO do something more useful with help_text
 
 
     # Following functions are overrideable for test runner
