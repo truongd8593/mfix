@@ -40,6 +40,9 @@ PAGE_CELL, PAGE_PARTICLE = (0, 1)
 
 MAX_SP = 11
 
+#model/init_namelist.f:      bWrite_netCDF(:20) = .FALSE.
+MAX_BWRITE_NETCDF = 20
+
 VTK_DATA_TYPES = ['C', 'P']
 
 class Output(object):
@@ -101,10 +104,10 @@ class Output(object):
         gb.clicked.connect(self.output_enable_vtk)
         self.add_tooltip(gb, key)
 
-        cb = ui.checkbox_binary_spx_files
+        cb = ui.checkbox_spx
         cb.clicked.connect(self.output_enable_spx)
 
-        cb = ui.checkbox_netcdf_files
+        cb = ui.checkbox_netcdf
         cb.clicked.connect(self.output_enable_netcdf)
 
 
@@ -524,6 +527,11 @@ class Output(object):
     def output_enable_spx(self, enabled):
         ui = self.ui.output
         if enabled:
+            ui.pushbutton_spx.setEnabled(True)
+            ui.pushbutton_netcdf.setEnabled(False)
+            ui.checkbox_netcdf.setChecked(False)
+            ui.checkbox_netcdf.setEnabled(False)
+
             res_dt = self.project.get_value('res_dt', default=1.0)
             default = max(1.0, res_dt)
             for i in range(1, MAX_SP+1): # Only set keys not already set
@@ -535,13 +543,21 @@ class Output(object):
                         val = default
                     self.update_keyword('spx_dt', val, args=[i])
         else:
+            ui.checkbox_netcdf.setEnabled(True) #Enable option, but do not activate
             for i in range(1, MAX_SP+1):
                 self.unset_keyword('spx_dt', args=[i])
-        self.setup_output()
+
 
 
     def output_enable_netcdf(self, enabled):
         ui = self.ui.output
+        if enabled:
+            ui.pushbutton_netcdf.setEnabled(True)
+            ui.pushbutton_spx.setEnabled(False)
+            ui.checkbox_spx.setChecked(False)
+            ui.checkbox_spx.setEnabled(False)
+        else:
+            ui.checkbox_spx.setEnabled(True) # Enable, do not activate
 
 
     def setup_output(self):
@@ -563,7 +579,7 @@ class Output(object):
         vtk_enabled = self.project.get_value('write_vtk_files', default=False)
         ui.pushbutton_vtk.setEnabled(vtk_enabled)
 
-        netcdf_enabled = False
+        netcdf_enabled = True#
         ui.pushbutton_netcdf.setEnabled(netcdf_enabled)
 
         # TODO don't stay on disabled tab
@@ -689,16 +705,32 @@ class Output(object):
         #    No keyword association
         #    Enables SPx tab
         #    Backwards compatibility: Enabled if any SPx time values are specified
-        enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
-                      for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
-        ui.checkbox_binary_spx_files.setChecked(enabled)
-        ui.pushbutton_spx.setEnabled(enabled)
+
+        spx_dt_specified = any(self.project.get_value('spx_dt', args=[i]) is not None
+                               for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
+        bwrite_netcdf_specified = any(self.project.get_value('bwrite_netcdf', args=[i]) is not None
+                                      for i in range(1, MAX_BWRITE_NETCDF+1))
+
+        print("SPX:", spx_dt_specified)
+        print("BWRITE_NETCDF:", bwrite_netcdf_specified)
+
+        enable_spx = not bwrite_netcdf_specified # Enables checkbox but does not check it
+        activate_spx = enable_spx and spx_dt_specified
+        ui.checkbox_spx.setEnabled(enable_spx)
+        ui.checkbox_spx.setChecked(activate_spx)
+        ui.pushbutton_spx.setEnabled(activate_spx)
 
         #Enable NetCDF output files
         #    Not available when SPx output is enabled
         #    No keyword association.
         #    Enables NetCDF tab
-        pass
+
+        enable_netcdf = not activate_spx
+        activate_netcdf =  bwrite_netcdf_specified
+        ui.checkbox_netcdf.setEnabled(enable_netcdf)
+        ui.checkbox_netcdf.setChecked(activate_netcdf)
+        ui.pushbutton_netcdf.setEnabled(activate_netcdf)
+
 
 
     def setup_output_spx_tab(self):
@@ -828,6 +860,96 @@ class Output(object):
             val = default
             self.update_keyword(key, val)
         cb.setCurrentIndex(DES_OUTPUT_TYPES.index(val))
+
+    def setup_output_netcdf_tab(self):
+        #NetCDF (tab)
+	# Note: NetCDF support 'piggy-backs' off of the SPx keywords. The output time values are specified
+        # via SPX_DT while NetCDF output is triggered by a BWRITE_NETCDF flag. To make this less
+        # opaque to users, both SPx and netCDF output cannot be enabled at the same time.
+
+        #Write interval for gas volume fraction
+        #    Sets keyword BWRITE_NETCDF(1) = .TRUE.
+        #    Sets keyword SPX_DT(1)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids pressure
+        #    Sets keyword BWRITE_NETCDF(2) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(3) = .TRUE.
+        #    Sets keyword SPX_DT(2)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas velocity
+        #    Sets keyword BWRITE_NETCDF(4) = .TRUE.
+        #    Sets keyword SPX_DT(3)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for solids velocity
+        #    Sets keyword BWRITE_NETCDF(5) = .TRUE.
+        #    Sets keyword SPX_DT(4)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for solids bulk density
+        #    Sets keyword BWRITE_NETCDF(6) = .TRUE.
+        #    Sets keyword SPX_DT(5)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids temperature
+        #    Only available when solving energy equations
+        #    Sets keyword BWRITE_NETCDF(7) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(8) = .TRUE.
+        #    Sets keyword SPX_DT(6)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids mass fractions
+        #    Only available when solving species equations
+        #    Sets keyword BWRITE_NETCDF(9) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(10) = .TRUE.
+        #    Sets keyword SPX_DT(7)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for granular temperature
+        #    Only available when KT_TYPE =/ 'ALGEBRAIC'
+        #    Sets keyword BWRITE_NETCDF(11) = .TRUE.
+        #    Sets keyword SPX_DT(8)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for user defined scalars
+        #    Only available when solving any user defined scalar equations
+        #    Sets keyword BWRITE_NETCDF(12) = .TRUE.
+        #    Sets keyword SPX_DT(9)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for reaction rates
+        #    Only available if NRR > 0 (see below)
+        #    Sets keyword BWRITE_NETCDF(13) = .TRUE.
+        #    Sets keyword SPX_DT(10)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Number of reaction rates to write
+        #    Specification always available
+        #    Sets keyword NRR
+        #    DEFAULT value of 0
+        #    Error check: value must be greater than or equal to 0
+        #Write interval for turbulence quantities
+        #    Only available if TURBULENCE_MODEL = “K_EPSILON”
+        #    Sets keyword BWRITE_NETCDF(14) = .TRUE.
+        #    Sets keyword SPX_DT(11)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+
+        #This is the same particle section as the SPx section.
+
+	#Write ASCII particle data
+        #    Selection only available if DEM or PIC solids
+        #    Sets keyword PRINT_DES_DATA
+        #    DEFAULT value of .TRUE.
+        #Specify VTP Directory
+        #    Specification only if PRINT_DES_DATA = .TRUE.
+        #    Sets keyword VTP_DIR
+        #    No default (empty string)
+        #Select particle data format
+        #    Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
+        pass
 
 
     def output_default_vtk_filebase(self, region_names):
