@@ -409,7 +409,6 @@ class Chemistry(object):
 
         def handle_coeff(widget, val, args):
             ui = self.ui.chemistry
-            #assert not widget.zombie
             tw = ui.tablewidget_reactants if widget.side == 'reactants' else ui.tablewidget_products
             #reaction = self.project.reactions[self.current_reaction_name]
             if not self.working_reaction:
@@ -430,9 +429,8 @@ class Chemistry(object):
 
         def make_coeff_item(tw, row, val):
             le = ExtLineEdit()
-            #le.zombie = False
             le.parent = self
-            le.setMaximumWidth(80) #?
+            #le.setMaximumWidth(80) #?
             le.dtype = float
             le.min = 0
             le.setToolTip("Stoichometric coefficient")
@@ -732,7 +730,6 @@ class Chemistry(object):
                 for col in (2, 1, 0):
                     w = tw.cellWidget(row, col)
                     if w:
-                        #w.zombie = True
                         try:
                             w.value_updated.disconnect()
                         except:
