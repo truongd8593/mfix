@@ -252,9 +252,9 @@ class MainMenu(object):
         # developer mode
         cb = QtWidgets.QCheckBox()
         cb.setText('Enable developer tools.')
-        cb.setChecked(bool(self.settings.value('developer_mode', True)))
+        cb.setChecked(int(self.settings.value('developer_mode', 0)))
         cb.stateChanged.connect(self.enable_developer_mode)
-        sw_layout.addWidget(cb, 6, 0)
+        sw_layout.addWidget(cb, 6, 0, 1, 2)
 
         sw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
@@ -493,7 +493,7 @@ class MainMenu(object):
         self.settings.setValue('app_style', style)
 
     def enable_developer_mode(self, enable):
-
+        print(enable)
         self.change_mode('modeler')
         self.ui.pushButtonDeveloper.setVisible(enable)
         self.ui.pushButtonInterpreter.setVisible(enable)
@@ -502,4 +502,4 @@ class MainMenu(object):
         else:
             self.ui.tabWidgetGraphics.removeTab(self.ui.tabWidgetGraphics.indexOf(self.ui.api_response))
 
-        self.settings.setValue('developer_mode', enable)
+        self.settings.setValue('developer_mode', int(enable))

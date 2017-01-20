@@ -2615,8 +2615,10 @@ def main():
                          help='do not load vtk')
     parser.add_argument('-q', '--quit', action='store_true',
                         help='quit after opening file (for testing)')
-    parser.add_argument('-d', '--default_geo', action='store_true',
+    parser.add_argument('-g', '--default_geo', action='store_true',
                         help="Use default geometry, don't restore previous state.")
+    parser.add_argument('-d', '--developer', action='store_true',
+                        help="Enable developer mode.")
     parser.add_argument('-v', '--version', action='version', version=__version_str__)
 
     # parse the args
@@ -2670,6 +2672,11 @@ def main():
         cmd_output = SETTINGS.value('splitter_graphics_cmd_output')
         if cmd_output is not None:
             gui.ui.splitter_graphics_cmd_output.setSizes([int(num) for num in cmd_output])
+
+    # set developer mode
+    gui.enable_developer_mode(int(SETTINGS.value('developer_mode', 0)) or args.developer)
+
+    # show the gui
     gui.show()
 
     if args.exe:
