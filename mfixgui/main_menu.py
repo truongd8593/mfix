@@ -493,7 +493,6 @@ class MainMenu(object):
         self.settings.setValue('app_style', style)
 
     def enable_developer_mode(self, enable):
-        print(enable)
         self.change_mode('modeler')
         self.ui.pushButtonDeveloper.setVisible(enable)
         self.ui.pushButtonInterpreter.setVisible(enable)
