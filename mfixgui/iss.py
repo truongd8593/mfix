@@ -450,7 +450,7 @@ class ISS(object):
                     self.project.unregister_widget(w)
                     w.setParent(None)
                     w.deleteLater()
-
+                # make new ones
                 layout = ui.groupbox_solids_velocities.layout()
                 row = 0
                 key = 'is_vel_s'
