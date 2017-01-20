@@ -33,7 +33,7 @@ writeFiles(buildKeywordDoc(MODEL_DIR))
 
 data_files = []
 
-for subdir in ['defaults', 'model', 'tutorials', 'benchmarks']:
+for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests']:
     for root,dirs,files in walk(subdir):
         dir_files = []
         for f in files:

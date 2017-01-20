@@ -98,6 +98,9 @@
   MEW =   0.0                  ! particle-particle
   MEW_W = 0.0                  ! particle-wall
 
+  DES_INTERP_MEAN_FIELDS=.F.
+  DES_INTERP_ON=.F.
+  DES_ONEWAY_COUPLED=.T.
 
 ! Solids phase 1:
 !---------------------------------------------------------------------//

@@ -42,7 +42,7 @@
 
   Coordinates   = 'cartesian'
 
-  xlength = 0.20  
+  xlength = 0.20
   ylength = 0.50
 
   imax    = 40  ! set via command line
@@ -65,18 +65,18 @@
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
-  IC_X_w(1)   = 0.0     
-  IC_X_e(1)   = 0.2    
-  IC_Y_s(1)   = 0.0    
-  IC_Y_n(1)   = 0.5    
+  IC_X_w(1)   = 0.0
+  IC_X_e(1)   = 0.2
+  IC_Y_s(1)   = 0.0
+  IC_Y_n(1)   = 0.5
 
-  IC_EP_g(1)  = 1.0   
-  IC_U_g(1)   = 0.0   
-  IC_V_g(1)   = 0.0     
+  IC_EP_g(1)  = 1.0
+  IC_U_g(1)   = 0.0
+  IC_V_g(1)   = 0.0
   IC_P_g(1)   = 0.0
   IC_T_g(1)   = 350.0
 
-  IC_X_g(1,1) =   1.0	   
+  IC_X_g(1,1) =   1.0
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
@@ -85,32 +85,32 @@
 !---------------------------------------------------------------------//
 
 ! West wall
-  BC_X_w(1)   = 0.0 	
+  BC_X_w(1)   = 0.0
   BC_X_e(1)   = 0.0
-  BC_Y_s(1)   = 0.0	
+  BC_Y_s(1)   = 0.0
   BC_Y_n(1)   = 0.5
 
   BC_Type(1)  = 'NSW'
- 
+
   BC_TW_g(1)  = 400.0
 
 ! East wall
-  BC_X_w(2)   = 0.2 	
+  BC_X_w(2)   = 0.2
   BC_X_e(2)   = 0.2
-  BC_Y_s(2)   = 0.0	
+  BC_Y_s(2)   = 0.0
   BC_Y_n(2)   = 0.5
 
   BC_Type(2)  = 'NSW'
- 
+
   BC_TW_g(2)  = 320.0
 
 ! Zero heat flux on Top and Bottom walls
 !---------------------------------------------------------------------//
 
 ! South wall
-  BC_X_w(3)   = 0.0 	
+  BC_X_w(3)   = 0.0
   BC_X_e(3)   = 0.2
-  BC_Y_s(3)   = 0.0	
+  BC_Y_s(3)   = 0.0
   BC_Y_n(3)   = 0.0
 
   BC_Type(3)  = 'NSW'
@@ -119,9 +119,9 @@
   BC_C_T_g(3) = 0.0
 
 ! North wall
-  BC_X_w(4)   = 0.0 	
+  BC_X_w(4)   = 0.0
   BC_X_e(4)   = 0.2
-  BC_Y_s(4)   = 0.5	
+  BC_Y_s(4)   = 0.5
   BC_Y_n(4)   = 0.5
   BC_Type(4)  = 'NSW'
 
@@ -130,11 +130,11 @@
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
- 
-  Out_dt      = 1.                 
-  Res_dt      = 1.                 
-  Nlog        = 1                  
-  Full_log    = .T.              
+
+  Out_dt      = 1.
+  Res_dt      = 1.
+  Nlog        = 1
+  Full_log    = .T.
   Spx_dt      = 9*1.
 
   Resid_string  = 'T0'

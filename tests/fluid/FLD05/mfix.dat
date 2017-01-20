@@ -43,7 +43,7 @@
   XLENGTH = 1.00     IMAX =  3
   ZLENGTH = 1.00     NO_K = .T.
 
-  YLENGTH = 0.01   ! JMAX passed as argument
+  YLENGTH = 0.01     JMAX = 8
 
 #_______________________________________________________________________
 # GAS-PHASE SECTION
@@ -104,7 +104,7 @@
 ! specified pressure drop (DELP_X)
 !---------------------------------------------------------------------//
   CYCLIC_X_PD = .TRUE.
-! DELP_X = [-3.0, 3.0]  -passed as argument-
+  DELP_X =  -3.0
 
 
 

@@ -42,11 +42,11 @@
 
   Coordinates   = 'cartesian'
 
-  xlength = 0.20  
+  xlength = 0.20
   ylength = 0.01
 
-!  imax    = 8  ! set via command line
-!  jmax    = 8  ! set via command line
+  imax    = 8  ! set via command line
+  jmax    = 8  ! set via command line
 
   no_k = .T.
 
@@ -67,18 +67,18 @@
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
-  IC_X_w(1)   = 0.0     
-  IC_X_e(1)   = 0.2    
-  IC_Y_s(1)   = 0.0    
-  IC_Y_n(1)   = 0.01    
+  IC_X_w(1)   = 0.0
+  IC_X_e(1)   = 0.2
+  IC_Y_s(1)   = 0.0
+  IC_Y_n(1)   = 0.01
 
-  IC_EP_g(1)  = 1.0   
-  IC_U_g(1)   = 10.0   
-  IC_V_g(1)   = 0.0     
+  IC_EP_g(1)  = 1.0
+  IC_U_g(1)   = 10.0
+  IC_V_g(1)   = 0.0
   IC_P_g(1)   = 101325.0
   IC_T_g(1)   = 300.0
 
-  IC_X_g(1,1) =   1.0	   
+  IC_X_g(1,1) =   1.0
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
@@ -88,32 +88,32 @@
 
   CYCLIC_X_PD = .TRUE.
   DELP_X      = 240.0
- 
+
 ! Top and bottom walls: No-slip
 !---------------------------------------------------------------------//
 
 ! Bottom wall
-  BC_X_w(3)   = 0.0 	
+  BC_X_w(3)   = 0.0
   BC_X_e(3)   = 0.2
-  BC_Y_s(3)   = 0.0	
+  BC_Y_s(3)   = 0.0
   BC_Y_n(3)   = 0.0
 
   BC_Type(3)  = 'NSW'
 
 ! Top wall
-  BC_X_w(4)   = 0.0 	
+  BC_X_w(4)   = 0.0
   BC_X_e(4)   = 0.2
-  BC_Y_s(4)   = 0.01	
+  BC_Y_s(4)   = 0.01
   BC_Y_n(4)   = 0.01
   BC_Type(4)  = 'NSW'
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
- 
-  Out_dt      = 1.                 
-  Res_dt      = 1.                 
-  Nlog        = 1                  
-  Full_log    = .T.              
+
+  Out_dt      = 1.
+  Res_dt      = 1.
+  Nlog        = 1
+  Full_log    = .T.
   Spx_dt      = 9*1.
 
   Resid_string  = 'P0', 'U0', 'V0'

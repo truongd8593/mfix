@@ -65,7 +65,7 @@
 !---------------------------------------------------------------------//
   MMAX = 1
 
-  PARTICLES = 1                ! Number of partiles
+  PARTICLES = 1                ! Number of particles
 
 ! Friction coefficients. (1)
   MEW =   0.0                  ! particle-particle
@@ -77,6 +77,12 @@
   DESGRIDSEARCH_IMAX = 1
   DESGRIDSEARCH_JMAX = 1
   DESGRIDSEARCH_KMAX = 1
+
+  DES_EN_INPUT = 1.0
+  DES_EN_WALL_INPUT = 1.0
+  DES_INTG_METHOD = 'ADAMS_BASHFORTH'
+  KN = 50000
+  KN_W = 50000
 
 !......................................................................!
 ! The following keywords are required inputs for the simulation. They  !
@@ -134,7 +140,7 @@
 
 
 #_______________________________________________________________________
-# OUTPUT CONROL SECTION
+# OUTPUT CONTROL SECTION
 
   RES_DT = 1.0d3  ! interval to update restart (.RES) file
 

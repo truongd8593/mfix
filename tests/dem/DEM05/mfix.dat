@@ -35,7 +35,7 @@
   MOMENTUM_Y_EQ(0:2) = .F. .F. .F.
   MOMENTUM_Z_EQ(0:2) = .F. .F. .F.
 
-! No gravity 
+! No gravity
   GRAVITY = 0.0
 
 ! Invoke UDFs
@@ -45,7 +45,7 @@
   DES_INTG_METHOD='ADAMS_BASHFORTH'
 
 #_______________________________________________________________________
-# GEOMETRY SECTION 
+# GEOMETRY SECTION
 
   COORDINATES = 'Cartesian'
 
@@ -71,6 +71,14 @@
 ! Friction coefficients (1)
   MEW      = 0.092           ! particle-particle
   MEW_W    = 0.092           ! Particle-wall
+
+  DES_COLL_MODEL = 'LSD'
+  DES_EN_INPUT(1:3)=3*1.0
+  DES_EN_WALL_INPUT(1:2)=2*1.0
+  KN=1.72d7
+  KN_W=1.72d7
+  KT_FAC=@(1.48/1.72)
+  KT_W_FAC=@(1.48/1.72)
 
 !......................................................................!
 ! The following keywords are required inputs for the simulation. They  !
@@ -157,7 +165,7 @@
 
 
 #_______________________________________________________________________
-# OUTPUT CONROL SECTION
+# OUTPUT CONTROL SECTION
 
   RES_DT = 1.0d3  ! interval to update restart (.RES) file
 
