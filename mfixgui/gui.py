@@ -1603,8 +1603,6 @@ class MfixGui(QtWidgets.QMainWindow,
         if not stripped:
             # Let's just skip blank lines completely
             return
-        if not line.endswith('\n'):
-            line += '\n'
         lower = line.lower()
         logmsg = stripped
         # hack. TODO: real msg types, map to font/color
@@ -1640,6 +1638,8 @@ class MfixGui(QtWidgets.QMainWindow,
         cursor.setCharFormat(char_format)
         scrollbar = qtextbrowser.verticalScrollBar()
         scrolled_to_end = (scrollbar.value() == scrollbar.maximum())
+        if not line.endswith('\n'):
+            line += '\n'
         cursor.insertText(line)
         if scrolled_to_end:
             scrollbar.setValue(scrollbar.maximum())
