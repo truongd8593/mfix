@@ -309,10 +309,15 @@ class Equation(object):
             raise ValueError('invalid parameter(s): {}'.format(','.join(self.check_parameters())))
         else:
             name_dict = {}
-            for key, value in PARAMETER_DICT.items():
+            # only collect used parameters
+            for key in self.get_used_parameters():
+                value = PARAMETER_DICT.get(key, None)
+                if value is self:
+                    raise ValueError('Circular reference.')
                 try:
                     name_dict[key] = float(value)
-                except:
+                except ValueError:
+                    # could have been a string parameter
                     pass
             try:
                 return float(simple_eval(self.eq.lower(),
@@ -393,6 +398,19 @@ class Equation(object):
 
     def __pow__(self, x):
         return self.binop(x, '**')
+
+    # unary operations
+    def unaryop(self, c):
+        return Equation('%s(%s)' % (c, self.eq))
+
+    def __neg__(self):
+        return self.unaryop('-')
+
+    def __pos__(self):
+        return self.unaryop('+')
+
+    def __abs__(self):
+        return Equation('abs(%s)' % (self.eq))
 
 
 class Keyword(Comparable):
