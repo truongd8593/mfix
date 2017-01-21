@@ -1648,7 +1648,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
         <number>0</number>
        </property>
        <item row="0" column="0" colspan="2">
-        <widget class="QGroupBox" name="groupbox_write_intervals">
+        <widget class="QGroupBox" name="groupbox_spx">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -2258,7 +2258,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupbox_write_intervals_2">
+        <widget class="QGroupBox" name="groupbox_netcdf">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -2297,7 +2297,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            <number>6</number>
           </property>
           <item row="10" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_7">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_10">
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -2313,7 +2313,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="10" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_13">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_10">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2326,7 +2326,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="11" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_14">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_11">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2349,7 +2349,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="8" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_15">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_8">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2378,7 +2378,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_16">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_2">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2407,7 +2407,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="9" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_12">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_9">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2436,7 +2436,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_10">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_7">
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -2468,7 +2468,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="6" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_17">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_6">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2481,7 +2481,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="7" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_18">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_7">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2494,7 +2494,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="5" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_19">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_5">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2539,7 +2539,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="3" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_20">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_3">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2568,7 +2568,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="4" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_21">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_4">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2591,7 +2591,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_22">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_1">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2656,7 +2656,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="5" column="0">
-           <widget class="CheckBox" name="checkBox_5">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_6">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2669,7 +2669,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="6" column="0">
-           <widget class="CheckBox" name="checkBox_6">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_7">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2682,7 +2682,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="7" column="0">
-           <widget class="CheckBox" name="checkBox_7">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_9">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2695,7 +2695,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="8" column="0">
-           <widget class="CheckBox" name="checkBox_8">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_11">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2708,7 +2708,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="9" column="0">
-           <widget class="CheckBox" name="checkBox_9">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_12">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2721,7 +2721,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="10" column="0">
-           <widget class="CheckBox" name="checkBox_10">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_13">
             <property name="font">
              <font>
               <weight>50</weight>
@@ -2734,7 +2734,7 @@ QPushButton:checked { font: bold; background-color: transparent; }
            </widget>
           </item>
           <item row="11" column="0">
-           <widget class="CheckBox" name="checkBox_11">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_14">
             <property name="font">
              <font>
               <weight>50</weight>
