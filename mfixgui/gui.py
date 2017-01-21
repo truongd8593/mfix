@@ -2530,8 +2530,18 @@ class MfixGui(QtWidgets.QMainWindow,
         #    text = match.group(0)
         #    description = description.replace(text, '<i>Default: %s</i>'%text[1:-1])
 
+        for phrase in ('Variable Index List', ):
+            if phrase in description:
+                description = description.replace(phrase, '<br/>'+phrase)
+
         # Bullets
         description = description.replace(' o ', '<br/>&bull;')
+
+        if 'list:' in description.lower():
+            for n in range(1, 20):
+                s = ' %d: ' % n
+                description = description.replace(s, '<br/>&bull;%d: '%n)
+
 
         args = widget.args if hasattr(widget, 'args') else None
         if args is None:
