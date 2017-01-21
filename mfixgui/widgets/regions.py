@@ -279,10 +279,13 @@ class RegionsWidget(QtWidgets.QWidget):
             self.enable_disable_widgets(name, enable_all=True)
         self.toolbutton_region_delete.setEnabled(not in_use)
         self.lineedit_regions_name.setEnabled(not in_use)
+        self.checkbox_region_stl.setEnabled(not in_use)
         self.label_used_by.setText(', '.join(in_use))
 
         # type
-        self.label_region_type.setText(data.get('type', 'box'))
+        r_type = data.get('type', 'box')
+        self.label_region_type.setText(r_type)
+        self.checkbox_region_stl.setChecked(r_type == 'STL')
 
         # from
         for widget, value in zip(self.extent_lineedits[::2], data['from']):
@@ -346,7 +349,11 @@ class RegionsWidget(QtWidgets.QWidget):
             # Infer shape from extents
             if not in_use:
                 old_shape = row_data.get('type', 'box')
-                shape = row_data['type'] = self.get_region_type([row_data['from'],row_data['to']])
+                stl = self.checkbox_region_stl.isChecked()
+                if stl:
+                    shape = 'STL'
+                else:
+                    shape = row_data['type'] = self.get_region_type([row_data['from'],row_data['to']])
                 self.label_region_type.setText(shape)
                 if old_shape != shape:
                     self.vtkwidget.change_region_type(name, row_data)

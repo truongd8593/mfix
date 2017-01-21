@@ -232,7 +232,7 @@ QHeaderView::section:vertical{
         <number>5</number>
        </property>
        <item>
-        <widget class="QGroupBox" name="groupbox_region_parameters">
+        <widget class="QWidget" name="groupbox_region_parameters" native="true">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -241,12 +241,6 @@ QHeaderView::section:vertical{
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Parameters</string>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_16">
           <property name="leftMargin">
@@ -264,62 +258,11 @@ QHeaderView::section:vertical{
           <property name="spacing">
            <number>5</number>
           </property>
-          <item row="6" column="2">
-           <widget class="LineEdit" name="lineedit_regions_to_y"/>
-          </item>
-          <item row="5" column="2">
-           <widget class="LineEdit" name="lineedit_regions_from_y"/>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_32">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>From</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_35">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Type</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="LineEdit" name="lineedit_regions_from_x"/>
-          </item>
-          <item row="0" column="1" colspan="3">
-           <widget class="LineEdit" name="lineedit_regions_name"/>
+          <item row="7" column="3">
+           <widget class="LineEdit" name="lineedit_regions_to_z"/>
           </item>
           <item row="6" column="1">
-           <widget class="LineEdit" name="lineedit_regions_to_x"/>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_33">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>To</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="3">
-           <widget class="LineEdit" name="lineedit_regions_to_z"/>
+           <widget class="LineEdit" name="lineedit_regions_from_x"/>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_34">
@@ -334,8 +277,64 @@ QHeaderView::section:vertical{
             </property>
            </widget>
           </item>
-          <item row="5" column="3">
-           <widget class="LineEdit" name="lineedit_regions_from_z"/>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_35">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="LineEdit" name="lineedit_regions_name"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QToolButton" name="toolbutton_color">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" colspan="3">
+           <widget class="QLabel" name="label_region_type">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_33">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>To</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_4">
@@ -350,18 +349,39 @@ QHeaderView::section:vertical{
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QToolButton" name="toolbutton_color">
+          <item row="7" column="2">
+           <widget class="LineEdit" name="lineedit_regions_to_y"/>
+          </item>
+          <item row="6" column="2">
+           <widget class="LineEdit" name="lineedit_regions_from_y"/>
+          </item>
+          <item row="7" column="1">
+           <widget class="LineEdit" name="lineedit_regions_to_x"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_5">
             <property name="text">
-             <string/>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
+             <string>Used by</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0" colspan="4">
-           <widget class="QGroupBox" name="groupbox_stl">
+          <item row="1" column="1" colspan="3">
+           <widget class="QLabel" name="label_used_by">
+            <property name="styleSheet">
+             <string notr="true">QLabel{
+color: red;
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="3">
+           <widget class="LineEdit" name="lineedit_regions_from_z"/>
+          </item>
+          <item row="10" column="0" colspan="4">
+           <widget class="QWidget" name="groupbox_stl" native="true">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -371,24 +391,12 @@ QHeaderView::section:vertical{
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="title">
-             <string>STL </string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
             <layout class="QGridLayout" name="gridLayout">
              <property name="leftMargin">
-              <number>0</number>
+              <number>20</number>
              </property>
              <property name="topMargin">
-              <number>5</number>
+              <number>0</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
@@ -398,8 +406,14 @@ QHeaderView::section:vertical{
              </property>
              <item row="2" column="0" colspan="3">
               <widget class="QGroupBox" name="groupbox_filter_facets">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="title">
-                <string>Filter facets based on normals</string>
+                <string>Filter facets based on normals:</string>
                </property>
                <property name="flat">
                 <bool>true</bool>
@@ -504,44 +518,47 @@ QHeaderView::section:vertical{
             </layout>
            </widget>
           </item>
-          <item row="7" column="2">
-           <spacer name="verticalSpacer_2">
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_32">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>From</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="4">
+           <widget class="QCheckBox" name="checkbox_region_stl">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Select Facets (STL):</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>40</height>
+              <height>20</height>
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Used by</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="QLabel" name="label_used_by">
-            <property name="styleSheet">
-             <string notr="true">QLabel{
-color: red;
-}</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" colspan="3">
-           <widget class="QLabel" name="label_region_type">
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>
@@ -606,5 +623,22 @@ color: red;
   <tabstop>checkbox_slice_facets</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>checkbox_region_stl</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>groupbox_stl</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>75</x>
+     <y>480</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>14</x>
+     <y>543</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
