@@ -43,7 +43,7 @@ test-load-all:
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp
-	make -C .. mfix
+	make -C .. mfix mfixsolver.so
 
 pyinst: all ../mfix
 	pyinstaller gui.spec

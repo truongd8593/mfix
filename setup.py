@@ -49,7 +49,7 @@ class MfixBuildExt(build_ext):
         '''
         # if platform.system() == 'Windows':
         subprocess.call(["./configure_mfix", "PYTHON_BIN=%s" % sys.executable, "--python"])
-        subprocess.call(["make"])
+        subprocess.call(["make", "mfixsolver.so"])
 
         # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
         # ./configure_mfix --python --host=x86_64-w64-mingw32

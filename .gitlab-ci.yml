@@ -17,12 +17,6 @@ build_job:
     - env PYTHON_BIN=${ANACONDA_BIN}/python ./configure_mfix --python
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel -d ${PYPATH}
     - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d ${PYPATH}
-    - make
-  artifacts:
-    expire_in: 1 week
-    paths:
-    - mfix
-    - mfixsolver*
   only:
     - branches
   tags:
