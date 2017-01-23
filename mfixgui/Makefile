@@ -16,13 +16,19 @@ clean:
 	make -C .. clean
 
 test2: all
-	MFIX_NO_VTK=1 xvfb-run python2 -m nose -v
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
+	pkill Xvfb
 
 test3: all
-	MFIX_NO_VTK=1 xvfb-run python3 -m nose -v
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
+	pkill Xvfb
 
 test: all
-	MFIX_NO_VTK=1 xvfb-run nosetests -v
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
+	pkill Xvfb
 
 test-gui:
 	nosetests -v
@@ -31,7 +37,9 @@ tags:
 	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
 
 test-load-all:
-	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xvfb-run xargs -0 -n 1 ./run.sh -lwarning -q |& egrep --line-buf -v 'GL|Unsupported screen format' >& /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
+	(Xvfb :99 &)
+	find .. -name mfix.dat -print0 | DISPLAY=:99 MFIX_NO_VTK=1 xargs -0 -n 1 ./run.sh -lwarning -q |& egrep --line-buf -v 'GL|Unsupported screen format' >& /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
+	pkill Xvfb
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp
