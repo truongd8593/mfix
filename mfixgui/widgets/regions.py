@@ -360,15 +360,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.parent.set_unsaved_flag()
 
-        if key == 'name':
-            new_name = value.get('name')
-            if new_name:
-                self.parent.change_region_name(name, new_name)
-            else:
-                self.parent.error('invalid value %s' % value)
-                return
-
-        elif 'to' in key or 'from' in key:
+        if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
             val = list(value.values())[0]
@@ -412,6 +404,13 @@ class RegionsWidget(QtWidgets.QWidget):
 
         elif 'name' in key and name != list(value.values())[0]:
             new_name = get_unique_string(list(value.values())[0], list(data.keys()))
+
+            if new_name:
+                self.parent.change_region_name(name, new_name)
+            else:
+                self.parent.error('invalid value %s' % value)
+                return
+
             data = OrderedDict(((new_name, v) if k == name else (k, v) for
                                 (k, v) in data.items()))
 
