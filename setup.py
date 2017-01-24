@@ -62,7 +62,10 @@ class MfixBuildExt(build_ext):
         if not mfixsolver_sharedlib:
             raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
         mfixsolver_sharedlib = mfixsolver_sharedlib[0]
-        copyfile(path.join(HERE, mfixsolver_sharedlib), self.get_ext_fullpath(ext.name))
+        src = path.join(HERE, mfixsolver_sharedlib)
+        dest = self.get_ext_fullpath(ext.name)
+        if src != dest:
+            copyfile(src, dest)
 
 setup(
     name='mfixgui',
