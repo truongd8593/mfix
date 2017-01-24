@@ -146,6 +146,7 @@ setup(
         'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
         'mfixgui.icons': ['*.png'],
         'mfixgui.uifiles': ['*'],
+        'mfixgui.colormaps': ['*'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may

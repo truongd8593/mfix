@@ -25,8 +25,8 @@ except RuntimeError:
 
 try:
     import vtk
-    VTK_AVAILABLE = True
     from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, build_qicons
+    VTK_AVAILABLE = True
     LOOKUP_TABLES = build_vtk_lookup_tables()
     GLYPHS = {
         'sphere':   vtk.vtkSphereSource,
@@ -40,7 +40,7 @@ except:
     LOOKUP_TABLES = {}
 
 from qtpy import QtCore, QtWidgets, QtGui, uic
-from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE
+from mfixgui.widgets.base_vtk import BaseVtkWidget
 from mfixgui.widgets.base import CustomPopUp
 from mfixgui.tools.general import get_icon
 
