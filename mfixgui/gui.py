@@ -726,12 +726,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def check_region_in_use(self, name):
-        return any(check(name) for check in (self.ics_check_region_in_use,
-                                             self.bcs_check_region_in_use,
-                                             self.pss_check_region_in_use,
-                                             self.iss_check_region_in_use,
-                                             self.output_check_region_in_use))
-                                             # any more places region can be used?
+        return [t for t, check in (('ICs', self.ics_check_region_in_use),
+                                   ('BCs', self.bcs_check_region_in_use),
+                                   ('PSs', self.pss_check_region_in_use),
+                                   ('ISs', self.iss_check_region_in_use),
+                                   ('Output', self.output_check_region_in_use))
+                                    # any more places region can be used?
+                                   if check(name)]
 
 
     def change_region_name(self, name, new_name):
