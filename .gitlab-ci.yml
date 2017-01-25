@@ -23,7 +23,6 @@ build_job:
   only:
     - branches
   tags:
-    - mfixgui
     - linux
 
 install_job:
@@ -34,7 +33,6 @@ install_job:
   only:
     - branches
   tags:
-    - mfixgui
     - linux
 
 build_job_mac:
