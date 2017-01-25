@@ -14,7 +14,6 @@ variables:
 build_job:
   stage: build
   script:
-    - env PYTHON_BIN=${ANACONDA_BIN}/python ./configure_mfix --python
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel -d ${PYPATH}
     - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d ${PYPATH}
   artifacts:
@@ -41,8 +40,8 @@ install_job:
 build_job_mac:
   stage: build
   script:
-    - env PYTHON_BIN=$HOME/anaconda2/bin/python FC=gfortran-6 CC=gcc-6 ./configure_mfix --python
-    - $HOME/anaconda2/bin/python setup.py bdist_wheel
+    - env FC=gfortran-6 CC=gcc-6 python3 setup.py bdist_wheel
+    - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
   artifacts:
     expire_in: 1 week
     paths:
