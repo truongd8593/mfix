@@ -41,7 +41,7 @@ install_job:
 build_job_mac:
   stage: build
   script:
-    - env PYTHON_BIN=python ./configure_mfix --python
+    - env PYTHON_BIN=python FC=gfortran-6 CC=gcc-6 ./configure_mfix --python
     - python setup.py bdist_wheel
   artifacts:
     expire_in: 1 week
