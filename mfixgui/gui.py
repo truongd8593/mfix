@@ -2042,13 +2042,13 @@ class MfixGui(QtWidgets.QMainWindow,
         performing template expansion and modifying comments,
         then open the new project"""
 
-        runname = ''
+        run_name = ''
         try:
             with open(template) as infile:
                 for line in infile.readlines():
                     match = re.match("\s*run_name\s*=\s*'(?P<run_name>\w*)'", line, flags=re.IGNORECASE)
                     if match:
-                        runname = match.group('run_name')
+                        run_name = match.group('run_name')
 
         except Exception as e:
             self.message(text="Error %s in project template %s:  %s" % (template,e),
@@ -2057,30 +2057,39 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_no_project()
             return
 
-        if not runname:
+        if not run_name:
             log.warn('RUN_NAME missing from project template: %s' % template)
 
-        project_file = QtWidgets.QFileDialog.getSaveFileName(
-            self, caption='Create Project File',
-            directory=runname, filter="MFX files (*.mfx)")
-
-        if PYQT5:
-            project_file = project_file[0]
-        if not project_file:
+        run_name, ok = QtWidgets.QInputDialog.getText(self, "Run name", "Enter the name for your case:", text=run_name)
+        if not ok or not run_name:
             return
 
-        if not project_file.endswith(".mfx"):
-            project_file = project_file + ".mfx"
+        project_loc = QtWidgets.QFileDialog.getExistingDirectory(
+            self, caption='Create Project Location')
 
-        if os.path.exists(project_file):
-            if not self.confirm_clobber(project_file):
+        if not project_loc:
+            return
+
+        if not self.check_writable(project_loc):
+            return
+
+        project_dir = os.path.join(project_loc, run_name)
+
+        if os.path.exists(project_dir):
+            if not self.confirm_clobber(project_dir):
                 return
 
-        basename = os.path.basename(project_file)
-        project_dir = os.path.dirname(project_file)
-        run_name = os.path.splitext(basename)[0]
-        if not self.check_writable(project_dir):
-            return
+        os.makedirs(project_dir)
+
+        extra_files = []
+        globs = ["*.msh", "*.f", "*.stl", "*.dat"]
+        for pattern in globs:
+            for extra_file in glob.glob(os.path.join(os.path.dirname(template), pattern)):
+                if "mfix.dat" not in extra_file:
+                    extra_files.append(extra_file)
+
+        project_file = os.path.join(project_dir, run_name + ".mfx")
+
         # Start from template
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')
@@ -2096,8 +2105,8 @@ class MfixGui(QtWidgets.QMainWindow,
                             line = line.replace('${run_name}', run_name)
                         outfile.write(line)
             geometry_stl = os.path.join(os.path.dirname(template), 'geometry.stl')
-            if os.path.exists(geometry_stl):
-                shutil.copyfile(geometry_stl, os.path.join(project_dir, 'geometry.stl'))
+            for extra_file in extra_files:
+                shutil.copyfile(extra_file, os.path.join(project_dir, os.path.basename(extra_file)))
 
         except Exception as e:
             self.message(text="Error %s creating new project" % e,
