@@ -31,11 +31,9 @@ from timeit import default_timer as timer
 from functools import wraps
 from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
 
-sys.path.append(os.getcwd())
+# current working directory has priority for mfixsolver (for test cases with UDFs)
+sys.path.insert(0, os.getcwd())
 pidfilename = None
-
-# append the path of the symlink __file__ (not its realpath)
-sys.path.append(os.path.dirname(__file__))
 
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
