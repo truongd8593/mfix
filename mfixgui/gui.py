@@ -1765,6 +1765,21 @@ class MfixGui(QtWidgets.QMainWindow,
         """Open run popup dialog"""
         if not self.check_save():
             return
+
+        project_dir = self.get_project_dir()
+        udfs = glob.glob(os.path.join(project_dir, "*.f"))
+        mfixsolver = glob.glob(os.path.join(project_dir, "mfixsolver*"))
+        if udfs and not mfixsolver:
+            udf_msg = "Warning: Fortran source files exist for this project, but no project-specific mfixsolver was found. This case probably won't run correctly unless mfixsolver is (re)built.  See the user manual for instructions on building mfixsolver.  Proceed anyway?"
+            response = self.message(title='Warning',
+                            icon='question',
+                            text=udf_msg,
+                            buttons=['yes', 'no'],
+                            default='no')
+            if response is not 'yes':
+                return
+
+
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
