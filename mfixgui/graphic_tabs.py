@@ -26,7 +26,7 @@ PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
     ['dt', {'left':'dt', 'bottom':'Time Step', 'var':'dt'}],
     ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
-    ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
+    ['time', {'left':'Simulation Time [s]', 'bottom':'Elapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
 
 class BaseGraphicTab(QtWidgets.QWidget):
