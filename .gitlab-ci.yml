@@ -6,7 +6,7 @@
 
 stages:
   - build
-  - install
+  - deploy
 
 variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
@@ -26,7 +26,7 @@ build_job:
     - linux
 
 install_job:
-  stage: install
+  stage: deploy
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install ${PYPATH}/*cp27*.whl --prefix=${PYPATH}
@@ -47,5 +47,4 @@ build_job_mac:
   only:
     - branches
   tags:
-    - mfixgui
     - mac
