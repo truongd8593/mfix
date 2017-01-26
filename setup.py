@@ -120,12 +120,13 @@ setup(
     # simple. Or you can use find_packages().
     packages=[
         'mfixgui',
+        'mfixgui.colormaps',
         'mfixgui.doc',
         'mfixgui.icons',
         'mfixgui.tests',
         'mfixgui.tools',
-        'mfixgui.widgets',
         'mfixgui.uifiles',
+        'mfixgui.widgets',
     ],
 
     # List run-time dependencies here.  These will be installed by pip when
