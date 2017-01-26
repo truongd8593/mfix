@@ -130,7 +130,7 @@ class Chemistry(object):
             dh = reaction.get('dh')
             if dh is None:
                 dh = ui.lineedit_dh.value #restore
-                if dh=='':
+                if dh == '':
                     dh = None
                 if dh is not None:
                     reaction['dh'] = dh
@@ -189,10 +189,10 @@ class Chemistry(object):
         val = vals.get('fracdh')
         if val in (None, ''):
             val = 0.0
-        if args==[0]:
+        if args == [0]:
             reaction['fracdh'] = {phases[0]: val, phases[1]: 1.0-val}
             ui.lineedit_fracdh_2.updateValue('fracdh', 1.0-val)
-        elif args==[1]:
+        elif args == [1]:
             reaction['fracdh'] = {phases[0]: 1.0-val, phases[1]: val}
             ui.lineedit_fracdh_1.updateValue('fracdh', 1.0-val)
 
@@ -230,7 +230,7 @@ class Chemistry(object):
                 phase = cb.currentIndex()
                 phases[(tw, row)] = phase
         for tw in (ui.tablewidget_reactants, ui.tablewidget_products):
-            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            side = 'reactants' if tw == ui.tablewidget_reactants else 'products'
             # We need to determine, for each combobox item, how many phases would be
             # referenced if the combobox were set to that item
             for row in range(tw.rowCount()-1):
@@ -335,7 +335,7 @@ class Chemistry(object):
             if self.working_reaction is None:
                 return
             reaction = self.working_reaction
-            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            side = 'reactants' if tw == ui.tablewidget_reactants else 'products'
             species = self.chemistry_find_available_species(side, idx)
             reaction[side][row][0] = species
             item = make_species_item(tw, row, idx, species)
@@ -359,7 +359,7 @@ class Chemistry(object):
 
         def make_phase_item(tw, row, phase):
             ui = self.ui.chemistry
-            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            side = 'reactants' if tw == ui.tablewidget_reactants else 'products'
             cb = ComboBox()
             phases = [self.fluid_phase_name]
             for name in self.solids.keys():
@@ -369,7 +369,7 @@ class Chemistry(object):
             if phase is not None:
                 cb.setCurrentIndex(phase)
             cb.currentIndexChanged.connect(lambda idx, tw=tw, cb=cb, row=row: handle_phase(tw, cb, row, idx))
-            if side=='reactants': # additional callbacks for pseudo-selection
+            if side == 'reactants': # additional callbacks for pseudo-selection
                 cb.activated.connect(lambda idx, row=row: self.chemistry_handle_reactant_selection(row))
             else:
                 cb.activated.connect(lambda idx, row=row: self.chemistry_handle_product_selection(row))
@@ -380,7 +380,7 @@ class Chemistry(object):
             #tw.cellWidget(row, COL_SPECIES).setText('1.0')
             self.reaction_edited = True
             species = tw.cellWidget(row, COL_SPECIES).currentText()
-            side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            side = 'reactants' if tw == ui.tablewidget_reactants else 'products'
             #reaction = self.project.reactions[self.current_reaction_name]
             reaction = self.working_reaction
             reaction[side][row][0] = species
@@ -393,13 +393,13 @@ class Chemistry(object):
             idx = 0
             for s in self.species_of_phase(phase):
                 cb.addItem(s)
-                if s == species:
+                if s.lower() == species.lower():
                     cb.setCurrentIndex(idx)
                 idx += 1
             cb.currentIndexChanged.connect(lambda idx, tw=tw, cb=cb, row=row:
                                            handle_species(tw, cb, row, idx))
             side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
-            if side=='reactants': # additional callbacks for pseudo-selection
+            if side == 'reactants': # additional callbacks for pseudo-selection
                 cb.activated.connect(lambda idx, row=row:
                                      self.chemistry_handle_reactant_selection(row))
             else:
@@ -436,7 +436,7 @@ class Chemistry(object):
             le.setToolTip("Stoichometric coefficient")
             le.key = ''
             le.updateValue('', val)
-            le.side = 'reactants' if tw==ui.tablewidget_reactants else 'products'
+            le.side = 'reactants' if tw == ui.tablewidget_reactants else 'products'
             le.tw = tw
             le.row = row
             le.value_updated.connect(handle_coeff)
@@ -447,7 +447,7 @@ class Chemistry(object):
             data = reaction.get(side,[])
             #data = self.project.reactions[name].get(side, [])
             # Add a "total" row, only if there is data
-            tw = ui.tablewidget_reactants if side=='reactants' else ui.tablewidget_products
+            tw = ui.tablewidget_reactants if side == 'reactants' else ui.tablewidget_products
             tw.setRowCount(len(data)+1 if data else 0)
             for (row, (species, coeff)) in enumerate(data):
                 phase = self.find_species_phase(species)
@@ -467,7 +467,7 @@ class Chemistry(object):
                 item.setFont(font)
                 tw.setItem(row+1, COL_COEFF, item)
             self.fixup_chemistry_table(tw)
-            row = 0 if len(data)==1 else None # Auto-select single row
+            row = 0 if len(data) == 1 else None # Auto-select single row
             if side == 'reactants':
                 self.chemistry_handle_reactant_selection(row)
             else:
@@ -531,7 +531,7 @@ class Chemistry(object):
     def format_chem_eq(self, reactants, products):
         tmp = []
         for side in reactants, products:
-            tmp.append(' + '.join(species if coeff==1.0 else '%g*%s' % (coeff, species)
+            tmp.append(' + '.join(species if coeff == 1.0 else '%g*%s' % (coeff, species)
                                   for (species, coeff) in side))
         chem_eq = ' --> '.join(tmp)
         return chem_eq
@@ -638,6 +638,8 @@ class Chemistry(object):
         """return sorted list of phase indices involved in specified reaction"""
         alias_list = [k[0] for k in reaction.get('reactants',[]) + reaction.get('products',[])]
         phases = list(set(map(self.find_species_phase, alias_list)))
+        if None in phases: #Oops, couldn't find phase
+            phases.remove(None)
         phases.sort()
         return phases
 
@@ -648,7 +650,7 @@ class Chemistry(object):
         # Fewer than 2 species, no chemistry possible
         if len(self.fluid_species) + sum(map(len, self.solids_species.values())) < 2:
             disabled = True
-        if any(self.project.get_value('solids_model', args=[i])=='PIC'
+        if any(self.project.get_value('solids_model', args=[i]) == 'PIC'
                for (i,s) in enumerate(self.solids, 1)):
             disabled = True
         if self.project.reactions: # Don't ever disable pane if reactions are defined
@@ -666,7 +668,7 @@ class Chemistry(object):
         ncols = tw.columnCount()
 
         for n in range(0, ncols):
-            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+            resize(n, hv.Stretch if n == stretch_column else hv.ResizeToContents)
 
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
@@ -675,7 +677,7 @@ class Chemistry(object):
         # outside of this function.  We need to call this everytime window geometry changes
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
-        if nrows==0:
+        if nrows == 0:
             row_height = 0
             height = header_height+scrollbar_height
         else:
@@ -928,12 +930,12 @@ class Chemistry(object):
     def chemistry_check_species_in_use(self, alias):
         for (rxn_name, reaction) in self.project.reactions.items():
             for side in 'reactants', 'products':
-                if any(v[0]==alias for v in reaction.get(side,[])):
+                if any(v[0] == alias for v in reaction.get(side,[])):
                     return rxn_name
         reaction = self.working_reaction
         if reaction:
             for side in 'reactants', 'products':
-                if any(v[0]==alias for v in reaction.get(side,[])):
+                if any(v[0] == alias for v in reaction.get(side,[])):
                     return self.current_reaction_name
         return False
 
@@ -943,14 +945,14 @@ class Chemistry(object):
         if reaction is not None:
             for side in 'reactants', 'products':
                 for v in reaction.get(side, []):
-                    if v[0]==old_name:
+                    if v[0] == old_name:
                         v[0] = new_name
 
         for (rxn_name, reaction) in self.project.reactions.items():
             changed = False
             for side in 'reactants', 'products':
                 for v in reaction.get(side, []):
-                    if v[0]==old_name:
+                    if v[0] == old_name:
                         v[0] = new_name
                         changed = True
             if changed:
