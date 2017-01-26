@@ -37,14 +37,9 @@ from mfixgui.widgets.base import LineEdit # a little special handling needed
 from mfixgui.tools.general import (format_key_with_args, parse_key_with_args,
                            plural, to_text_string)
 from mfixgui.tools import read_burcat
+from mfixgui.tools import keyword_args
 from mfixgui.unit_conversion import cgs_to_SI
 
-def convert_cm_to_m(s):
-    '''given a string, try to convert number from cm to m, else return string'''
-    try:
-        return "{:.10e}".format(float(s)/100.0)
-    except ValueError:
-        return s
 
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
@@ -234,19 +229,21 @@ class ProjectManager(Project):
            * prefetch entries from Burcat db and add to THERMO DATA
            * set ic_ep_s from ic_ep_g  (issues/142)
            * convert gravity scalar to vector
-           *
+           * convert VTK_VAR and VTK_VARLIST keys to vtk_* booleans
 
         Reports any non-fatal load errors via the 'warnings' module
 
         Returns False if input file rejected, True if opened (with possible warnings)
 
-        See also project.parsemfixdat and gui.open_project
+        This is the intermediary between gui.open_project and project.parsemfixdat
         """
 
         n_errs = 0
         excs = []
         with warnings.catch_warnings(record=True) as ws:
+            # Load the file and do basic keyword parsing
             self.parsemfixdat(fname=project_file)
+
             # Check for some invalid conditions
             if self.get_value('use_rrates'):
                 raise ValueError('use_rrates not supported')
@@ -261,8 +258,7 @@ class ProjectManager(Project):
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
                     # Don't attempt to convert non-floating point values
-                    #if kw.key not in cgs_to_SI:
-                    #   continue
+
                     dtype = self.keyword_doc.get(kw.key,{}).get('dtype')
                     if dtype != 'DP':
                         continue
@@ -317,7 +313,7 @@ class ProjectManager(Project):
             self.gasSpecies.sort(key=lambda a: a.ind)
             self.solids.sort(key=lambda a:a.ind)
 
-            # Parse THERMO DATA section (parsemfixdat does not handle this)
+            # Parse THERMO DATA section NB: parsemfixdat does not handle this
             user_species = {}
             if self.thermo_data is not None:
                 for (species, lines) in self.thermo_data.items():
@@ -326,19 +322,17 @@ class ProjectManager(Project):
                     for (species, phase, tmin, tmax, mol_weight, coeffs, comment) in data:
                         user_species[(species, phase)] = (tmin, tmax, mol_weight, coeffs, comment)
 
-
             for g in self.gasSpecies:
                 # First look for definition in THERMO DATA section
                 phase = g.phase.upper() # phase and species_g are guaranteed to be set
                 species = g.get('species_g')
 
-                source = "User Defined"
+                source = "User Defined" # TODO load comment from THERMO DATA
                 if species is None: # Should not happen (?)
                     species = 'Gas %s' % g.ind
                     source = "Auto"
                     #warnings.warn("no species_g for gas %d" % g.ind)
                 alias = g.get('species_alias_g', species)
-
                 mw_g = g.get('mw_g', None)
                 # Note, we're going to unset mw_g and migrate it into THERMO DATA
 
@@ -406,11 +400,10 @@ class ProjectManager(Project):
 
                 # Species/alias unification!
                 if species != alias:
-                    self.gui.print_internal("Renaming %s to %s" % (species, alias), font="Monospace") # log?
+                    self.gui.print_internal("Renaming %s to %s" % (species, alias), font="Monospace")
                     self.gui.set_unsaved_flag()
                     self.thermo_data.pop(species, None)
                     species = alias # Create a new species, so we can override mol. weight, etc
-
 
                 self.gui.fluid_species[species] = species_data
 
@@ -559,6 +552,61 @@ class ProjectManager(Project):
             # issues/149 - don't save nodes[ijk] in file, pass on cmdline
             skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
 
+            # SRS: Many mfix.dat files may use a different specification
+            # for VTK input. There will need to be a way of catching
+            # the 'old' format and converting it to this input style.
+
+            # from mfix_user_guide
+            varlist_map = {
+                1:    ('ep_g',),                 #  Void fraction (EP_g)
+                2:    ('p_g', 'p_star'),         #  Gas pressure, solids pressure
+                3:    ('u_g', 'v_g', 'w_g'),     #  Gas velocity
+                4:    ('u_s', 'v_s', 'w_s'),     #  Solids velocity
+                5:    ('rop_s',),                #  Solids density
+                6:    ('t_g', 't_s'),            #  Gas and solids temperature
+                7:    ('x_g', 'x_s'),            #  Gas and solids mass fractions
+                8:    ('theta_m',),              #  Granular temperature
+                9:    ('scalar',),               #  Scalar
+                10:   ('rrate',),                #  Reaction rates
+                11:   ('k_turb_g', 'e_turb_g'),  #  K and Epsilon
+                12:   ('vorticity', 'lambda_2'), #  Vorticity magnitude and lambda_2
+                100:  ('partition',),            #  Grid Partition
+                101:  ('bc_id',),                #  Boundary Condition ID
+                102:  ('dwall',),                #  Distance to wall
+                103:  ('facet_count_des',),      #  DEM facet count
+                104:  ('nb_facet_des',),         #  DEM Neighboring facets
+                999:  ('ijk',),                  #  Cell IJK index
+                1000: ('normal',)                #  Cut face normal vector
+                }
+            vtk_varlist = self.get_key_indices('vtk_varlist')
+            vtk_var = self.get_key_indices('vtk_var')
+            #print("V", vtk_var)
+            if vtk_var:
+                # find region index for whole domain
+                vtk_varlist += [(0,x[0]) for x in vtk_var]
+            for (v,i) in vtk_varlist:
+                varnames = varlist_map.get(i)
+                if not varnames:
+                    warnings.warn("unknown vtk_var %s" % i)
+                mmax = len(self.gui.solids)
+                for vn in varnames:
+                    key = 'vtk_' + vn
+                    args = keyword_args.keyword_args.get(key)
+                    if args == ['vtk']:
+                        self.gui.update_keyword(key, True, args=[v])
+                    elif args == ['vtk', 'phase']:
+                        for p in range(1, 1+mmax):
+                            self.gui.update_keyword(key, True, args=[v, p])
+                    else:
+                        print(key, v, i, args)
+            self.gui.unset_keyword('vkt_varlist')
+
+
+
+            self.gui.unset_keyword('vkt_var')
+
+
+
             # Submit all remaining keyword updates, except the ones we're skipping
             # some of these changes may cause new keywords to be instantiated,
             # so iterate over a copy of the list, which may change
@@ -700,14 +748,23 @@ class ProjectManager(Project):
             warnings.warn('%s saved as %s' % (basename, basename+'.cgs')) # info?
             os.rename(filename, cgs_file)
 
+        def cm_to_m_str(s):
+            '''attempt converting string value s from cgs to SI, returning original
+            string if not a float'''
+
+            try:
+                return "{:.10e}".format(float(s)/100.0)
+            except ValueError:
+                return s
+
+
         with open(filename, 'w') as out_file:
             for line in open(cgs_file, 'r'):
                 leading_spaces = len(line) - len(line.lstrip(' '))
-                line = line.strip()
-                tok = line.split()
-                # convert floats
-                vals = list(map(convert_cm_to_m, tok))
+                # convert floats to SI
+                vals = [cm_to_m_str(t) for t in line.strip().split()]
                 out_file.write(' '.join([' '*leading_spaces]+vals) + '\n')
+
 
     def register_widget(self, widget, keys=None, args=None):
         """ Register a widget with the project manager. The widget must have a
@@ -775,18 +832,15 @@ class ProjectManager(Project):
 
 
     def update_thermo_data(self, species_dict):
-        """Update definitions in self.thermo_data based on data in species_dict.
-        Unmatching entries are not modified"""
+        """Update definitions in self.thermo_data based on data in species_dict."""
 
-        changed = False
         update_dict = dict((species, format_burcat(species, data))
                            for (species, data) in species_dict.items())
-        for (k,v) in update_dict.items():
-            if self.thermo_data.get(k) != v:
-                changed = True
-                break
+
+        changed = any(self.thermo_data.get(k) != update_dict[k] for k in update_dict)
 
         if changed:
+            log.info("Update THERMO_DATA")
             self.thermo_data.update(update_dict)
             self.gui.set_unsaved_flag()
 
