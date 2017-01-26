@@ -371,13 +371,7 @@ class VtkWidget(BaseVtkWidget):
             layout.addWidget(label, i, 4)
         self.set_visual_btn_values()
 
-        for btn in [self.toolbutton_reset,
-                    self.toolbutton_view_xy,
-                    self.toolbutton_view_yz,
-                    self.toolbutton_view_xz,
-                    self.toolbutton_perspective,
-                    self.toolbutton_screenshot,
-                    self.toolbutton_visible]:
+        for btn in [self.toolbutton_visible]:
             self.button_bar_layout.addWidget(btn)
             btn.setAutoRaise(True)
 

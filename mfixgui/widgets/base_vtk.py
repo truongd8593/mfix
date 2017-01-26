@@ -212,6 +212,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
                     self.toolbutton_screenshot,]:
             self.button_bar_layout.addWidget(btn)
             btn.setAutoRaise(True)
+            btn.setFocusPolicy(QtCore.Qt.ClickFocus)
 
     # --- render ---
     def render(self, force_render=False, defer_render=None):

@@ -492,6 +492,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.button_bar_layout.addWidget(btn)
             if isinstance(btn, QtWidgets.QToolButton):
                 btn.setAutoRaise(True)
+                if btn is not self.toolbutton_visible:
+                    btn.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         self.button_bar_layout.addStretch()
 
