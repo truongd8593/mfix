@@ -19,26 +19,22 @@ clean:
 	find .. -name particle_input.dat.cgs -delete
 	find .. -name geometry.stl.original -delete
 
-test2: all
+
+tags:
+	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
+
+test: clean test2 test3
+
+test2:
 	(Xvfb :99 &)
 	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
 	pkill Xvfb
 
-test3: all
+test3:
 	(Xvfb :99 &)
 	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
 	pkill Xvfb
 
-test: all
-	(Xvfb :99 &)
-	DISPLAY=:99 MFIX_NO_VTK=1 nosetests -v
-	pkill Xvfb
-
-test-gui:   # test with GUI enabled
-	nosetests -v
-
-tags:
-	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
 
 test-load-all: clean test-load-all-2 test-load-all-3
 
