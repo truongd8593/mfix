@@ -277,7 +277,7 @@ class Output(object):
             height =  (header_height+scrollbar_height
                        + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
         ui.top_frame.setMaximumHeight(height+24)
-        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
         ui.top_frame.updateGeometry()
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(header_height)

@@ -352,10 +352,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if tw == ui.tablewidget_solids: # In a splitter
             # top_frame is the tab bar, not the top part of the splitter!!
             #ui.top_frame.setMaximumHeight(height+24)
-            #ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            #ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
             #ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
-            tw.setMinimumHeight(header_height+row_height*min(nrows,3))
+            tw.setMinimumHeight(header_height+row_height*min(nrows,5))
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?

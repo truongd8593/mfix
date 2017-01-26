@@ -573,7 +573,7 @@ class BCS(object):
 
         if tw == ui.tablewidget_regions:
             ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
