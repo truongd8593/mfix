@@ -849,7 +849,7 @@ QPushButton:checked {
                <item row="2" column="3">
                 <widget class="QLabel" name="label_mu_s0_units">
                  <property name="text">
-                  <string>Pa</string>
+                  <string>Pa.s</string>
                  </property>
                 </widget>
                </item>
