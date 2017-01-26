@@ -836,21 +836,6 @@ class SolidsCollection(Collection):
         return '\n'.join(self._prettyPrintList())
 
 
-class VtkVar(Base):
-    def __init__(self, ind):
-        Base.__init__(self, ind)
-
-
-class VtkVarCollection(Collection):
-    def __init__(self):
-        Collection.__init__(self)
-
-    def new(self, ind=None):
-        ind = self.check_ind(ind)
-        self.append(VtkVar(ind))
-        return self[ind]
-
-
 class VariableGridVar(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
@@ -904,9 +889,6 @@ class Project(object):
         self.gasSpecies = SpeciesCollection()
         self.solids = SolidsCollection()
         self.speciesEq = SpeciesEqCollection()
-
-        # VTK_VAR #deprecated
-        self.vtkvar = VtkVarCollection()
 
         # variablegrid
         self.variablegrid = VariableGridCollection()
@@ -1426,16 +1408,7 @@ class Project(object):
                 keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spec[key] = keyword
-            # VTK_VAR
-            elif key == 'vtk_var':
-                if args[0] not in self.vtkvar:
-                    vtkvar = self.vtkvar.new(args[0])
-                else:
-                    vtkvar = self.vtkvar[args[0]]
 
-                keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
-                vtkvar[key] = keyword
             # variable grid
             elif key in ['cpx', 'ncx', 'erx', 'first_dx', 'last_dx', 'cpy',
                          'ncy', 'ery', 'first_dy', 'last_dy', 'cpz', 'ncz',
