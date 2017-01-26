@@ -119,8 +119,9 @@ class MfixGui(QtWidgets.QMainWindow,
               Numerics,
               Output,
               GraphicTabs,
-              Interpreter,
-              MainMenu):
+              MainMenu,
+              Interpreter):
+
     # Main window class for MFIX-GUI
 
     settings = SETTINGS
@@ -487,7 +488,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.change_pane('model setup')
 
         # Update run options
-        log.info('init update_runbuttons')
+        log.debug('init update_runbuttons')
         self.signal_update_runbuttons.emit('')
 
         # Reset everything to default values
@@ -2265,7 +2266,7 @@ class MfixGui(QtWidgets.QMainWindow,
         except Exception as e:
             msg = 'Failed to load %s: %s: %s' % (os.path.basename(project_file),
                                                  e.__class__.__name__, e)
-            self.error(msg, popup=interactive) # don't popup in -q mode
+            self.error(msg, popup=interactive) # don't popup in -t mode
 
             traceback.print_exception(*sys.exc_info())
             # Should we stick this in the output window?  no, for now.
@@ -2622,37 +2623,37 @@ class MfixGui(QtWidgets.QMainWindow,
 def main():
     global gui
 
-    # build the arg parser
+    # handle command-line arguments
     av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
     parser = argparse.ArgumentParser(description='MFIX GUI')
     ARG = parser.add_argument
     ARG('project', action='store', nargs='?', default=None,
-                        help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
+        help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
     ARG('-e', '--exe',  metavar='EXE', action='store', default=None,
-                        help='specify MFIX executable (full path)')
+        help='specify MFIX executable (full path)')
     ARG('-l', '--log', metavar='LOG', action='store', default='WARN',
-                        choices=['error', 'warning', 'info', 'debug'],
-                        help='set logging level (error, warning, info, debug)')
+        choices=['error', 'warning', 'info', 'debug'],
+        help='set logging level (error, warning, info, debug)')
     ARG('-s', '--style', metavar='STYLE', action='store', default=None,
-                        choices=av_styles,
-                        help='specify app style (windowsvista, fusion, cleanlooks,...)')
+        choices=av_styles,
+        help='specify app style (windowsvista, fusion, cleanlooks,...)')
     ARG('-n', '--noload', action='store_true',
-                        help='do not autoload previous project')
+        help='do not autoload previous project')
     ARG('-w', '--noworkflow', action='store_false',
-                        help='do not load the workflow environment')
+        help='do not load the workflow environment')
     ARG('-k', '--novtk', action='store_false',
-                         help='do not load vtk')
-    ARG('-q', '--quit', action='store_true',
-                        help='quit after opening file (for testing)')
+        help='do not load vtk')
     ARG('-g', '--default_geo', action='store_true',
-                        help="Use default geometry, don't restore previous state.")
+        help="Use default geometry, don't restore previous state.")
     ARG('-d', '--developer', action='store_true',
-                        help="Enable developer mode.")
+        help="Enable developer mode.")
+    ARG('-t', '--test', action='store_true',
+        help="Enable test mode.")
     ARG('-v', '--version', action='version', version=__version__)
 
-    # parse the args
     args = parser.parse_args()
 
+    # setup logging
     logging.basicConfig(stream=sys.stdout,
                         filemode='w', level=getattr(logging, args.log.upper()),
                         format='%(name)s - %(levelname)s - %(message)s')
@@ -2705,22 +2706,23 @@ def main():
     # set developer mode
     gui.enable_developer_mode(int(SETTINGS.value('developer_mode', 0)) or args.developer)
 
-    # show the gui
-    gui.show()
+    # show the gui, unless disabled
+    if not args.test:
+        gui.show()
 
     if args.exe:
         #print('exe option passed: %s' % mfix_exe_option)
         gui.commandline_option_exe = args.exe
 
-    last_prj = None
+    last_project = None
     if project_file is None and not args.noload:
         # autoload last project
-        last_prj = project_file = gui.get_project_file()
+        last_project = project_file = gui.get_project_file()
 
     if project_file and not args.noload and os.path.exists(project_file):
-        gui.open_project(project_file, interactive=(not args.quit))
+        gui.open_project(project_file, interactive=(not args.test))
         # change mode and navigation if loaded last project
-        if last_prj == project_file:
+        if last_project == project_file:
             m = SETTINGS.value('mode')
             if m is not None:
                 gui.change_mode(m)
@@ -2732,17 +2734,35 @@ def main():
         gui.handle_main_menu()
 
     # have to initialize vtk after the widget is visible!
-    gui.vtkwidget.vtkiren.Initialize()
+    if not (args.novtk or args.test):
+        gui.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    if not args.quit:
+    if not args.test:
         qapp.exec_()
+    else:
+        tw = gui.ui.treewidget_navigation
+        r = tw.invisibleRootItem()
+        for i in range(r.childCount()):
+            c = r.child(i)
+            #print('test %s' % c.text(0))
+            gui.change_pane(c.text(0))
+            # we should cycle through all the subtabs, too
+            if gui.project.solver == 'DEM':
+                gui.setup_solids_dem_tab()
+            elif gui.project.solver == 'TFM':
+                gui.setup_solids_tfm_tab()
+            elif gui.project.solver == 'PIC':
+                gui.setup_solids_pic_tab()
 
-    qapp.deleteLater()
-    sys.exit()
+        for t in (0,2,4,5):
+            #print('test bcs tab %s' % t)
+            gui.setup_bcs_tab(t)
+
+        print("That's all folks")
 
 if __name__  == '__main__':
     main()
