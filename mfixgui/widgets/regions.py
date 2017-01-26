@@ -320,7 +320,6 @@ class RegionsWidget(QtWidgets.QWidget):
         else:
             self.enable_disable_widgets(name, enable_all=True)
         self.toolbutton_region_delete.setEnabled(not in_use)
-        self.lineedit_regions_name.setEnabled(not in_use)
         self.checkbox_region_stl.setEnabled(not in_use)
         self.label_used_by.setText(', '.join(in_use))
 
