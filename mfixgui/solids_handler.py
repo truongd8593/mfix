@@ -1142,7 +1142,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             #self.unset_keyword('mw_s', args=[phase,i]) # TBD FIXME
 
         # FIXME, what's the right place for this?
-        #self.project.update_thermo_data(self.solids_species[phase])
+        self.project.update_thermo_data(self.solids_species[phase])
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
 
