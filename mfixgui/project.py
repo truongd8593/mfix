@@ -937,6 +937,7 @@ class Project(object):
         """return a list of indices (args) for which the key is defined"""
         # Returning as a list makes this safe to iterate over, even if keys are
         # added/deleted
+        # TODO: Should we make each argument tuple a list?  Probably
         return sorted(list(self.keyword_dict.get(key, {}).keys()))
 
 
@@ -949,7 +950,9 @@ class Project(object):
             args = [args]
         elif args is None:
             args = []
-
+        if isinstance(args, tuple):
+            args = list(args) # implementation detail, if tuple was
+            # passed we need it to match a list
         try:
             r = self.keyword_dict[key]
         except KeyError:
@@ -970,10 +973,10 @@ class Project(object):
         # remove from dat_file_list
         # Note. list.remove does not work because of the way keyword comparison is implemented,
         #  since remove will remove the first key with matching value
-        #  (Do we really need comparison of keyword object by value to work?)
         self.dat_file_list = [k for k in self.dat_file_list
                               if not (isinstance(k, Keyword)
                                       and k.key==key and k.args==args)]
+
         return True
 
 
