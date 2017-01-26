@@ -10,10 +10,14 @@ all: ${PY_UIFILES}
 	${PYUIC} -o $@ $<
 
 clean:
-	-rm -rf ${PY_UIFILES} dist __pycache__
+	rm -rf ${PY_UIFILES}
+	rm -rf dist
 	rm -rf doc/generated
+	rm -rf __pycache__ */__pycache__
 	find . -name \*.pyc -delete
-	make -C .. clean
+	find .. -name \*.stl.cgs -delete
+	find .. -name particle_input.dat.cgs -delete
+	find .. -name geometry.stl.original -delete
 
 test2: all
 	(Xvfb :99 &)
