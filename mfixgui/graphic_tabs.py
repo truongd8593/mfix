@@ -109,7 +109,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         plotbtn.clicked.connect(self.create_vtk_widget)
         self.layout.addWidget(plotbtn, 2, 2)
 
-        if self.loadvtk and not 'MFIX_NO_VTK' in os.environ:
+        if self.loadvtk and 'MFIX_NO_VTK' not in os.environ:
             from mfixgui.widgets.base_vtk import VTK_AVAILABLE
             plotbtn.setEnabled(VTK_AVAILABLE)
         else:
