@@ -201,7 +201,7 @@ class Mesh(object):
 
     def init_background_mesh(self):
         """init the background mesh"""
-        prj = self.project
+        project = self.project
         self.mesh_extents = []
         self.mesh_spacing = [[], [], []]
 
@@ -210,15 +210,15 @@ class Mesh(object):
             btn.setEnabled(False)
 
         for key in MESH_EXTENT_KEYS:
-            self.mesh_extents.append(safe_float(prj.get_value(key, default=0.0)))
+            self.mesh_extents.append(safe_float(project.get_value(key, default=0.0)))
 
         self.mesh_cells = []
         for key in MESH_CELL_KEYS:
-            self.mesh_cells.append(safe_int(prj.get_value(key, default=1)))
+            self.mesh_cells.append(safe_int(project.get_value(key, default=1)))
 
         # collect dx, dy, dz
         for i, (s, c, e) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS, MESH_EXTENT_KEYS[1::2])):
-            d = [prj.get_value(s, args=args) for args in sorted(prj.get_key_indices(s))]
+            d = [project.get_value(s, args=args) for args in sorted(project.get_key_indices(s))]
             l = len(d)
 
             # if there are spacing, update the keywords.
@@ -233,17 +233,17 @@ class Mesh(object):
 
         # collect variable grid spacing keywords
         for i, k in enumerate(['x', 'y', 'z']):
-            indices = prj.get_key_indices('cp' + k)
+            indices = project.get_key_indices('cp' + k)
             if indices:
                 table_dic = OrderedDict()
                 for j, ind in enumerate(sorted(indices)):
                     ind = ind[0]
                     table_dic[j] = {
-                        'position': prj.get_value('cp' + k, 0, args=ind),
-                        'cells': prj.get_value('nc' + k, 1, args=ind+1),
-                        'stretch': prj.get_value('er' + k, 1, args=ind+1),
-                        'first': prj.get_value('first_d' + k, 0, args=ind+1),
-                        'last': prj.get_value('last_d' + k, 0, args=ind+1)}
+                        'position': project.get_value('cp' + k, 0, args=ind),
+                        'cells': project.get_value('nc' + k, 1, args=ind+1),
+                        'stretch': project.get_value('er' + k, 1, args=ind+1),
+                        'first': project.get_value('first_d' + k, 0, args=ind+1),
+                        'last': project.get_value('last_d' + k, 0, args=ind+1)}
                 self.mesh_tables[i].set_value(table_dic)
                 self.mesh_tables[i].fit_to_contents()
 
@@ -414,7 +414,7 @@ class Mesh(object):
         """update the background mesh"""
         extents = self.mesh_extents
         cells = self.mesh_cells
-        prj = self.project
+        project = self.project
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
@@ -439,7 +439,7 @@ class Mesh(object):
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
                 # enable imax, jmax, kmax
                 if i == 2:
-                    self.cell_count_widgets[i].setEnabled(not prj.get_value('no_k', False))
+                    self.cell_count_widgets[i].setEnabled(not project.get_value('no_k', False))
                 else:
                     self.cell_count_widgets[i].setEnabled(True)
 

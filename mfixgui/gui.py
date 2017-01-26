@@ -1812,10 +1812,10 @@ class MfixGui(QtWidgets.QMainWindow,
         new_project_file = os.path.splitext(os.path.basename(export_file))[0]
 
         # copy the project file
-        export_prj = copy.deepcopy(self.project)
-        export_prj.updateKeyword('run_name', new_project_file)
+        export_project = copy.deepcopy(self.project)
+        export_project.updateKeyword('run_name', new_project_file)
         self.print_internal("Info: Exporting %s" % new_project_file)
-        export_prj.writeDatFile(os.path.join(export_dir, new_project_file+'.mfx'))
+        export_project.writeDatFile(os.path.join(export_dir, new_project_file+'.mfx'))
 
         # collect files to copy
         files_to_copy = []
@@ -2212,14 +2212,14 @@ class MfixGui(QtWidgets.QMainWindow,
     def save_recent_projects(self):
         '''Save recent projects'''
 
-        rec_prjs = self.settings.value('recent_projects')
-        if rec_prjs is None:
-            rec_prjs = []
+        rec_projects = self.settings.value('recent_projects')
+        if rec_projects is None:
+            rec_projects = []
         else:
-            rec_prjs = rec_prjs.split('|')
+            rec_projects = rec_projects.split('|')
 
-        new_rec_prjs = list(set([self.get_project_file()] + rec_prjs))[:MAX_RECENT_PROJECTS]
-        self.settings.setValue('recent_projects', '|'.join(new_rec_prjs))
+        new_rec_projects = list(set([self.get_project_file()] + rec_projects))[:MAX_RECENT_PROJECTS]
+        self.settings.setValue('recent_projects', '|'.join(new_rec_projects))
 
 
     def open_project(self, project_path, runname=None, interactive=True):
