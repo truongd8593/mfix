@@ -712,15 +712,35 @@ class Output(object):
                 self.output_region_dict[region]['available'] = False
 
 
-        spx_enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
-                          for i in range(1,MAX_SP+1))
-        ui.pushbutton_spx.setEnabled(spx_enabled)
+        #Write binary Single Precision files (SPx)
+        #    No keyword association
+        #    Enables SPx tab
+        #    Backwards compatibility: Enabled if any SPx time values are specified
+
+        spx_dt_specified = any(self.project.get_value('spx_dt', args=[i]) is not None
+                               for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
+        bwrite_netcdf_specified = any(bool(self.project.get_value('bwrite_netcdf', args=[i]))
+                                           for i in range(1, MAX_BWRITE_NETCDF+1))
+
+        enable_spx = not bwrite_netcdf_specified # Enables checkbox but does not check it
+        activate_spx = enable_spx and spx_dt_specified
+        ui.checkbox_spx.setEnabled(enable_spx)
+        ui.checkbox_spx.setChecked(activate_spx)
+        ui.pushbutton_spx.setEnabled(activate_spx)
+
+        #Enable NetCDF output files
+        #    Not available when SPx output is enabled
+        #    No keyword association.
+        #    Enables NetCDF tab
+
+        enable_netcdf = not activate_spx
+        activate_netcdf =  bwrite_netcdf_specified
+        ui.checkbox_netcdf.setEnabled(enable_netcdf)
+        ui.checkbox_netcdf.setChecked(activate_netcdf)
+        ui.pushbutton_netcdf.setEnabled(activate_netcdf)
 
         vtk_enabled = self.project.get_value('write_vtk_files', default=False)
         ui.pushbutton_vtk.setEnabled(vtk_enabled)
-
-        netcdf_enabled = True#
-        ui.pushbutton_netcdf.setEnabled(netcdf_enabled)
 
         # TODO don't stay on disabled tab
         self.output_setup_current_tab()
@@ -844,32 +864,6 @@ class Output(object):
             self.unset_keyword(key)
         ui.pushbutton_vtk.setEnabled(enabled)
 
-        #Write binary Single Precision files (SPx)
-        #    No keyword association
-        #    Enables SPx tab
-        #    Backwards compatibility: Enabled if any SPx time values are specified
-
-        spx_dt_specified = any(self.project.get_value('spx_dt', args=[i]) is not None
-                               for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
-        bwrite_netcdf_specified = any(bool(self.project.get_value('bwrite_netcdf', args=[i]))
-                                           for i in range(1, MAX_BWRITE_NETCDF+1))
-
-        enable_spx = not bwrite_netcdf_specified # Enables checkbox but does not check it
-        activate_spx = enable_spx and spx_dt_specified
-        ui.checkbox_spx.setEnabled(enable_spx)
-        ui.checkbox_spx.setChecked(activate_spx)
-        ui.pushbutton_spx.setEnabled(activate_spx)
-
-        #Enable NetCDF output files
-        #    Not available when SPx output is enabled
-        #    No keyword association.
-        #    Enables NetCDF tab
-
-        enable_netcdf = not activate_spx
-        activate_netcdf =  bwrite_netcdf_specified
-        ui.checkbox_netcdf.setEnabled(enable_netcdf)
-        ui.checkbox_netcdf.setChecked(activate_netcdf)
-        ui.pushbutton_netcdf.setEnabled(activate_netcdf)
 
 
 
