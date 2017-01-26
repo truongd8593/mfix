@@ -241,7 +241,7 @@
 ! which is a positive number (considered outside the fluid region).
                   DO NODE=1,8
                      CALL EVAL_STL_FCT_AT('SCALAR',IJK,NODE,F_NODE(NODE),CLIP_FLAG,BCID)
-                     IF(F_NODE(NODE)/=UNDEFINED.AND.F_NODE(NODE)/=ZERO) THEN
+                     IF(F_NODE(NODE)/=UNDEFINED.AND.F_NODE(NODE)/=ZERO.AND.(.NOT.SNAP(IJK_OF_NODE(NODE)))) THEN
                         F_NODE(0) = F_NODE(NODE)
                         EXIT
                      ENDIF
