@@ -29,7 +29,7 @@ import logging
 log = logging.getLogger(__name__)
 import warnings
 
-from mfixgui.project import Project, Keyword
+from mfixgui.project import Project, Keyword, Equation
 from mfixgui.constants import *
 
 from mfixgui.widgets.base import LineEdit # a little special handling needed
@@ -37,7 +37,7 @@ from mfixgui.widgets.base import LineEdit # a little special handling needed
 from mfixgui.tools.general import (format_key_with_args, parse_key_with_args,
                            plural, to_text_string)
 from mfixgui.tools import read_burcat
-from mfixgui.tools import keyword_args
+from mfixgui.tools.keyword_args import keyword_args
 from mfixgui.unit_conversion import cgs_to_SI
 
 
@@ -555,8 +555,9 @@ class ProjectManager(Project):
             # SRS: Many mfix.dat files may use a different specification
             # for VTK input. There will need to be a way of catching
             # the 'old' format and converting it to this input style.
-
-            # from mfix_user_guide
+            #  Note - maybe this doesn't belong here.  But we have to
+            #   do it somewhere.
+            # following values are extracted from mfix_user_guide
             varlist_map = {
                 1:    ('ep_g',),                 #  Void fraction (EP_g)
                 2:    ('p_g', 'p_star'),         #  Gas pressure, solids pressure
@@ -578,12 +579,32 @@ class ProjectManager(Project):
                 999:  ('ijk',),                  #  Cell IJK index
                 1000: ('normal',)                #  Cut face normal vector
                 }
-            vtk_varlist = self.get_key_indices('vtk_varlist')
-            vtk_var = self.get_key_indices('vtk_var')
-            #print("V", vtk_var)
+            key ='vtk_varlist'
+            vtk_varlist = [(args[0], self.get_value(key, args=args))
+                            for args in self.get_key_indices(key)]
+            key = 'vtk_var'
+            vtk_var = [self.get_value(key, args=args)
+                       for args in self.get_key_indices(key)]
+
             if vtk_var:
-                # find region index for whole domain
-                vtk_varlist += [(0,x[0]) for x in vtk_var]
+                # We need to create a region for the vtk output region, default index=1
+                idx = 1
+                # We don't expect vtk_var and vtk_varlist to both be set, but
+                #  it's not explicitly forbidden
+                if vtk_varlist:
+                    idx = 1 + max(v for (v,i) in vtk_varlist)
+
+                vtk_varlist += [(idx,x) for x in vtk_var]
+
+                no_k = self.get_value('no_k')
+                for (key, val) in zip(('x_w', 'y_s', 'z_b',
+                                       'x_e', 'y_n', 'z_t'),
+                                      ('xmin', 'ymin', 'zmin',
+                                       'xmax', 'ymax', 'zmax')):
+                    if no_k and key[0]=='z':
+                        continue
+                    self.gui.update_keyword('vtk_'+key, Equation(val), args=[idx])
+
             for (v,i) in vtk_varlist:
                 varnames = varlist_map.get(i)
                 if not varnames:
@@ -591,21 +612,31 @@ class ProjectManager(Project):
                 mmax = len(self.gui.solids)
                 for vn in varnames:
                     key = 'vtk_' + vn
-                    args = keyword_args.keyword_args.get(key)
+                    args = keyword_args.get(key)
                     if args == ['vtk']:
                         self.gui.update_keyword(key, True, args=[v])
+                    elif args == ['vtk', 'species']: # Fluid
+                        for s in range(1, 1+len(self.gui.fluid_species)):
+                            self.gui.update_keyword(key, True, args=[v, s])
                     elif args == ['vtk', 'phase']:
                         for p in range(1, 1+mmax):
                             self.gui.update_keyword(key, True, args=[v, p])
+                    elif args == ['vtk', 'phase', 'species']:
+                        for p in range(1, 1+mmax):
+                            for s in range(1, 1+len(self.gui.solids_species.get(p,[]))):
+                                self.gui.update_keyword(key, True, args=[v, p, s])
+                    elif args == ['vtk', 'scalar']:
+                        for s in range(1, 1+self.get_value('nscalar', default=0)):
+                            self.gui.update_keyword(key, True, args=[v, s])
+                    elif args == ['vtk', 'reaction']:
+                        for r in range(1, 1+self.get_value('nrr', default=0)):
+                            self.gui.update_keyword(key, True, args=[v, r])
                     else:
-                        print(key, v, i, args)
-            self.gui.unset_keyword('vkt_varlist')
+                        warnings.warn('unhandled key %s' % key)
 
-
-
-            self.gui.unset_keyword('vkt_var')
-
-
+            for key in ('vtk_var', 'vtk_varlist'):
+                for args in self.get_key_indices(key):
+                    self.gui.unset_keyword(key, args=args)
 
             # Submit all remaining keyword updates, except the ones we're skipping
             # some of these changes may cause new keywords to be instantiated,
