@@ -212,113 +212,6 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Region</string>
-           </property>
-           <property name="margin">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Type</string>
-           </property>
-           <property name="margin">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="comboBox">
-           <item>
-            <property name="text">
-             <string>Mass inflow</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Pressure inflow</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>No Slip Wall</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Free Slip Wall</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Partial Slip Wall</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Pressure Inflow</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Mass Outflow</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Cyclic Boundary</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_4">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QFrame" name="tab_frame">
@@ -437,7 +330,7 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0">
+       <item row="1" column="0">
         <widget class="QScrollArea" name="scrollarea_detail">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -462,8 +355,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>321</width>
-            <height>671</height>
+            <width>335</width>
+            <height>712</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
