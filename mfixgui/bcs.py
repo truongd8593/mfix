@@ -902,8 +902,10 @@ class BCS(object):
             btn_layout.indexOf(line)), 1, line_to)
 
 
-
     def bcs_setup_current_tab(self):
+        self.setup_bcs_tab(self.bcs_current_tab)
+
+    def setup_bcs_tab(self, tab):
         if self.bcs_current_tab == FLUID_TAB:
             self.setup_bcs_fluid_tab()
         elif self.bcs_current_tab == SOLIDS_TAB:
@@ -912,6 +914,8 @@ class BCS(object):
             self.setup_bcs_scalar_tab()
         elif self.bcs_current_tab == CYCLIC_TAB:
             self.setup_bcs_cyclic_tab()
+        else:
+            raise ValueError("invalid tab %s" % tab)
 
     def bcs_extract_regions(self):
         ui = self.ui.boundary_conditions
