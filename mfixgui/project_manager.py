@@ -1,7 +1,13 @@
-"""ProjectManager handles interaction between gui and Project objects,
+"""ProjectManager is a subclass of Project,
+  intermediating between Gui and Project objects
+
+ It handles loading and storing MFIX-GUI projects,
+   using primitives from Project
+
+ It handles interaction between gui and Project objects,
 updating gui widgets when keywords are changed, and vice-versa.
 
-It is a subclass of Project, and the .project member in the main MfixGui
+ It is a subclass of Project, and the .project member in the main MfixGui
 object is actually a ProjectManager, not a Project.
 
 Widgets get associated with keywords via the 'register' method.  Multiple
@@ -802,13 +808,14 @@ class ProjectManager(Project):
 
 def format_burcat(species, data):
     """Return a list of lines in BURCAT.THR format"""
-    ## TODO: move this somewhere else
+
     lines = []
     calc_quality = 'B' # This appears in column 68, valid values are A-F.
                        # We'll just assign 'B' to fill the space, it's the
                        # most common value.
 
     # First line
+    # TODO: Would be  nice to put the Burcat species name in the comment field, if available
     row = (species, 'User Defined', data['phase'].upper(),
            data['tmin'], data['tmax'],
            calc_quality, data['mol_weight'])
