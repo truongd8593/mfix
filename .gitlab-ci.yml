@@ -17,6 +17,7 @@ build_job:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel -d ${PYPATH}
     - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d ${PYPATH}
   artifacts:
+    name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
     - ${PYPATH}/mfixgui*.whl
@@ -41,6 +42,7 @@ build_job_mac:
     - env FC=gfortran-6 CC=gcc-6 python3 setup.py bdist_wheel
     - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
   artifacts:
+    name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
     - dist/mfixgui*.whl
