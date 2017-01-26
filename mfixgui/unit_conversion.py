@@ -124,12 +124,12 @@ cgs_to_SI = {
   'c_ps0':          4184, # cal/g.K -> J/kg.K      : Specified constant solids specific heat .
   'cfl_pic':        1,    # s                      : CFL number used to decide maximum time step size for parcels
   'cg_ur_fac':      1,    # factor                 : Under-relaxation factor used in cut cells (only CG_UR_FAC(2)
-  'clip_xmax':      None, # UNKNOWN                : Upper x-limit where the quadric is defined.
-  'clip_xmin':      None, # UNKNOWN                : Lower x-limit where the quadric is defined.
-  'clip_ymax':      None, # UNKNOWN                : Upper y-limit where the quadric is defined.
-  'clip_ymin':      None, # UNKNOWN                : Lower y-limit where the quadric is defined.
-  'clip_zmax':      None, # UNKNOWN                : Upper z-limit where the quadric is defined.
-  'clip_zmin':      None, # UNKNOWN                : Lower z-limit where the quadric is defined.
+  'clip_xmax':      0.01, # cm -> m                : Upper x-limit where the quadric is defined.
+  'clip_xmin':      0.01, # cm -> m                : Lower x-limit where the quadric is defined.
+  'clip_ymax':      0.01, # cm -> m                : Upper y-limit where the quadric is defined.
+  'clip_ymin':      0.01, # cm -> m                : Lower y-limit where the quadric is defined.
+  'clip_zmax':      0.01, # cm -> m                : Upper z-limit where the quadric is defined.
+  'clip_zmin':      0.01, # cm -> m                : Lower z-limit where the quadric is defined.
   'cpx':            0.01, # cm -> m                : Location of control points in x-direction.
   'cpy':            0.01, # cm -> m                : Location of control points in y-direction.
   'cpz':            0.01, # cm -> m                : Location of control points in z-direction.
@@ -143,10 +143,10 @@ cgs_to_SI = {
   'des_en_wall_input':1,  # factor                 : The normal restitution coefficient for particle-wall
   'des_et_input':   1,    # max = 1.0              : Tangential restitution coefficient for inter-particle
   'des_et_wall_input':1,  # max = 1.0              : Tangential restitution coefficient for particle wall
-  'des_etat_fac':   1,    # factor                 : Ratio of the tangential damping factor to the normal damping
-  'des_etat_w_fac': 1,    # factor                 : Ratio of the tangential damping factor to the normal damping
+  'des_etat_fac':   1,    # max = 1.0              : Ratio of the tangential damping factor to the normal damping
+  'des_etat_w_fac': 1,    # max = 1.0              : Ratio of the tangential damping factor to the normal damping
   'des_interp_width':0.01,# cm -> m                : The length used in interpolating data to/from a particle's
-  'des_min_cond_dist':1,  # ratio                  : Minimum separation distance between the surfaces of two
+  'des_min_cond_dist':0.01,# cm -> m               : Minimum separation distance between the surfaces of two
   'dif_g0':         0.0001,# cm^2/s -> m^2/s       : Specified constant gas diffusivity .
   'dif_s0':         0.0001,# cm^2/s -> m^2/s       : Specified constant solids diffusivity .
   'dil_factor_vsd': 1,    # volume fraction        : Factor to define the dilute region where the solids density
@@ -159,8 +159,8 @@ cgs_to_SI = {
   'dt_max':         1,    # s                      : Maximum time step size.
   'dt_min':         1,    # s                      : Minimum time step size.
   'dx':             0.01, # cm -> m                : Cell sizes in the x (r) direction. Enter values from DX(0)
-  'dy':             None, # UNKNOWN                : Cell sizes in the y-direction. Enter values from DY(0) to
-  'dz':             None, # UNKNOWN                : Cell sizes in the z (theta) direction. Enter values from
+  'dy':             0.01, # cm -> m                : Cell sizes in the y-direction. Enter values from DY(0) to
+  'dz':             0.01, # cm -> m                : Cell sizes in the z (theta) direction. Enter values from
   'e_w':            1,    # max = 1.0              : Coefficient of restitution for particle-wall collisions when
   'e_young':        0.1,  # barye -> Pa            : Young's modulus for the particle . Required when using the
   'e_young_actual': 0.1,  # barye -> Pa            : Actual Young's modulus for the particle . Used for computing
@@ -186,7 +186,7 @@ cgs_to_SI = {
   'gravity_y':      0.01, # cm/s^2 -> m/s^2        : Y-component of gravitational acceleration vector.
   'gravity_z':      0.01, # cm/s^2 -> m/s^2        : Z-component of gravitational acceleration vector.
   'half_angle':     1,    # angle                  : Cone half angle, expressed in degrees (used when
-  'hamaker_constant':None,# UNKNOWN                : Hamaker constant used in particle-particle cohesive
+  'hamaker_constant':1e-07,# erg -> J              : Hamaker constant used in particle-particle cohesive
   'ic_e_turb_g':    0.0001,# cm^2/s^3 -> m^2/s^3   : Initial value of Epsilon in K-Epsilon.
   'ic_ep_g':        1,    # void fraction          : Initial void fraction in the IC region.
   'ic_ep_s':        1,    # volume fraction        : Initial solids volume fraction of solids phase-m in the IC
@@ -230,9 +230,9 @@ cgs_to_SI = {
   'k_s0':           418.4,# cal/s.cm.K -> J/s.m.K  : Specified constant solids conductivity .
   'kn':             0.001,# dyne/cm -> N/m         : Normal spring constant  for inter-particle collisions.
   'kn_w':           0.001,# dyne/cm -> N/m         : Normal spring constant  for particle-wall collisions.
-  'kt_fac':         1,    # ratio                  : Ratio of the tangential spring constant to normal spring
-  'kt_w_fac':       1,    # ratio                  : Ratio of the tangential spring constant to normal spring
-  'lam_hys':        None, # UNKNOWN                : The lubrication cutoff distance for HYS drag model.  In
+  'kt_fac':         1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
+  'kt_w_fac':       1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
+  'lam_hys':        0.01, # cm -> m                : The lubrication cutoff distance for HYS drag model.  In
   'lambda_x':       None, # UNKNOWN                : Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
   'lambda_y':       None, # UNKNOWN                : Coefficient LAMBDA_Y in equation (1) ('NORMAL' form) or
   'lambda_z':       None, # UNKNOWN                : Coefficient LAMBDA_Z in equation (1) ('NORMAL' form) or
@@ -268,12 +268,12 @@ cgs_to_SI = {
   'phi_w':          1,    # angle                  : Angle of internal friction (in degrees) at walls. Set this
   'phip':           1,    # max = 1.0              : Specularity coefficient associated with particle-wall
   'phip0':          0.01, # cm/s -> m/s            : Specify the value of specularity coefficient when the
-  'piece_xmax':     None, # UNKNOWN                : Upper z-limit where the quadric is defined in a piecewise
-  'piece_xmin':     None, # UNKNOWN                : Lower x-limit where the quadric is defined in a piecewise
-  'piece_ymax':     None, # UNKNOWN                : Upper y-limit where the quadric is defined in a piecewise
-  'piece_ymin':     None, # UNKNOWN                : Lower y-limit where the quadric is defined in a piecewise
-  'piece_zmax':     None, # UNKNOWN                : Upper z-limit where the quadric is defined in a piecewise
-  'piece_zmin':     None, # UNKNOWN                : Lower z-limit where the quadric is defined in a piecewise
+  'piece_xmax':     0.01, # cm -> m                : Upper z-limit where the quadric is defined in a piecewise
+  'piece_xmin':     0.01, # cm -> m                : Lower x-limit where the quadric is defined in a piecewise
+  'piece_ymax':     0.01, # cm -> m                : Upper y-limit where the quadric is defined in a piecewise
+  'piece_ymin':     0.01, # cm -> m                : Lower y-limit where the quadric is defined in a piecewise
+  'piece_zmax':     0.01, # cm -> m                : Upper z-limit where the quadric is defined in a piecewise
+  'piece_zmin':     0.01, # cm -> m                : Lower z-limit where the quadric is defined in a piecewise
   'ps_massflow_g':  0.001,# g/s -> kg/s            : Gas mass flow rate through the point source.
   'ps_massflow_s':  0.001,# g/s -> kg/s            : Solids mass flow rate through the point source.
   'ps_t_g':         1,    # K                      : Temperature of incoming gas.
@@ -368,8 +368,8 @@ cgs_to_SI = {
   'v_poisson':      1,    # ratio                  : Poisson's ratio for the particle. Required when using the
   'v_poisson_actual':1,   # ratio                  : Poisson's ratio for the particle. Used for computing
   'v_sh':           0.01, # cm/s -> m/s            : Specifies the mean y velocity component at the eastern
-  'vdw_inner_cutoff':1,   # ratio                  : Minimum separation distance below which van der Waals forces
-  'vdw_outer_cutoff':1,   # ratio                  : Maximum separation distance above which van der Waals forces
+  'vdw_inner_cutoff':0.01,# cm -> m                : Minimum separation distance below which van der Waals forces
+  'vdw_outer_cutoff':0.01,# cm -> m                : Maximum separation distance above which van der Waals forces
   'vtk_dt':         1,    # s                      : Interval (expressed in seconds of simulation time) at which
   'vtk_slice_tol':  1,    # tolerance              : Tolerance to detect particle in a VTK region.
   'vtk_x_e':        0.01, # cm -> m                : East location of VTK region.
@@ -380,13 +380,19 @@ cgs_to_SI = {
   'vtk_z_t':        0.01, # cm -> m                : West location of VTK region.
   'vw_poisson':     1,    # ratio                  : Poisson's ratio for the wall. Required when using the
   'vw_poisson_actual':1,  # ratio                  : Poisson's ratio for the wall. Used for computing correction
-  'wall_hamaker_constant':None,# UNKNOWN           : Hamaker constant used in particle-wall cohesive
-  'wall_vdw_inner_cutoff':1,# ratio                : Minimum separation distance below which van der Waals forces
-  'wall_vdw_outer_cutoff':1,# ratio                : Maximum separation distance above which van der Waals forces
+  'wall_hamaker_constant':1e-07,# erg -> J         : Hamaker constant used in particle-wall cohesive
+  'wall_vdw_inner_cutoff':0.01,# cm -> m           : Minimum separation distance below which van der Waals forces
+  'wall_vdw_outer_cutoff':0.01,# cm -> m           : Maximum separation distance above which van der Waals forces
+  'x_max':          0.01, # cm -> m                : Reactor upper bound in the x-direction.
+  'x_min':          0.01, # cm -> m                : Reactor lower bound in the x-direction.
   'x_s0':           1,    # mass fraction          : Baseline species mass fraction. Specifically, the mass
   'xlength':        0.01, # cm -> m                : Reactor length in the x (r) direction.
   'xmin':           0.01, # cm -> m                : The inner radius in the simulation of an annular cylindrical
+  'y_max':          0.01, # cm -> m                : Reactor upper bound in the y-direction.
+  'y_min':          0.01, # cm -> m                : Reactor lower bound in the y-direction.
   'ylength':        0.01, # cm -> m                : Reactor length in the y-direction.
+  'z_max':          0.01, # cm -> m                : Reactor upper bound in the z-direction.
+  'z_min':          0.01, # cm -> m                : Reactor lower bound in the z-direction.
   'zlength':        0.01, # cm -> m                : Reactor length in the z (theta) direction.
 }
 
@@ -519,6 +525,13 @@ def main():
             # as are VTK region locations
             elif 'location of' in desc_lower:
                 SI_unit = 'm'
+            elif 'cell size' in desc_lower:
+                SI_unit = 'm'
+            # [xyz]max
+            elif any(s in key for s in
+                     ('xmax', 'ymax', 'zmax', 'x_max', 'y_max', 'z_max',
+                      'xmin', 'ymin', 'zmin', 'x_min', 'y_min', 'z_min')):
+                SI_unit = 'm'
             # BC velocity keys
             elif any (key.startswith(x) for x in ('bc_uw', 'bc_vw', 'bc_ww')):
                 SI_unit = 'm/s'
@@ -546,9 +559,6 @@ def main():
             # "Factors" are dimensionless
             elif 'factor' in desc_lower:
                 SI_unit = 'factor'
-            # Ratios too
-            elif 'ratio' in desc_lower:
-                SI_unit = 'ratio'
             # Coefficient of restitition is dimensionless
             elif 'coefficient of restitution' in desc_lower:
                 SI_unit = 'coefficient'
@@ -558,6 +568,12 @@ def main():
             # Radii are meters
             elif 'radius' in desc_lower:
                 SI_unit = 'm'
+            # Distances are too, but avoid 'ratio of distance'
+            elif 'distance' in desc_lower and 'ratio ' not in desc_lower:
+                SI_unit = 'm'
+            # Ratios are dimensionless
+            elif 'ratio ' in desc_lower:
+                SI_unit = 'ratio'
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
@@ -567,6 +583,8 @@ def main():
                     SI_unit = 'm^2/s^3' # From GUI
                 elif 'value of k' in desc_lower:
                     SI_unit = 'm^2/s^2'
+            elif 'hamaker' in key: # Note ,this is being converted from erg, not kcal
+                SI_unit = 'J'
             # Pressures are Pa # do this last, due to many references to 'pressure drop' etc
             elif any(p in desc_lower for p in ('gas pressure', 'solids pressure',
                                                'fluid pressure', 'reference pressure')):
@@ -625,6 +643,11 @@ def main():
                 comment = '%s -> %s' % (comment, SI_unit)
                 comment = comment.replace('(', '')
                 comment = comment.replace(')', '')
+            # Special hack for hamaker constant, which is being converted from
+            # erg, not kcal
+            if 'hamaker' in key.lower():
+                factor = 1e-07
+                comment = 'erg -> J'
             new_cgs_to_SI[key] = (factor, comment)
 
     infile = open(__file__, 'r')
