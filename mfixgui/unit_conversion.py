@@ -248,8 +248,8 @@ cgs_to_SI = {
   'mppic_coeff_en_wall':1,# coefficient            : Normal coefficient of restitution for parcel-wall collisions
   'mppic_coeff_et_wall':1,# coefficient            : Tangential coefficient of restitution for parcel-wall
   'mu_g0':          0.1,  # g/cm.s -> kg/m.s       : Specified constant gas viscosity .
-  'mu_gmax':        None, # UNKNOWN                : Maximum value of the turbulent viscosity of the fluid, which
-  'mu_s0':          None, # UNKNOWN                : Specified constant viscosity. If any value is specified
+  'mu_gmax':        0.1,  # barye.s -> Pa.s        : Maximum value of the turbulent viscosity of the fluid, which
+  'mu_s0':          0.1,  # barye.s -> Pa.s        : Specified constant viscosity. If any value is specified
   'mw_avg':         1,    # g/mol                  : Average molecular weight of gas . Used in calculating the
   'mw_g':           1,    # g/mol                  : Molecular weight of gas species .
   'mw_s':           1,    # g/mol                  : Molecular weight of solids phase species .
@@ -585,6 +585,8 @@ def main():
                     SI_unit = 'm^2/s^2'
             elif 'hamaker' in key: # Note ,this is being converted from erg, not kcal
                 SI_unit = 'J'
+            elif 'viscosity' in desc_lower:
+                SI_unit = 'Pa.s'
             # Pressures are Pa # do this last, due to many references to 'pressure drop' etc
             elif any(p in desc_lower for p in ('gas pressure', 'solids pressure',
                                                'fluid pressure', 'reference pressure')):
