@@ -686,7 +686,7 @@ class ProjectManager(Project):
             if excs:
                 msg = plural(len(excs), 'error')
                 self.gui.print_internal("Warning: %s loading %s" %
-                                        msg , project_file,
+                                        (msg , project_file),
                                         color='red')
             else:
                 if ws:
