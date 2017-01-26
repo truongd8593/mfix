@@ -132,6 +132,8 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
+        self.checkbox_region_stl.clicked.connect(self.stl_type_changed)
+
         # default region buttons
         for btn, region in [(self.toolbutton_region_a, 'all'),
                             (self.toolbutton_region_l, 'left'), (self.toolbutton_region_r, 'right'),
@@ -345,8 +347,15 @@ class RegionsWidget(QtWidgets.QWidget):
                                   data['filter']):
             widget.updateValue(None, value)
 
-    def region_value_changed(self, widget, value, args, name=None,
-                             update_param=True):
+    def stl_type_changed(self):
+        checked = self.checkbox_region_stl.isChecked()
+
+        type_ = None
+        if checked:
+            type_ = 'STL'
+        self.region_value_changed(self.checkbox_region_stl, {'type': type_}, [])
+
+    def region_value_changed(self, widget, value, args, name=None, update_param=True):
         'one of the region widgets values changed, update'
         rows = self.tablewidget_regions.current_rows()
         data = self.tablewidget_regions.value
@@ -385,7 +394,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 if stl:
                     shape = 'STL'
                 else:
-                    shape = row_data['type'] = self.get_region_type([row_data['from'],row_data['to']])
+                    shape = row_data['type'] = self.get_region_type([row_data['from'], row_data['to']])
                 self.label_region_type.setText(shape)
                 if old_shape != shape:
                     self.vtkwidget.change_region_type(name, row_data)
@@ -422,6 +431,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
         elif 'type' in key:
             shape = list(value.values())[0]
+            if shape is None:
+                shape = self.get_region_type([row_data['from'], row_data['to']])
             data[name]['type'] = shape
             self.vtkwidget.change_region_type(name, data[name])
             self.enable_disable_widgets(name)
