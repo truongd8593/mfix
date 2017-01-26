@@ -13,7 +13,7 @@ class SpeciesHandler(object):
     def species_alias_unique(self, alias):
         alias = alias.lower()
         for a in self.species_all_aliases():
-            if a.lower() == alias:
+            if a.lower() == alias.lower():
                 return False
         return True
 
@@ -59,12 +59,13 @@ class SpeciesHandler(object):
 
 
     def find_species_phase(self, species):
-        if species in self.fluid_species:
-            return 0
-
-        for (p, s) in self.solids_species.items():
-            if species in s:
-                return p
+        # case insensitive
+        slower= species.lower()
+        for p in range(0, 1+len(self.solids)):
+            for s in self.species_of_phase(p):
+                if s.lower() == slower:
+                    return p
+        self.warning("Species %s is not associated with any phase" % species)
 
 
     def species_mol_weight(self, species):
@@ -78,7 +79,7 @@ class SpeciesHandler(object):
 
 
     def species_of_phase(self, p):
-        if p is None:
+        if p is None or p > len(self.solids):
             return []
         elif p == 0:
             return self.fluid_species.keys()
