@@ -139,6 +139,11 @@ setup(
         'qtpy',
     ],
 
+    setup_requires=[
+        'numpy',
+        'packaging',
+    ],
+
     ext_modules=[Extension('mfixsolver', sources=[])],
 
     # If there are data files included in your packages that need to be
