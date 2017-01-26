@@ -1251,6 +1251,8 @@ class Project(object):
                     self.thermo_data[species] = []
                 if species and line:
                     self.thermo_data[species].append(line)
+
+        # parse reaction section
         if reaction_lines or des_reaction_lines:
             for lines in reaction_lines, des_reaction_lines:
                 RP = ReactionParser()
@@ -1330,7 +1332,7 @@ class Project(object):
                     value = value.upper()
                     value = IS_TYPE_DICT.get(value, value)
                 cond = self.iss
-            elif key != 'vtk_var' and key.startswith('vtk_'):
+            elif key.startswith('vtk_') and 'vtk_var' not in key:
                 cond = self.vtks
             else:
                 cond = None
