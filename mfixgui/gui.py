@@ -384,6 +384,9 @@ class MfixGui(QtWidgets.QMainWindow,
                     widget.setIcon(get_icon('remove.png'))
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
+            if isinstance(widget, QtWidgets.QAbstractButton):
+                # Make sure lineedits lose focus so updates stick!!
+                widget.setFocusPolicy(Qt.ClickFocus)
 
         # Toolbuttons at top of frame
         ui = self.ui
