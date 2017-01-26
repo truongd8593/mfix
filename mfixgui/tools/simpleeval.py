@@ -305,7 +305,10 @@ class SimpleEval(object): # pylint: disable=too-few-public-methods
 def simple_eval(expr, names={}):
     ''' Simply evaluate an expresssion '''
     s = SimpleEval(names=names)
-    return s.eval(expr)
+    v = s.eval(expr)
+    if isinstance(v, float):
+        v = round(v, 6)
+    return v
 
 
 if (__name__ == '__main__'):
