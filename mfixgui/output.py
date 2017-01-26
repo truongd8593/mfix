@@ -359,6 +359,9 @@ class Output(object):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.output
 
+        if output_type is None:
+            output_type = 'C' #Cell data is default
+
         if self.output_region_dict is None:
             self.output_region_dict = self.ui.regions.get_region_dict()
 
@@ -479,7 +482,7 @@ class Output(object):
         # TODO: if we wanted to be fancy, we could find regions where
         # output values matched, and merge into a new output region.  That
         # is only needed for projects created outside the GUI (otherwise
-        # we have already stored the output regions).  Also would be noutpute
+        # we have already stored the output regions).  Also would be nice
         # to offer a way to split compound regions.
         for vtk in self.project.vtks:
 
@@ -1087,7 +1090,7 @@ class Output(object):
             return
 
         V0 = indices[0]
-        vtk_data = self.project.get_value('vtk_data', args=[V0])
+        vtk_data = self.project.get_value('vtk_data', args=[V0], default='C')
 
         # Note, filebase through nzs are common to cell/particle
 
