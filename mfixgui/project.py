@@ -937,7 +937,7 @@ class Project(object):
         """return a list of indices (args) for which the key is defined"""
         # Returning as a list makes this safe to iterate over, even if keys are
         # added/deleted
-        return list(self.keyword_dict.get(key, {}).keys())
+        return sorted(list(self.keyword_dict.get(key, {}).keys()))
 
 
     def removeKeyword(self, key, args=None, warn=True):
