@@ -602,7 +602,7 @@
               <item row="0" column="0" colspan="2">
                <widget class="CheckBox" name="checkbox_keyword_out_stl_value">
                 <property name="text">
-                 <string>Internal Flow</string>
+                 <string>External Flow</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>

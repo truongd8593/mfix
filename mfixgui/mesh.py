@@ -8,7 +8,7 @@ from qtpy import QtCore, QtWidgets
 # local imports
 from mfixgui.tools.general import sort_dict, safe_float, safe_int
 
-MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
+MESH_EXTENT_KEYS = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
 TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
                      'first': 'first_d', 'last': 'last_d'}

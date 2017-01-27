@@ -1278,9 +1278,9 @@ class Project(object):
 
         key = key.lower()
 
-        # special handling of xmin, xlength, ymin, ylength, zmin, zlength
-        if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            par_key = key.replace('length', 'max')
+        # special handling of x_min, x_max, etc.
+        if key in ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']:
+            par_key = key.replace('_', '')
             PARAMETER_DICT[par_key] = value
 
         # check to see if the keyword already exists

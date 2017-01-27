@@ -137,8 +137,8 @@ class ProjectManager(Project):
 
         # 'Parameters' are user-defined variables
         # TODO: methods to handle these ('is_param', etc)
-        if self.gui and key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            self.gui.update_parameters([key.replace('length', 'max')]) #??  length==max-min?
+        if self.gui and key in ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']:
+            self.gui.update_parameters([key.replace('_', '')]) #??  length==max-min?
 
         if hasattr(widget, 'post_update'):
             widget.post_update()
@@ -230,6 +230,7 @@ class ProjectManager(Project):
            * set ic_ep_s from ic_ep_g  (issues/142)
            * convert gravity scalar to vector
            * convert VTK_VAR and VTK_VARLIST keys to vtk_* booleans
+           * convert [XYZ]LENGTH to [XYZ]_MIN and [XYZ]_MAX (issues/238)
 
         Reports any non-fatal load errors via the 'warnings' module
 
@@ -650,6 +651,14 @@ class ProjectManager(Project):
                     for axis in 'xz':
                         self.submit_change(None, {'gravity_%s'%axis: 0.0}, args=None)
                     self.submit_change(None, {'gravity_y': y_val}, args=None)
+                    continue
+
+                # convert [XYZ]LENGTH to [XYZ]_MIN and [XYZ]_MAX (issues/238)
+                if kw.key in ['xlength', 'ylength', 'zlength']:
+                    self.gui.unset_keyword(kw.key)
+                    axis = kw.key[0]
+                    min_ = self.get_value('%s_min'%axis, 0)
+                    self.submit_change(None, {'%s_min'%axis: min_, '%s_max'%axis: kw.value}, args=None)
                     continue
 
                 if kw.key in thermo_keys:

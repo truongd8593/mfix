@@ -1131,8 +1131,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # register with project manager
         self.project.register_widget(
-            self.vtkwidget, ['xmin', 'xlength', 'ymin', 'ylength', 'zmin',
-                             'zlength', 'imax', 'jmax', 'kmax', 'no_k',
+            self.vtkwidget, ['x_min', 'x_max', 'y_min', 'y_max', 'z_min',
+                             'Z_max', 'imax', 'jmax', 'kmax', 'no_k',
                              ])
 
         # add reference to other widgets

@@ -446,7 +446,7 @@ class VtkWidget(BaseVtkWidget):
 
     def default(self):
         """reset to defaults"""
-        self.ui.geometry.lineedit_keyword_zlength.setEnabled(True)
+        self.ui.geometry.lineedit_keyword_z_max.setEnabled(True)
         self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
@@ -2194,11 +2194,10 @@ class VtkWidget(BaseVtkWidget):
         extents = self.get_geometry_extents()
 
         if extents:
-            for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
-                                    'zmin', 'zlength'],
+            for key, extent in zip(['x_min', 'x_max', 'y_min', 'y_max',
+                                    'z_min', 'z_max'],
                                    extents):
-                if 'min' not in key:  # mfix doesn't support mins yet
-                    self.emitUpdatedValue(key, extent)
+                self.emitUpdatedValue(key, extent)
 
 #            self.update_background_mesh()
 

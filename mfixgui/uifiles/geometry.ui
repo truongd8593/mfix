@@ -71,9 +71,9 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="LineEdit" name="lineedit_xmin">
+       <widget class="LineEdit" name="lineedit_keyword_x_min">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="font">
          <font>
@@ -81,14 +81,14 @@
          </font>
         </property>
         <property name="text">
-         <string>0.0</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="LineEdit" name="lineedit_ymin">
+       <widget class="LineEdit" name="lineedit_keyword_y_min">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="font">
          <font>
@@ -96,14 +96,14 @@
          </font>
         </property>
         <property name="text">
-         <string>0.0</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="LineEdit" name="lineedit_zmin">
+       <widget class="LineEdit" name="lineedit_keyword_z_min">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="font">
          <font>
@@ -111,7 +111,7 @@
          </font>
         </property>
         <property name="text">
-         <string>0.0</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -128,7 +128,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="LineEdit" name="lineedit_keyword_xlength">
+       <widget class="LineEdit" name="lineedit_keyword_x_max">
         <property name="font">
          <font>
           <pointsize>8</pointsize>
@@ -137,7 +137,7 @@
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="LineEdit" name="lineedit_keyword_ylength">
+       <widget class="LineEdit" name="lineedit_keyword_y_max">
         <property name="font">
          <font>
           <pointsize>8</pointsize>
@@ -146,7 +146,7 @@
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="LineEdit" name="lineedit_keyword_zlength">
+       <widget class="LineEdit" name="lineedit_keyword_z_max">
         <property name="font">
          <font>
           <pointsize>8</pointsize>
