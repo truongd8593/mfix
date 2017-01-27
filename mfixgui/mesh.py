@@ -15,10 +15,10 @@ TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
 CELL_MFIX_KEYS = ['imax', 'jmax', 'kmax']
 
 
-def ctrl_pts_to_loc(ctrl):
+def ctrl_pts_to_loc(ctrl, min_loc):
     """given control points, convert to location"""
-    loc = [0]
-    last = 0
+    loc = [min_loc]
+    last = min_loc
     for pt in ctrl.values():
         er = safe_float(pt['stretch'], 1.0)
         cp = safe_float(pt['position'], 0.0)
@@ -312,7 +312,7 @@ class Mesh(object):
         self.update_background_mesh()
 
         nrows = len(new)
-        if rows[-1] - 1 == nrows: # We deleted the last row,
+        if rows[-1] == nrows: # We deleted the last row,
             if nrows > 0:
                 table.selectRow(nrows-1)
 
@@ -327,6 +327,11 @@ class Mesh(object):
             for key in TABLE_MFIXKEY_MAP.values():
                 self.update_mesh_keyword(key+d, None, args=ind)
 
+        # the last control point
+        if m == max_i == 0:
+            for key in TABLE_MFIXKEY_MAP.values():
+                self.update_mesh_keyword(key+d, None, args=0)
+
     def mesh_add(self, index):
         """add a control point to the end"""
         table = self.mesh_tables[index]
@@ -339,7 +344,7 @@ class Mesh(object):
             loc = safe_float(list(data.values())[-1]['position']) + 1
             c = 1
         else:
-            loc = self.project.get_value(d + 'length', 1)
+            loc = self.project.get_value(d + '_max', 1)
             c = self.project.get_value(CELL_MFIX_KEYS[index], 1)
         ctrl = data[i] = {'position': loc, 'cells': c, 'stretch': 1.0, 'first': 0.0, 'last': 0.0}
 
@@ -353,7 +358,7 @@ class Mesh(object):
         row, col = table.get_clicked_cell()
         data = table.value
         split_data = data[row]
-        prev_data_loc = 0
+        prev_data_loc = self.project.get_value(d + '_min', 0)
         if row >= 2:
             prev_data_loc = safe_float(data[row-1]['position'])
 
@@ -427,9 +432,10 @@ class Mesh(object):
         # determine cell spacing
         spacing = []
         for i, table in enumerate(self.mesh_tables):
+            axis='xyz'[i]
             val = table.value
             if val:
-                s = ctrl_pts_to_loc(val)
+                s = ctrl_pts_to_loc(val, project.get_value('%s_min'%axis, 0))
                 spacing.append(s)
                 # disable imax, jmax, kmax
                 self.cell_count_widgets[i].setEnabled(False)
