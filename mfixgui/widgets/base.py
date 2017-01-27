@@ -5,8 +5,9 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import copy
+import os
 from collections import OrderedDict
-from qtpy import QtWidgets, QtCore, QtGui
+from qtpy import QtWidgets, QtCore, QtGui, PYQT5
 from qtpy.QtCore import Qt
 
 # Note - some items moved from 'Widgets' to 'Core'
@@ -423,6 +424,46 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self._completer.popup().setCurrentIndex(
                 self._completer.completionModel().index(0, 0))
 
+
+class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QCheckBox.__init__(self, parent)
+        BaseWidget.__init__(self)
+
+        self.context_menu = self.createStandardContextMenu
+
+    def extend_context_menu(self):
+        menu = self.context_menu()
+        first_default_action = menu.actions()
+
+        if first_default_action:
+            first_default_action = first_default_action[0]
+
+        # clear
+        clear_action = QtWidgets.QAction(
+            get_icon('close.png'), 'Clear', menu)
+        clear_action.triggered.connect(self.clear)
+        insert_append_action(menu, clear_action, first_default_action)
+
+        # save
+        clear_action = QtWidgets.QAction(
+            get_icon('save.png'), 'Save', menu)
+        clear_action.triggered.connect(self.save_to_file)
+        insert_append_action(menu, clear_action, first_default_action)
+
+        return menu
+
+    def save_to_file(self):
+        proj_dir = os.path.dirname(SETTINGS.value('project_file'))
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save output to a file", proj_dir, "Text (*.txt)")
+        if PYQT5:
+            filename = filename[0]
+        if not filename:
+            return
+
+        text = self.toPlainText()
+        with open(filename, 'w') as txtfile:
+            txtfile.write(text)
 
 class CheckBox(QtWidgets.QCheckBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
@@ -1295,4 +1336,5 @@ BASE_WIDGETS = {
     'checkbox': CheckBox,
     'spinbox': SpinBox,
     'doublespinbox': DoubleSpinBox,
+    'plaintextedit': PlainTextEdit,
 }
