@@ -42,7 +42,7 @@ install:
 build:mac:
   stage: build
   script:
-    - env FC=gfortran-6 CC=gcc-6 python3 setup.py bdist_wheel
+    - env FC=gfortran-6 CC=gcc-6 $HOME/miniconda3/bin/python3 setup.py bdist_wheel
     - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
   artifacts:
     name: "$CI_BUILD_NAME"
