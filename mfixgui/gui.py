@@ -2746,7 +2746,7 @@ def main():
 
     if not args.test:
         qapp.exec_()
-    else:
+    else:  # Run internal test suite
         tw = gui.ui.treewidget_navigation
         r = tw.invisibleRootItem()
         for i in range(r.childCount()):
