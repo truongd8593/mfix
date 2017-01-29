@@ -112,6 +112,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
 
         self.defer_render = False
         self.view_flip = [False]*3
+        self.offscreen_vtkrenderer = None
 
         # --- layout ---
         self.grid_layout = QtWidgets.QGridLayout(self)
@@ -242,11 +243,12 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not fname:
             return
 
+        self.init_offscreen_render()
+
         # screenshot code:
         # TODO: get resolution from user
         window_image = vtk.vtkWindowToImageFilter()
-        window_image.SetInput(self.vtkRenderWindow)
-        window_image.SetMagnification(3)
+        window_image.SetInput(self.offscreen_vtkrenderwindow)
         window_image.SetInputBufferTypeToRGBA()
 #        window_image.ReadFrontBufferOff()
         window_image.Update()
@@ -265,6 +267,35 @@ class BaseVtkWidget(QtWidgets.QWidget):
         writer.SetFileName(fname)
         writer.SetInputConnection(window_image.GetOutputPort())
         writer.Write()
+
+    def init_offscreen_render(self, size=[1920, 1080]):
+        self.offscreen_vtkrenderer = vtk.vtkRenderer()
+        self.offscreen_vtkrenderer.GradientBackgroundOn()
+        self.offscreen_vtkrenderer.SetBackground(0.4, 0.4, 0.4)
+        self.offscreen_vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
+        self.offscreen_vtkrenderwindow = vtk.vtkRenderWindow()
+        self.offscreen_vtkrenderwindow.SetOffScreenRendering(1)
+        self.offscreen_vtkrenderwindow.AddRenderer(self.offscreen_vtkrenderer)
+        self.offscreen_vtkrenderwindow.SetSize(*size)
+
+        actors = self.vtkrenderer.GetActors()
+
+        for i in range(actors.GetNumberOfItems()):
+            actor = actors.GetItemAsObject(i)
+            if actor:
+                mapper = actor.GetMapper()
+                new_actor = vtk.vtkActor()
+                new_actor.SetMapper(mapper)
+                new_actor.SetProperty(actor.GetProperty())
+                self.offscreen_vtkrenderer.AddActor(new_actor)
+
+        self.offscreen_vtkrenderer.ResetCamera()
+
+        camera = self.vtkrenderer.GetActiveCamera()
+        offscreen_camera = self.offscreen_vtkrenderer.GetActiveCamera()
+        offscreen_camera.SetModelTransformMatrix(camera.GetModelTransformMatrix())
+
+        self.offscreen_vtkrenderer.Render()
 
     def change_interaction(self, style_2d=False):
         if style_2d:
