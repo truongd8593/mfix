@@ -70,7 +70,7 @@ from mfixgui.graphic_tabs import GraphicTabs
 
 from mfixgui.interpreter import Interpreter
 
-from mfixgui.tools.general import (get_icon, widget_iter,
+from mfixgui.tools.general import (get_icon, widget_iter, get_pixmap,
                            is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs,
                            get_username, convert_string_to_python)
@@ -157,7 +157,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def __init__(self, app, parent=None, project_file=None, loadworkflow=True,
-                 loadvtk=True):
+                 loadvtk=True, set_splash_text=None):
         self.app = app
         QtWidgets.QMainWindow.__init__(self, parent)
         self.setObjectName('mfixgui')
@@ -180,6 +180,11 @@ class MfixGui(QtWidgets.QMainWindow,
         self.open_succeeded = False
         self.unsaved_flag = False
         self.run_dialog = None
+        if set_splash_text is not None:
+            self.set_splash_text = set_splash_text
+        else:
+            def noop(text): return
+            self.set_splash_text = noop
 
         # Hack -remove these once better 'restore value' framework exists
         self.saved_ro_g0 = None
@@ -233,6 +238,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
                 self.ui.panes.append(widget)
+                # change splash text
+                self.set_splash_text('Creating %s widgets'%name)
 
         else:  # not precompiled - for developers
             uifiles = os.path.join(SCRIPT_DIRECTORY, 'uifiles')
@@ -275,6 +282,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
                 self.ui.panes.append(widget)
+                # set text on splash
+                self.set_splash_text('Creating %s widgets'%name)
         # end of ui loading
 
         # build keyword documentation from namelist docstrings
@@ -332,6 +341,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.find_navigation_tree_item(name).setDisabled(True)
 
         # Initialize popup dialogs
+        self.set_splash_text('Initializing Dialogs')
         self.species_popup = SpeciesPopup(QtWidgets.QDialog(), self)
         #self.species_popup.setModal(True) # ?
         self.regions_popup = RegionsPopup(QtWidgets.QDialog(), self)
@@ -345,6 +355,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Extra setup for fluid & solids panes.  Needs to happen
         # after we create ProjectManager, because widgets get registered
+        self.set_splash_text('Creating panes')
         self.init_model_setup()
         self.init_fluid_handler()
         self.init_solids_handler()
@@ -375,6 +386,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # --- icons ---
         # loop through all widgets & set icons for any ToolButton with add/delete/copy
         #  in the name
+        self.set_splash_text('Loading icons')
         for widget in widget_iter(self):
             if isinstance(widget, QtWidgets.QToolButton):
                 name = str(widget.objectName())
@@ -451,6 +463,7 @@ class MfixGui(QtWidgets.QMainWindow,
                 widget.setChildrenCollapsible(False)
 
         # Job manager / monitor
+        self.set_splash_text('Creating job manager')
         self.job_manager = JobManager(self)
         self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
         self.job_manager.sig_update_job_status.connect(self.slot_update_residuals)
@@ -472,15 +485,18 @@ class MfixGui(QtWidgets.QMainWindow,
         self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
         # --- Register widgets ---
+        self.set_splash_text('Registering widgets')
         self.register_keyword_widgets()
 
         # --- Create main menu ---
         self.init_main_menu()
 
         # --- vtk setup ---
+        self.set_splash_text('Loading vtk')
         self.init_vtk_widget(loadvtk)
 
         # --- workflow setup ---
+        self.set_splash_text('Loading workflow')
         self.init_workflow_widget(loadworkflow)
 
         # --- parameter dialog
@@ -2682,6 +2698,20 @@ def main():
 
     # create the QApplication
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
+
+    # splash screen
+    splash = None
+    if not args.test:
+        splash = QtWidgets.QSplashScreen(get_pixmap('splash.png', 600, 338))
+        splash.setWindowFlags(Qt.SplashScreen | Qt.WindowStaysOnTopHint)
+        splash.show()
+
+    def set_splash_text(text):
+        if splash is None: return
+        splash.showMessage(text, Qt.AlignHCenter|Qt.AlignBottom)
+        qapp.processEvents()
+    set_splash_text('Starting...')
+
     # set style
     app_style_arg = args.style
     app_style_settings = SETTINGS.value('app_style')
@@ -2692,8 +2722,9 @@ def main():
         qapp.setStyle(app_style_settings.lower())
 
     # create the gui
+    set_splash_text('Creating App...')
     gui = MfixGui(qapp, project_file=project_file, loadworkflow=args.noworkflow,
-                  loadvtk=args.novtk)
+                  loadvtk=args.novtk, set_splash_text=set_splash_text)
 
     # set previous geometry
     geo = SETTINGS.value('geometry')
@@ -2723,6 +2754,7 @@ def main():
         last_project = project_file = gui.get_project_file()
 
     if project_file and not args.noload and os.path.exists(project_file):
+        set_splash_text('Loading project')
         gui.open_project(project_file, interactive=(not args.test))
         # change mode and navigation if loaded last project
         if last_project == project_file:
@@ -2743,6 +2775,10 @@ def main():
     # exit with Ctrl-C at the terminal
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    # close the sphash
+    if splash is not None:
+        splash.close()
 
     if not args.test:
         qapp.exec_()
