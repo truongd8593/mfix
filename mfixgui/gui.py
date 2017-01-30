@@ -2722,7 +2722,7 @@ def main():
         qapp.setStyle(app_style_settings.lower())
 
     # create the gui
-    set_splash_text('Creating App...')
+    set_splash_text('Creating application')
     gui = MfixGui(qapp, project_file=project_file, loadworkflow=args.noworkflow,
                   loadvtk=args.novtk, set_splash_text=set_splash_text)
 
@@ -2776,7 +2776,7 @@ def main():
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # close the sphash
+    # close the splash
     if splash is not None:
         splash.close()
 
