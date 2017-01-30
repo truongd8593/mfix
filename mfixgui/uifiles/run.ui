@@ -23,27 +23,14 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="6" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_dt_min"/>
-   </item>
-   <item row="6" column="2">
-    <widget class="QLabel" name="label_dt_min_units">
-     <property name="text">
-      <string>s</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_dt_fac">
      <property name="text">
       <string>Time step factor</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_dt_fac"/>
-   </item>
-   <item row="8" column="0">
+   <item row="5" column="0">
     <widget class="QCheckBox" name="checkbox_pymfix_output">
      <property name="enabled">
       <bool>true</bool>
@@ -53,27 +40,20 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
-    <widget class="QCheckBox" name="checkbox_detect_stall">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Detect stall</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
+   <item row="2" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_dt_max"/>
    </item>
-   <item row="4" column="2">
-    <widget class="QLabel" name="label_dt_units">
+   <item row="3" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_dt_min"/>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="label_dt_min_units">
      <property name="text">
       <string>s</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="2" column="0">
     <widget class="QLabel" name="label_dt_max">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -86,73 +66,33 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_max_nit">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_norm_g">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item row="6" column="0">
+    <widget class="QCheckBox" name="checkbox_detect_stall">
+     <property name="enabled">
+      <bool>false</bool>
      </property>
      <property name="text">
-      <string>Fluid normalization</string>
+      <string>Detect stall</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_norm_g">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_max_nit">
+   <item row="1" column="2">
+    <widget class="QLabel" name="label_dt_units">
      <property name="text">
-      <string>Maximum iterations</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_norm_s">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Solids normalization</string>
+      <string>s</string>
      </property>
     </widget>
    </item>
    <item row="4" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_dt_fac"/>
+   </item>
+   <item row="1" column="1">
     <widget class="LineEdit" name="lineedit_keyword_dt"/>
    </item>
-   <item row="2" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_norm_s">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
+   <item row="0" column="0">
     <widget class="QLabel" name="label_tstop">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -165,34 +105,31 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="0" column="1">
     <widget class="LineEdit" name="lineedit_keyword_tstop"/>
    </item>
-   <item row="5" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_dt_max"/>
-   </item>
-   <item row="5" column="2">
+   <item row="2" column="2">
     <widget class="QLabel" name="label_dt_max_units">
      <property name="text">
       <string>s</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="3" column="0">
     <widget class="QLabel" name="label_dt_min">
      <property name="text">
       <string>Minimum time step</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
+   <item row="0" column="2">
     <widget class="QLabel" name="label_tstop_units">
      <property name="text">
       <string>s</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="1" column="0">
     <widget class="QLabel" name="label_dt">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -205,7 +142,7 @@
      </property>
     </widget>
    </item>
-   <item row="10" column="0" colspan="2">
+   <item row="7" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
