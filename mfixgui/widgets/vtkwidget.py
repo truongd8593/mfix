@@ -1649,12 +1649,19 @@ class VtkWidget(BaseVtkWidget):
                                 y + safe_float(geo['translatey']),
                                 z + safe_float(geo['translatez']))
         elif filtertype == 'sample_implicit':
-            geo['samplefunction'].SetSampleDimensions(
+            sample = geo.get('samplefunction')
+            sample.SetSampleDimensions(
                 safe_int(geo['samplesx']), safe_int(geo['samplesy']), safe_int(geo['samplesz']))
             bounds = [safe_float(geo[k]) for k in ['minx','maxx','miny', 'maxy', 'minz', 'maxz']]
-            geo['samplefunction'].SetModelBounds(bounds)
-            geo['samplefunction'].Update()
+            sample.SetModelBounds(bounds)
 
+            # look for the mapper, if it exists, replace the surface filter
+            mapper = geo.get('mapper', None)
+            if mapper is not None:
+                surf = geo['filter'] = vtk.vtkContourFilter()
+                surf.SetInputConnection(sample.GetOutputPort())
+                surf.SetValue(0, 0.0)
+                mapper.SetInputConnection(surf.GetOutputPort())
 
         vtkfilter.Update()
 
