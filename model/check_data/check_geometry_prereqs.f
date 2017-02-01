@@ -17,6 +17,7 @@
       use geometry, only: IMAX, NO_I, XMIN
       use geometry, only: JMAX, NO_J
       use geometry, only: KMAX, NO_K, DZ, ZLENGTH
+      use geometry, only: Z_MIN, Z_MAX
 
 ! Runtime flag specifying 2D simulations
 !      use geometry, only: NO_K
@@ -117,6 +118,9 @@
                IF(CYLINDRICAL) THEN
                   DZ(1) = 8.*ATAN(ONE)
                   ZLENGTH = 8.*ATAN(ONE)
+               ELSEIF(Z_MIN/=UNDEFINED.AND.Z_MAX/=UNDEFINED) THEN
+                  DZ(1)   = Z_MAX - Z_MIN
+                  ZLENGTH = Z_MAX - Z_MIN
                ELSE
                   DZ(1) = ONE
                   ZLENGTH = ONE
