@@ -40,7 +40,7 @@ build:linux:py3:
   tags:
     - linux
 
-install:linux:py2
+install:linux:py2:
   stage: deploy
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui || true
