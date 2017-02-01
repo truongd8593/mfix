@@ -115,8 +115,8 @@ cgs_to_SI = {
   'c':              None, # UNKNOWN                : User defined constants.
   'c2c_r1':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 1 (used when QUADRIC_FORM =
   'c2c_r2':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 2 (used when QUADRIC_FORM =
-  'c2c_y1':         None, # UNKNOWN                : Cylinder-cone_cylinder Y1 (used when QUADRIC_FORM = C2C*).
-  'c2c_y2':         None, # UNKNOWN                : Cylinder-cone_cylinder Y2 (used when QUADRIC_FORM = C2C*).
+  'c2c_y1':         0.01, # cm -> m                : Cylinder-cone_cylinder Y1 (used when QUADRIC_FORM = C2C*).
+  'c2c_y2':         0.01, # cm -> m                : Cylinder-cone_cylinder Y2 (used when QUADRIC_FORM = C2C*).
   'c_e':            1,    # max = 1.0              : Coefficient of restitution for particle-particle collisions.
   'c_f':            1,    # friction               : Coefficient of friction between the particles of two solids
   'c_fac':          1,    # factor                 : Factor between zero and one used in the universal limiter
@@ -138,7 +138,7 @@ cgs_to_SI = {
   'delp_y':         0.1,  # barye -> Pa            : Fluid pressure drop across YLENGTH when a cyclic boundary
   'delp_z':         0.1,  # barye -> Pa            : Fluid pressure drop across ZLENGTH when a cyclic boundary
   'des_diffuse_width':0.01,# cm -> m               : The length scale used to smooth dispersed phase averaged
-  'des_em':         None, # UNKNOWN                : Emissivity of solids phase.
+  'des_em':         1.0, # UNKNOWN                 : Emissivity of solids phase.
   'des_en_input':   1,    # factor                 : The normal restitution coefficient for inter-particle
   'des_en_wall_input':1,  # factor                 : The normal restitution coefficient for particle-wall
   'des_et_input':   1,    # max = 1.0              : Tangential restitution coefficient for inter-particle
@@ -151,9 +151,9 @@ cgs_to_SI = {
   'dif_s0':         0.0001,# cm^2/s -> m^2/s       : Specified constant solids diffusivity .
   'dil_factor_vsd': 1,    # volume fraction        : Factor to define the dilute region where the solids density
   'dil_inert_x_vsd':1,    # mass fraction          : Mass fraction of inert solids phase species in the dilute
-  'dquadric':       None, # UNKNOWN                : Coefficient D in equation (1).
-  'drag_c1':        None, # UNKNOWN                : Quantity for calibrating Syamlal-O'Brien drag correlation
-  'drag_d1':        None, # UNKNOWN                : Quantity for calibrating Syamlal-O'Brien drag correlation
+  'dquadric':       1.0, # factor                : Coefficient D in equation (1).
+  'drag_c1':        1.0, # factor                  : Quantity for calibrating Syamlal-O'Brien drag correlation
+  'drag_d1':        1.0, # factor                  : Quantity for calibrating Syamlal-O'Brien drag correlation
   'dt':             1,    # s                      : Initial time step size. If left undefined, a steady-state
   'dt_fac':         1,    # max = 1.0              : Factor for adjusting time step. * The value must be less
   'dt_max':         1,    # s                      : Maximum time step size.
@@ -175,9 +175,9 @@ cgs_to_SI = {
   'fac_dim_max_cut_cell':1,# factor                : Factor used to allocate cut cell arrays (expressed as a
   'factor_rlm':     0.01, # cm -> m                : Effectively increase the radius of a particle (multiple of
   'filter_size_ratio':1,  # ratio                  : Ratio of filter size to computational cell size.
-  'first_dx':       None, # UNKNOWN                : Value of first DX in a segment (x-direction). A negative
-  'first_dy':       None, # UNKNOWN                : Value of first DY in a segment (y-direction). A negative
-  'first_dz':       None, # UNKNOWN                : Value of first DZ in a segment (z-direction). A negative
+  'first_dx':       0.01, # cm -> m                : Value of first DX in a segment (x-direction). A negative
+  'first_dy':       0.01, # cm -> m                : Value of first DY in a segment (y-direction). A negative
+  'first_dz':       0.01, # cm -> m                : Value of first DZ in a segment (z-direction). A negative
   'flpc':           0.01, # cm -> m                : Fluid lens proportion constant used to calculate the radius
   'flux_g':         100,  # 1/cm -> 1/m            : If a value is specified, the domain-averaged gas flux is
   'fric_exp_pic':   None, # UNKNOWN                : Beta term in the frictional stress model of Snider.
@@ -233,12 +233,12 @@ cgs_to_SI = {
   'kt_fac':         1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
   'kt_w_fac':       1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
   'lam_hys':        0.01, # cm -> m                : The lubrication cutoff distance for HYS drag model.  In
-  'lambda_x':       None, # UNKNOWN                : Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
-  'lambda_y':       None, # UNKNOWN                : Coefficient LAMBDA_Y in equation (1) ('NORMAL' form) or
-  'lambda_z':       None, # UNKNOWN                : Coefficient LAMBDA_Z in equation (1) ('NORMAL' form) or
-  'last_dx':        None, # UNKNOWN                : Value of last DX in a segment (x-direction). A negative
-  'last_dy':        None, # UNKNOWN                : Value of last DY in a segment (y-direction). A negative
-  'last_dz':        None, # UNKNOWN                : Value of last DZ in a segment (z-direction). A negative
+  'lambda_x':       1.0, # UNKNOWN                 : Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
+  'lambda_y':       1.0, # UNKNOWN                 : Coefficient LAMBDA_Y in equation (1) ('NORMAL' form) or
+  'lambda_z':       1.0, # UNKNOWN                 : Coefficient LAMBDA_Z in equation (1) ('NORMAL' form) or
+  'last_dx':        0.01, # cm -> m                : Value of last DX in a segment (x-direction). A negative
+  'last_dy':        0.01, # cm -> m                : Value of last DY in a segment (y-direction). A negative
+  'last_dz':        0.01, # cm -> m                : Value of last DZ in a segment (z-direction). A negative
   'leq_tol':        1,    # tolerance              : Linear Equation tolerance .
   'max_inlet_vel_fac':0.01,# cm/s -> m/s           : The code declares divergence if the velocity anywhere in the
   'mew':            1,    # max = 1.0              : Inter-particle Coulomb friction coefficient.
@@ -253,9 +253,9 @@ cgs_to_SI = {
   'mw_avg':         1,    # g/mol                  : Average molecular weight of gas . Used in calculating the
   'mw_g':           1,    # g/mol                  : Molecular weight of gas species .
   'mw_s':           1,    # g/mol                  : Molecular weight of solids phase species .
-  'n_x':            None, # UNKNOWN                : X-component of normal vector defining the plane (used when
-  'n_y':            None, # UNKNOWN                : Y-component of normal vector defining the plane (used when
-  'n_z':            None, # UNKNOWN                : Z-component of normal vector defining the plane (used when
+  'n_x':            1.0, # unit vector             : X-component of normal vector defining the plane (used when
+  'n_y':            1.0, # unit vector             : Y-component of normal vector defining the plane (used when
+  'n_z':            1.0, # unit vector             : Z-component of normal vector defining the plane (used when
   'neighbor_search_rad_ratio':1,# ratio            : Ratio of the distance (imaginary sphere radius) to particle
   'norm_g':         1,    # factor                 : Factor to normalize the gas continuity equation residual.
   'norm_s':         1,    # volume fraction        : Factor to normalize the solids continuity equation residual.
@@ -302,10 +302,10 @@ cgs_to_SI = {
   'reactor1_rr2':   0.01, # cm -> m                : Reactor 1, upper rounding radius.
   'reactor1_theta1':1,    # angle                  : Reactor 1, lower rounding angle (degrees).
   'reactor1_theta2':1,    # angle                  : Reactor 1, upper rounding angle (degrees).
-  'reactor1_y1':    None, # UNKNOWN                : Reactor 1, lower conical transition between cylinders.
-  'reactor1_y2':    None, # UNKNOWN                : Reactor 1, upper conical transition between cylinders.
-  'reactor1_yr1':   None, # UNKNOWN                : Reactor 1, lower rounding below cylinder.
-  'reactor1_yr2':   None, # UNKNOWN                : Reactor 1, upper rounding above cylinder.
+  'reactor1_y1':    0.01, # cm -> m                : Reactor 1, lower conical transition between cylinders.
+  'reactor1_y2':    0.01, # cm -> m                : Reactor 1, upper conical transition between cylinders.
+  'reactor1_yr1':   0.01, # cm -> m                : Reactor 1, lower rounding below cylinder.
+  'reactor1_yr2':   0.01, # cm -> m                : Reactor 1, upper rounding above cylinder.
   'report_mass_balance_dt':1,# s                   : Frequency to perform an overall species mass balance.
   'res_backup_dt':  1,    # s                      : Interval at which a backup copy of the restart file is
   'res_dt':         1,    # s                      : Interval at which restart (.res) file is updated.
@@ -314,7 +314,7 @@ cgs_to_SI = {
   'ro_xs0':         1000.0,# g/cm^3 -> kg/m^3      : Specified constant solids species density .
   'scale_msh':      1,    # factor                 : Scaling factor, applied to the .msh geometry. Note that
   'scale_stl':      1,    # factor                 : Scaling factor, applied to the STL geometry. Note that
-  'segregation_slope_coefficient':None,# UNKNOWN   : Used in calculating the initial slope of segregation: see
+  'segregation_slope_coefficient':1.0,# UNKNOWN   : Used in calculating the initial slope of segregation: see
   'spx_dt':         1,    # s                      : Interval at which .SPX files are updated.
   'stl_small_angle':1,    # angle                  : Smallest angle accepted for valid STL triangles (in
   't_x':            0.01, # cm -> m                : Translation in x-direction.
@@ -352,8 +352,8 @@ cgs_to_SI = {
   'tz_stl':         0.01, # cm -> m                : Translation in z-direction, applied to the STL geometry.
   'ucoil_r1':       0.01, # cm -> m                : U-shaped coil Radius 1 (used when QUADRIC_FORM = UCOIL*),
   'ucoil_r2':       0.01, # cm -> m                : U-shaped coil Radius 2 (used when QUADRIC_FORM = UCOIL*),
-  'ucoil_y1':       None, # UNKNOWN                : U-shaped coil ymax (used when QUADRIC_FORM = UCOIL*),
-  'ucoil_y2':       None, # UNKNOWN                : U-shaped coil ymin (used when QUADRIC_FORM = UCOIL*),
+  'ucoil_y1':       0.01, # cm -> m                : U-shaped coil ymax (used when QUADRIC_FORM = UCOIL*),
+  'ucoil_y2':       0.01, # cm -> m                : U-shaped coil ymin (used when QUADRIC_FORM = UCOIL*),
   'ur_f_gs':        1,    # s                      : The implicitness calculation of the gas-solids drag
   'ur_fac':         1,    # factor                 : Under relaxation factors.
   'ur_kth_sml':     1,    # factor                 : Under relaxation factor for conductivity coefficient
