@@ -58,7 +58,7 @@ class MfixBuildExt(build_ext):
         if not path.exists(extpath):
             makedirs(extpath)
 
-        mfixsolver_sharedlib = [p for p in glob('mfixsolver*') if path.isfile(p)]
+        mfixsolver_sharedlib = [p for p in glob('mfixsolver*.so') if path.isfile(p)]
         if not mfixsolver_sharedlib:
             raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
         mfixsolver_sharedlib = mfixsolver_sharedlib[0]
