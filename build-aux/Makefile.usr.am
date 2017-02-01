@@ -184,7 +184,7 @@ F2PY_FILES = \
 	mfixsolvermodule.o \
 	fortranobject.o
 
-$(F2PY_FILES): $(LIBMFIX)
+$(F2PY_FILES): mfix$(EXEEXT)
 	$(PYTHON_BIN) -c 'import os; \
 	import numpy; \
 	from numpy.f2py import f2py2e; \
