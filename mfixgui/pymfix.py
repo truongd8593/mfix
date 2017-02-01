@@ -31,11 +31,9 @@ from timeit import default_timer as timer
 from functools import wraps
 from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
 
-sys.path.append(os.getcwd())
+# current working directory has priority for mfixsolver (for test cases with UDFs)
+sys.path.insert(0, os.getcwd())
 pidfilename = None
-
-# append the path of the symlink __file__ (not its realpath)
-sys.path.append(os.path.dirname(__file__))
 
 # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
 # conventional to only use uppercase for constants)
@@ -202,6 +200,7 @@ class Mfix(object):
         self.des_time_init_walltime = 'unknown'
         self.des_time_steps_walltime = 'unknown'
         self.des_time_end_walltime = 'unknown'
+        self.steady_converged = False
 
     def start(self):
         " start the MFIX thread"
@@ -263,6 +262,8 @@ class Mfix(object):
                     break
 
         MAIN.finalize()
+        if RUN.steady_state:
+            self.steady_converged = True
 
     def do_step(self):
         """Run MFIX for a single timestep"""
@@ -580,12 +581,7 @@ def backupres():
 def exit_mfix():
     status_code, command_output = mfix_thread.do_command("EXIT")
     mfix_thread.thread.join()
-    global pidfilename
-    os.remove(pidfilename)
-    shutdown = request.environ.get('werkzeug.server.shutdown')
-    if shutdown is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    shutdown() # will finish current request, then shutdown
+    do_exit()
     return api_response(status_code, command_output)
 
 
@@ -612,11 +608,21 @@ def unpause():
     status_code, command_output = mfix_thread.do_command("UNPAUSE")
     return api_response(status_code, command_output)
 
+def do_exit():
+    global pidfilename
+    os.remove(pidfilename)
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if shutdown is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    shutdown() # will finish current request, then shutdown
+
 @FLASK_APP.route('/status', methods=['GET'])
 @token_required
 def get_status():
     "returns current status: paused state, current time, and residuals"
     # status is included in api_response
+    if RUN.steady_state and mfix_thread.steady_converged:
+        do_exit()
     return api_response(200, '')
 
 @FLASK_APP.route('/logging/<state>', methods=['POST'])

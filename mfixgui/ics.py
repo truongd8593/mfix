@@ -343,11 +343,15 @@ class ICS(object):
 
         if tw == ui.tablewidget_regions: # main table, adjust top splitter
             ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
         else: # mass fraction tables
+            if tw == ui.tablewidget_solids_mass_fraction:
+                ui.groupbox_solids_composition.setMaximumHeight(height+30)
+            elif tw == ui.tablewidget_fluid_mass_fraction:
+                ui.groupbox_fluid_composition.setMaximumHeight(height+30)
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed? should we allow scrollbar?
         tw.updateGeometry() #? needed?
@@ -697,7 +701,6 @@ class ICS(object):
             self.update_ics_fluid_mass_fraction_table()
 
 
-    # DRY out fluid/solids code
     def update_ics_solids_mass_fraction_table(self):
         ui = self.ui.initial_conditions
         table = ui.tablewidget_solids_mass_fraction
@@ -746,7 +749,6 @@ class ICS(object):
             font.setBold(True)
             item.setFont(font)
             self.update_ics_solids_mass_fraction_total()
-
         self.fixup_ics_table(table)
 
 

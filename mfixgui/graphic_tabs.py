@@ -26,7 +26,7 @@ PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
     ['dt', {'left':'dt', 'bottom':'Time Step', 'var':'dt'}],
     ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
-    ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
+    ['time', {'left':'Simulation Time [s]', 'bottom':'Elapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
 
 class BaseGraphicTab(QtWidgets.QWidget):
@@ -109,7 +109,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         plotbtn.clicked.connect(self.create_vtk_widget)
         self.layout.addWidget(plotbtn, 2, 2)
 
-        if self.loadvtk and not 'MFIX_NO_VTK' in os.environ:
+        if self.loadvtk and 'MFIX_NO_VTK' not in os.environ:
             from mfixgui.widgets.base_vtk import VTK_AVAILABLE
             plotbtn.setEnabled(VTK_AVAILABLE)
         else:

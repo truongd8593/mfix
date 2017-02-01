@@ -371,13 +371,7 @@ class VtkWidget(BaseVtkWidget):
             layout.addWidget(label, i, 4)
         self.set_visual_btn_values()
 
-        for btn in [self.toolbutton_reset,
-                    self.toolbutton_view_xy,
-                    self.toolbutton_view_yz,
-                    self.toolbutton_view_xz,
-                    self.toolbutton_perspective,
-                    self.toolbutton_screenshot,
-                    self.toolbutton_visible]:
+        for btn in [self.toolbutton_visible]:
             self.button_bar_layout.addWidget(btn)
             btn.setAutoRaise(True)
 
@@ -452,7 +446,7 @@ class VtkWidget(BaseVtkWidget):
 
     def default(self):
         """reset to defaults"""
-        self.ui.geometry.lineedit_keyword_zlength.setEnabled(True)
+        self.ui.geometry.lineedit_keyword_z_max.setEnabled(True)
         self.ui.mesh.lineedit_keyword_kmax.setEnabled(True)
         self.vtkrenderer.RemoveAllViewProps()
         self.clear_all_geometry()
@@ -552,6 +546,59 @@ class VtkWidget(BaseVtkWidget):
         self.set_visual_btn_values()
         for actor in self.grid_viewer_dict['actors']:
             self.set_background_mesh_actor_props(actor)
+
+    def process_quadrics(self, proj):
+
+        # hack to look for a value in a list of values
+        def get(keys, default, args):
+            for key in keys:
+                v = proj.get_value(key, None, args)
+                if v is not None:
+                    break
+            return default if v is None else v
+
+        for qid in proj.get_key_indices('quadric_form'):
+            qtype = proj.get_value('quadric_form', '', qid).lower()
+
+            data = copy.deepcopy(DEFAULT_IMPLICIT_PARAMS)
+            data['radius'] = proj.get_value('radius', 0, qid)
+            data['centerx'] = proj.get_value('t_x', 0, qid)
+            data['centery'] = proj.get_value('t_y', 0, qid)
+            data['centerz'] = proj.get_value('t_z', 0, qid)
+            xe = [get(['piece_xmax', 'clip_xmax'], Equation('xmax'), qid), get(['piece_xmin', 'clip_xmin'], Equation('xmin'), qid)]
+            ye = [get(['piece_ymax', 'clip_ymax'], Equation('ymax'), qid), get(['piece_ymin', 'clip_ymin'], Equation('ymin'), qid)]
+            ze = [get(['piece_zmax', 'clip_zmax'], Equation('zmax'), qid), get(['piece_zmin', 'clip_zmin'], Equation('zmin'), qid)]
+
+            dx = xe[0] - xe[1]
+            dy = ye[0] - ye[1]
+            dz = ze[0] - ze[1]
+
+            mx = float(xe[0] + xe[1])/2
+            my = float(ye[0] + ye[1])/2
+            mz = float(ze[0] + ze[1])/2
+
+            itype = None
+            if 'sphere' in qtype:
+                itype = 'sphere'
+            elif 'cyl' in qtype:
+                itype = 'cylinder'
+                if qtype.startswith('x'):
+                    data['rotationz'] = 90
+                    data['height'] = dx
+                    data['centerx'] += mx
+                elif qtype.startswith('y'):
+                    data['height'] = dy
+                    data['centery'] += my
+                elif qtype.startswith('z'):
+                    data['rotationx'] = 90
+                    data['height'] = dz
+                    data['centerz'] += mz
+            elif 'cone' in qtype:
+                itype = 'cone'
+
+            if itype is not None:
+                data['type'] = itype
+                self.add_implicit(data=data, name=qtype+'_'+str(qid[0]))
 
     # --- geometry ---
     def selected_geometry_changed(self):
@@ -1074,9 +1121,9 @@ class VtkWidget(BaseVtkWidget):
             bounds = [0, h, -r, r, -r, r]
         elif implicittype == 'cylinder':
             geo['cylinder_source'].SetRadius(r)
-            geo['plane1'].SetOrigin(x, y + h/2, z)
+            geo['plane1'].SetOrigin(x, h/2, z)
             geo['plane1'].SetNormal(0, -1, 0)
-            geo['plane2'].SetOrigin(x, y - h/2, z)
+            geo['plane2'].SetOrigin(x, -h/2, z)
             geo['plane2'].SetNormal(0, 1, 0)
             bounds = [-r, r, -h/2, h/2, -r, r]
         elif implicittype == 'quadric':
@@ -1655,12 +1702,19 @@ class VtkWidget(BaseVtkWidget):
                                 y + safe_float(geo['translatey']),
                                 z + safe_float(geo['translatez']))
         elif filtertype == 'sample_implicit':
-            geo['samplefunction'].SetSampleDimensions(
+            sample = geo.get('samplefunction')
+            sample.SetSampleDimensions(
                 safe_int(geo['samplesx']), safe_int(geo['samplesy']), safe_int(geo['samplesz']))
             bounds = [safe_float(geo[k]) for k in ['minx','maxx','miny', 'maxy', 'minz', 'maxz']]
-            geo['samplefunction'].SetModelBounds(bounds)
-            geo['samplefunction'].Update()
+            sample.SetModelBounds(bounds)
 
+            # look for the mapper, if it exists, replace the surface filter
+            mapper = geo.get('mapper', None)
+            if mapper is not None:
+                surf = geo['filter'] = vtk.vtkContourFilter()
+                surf.SetInputConnection(sample.GetOutputPort())
+                surf.SetValue(0, 0.0)
+                mapper.SetInputConnection(surf.GetOutputPort())
 
         vtkfilter.Update()
 
@@ -2200,11 +2254,10 @@ class VtkWidget(BaseVtkWidget):
         extents = self.get_geometry_extents()
 
         if extents:
-            for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
-                                    'zmin', 'zlength'],
+            for key, extent in zip(['x_min', 'x_max', 'y_min', 'y_max',
+                                    'z_min', 'z_max'],
                                    extents):
-                if 'min' not in key:  # mfix doesn't support mins yet
-                    self.emitUpdatedValue(key, extent)
+                self.emitUpdatedValue(key, extent)
 
 #            self.update_background_mesh()
 

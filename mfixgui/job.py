@@ -388,11 +388,11 @@ class JobManager(QObject):
 
     def submit_command(self, qscript, submit_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
 
-        prj_dir = self.parent.get_project_dir()
+        project_dir = self.parent.get_project_dir()
         script_name = '.qsubmit_script'
 
         # write the script
-        with open(os.path.join(prj_dir, script_name), 'w') as f:
+        with open(os.path.join(project_dir, script_name), 'w') as f:
             f.write(qscript)
 
         replace_dict['SCRIPT'] = script_name

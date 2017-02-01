@@ -6,34 +6,50 @@
 
 stages:
   - build
-  - install
+  - deploy
 
 variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
-build_job:
+
+build:linux:
   stage: build
   script:
-    - env PYTHON_BIN=${ANACONDA_BIN}/python ./configure_mfix --python
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel -d ${PYPATH}
-    - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel -d ${PYPATH}
-    - make
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel
+    - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel
   artifacts:
+    name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - mfix
-    - mfixsolver*
+    - dist/mfixgui*.whl
   only:
     - branches
   tags:
-    - mfixgui
+    - linux
 
-install_job:
-  stage: install
+install:
+  stage: deploy
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install ${PYPATH}/*cp27*.whl --prefix=${PYPATH}
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*cp27*.whl --prefix=${PYPATH}
+  dependencies:
+    - build:linux
   only:
     - branches
   tags:
-    - mfixgui
+    - linux
+
+build:mac:
+  stage: build
+  script:
+    - env FC=gfortran-6 CC=gcc-6 $HOME/miniconda3/bin/python3 setup.py bdist_wheel
+    - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/mfixgui*.whl
+  only:
+    - branches
+  tags:
+    - mac

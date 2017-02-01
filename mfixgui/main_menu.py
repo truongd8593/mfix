@@ -353,9 +353,9 @@ class MainMenu(object):
         elif text == 'defaults':
             self.ui.main_menu_file_lw.addItems(self.default_paths)
         elif text == 'recent':
-            prjs = self.settings.value('recent_projects')
-            if prjs:
-                existing_projects = [ prj for prj in prjs.split('|') if os.path.exists(prj)]
+            projects = self.settings.value('recent_projects')
+            if projects:
+                existing_projects = [ project for project in projects.split('|') if os.path.exists(project)]
                 self.ui.main_menu_file_lw.addItems(existing_projects)
         elif text == 'clear recent':
             self.settings.setValue('recent_projects', '|'.join([]))
@@ -418,8 +418,8 @@ class MainMenu(object):
     def handle_main_menu(self):
         """Show the main menu"""
 
-        prj_file = self.get_project_file()
-        if prj_file is None:
+        project_file = self.get_project_file()
+        if project_file is None:
             self.ui.main_menu_list.setCurrentRow(2)
             self.disable_main_menu_items(['project info', 'save', 'save as', 'export project', 'export workflow', 'import workflow'])
         else:

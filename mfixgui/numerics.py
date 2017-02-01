@@ -285,11 +285,11 @@ class Numerics(object):
         nrows = tw.rowCount()
 
         height =  (header_height+scrollbar_height
-                   + nrows*tw.rowHeight(0) + 4) # extra to avoid unneeded scrollbar
+                   + nrows*tw.rowHeight(0)) # extra to avoid unneeded scrollbar
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(height)
         if tw == ui.tablewidget_discretization:
-            ui.groupbox_discretization.setMaximumHeight(height)
+            ui.groupbox_discretization.setMaximumHeight(height+24)
         tw.updateGeometry() #? needed?
 
 

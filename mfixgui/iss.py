@@ -273,7 +273,7 @@ class ISS(object):
 
         if tw == ui.tablewidget_regions: # main table, adjust top splitter
             ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
@@ -450,7 +450,7 @@ class ISS(object):
                     self.project.unregister_widget(w)
                     w.setParent(None)
                     w.deleteLater()
-
+                # make new ones
                 layout = ui.groupbox_solids_velocities.layout()
                 row = 0
                 key = 'is_vel_s'

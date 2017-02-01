@@ -291,7 +291,9 @@ class SpeciesPopup(QtWidgets.QDialog):
                         'tmin':  tmin,
                         'tmax': tmax,
                         'a_low': a_low,
-                        'a_high': a_high}
+                        'a_high': a_high,
+                        'burcat': key[0] }  # Save this as comment in THERMO DATA
+
         if self.density_enabled:
             species_data['density'] = None # ? where do we get this?
         self.defined_species[alias] = species_data

@@ -489,13 +489,13 @@ class WorkflowWidget(QtWidgets.QWidget):
         self.mfixgui.print_internal(msg, color='green')
         return job_id
 
-    def submit_to_queue(self, prj_dir):
+    def submit_to_queue(self, project_dir):
         script_name = '.qsubmit_script'
 
         script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict = self.submit_cmd
 
         # write the script
-        with open(os.path.join(prj_dir, script_name), 'w') as f:
+        with open(os.path.join(project_dir, script_name), 'w') as f:
             f.write(script)
 
         replace_dict['SCRIPT'] = script_name
@@ -508,7 +508,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         proc = subprocess.Popen(submit_cmd, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                cwd=prj_dir)
+                                cwd=project_dir)
         out, err = proc.communicate()
         if job_id_regex is not None and out:
             job_id = re.findall(job_id_regex, str(out))
@@ -524,7 +524,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         if err:
             self.mfixgui.error('Error with submission:\n{}'.format(err))
 
-        dir_base = os.path.basename(prj_dir)
+        dir_base = os.path.basename(project_dir)
         data = self.job_status_table.value
         data[dir_base]['job id'] = job_id
         data[dir_base]['status'] = 'submitted to queue'

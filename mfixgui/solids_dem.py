@@ -367,7 +367,7 @@ class SolidsDEM(object):
                 item.hide()
                 layout.removeWidget(item)
 
-            # Delete all the old ones
+            # Delete all the old ones...
             for idx in range(layout.count()-1, -1, -1):
                 item = layout.itemAt(idx)
                 w = item.widget()
@@ -382,6 +382,7 @@ class SolidsDEM(object):
                        w.setParent(None)
                        w.deleteLater()
 
+            # ...and make new ones
             idx = layout.indexOf(ui.lineedit_keyword_ew_young)
             columns = 4
             row = 1 + int(idx/columns)
@@ -458,15 +459,15 @@ class SolidsDEM(object):
         # Input given as an upper triangular matrix
         mmax = self.project.get_value('mmax', default=len(self.solids))
         tw = ui.tablewidget_des_en_input
+        def make_item(str):
+            item = QTableWidgetItem(str)
+            set_item_noedit(item)
+            set_item_enabled(item, False)
+            return item
+
         if (self.solids_dem_saved_solids_names != solids_names
             or tw.rowCount() != mmax+1
             or tw.columnCount() != mmax):
-
-            def make_item(str):
-                item = QTableWidgetItem(str)
-                set_item_noedit(item)
-                set_item_enabled(item, False)
-                return item
 
             # Clear out old lineedit widgets
             for row in range(tw.rowCount()):
@@ -480,9 +481,8 @@ class SolidsDEM(object):
             # Make a new batch
             tw.setRowCount(mmax+1) # extra row for "Wall"
             tw.setColumnCount(mmax)
-            names = list(self.solids.keys())
-            tw.setHorizontalHeaderLabels(names)
-            tw.setVerticalHeaderLabels(names + ['Wall'])
+            tw.setHorizontalHeaderLabels(solids_names)
+            tw.setVerticalHeaderLabels(solids_names + ['Wall'])
 
             arg = 1 # One-based
             key = 'des_en_input'
@@ -566,7 +566,7 @@ class SolidsDEM(object):
                 tw.setRowCount(mmax+1) # extra row for "Wall"
                 tw.setColumnCount(mmax)
                 tw.setHorizontalHeaderLabels(solids_names)
-                tw.setVerticalHeaderLabels(names + ['Wall'])
+                tw.setVerticalHeaderLabels(solids_names + ['Wall'])
 
                 arg = 1
                 key = 'des_et_input'

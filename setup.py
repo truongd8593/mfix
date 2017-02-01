@@ -49,7 +49,7 @@ class MfixBuildExt(build_ext):
         '''
         # if platform.system() == 'Windows':
         subprocess.call(["./configure_mfix", "PYTHON_BIN=%s" % sys.executable, "--python"])
-        subprocess.call(["make"])
+        subprocess.call(["make", "mfixsolver.so"])
 
         # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
         # ./configure_mfix --python --host=x86_64-w64-mingw32
@@ -62,7 +62,10 @@ class MfixBuildExt(build_ext):
         if not mfixsolver_sharedlib:
             raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
         mfixsolver_sharedlib = mfixsolver_sharedlib[0]
-        copyfile(path.join(HERE, mfixsolver_sharedlib), self.get_ext_fullpath(ext.name))
+        src = path.join(HERE, mfixsolver_sharedlib)
+        dest = self.get_ext_fullpath(ext.name)
+        if src != dest:
+            copyfile(src, dest)
 
 setup(
     name='mfixgui',
@@ -117,12 +120,13 @@ setup(
     # simple. Or you can use find_packages().
     packages=[
         'mfixgui',
+        'mfixgui.colormaps',
         'mfixgui.doc',
         'mfixgui.icons',
         'mfixgui.tests',
         'mfixgui.tools',
-        'mfixgui.widgets',
         'mfixgui.uifiles',
+        'mfixgui.widgets',
     ],
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -146,6 +150,7 @@ setup(
         'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
         'mfixgui.icons': ['*.png'],
         'mfixgui.uifiles': ['*'],
+        'mfixgui.colormaps': ['*'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may

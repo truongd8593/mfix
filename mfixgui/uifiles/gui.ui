@@ -869,7 +869,7 @@ p, li { white-space: pre-wrap; }
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPlainTextEdit" name="command_output">
+                <widget class="PlainTextEdit" name="command_output">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                    <horstretch>0</horstretch>
@@ -910,6 +910,13 @@ p, li { white-space: pre-wrap; }
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

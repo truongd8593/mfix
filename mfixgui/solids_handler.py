@@ -352,10 +352,10 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if tw == ui.tablewidget_solids: # In a splitter
             # top_frame is the tab bar, not the top part of the splitter!!
             #ui.top_frame.setMaximumHeight(height+24)
-            #ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+            #ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
             #ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
-            tw.setMinimumHeight(header_height+row_height*min(nrows,3))
+            tw.setMinimumHeight(header_height+row_height*min(nrows,5))
         else:
             tw.setMaximumHeight(height) # Works for tablewidget inside groupbox
             tw.setMinimumHeight(height) #? needed for tablewidget_des_en_input. should we allow scrollbar?
@@ -846,17 +846,19 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
                         self.update_keyword(key, val, args=i)
                     for i in range(len(new_vals)+1,  len(vals)+1):
                         self.unset_keyword(key, args=i)
-            for key in ('des_et_wall_input', 'des_en_wall_input'):
-                prev_size = n+1
-                vals = [self.project.get_value(key, args=i)
-                        for i in range(1, 1+prev_size)]
-                if any(v is not None for v in vals):
-                    new_vals = vals[:]
-                    del new_vals[phase-1] # 1-based
-                    for (i, val) in enumerate(new_vals, 1):
-                        self.update_keyword(key, val, args=i)
-                    for i in range(len(new_vals)+1,  len(vals)+1):
-                        self.unset_keyword(key, args=i)
+
+            # Should be handled by delete_phase_keys
+            # for key in ('des_et_wall_input', 'des_en_wall_input'):
+            #     prev_size = n+1
+            #     vals = [self.project.get_value(key, args=i)
+            #             for i in range(1, 1+prev_size)]
+            #     if any(v is not None for v in vals):
+            #         new_vals = vals[:]
+            #         del new_vals[phase-1] # 1-based
+            #         for (i, val) in enumerate(new_vals, 1):
+            #             self.update_keyword(key, val, args=i)
+            #         for i in range(len(new_vals)+1,  len(vals)+1):
+            #             self.unset_keyword(key, args=i)
 
             self.update_solids_table()
 
@@ -1140,7 +1142,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
             #self.unset_keyword('mw_s', args=[phase,i]) # TBD FIXME
 
         # FIXME, what's the right place for this?
-        #self.project.update_thermo_data(self.solids_species[phase])
+        self.project.update_thermo_data(self.solids_species[phase])
         self.fixup_solids_table(ui.tablewidget_solids_species)
         self.fixup_solids_table(ui.tablewidget_solids_baseline)
 

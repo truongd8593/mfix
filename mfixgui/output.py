@@ -40,6 +40,9 @@ PAGE_CELL, PAGE_PARTICLE = (0, 1)
 
 MAX_SP = 11
 
+#model/init_namelist.f:      bWrite_netCDF(:20) = .FALSE.
+MAX_BWRITE_NETCDF = 20
+
 VTK_DATA_TYPES = ['C', 'P']
 
 class Output(object):
@@ -101,10 +104,10 @@ class Output(object):
         gb.clicked.connect(self.output_enable_vtk)
         self.add_tooltip(gb, key)
 
-        cb = ui.checkbox_binary_spx_files
+        cb = ui.checkbox_spx
         cb.clicked.connect(self.output_enable_spx)
 
-        cb = ui.checkbox_netcdf_files
+        cb = ui.checkbox_netcdf
         cb.clicked.connect(self.output_enable_netcdf)
 
 
@@ -274,7 +277,7 @@ class Output(object):
             height =  (header_height+scrollbar_height
                        + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
         ui.top_frame.setMaximumHeight(height+24)
-        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,3))
+        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
         ui.top_frame.updateGeometry()
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(header_height)
@@ -355,6 +358,9 @@ class Output(object):
     def output_add_regions_1(self, selections, output_type=None, indices=None, autoselect=False):
         # Used by both interactive and load-time add-region handlers
         ui = self.ui.output
+
+        if output_type is None:
+            output_type = 'C' #Cell data is default
 
         if self.output_region_dict is None:
             self.output_region_dict = self.ui.regions.get_region_dict()
@@ -476,7 +482,7 @@ class Output(object):
         # TODO: if we wanted to be fancy, we could find regions where
         # output values matched, and merge into a new output region.  That
         # is only needed for projects created outside the GUI (otherwise
-        # we have already stored the output regions).  Also would be noutpute
+        # we have already stored the output regions).  Also would be nice
         # to offer a way to split compound regions.
         for vtk in self.project.vtks:
 
@@ -491,11 +497,10 @@ class Output(object):
             for (region_name, data) in self.output_region_dict.items():
                 ext2 = [0 if x is None else x for x in
                         (data.get('from',[]) + data.get('to',[]))]
-                if ext2 == extent:
-                    if data.get('available', True):
-                        self.output_add_regions_1([region_name], indices=[vtk.ind], autoselect=False)
-                        break
-
+                if ext2 == extent: # Don't need to check 'available' here since
+                            # Regions can define multiple VTK regions.
+                    self.output_add_regions_1([region_name], indices=[vtk.ind], autoselect=False)
+                    break
             else:
                 self.warn("vtk output %s: could not match defined region %s" %
                           (vtk.ind, extent))
@@ -514,6 +519,137 @@ class Output(object):
 
     def init_output_netcdf_tab(self):
         ui = self.ui.output
+        # Special handling for all bwrite_netcdf checkboxes
+        for w in widget_iter(ui.groupbox_netcdf):
+            if isinstance(w, CheckBox):
+                w.post_update = self.output_handle_bwrite_netcdf
+
+        gb = ui.groupbox_print_des_data_2 # aka "Write ASCII particle data"
+        gb.clicked.connect(lambda val:  self.update_keyword('print_des_data', val))
+        self.add_tooltip(gb, key = 'print_des_data')
+
+        cb = ui.combobox_des_output_type_2
+        cb.currentIndexChanged.connect(lambda val: self.update_keyword('des_output_type', DES_OUTPUT_TYPES[val]))
+        self.add_tooltip(cb, key='des_output_type')
+
+
+    def output_handle_bwrite_netcdf(self):
+        # Enable/disable spx_dt inputs based on bwrite_netcdf,
+        #  and keep certain pairs of bwrite_netcdf flags in sync
+
+        #Write interval for gas volume fraction
+        #    Sets keyword BWRITE_NETCDF(1) = .TRUE.
+        #    Sets keyword SPX_DT(1)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids pressure
+        #    Sets keyword BWRITE_NETCDF(2) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(3) = .TRUE.
+        #    Sets keyword SPX_DT(2)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas velocity
+        #    Sets keyword BWRITE_NETCDF(4) = .TRUE.
+        #    Sets keyword SPX_DT(3)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for solids velocity
+        #    Sets keyword BWRITE_NETCDF(5) = .TRUE.
+        #    Sets keyword SPX_DT(4)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for solids bulk density
+        #    Sets keyword BWRITE_NETCDF(6) = .TRUE.
+        #    Sets keyword SPX_DT(5)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids temperature
+        #    Only available when solving energy equations
+        #    Sets keyword BWRITE_NETCDF(7) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(8) = .TRUE.
+        #    Sets keyword SPX_DT(6)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for gas and solids mass fractions
+        #    Only available when solving species equations
+        #    Sets keyword BWRITE_NETCDF(9) = .TRUE.
+        #    Sets keyword BWRITE_NETCDF(10) = .TRUE.
+        #    Sets keyword SPX_DT(7)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for granular temperature
+        #    Only available when KT_TYPE =/ 'ALGEBRAIC'
+        #    Sets keyword BWRITE_NETCDF(11) = .TRUE.
+        #    Sets keyword SPX_DT(8)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for user defined scalars
+        #    Only available when solving any user defined scalar equations
+        #    Sets keyword BWRITE_NETCDF(12) = .TRUE.
+        #    Sets keyword SPX_DT(9)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Write interval for reaction rates
+        #    Only available if NRR > 0 (see below)
+        #    Sets keyword BWRITE_NETCDF(13) = .TRUE.
+        #    Sets keyword SPX_DT(10)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+        #Number of reaction rates to write
+        #    Specification always available
+        #    Sets keyword NRR
+        #    DEFAULT value of 0
+        #    Error check: value must be greater than or equal to 0
+        #Write interval for turbulence quantities
+        #    Only available if TURBULENCE_MODEL = “K_EPSILON”
+        #    Sets keyword BWRITE_NETCDF(14) = .TRUE.
+        #    Sets keyword SPX_DT(11)
+        #    DEFAULT value of 1.0
+        #    Error check: value must be greater than or equal to RES_DT
+
+        ui = self.ui.output
+        key = 'bwrite_netcdf'
+        bwrite_netcdf = [self.project.get_value(key, default=False, args=[i])
+                         for i in range(0, MAX_BWRITE_NETCDF+1)] # start at 0 so 1-based index works
+
+        res_dt = self.project.get_value('res_dt', default=1.0)
+        default = max(res_dt, 1.0)
+
+        def enable_input(idx, enabled):
+            enabled = bool(enabled)
+            le = getattr(ui, 'lineedit_keyword_spx_dt_2_args_%s' % idx)
+            la = getattr(ui, 'label_spx_dt_2_units_args_%s' % idx)
+            le.setEnabled(enabled)
+            la.setEnabled(enabled)
+            if enabled:
+                val = self.project.get_value('spx_dt', args=[idx])
+                if val is None:
+                    prev_val = le.value # restore value from lineedit
+                    if prev_val != '' and prev_val is not None:
+                        val = prev_val
+                    else:
+                        val = default
+                if val < res_dt:
+                    val = res_dt
+                self.update_keyword('spx_dt', val, args=[idx])
+                le.min = res_dt
+
+            else:
+                self.unset_keyword('spx_dt', args=[idx])
+
+        # Association of bwrite flags to spx_dt flags, see comments above
+        index_map = [1, 2, 4, 5, 6, 7, 9, 11, 12, 13, 14]
+        for spx_idx, bwrite_idx in enumerate(index_map,1):
+            enabled = bwrite_netcdf[bwrite_idx]
+            enable_input(spx_idx, enabled)
+            # Why do we have to do this?  Setting keyword should update checkbox
+            cb = getattr(ui, 'checkbox_keyword_bwrite_netcdf_args_%s' % bwrite_idx)
+            cb.setChecked(enabled)
+
+        # Certain BWRITE_NETCDF flags are set in pairs
+        for n in (2, 7, 9):
+            val = bwrite_netcdf[n+1] = bwrite_netcdf[n]
+            self.update_keyword(key, val, args=[n+1])
 
 
     def output_enable_vtk(self, enabled):
@@ -524,6 +660,11 @@ class Output(object):
     def output_enable_spx(self, enabled):
         ui = self.ui.output
         if enabled:
+            ui.pushbutton_spx.setEnabled(True)
+            ui.pushbutton_netcdf.setEnabled(False)
+            ui.checkbox_netcdf.setChecked(False)
+            ui.checkbox_netcdf.setEnabled(False)
+
             res_dt = self.project.get_value('res_dt', default=1.0)
             default = max(1.0, res_dt)
             for i in range(1, MAX_SP+1): # Only set keys not already set
@@ -535,13 +676,28 @@ class Output(object):
                         val = default
                     self.update_keyword('spx_dt', val, args=[i])
         else:
+            ui.pushbutton_spx.setEnabled(False)
+            ui.checkbox_netcdf.setEnabled(True) #Enable option, but do not activate
             for i in range(1, MAX_SP+1):
                 self.unset_keyword('spx_dt', args=[i])
-        self.setup_output()
+
 
 
     def output_enable_netcdf(self, enabled):
         ui = self.ui.output
+        if enabled:
+            ui.pushbutton_netcdf.setEnabled(True)
+            ui.pushbutton_spx.setEnabled(False)
+            ui.checkbox_spx.setChecked(False)
+            ui.checkbox_spx.setEnabled(False)
+        else:
+            ui.pushbutton_netcdf.setEnabled(False)
+            ui.checkbox_spx.setEnabled(True) # Enable, do not activate
+            for i in range(1, MAX_BWRITE_NETCDF+1):
+                self.unset_keyword('bwrite_netcdf', args=[i])
+            for i in range(1, MAX_SP+1):
+                self.unset_keyword('spx_dt', args=[i])
+        self.output_handle_bwrite_netcdf()
 
 
     def setup_output(self):
@@ -556,15 +712,35 @@ class Output(object):
                 self.output_region_dict[region]['available'] = False
 
 
-        spx_enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
-                          for i in range(1,MAX_SP+1))
-        ui.pushbutton_spx.setEnabled(spx_enabled)
+        #Write binary Single Precision files (SPx)
+        #    No keyword association
+        #    Enables SPx tab
+        #    Backwards compatibility: Enabled if any SPx time values are specified
+
+        spx_dt_specified = any(self.project.get_value('spx_dt', args=[i]) is not None
+                               for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
+        bwrite_netcdf_specified = any(bool(self.project.get_value('bwrite_netcdf', args=[i]))
+                                           for i in range(1, MAX_BWRITE_NETCDF+1))
+
+        enable_spx = not bwrite_netcdf_specified # Enables checkbox but does not check it
+        activate_spx = enable_spx and spx_dt_specified
+        ui.checkbox_spx.setEnabled(enable_spx)
+        ui.checkbox_spx.setChecked(activate_spx)
+        ui.pushbutton_spx.setEnabled(activate_spx)
+
+        #Enable NetCDF output files
+        #    Not available when SPx output is enabled
+        #    No keyword association.
+        #    Enables NetCDF tab
+
+        enable_netcdf = not activate_spx
+        activate_netcdf =  bwrite_netcdf_specified
+        ui.checkbox_netcdf.setEnabled(enable_netcdf)
+        ui.checkbox_netcdf.setChecked(activate_netcdf)
+        ui.pushbutton_netcdf.setEnabled(activate_netcdf)
 
         vtk_enabled = self.project.get_value('write_vtk_files', default=False)
         ui.pushbutton_vtk.setEnabled(vtk_enabled)
-
-        netcdf_enabled = False
-        ui.pushbutton_netcdf.setEnabled(netcdf_enabled)
 
         # TODO don't stay on disabled tab
         self.output_setup_current_tab()
@@ -597,16 +773,19 @@ class Output(object):
         #    DEFAULT value of 1.0
         key = 'res_dt'
         res_dt = self.project.get_value(key, default=1.0)
+
         # 'reverse constraint', res_dt must be less than a bunch of other keys
         # (which must be greater than it)
+        #m = min(safe_float(self.project.get_value('spx_dt', default=1.0, args=[i]))
+        #        for i in range(1,MAX_SP+1))
+        #if self.project.get_value('res_backups', default=0) > 0:
+        #    m = min(m, safe_float(self.project.get_value('res_backup_dt', default=1.0)))
+        #ui.lineedit_keyword_res_dt.max = m
+        #  Note, this seems like a good idea but makes it hard to change values
 
-        m = min(safe_float(self.project.get_value('spx_dt', default=1.0, args=[i]))
-                for i in range(1,MAX_SP+1))
-        if self.project.get_value('res_backups', default=0) > 0:
-            m = min(m, safe_float(self.project.get_value('res_backup_dt', default=1.0)))
-        ui.lineedit_keyword_res_dt.max = m
         #if res_dt > m:
         #    res_dt = m
+
         #    self.update_keyword(key, res_dt)
 
         #Specify the number of backup copies
@@ -685,20 +864,7 @@ class Output(object):
             self.unset_keyword(key)
         ui.pushbutton_vtk.setEnabled(enabled)
 
-        #Write binary Single Precision files (SPx)
-        #    No keyword association
-        #    Enables SPx tab
-        #    Backwards compatibility: Enabled if any SPx time values are specified
-        enabled = any(self.project.get_value('spx_dt', args=[i]) is not None
-                      for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
-        ui.checkbox_binary_spx_files.setChecked(enabled)
-        ui.pushbutton_spx.setEnabled(enabled)
 
-        #Enable NetCDF output files
-        #    Not available when SPx output is enabled
-        #    No keyword association.
-        #    Enables NetCDF tab
-        pass
 
 
     def setup_output_spx_tab(self):
@@ -830,6 +996,57 @@ class Output(object):
         cb.setCurrentIndex(DES_OUTPUT_TYPES.index(val))
 
 
+    def setup_output_netcdf_tab(self):
+        #NetCDF (tab)
+	# Note: NetCDF support 'piggy-backs' off of the SPx keywords. The output time values are specified
+        # via SPX_DT while NetCDF output is triggered by a BWRITE_NETCDF flag. To make this less
+        # opaque to users, both SPx and netCDF output cannot be enabled at the same time.
+        ui = self.ui.output
+        self.output_handle_bwrite_netcdf()
+
+        #This is the same particle section as the SPx section.
+
+	#Write ASCII particle data
+        #    Selection only available if DEM or PIC solids
+        #    Sets keyword PRINT_DES_DATA
+        #    DEFAULT value of .TRUE.
+        #    Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
+        key = 'print_des_data'
+        solids_models = set(self.project.get_value('solids_model', args=[i])
+                            for i in range(1, len(self.solids)+1))
+        enabled = 'DEM' in solids_models or 'PIC' in solids_models
+        gb = ui.groupbox_print_des_data_2
+        if enabled:
+            checked = self.project.get_value(key, default=True)
+        else:
+            checked = self.project.get_value(key, default=False)
+        gb.setEnabled(enabled)
+        gb.setChecked(checked)
+
+        #Specify VTP Directory
+        #    Specification only if PRINT_DES_DATA = .TRUE.
+        #    Sets keyword VTP_DIR
+        #    No default (empty string)
+        #Select particle data format
+        #
+        #Selection only available if DEM or PIC solids and PRINT_DES_DATA = .TRUE.
+        #  (note, containing groupbox is disabled if this condition is not met)
+        #Sets keyword DES_OUTPUT_TYPE
+        #Available Selections
+        #  ParaView - VTK/.vtp [DEFAULT]
+        #  Tecplot - .dat
+        cb = ui.combobox_des_output_type_2
+        key = 'des_output_type'
+        default = DES_OUTPUT_TYPES[0] # "PARAVIEW"
+        val = self.project.get_value(key, default)
+        if val not in DES_OUTPUT_TYPES:
+            val = default
+            self.update_keyword(key, val)
+        cb.setCurrentIndex(DES_OUTPUT_TYPES.index(val))
+
+
+
+
     def output_default_vtk_filebase(self, region_names):
         # Construct default value for VTK_FILEBASE,
         # replacing possibly troublesome characters
@@ -866,7 +1083,7 @@ class Output(object):
             return
 
         V0 = indices[0]
-        vtk_data = self.project.get_value('vtk_data', args=[V0])
+        vtk_data = self.project.get_value('vtk_data', args=[V0], default='C')
 
         # Note, filebase through nzs are common to cell/particle
 
@@ -937,7 +1154,6 @@ class Output(object):
         if self.output_saved_solids_names != solids_names:
             # Clear out the old ones
             n_cols = ui.bottom_tab_layout.columnCount()
-
             for i in range(n_cols-1, 0, -1):
                 item = ui.bottom_tab_layout.itemAtPosition(0, i)
                 if not item:
@@ -961,7 +1177,6 @@ class Output(object):
                 b.setFont(font)
                 b.pressed.connect(lambda i=i: self.output_change_subtab(SOLIDS_TAB, i))
                 ui.bottom_tab_layout.addWidget(b, 0, i)
-
 
         # Move the 'Scalar' and other buttons to the right of all solids, if needed
         if len(self.solids) != len(self.output_saved_solids_names):
@@ -1185,7 +1400,8 @@ class Output(object):
                 cbs.append(cb)
                 self.add_tooltip(cb, key=cb.key)
                 layout.addWidget(cb)
-
+            for (cb, name) in zip(cbs, fluid_species_names):
+                cb.setText(name)
         if spacer_moved:
             layout.addItem(spacer)
 
@@ -1381,6 +1597,8 @@ class Output(object):
                 cbs.append(cb)
                 self.add_tooltip(cb, key=cb.key)
                 layout.addWidget(cb)
+            for (cb, name) in zip(cbs, solids_species_names):
+                cb.setText(name)
 
         if spacer_moved:
             layout.addItem(spacer)

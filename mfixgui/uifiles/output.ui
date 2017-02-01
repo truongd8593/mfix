@@ -191,7 +191,7 @@ QPushButton:checked {
         <number>5</number>
        </property>
        <property name="topMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <property name="rightMargin">
         <number>5</number>
@@ -201,6 +201,12 @@ QPushButton:checked {
        </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label_res_dt">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="text">
           <string>Restart/checkpoint write interval</string>
          </property>
@@ -256,9 +262,15 @@ QPushButton:checked {
         </spacer>
        </item>
        <item row="5" column="0" colspan="2">
-        <widget class="CheckBox" name="checkbox_binary_spx_files">
+        <widget class="CheckBox" name="checkbox_spx">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
          </property>
          <property name="toolTip">
           <string/>
@@ -275,12 +287,15 @@ QPushButton:checked {
         </widget>
        </item>
        <item row="6" column="0">
-        <widget class="CheckBox" name="checkbox_netcdf_files">
+        <widget class="CheckBox" name="checkbox_netcdf">
          <property name="enabled">
           <bool>false</bool>
          </property>
-         <property name="toolTip">
-          <string>not yet available</string>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
          </property>
          <property name="text">
           <string>Write NetCDF output files</string>
@@ -334,6 +349,12 @@ QPushButton:checked {
        </item>
        <item row="4" column="0" colspan="3">
         <widget class="QGroupBox" name="groupbox_write_vtk_files">
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="title">
           <string>Write VTK output files (VTU/VTP)</string>
          </property>
@@ -358,6 +379,12 @@ QPushButton:checked {
           </property>
           <item row="0" column="0" colspan="2">
            <widget class="CheckBox" name="checkbox_keyword_time_dependent_filename">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Enable time-dependent VTK filename</string>
             </property>
@@ -365,13 +392,23 @@ QPushButton:checked {
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_vtu_dir">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>VTK directory</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_vtu_dir"/>
+           <widget class="LineEdit" name="lineedit_keyword_vtu_dir">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -404,8 +441,8 @@ QPushButton:checked {
       <zorder>label_res_dt</zorder>
       <zorder>lineedit_keyword_res_dt</zorder>
       <zorder>label_res_dt_units</zorder>
-      <zorder>checkbox_binary_spx_files</zorder>
-      <zorder>checkbox_netcdf_files</zorder>
+      <zorder>checkbox_spx</zorder>
+      <zorder>checkbox_netcdf</zorder>
       <zorder>label_nrr</zorder>
       <zorder>lineedit_keyword_nrr</zorder>
       <zorder>verticalSpacer_3</zorder>
@@ -1602,16 +1639,16 @@ QPushButton:checked { font: bold; background-color: transparent; }
         <number>5</number>
        </property>
        <property name="topMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <property name="rightMargin">
         <number>5</number>
        </property>
        <property name="bottomMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <item row="0" column="0" colspan="2">
-        <widget class="QGroupBox" name="groupbox_write_intervals">
+        <widget class="QGroupBox" name="groupbox_spx">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -1643,6 +1680,22 @@ QPushButton:checked { font: bold; background-color: transparent; }
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <property name="horizontalSpacing">
+           <number>2</number>
+          </property>
+          <item row="8" column="2">
+           <widget class="QLabel" name="label_spx_dt_units_args_9">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="1">
            <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_6">
             <property name="maximumSize">
@@ -1876,19 +1929,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
-          <item row="8" column="2">
-           <widget class="QLabel" name="label_spx_dt_units_args_9">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>s</string>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="2">
            <widget class="QLabel" name="label_spx_dt_units_args_6">
             <property name="font">
@@ -2057,6 +2097,16 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
            </widget>
           </item>
+          <item row="10" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_11">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
            <widget class="QLabel" name="label_spx_dt_units_args_1">
             <property name="font">
@@ -2080,16 +2130,6 @@ QPushButton:checked { font: bold; background-color: transparent; }
             </property>
             <property name="text">
              <string>Fluid and solids pressure</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="1">
-           <widget class="LineEdit" name="lineedit_keyword_spx_dt_args_11">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
             </property>
            </widget>
           </item>
@@ -2203,7 +2243,619 @@ QPushButton:checked { font: bold; background-color: transparent; }
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="page_netcdf"/>
+     <widget class="QWidget" name="page_netcdf">
+      <layout class="QGridLayout" name="gridLayout_26">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupbox_netcdf">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="title">
+          <string>Write Intervals</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_25">
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="horizontalSpacing">
+           <number>2</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>6</number>
+          </property>
+          <item row="10" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_10">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_10">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_11">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_8">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_8">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_1">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_9">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_6">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_7">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_9">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_6">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_7">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_5">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_3">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_4">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_3">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_5">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_4">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_spx_dt_2_args_11">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_spx_dt_2_units_args_1">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>s</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_1">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Fluid volume fraction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Fluid and solids pressure</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_4">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Fluid velocity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_5">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Solids velocity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_6">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Solids bulk density</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_7">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Temperature</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_9">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Mass fractions</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_11">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Granular temperature</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_12">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>User defined scalars</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_13">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Reaction rates</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="CheckBox" name="checkbox_keyword_bwrite_netcdf_args_14">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Turbulence quantities</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupbox_print_des_data_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="title">
+          <string>Write ASCII particle data</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_24">
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_des_output_type_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Particle data format</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="combobox_des_output_type_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <item>
+             <property name="text">
+              <string>ParaView - VTK/.vtp</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Tecplot - .dat</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="LineEdit" name="lineedit_keyword_vtp_dir_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" rowspan="2">
+           <widget class="QLabel" name="label_vtp_dir_2">
+            <property name="font">
+             <font>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>VTP directory</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <spacer name="verticalSpacer_10">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>399</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

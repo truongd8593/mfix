@@ -8,17 +8,17 @@ from qtpy import QtCore, QtWidgets
 # local imports
 from mfixgui.tools.general import sort_dict, safe_float, safe_int
 
-MESH_EXTENT_KEYS = ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']
+MESH_EXTENT_KEYS = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']
 MESH_CELL_KEYS = ['imax', 'jmax', 'kmax']
 TABLE_MFIXKEY_MAP = {'position': 'cp', 'cells': 'nc', 'stretch': 'er',
                      'first': 'first_d', 'last': 'last_d'}
 CELL_MFIX_KEYS = ['imax', 'jmax', 'kmax']
 
 
-def ctrl_pts_to_loc(ctrl):
+def ctrl_pts_to_loc(ctrl, min_loc):
     """given control points, convert to location"""
-    loc = [0]
-    last = 0
+    loc = [min_loc]
+    last = min_loc
     for pt in ctrl.values():
         er = safe_float(pt['stretch'], 1.0)
         cp = safe_float(pt['position'], 0.0)
@@ -201,7 +201,7 @@ class Mesh(object):
 
     def init_background_mesh(self):
         """init the background mesh"""
-        prj = self.project
+        project = self.project
         self.mesh_extents = []
         self.mesh_spacing = [[], [], []]
 
@@ -210,15 +210,15 @@ class Mesh(object):
             btn.setEnabled(False)
 
         for key in MESH_EXTENT_KEYS:
-            self.mesh_extents.append(safe_float(prj.get_value(key, default=0.0)))
+            self.mesh_extents.append(safe_float(project.get_value(key, default=0.0)))
 
         self.mesh_cells = []
         for key in MESH_CELL_KEYS:
-            self.mesh_cells.append(safe_int(prj.get_value(key, default=1)))
+            self.mesh_cells.append(safe_int(project.get_value(key, default=1)))
 
         # collect dx, dy, dz
         for i, (s, c, e) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS, MESH_EXTENT_KEYS[1::2])):
-            d = [prj.get_value(s, args=args) for args in sorted(prj.get_key_indices(s))]
+            d = [project.get_value(s, args=args) for args in sorted(project.get_key_indices(s))]
             l = len(d)
 
             # if there are spacing, update the keywords.
@@ -233,17 +233,17 @@ class Mesh(object):
 
         # collect variable grid spacing keywords
         for i, k in enumerate(['x', 'y', 'z']):
-            indices = prj.get_key_indices('cp' + k)
+            indices = project.get_key_indices('cp' + k)
             if indices:
                 table_dic = OrderedDict()
                 for j, ind in enumerate(sorted(indices)):
                     ind = ind[0]
                     table_dic[j] = {
-                        'position': prj.get_value('cp' + k, 0, args=ind),
-                        'cells': prj.get_value('nc' + k, 1, args=ind+1),
-                        'stretch': prj.get_value('er' + k, 1, args=ind+1),
-                        'first': prj.get_value('first_d' + k, 0, args=ind+1),
-                        'last': prj.get_value('last_d' + k, 0, args=ind+1)}
+                        'position': project.get_value('cp' + k, 0, args=ind),
+                        'cells': project.get_value('nc' + k, 1, args=ind+1),
+                        'stretch': project.get_value('er' + k, 1, args=ind+1),
+                        'first': project.get_value('first_d' + k, 0, args=ind+1),
+                        'last': project.get_value('last_d' + k, 0, args=ind+1)}
                 self.mesh_tables[i].set_value(table_dic)
                 self.mesh_tables[i].fit_to_contents()
 
@@ -312,7 +312,7 @@ class Mesh(object):
         self.update_background_mesh()
 
         nrows = len(new)
-        if rows[-1] - 1 == nrows: # We deleted the last row,
+        if rows[-1] == nrows: # We deleted the last row,
             if nrows > 0:
                 table.selectRow(nrows-1)
 
@@ -327,6 +327,11 @@ class Mesh(object):
             for key in TABLE_MFIXKEY_MAP.values():
                 self.update_mesh_keyword(key+d, None, args=ind)
 
+        # the last control point
+        if m == max_i == 0:
+            for key in TABLE_MFIXKEY_MAP.values():
+                self.update_mesh_keyword(key+d, None, args=0)
+
     def mesh_add(self, index):
         """add a control point to the end"""
         table = self.mesh_tables[index]
@@ -339,7 +344,7 @@ class Mesh(object):
             loc = safe_float(list(data.values())[-1]['position']) + 1
             c = 1
         else:
-            loc = self.project.get_value(d + 'length', 1)
+            loc = self.project.get_value(d + '_max', 1)
             c = self.project.get_value(CELL_MFIX_KEYS[index], 1)
         ctrl = data[i] = {'position': loc, 'cells': c, 'stretch': 1.0, 'first': 0.0, 'last': 0.0}
 
@@ -353,7 +358,7 @@ class Mesh(object):
         row, col = table.get_clicked_cell()
         data = table.value
         split_data = data[row]
-        prev_data_loc = 0
+        prev_data_loc = self.project.get_value(d + '_min', 0)
         if row >= 2:
             prev_data_loc = safe_float(data[row-1]['position'])
 
@@ -414,7 +419,7 @@ class Mesh(object):
         """update the background mesh"""
         extents = self.mesh_extents
         cells = self.mesh_cells
-        prj = self.project
+        project = self.project
 
         # average cell width
         for (f, t), c, wid in zip(zip(extents[::2], extents[1::2]), cells, self.cell_spacing_widgets):
@@ -427,9 +432,10 @@ class Mesh(object):
         # determine cell spacing
         spacing = []
         for i, table in enumerate(self.mesh_tables):
+            axis='xyz'[i]
             val = table.value
             if val:
-                s = ctrl_pts_to_loc(val)
+                s = ctrl_pts_to_loc(val, project.get_value('%s_min'%axis, 0))
                 spacing.append(s)
                 # disable imax, jmax, kmax
                 self.cell_count_widgets[i].setEnabled(False)
@@ -439,7 +445,7 @@ class Mesh(object):
                 spacing.append(linspace(extents[i*2], extents[i*2+1], cells[i]))
                 # enable imax, jmax, kmax
                 if i == 2:
-                    self.cell_count_widgets[i].setEnabled(not prj.get_value('no_k', False))
+                    self.cell_count_widgets[i].setEnabled(not project.get_value('no_k', False))
                 else:
                     self.cell_count_widgets[i].setEnabled(True)
 

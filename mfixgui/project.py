@@ -309,10 +309,15 @@ class Equation(object):
             raise ValueError('invalid parameter(s): {}'.format(','.join(self.check_parameters())))
         else:
             name_dict = {}
-            for key, value in PARAMETER_DICT.items():
+            # only collect used parameters
+            for key in self.get_used_parameters():
+                value = PARAMETER_DICT.get(key, None)
+                if value is self:
+                    raise ValueError('Circular reference.')
                 try:
                     name_dict[key] = float(value)
-                except:
+                except ValueError:
+                    # could have been a string parameter
                     pass
             try:
                 return float(simple_eval(self.eq.lower(),
@@ -393,6 +398,19 @@ class Equation(object):
 
     def __pow__(self, x):
         return self.binop(x, '**')
+
+    # unary operations
+    def unaryop(self, c):
+        return Equation('%s(%s)' % (c, self.eq))
+
+    def __neg__(self):
+        return self.unaryop('-')
+
+    def __pos__(self):
+        return self.unaryop('+')
+
+    def __abs__(self):
+        return Equation('abs(%s)' % (self.eq))
 
 
 class Keyword(Comparable):
@@ -818,21 +836,6 @@ class SolidsCollection(Collection):
         return '\n'.join(self._prettyPrintList())
 
 
-class VtkVar(Base):
-    def __init__(self, ind):
-        Base.__init__(self, ind)
-
-
-class VtkVarCollection(Collection):
-    def __init__(self):
-        Collection.__init__(self)
-
-    def new(self, ind=None):
-        ind = self.check_ind(ind)
-        self.append(VtkVar(ind))
-        return self[ind]
-
-
 class VariableGridVar(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
@@ -887,9 +890,6 @@ class Project(object):
         self.solids = SolidsCollection()
         self.speciesEq = SpeciesEqCollection()
 
-        # VTK_VAR #deprecated
-        self.vtkvar = VtkVarCollection()
-
         # variablegrid
         self.variablegrid = VariableGridCollection()
 
@@ -937,7 +937,8 @@ class Project(object):
         """return a list of indices (args) for which the key is defined"""
         # Returning as a list makes this safe to iterate over, even if keys are
         # added/deleted
-        return list(self.keyword_dict.get(key, {}).keys())
+        # TODO: Should we make each argument tuple a list?  Probably
+        return sorted(list(self.keyword_dict.get(key, {}).keys()))
 
 
     def removeKeyword(self, key, args=None, warn=True):
@@ -949,7 +950,9 @@ class Project(object):
             args = [args]
         elif args is None:
             args = []
-
+        if isinstance(args, tuple):
+            args = list(args) # implementation detail, if tuple was
+            # passed we need it to match a list
         try:
             r = self.keyword_dict[key]
         except KeyError:
@@ -970,10 +973,10 @@ class Project(object):
         # remove from dat_file_list
         # Note. list.remove does not work because of the way keyword comparison is implemented,
         #  since remove will remove the first key with matching value
-        #  (Do we really need comparison of keyword object by value to work?)
         self.dat_file_list = [k for k in self.dat_file_list
                               if not (isinstance(k, Keyword)
                                       and k.key==key and k.args==args)]
+
         return True
 
 
@@ -1251,6 +1254,8 @@ class Project(object):
                     self.thermo_data[species] = []
                 if species and line:
                     self.thermo_data[species].append(line)
+
+        # parse reaction section
         if reaction_lines or des_reaction_lines:
             for lines in reaction_lines, des_reaction_lines:
                 RP = ReactionParser()
@@ -1273,9 +1278,9 @@ class Project(object):
 
         key = key.lower()
 
-        # special handling of xmin, xlength, ymin, ylength, zmin, zlength
-        if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
-            par_key = key.replace('length', 'max')
+        # special handling of x_min, x_max, etc.
+        if key in ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max']:
+            par_key = key.replace('_', '')
             PARAMETER_DICT[par_key] = value
 
         # check to see if the keyword already exists
@@ -1330,7 +1335,7 @@ class Project(object):
                     value = value.upper()
                     value = IS_TYPE_DICT.get(value, value)
                 cond = self.iss
-            elif key != 'vtk_var' and key.startswith('vtk_'):
+            elif key.startswith('vtk_') and 'vtk_var' not in key:
                 cond = self.vtks
             else:
                 cond = None
@@ -1408,16 +1413,7 @@ class Project(object):
                 keyword = Keyword(key, value, args=args,
                                         comment=keywordComment)
                 spec[key] = keyword
-            # VTK_VAR
-            elif key == 'vtk_var':
-                if args[0] not in self.vtkvar:
-                    vtkvar = self.vtkvar.new(args[0])
-                else:
-                    vtkvar = self.vtkvar[args[0]]
 
-                keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
-                vtkvar[key] = keyword
             # variable grid
             elif key in ['cpx', 'ncx', 'erx', 'first_dx', 'last_dx', 'cpy',
                          'ncy', 'ery', 'first_dy', 'last_dy', 'cpz', 'ncz',

@@ -25,8 +25,8 @@ except RuntimeError:
 
 try:
     import vtk
-    VTK_AVAILABLE = True
     from mfixgui.colormaps.color_maps import build_vtk_lookup_tables, build_qicons
+    VTK_AVAILABLE = True
     LOOKUP_TABLES = build_vtk_lookup_tables()
     GLYPHS = {
         'sphere':   vtk.vtkSphereSource,
@@ -40,7 +40,7 @@ except:
     LOOKUP_TABLES = {}
 
 from qtpy import QtCore, QtWidgets, QtGui, uic
-from mfixgui.widgets.base_vtk import BaseVtkWidget, vtk, VTK_AVAILABLE
+from mfixgui.widgets.base_vtk import BaseVtkWidget
 from mfixgui.widgets.base import CustomPopUp
 from mfixgui.tools.general import get_icon
 
@@ -48,7 +48,7 @@ PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
     ['dt', {'left':'dt', 'bottom':'Time Step', 'var':'dt'}],
     ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
-    ['time', {'left':'Simulation Time [s]', 'bottom':'Ellapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
+    ['time', {'left':'Simulation Time [s]', 'bottom':'Elapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
     ])
 
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
@@ -492,6 +492,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.button_bar_layout.addWidget(btn)
             if isinstance(btn, QtWidgets.QToolButton):
                 btn.setAutoRaise(True)
+                if btn is not self.toolbutton_visible:
+                    btn.setFocusPolicy(QtCore.Qt.ClickFocus)
 
         self.button_bar_layout.addStretch()
 

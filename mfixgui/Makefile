@@ -10,32 +10,42 @@ all: ${PY_UIFILES}
 	${PYUIC} -o $@ $<
 
 clean:
-	-rm -rf ${PY_UIFILES} dist __pycache__
+	rm -rf ${PY_UIFILES}
+	rm -rf dist
 	rm -rf doc/generated
+	rm -rf __pycache__ */__pycache__
 	find . -name \*.pyc -delete
-	make -C .. clean
+	find .. -name \*.stl.cgs -delete
+	find .. -name particle_input.dat.cgs -delete
+	find .. -name geometry.stl.original -delete
 
-test2: all
-	MFIX_NO_VTK=1 xvfb-run python2 -m nose -v
-
-test3: all
-	MFIX_NO_VTK=1 xvfb-run python3 -m nose -v
-
-test: all
-	MFIX_NO_VTK=1 xvfb-run nosetests -v
-
-test-gui:
-	nosetests -v
 
 tags:
 	etags *.py {widgets,tests,tools}/*.py  # avoid uifiles
 
-test-load-all:
-	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xvfb-run xargs -0 -n 1 ./run.sh -lwarning -q |& egrep --line-buf -v 'GL|Unsupported screen format' >& /tmp/test-load-all.log & tail -f /tmp/test-load-all.log
+test: clean test2 test3
+
+test2:
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python2 -m nose -v
+	pkill Xvfb
+
+test3:
+	(Xvfb :99 &)
+	DISPLAY=:99 MFIX_NO_VTK=1 python3 -m nose -v
+	pkill Xvfb
+
+
+test-load-all: clean test-load-all-2 test-load-all-3
+
+test-load-all-2: clean
+	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xargs -0 -n 1 ./run2.sh -linfo -t
+test-load-all-3: clean
+	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xargs -0 -n 1 ./run3.sh -linfo -t
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp
-	make -C .. mfix
+	make -C .. mfix mfixsolver.so
 
 pyinst: all ../mfix
 	pyinstaller gui.spec

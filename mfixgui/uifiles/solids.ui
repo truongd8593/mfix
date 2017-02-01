@@ -849,7 +849,7 @@ QPushButton:checked {
                <item row="2" column="3">
                 <widget class="QLabel" name="label_mu_s0_units">
                  <property name="text">
-                  <string>Pa</string>
+                  <string>Pa.s</string>
                  </property>
                 </widget>
                </item>
@@ -2603,6 +2603,13 @@ background-color:white;
                  <widget class="QLabel" name="label_asperities_units">
                   <property name="text">
                    <string>m</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QLabel" name="label_hamaker_constant_units">
+                  <property name="text">
+                   <string>J</string>
                   </property>
                  </widget>
                 </item>

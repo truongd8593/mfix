@@ -1441,11 +1441,13 @@ MODULE CG_INIT_NAMELIST
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>Location of control points in x-direction.</description>
+!  <arg index="1" id="CTRL" max="DIMENSION_CTRL" min="0"/>
       CPX = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>Number of cells within a segment (x-direction).</description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       NCX      = 0
 !</keyword>
 
@@ -1453,6 +1455,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>
 !    Expansion ratio (last DX/first DX) in a segment (x-direction).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       ERX      = ONE
 !</keyword>
 
@@ -1460,6 +1463,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>Value of first DX in a segment (x-direction). A negative
 !      value will copy DX from previous segment (if available).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       FIRST_DX = ZERO
 !</keyword>
 
@@ -1467,12 +1471,14 @@ MODULE CG_INIT_NAMELIST
 !  <description>Value of last DX in a segment (x-direction). A
 !  negative value will copy DX from next segment (if
 !  available).</description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       LAST_DX  = ZERO
 !</keyword>
 
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>Location of control points in y-direction.</description>
+!  <arg index="1" id="CTRL" max="DIMENSION_CTRL" min="0"/>
       CPY = ZERO
 !</keyword>
 
@@ -1480,6 +1486,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>
 !    Number of cells within a segment (y-direction).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       NCY = 0
 !</keyword>
 
@@ -1487,6 +1494,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>
 !    Expansion ratio (last DY/first DY) in a segment (y-direction).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       ERY = ONE
 !</keyword>
 
@@ -1495,6 +1503,7 @@ MODULE CG_INIT_NAMELIST
 !    Value of first DY in a segment (y-direction). A negative value will
 !    copy DY from previous segment (if available).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       FIRST_DY = ZERO
 !</keyword>
 
@@ -1503,11 +1512,13 @@ MODULE CG_INIT_NAMELIST
 !    Value of last DY in a segment (y-direction). A negative value will
 !    copy DY from next segment (if available).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       LAST_DY  = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>Location of control points in z-direction.</description>
+!  <arg index="1" id="CTRL" max="DIMENSION_CTRL" min="0"/>
       CPZ = ZERO
 !</keyword>
 
@@ -1515,6 +1526,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>
 !    Number of cells within a segment (z-direction).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       NCZ = 0
 !</keyword>
 
@@ -1522,6 +1534,7 @@ MODULE CG_INIT_NAMELIST
 !  <description>
 !    Expansion ratio (last DZ/first DZ) in a segment (z-direction).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       ERZ      = ONE
 !</keyword>
 
@@ -1530,6 +1543,7 @@ MODULE CG_INIT_NAMELIST
 !    Value of first DZ in a segment (z-direction). A negative value will
 !    copy DZ from previous segment (if available).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       FIRST_DZ = ZERO
 !</keyword>
 
@@ -1538,6 +1552,7 @@ MODULE CG_INIT_NAMELIST
 !    Value of last DZ in a segment (z-direction). A negative value will
 !    copy DZ from next segment (if available).
 !  </description>
+!  <arg index="1" id="CTRL+1" max="DIMENSION_CTRL+1" min="1"/>
       LAST_DZ  = ZERO
 !</keyword>
 
