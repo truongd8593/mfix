@@ -176,7 +176,7 @@ mfixsolver-f2pywrappers.o: mfixsolver-f2pywrappers.f
 	$(F77COMPILE) -c -o $@ $<
 
 mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfix_LDADD)
-	gcc -o $@ -shared $^ -lgfortran
+	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
 
 F2PY_FILES = \
 	mfixsolver-f2pywrappers.f \
