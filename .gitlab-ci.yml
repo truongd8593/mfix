@@ -1,5 +1,6 @@
 stages:
-  - build
+  - build:py2
+  - build:py3
   - deploy
 
 variables:
@@ -7,7 +8,7 @@ variables:
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
 build:linux:py2:
-  stage: build
+  stage: build:py2
   script:
     - /nfs/home/0/users/jenkins/miniconda2/bin/python setup.py bdist_wheel
   artifacts:
@@ -21,7 +22,7 @@ build:linux:py2:
     - linux
 
 build:linux:py3:
-  stage: build
+  stage: build:py3
   script:
     - /nfs/home/0/users/jenkins/miniconda3/bin/python setup.py bdist_wheel
   artifacts:
@@ -47,7 +48,7 @@ install:linux:py2:
     - linux
 
 build:mac:py2:
-  stage: build
+  stage: build:py3
   script:
     - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
   artifacts:
@@ -61,7 +62,7 @@ build:mac:py2:
     - mac
 
 build:mac:py3:
-  stage: build
+  stage: build:py3
   script:
     - env FC=gfortran-6 CC=gcc-6 $HOME/miniconda3/bin/python3 setup.py bdist_wheel
   artifacts:
