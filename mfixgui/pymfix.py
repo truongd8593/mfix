@@ -3,7 +3,7 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
-from .version import __version__
+from mfixgui.version import __version__
 
 import argparse
 import copy
