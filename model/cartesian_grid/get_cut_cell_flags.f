@@ -74,7 +74,7 @@
 
 !     x-Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
-         XG_E(1) = ZERO
+         XG_E(1) = X_MIN
          DO I = IMIN1, IMAX3
             XG_E(I) = XG_E(I-1) + DX(I)
          END DO
@@ -83,7 +83,7 @@
 
 !     y-Location of V-momentum cells for original (uncut grid)
       IF (DO_J) THEN
-         YG_N(1) = ZERO
+         YG_N(1) = Y_MIN
          DO J = JMIN1, JMAX3
             YG_N(J) = YG_N(J-1) + DY(J)
          END DO
@@ -92,7 +92,7 @@
 
 !     z-Location of W-momentum cells for original (uncut grid)
       IF (DO_K) THEN
-         ZG_T(1) = ZERO
+         ZG_T(1) = Z_MIN
          DO K = KMIN1, KMAX3
             ZG_T(K) = ZG_T(K-1) + DZ(K)
          END DO
