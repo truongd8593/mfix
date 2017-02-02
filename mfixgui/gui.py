@@ -2748,6 +2748,10 @@ def main():
     if not args.test:
         gui.show()
 
+    # close the splash
+    if splash is not None:
+        splash.close()
+
     if args.exe:
         #print('exe option passed: %s' % mfix_exe_option)
         gui.commandline_option_exe = args.exe
@@ -2779,10 +2783,6 @@ def main():
     # exit with Ctrl-C at the terminal
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # close the splash
-    if splash is not None:
-        splash.close()
 
     if not args.test:
         qapp.exec_()
