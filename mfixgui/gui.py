@@ -73,7 +73,8 @@ from mfixgui.interpreter import Interpreter
 from mfixgui.tools.general import (get_icon, widget_iter, get_pixmap,
                            is_text_string, is_unicode, get_image_path,
                            format_key_with_args, to_unicode_from_fs,
-                           get_username, convert_string_to_python)
+                           get_username, convert_string_to_python,
+                           to_fs_from_unicode,)
 
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.keyword_args import keyword_args
@@ -2079,8 +2080,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         run_name = ''
         try:
-            with open(template) as infile:
+            with open(template, 'rb') as infile:
                 for line in infile.readlines():
+                    line = to_unicode_from_fs(line)
                     match = re.match("\s*run_name\s*=\s*'(?P<run_name>\w*)'", line, flags=re.IGNORECASE)
                     if match:
                         run_name = match.group('run_name')
@@ -2113,8 +2115,8 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(project_dir):
             if not self.confirm_clobber(project_dir):
                 return
-
-        os.makedirs(project_dir)
+        else:
+            os.makedirs(project_dir)
 
         extra_files = []
         globs = ["*.msh", "*.f", "*.stl", "*.dat"]
@@ -2129,17 +2131,17 @@ class MfixGui(QtWidgets.QMainWindow,
         creator = get_username()
         creation_time = time.strftime('%Y-%m-%d %H:%M')
         try:
-            with open(template) as infile:
-                with open(project_file,'w') as outfile:
+            with open(template, 'rb') as infile:
+                with open(project_file,'wb') as outfile:
                     for line in infile:
+                        line = to_unicode_from_fs(line)
                         if line.startswith('# Generic'):
                             # Put something better in the comment field, otherwise
                             # "generic template" lingers there forever
                             line = '# Created by %s on %s\n' % (creator, creation_time)
                         elif '${run_name}' in line:
                             line = line.replace('${run_name}', run_name)
-                        outfile.write(line)
-            geometry_stl = os.path.join(os.path.dirname(template), 'geometry.stl')
+                        outfile.write(to_fs_from_unicode(line))
             for extra_file in extra_files:
                 shutil.copyfile(extra_file, os.path.join(project_dir, os.path.basename(extra_file)))
 
