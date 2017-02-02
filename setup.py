@@ -48,8 +48,14 @@ class MfixBuildExt(build_ext):
         ''' Copies the already-compiled pyd
         '''
         # if platform.system() == 'Windows':
-        subprocess.call(["./configure_mfix", "PYTHON_BIN=%s" % sys.executable, "--python"])
-        subprocess.call(["make", "mfixsolver.so"])
+
+        returncode = subprocess.call("./configure_mfix PYTHON_BIN=%s --python" % sys.executable, shell=True)
+        if(returncode!=0):
+            raise EnvironmentError("Failed to configure_mfix correctly")
+
+        returncode = subprocess.call("make mfixsolver.so", shell=True)
+        if(returncode!=0):
+            raise EnvironmentError("Failed to build mfixsolver correctly")
 
         # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
         # ./configure_mfix --python --host=x86_64-w64-mingw32
