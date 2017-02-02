@@ -48,7 +48,7 @@ install:linux:py2:
     - linux
 
 build:mac:py2:
-  stage: build:py3
+  stage: build:py2
   script:
     - env FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python setup.py bdist_wheel
   artifacts:
