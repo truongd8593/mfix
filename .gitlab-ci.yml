@@ -1,9 +1,3 @@
-# cache:
-#   key: "$CI_BUILD_REF_NAME"
-#   untracked: true
-#   paths:
-#     - build/
-
 stages:
   - build
   - deploy
@@ -15,7 +9,7 @@ variables:
 build:linux:py2:
   stage: build
   script:
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/python setup.py bdist_wheel
+    - /nfs/home/0/users/jenkins/miniconda2/bin/python setup.py bdist_wheel
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
