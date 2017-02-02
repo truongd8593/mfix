@@ -548,7 +548,6 @@ class VtkWidget(BaseVtkWidget):
             self.set_background_mesh_actor_props(actor)
 
     def process_quadrics(self, proj):
-
         # hack to look for a value in a list of values
         def get(keys, default, args):
             for key in keys:
@@ -565,17 +564,20 @@ class VtkWidget(BaseVtkWidget):
             data['centerx'] = proj.get_value('t_x', 0, qid)
             data['centery'] = proj.get_value('t_y', 0, qid)
             data['centerz'] = proj.get_value('t_z', 0, qid)
-            xe = [get(['piece_xmax', 'clip_xmax'], Equation('xmax'), qid), get(['piece_xmin', 'clip_xmin'], Equation('xmin'), qid)]
-            ye = [get(['piece_ymax', 'clip_ymax'], Equation('ymax'), qid), get(['piece_ymin', 'clip_ymin'], Equation('ymin'), qid)]
-            ze = [get(['piece_zmax', 'clip_zmax'], Equation('zmax'), qid), get(['piece_zmin', 'clip_zmin'], Equation('zmin'), qid)]
+            xe = [get(['piece_xmax', 'clip_xmax'], float(Equation('xmax')), qid),
+                  get(['piece_xmin', 'clip_xmin'], float(Equation('xmin')), qid)]
+            ye = [get(['piece_ymax', 'clip_ymax'], float(Equation('ymax')), qid),
+                  get(['piece_ymin', 'clip_ymin'], float(Equation('ymin')), qid)]
+            ze = [get(['piece_zmax', 'clip_zmax'], float(Equation('zmax')), qid),
+                  get(['piece_zmin', 'clip_zmin'], float(Equation('zmin')), qid)]
 
             dx = xe[0] - xe[1]
             dy = ye[0] - ye[1]
             dz = ze[0] - ze[1]
 
-            mx = float(xe[0] + xe[1])/2
-            my = float(ye[0] + ye[1])/2
-            mz = float(ze[0] + ze[1])/2
+            mx = (xe[0] + xe[1])/2
+            my = (ye[0] + ye[1])/2
+            mz = (ze[0] + ze[1])/2
 
             itype = None
             if 'sphere' in qtype:
@@ -593,6 +595,11 @@ class VtkWidget(BaseVtkWidget):
                     data['rotationx'] = 90
                     data['height'] = dz
                     data['centerz'] += mz
+
+                # if the height is zero, most likely a 2D simulation, make the
+                # height 1 so we can see it.
+                if data['height'] == 0:
+                    data['height'] = 1
             elif 'cone' in qtype:
                 itype = 'cone'
 
@@ -2217,6 +2224,12 @@ class VtkWidget(BaseVtkWidget):
             stl_writer.SetFileName(file_name)
             stl_writer.SetInputConnection(geometry.GetOutputPort())
             stl_writer.Write()
+        elif GUI.project.get_value('n_quadric', None) is not None:
+            GUI.update_keyword('cartesian_grid', True)
+        elif GUI.project.get_value('use_msh', False):
+            GUI.update_keyword('cartesian_grid', True)
+        elif GUI.project.get_value('use_polygon', False):
+            GUI.update_keyword('cartesian_grid', True)
         else:
             GUI.update_keyword('cartesian_grid', False)
             GUI.update_keyword('use_stl', False)

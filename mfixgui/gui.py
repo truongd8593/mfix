@@ -2373,8 +2373,10 @@ class MfixGui(QtWidgets.QMainWindow,
             geo = self.project.mfix_gui_comments.get('geometry')
             if geo:
                 self.vtkwidget.geometry_from_str(geo)
-            # extract quadrics
-            self.vtkwidget.process_quadrics(self.project)
+            else:
+                # extract quadrics
+                self.vtkwidget.process_quadrics(self.project)
+                # read other geometry?
 
         #  Non-keyword params stored as !#MFIX-GUI comments
         solids_phase_names = {}

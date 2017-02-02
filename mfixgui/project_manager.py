@@ -606,6 +606,11 @@ class ProjectManager(Project):
                         continue
                     self.gui.update_keyword('vtk_'+key, Equation(val), args=[idx])
 
+                # more keys
+                self.gui.update_keyword('vtk_filebase', 'IC_1', args=[idx])
+                for key in [ 'vtk_nxs', 'vtk_nys', 'vtk_nzs']:
+                    self.gui.update_keyword(key, 0, args=[idx])
+
             for (v,i) in vtk_varlist:
                 varnames = varlist_map.get(i)
                 if not varnames:
@@ -638,6 +643,7 @@ class ProjectManager(Project):
             for key in ('vtk_var', 'vtk_varlist'):
                 for args in self.get_key_indices(key):
                     self.gui.unset_keyword(key, args=args)
+
 
             # Submit all remaining keyword updates, except the ones we're skipping
             # some of these changes may cause new keywords to be instantiated,
