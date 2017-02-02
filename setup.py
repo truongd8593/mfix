@@ -141,7 +141,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'flask',
-        'numpy==1.11',
+        'numpy==1.11.3',
         'packaging',
         'qtpy',
     ],
