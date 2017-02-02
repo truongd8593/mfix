@@ -15,7 +15,7 @@ build:linux:py2:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/mfixgui*.whl
+    - dist/mfixgui*py2*linux*.whl
   only:
     - branches
   tags:
@@ -29,7 +29,7 @@ build:linux:py3:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/mfixgui*.whl
+    - dist/mfixgui*py3*linux*.whl
   only:
     - branches
   tags:
@@ -39,7 +39,7 @@ install:linux:py2:
   stage: deploy
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui || true
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*.whl --prefix=${PYPATH}
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/mfixgui*py2*linux*.whl --prefix=${PYPATH}
   dependencies:
     - build:linux:py2
   only:
