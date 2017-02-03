@@ -158,6 +158,16 @@ class BCS(object):
         le.dtype = float
         le.value_updated.connect(self.project.submit_change)
 
+        # remove from GUI, not implemented yet
+        hbox = ui.hbox_bc_type
+        while True:
+            item = hbox.takeAt(0)
+            if not item:
+                break
+            w = item.widget()
+            if not w:
+                continue
+            w.deleteLater()
 
 
     def bcs_set_volume_fraction_limit(self):
