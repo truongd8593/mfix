@@ -893,7 +893,8 @@ class MfixGui(QtWidgets.QMainWindow,
         #handle buttons in order:  RESET RUN PAUSE STOP
 
         if pending:
-            self.status_message("MFiX starting up, process %s" % self.job_manager.job.mfix_pid)
+            # This message is printed after the app exits, sigh
+            #self.status_message("MFiX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
