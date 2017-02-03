@@ -2421,6 +2421,9 @@ class VtkWidget(BaseVtkWidget):
         cell_count = self.mesh.GetNumberOfCells()
         cell_types = self.mesh.GetCellTypesArray()
 
+        if cell_types is None or cell_count is None:
+            return
+
         cell_list = []
         for i in range(cell_types.GetNumberOfTuples()):
             cell_list.append(cell_types.GetTuple(i))
