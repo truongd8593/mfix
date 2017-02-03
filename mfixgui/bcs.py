@@ -1318,6 +1318,8 @@ class BCS(object):
 
         def make_fluid_species_box(title, species_index):
             box = QGroupBox(title, parent=ui.page_fluid_wall)
+            box.setStyleSheet("QGroupBox { font-weight: bold; } ")
+            box.setFlat(True)
             box_layout = QGridLayout()
             #margins = ui.groupbox_fluid_energy_eq.getContentsMargins()
             box.setFlat(True)
@@ -2116,6 +2118,7 @@ class BCS(object):
 
             for i in range(1, nscalar+1):
                 groupbox = QGroupBox('Scalar %s' % i)
+                groupbox.setStyleSheet("QGroupBox { font-weight: bold; } ")
                 groupbox.setFlat(True)
                 # TODO adjust margins/spacing
                 page_layout.addWidget(groupbox)
