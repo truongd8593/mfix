@@ -282,6 +282,13 @@ class ProjectManager(Project):
                         self.convert_particle_file_units(particle_file)
                     except Exception as e:
                         warnings.warn("Error %s while converting %s" % (e, particle_file))
+                # convert poly.dat
+                poly_file = os.path.join(os.path.dirname(project_file), 'poly.dat')
+                if os.path.exists(poly_file):
+                    try:
+                        self.convert_polygon_file_units(poly_file)
+                    except Exception as e:
+                        warnings.warn("Error %s while converting %s" % (e, poly_file))
                 # convert stl file
                 stl_file = os.path.join(os.path.dirname(project_file), 'geometry.stl')
                 if os.path.exists(stl_file):
@@ -768,6 +775,50 @@ class ProjectManager(Project):
 
                     out_line = ''.join('%-16s'%round((v*f),12) for (f,v) in zip(vals, factors))
 
+                out_file.write(out_line.strip()+'\n')
+
+    def convert_polygon_file_units(self, filename):
+        basename = os.path.basename(filename)
+        cgs_file = filename + '.cgs'
+        if os.path.exists(cgs_file):
+            # If we've converted before, use the '.cgs' file as input to avoid
+            # double-converting
+            warnings.warn('%s found, not converting particle data (already converted?)' % cgs_file)
+            return
+        else:
+            warnings.warn('%s saved as %s' % (basename, basename+'.cgs')) # info?
+            os.rename(filename, cgs_file)
+        lineno = 0
+        with open(filename, 'w') as out_file:
+            for line in open(cgs_file):
+                lineno += 1
+                line = line.strip()
+                if not line: # blank
+                    continue
+                line = line.replace('d', 'e').replace('D', 'E')
+                tok = line.split()
+                # data starts on line 13
+                if lineno <= 13:
+                    out_line = line # Pass through
+                # line 14 should be the number of polygons
+                elif lineno == 14 and len(tok) == 1:
+                    out_line = line # Pass through
+                elif len(tok) == 2: # new poly def, n verticies, sign
+                    out_line = line # Pass through
+                else:
+                    if len(tok) != 3: # vertex, x y bc_id
+                        warnings.warn('%s: bad line %s' % (filename, lineno))
+                        break
+                    try:
+                        vals = list(map(float, tok))
+                    except ValueError:
+                        warnings.warn('%s: bad value on line %s' % (filename, lineno))
+                        break
+                    factors = [0.01] * 2 # position, cm -> m
+
+
+                    out_line = ''.join('%-16s'%round((v*f),12) for (f,v) in zip(vals, factors))
+                    out_line += str(int(vals[-1]))
                 out_file.write(out_line.strip()+'\n')
 
     def convert_stl_file_units(self, filename):
