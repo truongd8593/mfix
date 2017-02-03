@@ -1342,7 +1342,7 @@ class BCS(object):
             box_layout.addLayout(hbox, 0, 0, 1, 3)
             row = 0
             for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
-                                             ('Constant flux', 'bc_c_x_g', '1/m'),
+                                             ('Constant flux', 'bc_c_x_g', '/m'),
                                              ('Transfer coefficient', 'bc_hw_x_g', None),
                                              ('Free stream mass frac.', 'bc_xw_g', None)):
                 row += 1
