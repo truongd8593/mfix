@@ -2831,8 +2831,28 @@ def main():
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    def excepthook(etype, exc, tb):
+        msg =  ['Please report this error to MFiX-GUI developers\n',
+                'You may continue running, but the application may\n',
+                ' become unstable.  Consider saving your work now.\n',
+                'Please include the following in your bug report:\n']
+        try:
+            msg.append("Error: %s\n" % exc)
+        except: # unlikely
+            msg.append("Error: %s\n" % etype)
+        msg.extend(traceback.format_tb(tb))
+        try:
+            gui.message("Internal error", text=''.join(msg))
+        except Exception as e:
+            print("Internal error")
+            print(''.join(msg))
+            print("Error displaying popup: %s" % e)
+
     if not args.test:
+        sys.excepthook = excepthook
         qapp.exec_()
+
+
     else:  # Run internal test suite
         gui.navigate_all()
         print("That's all folks")
