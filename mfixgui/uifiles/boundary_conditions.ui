@@ -212,45 +212,18 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Region</string>
-           </property>
-           <property name="margin">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <layout class="QHBoxLayout" name="hbox_bc_type">
          <property name="leftMargin">
           <number>5</number>
          </property>
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="label_bc_type">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Type</string>
            </property>
@@ -260,7 +233,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="ComboBox" name="combobox_bc_type">
            <item>
             <property name="text">
              <string>Mass inflow</string>
@@ -318,7 +291,7 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
+       <item row="1" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QFrame" name="tab_frame">
@@ -437,7 +410,7 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
         <widget class="QScrollArea" name="scrollarea_detail">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -462,8 +435,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>321</width>
-            <height>671</height>
+            <width>335</width>
+            <height>682</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
