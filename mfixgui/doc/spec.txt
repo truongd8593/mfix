@@ -1199,24 +1199,17 @@ Select boundary type
 #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
 #  Partial Slip Wall
-
-#
-
-#
-
-#
-
 #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
 #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-Pressure Inflow
+#  Pressure Inflow
 #    Plane regions set keyword BC_TYPE(#) to 'PI'
 #    Not available for volume regions
 #    Not available for STL regions
-Mass Outflow
+#  Mass Outflow
 #    Plane regions set keyword BC_TYPE(#) to 'MO'
 #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
 #    Not available for volume regions
-Cyclic
+#  Cyclic
 #    No region to select
 
 # Specification always available
