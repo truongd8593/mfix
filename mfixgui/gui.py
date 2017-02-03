@@ -1594,9 +1594,18 @@ class MfixGui(QtWidgets.QMainWindow,
         stripped = line.strip()
         return all(c=='*' for c in stripped) or stripped in boilerplate
 
+    def fix_filename_reference(self, text):
+        """replace misleading references to 'mfix.dat' with correct
+        filename"""
+        project_file = self.get_project_file()
+        basename = "(unknown)" if not project_file else os.path.basename(project_file)
+        text = text.replace('mfix.dat file.', 'input file %s'% project_file)
+        return text
+
     def handle_stdout(self, text):
         """collect stderr from mfix/pymfix process, format and display
         to user.  Note that some errors are printed to stdout"""
+        text = self.fix_filename_reference(text)
         color = 'red' if "Error" in text else None
         lines = text.split('\n')
         # Scanning for errors may trigger popups, etc, so get the output to
@@ -1613,7 +1622,7 @@ class MfixGui(QtWidgets.QMainWindow,
         to user."""
         # Scanning for errors may trigger popups, etc, so get the output to
         # the user first.
-
+        text = self.fix_filename_reference(text)
         lines = text.split('\n')
         for line in lines:
             if self.can_skip(line):
