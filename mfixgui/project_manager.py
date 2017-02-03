@@ -363,6 +363,8 @@ class ProjectManager(Project):
                             break
                 if user_def:
                     (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                    if tmin == tmax == 0.0:
+                        tmin, tmax = 200.0, 6000.0
                     if mw_g is not None:
                         mol_weight = mw_g # mw_g overrides values in THERMO DATA
                     species_data = {'source': source,
@@ -407,8 +409,8 @@ class ProjectManager(Project):
                         'phase': phase,
                         'mol_weight': mw_g or 0,
                         'h_f': 0.0,
-                        'tmin':  0.0,
-                        'tmax': 0.0,
+                        'tmin':  200.0,
+                        'tmax': 6000.0,
                         'a_low': [0.0]*7,
                         'a_high': [0.0]*7}
 
@@ -471,6 +473,8 @@ class ProjectManager(Project):
                                 break
                     if user_def:
                         (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                        if tmin == tmax == 0.0:
+                            tmin, tmax = 200.0, 6000.0
                         if mw_s is not None:
                             mol_weight = mw_s # mw_s overrides values in THERMO DATA
                         species_data = {'source': source,
@@ -515,8 +519,8 @@ class ProjectManager(Project):
                             'phase': phase,
                             'mol_weight': mw_s or 0,
                             'h_f': 0.0,
-                            'tmin':  0.0,
-                            'tmax': 0.0,
+                            'tmin':  200.0,
+                            'tmax': 6000.0,
                             'a_low': [0.0]*7,
                             'a_high': [0.0]*7}
 
