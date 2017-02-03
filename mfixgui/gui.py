@@ -1782,7 +1782,7 @@ class MfixGui(QtWidgets.QMainWindow,
         except Exception as e:
             self.error('handle_stop: %s' % e)
 
-    def check_save(self, text="Save current project?"):
+    def confirm_save(self, text="Save current project?"):
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
@@ -1795,7 +1795,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def open_run_dialog(self):
         """Open run popup dialog"""
-        if not self.check_save():
+        if not self.confirm_save():
+            self.message(title="Not starting MFiX",
+                         text="Must save project before running.")
             return
 
         project_dir = self.get_project_dir()
@@ -1826,7 +1828,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
-        self.check_save(text='Save current project before exporting?')
+        self.confirm_save(text='Save current project before exporting?')
         project_file = self.get_project_file()
         if not project_file:
             self.message(text="Nothing to export",
