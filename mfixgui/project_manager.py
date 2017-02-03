@@ -259,12 +259,18 @@ class ProjectManager(Project):
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
                     # Don't attempt to convert non-floating point values
-
                     dtype = self.keyword_doc.get(kw.key,{}).get('dtype')
                     if dtype != 'DP':
                         continue
 
                     factor = cgs_to_SI.get(kw.key)
+
+                    #Special case is_pc, per Jeff Dietiker
+                    #is_pc: 0.0001 for 1st index (permeability, Length2),
+                    # 100.0 for 2nd index (Inertial resistance factor, 1/Length)
+                    if kw.key == 'is_pc' and len(kw.args) == 2:
+                        factor = {1: 0.001, 2:100}.get(kw.args[1])
+
                     if factor == 1:
                         continue
                     if factor is not None:
