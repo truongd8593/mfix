@@ -73,22 +73,22 @@
        </item>
        <item>
         <property name="text">
-         <string>Two-Fluid Model (MFIX-TFM)</string>
+         <string>Two-Fluid Model (MFiX-TFM)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Discrete Element Model (MFIX-DEM)</string>
+         <string>Discrete Element Model (MFiX-DEM)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Particle-in-Cell (MFIX-PIC)</string>
+         <string>Particle-in-Cell (MFiX-PIC)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>MFIX-Hybrid</string>
+         <string>MFiX-Hybrid</string>
         </property>
        </item>
       </widget>

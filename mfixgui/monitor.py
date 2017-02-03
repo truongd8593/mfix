@@ -1,4 +1,4 @@
-"""classes to monitor MFIX output files & executables"""
+"""classes to monitor MFiX output files & executables"""
 
 import glob
 import logging
@@ -8,7 +8,7 @@ from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
 log = logging.getLogger(__name__)
 
 class Monitor(object):
-    """class for monitoring available MFIX executables and output files"""
+    """class for monitoring available MFiX executables and output files"""
     def __init__(self, parent):
         self.parent = parent
         self.outputs = None

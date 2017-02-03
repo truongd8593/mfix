@@ -488,17 +488,17 @@ QPushButton:checked {
                 <widget class="ComboBox" name="combobox_solids_model">
                  <item>
                   <property name="text">
-                   <string>Two-Fluid Model (MFIX-TFM)</string>
+                   <string>Two-Fluid Model (MFiX-TFM)</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>Discrete Element Model (MFIX-DEM)</string>
+                   <string>Discrete Element Model (MFiX-DEM)</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>Multiphase Particle-in-Cell (MFIX-PIC)</string>
+                   <string>Multiphase Particle-in-Cell (MFiX-PIC)</string>
                   </property>
                  </item>
                 </widget>

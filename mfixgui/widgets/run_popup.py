@@ -127,7 +127,7 @@ class RunPopup(QDialog):
             self.mfix_exe = None
             self.parent.message(
                 icon='warning',
-                text='MFIX not found. Please browse for an executable.',
+                text='MFiX not found. Please browse for an executable.',
                 buttons=['ok','cancel'],
                 default='ok')
 
@@ -285,7 +285,7 @@ class RunPopup(QDialog):
         self.ui.button_local_run.setEnabled(ok)
         self.ui.button_queue_submit.setEnabled(ok)
         if not ok:
-            self.parent.print_internal("Warning: no MFIX executables available")
+            self.parent.print_internal("Warning: no MFiX executables available")
 
     def popup(self):
         self.show()
@@ -386,7 +386,7 @@ class RunPopup(QDialog):
             self.parent.message(
                 icon='warning',
                 title='Warning',
-                text='The selected file is not an executable MFIX binary')
+                text='The selected file is not an executable MFiX binary')
             return
         self.mfix_available = True
         self.mfix_exe = new_exe
@@ -538,13 +538,13 @@ class RunPopup(QDialog):
             _, flags = self.mfix_exe_cache[(stat, mfix_exe)]
             return flags
         try:
-            log.debug('Feature testing MFIX %s' % mfix_exe)
+            log.debug('Feature testing MFiX %s' % mfix_exe)
             exe_dir = os.path.dirname(mfix_exe)
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
             if err:
-                log.error('MFIX %s' % str(err))
+                log.error('MFiX %s' % str(err))
         except:
             log.error("could not run %s --print-flags", mfix_exe)
             return None
@@ -656,9 +656,9 @@ class RunPopup(QDialog):
 
         def slot_start():
             # Keep a copy because it gets reset
-            msg = "MFIX process %d is running" % self.mfixproc.pid()
+            msg = "MFiX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", self.cmdline)
+            log.debug("Full MFiX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
@@ -669,7 +669,7 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
-            msg = "MFIX process has stopped"
+            msg = "MFiX process has stopped"
             self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_error(error):

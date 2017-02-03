@@ -562,7 +562,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.enable_input(False)
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
-        self.status_message("No project - open existing MFIX project or create a new one")
+        self.status_message("No project - open existing MFiX project or create a new one")
         self.change_pane("model setup")
 
     def reset(self):
@@ -802,8 +802,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
-            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFIX run' if text=='Resume'
-                                                   else text+' MFIX')
+            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFiX run' if text=='Resume'
+                                                   else text+' MFiX')
         if enabled is not None:
             b = self.ui.toolbutton_run_mfix
             b.setEnabled(enabled)
@@ -893,7 +893,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #handle buttons in order:  RESET RUN PAUSE STOP
 
         if pending:
-            self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
+            self.status_message("MFiX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -901,7 +901,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif unpaused:
-            self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
+            self.status_message("MFiX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -909,14 +909,14 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif paused:
-            self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
+            self.status_message("MFiX paused, process %s" % self.job_manager.job.mfix_pid)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
 
         elif resumable:
-            self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
+            self.status_message("Previous MFiX run is resumable.  Reset job to edit model")
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
@@ -933,9 +933,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def print_welcome(self):
-        self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
+        self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFIX-GUI version %s" % __version__,
+        self.print_internal("MFiX-GUI version %s" % __version__,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -2013,7 +2013,7 @@ class MfixGui(QtWidgets.QMainWindow,
     #     self.unimplemented()
 
     def update_window_title(self):
-        title = self.solver_name or 'MFIX'
+        title = self.solver_name or 'MFiX'
         project_file = self.get_project_file()
         if project_file:
             # add entire path to title, abbreviate user dir
@@ -2168,7 +2168,7 @@ class MfixGui(QtWidgets.QMainWindow,
         project_dir = self.get_project_dir()
         project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir,
-            'MFIX Project (*.mfx *.dat);; All Files (*)')
+            'MFiX Project (*.mfx *.dat);; All Files (*)')
         if PYQT5:
             # qt4/qt5 compat hack
             project_path = project_path[0]
@@ -2652,12 +2652,12 @@ def main():
 
     # handle command-line arguments
     av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
-    parser = argparse.ArgumentParser(description='MFIX GUI')
+    parser = argparse.ArgumentParser(description='MFiX GUI')
     ARG = parser.add_argument
     ARG('project', action='store', nargs='?', default=None,
         help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
     ARG('-e', '--exe',  metavar='EXE', action='store', default=None,
-        help='specify MFIX executable (full path)')
+        help='specify MFiX executable (full path)')
     ARG('-l', '--log', metavar='LOG', action='store', default='WARN',
         choices=['error', 'warning', 'info', 'debug'],
         help='set logging level (error, warning, info, debug)')

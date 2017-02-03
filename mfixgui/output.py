@@ -870,7 +870,7 @@ class Output(object):
     def setup_output_spx_tab(self):
         ui = self.ui.output
         #SPx (tab)
-        #Note: Technically, MFIX will now permit a user to mix-and-match the SPx output files meaning that
+        #Note: Technically, MFiX will now permit a user to mix-and-match the SPx output files meaning that
         #some can be written and others not. However, this is likely to break the ParaView reader.
         #Therefore, if the “Write binary SPx” checkbox is enabled, output is required for all SPx files.
         #Otherwise, all should remain unspecified to skip writing the SPx files.

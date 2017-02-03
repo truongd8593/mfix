@@ -538,7 +538,7 @@ class SpeciesPopup(QtWidgets.QDialog):
                     self.parent.set_ok_button(False, 'Alias must be unique')
                     return (QValidator.Intermediate, text, pos)
                 if tlower in self.parent.mfix_keywords:
-                    self.parent.set_ok_button(False, '%s is an MFIX keyword'%text)
+                    self.parent.set_ok_button(False, '%s is an MFiX keyword'%text)
                     return (QValidator.Intermediate, text, pos)
                 self.parent.set_ok_button(True)
                 return (QValidator.Acceptable, text, pos)

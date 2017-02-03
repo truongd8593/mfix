@@ -142,7 +142,7 @@ class MainMenu(object):
         l.setSizePolicy(label_policy)
         iw_layout.addWidget(l, 2, 1)
 
-        l = QtWidgets.QLabel('MFIX GUI Version:')
+        l = QtWidgets.QLabel('MFiX GUI Version:')
         l.setSizePolicy(label_policy_m)
         iw_layout.addWidget(l, 3, 0)
 
@@ -289,13 +289,13 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
-        vl = QtWidgets.QLabel('MFIX GUI version: {}'.format(__version__))
+        vl = QtWidgets.QLabel('MFiX GUI version: {}'.format(__version__))
         vl.setStyleSheet('background-color: white;')
         aw_layout.addWidget(vl, 2, 0, 1, -1)
 
         il = QtWidgets.QLabel('''
-        MFIX is an open-source multiphase flow solver and is free to download
-        and use. MFIX provides a suite of models that treat the carrier phase
+        MFiX is an open-source multiphase flow solver and is free to download
+        and use. MFiX provides a suite of models that treat the carrier phase
         (typically the gas phase) and disperse phase (typically the solids
         phase) differently. These models include the Two Fluid Model (TFM), the
         Particle in Cell (PIC) model, the Discrete Element Model (DEM), and the

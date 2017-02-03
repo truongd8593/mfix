@@ -100,11 +100,11 @@ class ModelSetup(object):
         if cb.currentIndex != solver:
             cb.setCurrentIndex(solver)
 
-        solver_name = {SINGLE:"MFIX Single-Phase",
-                       TFM:"MFIX-TFM",
-                       DEM:"MFIX-DEM",
-                       PIC:"MFIX-PIC",
-                       HYBRID:"MFIX-Hybrid"}.get(solver, "MFIX")
+        solver_name = {SINGLE:"MFiX Single-Phase",
+                       TFM:"MFiX-TFM",
+                       DEM:"MFiX-DEM",
+                       PIC:"MFiX-PIC",
+                       HYBRID:"MFiX-Hybrid"}.get(solver, "MFiX")
 
         self.print_internal("Solver: %s" % solver_name)
         self.solver_name = solver_name

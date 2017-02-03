@@ -1,7 +1,7 @@
 """ProjectManager is a subclass of Project,
   intermediating between Gui and Project objects
 
- It handles loading and storing MFIX-GUI projects,
+ It handles loading and storing MFiX-GUI projects,
    using primitives from Project
 
  It handles interaction between gui and Project objects,
@@ -221,7 +221,7 @@ class ProjectManager(Project):
 
     def load_project_file(self, project_file):
         """Loads an MFiX project file updating certain keywords to match expectations
-        of MFIX-GUI:
+        of MFiX-GUI:
            * reject certain types of files (cylindrical coordinates)
            * autoconvert CGS to SI
            * filter out keywords which will be passed on commandline  (issues/149)

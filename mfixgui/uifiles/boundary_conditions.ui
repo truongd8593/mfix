@@ -2454,7 +2454,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>MFIX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</string>
+                      <string>MFiX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</string>
                      </property>
                      <property name="wordWrap">
                       <bool>true</bool>

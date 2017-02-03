@@ -335,7 +335,7 @@ QPushButton:disabled {
                  <bool>false</bool>
                 </property>
                 <property name="toolTip">
-                 <string>Run MFIX</string>
+                 <string>Run MFiX</string>
                 </property>
                 <property name="text">
                  <string>Run</string>
@@ -382,7 +382,7 @@ QPushButton:disabled {
                  <bool>false</bool>
                 </property>
                 <property name="toolTip">
-                 <string>Stop MFIX</string>
+                 <string>Stop MFiX</string>
                 </property>
                 <property name="text">
                  <string>Stop</string>
@@ -433,7 +433,7 @@ QPushButton:disabled {
               <item>
                <widget class="QToolButton" name="toolbutton_compile">
                 <property name="toolTip">
-                 <string>Compile MFIX</string>
+                 <string>Compile MFiX</string>
                 </property>
                 <property name="text">
                  <string>Compile</string>
