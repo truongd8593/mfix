@@ -77,7 +77,7 @@ class PSS(object):
         rp.save.connect(self.pss_add_regions)
         rp.cancel.connect(self.pss_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -92,7 +92,7 @@ class PSS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -211,10 +211,9 @@ class PSS(object):
         for item in (ui.toolbutton_delete,
                      ui.bottom_frame):
             item.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ui.detail_pane):
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -426,8 +425,9 @@ class PSS(object):
             row = 0
             ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
 
         #Tabs group point source parameters for phases. Tabs are unavailable if no input
         #is required from the user.
