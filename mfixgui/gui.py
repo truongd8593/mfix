@@ -1873,6 +1873,36 @@ class MfixGui(QtWidgets.QMainWindow,
                              buttons=['ok'])
         self.handle_main_menu_hide()
 
+    def navigate_all(self):
+        """iterate over all navigation panes, selecting each
+        row of each table, to make sure associated keywords
+        are all set"""
+        tw = self.ui.treewidget_navigation
+        r = tw.invisibleRootItem()
+        for i in range(r.childCount()):
+            c = r.child(i)
+            gui.change_pane(c.text(0))
+            # we should cycle through all the subtabs, too
+            if gui.project.solver == 'DEM':
+                gui.setup_solids_dem_tab()
+            elif gui.project.solver == 'TFM':
+                gui.setup_solids_tfm_tab()
+            elif gui.project.solver == 'PIC':
+                gui.setup_solids_pic_tab()
+
+        for t in (0,2,4,5):
+            gui.setup_bcs_tab(t)
+
+        for w in widget_iter(self):
+            if isinstance(w, QtWidgets.QTableWidget):
+                for r in range(0, w.rowCount()):
+                    w.setCurrentCell(r, 0)
+
+
+
+
+
+
     def save_project(self, filename=None):
         """save project, optionally as a new project.
 
@@ -2053,7 +2083,7 @@ class MfixGui(QtWidgets.QMainWindow,
             # For debugging problems where flag gets set during load
             #import traceback
             #traceback.print_stack()
-            log.info("Project is unsaved")
+            log.info("Project is not saved")
         self.unsaved_flag = True
         self.update_window_title()
         self.set_save_button(enabled=True)
@@ -2350,6 +2380,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.do_open(project_file, runname_pid)
+
+        #self.navigate_all() # leaves GUI in undesired state
 
 
     def do_open(self, project_file, runname_pid):
@@ -2802,24 +2834,7 @@ def main():
     if not args.test:
         qapp.exec_()
     else:  # Run internal test suite
-        tw = gui.ui.treewidget_navigation
-        r = tw.invisibleRootItem()
-        for i in range(r.childCount()):
-            c = r.child(i)
-            #print('test %s' % c.text(0))
-            gui.change_pane(c.text(0))
-            # we should cycle through all the subtabs, too
-            if gui.project.solver == 'DEM':
-                gui.setup_solids_dem_tab()
-            elif gui.project.solver == 'TFM':
-                gui.setup_solids_tfm_tab()
-            elif gui.project.solver == 'PIC':
-                gui.setup_solids_pic_tab()
-
-        for t in (0,2,4,5):
-            #print('test bcs tab %s' % t)
-            gui.setup_bcs_tab(t)
-
+        gui.navigate_all()
         print("That's all folks")
 
 if __name__  == '__main__':
