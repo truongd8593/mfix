@@ -208,7 +208,9 @@ class PSS(object):
             (indices, regions) = table.item(row,0).data(UserRole)
         self.pss_current_indices, self.pss_current_regions = indices, regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
         ui.detail_pane.setEnabled(enabled)
         if not enabled:
             # Clear

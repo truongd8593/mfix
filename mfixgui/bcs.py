@@ -482,8 +482,11 @@ class BCS(object):
         self.bcs_current_indices = indices
         self.bcs_current_regions = regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+                item.setEnabled(enabled)
+
         if not enabled:
             # Clear
             for widget in widget_iter(ui.detail_pane):
