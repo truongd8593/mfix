@@ -10,6 +10,12 @@
     <height>861</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Boundary Conditions</string>
   </property>
@@ -159,6 +165,12 @@
            <height>100</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -234,14 +246,20 @@
          </item>
          <item>
           <widget class="ComboBox" name="combobox_bc_type">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
            <item>
             <property name="text">
-             <string>Mass inflow</string>
+             <string>Mass Inflow</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Pressure inflow</string>
+             <string>Pressure Outflow</string>
             </property>
            </item>
            <item>
@@ -1620,6 +1638,12 @@
                 </property>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_momentum_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Momentum Equations</string>
                   </property>
@@ -1823,6 +1847,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_energy_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Energy Equation</string>
                   </property>
@@ -1963,6 +1993,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_granular_energy_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Granular Energy Equation</string>
                   </property>
@@ -2390,6 +2426,12 @@
                <layout class="QVBoxLayout" name="verticalLayout_8">
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_po_optional">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Optional</string>
                   </property>
