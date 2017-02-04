@@ -168,13 +168,15 @@ class BCS(object):
         row = get_selected_row(ui.tablewidget_regions)
         if not row:
             return
-        new_type = BC_TYPES[idx]
         new_name = BC_NAMES[idx]
+        new_type = BC_TYPES[idx]
         item = QtWidgets.QTableWidgetItem(new_name)
         set_item_noedit(item)
         ui.tablewidget_regions.setItem(row, 1, item)
         for BC in self.bcs_current_indices:
-            self.update_keyword('bc_type', new_type, args=[BC])
+            old_type = self.project.get_value('bc_type', default='', args=[BC])
+            prefix = 'CG_' if old_type.startswith('CG_') else ''
+            self.update_keyword('bc_type', prefix+new_type, args=[BC])
         self.bcs_setup_current_tab()
 
 
