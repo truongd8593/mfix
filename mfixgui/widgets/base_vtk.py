@@ -223,7 +223,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not self.defer_render or force_render:
             self.vtkRenderWindow.Render()
 
-    def screenshot(self, checked, fname=None):
+    def screenshot(self, checked, fname=None, size=[1920, 1080]):
         """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 
@@ -243,12 +243,17 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not fname:
             return
 
-        self.init_offscreen_render()
+        notvisible = not self.isVisible()
+        if notvisible:
+            self.init_offscreen_render(size)
 
         # screenshot code:
         # TODO: get resolution from user
         window_image = vtk.vtkWindowToImageFilter()
-        window_image.SetInput(self.offscreen_vtkrenderwindow)
+        if notvisible:
+            window_image.SetInput(self.offscreen_vtkrenderwindow)
+        else:
+            window_image.SetInput(self.vtkRenderWindow)
         window_image.SetInputBufferTypeToRGBA()
 #        window_image.ReadFrontBufferOff()
         window_image.Update()
@@ -274,6 +279,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.offscreen_vtkrenderer.SetBackground(0.4, 0.4, 0.4)
         self.offscreen_vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
         self.offscreen_vtkrenderwindow = vtk.vtkRenderWindow()
+        self.offscreen_vtkrenderwindow.SetAlphaBitPlanes(1)
         self.offscreen_vtkrenderwindow.SetOffScreenRendering(1)
         self.offscreen_vtkrenderwindow.AddRenderer(self.offscreen_vtkrenderer)
         self.offscreen_vtkrenderwindow.SetSize(*size)
@@ -290,10 +296,6 @@ class BaseVtkWidget(QtWidgets.QWidget):
                 self.offscreen_vtkrenderer.AddActor(new_actor)
 
         self.offscreen_vtkrenderer.ResetCamera()
-
-        camera = self.vtkrenderer.GetActiveCamera()
-        offscreen_camera = self.offscreen_vtkrenderer.GetActiveCamera()
-        offscreen_camera.SetModelTransformMatrix(camera.GetModelTransformMatrix())
 
         self.offscreen_vtkrenderer.Render()
 

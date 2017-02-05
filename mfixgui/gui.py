@@ -75,7 +75,7 @@ from mfixgui.tools.general import (get_icon, widget_iter, get_pixmap,
                            format_key_with_args, to_unicode_from_fs,
                            get_username, convert_string_to_python,
                            to_fs_from_unicode,)
-
+from mfixgui.tools.thumbnail import create_thumbnail
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.keyword_args import keyword_args
 
@@ -2392,6 +2392,9 @@ class MfixGui(QtWidgets.QMainWindow,
         """
         project_dir = os.path.dirname(project_file)
 
+        # make sure the main_menu is closed
+        self.handle_main_menu_hide()
+
         if runname_pid:
             # previously started job may be running, try to reconnect
             log.debug('attempting to connect to running job %s' % runname_pid)
@@ -2690,6 +2693,30 @@ class MfixGui(QtWidgets.QMainWindow,
                                default='cancel')
         return response == 'ok'
 
+    def create_project_thumbnail(self):
+        '''create a thumbnail for the project'''
+
+        path = os.path.join(self.get_project_dir(), '.thumbnail')
+        solver = self.project.solver
+        for s, n in [('single', SINGLE), ('tfm', TFM), ('dem', DEM), ('pic', PIC), ('hybrid', HYBRID)]:
+            if n == solver:
+                break
+        geo = self.project.get_value('cartesian_grid', False)
+        chem = bool(self.project.reactions)
+        # try to get image from vtk
+        temp = os.path.join(self.get_project_dir(), 'temp.png')
+        self.vtkwidget.screenshot(True, temp, size=[600, 600])
+
+        # create the thumbnail
+        create_thumbnail(path, s, geo, chem, temp)
+        if os.path.exists(temp):
+            os.remove(temp)
+
+        # save the model types too!
+        path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
+        with open(path, 'w') as f:
+            f.write(','.join(str(v) for v in [s, geo, chem]))
+
 
 def main():
     global gui
@@ -2720,6 +2747,8 @@ def main():
         help="Enable developer mode.")
     ARG('-t', '--test', action='store_true',
         help="Enable test mode.")
+    ARG('-ct', '--thumbnails', action='store_true',
+        help="Create thumbnails in test mode.")
     ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
@@ -2853,9 +2882,11 @@ def main():
         sys.excepthook = excepthook
         qapp.exec_()
 
-
     else:  # Run internal test suite
         gui.navigate_all()
+        # create thumbnails
+        if args.thumbnails:
+            gui.create_project_thumbnail()
         print("That's all folks")
 
 if __name__  == '__main__':

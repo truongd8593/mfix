@@ -1,6 +1,6 @@
 import os
 import json
-from qtpy import QtCore, QtWidgets
+from qtpy import QtCore, QtWidgets, QtGui
 
 from mfixgui.tools.general import get_icon, get_mfix_home, get_separator, get_pixmap
 from mfixgui.version import __version__
@@ -112,13 +112,72 @@ class MainMenu(object):
         self.tutorial_paths = set_paths('tutorials', 'Tutorials')
         self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
 
-        loc = ['Recent', 'Defaults', 'Tutorials', 'Benchmarks']
+        loc = ['Recent']
         lw.addItems(loc)
         ow_layout.addWidget(lw, 2, 0)
 
         lw = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
         lw.itemDoubleClicked.connect(self.handle_main_menu_open_project)
         ow_layout.addWidget(lw, 2, 1)
+
+        #--- build new ---
+        nw = self.ui.main_menu_open_widget = QtWidgets.QWidget()
+        nw.setObjectName('new')
+        nw.setStyleSheet('QWidget#new{background-color: white;}')
+        st.addWidget(nw)
+        nw_layout = QtWidgets.QGridLayout(nw)
+
+        l = self.ui.main_menu_label = QtWidgets.QLabel('New')
+        l.setStyleSheet('font-size: 24pt;background-color: white;')
+        l.setSizePolicy(label_policy)
+        nw_layout.addWidget(l, 0, 0, 1, -1)
+
+        fw = QtWidgets.QWidget()
+        nw_layout.addWidget(fw, 1, 0, 1, -1)
+        fw_layout = QtWidgets.QHBoxLayout(fw)
+
+        self.main_menu_new_enable_list = [True]*7
+        for i, f in enumerate(['Single', 'TFM', 'PIC', 'DEM', 'Hybrid', 'Cartesian', 'Chemistry']):
+            cb = QtWidgets.QCheckBox()
+            cb.setIcon(get_icon('geometry.png' if f == 'Cartesian' else f.lower()+'.png'))
+            cb.setChecked(True)
+            cb.setToolTip(f)
+            cb.toggled.connect(lambda checked, idx=i: self.main_menu_filter_new(idx, checked))
+            fw_layout.addWidget(cb)
+        hspacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Maximum,)
+        fw_layout.addSpacerItem(hspacer)
+
+        lw = self.ui.main_menu_new_list = QtWidgets.QListWidget()
+        lw.setFrameStyle(lw.NoFrame)
+        lw.setViewMode(QtWidgets.QListWidget.IconMode)
+        lw.setIconSize(QtCore.QSize(128,128))
+        lw.setUniformItemSizes(True)
+        lw.setResizeMode(QtWidgets.QListWidget.Adjust)
+        lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
+        nw_layout.addWidget(lw, 2, 0, 1, -1)
+
+        mfx_dir = get_mfix_home()
+        for dirname, paths in (('defaults', self.default_paths), ('tutorials', self.tutorial_paths), ('benchmarks',self.benchmark_paths)):
+            for path in paths:
+                name = os.path.basename(path)
+                full_path = os.path.join(mfx_dir, dirname, path)
+                thumb_path = os.path.join(full_path, '.thumbnail')
+                info_path = os.path.join(full_path, '.mfixguiinfo')
+                pix = QtGui.QPixmap()
+                img = QtGui.QImage(thumb_path, 'PNG')
+                pix.convertFromImage(img)
+                item = QtWidgets.QListWidgetItem(QtGui.QIcon(pix), name)
+                item.full_path = full_path
+                item.enable_list = [False]*7
+                info = None
+                if os.path.exists(info_path):
+                    with open(info_path) as f:
+                        info = f.readlines()[0].split(',')
+                if info is not None and len(info) == 3:
+                    s = [info[0] == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
+                    s.extend([i.lower() == 'true' for i in info[-2:]])
+                    item.enable_list = s
+                lw.addItem(item)
 
         # --- build info ---
         iw = self.ui.main_menu_info_widget = QtWidgets.QWidget()
@@ -322,21 +381,23 @@ class MainMenu(object):
                 return
             self.clear_unsaved_flag()
 
-        loc_it = self.ui.main_menu_loc_lw.currentItem()
-        loc = str(loc_it.text()).lower()
-        if loc in ['defaults', 'benchmarks', 'tutorials']:
-            mfx_dir = get_mfix_home()
-            text = os.path.join(mfx_dir, loc, str(item.text()), 'mfix.dat')
-            self.open_new_from_template(text)
+        project_path = str(item.text())
+
+        if os.path.exists(project_path):
+            self.open_project(project_path)
         else:
-            project_path = str(item.text())
+            self.message(text="File does not exist: %s" % project_path)
 
-            if os.path.exists(project_path):
-                self.open_project(project_path)
-            else:
-                self.message(text="File does not exist: %s" % project_path)
+    def handle_main_menu_new_proect(self, item):
+        if self.unsaved_flag:
+            confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
+                                   buttons=['yes', 'no'],
+                                   default='no')
+            if confirm != 'yes':
+                return
+            self.clear_unsaved_flag()
 
-        self.handle_main_menu_hide()
+        self.open_new_from_template(os.path.join(item.full_path, 'mfix.dat'))
 
     def handle_main_menu_browse_loc_changes(self, selected, deselected):
         if selected:
@@ -364,34 +425,9 @@ class MainMenu(object):
     def handle_main_menu_selection_changed(self, selected, deselected):
         if selected and selected.indexes():
             text = str(self.ui.main_menu_list.item(selected.indexes()[0].row()).text()).lower()
-
             sw = self.ui.main_menu_stackedwidget
 
-            lw = self.ui.main_menu_loc_lw
-            lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
-            loc = ['Recent']
-            mfx_dir = get_mfix_home()
-
-            lw.clear()
-            lw.addItems(loc)
-
-            if text == 'new':
-                sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
-                lw.clear()
-                lw.addItems(['Defaults', 'Tutorials', 'Benchmarks'])
-                lw.setCurrentRow(0)
-                self.set_file_listwidget('defaults')
-                self.ui.main_menu_label.setText('New')
-                self.ui.main_menu_browse.setVisible(False)
-            elif text == 'open':
-                sw.setCurrentIndex([i for i in range(sw.count()) if 'open' in sw.widget(i).objectName()][0])
-                lw.clear()
-                lw.addItems(['Recent', '', 'Clear recent'])
-                lw.setCurrentRow(0)
-                self.set_file_listwidget('recent')
-                self.ui.main_menu_label.setText('Open')
-                self.ui.main_menu_browse.setVisible(True)
-            elif text == 'save':
+            if text == 'save':
                 self.handle_save()
             elif text == 'save as':
                 self.handle_save_as()
@@ -503,3 +539,10 @@ class MainMenu(object):
             self.ui.tabWidgetGraphics.removeTab(self.ui.tabWidgetGraphics.indexOf(self.ui.api_response))
 
         self.settings.setValue('developer_mode', int(enable))
+
+    def main_menu_filter_new(self, idx, checked):
+        self.main_menu_new_enable_list[idx] = checked
+        for r in range(self.ui.main_menu_new_list.count()):
+            item = self.ui.main_menu_new_list.item(r)
+            hide = any( e==False and i==True for e, i in zip(self.main_menu_new_enable_list, item.enable_list))
+            item.setHidden(hide)
