@@ -256,7 +256,7 @@ class Mesh(object):
         table_dic = OrderedDict()
         d = ['x', 'y', 'z'][index]
 
-        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)], 1):
+        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
             loc = count*val + start
             start = loc
             self.update_mesh_keyword('cp' + d, loc, args=i)
