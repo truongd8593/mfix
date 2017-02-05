@@ -18,6 +18,7 @@ clean:
 	find .. -name \*.stl.cgs -delete
 	find .. -name particle_input.dat.cgs -delete
 	find .. -name geometry.stl.original -delete
+	find .. -name poly.dat.cgs -delete
 
 
 tags:
