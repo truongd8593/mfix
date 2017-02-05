@@ -10,6 +10,12 @@
     <height>861</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <weight>75</weight>
+    <bold>true</bold>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Boundary Conditions</string>
   </property>
@@ -159,6 +165,12 @@
            <height>100</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="selectionMode">
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
@@ -212,6 +224,92 @@
         <number>0</number>
        </property>
        <item row="0" column="0">
+        <layout class="QHBoxLayout" name="hbox_bc_type">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_bc_type">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Type</string>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="ComboBox" name="combobox_bc_type">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <item>
+            <property name="text">
+             <string>Mass Inflow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Pressure Outflow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>No Slip Wall</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Free Slip Wall</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Partial Slip Wall</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Pressure Inflow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Mass Outflow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Cyclic Boundary</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QFrame" name="tab_frame">
@@ -330,7 +428,7 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QScrollArea" name="scrollarea_detail">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
@@ -356,7 +454,7 @@
             <x>0</x>
             <y>0</y>
             <width>335</width>
-            <height>712</height>
+            <height>682</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
@@ -1540,6 +1638,12 @@
                 </property>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_momentum_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Momentum Equations</string>
                   </property>
@@ -1743,6 +1847,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_energy_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Energy Equation</string>
                   </property>
@@ -1883,6 +1993,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_granular_energy_eq">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Granular Energy Equation</string>
                   </property>
@@ -2310,6 +2426,12 @@
                <layout class="QVBoxLayout" name="verticalLayout_8">
                 <item>
                  <widget class="QGroupBox" name="groupbox_solids_po_optional">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Optional</string>
                   </property>
@@ -2347,7 +2469,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>MFIX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</string>
+                      <string>MFiX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</string>
                      </property>
                      <property name="wordWrap">
                       <bool>true</bool>

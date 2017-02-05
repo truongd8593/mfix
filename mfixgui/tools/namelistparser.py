@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MFIX [Multiphase Flow with Interphase eXchanges] is a general-purpose
+MFiX [Multiphase Flow with Interphase eXchanges] is a general-purpose
 computer code developed at the National Energy Technology Laboratory
 [NETL] for describing the hydrodynamics, heat transfer and chemical
 reactions in fluid-solid systems.

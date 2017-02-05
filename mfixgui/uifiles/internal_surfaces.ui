@@ -290,7 +290,7 @@
                 <item row="0" column="2">
                  <widget class="QLabel" name="label_is_pc_1_units">
                   <property name="text">
-                   <string>TBD</string>
+                   <string>m²</string>
                   </property>
                  </widget>
                 </item>
@@ -300,7 +300,7 @@
                 <item row="1" column="2">
                  <widget class="QLabel" name="label_is_pc_2_units">
                   <property name="text">
-                   <string>TBD</string>
+                   <string>/ m</string>
                   </property>
                  </widget>
                 </item>

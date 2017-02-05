@@ -158,6 +158,26 @@ class BCS(object):
         le.dtype = float
         le.value_updated.connect(self.project.submit_change)
 
+        ui.combobox_bc_type.activated.connect(self.change_bc_type)
+
+
+    def change_bc_type(self, idx):
+        if not self.bcs_current_indices:
+            return
+        ui = self.ui.boundary_conditions
+        row = get_selected_row(ui.tablewidget_regions)
+        if not row:
+            return
+        new_name = BC_NAMES[idx]
+        new_type = BC_TYPES[idx]
+        item = QtWidgets.QTableWidgetItem(new_name)
+        set_item_noedit(item)
+        ui.tablewidget_regions.setItem(row, 1, item)
+        for BC in self.bcs_current_indices:
+            old_type = self.project.get_value('bc_type', default='', args=[BC])
+            prefix = 'CG_' if old_type.startswith('CG_') else ''
+            self.update_keyword('bc_type', prefix+new_type, args=[BC])
+        self.bcs_setup_current_tab()
 
 
     def bcs_set_volume_fraction_limit(self):
@@ -233,7 +253,7 @@ class BCS(object):
         rp.save.connect(self.bcs_add_regions)
         rp.cancel.connect(self.bcs_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -248,7 +268,7 @@ class BCS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -259,43 +279,10 @@ class BCS(object):
 
 
     def bcs_add_regions(self):
-        #Select boundary type
-        # Selection is required
-        # Available selections:
-        #  Mass Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MI'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
-        #    Not available for volume regions
-        #  Pressure Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
-        #    Not available for volume regions
-        #  No Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
-        #  Free Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
-        #  Partial Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-        #  Pressure Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PI'
-        #    Not available for volume regions
-        #    Not available for STL regions
-        # Mass Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
-        #    Not available for volume regions
-        #  Cyclic
-        #    No region to select
-        # Specification always available
-
+        # Interactively add regions to define BCs
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
         # (selection logic implemented in regions_popup.py)
-
-        # Interactively add regions to define BCs
         ui = self.ui.boundary_conditions
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
@@ -472,16 +459,31 @@ class BCS(object):
         self.bcs_current_indices = indices
         self.bcs_current_regions = regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+                item.setEnabled(enabled)
+
         if not enabled:
+            #ui.combobox_bc_type.setCurrentIndex(NO_SLIP_WALL) # default type, but do we really need to set this ?  no.
             # Clear
-            for widget in widget_iter(ui.detail_pane):
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
+
         setup_done = False # change_tab calls setup, avoid double-calling
+
         if self.bc_is_cyclic(BC0):
+            # Setup bc_type combobox. Do not allow changing from cyclic to
+            # any other type, since there's no associated region
+
+            cb = ui.combobox_bc_type
+            cb.setCurrentIndex(CYCLIC_BOUNDARY)
+            for i in range(len(BC_TYPES)):
+                get_combobox_item(cb, i).setEnabled(i==CYCLIC_BOUNDARY)
+
+
             for i in range(ui.tab_layout.columnCount()-1): # Skip 'Cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
                 if not item:
@@ -496,6 +498,76 @@ class BCS(object):
                 self.bcs_change_tab(CYCLIC_TAB, None)
                 setup_done = True
         else: # Not cyclic
+            # Setup bc_type combobox
+            cb = ui.combobox_bc_type
+            bc_type = self.project.get_value('bc_type', args=[BC0])
+            cg = bc_type.startswith("CG_")
+            if cg:
+                bc_type = bc_type[3:]
+            if bc_type not in BC_TYPES:
+                self.error("Unknown BC_TYPE %s" % bc_type)
+            else:
+                cb.setCurrentIndex(BC_TYPES.index(bc_type))
+
+            #regions = [self.bcs[r].get('region') for r in self.bcs_current_indices]
+            region_types = [self.bcs_region_dict.get(r,{}).get('type') for r in regions]
+
+            #Available selections:
+            # Mass Inflow
+            # Plane regions set keyword BC_TYPE(#) to 'MI'
+            # STL regions set keyword BC_TYPE(#) to 'CG_MI'
+            # Not available for volume regions
+            item = get_combobox_item(cb, MASS_INFLOW)
+            enabled = ('box' not in region_types)
+            item.setEnabled(enabled)
+
+            # Pressure Outflow
+            # Plane regions set keyword BC_TYPE(#) to 'PO'
+            # STL regions set keyword BC_TYPE(#) to 'CG_PO'
+            # Not available for volume regions
+            item = get_combobox_item(cb, PRESSURE_OUTFLOW)
+            enabled = ('box' not in region_types)
+            item.setEnabled(enabled)
+
+            # No Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+            item = get_combobox_item(cb, NO_SLIP_WALL)
+            item.setEnabled(True)
+
+            # Free Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+            item = get_combobox_item(cb, FREE_SLIP_WALL)
+            item.setEnabled(True)
+
+            # Partial Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+            item = get_combobox_item(cb, PARTIAL_SLIP_WALL)
+            item.setEnabled(True)
+
+            #Pressure Inflow
+            # Plane regions set keyword BC_TYPE(#) to 'PI'
+            # Not available for volume regions
+            # Not available for STL regions
+            item = get_combobox_item(cb, PRESSURE_INFLOW)
+            enabled = not ('box' in region_types or 'STL' in region_types)
+            item.setEnabled(enabled)
+
+            #Mass Outflow
+            # Plane regions set keyword BC_TYPE(#) to 'MO'
+            # STL regions set keyword BC_TYPE(#) to 'CG_MO'
+            # Not available for volume regions
+            item = get_combobox_item(cb, MASS_OUTFLOW)
+            enabled = 'box' not in region_types
+            item.setEnabled(enabled)
+
+            #Cyclic
+            # No region to select
+            item = get_combobox_item(cb, CYCLIC_BOUNDARY)
+            item.setEnabled(False)
+
             ui.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
             if self.fluid_solver_disabled:
                 ui.pushbutton_fluid.setToolTip("Fluid solver disabled")
@@ -792,8 +864,9 @@ class BCS(object):
             row = 0
             ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
 
         # Tabs group boundary condition parameters for phases and additional equations. Tabs are
         # unavailable if no input is required from the user.
@@ -1304,6 +1377,8 @@ class BCS(object):
 
         def make_fluid_species_box(title, species_index):
             box = QGroupBox(title, parent=ui.page_fluid_wall)
+            box.setStyleSheet("QGroupBox { font-weight: bold; } ")
+            box.setFlat(True)
             box_layout = QGridLayout()
             #margins = ui.groupbox_fluid_energy_eq.getContentsMargins()
             box.setFlat(True)
@@ -1326,7 +1401,7 @@ class BCS(object):
             box_layout.addLayout(hbox, 0, 0, 1, 3)
             row = 0
             for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
-                                             ('Constant flux', 'bc_c_x_g', '1/m'),
+                                             ('Constant flux', 'bc_c_x_g', '/m'),
                                              ('Transfer coefficient', 'bc_hw_x_g', None),
                                              ('Free stream mass frac.', 'bc_xw_g', None)):
                 row += 1
@@ -2102,6 +2177,7 @@ class BCS(object):
 
             for i in range(1, nscalar+1):
                 groupbox = QGroupBox('Scalar %s' % i)
+                groupbox.setStyleSheet("QGroupBox { font-weight: bold; } ")
                 groupbox.setFlat(True)
                 # TODO adjust margins/spacing
                 page_layout.addWidget(groupbox)
@@ -3946,7 +4022,6 @@ class BCS(object):
         key = 'flux_g'
         default = 0.0
         val = self.project.get_value(key)
-
         cb = ui.checkbox_flux_g
         cb.setChecked(checked and enabled and (val is not None))
         le = ui.lineedit_keyword_flux_g

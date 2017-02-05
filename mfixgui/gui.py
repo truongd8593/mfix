@@ -562,7 +562,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.enable_input(False)
         # This gets set by guess_solver if we're loading a project, otherwise
         # we need to set the default.  (Do other defaults need to be set here?)
-        self.status_message("No project - open existing MFIX project or create a new one")
+        self.status_message("No project - open existing MFiX project or create a new one")
         self.change_pane("model setup")
 
     def reset(self):
@@ -613,13 +613,15 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def confirm_close(self):
         """before closing, ask user whether to end job and save project"""
+        ### FIXME this is racy, job can end while popup is open
         if self.job_manager.job:
             confirm = self.message(text="Stop running job?",
                                    buttons=['yes', 'no'],
                                    default='no')
             if confirm == 'yes':
                 log.info("Stopping mfix at application exit")
-                self.job_manager.job.stop_mfix()
+                if self.job_manager.job: #XXX still racy but shorter window
+                    self.job_manager.job.stop_mfix()
 
         if self.unsaved_flag:
             confirm = self.message(text="Save project before quitting?",
@@ -800,8 +802,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
-            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFIX run' if text=='Resume'
-                                                   else text+' MFIX')
+            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFiX run' if text=='Resume'
+                                                   else text+' MFiX')
         if enabled is not None:
             b = self.ui.toolbutton_run_mfix
             b.setEnabled(enabled)
@@ -891,7 +893,8 @@ class MfixGui(QtWidgets.QMainWindow,
         #handle buttons in order:  RESET RUN PAUSE STOP
 
         if pending:
-            self.status_message("MFIX starting up, process %s" % self.job_manager.job.mfix_pid)
+            # This message is printed after the app exits, sigh
+            #self.status_message("MFiX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -899,7 +902,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif unpaused:
-            self.status_message("MFIX running, process %s" % self.job_manager.job.mfix_pid)
+            self.status_message("MFiX running, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -907,14 +910,14 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif paused:
-            self.status_message("MFIX paused, process %s" % self.job_manager.job.mfix_pid)
+            self.status_message("MFiX paused, process %s" % self.job_manager.job.mfix_pid)
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
             self.set_stop_button(enabled=True)
 
         elif resumable:
-            self.status_message("Previous MFIX run is resumable.  Reset job to edit model")
+            self.status_message("Previous MFiX run is resumable.  Reset job to edit model")
             self.set_reset_button(enabled=True)
             self.set_run_button(text='Resume', enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
@@ -931,9 +934,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def print_welcome(self):
-        self.print_internal("Welcome to MFIX - https://mfix.netl.doe.gov",
+        self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFIX-GUI version %s" % __version__,
+        self.print_internal("MFiX-GUI version %s" % __version__,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1592,9 +1595,18 @@ class MfixGui(QtWidgets.QMainWindow,
         stripped = line.strip()
         return all(c=='*' for c in stripped) or stripped in boilerplate
 
+    def fix_filename_reference(self, text):
+        """replace misleading references to 'mfix.dat' with correct
+        filename"""
+        project_file = self.get_project_file()
+        basename = "(unknown)" if not project_file else os.path.basename(project_file)
+        text = text.replace('mfix.dat file.', 'input file %s'% project_file)
+        return text
+
     def handle_stdout(self, text):
         """collect stderr from mfix/pymfix process, format and display
         to user.  Note that some errors are printed to stdout"""
+        text = self.fix_filename_reference(text)
         color = 'red' if "Error" in text else None
         lines = text.split('\n')
         # Scanning for errors may trigger popups, etc, so get the output to
@@ -1611,7 +1623,7 @@ class MfixGui(QtWidgets.QMainWindow,
         to user."""
         # Scanning for errors may trigger popups, etc, so get the output to
         # the user first.
-
+        text = self.fix_filename_reference(text)
         lines = text.split('\n')
         for line in lines:
             if self.can_skip(line):
@@ -1771,7 +1783,7 @@ class MfixGui(QtWidgets.QMainWindow,
         except Exception as e:
             self.error('handle_stop: %s' % e)
 
-    def check_save(self, text="Save current project?"):
+    def confirm_save(self, text="Save current project?"):
         if self.unsaved_flag:
             response = self.message(title="Save?",
                                     icon="question",
@@ -1784,7 +1796,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def open_run_dialog(self):
         """Open run popup dialog"""
-        if not self.check_save():
+        if not self.confirm_save():
+            self.message(title="Not starting MFiX",
+                         text="Must save project before running.")
             return
 
         project_dir = self.get_project_dir()
@@ -1815,7 +1829,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
-        self.check_save(text='Save current project before exporting?')
+        self.confirm_save(text='Save current project before exporting?')
         project_file = self.get_project_file()
         if not project_file:
             self.message(text="Nothing to export",
@@ -1859,6 +1873,36 @@ class MfixGui(QtWidgets.QMainWindow,
                              text="Error copying file:\n%s" % e,
                              buttons=['ok'])
         self.handle_main_menu_hide()
+
+    def navigate_all(self):
+        """iterate over all navigation panes, selecting each
+        row of each table, to make sure associated keywords
+        are all set"""
+        tw = self.ui.treewidget_navigation
+        r = tw.invisibleRootItem()
+        for i in range(r.childCount()):
+            c = r.child(i)
+            gui.change_pane(c.text(0))
+            # we should cycle through all the subtabs, too
+            if gui.project.solver == 'DEM':
+                gui.setup_solids_dem_tab()
+            elif gui.project.solver == 'TFM':
+                gui.setup_solids_tfm_tab()
+            elif gui.project.solver == 'PIC':
+                gui.setup_solids_pic_tab()
+
+        for t in (0,2,4,5):
+            gui.setup_bcs_tab(t)
+
+        for w in widget_iter(self):
+            if isinstance(w, QtWidgets.QTableWidget):
+                for r in range(0, w.rowCount()):
+                    w.setCurrentCell(r, 0)
+
+
+
+
+
 
     def save_project(self, filename=None):
         """save project, optionally as a new project.
@@ -2011,7 +2055,7 @@ class MfixGui(QtWidgets.QMainWindow,
     #     self.unimplemented()
 
     def update_window_title(self):
-        title = self.solver_name or 'MFIX'
+        title = self.solver_name or 'MFiX'
         project_file = self.get_project_file()
         if project_file:
             # add entire path to title, abbreviate user dir
@@ -2040,7 +2084,7 @@ class MfixGui(QtWidgets.QMainWindow,
             # For debugging problems where flag gets set during load
             #import traceback
             #traceback.print_stack()
-            log.info("Project is unsaved")
+            log.info("Project is not saved")
         self.unsaved_flag = True
         self.update_window_title()
         self.set_save_button(enabled=True)
@@ -2166,7 +2210,7 @@ class MfixGui(QtWidgets.QMainWindow,
         project_dir = self.get_project_dir()
         project_path = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir,
-            'MFIX Project (*.mfx *.dat);; All Files (*)')
+            'MFiX Project (*.mfx *.dat);; All Files (*)')
         if PYQT5:
             # qt4/qt5 compat hack
             project_path = project_path[0]
@@ -2337,6 +2381,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.do_open(project_file, runname_pid)
+
+        #self.navigate_all() # leaves GUI in undesired state
 
 
     def do_open(self, project_file, runname_pid):
@@ -2650,12 +2696,12 @@ def main():
 
     # handle command-line arguments
     av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
-    parser = argparse.ArgumentParser(description='MFIX GUI')
+    parser = argparse.ArgumentParser(description='MFiX GUI')
     ARG = parser.add_argument
     ARG('project', action='store', nargs='?', default=None,
         help='open mfix.dat or <RUN_NAME>.mfx project file or search a specified directory for project files')
     ARG('-e', '--exe',  metavar='EXE', action='store', default=None,
-        help='specify MFIX executable (full path)')
+        help='specify MFiX executable (full path)')
     ARG('-l', '--log', metavar='LOG', action='store', default='WARN',
         choices=['error', 'warning', 'info', 'debug'],
         help='set logging level (error, warning, info, debug)')
@@ -2786,27 +2832,30 @@ def main():
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+    def excepthook(etype, exc, tb):
+        msg =  ['Please report this error to MFiX-GUI developers\n',
+                'You may continue running, but the application may\n',
+                ' become unstable.  Consider saving your work now.\n',
+                'Please include the following in your bug report:\n']
+        try:
+            msg.append("Error: %s\n" % exc)
+        except: # unlikely
+            msg.append("Error: %s\n" % etype)
+        msg.extend(traceback.format_tb(tb))
+        try:
+            gui.message("Internal error", text=''.join(msg))
+        except Exception as e:
+            print("Internal error")
+            print(''.join(msg))
+            print("Error displaying popup: %s" % e)
+
     if not args.test:
+        sys.excepthook = excepthook
         qapp.exec_()
+
+
     else:  # Run internal test suite
-        tw = gui.ui.treewidget_navigation
-        r = tw.invisibleRootItem()
-        for i in range(r.childCount()):
-            c = r.child(i)
-            #print('test %s' % c.text(0))
-            gui.change_pane(c.text(0))
-            # we should cycle through all the subtabs, too
-            if gui.project.solver == 'DEM':
-                gui.setup_solids_dem_tab()
-            elif gui.project.solver == 'TFM':
-                gui.setup_solids_tfm_tab()
-            elif gui.project.solver == 'PIC':
-                gui.setup_solids_pic_tab()
-
-        for t in (0,2,4,5):
-            #print('test bcs tab %s' % t)
-            gui.setup_bcs_tab(t)
-
+        gui.navigate_all()
         print("That's all folks")
 
 if __name__  == '__main__':

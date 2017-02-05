@@ -34,7 +34,7 @@ SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pa
 
 # Helper functions
 def get_mfix_home():
-    """return the top level MFIX directory"""
+    """return the top level MFiX directory"""
     # TODO:  This is confusing, add comment why both get_mfix_home and
     # SCRIPT_DIRECTORY are needed, and how they differ
     top_level_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))

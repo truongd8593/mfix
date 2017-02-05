@@ -2,7 +2,7 @@
 job.py
 ======
 
-This module defines classes used to facilitate MFIX job management.
+This module defines classes used to facilitate MFiX job management.
 
 :platform: Unix, Windows
 :license: Public Domain
@@ -31,10 +31,10 @@ from mfixgui.tools.general import replace_with_dict
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
 def get_dict_from_pidfile(pid_filename):
-    """Read contents of provided MFIX job pid file and set supported
+    """Read contents of provided MFiX job pid file and set supported
     key-value pairs as dictionary members
 
-    :param pid_file: Name of file that contains MFIX process connection
+    :param pid_file: Name of file that contains MFiX process connection
                      information. This must be an absolute filename.
     """
 
@@ -61,7 +61,7 @@ class PymfixAPI(QNetworkAccessManager):
        use directly.
 
        The PymfixAPI class extends :mod:`QtNetwork.QNetworkAccessManager` and
-       sets the MFIX API connection details transparently in API calls. This
+       sets the MFiX API connection details transparently in API calls. This
        class is used by instances of :mod:`job.Job`
     """
 
@@ -267,7 +267,7 @@ class PymfixAPI(QNetworkAccessManager):
 
 class JobManager(QObject):
 
-    """class for managing and monitoring MFIX jobs"""
+    """class for managing and monitoring MFiX jobs"""
 
     # TODO: state detection:
 
@@ -310,7 +310,7 @@ class JobManager(QObject):
     def try_to_connect(self, pidfile):
         """Create Job object if one does not yet exist.
 
-        :param pidfile: Name of file containing MFIX process and connection
+        :param pidfile: Name of file containing MFiX process and connection
                         details. The file name must be prefixed with an
                         absolute path.
         """
@@ -367,12 +367,12 @@ class JobManager(QObject):
             if count == self.API_ERROR_SOFT_LIMIT:
                 log.error("Soft error limit reached")
             if count < self.API_ERROR_HARD_LIMIT:
-                log.error('MFIX process is unresponsive, retry %s (of %s)' %\
+                log.error('MFiX process is unresponsive, retry %s (of %s)' %\
                     (self.api_error_count, self.API_ERROR_HARD_LIMIT))
                 return
             if self.mfix_proc_is_alive():
-               log.error("MFIX process is running and unresponsive. Giving up.")
-            log.error('MFIX process has died or retry timeout reached')
+               log.error("MFiX process is running and unresponsive. Giving up.")
+            log.error('MFiX process has died or retry timeout reached')
             self.teardown_job()
 
     def record(self,job_id):
@@ -464,10 +464,10 @@ class JobManager(QObject):
                 try:
                     os.kill(int(pid), 0)
                 except:
-                    log.debug("MFIX process %s does not exist", pid)
+                    log.debug("MFiX process %s does not exist", pid)
                     return
                 try:
-                    log.debug('MFIX process %s is still running', pid)
+                    log.debug('MFiX process %s is still running', pid)
                     os.kill(int(pid), signal.SIGKILL)
                 except: pass
             if os.path.exists(pidfile):
@@ -482,10 +482,10 @@ class JobManager(QObject):
 
 class Job(QObject):
 
-    """Class for managing and monitoring an MFIX job. This class contains
-    methods for issuing requests to and handling responses from the MFIX API.
+    """Class for managing and monitoring an MFiX job. This class contains
+    methods for issuing requests to and handling responses from the MFiX API.
 
-    :param pidfile: Name of file containing MFIX API connection information.
+    :param pidfile: Name of file containing MFiX API connection information.
                     This string must contain the absolute path to the file.
     """
 

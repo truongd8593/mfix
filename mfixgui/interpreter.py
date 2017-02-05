@@ -74,7 +74,7 @@ class Interpreter(object):
         self.stderr = Output(err=True)
         self.interp = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
-        banner += 'MFIX-GUI version %s' % __version__ + '\n'
+        banner += 'MFiX-GUI version %s' % __version__ + '\n'
         te.insertPlainText(banner)
 
 

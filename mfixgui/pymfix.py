@@ -3,7 +3,7 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
-from .version import __version__
+from mfixgui.version import __version__
 
 import argparse
 import copy
@@ -107,7 +107,7 @@ def get_run_name():
     return RUN.run_name.tobytes().decode('utf-8').replace('\x00', '').strip()
 
 def main():
-    """The main function starts MFIX on a separate thread, then
+    """The main function starts MFiX on a separate thread, then
        start the Flask server. """
 
     mfix_dat, paused, port, keyword_args = parse_command_line_arguments()
@@ -203,12 +203,12 @@ class Mfix(object):
         self.steady_converged = False
 
     def start(self):
-        " start the MFIX thread"
+        " start the MFiX thread"
         self.thread = threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args})
         self.thread.start()
 
     def run_mfix(self, keyword_args=None):
-        "Main thread for running MFIX itself"
+        "Main thread for running MFiX itself"
 
         RUN.interactive = True
 
@@ -266,7 +266,7 @@ class Mfix(object):
             self.steady_converged = True
 
     def do_step(self):
-        """Run MFIX for a single timestep"""
+        """Run MFiX for a single timestep"""
         start = timer()
         STEP.time_step_init(self.mfix_dat)
         self.time_step_init_walltime = float(timer() - start)
@@ -408,14 +408,14 @@ class Mfix(object):
         " unpause "
         if DEBUG.good_config:
             self.paused = False
-            return 200, "UNPAUSING MFIX"
+            return 200, "UNPAUSING MFiX"
         else:
-            return 200, "UNABLE TO UNPAUSE MFIX"
+            return 200, "UNABLE TO UNPAUSE MFiX"
 
     def pause(self, _):
         " paused "
         self.paused = True
-        return 200, "PAUSING MFIX"
+        return 200, "PAUSING MFiX"
 
     def write_dbg_vt(self, _):
         " call write_dbg_vtu_and_vtp_files "
@@ -431,13 +431,13 @@ class Mfix(object):
         " reinitialize "
         self.mfix_dat = _.get('mfix_dat')
         MAIN.do_reinit(self.mfix_dat)
-        return 200, 'REINITIALIZING MFIX\n'
+        return 200, 'REINITIALIZING MFiX\n'
 
     def exit(self, _):
         " run_mfix thread should exit cleanly "
         self.stopped = True
         self.paused = False
-        return 200, 'EXITING MFIX\n'
+        return 200, 'EXITING MFiX\n'
 
     def step(self, args):
         " take one or more timesteps "
@@ -508,7 +508,7 @@ def reinitialize():
         with tempfile.NamedTemporaryFile(prefix=prefix, delete=DEBUG_FLAG, dir=os.getcwd()) as tmp:
             tmp.write(project_str)
             tmp.flush()
-            # MFIX truncates path to 80 characters, so try to keep it short.
+            # MFiX truncates path to 80 characters, so try to keep it short.
             # split tmp name (defaults to absolute) on cwd, remove leading slash
             relative_name = tmp.name.split(os.getcwdu())[-1].lstrip('/')
             status_code, command_output = \
@@ -597,14 +597,14 @@ def step():
 @FLASK_APP.route('/pause', methods=['PUT'])
 @token_required
 def pause():
-    "pauses MFIX if unpaused"
+    "pauses MFiX if unpaused"
     status_code, command_output = mfix_thread.do_command("PAUSE")
     return api_response(status_code, command_output)
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 @token_required
 def unpause():
-    "unpause MFIX if paused"
+    "unpause MFiX if paused"
     status_code, command_output = mfix_thread.do_command("UNPAUSE")
     return api_response(status_code, command_output)
 
@@ -689,7 +689,7 @@ def check_port(value):
 
 def parse_command_line_arguments():
     "handle command line arguments"
-    parser = argparse.ArgumentParser(description='Welcome to PYMFIX')
+    parser = argparse.ArgumentParser(description='Welcome to PYMFiX')
     parser.add_argument('MFIX_KEY=VALUE', action=DictAction, nargs='*',
                         help='Series of MFIX_KEY=VALUE to over-ride values in the project file. Does not support indices.')
     parser.add_argument('-f', '--file',  metavar='FILE', action='store',

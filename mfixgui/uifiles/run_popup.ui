@@ -293,7 +293,7 @@
              <enum>Qt::TabFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Browse for MFIX executable</string>
+             <string>Browse for MFiX executable</string>
             </property>
             <property name="text">
              <string>Browse</string>
@@ -331,7 +331,7 @@
      </widget>
      <widget class="QWidget" name="local">
       <attribute name="title">
-       <string>Run local MFIX executable</string>
+       <string>Run local MFiX executable</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0" colspan="2">
@@ -358,7 +358,7 @@
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="title">
-          <string>Run local MFIX executable</string>
+          <string>Run local MFiX executable</string>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -420,7 +420,7 @@
              <enum>Qt::TabFocus</enum>
             </property>
             <property name="toolTip">
-             <string>Browse for MFIX executable</string>
+             <string>Browse for MFiX executable</string>
             </property>
             <property name="text">
              <string>Browse</string>
@@ -436,7 +436,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Warning: No MFIX executable selected</string>
+             <string>Warning: No MFiX executable selected</string>
             </property>
            </widget>
           </item>

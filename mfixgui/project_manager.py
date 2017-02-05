@@ -1,7 +1,7 @@
 """ProjectManager is a subclass of Project,
   intermediating between Gui and Project objects
 
- It handles loading and storing MFIX-GUI projects,
+ It handles loading and storing MFiX-GUI projects,
    using primitives from Project
 
  It handles interaction between gui and Project objects,
@@ -221,7 +221,7 @@ class ProjectManager(Project):
 
     def load_project_file(self, project_file):
         """Loads an MFiX project file updating certain keywords to match expectations
-        of MFIX-GUI:
+        of MFiX-GUI:
            * reject certain types of files (cylindrical coordinates)
            * autoconvert CGS to SI
            * filter out keywords which will be passed on commandline  (issues/149)
@@ -259,12 +259,18 @@ class ProjectManager(Project):
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
                     # Don't attempt to convert non-floating point values
-
                     dtype = self.keyword_doc.get(kw.key,{}).get('dtype')
                     if dtype != 'DP':
                         continue
 
                     factor = cgs_to_SI.get(kw.key)
+
+                    #Special case is_pc, per Jeff Dietiker
+                    #is_pc: 0.0001 for 1st index (permeability, Length2),
+                    # 100.0 for 2nd index (Inertial resistance factor, 1/Length)
+                    if kw.key == 'is_pc' and len(kw.args) == 2:
+                        factor = {1: 0.001, 2:100}.get(kw.args[1])
+
                     if factor == 1:
                         continue
                     if factor is not None:
@@ -357,6 +363,8 @@ class ProjectManager(Project):
                             break
                 if user_def:
                     (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                    if tmin == tmax == 0.0:
+                        tmin, tmax = 200.0, 6000.0
                     if mw_g is not None:
                         mol_weight = mw_g # mw_g overrides values in THERMO DATA
                     species_data = {'source': source,
@@ -401,8 +409,8 @@ class ProjectManager(Project):
                         'phase': phase,
                         'mol_weight': mw_g or 0,
                         'h_f': 0.0,
-                        'tmin':  0.0,
-                        'tmax': 0.0,
+                        'tmin':  200.0,
+                        'tmax': 6000.0,
                         'a_low': [0.0]*7,
                         'a_high': [0.0]*7}
 
@@ -465,6 +473,8 @@ class ProjectManager(Project):
                                 break
                     if user_def:
                         (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                        if tmin == tmax == 0.0:
+                            tmin, tmax = 200.0, 6000.0
                         if mw_s is not None:
                             mol_weight = mw_s # mw_s overrides values in THERMO DATA
                         species_data = {'source': source,
@@ -509,8 +519,8 @@ class ProjectManager(Project):
                             'phase': phase,
                             'mol_weight': mw_s or 0,
                             'h_f': 0.0,
-                            'tmin':  0.0,
-                            'tmax': 0.0,
+                            'tmin':  200.0,
+                            'tmax': 6000.0,
                             'a_low': [0.0]*7,
                             'a_high': [0.0]*7}
 
