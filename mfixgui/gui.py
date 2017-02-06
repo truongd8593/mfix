@@ -1304,9 +1304,11 @@ class MfixGui(QtWidgets.QMainWindow,
         text = '_'.join(text.lower().split(' '))
         # Make sure panes are properly initialized as we change to them.  This way
         # we do not have to worry so much about inter-pane state dependencies
-        if text == 'model_setup':
+        if text == 'regions':
+            self.ui.regions.setup_regions()
+        elif text == 'model_setup':
             self.setup_model_setup()
-        if text == 'fluid' : #
+        elif text == 'fluid' : #
             self.setup_fluid()
         elif text == 'solids':
             self.setup_solids()
@@ -1324,6 +1326,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_numerics()
         elif text == 'output':
             self.setup_output()
+
 
     # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,

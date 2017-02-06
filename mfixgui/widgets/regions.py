@@ -353,6 +353,12 @@ class RegionsWidget(QtWidgets.QWidget):
                                   data['filter']):
             widget.updateValue(None, value)
 
+
+    def setup_regions(self):
+        # Set up all widgets in pane to current state
+        self.update_region_parameters()
+
+
     def stl_type_changed(self):
         checked = self.checkbox_region_stl.isChecked()
 
