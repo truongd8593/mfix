@@ -177,6 +177,7 @@ class BCS(object):
             old_type = self.project.get_value('bc_type', default='', args=[BC])
             prefix = 'CG_' if old_type.startswith('CG_') else ''
             self.update_keyword('bc_type', prefix+new_type, args=[BC])
+            # TODO should we unset all other (non-region) BC_ keys for this BC, or can they stay set?
         self.bcs_setup_current_tab()
 
 
