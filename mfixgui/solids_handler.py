@@ -444,7 +444,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
             return
         else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+            model = [None, 'TFM', 'DEM', 'PIC', 'TFM'][self.project.solver]
 
         ui = self.ui.solids
         tw = ui.tablewidget_solids
