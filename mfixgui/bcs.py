@@ -125,16 +125,6 @@ class BCS(object):
                 cb.help_text = 'Select %s %s specification type' % (phase_type, flow_direction)
                 cb.setToolTip(cb.help_text)
 
-        le = ui.lineedit_solids_inflow
-        cb = ui.combobox_solids_inflow_type
-        le.value_updated.connect(self.bcs_handle_flow_input)
-        le.key = 'Unset' # diagnostic
-        le.args = ['BC', 'P']
-        le.dtype = float
-        # Tooltip added dynamically
-        cb.value_updated.connect(self.bcs_handle_flow_type)
-        cb.key = 'solids_inflow'
-
         # Not auto-registered with project manager
         key = 'bc_ep_s'
         for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
