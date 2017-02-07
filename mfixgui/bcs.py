@@ -622,8 +622,8 @@ class BCS(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
