@@ -2865,6 +2865,9 @@ def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def excepthook(etype, exc, tb):
+        if args.developer:
+            traceback.print_exception(etype, exc, tb)
+
         msg =  ['Please report this error to MFiX-GUI developers\n',
                 'You may continue running, but the application may\n',
                 ' become unstable.  Consider saving your work now.\n',
@@ -2874,6 +2877,10 @@ def main():
         except: # unlikely
             msg.append("Error: %s\n" % etype)
         msg.extend(traceback.format_tb(tb))
+
+        for line in msg:
+            log.error(line.strip())
+
         try:
             gui.message("Internal error", text=''.join(msg))
         except Exception as e:
