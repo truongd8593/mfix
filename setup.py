@@ -77,14 +77,16 @@ for s in pymfix_src:
 
 pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
 
+build_dir = path.join('build', 'FCFLAGS_-fPIC_')
+
 mfixsolver = Extension(name = 'mfixsolver',
                        sources = pymfix_src,
                        extra_f90_compile_args = ['-cpp'],
-                       module_dirs = ['build/_/model'],
+                       module_dirs = [ path.join(build_dir, 'model') ],
                        extra_objects = [
                            '.build/read_database.o',
                            '.build/read_namelist.o',
-                           'build/_/build-aux/libmfix.a',
+                           path.join(build_dir, 'build-aux/libmfix.a'),
                        ]
 )
 
