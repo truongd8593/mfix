@@ -201,7 +201,7 @@ class MainMenu(object):
         l.setSizePolicy(label_policy)
         iw_layout.addWidget(l, 2, 1)
 
-        l = QtWidgets.QLabel('MFiX GUI Version:')
+        l = QtWidgets.QLabel('Created with MFiX GUI Version:')
         l.setSizePolicy(label_policy_m)
         iw_layout.addWidget(l, 3, 0)
 
