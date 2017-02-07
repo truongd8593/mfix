@@ -1,17 +1,64 @@
 stages:
-  - build:py2
-  - build:py3
+  - build
+  - build:py
   - deploy
 
 variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
-build:linux:py2:
-  stage: build:py2
+# Build stage builds
+
+build:linux:
+  stage: build
+  script:
+    - ./configure
+    - make
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - build
+    - .build
+  tags:
+    - linux
+
+build:mac:
+  stage: build
+  script:
+    - ./configure
+    - make
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - build
+    - .build
+  tags:
+    - mac
+
+# build:windows:
+#   stage: build
+#   script:
+#     - ./configure
+#     - make
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - build
+#     - .build
+#   tags:
+#     - windows
+
+build:linux:py:
+  stage: build:py
   script:
     - git clean -fdx
-    - env PYTHON_VERSION=2.7 python2.7 setup.py bdist_wheel
+    - python2.7 setup.py bdist_wheel
+    - python3.5 setup.py bdist_wheel
+  dependencies:
+    - build:linux
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -22,11 +69,14 @@ build:linux:py2:
   tags:
     - linux
 
-build:linux:py3:
-  stage: build:py3
+build:mac:py:
+  stage: build:py
   script:
     - git clean -fdx
-    - env PYTHON_VERSION=3.5 python3.5 setup.py bdist_wheel
+    - FC=gfortran-6 CC=gcc-6 python2.7 setup.py bdist_wheel
+    - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
+  dependencies:
+    - build:mac
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -35,7 +85,24 @@ build:linux:py3:
   only:
     - branches
   tags:
-    - linux
+    - mac
+
+# build:windows:py:
+#   stage: build:py
+#   script:
+#     - git clean -fdx
+#     - python2.7 setup.py bdist_wheel
+#   dependencies:
+#     - build:windows
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - dist/mfixgui*.whl
+#   only:
+#     - branches
+#   tags:
+#     - windows
 
 install:linux:py2:
   stage: deploy
@@ -48,33 +115,3 @@ install:linux:py2:
     - branches
   tags:
     - linux
-
-build:mac:py2:
-  stage: build:py2
-  script:
-    - git clean -fdx
-    - env FC=gfortran-6 CC=gcc-6 PYTHON_VERSION=2.7 python2.7 setup.py bdist_wheel
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfixgui*.whl
-  only:
-    - branches
-  tags:
-    - mac
-
-build:mac:py3:
-  stage: build:py3
-  script:
-    - git clean -fdx
-    - env PYTHON_VERSION=2.7 FC=gfortran-6 CC=gcc-6 PYTHON_VERSION=3.5 python3.5 setup.py bdist_wheel
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfixgui*.whl
-  only:
-    - branches
-  tags:
-    - mac
