@@ -518,10 +518,10 @@
                   </property>
                   <layout class="QGridLayout" name="gridLayout_4">
                    <property name="leftMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="topMargin">
-                    <number>10</number>
+                    <number>5</number>
                    </property>
                    <property name="rightMargin">
                     <number>5</number>
@@ -640,10 +640,10 @@
                   </property>
                   <layout class="QGridLayout" name="gridLayout_5">
                    <property name="leftMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="topMargin">
-                    <number>10</number>
+                    <number>5</number>
                    </property>
                    <property name="rightMargin">
                     <number>5</number>
@@ -1091,6 +1091,12 @@
                     <height>16777215</height>
                    </size>
                   </property>
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Composition</string>
                   </property>
@@ -1102,13 +1108,13 @@
                     <number>0</number>
                    </property>
                    <property name="topMargin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <property name="rightMargin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <item row="0" column="0">
                     <widget class="QTableWidget" name="tablewidget_fluid_mass_fraction">
@@ -1123,6 +1129,12 @@
                        <width>16777215</width>
                        <height>35</height>
                       </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
                      </property>
                      <property name="selectionMode">
                       <enum>QAbstractItemView::NoSelection</enum>
@@ -1147,6 +1159,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_inflow_turbulence">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Turbulence</string>
                   </property>
@@ -1168,6 +1186,12 @@
                    </property>
                    <item row="0" column="2">
                     <widget class="QLabel" name="label_bc_k_turb_g_units">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>m²/s²</string>
                      </property>
@@ -1175,16 +1199,35 @@
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_k_turb_g">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>K-ε kinetic energy</string>
                      </property>
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_k_turb_g_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_k_turb_g_args_BC">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                    </widget>
                    </item>
                    <item row="1" column="2">
                     <widget class="QLabel" name="label_bc_e_turb_g_units">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>m²/s³</string>
                      </property>
@@ -1192,13 +1235,26 @@
                    </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_bc_e_turb_g">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>K-ε dissipation</string>
                      </property>
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_e_turb_g_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_e_turb_g_args_BC">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>
@@ -1242,7 +1298,7 @@
                   </property>
                   <layout class="QGridLayout" name="gridLayout_12">
                    <property name="leftMargin">
-                    <number>5</number>
+                    <number>0</number>
                    </property>
                    <property name="topMargin">
                     <number>0</number>
@@ -1275,6 +1331,12 @@
                 </item>
                 <item>
                  <widget class="QGroupBox" name="groupbox_fluid_po_optional">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
                   <property name="title">
                    <string>Optional</string>
                   </property>
@@ -1283,10 +1345,10 @@
                   </property>
                   <layout class="QGridLayout" name="gridLayout_13">
                    <property name="leftMargin">
-                    <number>0</number>
+                    <number>5</number>
                    </property>
                    <property name="topMargin">
-                    <number>10</number>
+                    <number>5</number>
                    </property>
                    <property name="rightMargin">
                     <number>5</number>
@@ -1296,6 +1358,12 @@
                    </property>
                    <item row="1" column="2">
                     <widget class="QLabel" name="label_bc_t_g_2_units">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>K</string>
                      </property>
@@ -1303,19 +1371,45 @@
                    </item>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_bc_t_g_2">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>Temperature</string>
                      </property>
                     </widget>
                    </item>
                    <item row="0" column="1">
-                    <widget class="LineEdit" name="lineedit_bc_ep_g_2_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_bc_ep_g_2_args_BC">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                    </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="LineEdit" name="lineedit_keyword_bc_t_g_2_args_BC"/>
+                    <widget class="LineEdit" name="lineedit_keyword_bc_t_g_2_args_BC">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
+                    </widget>
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_bc_ep_g_2">
+                     <property name="font">
+                      <font>
+                       <weight>50</weight>
+                       <bold>false</bold>
+                      </font>
+                     </property>
                      <property name="text">
                       <string>Volume fraction</string>
                      </property>
