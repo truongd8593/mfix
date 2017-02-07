@@ -12,7 +12,7 @@ variables:
 build:linux:
   stage: build
   script:
-    - ./configure
+    - ./configure_mfix
     - make
   artifacts:
     name: "$CI_BUILD_NAME"
@@ -26,7 +26,7 @@ build:linux:
 build:mac:
   stage: build
   script:
-    - ./configure
+    - ./configure_mfix
     - make
   artifacts:
     name: "$CI_BUILD_NAME"
@@ -40,7 +40,7 @@ build:mac:
 # build:windows:
 #   stage: build
 #   script:
-#     - ./configure
+#     - ./configure_mfix
 #     - make
 #   artifacts:
 #     name: "$CI_BUILD_NAME"
