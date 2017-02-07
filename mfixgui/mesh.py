@@ -264,7 +264,7 @@ class Mesh(object):
             table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
                             'first': 0.0, 'last': 0.0}
         for i in range(len(spacing)):
-            self.update_mesh_keyword('d' + d, None, args=i)
+            self.unset_keyword('d' + d, args=i)
 
         self.mesh_tables[index].set_value(table_dic)
         self.mesh_tables[index].fit_to_contents()
