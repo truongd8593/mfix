@@ -64,12 +64,13 @@ class Interpreter(object):
                     cursor = te.textCursor()
                     cursor.movePosition(cursor.End)
                     char_format = QtGui.QTextCharFormat()
-                    char_format.setForeground(QtGui.QColor('red' if self.err else 'blackv'))
+                    char_format.setForeground(QtGui.QColor('red' if self.err else 'black'))
                     cursor.setCharFormat(char_format)
                     cursor.insertText(text+'\n')
-                    te.ensureCursorVisible()
+                    #te.ensureCursorVisible()
                     #scrollbar = te.verticalScrollBar()  # this scrolls too far
                     #scrollbar.setValue(scrollbar.maximum())
+
         self.stdout = Output()
         self.stderr = Output(err=True)
         self.interp = InteractiveConsole()
