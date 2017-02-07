@@ -382,6 +382,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.parent.set_unsaved_flag()
 
+        shape = row_data['type']
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])

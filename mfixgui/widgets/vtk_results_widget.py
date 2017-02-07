@@ -42,7 +42,7 @@ except:
 from qtpy import QtCore, QtWidgets, QtGui, uic
 from mfixgui.widgets.base_vtk import BaseVtkWidget
 from mfixgui.widgets.base import CustomPopUp
-from mfixgui.tools.general import get_icon
+from mfixgui.tools.general import get_icon, to_unicode_from_fs
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
@@ -81,8 +81,9 @@ def build_time_dict(search_str):
     files = glob.glob(search_str)
     for f in sorted(files):
         time = None
-        with open(f) as xml:
+        with open(f, 'rb') as xml:
             for i, line in enumerate(xml):
+                line = to_unicode_from_fs(line)
                 if '<!-- Time =' in line:
                     try:
                         time = float(line.replace('<!-- Time =', '').replace('sec. -->', ''))
@@ -576,12 +577,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 time = list(self.vtp_files.keys())[index]
                 self.read_vtp(self.vtp_files[time])
                 if n_vtu:
-                    self.read_vtu(self.vtu_files.values()[bisect_left(self.vtu_files.keys(), time)-1])
+                    self.read_vtu(list(self.vtu_files.values())[bisect_left(list(self.vtu_files.keys()), time)-1])
             else:
                 time = list(self.vtu_files.keys())[index]
                 self.read_vtu(self.vtu_files[time])
                 if n_vtp:
-                    self.read_vtp(self.vtp_files.values()[bisect_left(self.vtp_files.keys(), time)-1])
+                    self.read_vtp(list(self.vtp_files.values())[bisect_left(list(self.vtp_files.keys()), time)-1])
             self.render()
 
             if self.checkbox_snap.isChecked():

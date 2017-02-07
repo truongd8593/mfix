@@ -786,6 +786,7 @@ class VtkWidget(BaseVtkWidget):
                     geo_data[k] = GUI.project.get_value(keyword, default= 1.0 if k=='scale' else 0.0)
                     GUI.unset_keyword(keyword)
             if found:
+                geo_data['aboutorigin'] = True
                 GUI.set_unsaved_flag()
 
             # reader
@@ -950,15 +951,17 @@ class VtkWidget(BaseVtkWidget):
         geo_type = geo['type']
         transform = geo['transform']
         transform_filter = geo['transformfilter']
+        about_center_object = not geo.get('aboutorigin', False)
 
         # reset to Identity
         transform.Identity()
         transform.PostMultiply()
 
         # translate to center
-        transform.Translate(-safe_float(geo['centerx']),
-                            -safe_float(geo['centery']),
-                            -safe_float(geo['centerz']))
+        if about_center_object:
+            transform.Translate(-safe_float(geo['centerx']),
+                                -safe_float(geo['centery']),
+                                -safe_float(geo['centerz']))
 
         # scale
         if 'scale' in geo:
@@ -972,9 +975,10 @@ class VtkWidget(BaseVtkWidget):
         transform.RotateWXYZ(safe_float(geo['rotationz']), 0, 0, 1)
 
         # back to position
-        transform.Translate(safe_float(geo['centerx']),
-                            safe_float(geo['centery']),
-                            safe_float(geo['centerz']))
+        if about_center_object:
+            transform.Translate(safe_float(geo['centerx']),
+                                safe_float(geo['centery']),
+                                safe_float(geo['centerz']))
 
         # translate stl files
         if geo_type == 'stl' or geo_type in PARAMETRIC_DICT:
