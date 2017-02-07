@@ -101,7 +101,6 @@ class Numerics(object):
             for j in range(len(DISCRETIZATION_NAMES)):
                 self.add_tooltip(get_combobox_item(cb, j), key, value=j)
             cb.setToolTip(get_combobox_item(cb,0).toolTip())
-
             cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(val, i))
             tw.setCellWidget(row, COL_SCHEME, cb)
 
