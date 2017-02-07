@@ -962,12 +962,14 @@ class BCS(object):
                    else self.bcs_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
 
     def bcs_setup_current_tab(self):
         self.setup_bcs_tab(self.bcs_current_tab)
+
 
     def setup_bcs_tab(self, tab):
         if self.bcs_current_tab == FLUID_TAB:
@@ -2040,23 +2042,25 @@ class BCS(object):
 
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
+        elif bc_type.endswith('I'):
+            self.setup_bcs_scalar_inflow_tab()
+        elif bc_type.endswith('PO'):
+            self.setup_bcs_scalar_po_tab()
+        elif bc_type.endswith('MO'):
+            self.setup_bcs_scalar_mo_tab()
         else:
-            pass # TODO implement
+            self.error("Invalid bc_type %s" % bc_type)
 
 
     def clear_bcs_scalar_tab(self):
+        # returns spacer item, if present, so it can be re-added
         ui = self.ui.boundary_conditions
-        nscalar = self.project.get_value('nscalar', default=0)
-        if nscalar == 0:
-            # Clear contents?
-            return
-
         page = ui.page_scalar
-        layout = page.layout()
+        page_layout = page.layout()
 
         spacer = None
-        for i in range(layout.count()-1, -1, -1):
-            item = layout.itemAt(i)
+        for i in range(page_layout.count()-1, -1, -1):
+            item = page_layout.itemAt(i)
             if not item:
                 continue
             widget = item.widget()
@@ -2072,14 +2076,14 @@ class BCS(object):
             widget.deleteLater()
 
         if spacer:
-            layout.removeItem(spacer)
+            page_layout.removeItem(spacer)
         return spacer
 
+
     def set_bcs_scalar_eq_type(self, eq_type, i):
+        ui = self.ui.boundary_conditions
         if not self.bcs_current_indices:
             return
-
-        ui = self.ui.boundary_conditions
         cb = getattr(ui, 'combobox_scalar_%s_eq_type' % i, None)
         if cb is None:
             self.error("Invalid scalar_eq %s" % i)
@@ -2143,36 +2147,36 @@ class BCS(object):
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
         #Scalar (tab) - Tab only available if scalar equations are solved
         #Note that this tab should only be available if scalar
-        #equations are being solved.  Furthermore, the number of
-        #scalars requiring input (here 2) comes from the number of
-        #scalar equations specified by the user.
+        #equations are being solved.
         if not self.bcs_current_indices:
             return # No selection
         BC0 = self.bcs_current_indices[0]
 
         ui = self.ui.boundary_conditions
         nscalar = self.project.get_value('nscalar', default=0)
-        old_nscalar = getattr(ui, 'nscalar', None)
-        ui.nscalar = nscalar
+        old_nscalar = getattr(ui, 'nscalar_wall', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_wall = nscalar
+        ui.scalar_bc_type = 'WALL'
 
         if nscalar == 0:
-            # Clear contents?
+            # tab is disabled
             return
 
         page = ui.page_scalar
         page_layout = page.layout()
 
         spacer = None
-        if nscalar != old_nscalar:
+        if nscalar != old_nscalar or old_scalar_bc_type != 'WALL':
             spacer = self.clear_bcs_scalar_tab()
 
             for i in range(1, nscalar+1):
                 groupbox = QGroupBox('Scalar %s' % i)
                 groupbox.setStyleSheet("QGroupBox { font-weight: bold; } ")
                 groupbox.setFlat(True)
-                # TODO adjust margins/spacing
-                page_layout.addWidget(groupbox)
+                page_layout.addWidget(groupbox, i-1, 0, 1, -1)
                 groupbox_layout = QGridLayout()
+                groupbox_layout.setContentsMargins(5, 0, 0, 5)
                 groupbox.setLayout(groupbox_layout)
                 #  Select scalar boundary type:
                 hbox = QHBoxLayout()
@@ -2379,7 +2383,6 @@ class BCS(object):
         if resp != 'yes':
             widget.updateValue(key, prev_val)
             return
-
 
         for BC in self.bcs_current_indices:
             self.update_keyword(key, new_val, args=[BC])
@@ -3192,8 +3195,51 @@ class BCS(object):
         #    Define initial scalar value
         # Sets keyword BC_SCALAR(#,#)
         # DEFAULT value of 0.0
-        # TODO implement this tab
-        pass
+        # (almost same as setup_bcs_scalar_po_tab)
+        ui = self.ui.boundary_conditions
+        nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar_inflow', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_inflow = nscalar
+        ui.scalar_bc_type = 'INFLOW'
+
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = None
+        key = 'bc_scalar'
+        if nscalar != old_nscalar or old_scalar_bc_type != 'INFLOW':
+            spacer = self.clear_bcs_scalar_tab()
+            for i in range(1, nscalar+1):
+                label = QLabel('Scalar %s' % i)
+                page_layout.addWidget(label, i, 0)
+                le = LineEdit()
+                le.key = key
+                le.dtype = float
+                le.args = ['BC', i]
+                self.add_tooltip(le, key)
+                self.project.register_widget(le, [key], ['BC', i])
+                setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), le)
+                page_layout.addWidget(le, i, 1)
+
+            if spacer:
+                page_layout.addItem(spacer)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        for i in range(1, nscalar+1):
+            le = getattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), None)
+            if not le:
+                self.error("No widget for %s %s" % (key, i))
+                continue
+            args = [BC0, i]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = 0.0 # Default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC,i])
+            le.updateValue(key, val, args=args)
+
 
 
     def setup_bcs_fluid_po_tab(self):
@@ -3386,8 +3432,49 @@ class BCS(object):
         #Define scalar value
         # Sets keyword BC_SCALAR(#,#)
         # NO DEFAULT value
-        # TODO implement this tab
-        pass
+        ui = self.ui.boundary_conditions
+        nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar_po', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_wall = nscalar
+        ui.scalar_bc_type = 'PO'
+
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = None
+        key = 'bc_scalar'
+        if nscalar != old_nscalar or old_scalar_bc_type != 'PO':
+            spacer = self.clear_bcs_scalar_tab()
+            label = QLabel('<i>MFiX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</i>')
+            label.setWordWrap(True)
+            page_layout.addWidget(label, 0, 0, 1, -1)
+            for i in range(1, nscalar+1):
+                label = QLabel('Scalar %s' % i)
+                page_layout.addWidget(label, i, 0)
+                le = LineEdit()
+                le.key = key
+                le.dtype = float
+                le.args = ['BC', i]
+                self.add_tooltip(le, key)
+                self.project.register_widget(le, [key], ['BC', i])
+                setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), le)
+                page_layout.addWidget(le, i, 1)
+
+            if spacer:
+                page_layout.addItem(spacer)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        for i in range(1, nscalar+1):
+            le = getattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), None)
+            if not le:
+                self.error("No widget for %s %s" % (key, i))
+                continue
+            args = [BC0, i]
+            val = self.project.get_value(key, args=args)
+            if val is not None:
+                le.updateValue(key, val, args=args)
 
 
     def setup_bcs_fluid_mo_tab(self):
@@ -3889,12 +3976,18 @@ class BCS(object):
         key = 'bc_dt_0'
         default = 0.1
         setup_key_widget(key, default, enabled, suffix='_4')
-
         # TODO: No mass fraction table?  No volume fraction?
 
 
     def setup_bcs_scalar_mo_tab(self):
-        pass # ? not mentioned in SRS
+        # ? not mentioned in SRS JORDAN?
+        ui = self.ui.boundary_conditions
+        ui.scalar_bc_type = 'MO'
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = self.clear_bcs_scalar_tab()
+        if spacer:
+            page_layout.addItem(spacer)
 
 
     def set_cyclic_pd(self, val):
