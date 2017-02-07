@@ -1233,8 +1233,9 @@ class Output(object):
                    else self.vtk_current_solid)
         line = ui.line_subtab
         btn_layout = ui.bottom_tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
         # Don't stay on disabled tab TODO
 
