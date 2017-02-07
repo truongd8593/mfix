@@ -54,7 +54,6 @@ build:mac:
 build:linux:py:
   stage: build:py
   script:
-    - git clean -fdx
     - python2.7 setup.py bdist_wheel
     - python3.5 setup.py bdist_wheel
   dependencies:
@@ -72,7 +71,6 @@ build:linux:py:
 build:mac:py:
   stage: build:py
   script:
-    - git clean -fdx
     - FC=gfortran-6 CC=gcc-6 python2.7 setup.py bdist_wheel
     - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
   dependencies:
@@ -90,7 +88,6 @@ build:mac:py:
 # build:windows:py:
 #   stage: build:py
 #   script:
-#     - git clean -fdx
 #     - python2.7 setup.py bdist_wheel
 #   dependencies:
 #     - build:windows
