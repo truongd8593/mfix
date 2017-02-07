@@ -82,6 +82,7 @@ class ICS(object):
 
 
 
+
     def handle_ic_p_star(self, widget, data, args):
         if not self.ics_current_indices:
             return
@@ -527,14 +528,16 @@ class ICS(object):
         # Tabs are unavailable if no input is required from the user.
 
         #Fluid tab - Unavailable if the fluid phase was disabled.
+        setup_done = False
         b = ui.pushbutton_fluid
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
-            if self.ics_current_tab == 0: # Don't stay on disabled tab
-                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR_TAB,None))
+            if self.ics_current_tab == FLUID_TAB: # Don't stay on disabled tab
+                self.ics_change_tab(*self.ics_find_valid_tab())
+                setup_done = True
         font = b.font()
-        font.setBold(self.ics_current_tab == 0)
+        font.setBold(self.ics_current_tab == FLUID_TAB)
         b.setFont(font)
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
@@ -566,8 +569,11 @@ class ICS(object):
                 b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
                 ui.tab_layout.addWidget(b, 0, i)
 
-        # Don't stay on disabled tab TODO
-        # if self.ics_current_tab == 1 and ...
+        # Don't stay on a disabled tab
+        if self.ics_current_tab == SOLIDS_TAB and not self.solids:
+            self.ics_change_tab(*self.ics_find_valid_tab())
+            setup_done = True
+
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
@@ -582,13 +588,16 @@ class ICS(object):
             ui.tab_layout.removeWidget(b)
             ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
 
-        # Don't stay on a disabled tab TODO
-        # if self.ics_current_tab == 2 and nscalar == 0:
-        #
-        self.P = self.ics_current_solid
-        self.ics_saved_solids_names = solids_names
+        # Don't stay on a disabled tab
+        if self.ics_current_tab == SCALAR_TAB and nscalar == 0:
+            self.ics_change_tab(*self.ics_find_valid_tab())
+            setup_done = True
 
-        self.ics_setup_current_tab()
+        self.ics_saved_solids_names = solids_names
+        self.P = self.ics_current_solid
+
+        if not setup_done:
+            self.ics_setup_current_tab()
 
         # make sure underline is in the right place, as # of solids may
         # have changed (lifted from animate_stacked_widget, which we
@@ -600,8 +609,21 @@ class ICS(object):
                    else self.ics_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
+
+
+    def ics_find_valid_tab(self): # Don't stay on a disabled tab
+        if not self.fluid_solver_disabled:
+            return (FLUID_TAB, None)
+        elif self.solids:
+            return (SOLIDS_TAB, 0)
+        elif self.project.get_value('nscalar', default=0) != 0:
+            return (SCALAR_TAB, None)
+        else:
+            self.error("Initial condition:  all tabs disabled!")
+            return (FLUID_TAB, None) # What else to do?
 
 
     def ics_setup_current_tab(self):
