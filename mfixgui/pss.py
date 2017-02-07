@@ -460,7 +460,7 @@ class PSS(object):
                 widget.setParent(None)
                 widget.deleteLater()
             # And make new ones
-            for (i, solid_name) in enumerate(self.solids.keys(),1):
+            for (i, solid_name) in enumerate(solids_names, 1):
                 b = QPushButton(text=solid_name)
                 w = b.fontMetrics().boundingRect(solid_name).width() + 20
                 b.setMaximumWidth(w)
@@ -470,6 +470,7 @@ class PSS(object):
                 b.setFont(font)
                 ui.tab_layout.addWidget(b, 0, i)
                 b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
+        self.pss_saved_solids_names = solids_names
 
         for (i, solid_name) in enumerate(self.solids.keys(),1):
             model = self.project.get_value('solids_model', args=[i])
@@ -484,7 +485,7 @@ class PSS(object):
                 b.setToolTip("Only TFM solids can be defined as point sources""")
 
         # Don't stay on disabled tab TODO
-        # if self.pss_current_tab == 1 and ...
+        # if self.pss_current_tab == SOLIDS_TAB and ...
         change_tab = False
         if change_tab:
             pass
@@ -497,16 +498,12 @@ class PSS(object):
         # don't want to call here)
         tab = self.pss_current_tab
         line_to = (0 if tab==FLUID_TAB
-                   #else len(self.solids)+1 if tab==SCALAR_TAB
-                   #else len(self.solids)+2 if tab==CYCLIC_TAB
                    else self.pss_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
-
-
-
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
 
     def pss_setup_current_tab(self):
@@ -514,8 +511,6 @@ class PSS(object):
             self.setup_pss_fluid_tab()
         elif self.pss_current_tab == SOLIDS_TAB:
             self.setup_pss_solids_tab(self.pss_current_solid)
-        #elif self.pss_current_tab == SCALAR_TAB:
-        #    self.setup_pss_scalar_tab()
 
 
     def update_pss_fluid_mass_fraction_table(self):
@@ -862,8 +857,6 @@ class PSS(object):
 
         PS0 = self.pss_current_indices[0]
 
-
-
         # Generic!
         def get_widget(key):
             for pat in ('lineedit_keyword_%s_args_PS_P',
@@ -947,7 +940,3 @@ class PSS(object):
             self.update_pss_solids_mass_fraction_table()
         else:
             comp.setEnabled(False)
-
-
-    #def setup_pss_scalar_tab():
-        # No scalar tab for point sources
