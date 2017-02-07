@@ -20,7 +20,7 @@ from zipfile import ZipFile
 import numpy as np
 import platform
 import tempfile
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 import subprocess
 import sys
@@ -193,7 +193,7 @@ setup(
 
 # clean tempdir
 try:
-    shutil.rmtree(f90)
+    rmtree(f90)
 except OSError as e:
     if e.errno != errno.ENOENT:
         raise
