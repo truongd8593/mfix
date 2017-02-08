@@ -77,7 +77,7 @@ for s in pymfix_src:
 
 pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
 
-build_dir = path.join('build', 'FCFLAGS_-fPIC_')
+build_dir = path.join('build', 'FCFLAGS_-fPIC_FFLAGS_-fPIC_')
 
 mfixsolver = Extension(name = 'mfixsolver',
                        sources = pymfix_src,
