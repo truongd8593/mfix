@@ -89,9 +89,32 @@ mfixsolver = Extension(name = 'mfixsolver',
                            path.join(build_dir, 'build-aux/libmfix.a'),
                        ]
 )
+class BuildMfixCommand(setuptools.Command):
+    """ builds libmfix (Python version agnostic) """
+    description = "build mfix (Fortran code)"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        returncode = subprocess.call("./configure_mfix FCFLAGS='-fPIC' FFLAGS='-fPIC'", shell=True)
+        if(returncode!=0):
+            raise EnvironmentError("Failed to configure_mfix correctly")
+
+        returncode = subprocess.call("make", shell=True)
+        if(returncode!=0):
+            raise EnvironmentError("Failed to build mfix correctly")
 
 setup(
     name='mfixgui',
+
+    cmdclass={
+        'build_mfix': BuildMfixCommand,
+    },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
