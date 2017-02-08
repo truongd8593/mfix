@@ -210,8 +210,8 @@ class BCS(object):
         key = 'bc_ep_s'
         self.project.submit_change(widget, val, args)
 
-        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, s]))
-                for s in range(1, len(self.solids)+1))
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, S]))
+                for S in range(1, len(self.solids)+1))
         if s > 1.0:
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
@@ -497,14 +497,17 @@ class BCS(object):
         else: # Not cyclic
             # Setup bc_type combobox
             cb = ui.combobox_bc_type
-            bc_type = self.project.get_value('bc_type', args=[BC0])
+            key = 'bc_type'
+            bc_type = self.project.get_value(key, args=[BC0])
             cg = bc_type.startswith("CG_")
             if cg:
                 bc_type = bc_type[3:]
             if bc_type not in BC_TYPES:
                 self.error("Unknown BC_TYPE %s" % bc_type)
-            else:
-                cb.setCurrentIndex(BC_TYPES.index(bc_type))
+                bc_type = 'NSW'
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, bc_type, args=[BC])
+            cb.setCurrentIndex(BC_TYPES.index(bc_type))
 
             #regions = [self.bcs[r].get('region') for r in self.bcs_current_indices]
             region_types = [self.bcs_region_dict.get(r,{}).get('type') for r in regions]
