@@ -7,13 +7,26 @@ variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
-# Build stage builds
+# build:src builds a source distribution tarball
+
+build:src:
+  stage: build
+  script:
+    - python setup.py sdist
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/*.tar.gz
+  tags:
+    - linux
+
+# build stage builds only Fortran code (libmfix.a)
 
 build:linux:
   stage: build
   script:
     - python setup.py build_mfix
-    - make
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -27,7 +40,6 @@ build:mac:
   stage: build
   script:
     - python setup.py build_mfix
-    - make
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -41,7 +53,6 @@ build:windows:
   stage: build
   script:
     - python setup.py build_mfix
-    - make
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -50,6 +61,9 @@ build:windows:
     - .build
   tags:
     - windows
+
+
+# build:py stage builds Python mfixsolver extension and Python wheel packages
 
 build:linux:py:
   stage: build:py
@@ -100,6 +114,9 @@ build:windows:py:
     - branches
   tags:
     - windows
+
+
+# install stage installs wheel package on Joule
 
 install:linux:py:
   stage: deploy
