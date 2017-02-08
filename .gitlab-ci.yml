@@ -37,19 +37,19 @@ build:mac:
   tags:
     - mac
 
-# build:windows:
-#   stage: build
-#   script:
-#     - python setup.py build_mfix
-#     - make
-#   artifacts:
-#     name: "$CI_BUILD_NAME"
-#     expire_in: 1 week
-#     paths:
-#     - build
-#     - .build
-#   tags:
-#     - windows
+build:windows:
+  stage: build
+  script:
+    - python setup.py build_mfix
+    - make
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - build
+    - .build
+  tags:
+    - windows
 
 build:linux:py:
   stage: build:py
@@ -85,21 +85,21 @@ build:mac:py:
   tags:
     - mac
 
-# build:windows:py:
-#   stage: build:py
-#   script:
-#     - python2.7 setup.py bdist_wheel
-#   dependencies:
-#     - build:windows
-#   artifacts:
-#     name: "$CI_BUILD_NAME"
-#     expire_in: 1 week
-#     paths:
-#     - dist/mfixgui*.whl
-#   only:
-#     - branches
-#   tags:
-#     - windows
+build:windows:py:
+  stage: build:py
+  script:
+    - python2.7 setup.py bdist_wheel
+  dependencies:
+    - build:windows
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/mfixgui*.whl
+  only:
+    - branches
+  tags:
+    - windows
 
 install:linux:py:
   stage: deploy
