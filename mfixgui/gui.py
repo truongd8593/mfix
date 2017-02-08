@@ -1603,7 +1603,7 @@ class MfixGui(QtWidgets.QMainWindow,
         filename"""
         project_file = self.get_project_file()
         basename = "(unknown)" if not project_file else os.path.basename(project_file)
-        text = text.replace('mfix.dat file.', 'input file %s'% project_file)
+        text = text.replace('mfix.dat', project_file)
         return text
 
     def handle_stdout(self, text):
