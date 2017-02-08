@@ -97,7 +97,7 @@ class BuildMfixCommand(setuptools.Command):
     def run(self):
 
         # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = '''bash -c "configure_mfix FCFLAGS='-fPIC' FFLAGS='-fPIC'"'''
+        cmd = '''bash -c "./configure_mfix FCFLAGS='-fPIC' FFLAGS='-fPIC'"'''
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
