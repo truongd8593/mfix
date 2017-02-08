@@ -136,7 +136,7 @@ class RunPopup(QDialog):
     def init_templates(self):
 
         # look for templates in mfixgui/queue_templates
-        search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
+        search_p = os.path.join(get_mfix_home(), 'queue_templates')
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
             for f in files:

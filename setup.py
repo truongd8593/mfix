@@ -35,7 +35,7 @@ writeFiles(buildKeywordDoc(MODEL_DIR))
 
 data_files = []
 
-for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests']:
+for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
     for root, dirs, files in walk(subdir):
         dir_files = []
         for f in files:
@@ -188,11 +188,11 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'mfixgui.widgets': ['burcat.pickle'],
-        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
-        'mfixgui.icons': ['*.png'],
-        'mfixgui.uifiles': ['*'],
         'mfixgui.colormaps': ['*'],
+        'mfixgui.icons': ['*.png'],
+        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
+        'mfixgui.uifiles': ['*'],
+        'mfixgui.widgets': ['burcat.pickle'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
