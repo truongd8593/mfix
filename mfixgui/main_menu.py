@@ -112,7 +112,7 @@ class MainMenu(object):
         self.tutorial_paths = set_paths('tutorials', 'Tutorials')
         self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
 
-        loc = ['Recent']
+        loc = ['Recent', '', 'Clear Recent']
         lw.addItems(loc)
         ow_layout.addWidget(lw, 2, 0)
 
