@@ -156,7 +156,7 @@ class BCS(object):
             return
         ui = self.ui.boundary_conditions
         row = get_selected_row(ui.tablewidget_regions)
-        if not row:
+        if row is None:
             return
         new_name = BC_NAMES[idx]
         new_type = BC_TYPES[idx]
