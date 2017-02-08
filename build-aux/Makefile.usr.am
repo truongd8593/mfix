@@ -175,19 +175,26 @@ pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 mfixsolver-f2pywrappers.o: mfixsolver-f2pywrappers.f
 	$(F77COMPILE) -c -o $@ $<
 
-# default filename (override to mfixsolver.pyd on Windows)
-MFIXSOLVER ?= mfixsolver.so
-
-mfixsolver: $(MFIXSOLVER)
-
-$(MFIXSOLVER): mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfix_LDADD)
-	$(CC) -o $@ -shared $^ -lgfortran $(LIBS)
+mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfix_LDADD)
+	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
 
 F2PY_FILES = \
 	mfixsolver-f2pywrappers.f \
 	mfixsolver-f2pywrappers2.f90 \
 	mfixsolvermodule.o \
 	fortranobject.o
+
+$(F2PY_FILES):
+	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
+	$(PYTHON_BIN) -c 'import os; \
+	import numpy; \
+	from numpy.f2py import f2py2e; \
+	r=f2py2e.run_main(["--lower", "-m", "mfixsolver"] + "$(pymfix_src)".split(" ")); \
+	m=r["mfixsolver"]; \
+	h=os.path.dirname(m["h"][0]); \
+	h2=numpy.get_include(); \
+	cs=m["csrc"]; \
+	[os.system("$(CC) -g -O2 -fPIC $(PYTHON_CPPFLAGS) -I%s -I%s -c %s -o %s" % (h,h2,c,os.path.basename(c).replace(".c",".o"))) for c in cs]'
 
 endif
 
