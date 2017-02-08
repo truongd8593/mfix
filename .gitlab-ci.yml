@@ -105,7 +105,7 @@ install:linux:py:
   stage: deploy
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfixgui || true
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*py2*.whl --prefix=${PYPATH}
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*27*.whl --prefix=${PYPATH}
   dependencies:
     - build:linux:py
   only:
