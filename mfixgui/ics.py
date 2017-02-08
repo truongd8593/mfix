@@ -78,8 +78,7 @@ class ICS(object):
         widget.args = ['IC']
         widget.dtype = float
         widget.value_updated.connect(self.handle_ic_p_star)
-
-
+        self.add_tooltip(widget, key)
 
 
 
@@ -135,8 +134,8 @@ class ICS(object):
         key = 'ic_ep_s'
         self.project.submit_change(widget, val, args)
 
-        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
-                for s in range(1, len(self.solids)+1))
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, S]))
+                for S in range(1, len(self.solids)+1))
         if s > 1.0:
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
@@ -1077,10 +1076,11 @@ class ICS(object):
         # Some input decks may or may not contain IC_EP_S keyword:
         #  Volume fraction is specified using the solids bulk density
         #    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
-        #    Solids density IC_ROs is determined by the solids density model
-        # IC_ROs(#) = RO_S0(#)
-        # IC_ROs(#) = -- FINISH LATER -
-        # (above section of spec NOT IMPLEMENTED)
+
+        #   Solids density IC_ROs is determined by the solids density model. For
+        #constant solids density, use RO_S0. For variable solids density, see
+        #“Calculating Variable Solids Density” section in the appendix.
+
 
         #  Volume fraction may be inferred from IC_EP_G
         #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
@@ -1122,6 +1122,12 @@ class ICS(object):
         key = 'ic_p_star'
         default = 0.0
         setup_key_widget(key, default, enabled)
+        le = ui.lineedit_ic_p_star_args_IC
+        self.add_tooltip(le, key)
+        if not enabled:
+            tooltip = le.toolTip()
+            tooltip += '<br>Only enabled for TFM solids'
+            le.setToolTip(tooltip)
 
         #Define granular temperature
         # Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
@@ -1150,6 +1156,12 @@ class ICS(object):
         key = 'ic_pic_const_statwt'
         default = 10.0
         setup_key_widget(key, default, enabled)
+        le = ui.lineedit_keyword_ic_pic_const_statwt_args_IC_P
+        self.add_tooltip(le, key)
+        if not enabled:
+            tooltip = le.toolTip()
+            tooltip += '<br>Only enabled for PIC solids'
+            le.setToolTip(tooltip)
 
         #Select species and set mass fractions (table format)
         # Specification always available

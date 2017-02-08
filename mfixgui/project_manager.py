@@ -567,6 +567,17 @@ class ProjectManager(Project):
                         val = round(1.0-bc_ep_g, 10)
                         self.gui.update_keyword('bc_ep_s', val, args=[BC,1])
 
+            for IC in range(1, len(self.ics)+1):
+                ic_ep_g = self.get_value('ic_ep_g', args=[IC,s])
+                for s in range(1, len(self.solids)+1):
+                    ic_ep_s = self.get_value('ic_ep_s', args=[IC,s])
+
+            for BC in range(1, len(self.bcs)+1):
+                bc_ep_g = self.get_value('bc_ep_g', args=[IC,s])
+                for s in range(1, len(self.solids)+1):
+                    bc_ep_s = self.get_value('bc_ep_s', args=[BC,s])
+
+
             # issues/149 - don't save nodes[ijk] in file, pass on cmdline
             skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
 
