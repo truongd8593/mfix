@@ -184,26 +184,32 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.toolbutton_reset = QtWidgets.QToolButton()
         self.toolbutton_reset.clicked.connect(self.reset_view)
         self.toolbutton_reset.setIcon(get_icon('overscan.png'))
+        self.toolbutton_reset.setToolTip('Reset View')
 
         self.toolbutton_perspective = QtWidgets.QToolButton()
         self.toolbutton_perspective.clicked.connect(lambda ignore: self.perspective())
         self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
+        self.toolbutton_perspective.setToolTip('Perspective')
 
         self.toolbutton_view_xy = QtWidgets.QToolButton()
         self.toolbutton_view_xy.clicked.connect(lambda: self.set_view('xy'))
         self.toolbutton_view_xy.setIcon(get_icon('xy.png'))
+        self.toolbutton_view_xy.setToolTip('XY View')
 
         self.toolbutton_view_yz = QtWidgets.QToolButton()
         self.toolbutton_view_yz.clicked.connect(lambda: self.set_view('yz'))
         self.toolbutton_view_yz.setIcon(get_icon('yz.png'))
+        self.toolbutton_view_yz.setToolTip('YZ View')
 
         self.toolbutton_view_xz = QtWidgets.QToolButton()
         self.toolbutton_view_xz.clicked.connect(lambda: self.set_view('xz'))
         self.toolbutton_view_xz.setIcon(get_icon('xz.png'))
+        self.toolbutton_view_xz.setToolTip('XZ View')
 
         self.toolbutton_screenshot = QtWidgets.QToolButton()
         self.toolbutton_screenshot.clicked.connect(self.screenshot)
         self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
+        self.toolbutton_screenshot.setToolTip('Save scene as image')
 
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,

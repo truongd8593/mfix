@@ -320,6 +320,7 @@ class VtkWidget(BaseVtkWidget):
         self.init_base_toolbar()
 
         self.toolbutton_visible = QtWidgets.QToolButton(self)
+        self.toolbutton_visible.setToolTip('Change Visibility')
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
 
         self.visible_menu = CustomPopUp(parent=self, button=self.toolbutton_visible)
