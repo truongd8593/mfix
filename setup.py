@@ -5,35 +5,29 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-# Always prefer setuptools over distutils
-from codecs import open
-from distutils.command.build_ext import build_ext
-from glob import glob
+import errno
+import platform
+import shutil
+import subprocess
+import tempfile
+import zipfile
+
+import codecs
 from os import makedirs, path, walk
-from numpy.f2py import f2py2e
 
 # must import setuptools before numpy.distutils
 import setuptools
 from numpy.distutils.core import Extension, setup
 
-from zipfile import ZipFile
-import numpy as np
-import platform
-import tempfile
-from shutil import copyfile, rmtree
-
-import subprocess
-import sys
-
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
-exec(open('mfixgui/version.py').read())
+exec(codecs.open('mfixgui/version.py').read())
 
 HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
 # Get the long description from the README file
-with open(path.join(HERE, 'README'), encoding='utf-8') as f:
+with codecs.open(path.join(HERE, 'README'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 MODEL_DIR = path.join(HERE, 'model')
@@ -42,14 +36,14 @@ writeFiles(buildKeywordDoc(MODEL_DIR))
 data_files = []
 
 for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests']:
-    for root,dirs,files in walk(subdir):
+    for root, dirs, files in walk(subdir):
         dir_files = []
         for f in files:
-            dir_files.append(path.join(root,f))
+            dir_files.append(path.join(root, f))
         data_files.append((path.join('share', NAME, root), dir_files))
 
 if platform.system() == 'Windows':
-    zf = ZipFile(os.path.join('build-aux','Win64','FORTRAN_DLLS.zip'))
+    zf = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
     data_files += zf.namelist()
     zf.extractall()
 
@@ -73,7 +67,7 @@ f90 = tempfile.mkdtemp()
 makedirs(path.join(f90, 'dmp_modules'))
 makedirs(path.join(f90, 'des'))
 for s in pymfix_src:
-    copyfile(path.join('model', s), path.join(f90, s)+'90')
+    shutil.copyfile(path.join('model', s), path.join(f90, s)+'90')
 
 pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
 
@@ -218,7 +212,7 @@ setup(
 
 # clean tempdir
 try:
-    rmtree(f90)
-except OSError as e:
-    if e.errno != errno.ENOENT:
+    shutil.rmtree(f90)
+except OSError as ex:
+    if ex.errno != errno.ENOENT:
         raise
