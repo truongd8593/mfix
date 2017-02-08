@@ -233,8 +233,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>347</width>
-            <height>327</height>
+            <width>352</width>
+            <height>313</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -273,39 +273,96 @@
                 <property name="bottomMargin">
                  <number>5</number>
                 </property>
-                <item row="1" column="0">
+                <item row="2" column="0">
                  <widget class="QLabel" name="label_is_pc_2">
                   <property name="text">
                    <string>Internal resistance cofficient</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="0">
+                <item row="1" column="0">
                  <widget class="QLabel" name="label_is_pc_1">
                   <property name="text">
                    <string>Fluid permeability</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2">
+                <item row="1" column="2">
                  <widget class="QLabel" name="label_is_pc_1_units">
                   <property name="text">
                    <string>m²</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
+                <item row="1" column="1">
                  <widget class="LineEdit" name="lineedit_keyword_is_pc_args_IS_1"/>
                 </item>
-                <item row="1" column="2">
+                <item row="2" column="2">
                  <widget class="QLabel" name="label_is_pc_2_units">
                   <property name="text">
                    <string>/ m</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
+                <item row="2" column="1">
                  <widget class="LineEdit" name="lineedit_keyword_is_pc_args_IS_2"/>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_is_type">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Type</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="ComboBox" name="combobox_is_type">
+                  <item>
+                   <property name="text">
+                    <string>Impermeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>X-Axis Impermeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Y-Axis Impermeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Z-Axis Impermeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Semi-permeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>X-Axis semi-permeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Y-Axis semi-permeable</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Z-Axis semi-permeable</string>
+                   </property>
+                  </item>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -369,6 +426,11 @@
   <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>

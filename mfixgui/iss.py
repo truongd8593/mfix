@@ -10,6 +10,7 @@ from mfixgui.constants import *
 from mfixgui.widgets.base import LineEdit
 
 from mfixgui.tools.general import (set_item_noedit, get_selected_row,
+                                   get_combobox_item,
                                    widget_iter, safe_float)
 
 from mfixgui.tools.keyword_args import mkargs
@@ -40,36 +41,39 @@ class ISS(object):
 
         ui.tablewidget_regions.itemSelectionChanged.connect(self.handle_iss_region_selection)
 
+        ui.combobox_is_type.activated.connect(self.change_is_type)
+
+
+    def change_is_type(self, idx):
+        if not self.iss_current_indices:
+            return
+        ui = self.ui.internal_surfaces
+        row = get_selected_row(ui.tablewidget_regions)
+        if row is None:
+            return
+        new_name = IS_NAMES[idx]
+        new_type = IS_TYPES[idx]
+        item = QtWidgets.QTableWidgetItem(new_name)
+        set_item_noedit(item)
+        ui.tablewidget_regions.setItem(row, 1, item)
+        for IS in self.iss_current_indices:
+            old_type = self.project.get_value('is_type', default='', args=[IS])
+            self.update_keyword('is_type', new_type, args=[IS])
+            for kw in list(self.project.keywordItems()):
+                if kw.key.startswith('is_') and kw.args and kw.args[0]==IS:
+                    if kw.key not in ('is_type',
+                                      'is_x_e', 'is_x_w',
+                                      'is_y_s', 'is_y_n',
+                                      'is_z_b', 'is_z_t'):
+                        self.unset_keyword(kw.key, args=kw.args)
+        self.iss_setup_current_tab()
+
+
+
 
     def iss_show_regions_popup(self):
         #Select internal surface type
         # Selection is required
-        # Available selections:
-        #  Impermeable
-        #    Selection only available for plane regions
-        #    set keyword IS_TYPE(#) to 'IMPERMEABLE'
-        #  X-Axis Impermeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'X_IMPERMEABLE'
-        #  Y-Axis Impermeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
-        #  z-Axis Impermeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
-        #  Semi-permeable
-        #    Selection only available for plane regions
-        #    set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
-        #  X-Axis semi-permeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'X_SEMIPERMEABLE'
-        #  Y-Axis semi-permeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'Y_SEMIPERMEABLE'
-        #  Z-Axis semi-permeable
-        #    Selection only available for volume regions
-        #    set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
-        # DEFAULT - Impermeable
         # (selection logic implemented in regions_popup.py)
 
         ui = self.ui.internal_surfaces
@@ -242,6 +246,49 @@ class ISS(object):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
+        IS0 = self.iss_current_indices[0]
+        cb = ui.combobox_is_type
+        key = 'is_type'
+        is_type = self.project.get_value(key, args=[IS0])
+        if is_type not in IS_TYPES:
+            self.error("Unknown IS_TYPE %s" % is_type)
+            is_type = 'IMPERMEABLE'
+            for IS in self.iss_current_indices:
+                self.update_keyword(key, is_type, args=[IS])
+        cb.setCurrentIndex(IS_TYPES.index(is_type))
+
+        # Available selections:
+        #  Impermeable
+        #    Selection only available for plane regions
+        #    set keyword IS_TYPE(#) to 'IMPERMEABLE'
+        #  X-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'X_IMPERMEABLE'
+        #  Y-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Y_IMPERMEABLE'
+        #  z-Axis Impermeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Z_IMPERMEABLE'
+        #  Semi-permeable
+        #    Selection only available for plane regions
+        #    set keyword IS_TYPE(#) to 'SEMIPERMEABLE'
+        #  X-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'X_SEMIPERMEABLE'
+        #  Y-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Y_SEMIPERMEABLE'
+        #  Z-Axis semi-permeable
+        #    Selection only available for volume regions
+        #    set keyword IS_TYPE(#) to 'Z_SEMIPERMEABLE'
+        # DEFAULT - Impermeable
+
+        plane = is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
+        vol = not plane
+        for (i, enable) in enumerate((plane,vol,vol,vol,plane,vol,vol,vol)):
+            get_combobox_item(cb, i).setEnabled(enable)
+
         self.setup_iss() # reinitialize all widgets in current tab
         # Scroll to top
         ui.scrollarea_detail.ensureVisible(0, 0)
@@ -291,7 +338,7 @@ class ISS(object):
             disabled = False
         else:
             # If there are no solids, (no scalar equations), and the fluid solver is disabled,
-            # then we have no input tabs on the BCs pane, so disable it completely
+            # then we have no input tabs on the ISs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
                            if not self.check_region_in_use(name)
