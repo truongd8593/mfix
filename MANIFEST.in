@@ -1,0 +1,10 @@
+include README CHANGES Bug_Fixes DISCLAIMER NOTICE mfix_user_guide.pdf
+recursive-include benchmarks *
+recursive-include build-aux *
+recursive-include defaults *
+recursive-include doc *
+recursive-include legacy_tests *
+recursive-include model *
+recursive-include post_mfix *
+recursive-include tests *
+recursive-include tutorials *

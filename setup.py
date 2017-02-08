@@ -5,27 +5,29 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-# Always prefer setuptools over distutils
-from codecs import open
-from distutils.command.build_ext import build_ext
-from glob import glob
-from os import makedirs, path, walk
-from shutil import copyfile
-
+import errno
+import platform
+import shutil
 import subprocess
-import sys
+import tempfile
+import zipfile
 
-from setuptools import setup, Extension
+import codecs
+from os import makedirs, path, walk
+
+# must import setuptools before numpy.distutils
+import setuptools
+from numpy.distutils.core import Extension, setup
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
-exec(open('mfixgui/version.py').read())
+exec(codecs.open('mfixgui/version.py').read())
 
 HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
 # Get the long description from the README file
-with open(path.join(HERE, 'README'), encoding='utf-8') as f:
+with codecs.open(path.join(HERE, 'README'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 MODEL_DIR = path.join(HERE, 'model')
@@ -34,48 +36,84 @@ writeFiles(buildKeywordDoc(MODEL_DIR))
 data_files = []
 
 for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests']:
-    for root,dirs,files in walk(subdir):
+    for root, dirs, files in walk(subdir):
         dir_files = []
         for f in files:
-            dir_files.append(path.join(root,f))
+            dir_files.append(path.join(root, f))
         data_files.append((path.join('share', NAME, root), dir_files))
 
+if platform.system() == 'Windows':
+    zf = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
+    data_files += zf.namelist()
+    zf.extractall()
 
-class MfixBuildExt(build_ext):
-    """Override build_extension to copy the shared library file"""
+pymfix_src = [
+    'param_mod.f',
+    'param1_mod.f',
+    'dmp_modules/compar_mod.f',
+    'dmp_modules/debug_mod.f',
+    'dmp_modules/parallel_mpi_mod.f',
+    'fldvar_mod.f',
+    'des/discretelement_mod.f',
+    'des/des_time_march.f',
+    'iterate.f',
+    'residual_mod.f',
+    'time_step.f',
+    'main.f',
+    'run_mod.f',
+]
 
-    def build_extension(self, ext):
-        ''' Copies the already-compiled pyd
-        '''
-        # if platform.system() == 'Windows':
+f90 = tempfile.mkdtemp()
+makedirs(path.join(f90, 'dmp_modules'))
+makedirs(path.join(f90, 'des'))
+for s in pymfix_src:
+    shutil.copyfile(path.join('model', s), path.join(f90, s)+'90')
 
-        returncode = subprocess.call("./configure_mfix PYTHON_BIN=%s --python" % sys.executable, shell=True)
-        if(returncode!=0):
+pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
+
+
+configure_args = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
+build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_'))
+
+mfixsolver = Extension(name = 'mfixsolver',
+                       sources = pymfix_src,
+                       extra_f90_compile_args = ['-cpp'],
+                       module_dirs = [ path.join(build_dir, 'model') ],
+                       extra_objects = [
+                           '.build/read_database.o',
+                           '.build/read_namelist.o',
+                           path.join(build_dir, 'build-aux/libmfix.a'),
+                       ]
+)
+class BuildMfixCommand(setuptools.Command):
+    """ builds libmfix (Python version agnostic) """
+    description = "build mfix (Fortran code)"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+
+        # should work Linux/Mac/Windows as long as bash is in PATH
+        cmd = 'bash ./configure_mfix %s' % configure_args
+        returncode = subprocess.call(cmd, shell=True)
+        if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
 
-        returncode = subprocess.call("make mfixsolver.so", shell=True)
-        if(returncode!=0):
-            raise EnvironmentError("Failed to build mfixsolver correctly")
-
-        # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
-        # ./configure_mfix --python --host=x86_64-w64-mingw32
-
-        extpath = path.dirname(self.get_ext_fullpath(ext.name))
-        if not path.exists(extpath):
-            makedirs(extpath)
-
-        mfixsolver_sharedlib = [p for p in glob('mfixsolver*.so') if path.isfile(p)]
-        if not mfixsolver_sharedlib:
-            raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
-        mfixsolver_sharedlib = mfixsolver_sharedlib[0]
-        src = path.join(HERE, mfixsolver_sharedlib)
-        dest = self.get_ext_fullpath(ext.name)
-        if src != dest:
-            copyfile(src, dest)
+        returncode = subprocess.call("make", shell=True)
+        if returncode != 0:
+            raise EnvironmentError("Failed to build mfix correctly")
 
 setup(
     name='mfixgui',
-    cmdclass={'build_ext': MfixBuildExt},
+
+    cmdclass={
+        'build_mfix': BuildMfixCommand,
+    },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -114,12 +152,10 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 
     # You can just specify the packages manually here if your project is
@@ -146,7 +182,7 @@ setup(
         'qtpy',
     ],
 
-    ext_modules=[Extension('mfixsolver', sources=[])],
+    ext_modules=[mfixsolver,],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -178,3 +214,10 @@ setup(
         ],
     },
 )
+
+# clean tempdir
+try:
+    shutil.rmtree(f90)
+except OSError as ex:
+    if ex.errno != errno.ENOENT:
+        raise
