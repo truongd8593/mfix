@@ -71,7 +71,9 @@ for s in pymfix_src:
 
 pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
 
-build_dir = path.join('build', 'FCFLAGS_-fPIC_FFLAGS_-fPIC_')
+
+configure_args = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
+build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_'))
 
 mfixsolver = Extension(name = 'mfixsolver',
                        sources = pymfix_src,
@@ -97,7 +99,7 @@ class BuildMfixCommand(setuptools.Command):
     def run(self):
 
         # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = '''bash -c "./configure_mfix FCFLAGS='-fPIC' FFLAGS='-fPIC'"'''
+        cmd = 'bash ./configure_mfix %s' % configure_args
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
