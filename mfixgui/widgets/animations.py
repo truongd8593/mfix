@@ -143,6 +143,7 @@ class StatusIndicator(BusyIndicator):
                 p[2] *= 4
         self.progress = percent
         self.progress_advancing = True
+        self.start()
 
     def pause_progress(self):
         # randomly set x velocity sign
