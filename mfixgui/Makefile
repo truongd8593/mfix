@@ -15,10 +15,10 @@ clean:
 	rm -rf doc/generated
 	rm -rf __pycache__ */__pycache__
 	find . -name \*.pyc -delete
-	find .. -name \*.stl.cgs -delete
-	find .. -name particle_input.dat.cgs -delete
-	find .. -name geometry.stl.original -delete
-	find .. -name poly.dat.cgs -delete
+	find .. -name \*.stl.cgs -exec rename .stl.cgs .stl {} \;
+	find .. -name particle_input.dat.cgs -exec rename .dat.cgs .dat {} \;
+	find .. -name geometry.stl.original -exec rename .stl.original .stl {} \;
+	find .. -name poly.dat.cgs -exec rename .dat.cgs .dat {} \;
 
 
 tags:
