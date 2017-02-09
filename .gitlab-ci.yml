@@ -65,7 +65,7 @@ build:windows:
     - windows
 
 
-# build:py stage builds Python mfixsolver extension and Python wheel packages
+# build:py2 stage builds python2 wheel packages
 
 build_linux_py2:
   stage: build:py2
@@ -83,42 +83,10 @@ build_linux_py2:
   tags:
     - linux
 
-build_linux_py3:
-  stage: build:py3
-  script:
-    - python3.5 setup.py bdist_wheel
-  dependencies:
-    - build:linux
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfixgui*.whl
-  only:
-    - branches
-  tags:
-    - linux
-
 build_mac_py2:
   stage: build:py2
   script:
     - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
-  dependencies:
-    - build:mac
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfixgui*.whl
-  only:
-    - branches
-  tags:
-    - mac
-
-build_mac_py3:
-  stage: build:py3
-  script:
-    - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
   dependencies:
     - build:mac
   artifacts:
@@ -148,7 +116,41 @@ build_windows_py2:
     - windows
 
 
-# install stage installs wheel package on Joule
+# build:py3 stage builds python3 wheel packages
+
+build_linux_py3:
+  stage: build:py3
+  script:
+    - python3.5 setup.py bdist_wheel
+  dependencies:
+    - build:linux
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/mfixgui*.whl
+  only:
+    - branches
+  tags:
+    - linux
+
+build_mac_py3:
+  stage: build:py3
+  script:
+    - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
+  dependencies:
+    - build:mac
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/mfixgui*.whl
+  only:
+    - branches
+  tags:
+    - mac
+
+# install stage installs python2 linux package on Joule
 
 install:linux:py:
   stage: deploy

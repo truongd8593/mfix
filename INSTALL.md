@@ -108,7 +108,6 @@ Now that the prerequisites are installed, build MFIX with:
 ```shell
 > tar xzf mfixgui-2017.1.tar.gz
 > cd mfixgui-2017.1
-> python setup.py build_mfix
 > python setup.py bdist_wheel
 ```
 
@@ -120,7 +119,7 @@ Download and install Anaconda (as described in [Installing MFIX](#installing-mfi
 Homebrew is the easiest way to install MFIX build dependencies.
  - Go to http://brew.sh and follow the installation instructions.
  - Once homebrew is installed, install MFIX build dependencies with the command:
- 
+
 ```shell
 > brew install gcc autoconf automake make gnu-sed
 ```
@@ -134,7 +133,6 @@ Now that the prerequisites are installed, build MFIX with the following command 
 ```shell
 > tar xzf mfixgui-2017.1.tar.gz
 > cd mfixgui-2017.1
-> python setup.py build_mfix
 > python setup.py bdist_wheel
 ```
 
@@ -153,7 +151,6 @@ Now that the prerequisites are installed, build MFIX with the following command 
 ```shell
 C:\> tar xzf mfixgui-2017.1.tar.gz
 C:\> cd mfixgui-2017.1
-C:\> python setup.py build_mfix
 C:\> python setup.py bdist_wheel
 ```
 

@@ -18,6 +18,7 @@ from os import makedirs, path, walk
 # must import setuptools before numpy.distutils
 import setuptools
 from numpy.distutils.core import Extension, setup
+from numpy.distutils.command.build_ext import build_ext
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
@@ -108,11 +109,36 @@ class BuildMfixCommand(setuptools.Command):
         if returncode != 0:
             raise EnvironmentError("Failed to build mfix correctly")
 
+
+
+def prereq(command_subclass):
+    """A decorator for classes subclassing one of the setuptools commands.
+
+    It modifies the run() method to run build_mfix before build_ext
+    """
+    orig_run = command_subclass.run
+
+    def modified_run(self):
+        self.run_command('build_mfix')
+
+        sys.exit()
+        orig_run(self)
+
+    command_subclass.run = modified_run
+    return command_subclass
+
+...
+
+@prereq
+class BuildExtPrereqCommand(build_ext):
+    pass
+
 setup(
     name='mfixgui',
 
     cmdclass={
         'build_mfix': BuildMfixCommand,
+        'build_ext': BuildExtPrereqCommand,
     },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
